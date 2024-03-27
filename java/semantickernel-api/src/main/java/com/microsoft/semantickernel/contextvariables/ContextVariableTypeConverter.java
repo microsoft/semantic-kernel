@@ -24,7 +24,6 @@ public class ContextVariableTypeConverter<T> {
         ContextVariableTypeConverter.class);
 
     public interface ToPromptStringFunction<T> {
-
         String toPromptString(ContextVariableTypes types, T t);
     }
 

@@ -199,14 +199,18 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                         ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
                                         if (kernel == null) {
                                             return Mono
-                                                .<List<ChatRequestMessage>>error(new SKException(
+                                                .error(new SKException(
                                                     "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
                                         }
+
+                                        ContextVariableTypes contextVariableTypes = invocationContext == null
+                                            ? new ContextVariableTypes()
+                                            : invocationContext.getContextVariableTypes();
 
                                         return invokeFunctionTool(
                                             kernel,
                                             functionToolCall,
-                                            invocationContext.getContextVariableTypes())
+                                            contextVariableTypes)
                                             .map(functionResult -> {
                                                 // Add chat request tool message to the chat options
                                                 ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
