@@ -48,16 +48,15 @@ public class Prompts {
             What is the intent of this request? %s
             """.formatted(request);
 
-        /*
-         * // Uncomment this block to make this example interactive
-         * // <InitialPrompt>
-         * System.out.println("Your request: ");
-         * String request = new Scanner(System.in).nextLine();
-         * String prompt = """
-         * What is the intent of this request? %s
-         * You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
-         * """.formatted(request);
-         * // </InitialPrompt>
+        /* Uncomment this block to make this example interactive
+         // <InitialPrompt>
+         System.out.println("Your request: ");
+         String request = new Scanner(System.in).nextLine();
+         String prompt = """
+         What is the intent of this request? %s
+         You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument.
+         """.formatted(request);
+         // </InitialPrompt>
          */
 
         System.out.println("0.0 Initial prompt");
