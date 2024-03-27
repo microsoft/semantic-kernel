@@ -169,18 +169,8 @@ public abstract class KernelFunction
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Invoke pre-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable CS0618 // Events are deprecated
-            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-#pragma warning restore CS0618 // Events are deprecated
-
             // Invoke pre-invocation filter. If it requests cancellation, throw.
             var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
-
-            if (invokingEventArgs?.Cancel is true)
-            {
-                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
-            }
 
             if (invokingContext?.Cancel is true)
             {
@@ -190,34 +180,13 @@ public abstract class KernelFunction
             // Invoke the function.
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-            // Invoke the post-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable CS0618 // Events are deprecated
-            var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
-#pragma warning restore CS0618 // Events are deprecated
-
-            // Invoke the post-invocation filter. If it requests cancellation, throw.
+            // Invoke the post-invocation filter.
             var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
-
-            if (invokedEventArgs is not null)
-            {
-                // Apply any changes from the event handlers to final result.
-                functionResult = new FunctionResult(this, invokedEventArgs.ResultValue, functionResult.Culture, invokedEventArgs.Metadata ?? functionResult.Metadata);
-            }
 
             if (invokedContext is not null)
             {
                 // Apply any changes from the function filters to final result.
                 functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
-            }
-
-            if (invokedEventArgs?.Cancel is true)
-            {
-                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
-            }
-
-            if (invokedContext?.Cancel is true)
-            {
-                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
@@ -227,8 +196,31 @@ public abstract class KernelFunction
         }
         catch (Exception ex)
         {
-            HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
-            throw;
+            functionResult = new(this);
+            var exception = HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
+
+            // Invoke post-invocation filter with exception.
+            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult, exception);
+
+            // No registered filters, throw original exception.
+            if (invokedContext is null)
+            {
+                throw exception;
+            }
+
+            // Filter is registered, exception was not canceled, throw the exception. 
+            if (invokedContext.Exception is not null)
+            {
+                throw invokedContext.Exception;
+            }
+
+            // Exception was canceled, override function result.
+            if (invokedContext is not null)
+            {
+                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
+            }
+
+            return functionResult;
         }
         finally
         {
@@ -313,18 +305,8 @@ public abstract class KernelFunction
                 // Quick check for cancellation after logging about function start but before doing any real work.
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Invoke pre-invocation event handler. If it requests cancellation, throw.
-#pragma warning disable CS0618 // Events are deprecated
-                var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
-#pragma warning restore CS0618 // Events are deprecated
-
                 // Invoke pre-invocation filter. If it requests cancellation, throw.
                 var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
-
-                if (invokingEventArgs?.Cancel is true)
-                {
-                    throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
-                }
 
                 if (invokingContext?.Cancel is true)
                 {
@@ -340,8 +322,8 @@ public abstract class KernelFunction
             }
             catch (Exception ex)
             {
-                HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
-                throw;
+                var exception = HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                throw exception;
             }
 
             // Ensure we clean up after the enumerator.
@@ -359,8 +341,8 @@ public abstract class KernelFunction
                     }
                     catch (Exception ex)
                     {
-                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
-                        throw;
+                        var exception = HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                        throw exception;
                     }
 
                     // Yield the next streaming result.
@@ -368,7 +350,7 @@ public abstract class KernelFunction
                 }
             }
 
-            // The FunctionInvoked hook and filter are not used when streaming.
+            // The FunctionInvoked filter are not used when streaming.
         }
         finally
         {
@@ -414,8 +396,8 @@ public abstract class KernelFunction
         CancellationToken cancellationToken);
 
     /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
-    private static void HandleException(
-        Exception ex,
+    private static Exception HandleException(
+        Exception exception,
         ILogger logger,
         Activity? activity,
         KernelFunction kernelFunction,
@@ -425,18 +407,17 @@ public abstract class KernelFunction
         ref TagList tags)
     {
         // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
-        tags.Add(MeasurementErrorTagName, ex.GetType().FullName);
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        logger.LogFunctionError(ex, ex.Message);
+        tags.Add(MeasurementErrorTagName, exception.GetType().FullName);
+        activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+        logger.LogFunctionError(exception, exception.Message);
 
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
         // important for cancellation that occurs in response to the FunctionInvoked event, in which case
         // there may be a result from a successful function invocation, and we want that result to be
         // visible to a consumer if that's needed.
-        if (ex is OperationCanceledException cancelEx)
-        {
-            throw new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result, cancelEx);
-        }
+        return exception is OperationCanceledException cancelException ?
+            new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result, cancelException) :
+            exception;
     }
 }

@@ -75,6 +75,9 @@ public class KernelFilterTests
             },
             onFunctionInvoked: (context) =>
             {
+                Assert.NotNull(context.Exception);
+                Assert.IsType<KernelFunctionCanceledException>(context.Exception);
+
                 postFilterInvocations++;
             });
 
@@ -84,9 +87,12 @@ public class KernelFilterTests
         // Assert
         Assert.Equal(1, preFilterInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Equal(0, postFilterInvocations);
+        Assert.Equal(1, postFilterInvocations);
         Assert.Same(function, exception.Function);
-        Assert.Null(exception.FunctionResult);
+        Assert.NotNull(exception.FunctionResult);
+
+        var resultValue = exception.FunctionResult.GetValue<object>();
+        Assert.Null(resultValue);
     }
 
     [Fact]
@@ -159,58 +165,6 @@ public class KernelFilterTests
 
         // Assert
         Assert.Equal(NewResult, result.GetValue<int>());
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterCancellationWorksCorrectlyAsync()
-    {
-        // Arrange
-        const int Result = 42;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => Result);
-        var args = new KernelArguments() { { "a", "b" } };
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
-        {
-            context.Cancel = true;
-        });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function, args));
-
-        // Assert
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Same(function, exception.Function);
-        Assert.Same(args, exception.Arguments);
-        Assert.NotNull(exception.FunctionResult);
-        Assert.Equal(Result, exception.FunctionResult.GetValue<int>());
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterCancellationWithModifiedResultAsync()
-    {
-        // Arrange
-        const int OriginalResult = 42;
-        const int NewResult = 84;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => OriginalResult);
-        var args = new KernelArguments() { { "a", "b" } };
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
-        {
-            context.SetResultValue(NewResult);
-            context.Cancel = true;
-        });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function, args));
-
-        // Assert
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Same(function, exception.Function);
-        Assert.Same(args, exception.Arguments);
-        Assert.NotNull(exception.FunctionResult);
-        Assert.Equal(NewResult, exception.FunctionResult.GetValue<int>());
     }
 
     [Fact]
@@ -377,27 +331,6 @@ public class KernelFilterTests
 
         // Assert
         mockTextGeneration.Verify(m => m.GetTextContentsAsync("Prompt - updated from filter", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public async Task PostInvocationPromptFilterCancellationWorksCorrectlyAsync()
-    {
-        // Arrange
-        var mockTextGeneration = this.GetMockTextGeneration();
-        var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
-        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendered: (context) =>
-            {
-                context.Cancel = true;
-            });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function));
-
-        // Assert
-        Assert.Same(function, exception.Function);
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Null(exception.FunctionResult);
     }
 
     [Fact]
