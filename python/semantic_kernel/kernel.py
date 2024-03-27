@@ -6,7 +6,6 @@ import importlib
 import inspect
 import logging
 import os
-from copy import copy
 from typing import Any, AsyncIterable, Callable, Literal, Type, TypeVar
 
 import yaml
@@ -14,21 +13,21 @@ from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
-from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     FunctionInitializationError,
     FunctionNameNotUniqueError,
+    HookInvalidSignatureError,
     KernelFunctionAlreadyExistsError,
     KernelFunctionNotFoundError,
-    KernelInvokeException,
     KernelPluginNotFoundError,
     KernelServiceNotFoundError,
+    OperationCancelledException,
     PluginInitializationError,
     PluginInvalidNameError,
-    ServiceInvalidRequestError,
     ServiceInvalidTypeError,
     TemplateSyntaxError,
 )
+from semantic_kernel.exceptions.kernel_exceptions import KernelInvokeException
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
@@ -37,11 +36,10 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.hooks import HOOK_PROTOCOLS, PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.hooks.utils import EmptyHook
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (
-    KERNEL_TEMPLATE_FORMAT_NAME,
-    TEMPLATE_FORMAT_TYPES,
-)
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -76,12 +74,7 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    function_invoking_handlers: dict[
-        int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
-    ] = Field(default_factory=dict)
-    function_invoked_handlers: dict[int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]] = (
-        Field(default_factory=dict)
-    )
+    hooks: list[Any] = Field(default_factory=list)
 
     def __init__(
         self,
@@ -140,7 +133,8 @@ class Kernel(KernelBaseModel):
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        return_function_results: bool | None = False,
+        metadata: dict[str, Any] = {},
+        return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncIterable[list["StreamingKernelContent"] | list[FunctionResult]]:
         """Execute one or more stream functions.
@@ -155,8 +149,9 @@ class Kernel(KernelBaseModel):
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
-            return_function_results (bool | None): If True, the function results are returned in addition to
-                the streaming content, otherwise only the streaming content is returned.
+            metadata (dict[str, Any]): The metadata to pass to the function(s)
+            return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
+            in addition to the streaming content, otherwise only the streaming content is yielded.
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
@@ -171,12 +166,11 @@ class Kernel(KernelBaseModel):
         results: list[FunctionResult] = []
         if isinstance(functions, KernelFunction):
             stream_function = functions
-            pipeline_step = 0
+            metadata["pipeline_step"] = 0
         else:
             stream_function = functions[-1]
             if len(functions) > 1:
                 pipeline_functions = functions[:-1]
-                # run pipeline functions
                 result = await self.invoke(functions=pipeline_functions, arguments=arguments)
                 # if function was cancelled, the result is None, otherwise can be one or more.
                 if result:
@@ -184,82 +178,24 @@ class Kernel(KernelBaseModel):
                         results.append(result)
                     else:
                         results.extend(result)
-            pipeline_step = len(functions) - 1
-        while True:
-            function_invoking_args = self.on_function_invoking(stream_function.metadata, arguments)
-            if function_invoking_args.is_cancel_requested:
-                logger.info(
-                    f"Execution was cancelled on function invoking event of pipeline step "
-                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
-                )
-                return
-            if function_invoking_args.updated_arguments:
-                logger.info(
-                    f"Arguments updated by function_invoking_handler in pipeline step: "
-                    f"{pipeline_step}, new arguments: {function_invoking_args.arguments}"
-                )
-                arguments = function_invoking_args.arguments
-            if function_invoking_args.is_skip_requested:
-                logger.info(
-                    f"Execution was skipped on function invoking event of pipeline step "
-                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
-                )
-                return
-                # TODO: decide how to put results into kernelarguments,
-                # might need to be done as part of the invoked_handler
-            function_result = []
-            exception = None
-
-            async for stream_message in stream_function.invoke_stream(self, arguments):
+            metadata["pipeline_step"] = len(functions) - 1
+        function_result = None
+        try:
+            async for stream_message in stream_function.invoke_stream(self, arguments, metadata):
                 if isinstance(stream_message, FunctionResult):
-                    exception = stream_message.metadata.get("exception", None)
-                    if exception:
-                        break
-                function_result.append(stream_message)
+                    # getting a FunctionResult, means something went wrong, store it and break
+                    function_result = stream_message
+                    break
                 yield stream_message
-
-            output_function_result = []
-            for result in function_result:
-                for choice in result:
-                    if len(output_function_result) <= choice.choice_index:
-                        output_function_result.append(copy(choice))
-                    else:
-                        output_function_result[choice.choice_index] += choice
-            func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
-            function_invoked_args = self.on_function_invoked(
-                stream_function.metadata,
-                arguments,
-                func_result,
-                exception,
-            )
-            if function_invoked_args.exception:
-                raise ServiceInvalidRequestError(
-                    f"Something went wrong in stream function. "
-                    f"During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. "
-                    f"Error description: '{str(function_invoked_args.exception)}'"
-                ) from function_invoked_args.exception
-            if return_function_results:
-                results.append(function_invoked_args.function_result)
-            if function_invoked_args.is_cancel_requested:
-                logger.info(
-                    f"Execution was cancelled on function invoked event of pipeline step "
-                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
-                )
-                return
-            if function_invoked_args.updated_arguments:
-                logger.info(
-                    f"Arguments updated by function_invoked_handler in pipeline step: "
-                    f"{pipeline_step}, new arguments: {function_invoked_args.arguments}"
-                )
-                arguments = function_invoked_args.arguments
-            if function_invoked_args.is_repeat_requested:
-                logger.info(
-                    f"Execution was repeated on function invoked event of pipeline step "
-                    f"{pipeline_step}: {stream_function.plugin_name}.{stream_function.name}."
-                )
-                continue
-            break
+        except OperationCancelledException:
+            pass
+        if function_result and "exception" in function_result.metadata:
+            raise KernelInvokeException(
+                f"Error occurred while invoking function: '{stream_function.fully_qualified_name}'"
+            ) from function_result.metadata["exception"]
         if return_function_results:
+            if function_result:
+                results.append(function_result)
             yield results
 
     async def invoke(
@@ -268,6 +204,7 @@ class Kernel(KernelBaseModel):
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult | list[FunctionResult] | None:
         """Execute one or more functions.
@@ -281,6 +218,7 @@ class Kernel(KernelBaseModel):
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
+            metadata (dict[str, Any]): The metadata to pass to the function(s)
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -289,81 +227,32 @@ class Kernel(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        results = []
-        pipeline_step = 0
+        results: list[FunctionResult] = []
+        metadata["pipeline_step"] = 0
         if not functions:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function or plugin name provided")
+                raise KernelFunctionNotFoundError("No function, or function- and plugin name provided")
             functions = [self.func(plugin_name, function_name)]
         if not isinstance(functions, list):
             functions = [functions]
             number_of_steps = 1
         else:
             number_of_steps = len(functions)
+        metadata["steps_in_pipeline"] = number_of_steps
         for func in functions:
-            # While loop is used to repeat the function invocation, if requested
-            while True:
-                function_invoking_args = self.on_function_invoking(func.metadata, arguments)
-                if function_invoking_args.is_cancel_requested:
-                    logger.info(
-                        f"Execution was cancelled on function invoking event of pipeline step "
-                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
-                    )
-                    return results if results else None
-                if function_invoking_args.updated_arguments:
-                    logger.info(
-                        f"Arguments updated by function_invoking_handler in pipeline step: "
-                        f"{pipeline_step}, new arguments: {function_invoking_args.arguments}"
-                    )
-                    arguments = function_invoking_args.arguments
-                if function_invoking_args.is_skip_requested:
-                    logger.info(
-                        f"Execution was skipped on function invoking event of pipeline step "
-                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
-                    )
-                    break
-                function_result = None
-                exception = None
-                try:
-                    function_result = await func.invoke(self, arguments)
-                except Exception as exc:
-                    logger.error(
-                        "Something went wrong in function invocation. During function invocation:"
-                        f" '{func.plugin_name}.{func.name}'. Error description: '{str(exc)}'"
-                    )
-                    exception = exc
-
-                # this allows a hook to alter the results before adding.
-                function_invoked_args = self.on_function_invoked(func.metadata, arguments, function_result, exception)
-                results.append(function_invoked_args.function_result)
-
-                if function_invoked_args.exception:
-                    raise KernelInvokeException(
-                        f"Error occurred while invoking function: '{func.plugin_name}.{func.name}'"
-                    ) from function_invoked_args.exception
-                if function_invoked_args.is_cancel_requested:
-                    logger.info(
-                        f"Execution was cancelled on function invoked event of pipeline step "
-                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
-                    )
-                    return results if results else None
-                if function_invoked_args.updated_arguments:
-                    logger.info(
-                        f"Arguments updated by function_invoked_handler in pipeline step: "
-                        f"{pipeline_step}, new arguments: {function_invoked_args.arguments}"
-                    )
-                    arguments = function_invoked_args.arguments
-                if function_invoked_args.is_repeat_requested:
-                    logger.info(
-                        f"Execution was repeated on function invoked event of pipeline step "
-                        f"{pipeline_step}: {func.plugin_name}.{func.name}."
-                    )
-                    continue
+            try:
+                function_result = await func.invoke(kernel=self, arguments=arguments, metadata=metadata)
+            except OperationCancelledException:
                 break
+            if function_result and "exception" in function_result.metadata:
+                raise KernelInvokeException(
+                    f"Error occurred while invoking function: '{func.fully_qualified_name}'"
+                ) from function_result.metadata["exception"]
+            if function_result:
+                results.append(function_result)
+            metadata["pipeline_step"] += 1
 
-            pipeline_step += 1
-
-        return results if number_of_steps > 1 else results[0]
+        return results if number_of_steps > 1 else results[0] if results else None
 
     async def invoke_prompt(
         self,
@@ -408,51 +297,121 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Function Invoking/Invoked Events
 
-    def on_function_invoked(
+    async def pre_function_invoke(
+        self,
+        kernel_function_metadata: KernelFunctionMetadata,
+        arguments: KernelArguments,
+        metadata: dict[str, Any] = {},
+    ) -> PreFunctionInvokeContext:
+        context = PreFunctionInvokeContext(
+            kernel_function_metadata=kernel_function_metadata, arguments=arguments, metadata=metadata
+        )
+        for hook in self.hooks:
+            try:
+                if isinstance(hook, HOOK_PROTOCOLS["pre_function_invoke"]):
+                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__}")
+                    result = hook.pre_function_invoke(context=context)
+                    if inspect.isawaitable(result):
+                        await result
+            except Exception as exc:
+                logger.error(
+                    f"An error occurred in the on_function_invoking event of hook: {hook.__class__.__name__}. "
+                    f"Error description: {str(exc)}"
+                )
+            if context.is_cancel_requested:
+                raise OperationCancelledException(
+                    f"Execution was cancelled on function invoking event of pipeline step "
+                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                    f"{kernel_function_metadata.fully_qualified_name}."
+                )
+            if context.updated_arguments:
+                logger.info(
+                    f"Arguments updated by function_invoking_handler in pipeline step: "
+                    f"{metadata['pipeline_step']}, new arguments: {context.arguments}"
+                )
+            if context.is_skip_requested:
+                logger.info(
+                    f"Execution was skipped on function invoking event of pipeline step "
+                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                    f"{kernel_function_metadata.fully_qualified_name}."
+                )
+        return context
+
+    async def post_function_invoke(
         self,
         kernel_function_metadata: KernelFunctionMetadata,
         arguments: KernelArguments,
         function_result: FunctionResult | None = None,
         exception: Exception | None = None,
-    ) -> FunctionInvokedEventArgs:
-        # TODO: include logic that uses function_result
-        args = FunctionInvokedEventArgs(
+        metadata: dict[str, Any] | None = None,
+    ) -> PostFunctionInvokeContext:
+        context = PostFunctionInvokeContext(
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
+            metadata=metadata or {},
             function_result=function_result,
             exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
-        if self.function_invoked_handlers:
-            for handler in self.function_invoked_handlers.values():
-                handler(self, args)
-        return args
+        for hook in self.hooks:
+            try:
+                if isinstance(hook, HOOK_PROTOCOLS["post_function_invoke"]):
+                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__}")
+                    result = hook.post_function_invoke(context=context)
+                    if inspect.isawaitable(result):
+                        await result
+            except Exception as exc:
+                logger.error(
+                    f"An error occurred in the on_function_invoked event of hook: {hook.__class__.__name__}. "
+                    f"Error description: {str(exc)}"
+                )
+            if context.is_cancel_requested:
+                raise OperationCancelledException(
+                    f"Execution was cancelled on function invoking event of pipeline step "
+                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                    f"{kernel_function_metadata.fully_qualified_name}."
+                )
+            if context.updated_arguments:
+                logger.info(
+                    f"Arguments updated by function_invoked_handler in pipeline step: "
+                    f"{metadata.get('pipeline_step', '') if metadata else ''}, new arguments: {context.arguments}"
+                )
+            if context.is_repeat_requested:
+                logger.info(
+                    f"Execution was repeated on function invoked event of pipeline step "
+                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                    f"{kernel_function_metadata.fully_qualified_name}."
+                )
 
-    def on_function_invoking(
-        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
-    ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
-        if self.function_invoking_handlers:
-            for handler in self.function_invoking_handlers.values():
-                handler(self, args)
-        return args
+        return context
 
-    def add_function_invoking_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
+    def add_hook(self, hook: object, priority: int | None = None) -> None:
+        """Add a KernelHook to the Kernel."""
+        # validate the hook, if a method with the right name is present, then check the protocol
+        for attr in dir(hook):
+            if attr not in HOOK_PROTOCOLS:
+                continue
+            if not isinstance(hook, HOOK_PROTOCOLS[attr]):
+                raise HookInvalidSignatureError(f"Hook function {attr} does not match the expected signature.")
+        if priority is not None:
+            self.hooks.insert(priority, hook)
+        else:
+            self.hooks.append(hook)
+
+    def add_hook_function(
+        self,
+        hook_name: Literal[
+            "pre_function_invoke",
+            "post_function_invoke",
+        ],
+        hook_function: Callable[[T], None],
+        priority: int | None = None,
     ) -> None:
-        self.function_invoking_handlers[id(handler)] = handler
+        """Add a hook function to the Kernel."""
+        hook = EmptyHook()
+        hook.__setattr__(hook_name, hook_function)
+        self.add_hook(hook, priority)
 
-    def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
-    ) -> None:
-        self.function_invoked_handlers[id(handler)] = handler
-
-    def remove_function_invoking_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoking_handlers:
-            del self.function_invoking_handlers[id(handler)]
-
-    def remove_function_invoked_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoked_handlers:
-            del self.function_invoked_handlers[id(handler)]
+    # TODO: remove hook method
 
     # endregion
     # region Plugins

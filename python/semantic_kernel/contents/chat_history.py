@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET
+from pydantic import Field
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
@@ -31,7 +32,9 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: List[ChatMessageContent]
+    messages: List[ChatMessageContent] = Field(
+        default_factory=list, description="The list of chat messages in the history."
+    )
 
     def __init__(self, **data: Any):
         """
