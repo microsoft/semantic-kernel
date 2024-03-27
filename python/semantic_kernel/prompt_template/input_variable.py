@@ -9,6 +9,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class InputVariable(KernelBaseModel):
     name: str
     description: str | None = ""
-    default: Any | None = ""
+    default: Any = ""
     is_required: bool | None = True
     json_schema: str | None = ""

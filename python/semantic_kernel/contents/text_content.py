@@ -11,7 +11,7 @@ class TextContent(KernelContent):
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
-        inner_content: Any | None - The inner content of the response,
+        inner_content: Any - The inner content of the response,
             this should hold all the information from the response so even
             when not creating a subclass a developer can leverage the full thing.
         ai_model_id: str | None - The id of the AI model that generated this response.

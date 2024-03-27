@@ -13,7 +13,7 @@ class StreamingKernelContent(KernelBaseModel, ABC):
     """Base class for all streaming kernel contents."""
 
     choice_index: int
-    inner_content: Any | None = None
+    inner_content: Any = None
     ai_model_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 

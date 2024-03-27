@@ -64,7 +64,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         default_headers: Mapping[str, str] | None = None,
-        log: Any | None = None,
+        log: Any = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.

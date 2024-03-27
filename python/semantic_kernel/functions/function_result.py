@@ -51,7 +51,7 @@ class FunctionResult(KernelBaseModel):
         else:
             return ""
 
-    def get_inner_content(self, index: int = 0) -> Any | None:
+    def get_inner_content(self, index: int = 0) -> Any:
         """Get the inner content of the function result.
 
         Arguments:
