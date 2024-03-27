@@ -1,4 +1,5 @@
-"""Class to hold chat messages."""
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import json
 from typing import Any

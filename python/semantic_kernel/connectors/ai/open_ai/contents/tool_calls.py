@@ -14,7 +14,7 @@ class ToolCall(KernelBaseModel):
     type: Literal["function"] | None = "function"
     function: FunctionCall | None = None
 
-    def __add__(self, other: "ToolCall" | None) -> "ToolCall":
+    def __add__(self, other: "ToolCall | None") -> "ToolCall":
         """Add two tool calls together, combines the function calls, ignores the id."""
         if not other:
             return self
