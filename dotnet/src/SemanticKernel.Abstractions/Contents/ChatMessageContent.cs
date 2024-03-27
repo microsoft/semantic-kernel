@@ -30,6 +30,7 @@ public class ChatMessageContent : KernelContent
     /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="TextContent"/> type.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
     public string? Content
     {
         get
