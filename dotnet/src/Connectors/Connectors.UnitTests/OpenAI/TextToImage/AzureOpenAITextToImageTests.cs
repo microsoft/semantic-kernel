@@ -4,8 +4,11 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
@@ -13,8 +16,25 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.TextToImage;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAITextToImageServiceTests"/> class.
 /// </summary>
-public sealed class AzureOpenAITextToImageServiceTests
+public sealed class AzureOpenAITextToImageServiceTests : IDisposable
 {
+    private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+
+    public AzureOpenAITextToImageServiceTests()
+    {
+        this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
+        this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._mockLoggerFactory = new Mock<ILoggerFactory>();
+
+        var mockLogger = new Mock<ILogger>();
+
+        mockLogger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+
+        this._mockLoggerFactory.Setup(l => l.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
+    }
+
     [Theory]
     [InlineData(1024, 1024, null)]
     [InlineData(1792, 1024, null)]
@@ -57,6 +77,38 @@ public sealed class AzureOpenAITextToImageServiceTests
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorWithApiKeyWorksCorrectly(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var service = includeLoggerFactory ?
+            new AzureOpenAITextToImageService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
+            new AzureOpenAITextToImageService("deployment", "https://endpoint", credentials, "model-id");
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConstructorWithTokenCredentialWorksCorrectly(bool includeLoggerFactory)
+    {
+        // Arrange & Act
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var service = includeLoggerFactory ?
+            new AzureOpenAITextToImageService("deployment", "https://endpoint", credentials, "model-id", loggerFactory: this._mockLoggerFactory.Object) :
+            new AzureOpenAITextToImageService("deployment", "https://endpoint", credentials, "model-id");
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.Equal("model-id", service.Attributes["ModelId"]);
+    }
+
+    [Theory]
     [InlineData("gpt-35-turbo", "gpt-3.5-turbo")]
     [InlineData("gpt-35-turbo", null)]
     [InlineData("gpt-4-turbo", "gpt-4")]
@@ -73,5 +125,11 @@ public sealed class AzureOpenAITextToImageServiceTests
 
         Assert.Contains(AIServiceExtensions.ModelIdKey, service.Attributes);
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
+    }
+
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 }
