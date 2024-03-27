@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(@Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
         return value;
     }
 

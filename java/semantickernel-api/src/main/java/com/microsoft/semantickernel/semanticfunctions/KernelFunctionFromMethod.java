@@ -443,7 +443,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
             ContextVariableTypeConverter<?> c = arg.getType().getConverter();
 
-            Object converted = c.toObject(arg.getValue(), parameter.getType());
+            Object converted = c.toObject(invocationContext.getContextVariableTypes(),
+                arg.getValue(), parameter.getType());
             if (converted != null) {
                 return converted;
             }
@@ -470,7 +471,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         if (value == null && type.equals(String.class) && arg != null) {
             ContextVariableTypeConverter c = arg.getType().getConverter();
 
-            value = c.toPromptString(arg.getValue());
+            value = c.toPromptString(invocationContext.getContextVariableTypes(), arg.getValue());
         }
 
         return value;

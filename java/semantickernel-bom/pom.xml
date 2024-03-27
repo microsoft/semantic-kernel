@@ -81,18 +81,18 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
-                <version>1.0.0-beta.6</version>
+                <version>1.0.0-beta.7</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
-                <version>1.13.11</version>
+                <version>1.14.1</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-identity</artifactId>
-                <version>1.11.2</version>
+                <version>1.11.4</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

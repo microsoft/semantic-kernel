@@ -104,7 +104,8 @@ public final class CodeBlock extends Block implements CodeRendering {
             case VALUE:
             case VARIABLE:
                 return Mono.just(
-                    ((TextRendering) this.tokens.get(0)).render(arguments));
+                    ((TextRendering) this.tokens.get(0)).render(context.getContextVariableTypes(),
+                        arguments));
 
             case FUNCTION_ID:
                 return this
@@ -207,7 +208,8 @@ public final class CodeBlock extends Block implements CodeRendering {
             }
 
             if (firstPositionalInputValue == null) {
-                firstPositionalInputValue = ((TextRendering) tokens.get(1)).render(arguments);
+                firstPositionalInputValue = ((TextRendering) tokens.get(1)).render(types,
+                    arguments);
                 firstPositionalInputValue = ContextVariable
                     .convert(
                         firstPositionalInputValue,
@@ -244,7 +246,7 @@ public final class CodeBlock extends Block implements CodeRendering {
                     "Ambiguity found as a named parameter '{arg.Name}' cannot be set for the first parameter when there is also a positional value: '{firstPositionalInputValue}' provided. Function: {fBlock.PluginName}.{fBlock.FunctionName}");
             }
 
-            arguments.put(arg.getName(), types.contextVariableOf(arg.getValue(arguments)));
+            arguments.put(arg.getName(), types.contextVariableOf(arg.getValue(types, arguments)));
         }
 
         return arguments;

@@ -127,7 +127,8 @@ public class ContextVariable<T> {
 
         if (typeOfActualReturnedType != null) {
             // Try the to object
-            T converted = typeOfActualReturnedType.getConverter().toObject(it, requestedResultType);
+            T converted = typeOfActualReturnedType.getConverter().toObject(contextVariableTypes, it,
+                requestedResultType);
 
             if (converted != null) {
                 return contextVariableTypes.getVariableTypeForClass(requestedResultType)
@@ -137,7 +138,9 @@ public class ContextVariable<T> {
             if (requestedResultType.isAssignableFrom(String.class)) {
                 // Try using toPromptString
                 String str = typeOfActualReturnedType.getConverter()
-                    .toPromptString(typeOfActualReturnedType.getClazz().cast(it));
+                    .toPromptString(
+                        contextVariableTypes,
+                        typeOfActualReturnedType.getClazz().cast(it));
 
                 return requestedResultTypeVariable.of(str);
             }
@@ -295,19 +298,29 @@ public class ContextVariable<T> {
      * @param converter the converter to use when converting the value
      * @return the value of this {@code ContextVariable} as a prompt string
      */
-    public String toPromptString(ContextVariableTypeConverter<T> converter) {
-        return converter.toPromptString(value);
+    public String toPromptString(ContextVariableTypes types,
+        ContextVariableTypeConverter<T> converter) {
+        return converter.toPromptString(types, value);
+    }
+
+    public String toPromptString(ContextVariableTypes types) {
+        return toPromptString(types, type.getConverter());
     }
 
     /**
-     * Use the convert of the type of this {@code ContextVariable} to convert the value of this
-     * {@code ContextVariable} to a prompt string.
+     * Use the given {@code ContextVariableTypeConverter} to convert the value of this
+     * {@code ContextVariable} to a prompt string. This method is useful when the convert of this
+     * {@code ContextVariableType} does not create the expected prompt string.
      *
+     * @param converter the converter to use when converting the value
      * @return the value of this {@code ContextVariable} as a prompt string
-     */
-    public String toPromptString() {
-        return toPromptString(type.getConverter());
+    public String toPromptString(ContextVariableTypeConverter<T> converter) {
+    return converter.toPromptString(value);
     }
+    public String toPromptString() {
+    return toPromptString(type.getConverter());
+    }
+     */
 
     /**
      * Returns true if the value of this {@code ContextVariable} is {@code null} or empty.

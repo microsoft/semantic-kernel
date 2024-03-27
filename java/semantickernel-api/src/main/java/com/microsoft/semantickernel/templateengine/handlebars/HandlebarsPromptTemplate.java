@@ -128,7 +128,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             Object value = null;
             if (context instanceof KernelFunctionArguments) {
                 ContextVariable<?> variable = ((KernelFunctionArguments) context).get(name);
-                value = variable != null ? variable.getValue() : null;
+                value = variable != null ? variable.getValue() : UNRESOLVED;
             }
             if (context instanceof ContextVariable) {
                 value = ((ContextVariable<?>) context).getValue();
@@ -187,6 +187,11 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         private static Helper<Object> handleEach(InvocationContext invocationContext) {
             return (context, options) -> {
+                if (context instanceof ContextVariable) {
+                    return ((ContextVariable<?>) context)
+                        .toPromptString(invocationContext.getContextVariableTypes());
+                }
+
                 if (context instanceof Iterable) {
                     StringBuilder sb = new StringBuilder();
                     Iterator<?> iterator = ((Iterable<?>) context).iterator();
@@ -209,7 +214,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 ContextVariableType type = invocationContext.getContextVariableTypes()
                     .getVariableTypeForClass(context.getClass());
                 if (type != null) {
-                    return type.getConverter().toPromptString(context);
+                    return type.getConverter()
+                        .toPromptString(invocationContext.getContextVariableTypes(), context);
                 }
                 return null;
             };
@@ -274,7 +280,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                         String functionName = kernelFunction.getName();
                         String pluginName = plugin.getName();
                         handlebars.registerHelper(
-                            String.format("%s.%s", pluginName, functionName),
+                            ToolCallBehavior.formFullFunctionName(pluginName, functionName),
                             functionInvokeHelper(kernel, kernelFunction, context));
                     });
 

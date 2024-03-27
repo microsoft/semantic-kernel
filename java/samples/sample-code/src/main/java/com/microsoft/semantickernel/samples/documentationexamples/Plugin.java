@@ -18,13 +18,19 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 public class Plugin {
+
+    public static InputStream INPUT = System.in;
+
     // CLIENT_KEY is for an OpenAI client
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    // Only required if AZURE_CLIENT_KEY is set
+    // AZURE_CLIENT_KEY and CLIENT_ENDPOINT are for an Azure client
+    // CLIENT_ENDPOINT required if AZURE_CLIENT_KEY is set
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv().getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
 
     public static void main(String[] args) {
         System.out.println("======== Plugin ========");
@@ -47,7 +53,6 @@ public class Plugin {
             return;
         }
 
-
         // <KernelCreation>
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(MODEL_ID)
@@ -69,7 +74,7 @@ public class Plugin {
 
         // Start the conversation
         System.out.print("User > ");
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(INPUT);
         String userInput;
         while (!(userInput = scanner.nextLine()).isEmpty()) {
             // Add user input to history
@@ -94,6 +99,7 @@ public class Plugin {
 
             // Add the message from the agent to the chat history
             history.addAssistantMessage(message);
+            System.out.print("User > ");
         }
         // </Chat>
     }
@@ -101,7 +107,7 @@ public class Plugin {
     // <LightPlugin>
     public static class LightPlugin {
 
-        public boolean isOn = false;
+        private boolean isOn = false;
 
         @DefineKernelFunction(name = "getState", description = "Gets the state of the light.'")
         String getState() {
@@ -110,9 +116,7 @@ public class Plugin {
 
         @DefineKernelFunction(name = "changeState", description = "Changes the state of the light.'")
         public String changeState(
-            @KernelFunctionParameter(name = "newState",
-                    description = "The new state of the light, boolean true==on, false==off.",
-                    type = boolean.class) boolean newState) {
+            @KernelFunctionParameter(name = "newState", description = "The new state of the light, boolean true==on, false==off.", type = boolean.class) boolean newState) {
 
             this.isOn = newState;
             String state = getState();

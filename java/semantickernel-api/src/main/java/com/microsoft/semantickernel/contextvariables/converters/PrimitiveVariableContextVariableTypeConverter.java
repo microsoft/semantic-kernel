@@ -5,11 +5,14 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
  * A {@link ContextVariableTypeConverter} for primative variables.
+ *
+ * @param <T> the type of the variable
  */
 public class PrimitiveVariableContextVariableTypeConverter<T> extends
     ContextVariableTypeConverter<T> {
@@ -38,21 +41,21 @@ public class PrimitiveVariableContextVariableTypeConverter<T> extends
 
     @Override
     @Nullable
-    public <U> U toObject(@Nullable Object t, Class<U> clazz) {
+    public <U> U toObject(ContextVariableTypes types, @Nullable Object t, Class<U> clazz) {
         if (t == null) {
             return null;
         }
 
         // Let the parent class have a crack at it first
         // since someone may have installed a special converter. 
-        U obj = super.toObject(t, clazz);
+        U obj = super.toObject(types, t, clazz);
         if (obj != null) {
             return obj;
         }
         // If the type is a string, and the object is of the same type as the
         // converter, then we can convert with the toPromptString method.
         if (clazz == String.class && t.getClass() == super.getType()) {
-            return clazz.cast(toPromptString(getType().cast(t)));
+            return clazz.cast(toPromptString(types, getType().cast(t)));
         }
         return null;
     }

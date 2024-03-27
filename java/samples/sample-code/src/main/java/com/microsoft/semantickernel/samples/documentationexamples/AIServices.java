@@ -42,14 +42,14 @@ public class AIServices {
             System.out.println("No client key found");
             return;
         }
-        
+
         // <CreateChatCompletionService>
         ChatCompletionService chatCompletionService = ChatCompletionService.builder()
             .withModelId(CHAT_MODEL_ID)
             .withOpenAIAsyncClient(client)
             .build();
         // </CreateChatCompletionService>
-             
+
         // <CreateTextGenerationService>
         TextGenerationService textGenerationService = TextGenerationService.builder()
             .withModelId(TEXT_MODEL_ID)
