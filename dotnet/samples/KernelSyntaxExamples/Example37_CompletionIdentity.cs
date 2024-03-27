@@ -83,7 +83,7 @@ public class Example37_CompletionIdentity : BaseTest
     {
         foreach (var message in chatHistory)
         {
-            if (expectName)
+            if (expectName && message.Role != AuthorRole.Assistant)
             {
                 Assert.NotNull(message.Name);
             }

@@ -18,12 +18,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>The messages.</summary>
     private readonly List<ChatMessageContent> _messages;
 
-    /// <summary>
-    /// An optional system name...either derived from the system message
-    /// or assigned directly.
-    /// </summary>
-    public string? SystemName { get; set; }
-
     /// <summary>Initializes an empty history.</summary>
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class
@@ -65,7 +59,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="name">Name of the author of the message</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null, string? name = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata, this.ProcessSystemName(authorRole, name)));
+        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata, name));
 
     /// <summary>
     /// <param name="authorRole">Role of the message author</param>
@@ -75,7 +69,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="name">Name of the author of the message</param>
     /// </summary>
     public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null, string? name = null) =>
-        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata, this.ProcessSystemName(authorRole, name)));
+        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata, name));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -232,28 +226,4 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => this._messages.GetEnumerator();
-
-    /// <summary>
-    /// Pass-through processing for message name in order to capture
-    /// system identity.
-    /// </summary>
-    private string? ProcessSystemName(AuthorRole role, string? name)
-    {
-        // Process for "System" role
-        if (role == AuthorRole.System)
-        {
-            // Capture if "Name" not null
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                this.SystemName = name;
-            }
-            else if (!string.IsNullOrWhiteSpace(this.SystemName))
-            {
-                // Consistency assignment
-                name = this.SystemName;
-            }
-        }
-
-        return name;
-    }
 }

@@ -56,7 +56,6 @@ public static class ChatHistoryExtensions
         if (messageContents.Count != 0)
         {
             var role = streamedRole ?? AuthorRole.Assistant;
-            var name = streamedName ?? (role == AuthorRole.Assistant ? chatHistory.SystemName : null);
 
             chatHistory.Add(new OpenAIChatMessageContent(
                 role,
@@ -64,7 +63,7 @@ public static class ChatHistoryExtensions
                 messageContents[0].ModelId!,
                 OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                 metadata,
-                name));
+                streamedName));
         }
     }
 }

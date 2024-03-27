@@ -327,7 +327,7 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice), chat.SystemName)).ToList();
+                return responseData.Choices.Select(chatChoice => new OpenAIChatMessageContent(chatChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, chatChoice))).ToList();
             }
 
             Debug.Assert(kernel is not null);
@@ -338,7 +338,7 @@ internal abstract class ClientCore
             // may return a FinishReason of "stop" even if there are tool calls to be made, in particular if a required tool
             // is specified.
             ChatChoice resultChoice = responseData.Choices[0];
-            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice), chat.SystemName);
+            OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice));
             if (result.ToolCalls.Count == 0)
             {
                 return new[] { result };
@@ -357,7 +357,7 @@ internal abstract class ClientCore
             // to understand the tool call responses. Also add the result message to the caller's chat
             // history: if they don't want it, they can remove it, but this makes the data available,
             // including metadata like usage.
-            chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message, chat.SystemName));
+            chatOptions.Messages.Add(GetRequestMessage(resultChoice.Message));
             chat.Add(result);
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
@@ -527,7 +527,7 @@ internal abstract class ClientCore
             {
                 metadata = GetResponseMetadata(update);
                 streamedRole ??= update.Role;
-                streamedName ??= update.AuthorName ?? (streamedRole == ChatRole.Assistant ? chat.SystemName : null);
+                streamedName ??= update.AuthorName;
                 finishReason = update.FinishReason ?? default;
 
                 // If we're intending to invoke function calls, we need to consume that function call information.
@@ -1038,16 +1038,16 @@ internal abstract class ClientCore
         throw new NotSupportedException($"Role {message.Role} is not supported.");
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message, string? name)
+    private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
     {
         if (message.Role == ChatRole.System)
         {
-            return new ChatRequestSystemMessage(message.Content) { Name = name };
+            return new ChatRequestSystemMessage(message.Content);
         }
 
         if (message.Role == ChatRole.Assistant)
         {
-            var msg = new ChatRequestAssistantMessage(message.Content) { Name = name };
+            var msg = new ChatRequestAssistantMessage(message.Content);
             if (message.ToolCalls is { Count: > 0 } tools)
             {
                 foreach (ChatCompletionsToolCall tool in tools)
@@ -1061,7 +1061,7 @@ internal abstract class ClientCore
 
         if (message.Role == ChatRole.User)
         {
-            return new ChatRequestUserMessage(message.Content) { Name = name };
+            return new ChatRequestUserMessage(message.Content);
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
