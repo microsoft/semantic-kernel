@@ -10,20 +10,19 @@ informed:
 # SK Agent Interactions and Architecture
 
 ## Context and Problem Statement
-- Agent abstraction must adapt to different modalities
-- Agent of differing modality must be able to interact in a shared context. (One to many)
-- Agent of differing modality must be able to support their own modality requirements. (Specialization)
-- Must functionally support with patterns introduced by AutoGen
+- Agent abstraction must adapt to different modalities (see [Agent Modalities](#Agent-Modalities:)) section)
+- Agents of differing modalities must be able to interact in a shared context. (One to many)
+- Agents of differing modalities must be able to support their own modality requirements. (Specialization)
+- Must support functional patterns introduced by AutoGen
 - Must be extensible
-- Must encapsulate complexity within
- implementation details, not calling patterns.
+- Must encapsulate complexity within implementation details, not calling patterns.
 
 > Note: Desire to establish AutoGen.Net alignment with SemanticKernel not limit to existing AutoGen definitions.
 
 ### Agent Modalities:
 - **SemanticKernel - IChatCompletionService**: No storage (local history and agent definitions)
 - **SemanticKernel - ITextGenerationService**: Not needed / Out of scope (SLM?)
-- **Open AI Assistant API**: Remote storage managed by Assistant API (Open AI & Azure Open AI)
+- **OpenAI Assistant API**: Remote storage managed by Assistant API (OpenAI & Azure OpenAI)
 - **AutoGen.Net**: Further specialization of the _Agent Architecture_
 
 ## Design Concept
@@ -74,10 +73,10 @@ KernelAgent|Agent|Agent|Abstraction|Includes `Kernel` services and plug-ins
 NexusAgent|Agent|Agent|Utility|`Agent` adapter based on `AgentNexus`
 ProxyAgent|Agent|Agent|Abstraction|`Agent` adapter based on another (inner) `Agent`
 ChatCompletionAgent|KernelAgent|Agent|SemanticKernel|A functional agent based on `IChatCompletionService`
-GptAssistantAgent|KernelAgent|Agent|Assistant API|A functional agent based on *Open AI Assistant API*
+OpenAIAssistantAgent|KernelAgent|Agent|Assistant API|A functional agent based on *OpenAI Assistant API*
 AgentChannel|-|Channel|Abstraction|Allows an agent to participate in a nexus.
 LocalChannel|AgentChannel|Channel|Utility|Concrete channel for agents based on local chat-history.
-GptAssistantChannel|AgentChannel|Channel|Assistant API|Channel associated with `GptAssistantAgent`
+OpenAIAssistantChannel|AgentChannel|Channel|Assistant API|Channel associated with `OpenAIAssistantAgent`
 AgentNexus|-|Nexus|Abstraction|Provides core capabilities for agent interactions.
 AgentChat|AgentNexus|Nexus|Utility|Strategy based nexus
 GroupChat|AgentNexus|Nexus|AutoGen.Net|AutoGen.Net nexus implementation
@@ -96,7 +95,7 @@ Nothing prevents the caller from deciding agent invocation order and completion.
 
 ```c#
 ChatAgent agent1 = ...; // SK IChatCompletionService
-GptAgent agent2 = ...; // Open AI Assistant API
+OpenAIAssistantAgent agent2 = ...; // OpenAI Assistant API
 AutoGen.Agent agent3 = ...; // AutoGen based agent
 
 AgentChat chat = new();
@@ -211,14 +210,14 @@ Creating an agent based on the *SemanticKernel* `IChatCompletionService` interfa
 
 > OPEN: Default to `ToolCallBehavior.AutoInvokeKernelFunctions` for agent?
 
-**6. GPT Assistant Agent**
+**6. OpenAI Assistant Agent**
 
-A `GptAssistantAgent` is also based on a `Kernel` object for function-calling, which may require a `IChatCompletionService` for prompt-functions and also supports `code-interpreter` and `retrieval` tools.
+A `OpenAIAssistantAgent` is also based on a `Kernel` object for function-calling, which may require a `IChatCompletionService` for prompt-functions and also supports `code-interpreter` and `retrieval` tools.
 
 > Note the use of a static factory method to support asynchronous initialization that includes calling the *Assistant API* to create or retrieve an agent definition.
 
 ```c#
-    await GptAssistantAgent.CreateAsync(
+    await OpenAIAssistantAgent.CreateAsync(
         CreateKernel(plugin1, plugin2, ...),
         GetApiKey(),
         instructions,
@@ -232,7 +231,7 @@ A `GptAssistantAgent` is also based on a `Kernel` object for function-calling, w
 or to retrieve an existing agent:
 
 ```c#
-    await GptAssistantAgent.GetAsync(
+    await OpenAIAssistantAgent.GetAsync(
         CreateKernel(plugin1, plugin2, ...),
         GetApiKey(),
         agentId);
@@ -350,12 +349,12 @@ public sealed class ChatCompletionAgent : KernelAgent
 
 **3. Remote Agent**
 
-An agent based on an API and remote storage introduces a different set of assumptions.  In this case, the `GptAssistantChannel` is doing the hard work.
+An agent based on an API and remote storage introduces a different set of assumptions.  In this case, the `OpenAIAssistantChannel` is doing the hard work.
 
 > Note the internal client and model as well as the asynchronous call to *Assistant API* during during channel initialization.
 
 ```c#
-public sealed class GptAssistantAgent : KernelAgent
+public sealed class OpenAIAssistantAgent : KernelAgent
 {
     private readonly Assistant _model;
     private readonly AssistantsClient _client;
@@ -368,7 +367,7 @@ public sealed class GptAssistantAgent : KernelAgent
 
     internal IReadOnlyList<ToolDefinition> Tools => this._model.Tools;
 
-    protected internal override Type ChannelType => typeof(GptAssistantChannel);
+    protected internal override Type ChannelType => typeof(OpenAIAssistantChannel);
 
     protected internal override async Task<AgentChannel> CreateChannelAsync(
         AgentNexus nexus, 
@@ -376,13 +375,10 @@ public sealed class GptAssistantAgent : KernelAgent
     {
         var thread =  await this._client.CreateThreadAsync(cancellationToken);
 
-        return new GptAssistantChannel(this._client, thread.Value.Id);
+        return new OpenAIAssistantChannel(this._client, thread.Value.Id);
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GptAgent"/> class.
-    /// </summary>
-    private GptAssistantAgent(AssistantsClient client, Assistant model, Kernel kernel)
+    private OpenAIAssistantAgent(AssistantsClient client, Assistant model, Kernel kernel)
         : base(kernel)
     {
         this._assistant = model;
@@ -402,13 +398,13 @@ This is the `InvokeAsync` that might be concepualized as belonging to the `Agent
 > Note: The caller has no visibility into the channel surface area.  These contracts are entirely managed by the `AgentNexus`.
 
 ```c#
-sealed class GptAssistantChannel : AgentChannel<GptAssistantAgent>
+sealed class OpenAIAssistantChannel : AgentChannel<OpenAIAssistantAgent>
 {
     private readonly AssistantsClient _client;
     private readonly string _threadId;
 
     protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        GptAssistantAgent agent, 
+        OpenAIAssistantAgent agent, 
         ChatMessageContent? input, 
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -430,7 +426,7 @@ sealed class GptAssistantChannel : AgentChannel<GptAssistantAgent>
         // invoke method.
     }
 
-    public GptChannel(AssistantsClient client, string threadId)
+    public OpenAIAssistantChannel(AssistantsClient client, string threadId)
     {
         this._client = client;
         this._threadId = threadId;
