@@ -447,10 +447,8 @@ sealed class OpenAIAssistantChannel : AgentChannel<OpenAIAssistantAgent>
 ## TBD
 
 - RetryQueue/EventualConsistency* (I got this/just not in POC)
-- ChatMessageContent.Name* (In Progress/Stand alone PR)
 - Plugin* (Nexus as Plug-in/Separate ADR)
 - StreamingKernelContent (Layer into design)
-- Middleware parity (Autogen concept)
 - Filters: SK, today, already has the concept of filters for [prompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Prompt/IPromptFilter.cs) and [functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Function/IFunctionFilter.cs). Ideally, the same approach should be taken for Agent filters.
 
 

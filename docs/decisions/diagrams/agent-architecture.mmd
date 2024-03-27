@@ -2,29 +2,32 @@ classDiagram
     Agent
     Agent <|-- KernelAgent
     Agent <|-- NexusAgent
-    %% KernelAgent <|-- LocalAgent
+    Agent <|-- ProxyAgent
     KernelAgent <|-- ChatCompletionAgent
-    KernelAgent <|-- GptAssistantAgent
+    KernelAgent <|-- OpenAIAssistantAgent
 
     AgentChannel~Agent~
     AgentChannel <|-- LocalChannel~Agent~
-    AgentChannel <|-- GptAssistantChannel~GptAssistantAgent~
+    AgentChannel <|-- OpenAIAssistantChannel~OpenAIAssistantAgent~
 
     AgentNexus
     AgentNexus <|-- AgentChat
     AgentNexus <|-- GroupChat
 
+    Agent --> AgentNexus
     class Agent {
         <<Abstract>>        
         +String Id
         +String? Name
         +String? Description
         ~#Type ChannelType*
-        ~#Task~AgentChannel~ CreateChannelAsync()*
+        ~#Task~AgentChannel~ CreateChannelAsync(AgentNexus nexus)*
     }
     class NexusAgent {
-        +AgentNexus Agent
-        -IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat)$
+        -AgentNexus _nexus
+    }
+    class ProxyAgent {
+        -Agent _agent
     }
     class KernelAgent {
         <<Abstract>>        
@@ -38,8 +41,8 @@ classDiagram
         -IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatAgent agent, ChatHistory chat)$
     }
 
-    GptAssistantAgent --> GptAssistantChannel
-    class GptAssistantAgent {
+    OpenAIAssistantAgent --> OpenAIAssistantChannel
+    class OpenAIAssistantAgent {
         <<Final>>
         -AssistantClient _client
         Assistant _assistant
@@ -64,7 +67,7 @@ classDiagram
         ~#Task ReceiveAsync(IEnumerable<ChatMessageContent> history)
     }
 
-    class GptAssistantChannel {
+    class OpenAIAssistantChannel {
         <<Final>>
         -AssistantClient _client
         -int _threadId
