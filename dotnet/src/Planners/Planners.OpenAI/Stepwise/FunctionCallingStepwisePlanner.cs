@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -277,7 +276,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
             else
             {
-                resultStr = valueElement.ToJsonString();
+                resultStr = JsonSerializer.Serialize(valueElement);
             }
         }
         else
