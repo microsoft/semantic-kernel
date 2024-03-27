@@ -66,7 +66,7 @@ dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
 dotnet user-secrets set "HuggingFace:EmbeddingModelId" "facebook/bart-base"
 
-dotnet user-secrets set "MistralAI:ChatModelId" "mistral-large-latest"
+dotnet user-secrets set "MistralAI:ChatModelId" "mistral-small-latest"
 dotnet user-secrets set "MistralAI:EmbeddingModel" "mistral-embed"
 dotnet user-secrets set "MistralAI:ApiKey" "..."
 

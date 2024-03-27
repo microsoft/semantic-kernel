@@ -46,6 +46,7 @@ internal sealed class ChatCompletionRequest
     /// Construct an instance of <see cref="ChatCompletionRequest"/>.
     /// </summary>
     /// <param name="model">ID of the model to use.</param>
+    [JsonConstructorAttribute]
     internal ChatCompletionRequest(string model)
     {
         this.Model = model;
@@ -58,5 +59,14 @@ internal sealed class ChatCompletionRequest
     {
         this.Tools ??= new List<MistralTool>();
         this.Tools.Add(tool);
+    }
+
+    /// <summary>
+    /// Add a message to the request.
+    /// </summary>
+    /// <param name="message"></param>
+    internal void AddMessage(MistralChatMessage message)
+    {
+        this.Messages.Add(message);
     }
 }

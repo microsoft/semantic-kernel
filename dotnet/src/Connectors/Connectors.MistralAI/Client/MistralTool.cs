@@ -24,6 +24,7 @@ internal class MistralTool
     /// <summary>
     /// Construct an instance of <see cref="MistralTool"/>.
     /// </summary>
+    [JsonConstructorAttribute]
     public MistralTool(string type, MistralFunction function)
     {
         this.Type = type;

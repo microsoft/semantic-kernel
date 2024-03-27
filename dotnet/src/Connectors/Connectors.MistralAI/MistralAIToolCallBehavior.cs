@@ -117,7 +117,7 @@ public abstract class MistralAIToolCallBehavior
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
     /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="MistralAIToolCallBehavior"/> provides.</summary>
-    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
     /// <param name="request">The destination <see cref="ChatCompletionRequest"/> to configure.</param>
     internal abstract void ConfigureRequest(Kernel? kernel, ChatCompletionRequest request);
 
@@ -213,14 +213,8 @@ public abstract class MistralAIToolCallBehavior
 
     // TODO : Implement Any Function
 
-    private static MistralTool ToMistralTool(this KernelFunctionMetadata metadata)
+    private static MistralTool ToMistralTool(KernelFunctionMetadata metadata)
     {
-        var function = new MistralFunction(
-            metadata.Name,
-            metadata.Description,
-            null
-            );
-
-        return new MistralTool("function", function);
+        return new MistralTool("function", new MistralFunction(metadata));
     }
 }
