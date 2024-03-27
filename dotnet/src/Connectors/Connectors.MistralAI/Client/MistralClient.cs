@@ -177,16 +177,6 @@ internal sealed class MistralClient
                 mistralExecutionSettings.ToolCallBehavior.ConfigureRequest(kernel, chatRequest);
             }
 
-            // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
-            // if we don't send any tools in subsequent requests, even if we say not to use any.
-            /*
-            if (chatRequest.ToolChoice == ChatCompletionsToolChoice.None)
-            {
-                Debug.Assert(chatOptions.Tools.Count == 0);
-                chatOptions.Tools.Add(s_nonInvocableFunctionTool);
-            }
-            */
-
             // Disable auto invocation if we've exceeded the allowed limit.
             if (iteration >= mistralExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
