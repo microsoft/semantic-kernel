@@ -151,6 +151,11 @@ internal sealed class HuggingFaceClient
         return response;
     }
 
+    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream stream, string modelId)
+    {
+
+    }
+
     private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream, string modelId)
         => from response in this.ParseTextResponseStream(stream)
            from textContent in this.GetTextStreamContentsFromResponse(response, modelId)
@@ -158,6 +163,9 @@ internal sealed class HuggingFaceClient
 
     private IEnumerable<TextGenerationStreamResponse> ParseTextResponseStream(Stream responseStream)
         => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<TextGenerationStreamResponse>);
+
+    private IEnumerable<ChatCompletionStreamResponse> ParseChatResponseStream(Stream responseStream)
+        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<ChatCompletionStreamResponse>);
 
     private List<TextContent> GetTextStreamContentsFromResponse(TextGenerationStreamResponse response, string modelId)
     {

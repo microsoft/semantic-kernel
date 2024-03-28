@@ -35,3 +35,16 @@ internal sealed class TextGenerationStreamResponse
         public bool Special { get; set; }
     }
 }
+
+
+internal sealed class ChatCompletionStreamResponse
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("object")]
+    public string? Object { get; set; }
+
+    [JsonPropertyName("created")]
+
+}
