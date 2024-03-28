@@ -255,7 +255,7 @@ class KernelFunction(KernelBaseModel):
                 added to the KernelArguments.
 
         Yields:
-            StreamingKernelContent or FunctionResult -- The results of the function,
+            KernelContent with the StreamingKernelMixin or FunctionResult -- The results of the function,
                 if there is an error a FunctionResult is yielded.
         """
         if arguments is None:

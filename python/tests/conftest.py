@@ -8,7 +8,7 @@ from typing import Any, AsyncIterable, Callable, List, Union
 import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -112,7 +112,7 @@ def create_mock_function() -> Callable:
                 self,
                 kernel: "Kernel",
                 arguments: "KernelArguments",
-            ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+            ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingContentMixin, Any]]]]:
                 self.call_count += 1
                 yield [StreamingTextContent(choice_index=0, text=value, metadata={})]
 
