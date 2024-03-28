@@ -78,6 +78,7 @@ pytest-asyncio = "^0.23.5.post1"
 snoop = "^0.4.3"
 pytest-cov = ">=4.1.0"
 mypy = ">=1.9.0"
+types-PyYAML = "^6.0.12.20240311"
 
 [tool.poetry.group.unit-tests]
 optional = true
