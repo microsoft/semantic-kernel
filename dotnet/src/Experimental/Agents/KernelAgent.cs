@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
 /// Base class for agents.
