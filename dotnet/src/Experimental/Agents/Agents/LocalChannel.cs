@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,29 +12,33 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with local <see cref="ChatHistory"/>.
 /// </summary>
-public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
+//public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent, ILocalAgent
+public class LocalChannel : AgentChannel
 {
-    /// <summary>
-    /// Delegate for calling into an agent with locally managed chat-history.
-    /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
-    /// <param name="chat">The nexus history at the point the channel is created.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
-    public delegate IAsyncEnumerable<ChatMessageContent> AgentInvocationAsync(TAgent agent, ChatHistory chat, CancellationToken cancellationToken);
-
     private readonly ChatHistory _chat;
-    private readonly AgentInvocationAsync _agentInvoker;
+    private readonly ILocalAgent _agent;
 
     /// <inheritdoc/>
-    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(TAgent agent, ChatMessageContent? input, CancellationToken cancellationToken)
+    protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        return this._agentInvoker.Invoke(agent, new ChatHistory(this._chat), cancellationToken);
+        if (input != null)
+        {
+            this._chat.Add(input);
+        }
+
+        await foreach (var message in this._agent.InvokeAsync(this._chat, cancellationToken))
+        {
+            this._chat.Add(message);
+
+            yield return message;
+        }
     }
 
     /// <inheritdoc/>
     protected internal override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
+        this._chat.AddRange(history);
+
         return Task.CompletedTask;
     }
 
@@ -44,11 +49,11 @@ public class LocalChannel<TAgent> : AgentChannel<TAgent> where TAgent : Agent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LocalChannel{TAgent}"/> class.
+    /// Initializes a new instance of the <see cref="LocalChannel"/> class.
     /// </summary>
-    public LocalChannel(AgentNexus nexus, AgentInvocationAsync agentInvoker)
+    public LocalChannel(ILocalAgent agent)
     {
-        this._chat = nexus.History;
-        this._agentInvoker = agentInvoker;
+        this._chat = new(); // $$$
+        this._agent = agent;
     }
 }
