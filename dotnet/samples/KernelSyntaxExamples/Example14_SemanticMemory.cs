@@ -168,7 +168,7 @@ public class Example14_SemanticMemory : BaseTest
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
             ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",
         };
     }
