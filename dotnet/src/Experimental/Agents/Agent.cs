@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,13 +29,9 @@ public abstract class Agent
     public abstract string? Name { get; }
 
     /// <summary>
-    /// The type of channel associated with the agent, should one be required.
+    /// Set of keys for tracking channel affinity.
     /// </summary>
-    /// <remarks>
-    /// Each implementation of <see cref="Agent"/> must be associated
-    /// with a corresponding <see cref="AgentChannel"/>.
-    /// </remarks>
-    protected internal abstract Type ChannelType { get; }
+    protected internal abstract IEnumerable<string> GetChannelKeys();
 
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.

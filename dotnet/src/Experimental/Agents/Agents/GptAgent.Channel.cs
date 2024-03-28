@@ -15,6 +15,8 @@ using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
+#pragma warning disable IDE0290 // Use primary constructor
+
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>

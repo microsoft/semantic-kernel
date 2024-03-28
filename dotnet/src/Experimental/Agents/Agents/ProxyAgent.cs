@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -25,7 +25,10 @@ public abstract class ProxyAgent : Agent
     public override string? Name => this._agent.Name;
 
     /// <inheritdoc/>
-    protected internal override Type ChannelType => this._agent.ChannelType;
+    protected internal override IEnumerable<string> GetChannelKeys()
+    {
+        return this._agent.GetChannelKeys();
+    }
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken) =>

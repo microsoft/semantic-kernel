@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
@@ -23,9 +24,9 @@ public class LocalChannel : AgentChannel
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (input != null)
+        if (input.TryGetContent(out var _))
         {
-            this._chat.Add(input);
+            this._chat.Add(input!);
         }
 
         await foreach (var message in this._agent.InvokeAsync(this._chat, cancellationToken))
@@ -55,7 +56,7 @@ public class LocalChannel : AgentChannel
     /// </summary>
     public LocalChannel(ILocalAgent agent)
     {
-        this._chat = new();
+        this._chat = [];
         this._agent = agent;
     }
 }

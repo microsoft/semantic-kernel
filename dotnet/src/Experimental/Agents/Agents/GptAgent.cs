@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 public sealed partial class GptAgent : KernelAgent
 {
     private readonly Assistant _assistant;
+    private readonly string _partitionKey;
     private readonly AssistantsClient _client;
 
     /// <inheritdoc/>
@@ -40,7 +41,11 @@ public sealed partial class GptAgent : KernelAgent
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
 
     /// <inheritdoc/>
-    protected internal override Type ChannelType => typeof(GptChannel);
+    protected internal override IEnumerable<string> GetChannelKeys()
+    {
+        yield return typeof(GptChannel).FullName;
+        yield return this._partitionKey;
+    }
 
     /// <inheritdoc/>
     protected internal override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
@@ -50,15 +55,17 @@ public sealed partial class GptAgent : KernelAgent
         return new GptChannel(this._client, thread.Value.Id);
     }
 
-    private static AssistantsClient CreateClient(IChatCompletionService service, string apiKey)
+    private static AssistantsClient CreateClient(IChatCompletionService service, string apiKey, out string partitionKey)
     {
         if (service is AzureOpenAIChatCompletionService azureService)
         {
-            return new AssistantsClient(new Uri(azureService.GetEndpoint()), new AzureKeyCredential(apiKey));
+            partitionKey = azureService.GetEndpoint() ?? throw new AgentException("No endpoint defined");
+            return new AssistantsClient(new Uri(partitionKey), new AzureKeyCredential(apiKey));
         }
 
         if (service is OpenAIChatCompletionService openaiService)
         {
+            partitionKey = "openai";
             return new AssistantsClient(apiKey);
         }
 
@@ -85,10 +92,11 @@ public sealed partial class GptAgent : KernelAgent
     /// <summary>
     /// Initializes a new instance of the <see cref="GptAgent"/> class.
     /// </summary>
-    private GptAgent(AssistantsClient client, Assistant model, Kernel kernel)
+    private GptAgent(AssistantsClient client, Assistant model, Kernel kernel, string partitionKey)
         : base(kernel)
     {
         this._assistant = model;
         this._client = client;
+        this._partitionKey = partitionKey;
     }
 }

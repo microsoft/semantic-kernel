@@ -23,7 +23,7 @@ public sealed partial class GptAgent : KernelAgent
     /// <param name="name">The agent name</param>
     /// <param name="enableCodeIntepreter">Enable code-intepreter tool</param>
     /// <param name="enableRetrieval">Enable retrieval tool</param>
-    /// <param name="fileIds">$$$</param>
+    /// <param name="fileIds">Set of fileids associated with the agent</param>
     /// <param name="metadata">Agent metadata</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An agent instance</returns>
@@ -41,7 +41,7 @@ public sealed partial class GptAgent : KernelAgent
     {
         var service = kernel.GetRequiredService<IChatCompletionService>();
         var model = GetModel(service);
-        var client = CreateClient(service, apiKey);
+        var client = CreateClient(service, apiKey, out var partitionKey);
 
         var options =
             new AssistantCreationOptions(model)
@@ -52,7 +52,7 @@ public sealed partial class GptAgent : KernelAgent
                 Metadata = metadata,
             };
 
-        foreach (var fileId in fileIds ?? Array.Empty<string>())
+        foreach (var fileId in fileIds ?? [])
         {
             options.FileIds.Add(fileId);
         }
@@ -69,7 +69,7 @@ public sealed partial class GptAgent : KernelAgent
 
         var response = await client.CreateAssistantAsync(options, cancellationToken).ConfigureAwait(false);
 
-        return new GptAgent(client, response, kernel);
+        return new GptAgent(client, response, kernel, partitionKey);
     }
 
     /// <summary>
@@ -83,10 +83,10 @@ public sealed partial class GptAgent : KernelAgent
     public static async Task<GptAgent> RestoreAsync(Kernel kernel, string apiKey, string id, CancellationToken cancellationToken)
     {
         var service = kernel.GetRequiredService<IChatCompletionService>();
-        var client = CreateClient(service, apiKey);
+        var client = CreateClient(service, apiKey, out var partitionKey);
 
         var response = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
-        return new GptAgent(client, response, kernel);
+        return new GptAgent(client, response, kernel, partitionKey);
     }
 }

@@ -222,8 +222,8 @@ public class Example99_Agents : BaseTest
             "I think I'm going to do something really important today!",
             new NexusExecutionSettings
             {
-                MaximumIterations = 6,
-                CompletionCriteria = new ExpressionCompletionStrategy("really"), // Terminate on pessimistic phrase.
+                MaximumIterations = 2,
+                //CompletionCriteria = new ExpressionCompletionStrategy("really"), // Terminate on pessimistic phrase. $$$
             },
             agent1,
             agent2);

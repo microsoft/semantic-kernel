@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,10 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 public abstract class LocalKernelAgent(Kernel kernel) : KernelAgent(kernel), ILocalAgent
 {
     /// <inheritdoc/>
-    protected internal sealed override Type ChannelType => typeof(LocalChannel);
+    protected internal override IEnumerable<string> GetChannelKeys()
+    {
+        yield return this.GetType().FullName;
+    }
 
     /// <inheritdoc/>
     protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)

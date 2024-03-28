@@ -35,7 +35,10 @@ public sealed class NexusAgent : Agent, ILocalAgent
     public override string? Name { get; }
 
     /// <inheritdoc/>
-    protected internal override Type ChannelType => typeof(LocalChannel);
+    protected internal override IEnumerable<string> GetChannelKeys()
+    {
+        yield return typeof(LocalChannel).FullName;
+    }
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)

@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -29,7 +31,10 @@ public record AgentMessageSource(string AgentId, string? MessageId = null)
 /// </summary>
 public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
 {
-    private readonly Dictionary<Type, AgentChannel> _agentChannels;
+    private static readonly SHA256CryptoServiceProvider s_sha256 = new();
+
+    private readonly Dictionary<string, AgentChannel> _agentChannels;
+    private readonly Dictionary<Agent, string> _channelMap;
     private int _isActive;
 
     /// <summary>
@@ -51,7 +56,8 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
             return this.History.Reverse().ToAsyncEnumerable(); // $$$ PERF
         }
 
-        if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
+        var channelKey = this.GetHash(agent);
+        if (!this._agentChannels.TryGetValue(channelKey, out var channel))
         {
             return Array.Empty<ChatMessageContent>().ToAsyncEnumerable();
         }
@@ -79,41 +85,46 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
             throw new AgentException("Unable to proceed while another agent is active.");
         }
 
-        // Manifest the required channel
-        var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
-
-        if (input.TryGetContent(out var content))
+        try
         {
-            this.History.AddUserMessage(content, input!.Name);
-            yield return input!;
-        }
+            // Manifest the required channel
+            var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
-        // Invoke agent & process response
-        await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
-        {
-            // Add to primary history
-            this.History.Add(message);
+            if (input.TryGetContent(out var content))
+            {
+                this.History.AddUserMessage(content, input!.Name);
+                yield return input!;
+            }
 
-            // Yield message to caller
-            yield return message;
+            // Invoke agent & process response
+            List<ChatMessageContent> messages = new();
+            await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
+            {
+                // Add to primary history
+                this.History.Add(message);
+                messages.Add(message);
+
+                // Yield message to caller
+                yield return message;
+            }
 
             // $$$ BACKGROUND QUEUE W/ RETRY | ANY AGENT W/ CHANNEL QUEUED BLOCKS
             // Broadcast message to other channels (in parallel)
-            var tasks =
-                this._agentChannels.Values
-                    .Where(c => c != channel)
-                    .Select(c => c.RecieveAsync([message]));
-
+            var otherChannels = this._agentChannels.Values.Where(c => c != channel);
+            var tasks = otherChannels.Select(c => c.RecieveAsync(messages)).ToArray();
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-
-        Interlocked.Exchange(ref this._isActive, 0);
+        finally
+        {
+            Interlocked.Exchange(ref this._isActive, 0);
+        }
     }
 
     private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)
     {
-        // $$$ TODO: BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
-        if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
+        var channelKey = this.GetHash(agent);
+
+        if (!this._agentChannels.TryGetValue(channelKey, out var channel))
         {
             channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
@@ -122,10 +133,27 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
                 await channel.RecieveAsync(this.History, cancellationToken).ConfigureAwait(false);
             }
 
-            this._agentChannels.Add(agent.ChannelType, channel);
+            this._agentChannels.Add(channelKey, channel);
         }
 
         return channel;
+    }
+
+    private string GetHash(Agent agent)
+    {
+        if (this._channelMap.TryGetValue(agent, out var hash))
+        {
+            return hash;
+        }
+
+        var buffer = Encoding.UTF8.GetBytes(string.Join(":", agent.GetChannelKeys()));
+        var result = s_sha256.ComputeHash(buffer);
+
+        hash = Convert.ToBase64String(result);
+
+        this._channelMap.Add(agent, hash);
+
+        return hash;
     }
 
     /// <summary>
@@ -143,6 +171,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     protected AgentNexus()
     {
         this._agentChannels = [];
+        this._channelMap = [];
         this.History = [];
     }
 }
