@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization bound to <see cref="LocalChannel"/>.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
 /// Contract for an agent that performs its own local processing.

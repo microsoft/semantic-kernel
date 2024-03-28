@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
+namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 #pragma warning disable IDE0290 // Use primary constructor
 
