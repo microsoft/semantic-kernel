@@ -40,8 +40,7 @@ public abstract class Agent
     /// <summary>
     /// Produce the an <see cref="AgentChannel"/> appropriate for the agent type.
     /// </summary>
-    /// <param name="nexus">The <see cref="AgentNexus"/> requesting the channel.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
-    protected internal abstract Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken);
+    protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 }

@@ -43,7 +43,7 @@ public sealed partial class GptAgent : KernelAgent
     protected internal override Type ChannelType => typeof(GptChannel);
 
     /// <inheritdoc/>
-    protected internal override async Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
+    protected internal override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         var thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 

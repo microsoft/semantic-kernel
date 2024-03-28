@@ -19,7 +19,7 @@ public abstract class LocalKernelAgent(Kernel kernel) : KernelAgent(kernel), ILo
     protected internal sealed override Type ChannelType => typeof(LocalChannel);
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult<AgentChannel>(new LocalChannel(this));
     }

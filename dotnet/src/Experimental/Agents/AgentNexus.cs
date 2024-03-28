@@ -115,7 +115,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         // $$$ TODO: BETTER KEY THAN TYPE (DIFFERENT APIKEYS / ENDPOINTS / TENENTS OF SAME TYPE)
         if (!this._agentChannels.TryGetValue(agent.ChannelType, out var channel))
         {
-            channel = await agent.CreateChannelAsync(this, cancellationToken).ConfigureAwait(false);
+            channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
 
             if (this.History.Count > 0)
             {

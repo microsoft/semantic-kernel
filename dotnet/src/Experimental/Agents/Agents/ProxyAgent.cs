@@ -28,8 +28,8 @@ public abstract class ProxyAgent : Agent
     protected internal override Type ChannelType => this._agent.ChannelType;
 
     /// <inheritdoc/>
-    protected internal override Task<AgentChannel> CreateChannelAsync(AgentNexus nexus, CancellationToken cancellationToken) =>
-        this._agent.CreateChannelAsync(nexus, cancellationToken);
+    protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken) =>
+        this._agent.CreateChannelAsync(cancellationToken);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProxyAgent"/> class.
