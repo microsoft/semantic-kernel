@@ -35,8 +35,11 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
     # Configure AI service used by the kernel. Load settings from the .env file.
     if llm_service == "AzureOpenAI":
         _, api_key, endpoint = sk.azure_openai_settings_from_dot_env(include_deployment=False)
-        deployment_name = (config.get("AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME") if use_chat 
-                           else config.get("AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME"))
+        deployment_name = (
+            config.get("AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME")
+            if use_chat
+            else config.get("AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME")
+        )
 
         if not deployment_name:
             raise ValueError("Deployment name for Azure AI is not set in .env file.")
@@ -61,12 +64,15 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
             )
     else:
         api_key, org_id = sk.openai_settings_from_dot_env()
-        model_id = (config.get("OPEN_AI_CHAT_COMPLETION_MODEL_ID") if use_chat 
-                    else config.get("OPEN_AI_TEXT_COMPLETION_MODEL_ID"))
+        model_id = (
+            config.get("OPEN_AI_CHAT_COMPLETION_MODEL_ID")
+            if use_chat
+            else config.get("OPEN_AI_TEXT_COMPLETION_MODEL_ID")
+        )
 
         if not model_id:
             raise ValueError("Model ID for OpenAI is not set in .env file.")
-        
+
         if use_chat:
             kernel.add_service(
                 OpenAIChatCompletion(
