@@ -191,6 +191,15 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to encode message tags in the prompt template.
+    /// </summary>
+    /// <remarks>
+    /// The default is true.
+    /// </remarks>
+    [JsonPropertyName("encode_tags")]
+    public bool EncodeTags { get; set; } = true;
+
+    /// <summary>
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
     /// </summary>
     /// <remarks>

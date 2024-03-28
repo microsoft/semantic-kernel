@@ -35,6 +35,7 @@ public sealed class InputVariable
         this.Default = inputVariable.Default;
         this.IsRequired = inputVariable.IsRequired;
         this.JsonSchema = inputVariable.JsonSchema;
+        this.EncodeTags = inputVariable.EncodeTags;
     }
 
     /// <summary>
@@ -88,4 +89,13 @@ public sealed class InputVariable
     /// </remarks>
     [JsonPropertyName("json_schema")]
     public string? JsonSchema { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to encode message tags in the prompt template.
+    /// </summary>
+    /// <remarks>
+    /// The default is true.
+    /// </remarks>
+    [JsonPropertyName("encode_tags")]
+    public bool EncodeTags { get; set; } = true;
 }

@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -39,6 +41,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
+
+        this._encodeTags = promptConfig.EncodeTags;
+        this._safeBlocks = promptConfig.InputVariables.Where(iv => !iv.EncodeTags).Select(iv => iv.Name).ToList();
     }
 
     /// <inheritdoc/>
@@ -52,6 +57,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
+    private readonly bool _encodeTags;
+    private readonly List<string> _safeBlocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -92,19 +99,29 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
+            string? blockResult = null;
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture);
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture);
                     break;
 
                 default:
                     Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
                     break;
+            }
+
+            if (blockResult is not null)
+            {
+                if (ShouldEncode(this._encodeTags, this._safeBlocks, block!))
+                {
+                    blockResult = Encode(blockResult);
+                }
+                result.Append(blockResult);
             }
         }
 
@@ -162,6 +179,35 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                 config.InputVariables.Add(new InputVariable { Name = variableName });
             }
         }
+    }
+
+    private const string MessagePattern = "<message role='[^']+'>";
+
+    private static string ReplaceMessageTag(Match match)
+    {
+        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
+    }
+
+    private static bool ShouldEncode(bool encodeTags, List<string> safeBlocks, Block block)
+    {
+        if (block is VarBlock varBlock)
+        {
+            return !safeBlocks.Contains(varBlock.Name);
+        }
+
+        if (encodeTags && block is not TextBlock)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static string Encode(string value)
+    {
+        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
+        result = result.Replace("</message>", "&lt;/message&gt;");
+        return result;
     }
     #endregion
 }

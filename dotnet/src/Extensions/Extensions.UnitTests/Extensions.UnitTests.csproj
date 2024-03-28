@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <LangVersion>12</LangVersion>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
   <ItemGroup>
