@@ -48,7 +48,9 @@ public class Prompts {
             What is the intent of this request? %s
             """.formatted(request);
 
-        /* Uncomment this block to make this example interactive
+        // @formatter:off
+        /*
+         Uncomment this block to make this example interactive
          // <InitialPrompt>
          System.out.println("Your request: ");
          String request = new Scanner(System.in).nextLine();
@@ -58,6 +60,7 @@ public class Prompts {
          """.formatted(request);
          // </InitialPrompt>
          */
+        // @formatter:on
 
         System.out.println("0.0 Initial prompt");
         // <InvokeInitialPrompt>
