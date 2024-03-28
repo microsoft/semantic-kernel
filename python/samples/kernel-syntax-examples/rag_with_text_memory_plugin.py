@@ -21,6 +21,8 @@ async def main():
         service_id="ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
     )
 
+    kernel.add_service(embedding_gen)
+
     memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embedding_gen)
     kernel.import_plugin_from_object(TextMemoryPlugin(memory), "memory")
 
