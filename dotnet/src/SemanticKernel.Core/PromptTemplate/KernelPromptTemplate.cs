@@ -181,7 +181,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-    private const string MessagePattern = "<message role='[^']+'>";
+    private const string MessagePattern1 = "<message role='[^']+'>";
+    private const string MessagePattern2 = "<message role=\"[^']+\">";
 
     private static string ReplaceMessageTag(Match match)
     {
@@ -205,7 +206,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
     private static string Encode(string value)
     {
-        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
+        string result = Regex.Replace(value, MessagePattern1, ReplaceMessageTag);
+        result = Regex.Replace(value, MessagePattern2, ReplaceMessageTag);
         result = result.Replace("</message>", "&lt;/message&gt;");
         return result;
     }
