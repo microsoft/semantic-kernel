@@ -11,7 +11,7 @@ namespace SemanticKernel.UnitTests.AI.ChatCompletion;
 /// <summary>
 /// Unit tests of <see cref="ChatHistory"/>.
 /// </summary>
-public class ChatHistoryTests // $$$ TODO
+public class ChatHistoryTests
 {
     [Fact]
     public void ItCanBeSerializedAndDeserialized()
@@ -19,6 +19,7 @@ public class ChatHistoryTests // $$$ TODO
         // Arrange
         var options = new JsonSerializerOptions();
         var chatHistory = new ChatHistory();
+        chatHistory.AddMessage(AuthorRole.System, "You are a polite bot.", name: "ChatBot");
         chatHistory.AddMessage(AuthorRole.User, "Hello");
         chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
@@ -33,6 +34,7 @@ public class ChatHistoryTests // $$$ TODO
         {
             Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialized[i].Role.Label);
             Assert.Equal(chatHistory[i].Content, chatHistoryDeserialized[i].Content);
+            Assert.Equal(chatHistory[i].Name, chatHistoryDeserialized[i].Name);
             Assert.Equal(chatHistory[i].Items.Count, chatHistoryDeserialized[i].Items.Count);
             Assert.Equal(
                 chatHistory[i].Items.OfType<TextContent>().Single().Text,
