@@ -181,6 +181,8 @@ class RestApiOperation:
 
 class OpenApiParser:
     """
+    NOTE: SK Python only supports the OpenAPI Spec >=3.0
+
     Import an OpenAPI file.
     :param openapi_file: The path to the OpenAPI file which can be local or a URL.
     :return: The parsed OpenAPI file
