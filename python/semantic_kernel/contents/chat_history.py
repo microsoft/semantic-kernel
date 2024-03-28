@@ -35,7 +35,7 @@ class ChatHistory(KernelBaseModel):
     """
 
     messages: list["ChatMessageContent"]
-    message_type: TYPES_CHAT_MESSAGE_CONTENT = "ChatMessageContent"
+    message_type: TYPES_CHAT_MESSAGE_CONTENT = CHAT_MESSAGE_CONTENT
 
     def __init__(self, **data: Any):
         """
@@ -205,8 +205,8 @@ class ChatHistory(KernelBaseModel):
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<prompt>{prompt}</prompt>")
-        except ParseError as e:
-            logger.error(f"Error parsing XML of prompt: {e}")
+        except ParseError:
+            logger.info(f"Could not parse prompt {prompt} as xml, treating as text")
             return cls(
                 messages=[ChatMessageContentBase.from_fields(role=ChatRole.USER, content=prompt, type=message_type)]
             )
