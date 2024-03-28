@@ -32,7 +32,7 @@ repos:
     - id: mypy
       files: ^python/semantic_kernel/
       name: mypy
-      entry: poetry -C python/ run python -m mypy -v -p semantic_kernel --config-file=python/mypy.ini
+      entry: poetry -C python/ run python -m mypy -p semantic_kernel --config-file=python/mypy.ini
       language: system
       types: [python]
       pass_filenames: false

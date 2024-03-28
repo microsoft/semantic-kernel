@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
     from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
     from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+    from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 
 T = TypeVar("T")
 
@@ -144,7 +145,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[list["StreamingKernelContent"] | FunctionResult | list[FunctionResult]]:
+    ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -209,7 +210,7 @@ class Kernel(KernelBaseModel):
                 return
                 # TODO: decide how to put results into kernelarguments,
                 # might need to be done as part of the invoked_handler
-            function_result: FunctionResult | list[list["StreamingKernelContent"] | Any] = []
+            function_result: FunctionResult | list[list["StreamingContentMixin"] | Any] = []
             exception = None
 
             async for stream_message in stream_function.invoke_stream(self, arguments):
@@ -224,12 +225,12 @@ class Kernel(KernelBaseModel):
                 func_result = function_result
                 exception = func_result.metadata.get("exception", None)
             else:
-                output_function_result: list["StreamingKernelContent"] = []
+                output_function_result: list["StreamingContentMixin"] = []
                 assert isinstance(function_result, list)
                 for result in function_result:
                     assert isinstance(result, list)
                     for choice in result:
-                        if not isinstance(choice, StreamingKernelContent):
+                        if isinstance(choice, FunctionResult):
                             continue
                         if len(output_function_result) <= choice.choice_index:
                             output_function_result.append(copy(choice))
