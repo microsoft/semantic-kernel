@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-import inspect
 import logging
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
 
-from pydantic import Field, field_validator
+from pydantic import Field, PrivateAttr, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -26,6 +25,8 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.hooks import HOOK_PROTOCOLS, PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.hooks.kernel_hook_filter_decorator import kernel_hook_filter
+from semantic_kernel.hooks.protocols.const import HookEnum
 from semantic_kernel.hooks.utils import EmptyHook
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
@@ -75,7 +76,7 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    hooks: list[Any] = Field(default_factory=list)
+    _hooks: list[tuple[int, Any]] = PrivateAttr(default_factory=list)
 
     def __init__(
         self,
@@ -289,27 +290,30 @@ class Kernel(KernelBaseModel):
         return await self.invoke(function=function, arguments=arguments)
 
     # endregion
-    # region Function Invoking/Invoked Events
+    # region Hooks
 
     async def pre_function_invoke(
         self,
         kernel_function_metadata: KernelFunctionMetadata,
         arguments: KernelArguments,
         metadata: dict[str, Any] = {},
-    ) -> PreFunctionInvokeContext:
+    ) -> PreFunctionInvokeContext | None:
         context = PreFunctionInvokeContext(
             kernel_function_metadata=kernel_function_metadata, arguments=arguments, metadata=metadata
         )
-        for hook in self.hooks:
+        if not self._hooks:
+            return None
+        ran_hook = False
+        for hook_id, hook in self._hooks:
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["pre_function_invoke"]):
-                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__}")
-                    result = hook.pre_function_invoke(context=context)
-                    if inspect.isawaitable(result):
-                        await result
+                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
+                    await hook.pre_function_invoke(context=context)
+                    ran_hook = True
             except Exception as exc:
                 logger.error(
-                    f"An error occurred in the on_function_invoking event of hook: {hook.__class__.__name__}. "
+                    "An error occurred in the on_function_invoking event of hook: "
+                    f"{hook.__class__.__name__} ({hook_id=}). "
                     f"Error description: {str(exc)}"
                 )
             if context.is_cancel_requested:
@@ -329,7 +333,7 @@ class Kernel(KernelBaseModel):
                     f"{metadata.get('pipeline_step', '') if metadata else ''}: "
                     f"{kernel_function_metadata.fully_qualified_name}."
                 )
-        return context
+        return context if ran_hook else None
 
     async def post_function_invoke(
         self,
@@ -338,7 +342,7 @@ class Kernel(KernelBaseModel):
         function_result: FunctionResult | None = None,
         exception: Exception | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> PostFunctionInvokeContext:
+    ) -> PostFunctionInvokeContext | None:
         context = PostFunctionInvokeContext(
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
@@ -346,16 +350,19 @@ class Kernel(KernelBaseModel):
             function_result=function_result,
             exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
-        for hook in self.hooks:
+        if not self._hooks:
+            return None
+        ran_hook = False
+        for hook_id, hook in self._hooks:
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["post_function_invoke"]):
-                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__}")
-                    result = hook.post_function_invoke(context=context)
-                    if inspect.isawaitable(result):
-                        await result
+                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
+                    await hook.post_function_invoke(context=context)
+                    ran_hook = True
             except Exception as exc:
                 logger.error(
-                    f"An error occurred in the on_function_invoked event of hook: {hook.__class__.__name__}. "
+                    "An error occurred in the on_function_invoked event of hook: "
+                    f"{hook.__class__.__name__} ({hook_id=}). "
                     f"Error description: {str(exc)}"
                 )
             if context.is_cancel_requested:
@@ -376,36 +383,68 @@ class Kernel(KernelBaseModel):
                     f"{kernel_function_metadata.fully_qualified_name}."
                 )
 
-        return context
+        return context if ran_hook else None
 
-    def add_hook(self, hook: object, priority: int | None = None) -> None:
-        """Add a KernelHook to the Kernel."""
-        # validate the hook, if a method with the right name is present, then check the protocol
+    def add_hook(
+        self,
+        hook: object | Callable[[T], None],
+        hook_name: HookEnum | str | None = None,
+        position: int | None = None,
+    ) -> int:
+        """Add a KernelHook to the Kernel.
+
+        Args:
+            hook (object | Callable[[T], None]): The hook to add
+            hook_name (HookEnum | None): The name of the hook, if not supplied and using a function,
+                the function name is used if it matches one of the hook names.
+            position (int | None): The position to add the hook
+
+        Returns:
+            int: The id of the added hook
+
+        """
+        if isinstance(hook, Callable):
+            if hook_name is None:
+                if hook.__name__ not in HOOK_PROTOCOLS:
+                    raise HookInvalidSignatureError(
+                        f"Hook function {hook.__name__} does not match the expected names, should either supply a hook_name, or the name of the function needs to be one of the hooks."
+                    )
+                hook_name = HookEnum(hook.__name__)
+            elif not isinstance(hook_name, HookEnum):
+                hook_name = HookEnum(hook_name)
+            hook_class = EmptyHook()
+            hook_class.__setattr__(hook_name.value, hook)
+            hook = hook_class
         for attr in dir(hook):
             if attr not in HOOK_PROTOCOLS:
                 continue
             if not isinstance(hook, HOOK_PROTOCOLS[attr]):
                 raise HookInvalidSignatureError(f"Hook function {attr} does not match the expected signature.")
-        if priority is not None:
-            self.hooks.insert(priority, hook)
+            hook_function = getattr(hook, attr)
+            if not hasattr(hook_function, "__kernel_hook__"):
+                setattr(hook, attr, kernel_hook_filter()(hook_function))
+        if position is not None:
+            self._hooks.insert(position, (id(hook), hook))
         else:
-            self.hooks.append(hook)
+            self._hooks.append((id(hook), hook))
+        return id(hook)
 
-    def add_hook_function(
-        self,
-        hook_name: Literal[
-            "pre_function_invoke",
-            "post_function_invoke",
-        ],
-        hook_function: Callable[[T], None],
-        priority: int | None = None,
-    ) -> None:
-        """Add a hook function to the Kernel."""
-        hook = EmptyHook()
-        hook.__setattr__(hook_name, hook_function)
-        self.add_hook(hook, priority)
+    def remove_hook(self, hook_id: int | None = None, position: int | None = None) -> None:
+        """Remove a KernelHook from the Kernel.
 
-    # TODO: remove hook method
+        Args:
+            hook_id (int): The id of the hook to remove
+
+        """
+        if hook_id is None and position is None:
+            raise ValueError("Either hook_id or position should be provided.")
+        if position is not None:
+            self._hooks.pop(position)
+            return
+        for i, hooks in enumerate(self._hooks):
+            if hooks[0] == hook_id:
+                self._hooks.pop(i)
+                break
 
     # endregion
     # region Plugins & Functions

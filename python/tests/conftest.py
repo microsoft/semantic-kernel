@@ -53,15 +53,15 @@ def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClient
 
 
 @pytest.fixture(scope="function")
-def kernel_with_handlers(kernel: Kernel) -> Kernel:
+def kernel_with_hooks(kernel: Kernel) -> Kernel:
     def invoking_handler(e: PreFunctionInvokeContext) -> None:
         pass
 
     def invoked_handler(e: PostFunctionInvokeContext) -> None:
         pass
 
-    kernel.add_hook_function("pre_function_invoke", invoking_handler)
-    kernel.add_hook_function("post_function_invoke", invoked_handler)
+    kernel.add_hook(invoking_handler, "pre_function_invoke")
+    kernel.add_hook(invoked_handler, "post_function_invoke")
 
     return kernel
 

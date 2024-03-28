@@ -175,7 +175,7 @@ class KernelFunction(KernelBaseModel):
         arguments: KernelArguments | None = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> FunctionResult:
+    ) -> "FunctionResult":
         """Invoke the function with the given arguments.
 
         Args:
@@ -190,13 +190,14 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         while True:
-            function_invoking_args = await kernel.pre_function_invoke(
+            pre_hook_context = await kernel.pre_function_invoke(
                 kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
             )
-            arguments = function_invoking_args.arguments
-            if function_invoking_args.is_skip_requested:
-                return
-            metadata.update(function_invoking_args.metadata)
+            if pre_hook_context:
+                arguments = pre_hook_context.arguments
+                if pre_hook_context.is_skip_requested:
+                    return FunctionResult(function=self.metadata, value=None, metadata=metadata)
+                metadata.update(pre_hook_context.metadata)
             function_result = None
             exception = None
             try:
@@ -210,17 +211,18 @@ class KernelFunction(KernelBaseModel):
                 function_result = FunctionResult(function=self.metadata, value=None, metadata=metadata)
 
             # this allows a hook to alter the results before returning.
-            function_invoked_args = await kernel.post_function_invoke(
+            post_hook_context = await kernel.post_function_invoke(
                 kernel_function_metadata=self.metadata,
                 arguments=arguments,
                 function_result=function_result,
                 exception=exception,
                 metadata=metadata,
             )
-            function_result = function_invoked_args.function_result
-            if function_invoked_args.is_repeat_requested:
-                arguments = function_invoked_args.arguments
-                continue
+            if post_hook_context:
+                function_result = post_hook_context.function_result
+                if post_hook_context.is_repeat_requested:
+                    arguments = post_hook_context.arguments
+                    continue
             return function_result
 
     @abstractmethod
@@ -258,13 +260,14 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        function_invoking_args = await kernel.pre_function_invoke(
+        pre_hook_context = await kernel.pre_function_invoke(
             kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
         )
-        arguments = function_invoking_args.arguments
-        if function_invoking_args.is_skip_requested:
-            return
-        metadata.update(function_invoking_args.metadata)
+        if pre_hook_context:
+            arguments = pre_hook_context.arguments
+            if pre_hook_context.is_skip_requested:
+                return
+            metadata.update(pre_hook_context.metadata)
         exception = None
         try:
             async for partial_result in self._invoke_internal_stream(kernel, arguments):

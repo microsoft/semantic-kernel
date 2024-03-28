@@ -12,7 +12,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class KernelHookContextBase(KernelBaseModel):
-    """Base class for Kernel Event args.
+    """Base class for Kernel Hook Contexts.
 
     Receives relevant parts of the the execution, either before (invoking) or after (invoked) the function is executed.
     When a handler changes the arguments in the invoking event,
