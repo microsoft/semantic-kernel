@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
+#pragma warning disable IDE0290 // Use primary constructor
+
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with local <see cref="ChatHistory"/>.
 /// </summary>
@@ -53,7 +55,7 @@ public class LocalChannel : AgentChannel
     /// </summary>
     public LocalChannel(ILocalAgent agent)
     {
-        this._chat = new(); // $$$
+        this._chat = new();
         this._agent = agent;
     }
 }

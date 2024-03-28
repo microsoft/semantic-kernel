@@ -5,7 +5,7 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
 /// <summary>
-/// $$$
+/// Contract for an agent that performs its own local processing.
 /// </summary>
 public interface ILocalAgent
 {

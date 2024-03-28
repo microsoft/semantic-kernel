@@ -12,8 +12,20 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <typeparam name="TAgent">The agent type for this channel</typeparam>
 public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 {
+    /// <summary>
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
+    /// </summary>
+    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="input">Optional user input.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    protected internal abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        TAgent agent,
+        ChatMessageContent? input = null,
+        CancellationToken cancellationToken = default);
+
     /// <inheritdoc/>
-    internal protected override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
         ChatMessageContent? input = null,
         CancellationToken cancellationToken = default)
@@ -25,18 +37,6 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
 
         return this.InvokeAsync(castAgent, input, cancellationToken);
     }
-
-    /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
-    /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
-    /// <param name="input">Optional user input.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
-    internal protected abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        TAgent agent,
-        ChatMessageContent? input = null,
-        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
