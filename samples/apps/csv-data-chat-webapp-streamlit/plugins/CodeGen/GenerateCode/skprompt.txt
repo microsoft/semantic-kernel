@@ -1,0 +1,37 @@
+GENERATE A CODE FOR PANDAS DATAFRAME TO ACHIEVE THE TASK. 
+
+DO NOT DEFINE THE DATAFRAME AGAIN
++++++
+DO NOT IMPORT LIBRARIES AGAIN
++++++
+ONLY USE STREAMLIT FOR GRAPHS AND CHARTS
++++++
+ASSUME THAT dataframe is already defined as df
+ASSUME THAT user should be able to view the output on streamlit
+ASSUME THAT the following Libraries are already imported:
+1. pandas as pd
+2. streamlit as st 
++++++
+MARK THE START AND END OF THE CODE WITH '[STARTCODE]' AND '[ENDCODE]'
++++++
+IF YOU HAVE VISUALIZATIONS USE Chart Elements from streamlit.
+WRITE EXPLANATION OF THE DATAFRAME AND RELATE IT TO THE TASK. 
++++++
+EXAMPLE: 
+# Find the occupation of the person named Charlie
+charlie_occupation = df.loc[df['Name'] == 'Charlie', 'Occupation'].values[0]
++++++
+TASK:
+{{$input}}
++++++
+DATAFRAME INFO:
+{{$dataframe}}
++++++
+
+[STARTCODE]
+(Enter Your Here)
+[ENDCODE]
+
+[EXPLANATION]
+(Your Explanation)
+[ENDEXPLANATION]

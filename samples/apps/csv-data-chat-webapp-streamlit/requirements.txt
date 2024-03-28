@@ -1,0 +1,4 @@
+semantic-kernel
+streamlit
+pandas
+matplotlib

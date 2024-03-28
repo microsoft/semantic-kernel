@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "Analyze the initial prompt given by the user and modify it to make a better prompt",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 256,
+      "temperature": 0,
+      "top_p": 0,
+      "presence_penalty": 0,
+      "frequency_penalty": 0
+    }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "Input for this semantic function",
+      "default": ""
+    },
+    {
+      "name": "dataframe",
+      "description": "Input as dataframe",
+      "default": ""
+    }
+  ]
+}
