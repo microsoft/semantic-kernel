@@ -17,18 +17,35 @@ public sealed class ChatCompletionAgent
     private readonly PromptExecutionSettings? _promptExecutionSettings;
 
     /// <summary>
+    /// Gets the name of the agent.
+    /// </summary>
+    public string Name { get; }
+
+    /// <summary>
+    /// Gets the description of the agent.
+    /// </summary>
+    public string Description { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="name">The name of the agent.</param>
     /// <param name="instructions">The instructions for the agent.</param>
+    /// <param name="description">The optional description of the agent.</param>
     /// <param name="executionSettings">The optional execution settings for the agent. If not provided, default settings will be used.</param>
-    public ChatCompletionAgent(Kernel kernel, string instructions, PromptExecutionSettings? executionSettings = null)
+    public ChatCompletionAgent(Kernel kernel, string name, string instructions, string description = null, PromptExecutionSettings? executionSettings = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
         this._kernel = kernel;
 
+        Verify.NotNullOrWhiteSpace(name, nameof(name));
+        this.Name = name;
+
         Verify.NotNullOrWhiteSpace(instructions, nameof(instructions));
         this._instructions = instructions;
+
+        this.Description = description ?? string.Empty;
 
         this._promptExecutionSettings = executionSettings;
     }
@@ -41,8 +58,9 @@ public sealed class ChatCompletionAgent
     /// <returns>List of messages representing the agent's response.</returns>
     public async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(IReadOnlyList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
-        var chat = new ChatHistory(this._instructions);
+        var chat = new ChatHistory();
         chat.AddRange(messages);
+        chat.AddSystemMessage(this._instructions);
 
         var chatCompletionService = this.GetChatCompletionService();
 
