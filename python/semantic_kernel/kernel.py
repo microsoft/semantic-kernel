@@ -407,7 +407,9 @@ class Kernel(KernelBaseModel):
             if hook_name is None:
                 if hook.__name__ not in HOOK_PROTOCOLS:
                     raise HookInvalidSignatureError(
-                        f"Hook function {hook.__name__} does not match the expected names, should either supply a hook_name, or the name of the function needs to be one of the hooks."
+                        f"Hook function {hook.__name__} does not match the expected names, "
+                        "should either supply a hook_name, "
+                        "or the name of the function needs to be one of the hooks."
                     )
                 hook_name = HookEnum(hook.__name__)
             elif not isinstance(hook_name, HookEnum):
