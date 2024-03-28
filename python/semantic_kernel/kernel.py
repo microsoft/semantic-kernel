@@ -7,13 +7,13 @@ import inspect
 import logging
 import os
 from copy import copy
-from typing import Any, AsyncIterable, Callable, Literal, Type, TypeVar
+from types import MethodType
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, ItemsView, Literal, Type, TypeVar, Union
 
 import yaml
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     FunctionInitializationError,
@@ -38,10 +38,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (
-    KERNEL_TEMPLATE_FORMAT_NAME,
-    TEMPLATE_FORMAT_TYPES,
-)
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
@@ -50,9 +47,15 @@ from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.utils.validation import validate_plugin_name
 
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+    from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+    from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+    from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+
 T = TypeVar("T")
 
-ALL_SERVICE_TYPES = "TextCompletionClientBase | ChatCompletionClientBase | EmbeddingGeneratorBase"
+ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -142,7 +145,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[list["StreamingKernelContent"] | list[FunctionResult]]:
+    ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
@@ -160,7 +163,7 @@ class Kernel(KernelBaseModel):
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
-            StreamingKernelContent: The content of the stream of the last function provided.
+            StreamingContentMixin: The content of the stream of the last function provided.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -207,25 +210,33 @@ class Kernel(KernelBaseModel):
                 return
                 # TODO: decide how to put results into kernelarguments,
                 # might need to be done as part of the invoked_handler
-            function_result = []
+            function_result: FunctionResult | list[list["StreamingContentMixin"] | Any] = []
             exception = None
 
             async for stream_message in stream_function.invoke_stream(self, arguments):
                 if isinstance(stream_message, FunctionResult):
-                    exception = stream_message.metadata.get("exception", None)
-                    if exception:
-                        break
+                    function_result = stream_message
+                    break
+                assert isinstance(function_result, list)
                 function_result.append(stream_message)
                 yield stream_message
 
-            output_function_result = []
-            for result in function_result:
-                for choice in result:
-                    if len(output_function_result) <= choice.choice_index:
-                        output_function_result.append(copy(choice))
-                    else:
-                        output_function_result[choice.choice_index] += choice
-            func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
+            if isinstance(function_result, FunctionResult):
+                func_result = function_result
+                exception = func_result.metadata.get("exception", None)
+            else:
+                output_function_result: list["StreamingContentMixin"] = []
+                assert isinstance(function_result, list)
+                for result in function_result:
+                    assert isinstance(result, list)
+                    for choice in result:
+                        if isinstance(choice, FunctionResult):
+                            continue
+                        if len(output_function_result) <= choice.choice_index:
+                            output_function_result.append(copy(choice))
+                        else:
+                            output_function_result[choice.choice_index] += choice
+                func_result = FunctionResult(function=stream_function.metadata, value=output_function_result)
             function_invoked_args = self.on_function_invoked(
                 stream_function.metadata,
                 arguments,
@@ -238,7 +249,7 @@ class Kernel(KernelBaseModel):
                     f"During function invocation:'{stream_function.plugin_name}.{stream_function.name}'. "
                     f"Error description: '{str(function_invoked_args.exception)}'"
                 ) from function_invoked_args.exception
-            if return_function_results:
+            if return_function_results and function_invoked_args.function_result:
                 results.append(function_invoked_args.function_result)
             if function_invoked_args.is_cancel_requested:
                 logger.info(
@@ -289,7 +300,7 @@ class Kernel(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        results = []
+        results: list[FunctionResult] = []
         pipeline_step = 0
         if not functions:
             if not function_name or not plugin_name:
@@ -335,7 +346,10 @@ class Kernel(KernelBaseModel):
 
                 # this allows a hook to alter the results before adding.
                 function_invoked_args = self.on_function_invoked(func.metadata, arguments, function_result, exception)
-                results.append(function_invoked_args.function_result)
+                if function_invoked_args.function_result:
+                    results.append(function_invoked_args.function_result)
+                else:
+                    results.append(FunctionResult(function=func.metadata, value=None, metadata={}))
 
                 if function_invoked_args.exception:
                     raise KernelInvokeException(
@@ -346,7 +360,7 @@ class Kernel(KernelBaseModel):
                         f"Execution was cancelled on function invoked event of pipeline step "
                         f"{pipeline_step}: {func.plugin_name}.{func.name}."
                     )
-                    return results if results else None
+                    return results if results else FunctionResult(function=func.metadata, value=None, metadata={})
                 if function_invoked_args.updated_arguments:
                     logger.info(
                         f"Arguments updated by function_invoked_handler in pipeline step: "
@@ -494,6 +508,7 @@ class Kernel(KernelBaseModel):
         logger.debug(f"Importing plugin {plugin_name}")
 
         functions: dict[str, KernelFunction] = {}
+        candidates: list[tuple[str, MethodType]] | ItemsView[str, Any] = []
 
         if isinstance(plugin_instance, dict):
             candidates = plugin_instance.items()
@@ -518,7 +533,9 @@ class Kernel(KernelBaseModel):
 
         return plugin
 
-    def import_native_plugin_from_directory(self, parent_directory: str, plugin_directory_name: str) -> KernelPlugin:
+    def import_native_plugin_from_directory(
+        self, parent_directory: str, plugin_directory_name: str
+    ) -> KernelPlugin | None:
         MODULE_NAME = "native_function"
 
         validate_plugin_name(plugin_directory_name)
@@ -532,7 +549,10 @@ class Kernel(KernelBaseModel):
         plugin_name = os.path.basename(plugin_directory)
 
         spec = importlib.util.spec_from_file_location(MODULE_NAME, native_py_file_path)
+        if not spec:
+            raise PluginInitializationError(f"Failed to load plugin: {plugin_name}")
         module = importlib.util.module_from_spec(spec)
+        assert spec.loader
         spec.loader.exec_module(module)
 
         class_name = next(
@@ -619,7 +639,7 @@ class Kernel(KernelBaseModel):
                         prompt = prompt_file.read()
                         prompt_template_config.template = prompt
 
-                    prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                    prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore
                         prompt_template_config=prompt_template_config
                     )
 
@@ -809,7 +829,7 @@ class Kernel(KernelBaseModel):
         self,
         service_id: str | None = None,
         type: Type[ALL_SERVICE_TYPES] | None = None,
-    ) -> ALL_SERVICE_TYPES:
+    ) -> "AIServiceClientBase":
         """Get a service by service_id and type.
 
         Type is optional and when not supplied, no checks are done.
@@ -833,6 +853,7 @@ class Kernel(KernelBaseModel):
             ValueError: If no service is found that matches the type.
 
         """
+        service: "AIServiceClientBase | None" = None
         if not service_id or service_id == "default":
             if not type:
                 if default_service := self.services.get("default"):
@@ -851,11 +872,11 @@ class Kernel(KernelBaseModel):
             raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
         return service
 
-    def get_services_by_type(self, type: Type[T]) -> dict[str, T]:
+    def get_services_by_type(self, type: Type[ALL_SERVICE_TYPES]) -> dict[str, "AIServiceClientBase"]:
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
 
     def get_prompt_execution_settings_from_service_id(
-        self, service_id: str, type: Type[T] | None = None
+        self, service_id: str, type: Type[ALL_SERVICE_TYPES] | None = None
     ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_service(service_id, type=type)
