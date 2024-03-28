@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace JsonSchemaMapper;
 
@@ -12,6 +13,7 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
+    [ExcludeFromCodeCoverage]
     internal
 #endif
     class JsonSchemaMapperConfiguration

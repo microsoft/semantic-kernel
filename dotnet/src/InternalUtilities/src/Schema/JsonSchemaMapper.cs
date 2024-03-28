@@ -22,6 +22,7 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
+    [ExcludeFromCodeCoverage]
     internal
 #endif
     static partial class JsonSchemaMapper

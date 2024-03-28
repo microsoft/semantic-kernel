@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if !NET6_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.Reflection
 {
     /// <summary>
     /// A class that represents nullability info.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     internal sealed class NullabilityInfo
     {
         internal NullabilityInfo(Type type, NullabilityState readState, NullabilityState writeState,
