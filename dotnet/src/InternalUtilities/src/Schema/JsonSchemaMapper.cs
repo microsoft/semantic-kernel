@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -22,10 +21,10 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    [ExcludeFromCodeCoverage]
-    internal
+[ExcludeFromCodeCoverage]
+internal
 #endif
-    static partial class JsonSchemaMapper
+static partial class JsonSchemaMapper
 {
     /// <summary>
     /// The JSON schema draft version used by the generated schemas.
@@ -45,7 +44,7 @@ namespace JsonSchemaMapper;
     {
         if (options is null)
         {
-           ThrowHelpers.ThrowArgumentNullException(nameof(options));
+            ThrowHelpers.ThrowArgumentNullException(nameof(options));
         }
 
         if (type is null)
@@ -490,7 +489,7 @@ namespace JsonSchemaMapper;
             schemaType |= JsonSchemaType.Null;
         }
 
-    ConstructSchemaDocument:
+ConstructSchemaDocument:
         return CreateSchemaDocument(
             description,
             schemaType,
@@ -608,7 +607,7 @@ namespace JsonSchemaMapper;
         /// <summary>
         /// Looks up the schema path for the specified type configuration.
         /// </summary>
-        public readonly bool TryGetGeneratedSchemaPath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling, [NotNullWhen(true)]out string? value)
+        public readonly bool TryGetGeneratedSchemaPath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling, [NotNullWhen(true)] out string? value)
         {
             if (Configuration.AllowSchemaReferences)
             {

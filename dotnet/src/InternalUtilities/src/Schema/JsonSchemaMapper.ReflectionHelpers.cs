@@ -1,5 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -17,10 +16,9 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    [ExcludeFromCodeCoverage]
-    internal
+internal
 #endif
-    static partial class JsonSchemaMapper
+static partial class JsonSchemaMapper
 {
     // Uses reflection to determine the element type of an enumerable or dictionary type
     // Workaround for https://github.com/dotnet/runtime/issues/77306#issuecomment-2007887560
