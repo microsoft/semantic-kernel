@@ -16,6 +16,12 @@ namespace Microsoft.SemanticKernel;
 public class ChatMessageContent : KernelContent
 {
     /// <summary>
+    /// Name of the author of the message
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; set; }
+
+    /// <summary>
     /// Role of the author of the message
     /// </summary>
     public AuthorRole Role { get; set; }
@@ -125,15 +131,18 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     public ChatMessageContent(
         AuthorRole role,
         string? content,
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+        string? name = null)
         : base(innerContent, modelId, metadata)
     {
+        this.Name = name;
         this.Role = role;
         this._encoding = encoding ?? Encoding.UTF8;
         this.Content = content;
@@ -148,15 +157,18 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     public ChatMessageContent(
         AuthorRole role,
         ChatMessageContentItemCollection items,
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+        string? name = null)
         : base(innerContent, modelId, metadata)
     {
+        this.Name = name;
         this.Role = role;
         this._encoding = encoding ?? Encoding.UTF8;
         this._items = items;

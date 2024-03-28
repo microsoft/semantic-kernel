@@ -56,46 +56,52 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="content">Message content</param>
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null, string? name = null) =>
+        this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata, name));
 
     /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
+    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null, string? name = null) =>
+        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata, name));
 
     /// <summary>
     /// Add a user message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>
-    public void AddUserMessage(string content) =>
-        this.AddMessage(AuthorRole.User, content);
+    /// <param name="name">Name of the author of the message</param>
+    public void AddUserMessage(string content, string? name = null) =>
+        this.AddMessage(AuthorRole.User, content, name: name);
 
     /// <summary>
     /// Add a user message to the chat history
     /// </summary>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
-    public void AddUserMessage(ChatMessageContentItemCollection contentItems) =>
-        this.AddMessage(AuthorRole.User, contentItems);
+    /// <param name="name">Name of the author of the message</param>
+    public void AddUserMessage(ChatMessageContentItemCollection contentItems, string? name = null) =>
+        this.AddMessage(AuthorRole.User, contentItems, name: name);
 
     /// <summary>
     /// Add an assistant message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>
-    public void AddAssistantMessage(string content) =>
-        this.AddMessage(AuthorRole.Assistant, content);
+    /// <param name="name">Name of the author of the message</param>
+    public void AddAssistantMessage(string content, string? name = null) =>
+        this.AddMessage(AuthorRole.Assistant, content, name: name);
 
     /// <summary>
     /// Add a system message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>
-    public void AddSystemMessage(string content) =>
-        this.AddMessage(AuthorRole.System, content);
+    /// <param name="name">Name of the author of the message</param>
+    public void AddSystemMessage(string content, string? name = null) =>
+        this.AddMessage(AuthorRole.System, content, name: name);
 
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>
@@ -199,6 +205,17 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public void RemoveRange(int index, int count)
     {
         this._messages.RemoveRange(index, count);
+    }
+
+    /// <summary>
+    /// An in-place enumeration of the chat history starting with the most recent message first.
+    /// </summary>
+    public IEnumerable<ChatMessageContent> ToDescending()
+    {
+        for (int index = this._messages.Count - 1; index > 0; --index)
+        {
+            yield return this._messages[index];
+        }
     }
 
     /// <inheritdoc/>

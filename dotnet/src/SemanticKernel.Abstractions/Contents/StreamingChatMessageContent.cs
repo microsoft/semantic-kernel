@@ -21,6 +21,11 @@ public class StreamingChatMessageContent : StreamingKernelContent
     public string? Content { get; set; }
 
     /// <summary>
+    /// Name of the author of the message
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>
     /// Role of the author of the message
     /// </summary>
     public AuthorRole? Role { get; set; }
@@ -41,9 +46,12 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="encoding">Encoding of the chat</param>
     /// <param name="metadata">Additional metadata</param>
+    /// <param name="name">Name of the author of the message</param>
     [JsonConstructor]
-    public StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent = null, int choiceIndex = 0, string? modelId = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
+    public StreamingChatMessageContent(AuthorRole? role, string? content, object? innerContent = null, int choiceIndex = 0, string? modelId = null, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null, string? name = null)
+        : base(innerContent, choiceIndex, modelId, metadata)
     {
+        this.Name = name;
         this.Role = role;
         this.Content = content;
         this.Encoding = encoding ?? Encoding.UTF8;
