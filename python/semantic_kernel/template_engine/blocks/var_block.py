@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pydantic import model_validator
 
-from semantic_kernel.exceptions import VarBlockSyntaxError
+from semantic_kernel.exceptions import VarBlockRenderError, VarBlockSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
@@ -72,6 +72,11 @@ class VarBlock(Block):
             return ""
         value = arguments.get(self.name, None)
         if value is None:
-            logger.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found in the KernelArguments")
-
-        return str(value) if value else ""
+            logger.warning(f"Variable `{Symbols.VAR_PREFIX}: {self.name}` not found in the KernelArguments")
+            return ""
+        try:
+            return str(value)
+        except Exception as e:
+            raise VarBlockRenderError(
+                f"Block {self.name} failed to be parsed to a string, type is {type(value)}"
+            ) from e

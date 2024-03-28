@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Opti
 
 from pydantic import ValidationError
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -59,7 +59,7 @@ class KernelFunctionFromMethod(KernelFunction):
             description=method.__kernel_function_return_description__,  # type: ignore
             default_value=None,
             type=method.__kernel_function_return_type__,  # type: ignore
-            required=method.__kernel_function_return_required__,  # type: ignore
+            is_required=method.__kernel_function_return_required__,  # type: ignore
         )
 
         try:
@@ -79,11 +79,11 @@ class KernelFunctionFromMethod(KernelFunction):
         args: Dict[str, Any] = {
             "metadata": metadata,
             "method": method,
-            "stream_method": stream_method
-            if stream_method is not None
-            else method
-            if isasyncgenfunction(method) or isgeneratorfunction(method)
-            else None,
+            "stream_method": (
+                stream_method
+                if stream_method is not None
+                else method if isasyncgenfunction(method) or isgeneratorfunction(method) else None
+            ),
         }
 
         super().__init__(**args)
@@ -114,7 +114,7 @@ class KernelFunctionFromMethod(KernelFunction):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[List[StreamingKernelContent], Any]]:
+    ) -> AsyncIterable[Union[List[StreamingContentMixin], Any]]:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
         function_arguments = self.gather_function_parameters(kernel, arguments)
@@ -142,9 +142,25 @@ class KernelFunctionFromMethod(KernelFunction):
                 function_arguments[param.name] = arguments
                 continue
             if param.name in arguments:
-                function_arguments[param.name] = arguments[param.name]
+                value = arguments[param.name]
+                if param.type_.find(",") == -1 and param.type_object:
+                    if hasattr(param.type_object, "model_validate"):
+                        try:
+                            value = param.type_object.model_validate(value)
+                        except Exception as exc:
+                            raise FunctionExecutionException(
+                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                            ) from exc
+                    else:
+                        try:
+                            value = param.type_object(value)
+                        except Exception as exc:
+                            raise FunctionExecutionException(
+                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                            ) from exc
+                function_arguments[param.name] = value
                 continue
-            if param.required:
+            if param.is_required:
                 raise FunctionExecutionException(
                     f"Parameter {param.name} is required but not provided in the arguments."
                 )

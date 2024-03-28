@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -11,16 +10,12 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAITextToAudioTests : IDisposable
+public sealed class OpenAITextToAudioTests
 {
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     public OpenAITextToAudioTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -48,7 +43,7 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         // Assert
         Assert.NotNull(result.Data);
-        Assert.False(result.Data!.IsEmpty);
+        Assert.False(result.Data!.Value.IsEmpty);
     }
 
     [Fact]
@@ -72,11 +67,6 @@ public sealed class OpenAITextToAudioTests : IDisposable
 
         // Assert
         Assert.NotNull(result.Data);
-        Assert.False(result.Data!.IsEmpty);
-    }
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
+        Assert.False(result.Data!.Value.IsEmpty);
     }
 }

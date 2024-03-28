@@ -4,11 +4,11 @@ import logging
 from typing import Dict, List, Optional, TypeVar, Union
 
 from pydantic import Field, field_validator
-from typing_extensions import Literal
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.input_variable import InputVariable
 
 PromptExecutionSettingsT = TypeVar("PromptExecutionSettingsT", bound=PromptExecutionSettings)
@@ -17,10 +17,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplateConfig(KernelBaseModel):
-    name: Optional[str] = ""
+    name: str = ""
     description: Optional[str] = ""
     template: Optional[str] = None
-    template_format: Optional[str] = "semantic-kernel"
+    template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
     input_variables: List[InputVariable] = Field(default_factory=list)
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
@@ -56,8 +56,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 description=variable.description,
                 default_value=variable.default,
                 type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
-                required=variable.is_required,
-                expose=True,
+                is_required=variable.is_required,
             )
             for variable in self.input_variables
         ]
@@ -90,7 +89,7 @@ class PromptTemplateConfig(KernelBaseModel):
         name: str,
         description: str,
         template: str,
-        template_format: Literal["semantic-kernel"] = "semantic-kernel",
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         input_variables: List[InputVariable] = [],
         execution_settings: Dict[str, PromptExecutionSettings] = {},
     ) -> "PromptTemplateConfig":

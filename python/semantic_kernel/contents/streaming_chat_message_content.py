@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
-from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.contents.finish_reason import FinishReason
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class StreamingChatMessageContent(StreamingKernelContent):
+class StreamingChatMessageContent(StreamingContentMixin, ChatMessageContent):
     """This is the base class for streaming chat message response content.
 
     All Chat Completion Services should return a instance of this class as streaming response,
@@ -32,14 +30,6 @@ class StreamingChatMessageContent(StreamingKernelContent):
         __bytes__: Returns the content of the response encoded in the encoding.
         __add__: Combines two StreamingChatMessageContent instances.
     """
-
-    role: Optional[ChatRole] = ChatRole.ASSISTANT
-    content: Optional[str] = None
-    encoding: Optional[str] = None
-    finish_reason: Optional[FinishReason] = None
-
-    def __str__(self) -> str:
-        return self.content or ""
 
     def __bytes__(self) -> bytes:
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""

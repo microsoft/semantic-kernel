@@ -13,11 +13,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.exceptions import (
-    PlannerCreatePlanError,
-    PlannerExecutionException,
-    PlannerInvalidPlanError,
-)
+from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerExecutionException, PlannerInvalidPlanError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -25,13 +21,9 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
-from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
-    StepwisePlannerConfig,
-)
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
 from semantic_kernel.planners.stepwise_planner.system_step import SystemStep
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -68,7 +60,6 @@ def is_null_or_empty(value: Optional[str] = None) -> bool:
 
 class StepwisePlanner:
     config: StepwisePlannerConfig
-    _arguments: "KernelArguments"
     _function_flow_function: "KernelFunction"
 
     def __init__(
@@ -97,7 +88,7 @@ class StepwisePlanner:
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
         self._native_functions = self._kernel.import_plugin_from_object(self, RESTRICTED_PLUGIN_NAME)
 
-        self._context = KernelArguments()
+        self._arguments = KernelArguments()
 
     @property
     def metadata(self) -> KernelFunctionMetadata:
@@ -106,7 +97,9 @@ class StepwisePlanner:
             plugin_name="planners",
             description="",
             parameters=[
-                KernelParameterMetadata(name="goal", description="The goal to achieve", default_value="", required=True)
+                KernelParameterMetadata(
+                    name="goal", description="The goal to achieve", default_value="", is_required=True
+                )
             ],
             is_prompt=True,
             is_asynchronous=True,
@@ -127,7 +120,7 @@ class StepwisePlanner:
         plan_step._outputs.append("plugin_count")
         plan_step._outputs.append("steps_taken")
 
-        plan = Plan(goal)
+        plan = Plan(description=goal)
 
         plan.add_steps([plan_step])
 
@@ -140,11 +133,12 @@ class StepwisePlanner:
         question: Annotated[str, "The question to answer"],
         function_descriptions: Annotated[List[str], "List of tool descriptions"],
     ) -> FunctionResult:
+        self._arguments["question"] = question
+        self._arguments["function_descriptions"] = function_descriptions
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
             for i in range(self.config.max_iterations):
                 scratch_pad = self.create_scratch_pad(question, steps_taken)
-
                 self._arguments["agent_scratch_pad"] = scratch_pad
 
                 llm_response = await self._system_step_function.invoke(self._kernel, self._arguments)
@@ -322,7 +316,7 @@ class StepwisePlanner:
     async def invoke_action(self, action_name: str, action_variables: Dict[str, str]) -> str:
         available_functions = self.get_available_functions()
         target_function = next(
-            (f for f in available_functions if self.to_fully_qualified_name(f) == action_name),
+            (f for f in available_functions if f.fully_qualified_name == action_name),
             None,
         )
 
@@ -397,12 +391,9 @@ class StepwisePlanner:
         ]
         inputs = "\n".join(inputs)
 
-        function_description = function.description.strip()
+        function_description = function.description.strip() if function.description else ""
 
         if is_null_or_empty(inputs):
-            return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs: None\n"
+            return f"{function.fully_qualified_name}: {function_description}\n  inputs: None\n"
 
-        return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
-
-    def to_fully_qualified_name(self, function: KernelFunctionMetadata):
-        return f"{function.plugin_name}.{function.name}"
+        return f"{function.fully_qualified_name}: {function_description}\n  inputs:\n{inputs}\n"

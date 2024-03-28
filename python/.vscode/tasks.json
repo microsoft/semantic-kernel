@@ -11,8 +11,6 @@
                 "run",
                 "pre-commit",
                 "run",
-                "-c",
-                ".conf/.pre-commit-config.yaml",
                 "-a"
             ],
             "problemMatcher": {
@@ -30,7 +28,62 @@
                 }
             },
             "presentation": {
-                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Python: Run Checks - PR",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pre-commit",
+                "run",
+            ],
+            "problemMatcher": {
+                "owner": "python",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Python: Run Mypy",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pre-commit",
+                "run",
+                "-a",
+                "mypy"
+            ],
+            "problemMatcher": {
+                "owner": "python",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
                 "panel": "shared"
             }
         },
@@ -39,7 +92,9 @@
             "type": "shell",
             "command": "poetry",
             "args": [
-                "install"
+                "install",
+                "--extras",
+                "all"
             ],
             "presentation": {
                 "reveal": "silent",
@@ -66,7 +121,7 @@
         {
             "label": "Python: Tests - Code Coverage",
             "type": "shell",
-            "command": "poetry run pytest --cov=semantic_kernel --cov-report term-missing tests/unit/",
+            "command": "poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/",
             "group": "test",
             "presentation": {
                 "reveal": "always",

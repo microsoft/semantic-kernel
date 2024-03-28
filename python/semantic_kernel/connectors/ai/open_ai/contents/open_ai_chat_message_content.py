@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import List, Optional
-from xml.etree.ElementTree import Element
+from typing import Any, List, Literal, Optional
 
-from defusedxml import ElementTree
-from openai.types.chat import ChatCompletion
+from pydantic import field_validator
 
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.const import OPENAI_CHAT_MESSAGE_CONTENT
 
 
 class OpenAIChatMessageContent(ChatMessageContent):
@@ -30,44 +28,34 @@ class OpenAIChatMessageContent(ChatMessageContent):
         __str__: Returns the content of the response.
     """
 
-    inner_content: Optional[ChatCompletion] = None
+    type: Literal[OPENAI_CHAT_MESSAGE_CONTENT] = OPENAI_CHAT_MESSAGE_CONTENT  # type: ignore
     function_call: Optional[FunctionCall] = None
     tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
+
+    @field_validator("tool_calls", mode="before")
+    @classmethod
+    def _validate_tool_calls(cls, tool_calls: Any) -> Optional[List[ToolCall]]:
+        if not tool_calls:
+            return None
+        if isinstance(tool_calls, list):
+            for index, call in enumerate(tool_calls):
+                if not isinstance(call, ToolCall):
+                    tool_calls[index] = ToolCall.model_validate_json(call)
+            return tool_calls
+        if isinstance(tool_calls, str):
+            return [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
+
+    @field_validator("function_call", mode="before")
+    @classmethod
+    def _validate_function_call(cls, function_call: Any) -> Optional[FunctionCall]:
+        if not function_call:
+            return None
+        if isinstance(function_call, FunctionCall):
+            return function_call
+        return FunctionCall.model_validate_json(function_call)
 
     @staticmethod
     def ToolIdProperty():
         # Directly using the class name and the attribute name as strings
         return f"{ToolCall.__name__}.{ToolCall.id.__name__}"
-
-    def to_prompt(self, root_key: str) -> str:
-        """Convert the OpenAIChatMessageContent to a prompt.
-
-        Returns:
-            str - The prompt from the ChatMessageContent.
-        """
-
-        root = Element(root_key)
-        root.set("role", self.role.value)
-        if self.function_call:
-            root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
-        if self.tool_calls:
-            root.set("tool_calls", ",".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
-        root.text = self.content or ""
-        return ElementTree.tostring(root, encoding=self.encoding or "unicode")
-
-    @classmethod
-    def from_element(cls, element: Element) -> "ChatMessageContent":
-        """Create a new instance of OpenAIChatMessageContent from a prompt.
-
-        Args:
-            prompt: str - The prompt to create the ChatMessageContent from.
-
-        Returns:
-            ChatMessageContent - The new instance of ChatMessageContent.
-        """
-        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if function_call := element.get("function_call"):
-            args["function_call"] = FunctionCall.model_validate_json(function_call)
-        if tool_calls := element.get("tool_calls"):
-            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split(",")]
-        return cls(**args)

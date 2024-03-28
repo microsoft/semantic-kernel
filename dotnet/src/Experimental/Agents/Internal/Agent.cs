@@ -56,6 +56,7 @@ internal sealed class Agent : IAgent
     public IEnumerable<string> FileIds => this._fileIds.AsEnumerable();
 
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+
     private static readonly Dictionary<string, IPromptTemplateFactory> s_templateFactories =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -118,10 +119,9 @@ internal sealed class Agent : IAgent
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         this.Kernel =
-            Kernel
-                .CreateBuilder()
-                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
-                .Build();
+            this._restContext.HasVersion ?
+                builder.AddAzureOpenAIChatCompletion(this._model.Model, this.GetAzureRootEndpoint(), this._restContext.ApiKey).Build() :
+                builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).Build();
 
         if (plugins is not null)
         {
@@ -231,9 +231,7 @@ internal sealed class Agent : IAgent
         var thread = await this.NewThreadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await thread.AddUserMessageAsync(input, cancellationToken).ConfigureAwait(false);
-
-            var messages = await thread.InvokeAsync(this, input, arguments, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            var messages = await thread.InvokeAsync(this, input, arguments, fileIds: null, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var response =
                 new AgentResponse
                 {
@@ -264,6 +262,12 @@ internal sealed class Agent : IAgent
         }
 
         return factory.Create(config);
+    }
+
+    private string GetAzureRootEndpoint()
+    {
+        var endpointUri = new Uri(this._restContext.Endpoint);
+        return endpointUri.AbsoluteUri.Replace(endpointUri.AbsolutePath, string.Empty);
     }
 
     private void ThrowIfDeleted()

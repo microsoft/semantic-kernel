@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -18,6 +19,13 @@ public sealed class Example79_OpenAIFiles : BaseTest
     private const string ResourceFileName = "30-user-context.txt";
 
     /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    private const bool ForceOpenAI = false;
+
+    /// <summary>
     /// Show how to utilize OpenAI file-service.
     /// </summary>
     [Fact]
@@ -25,17 +33,11 @@ public sealed class Example79_OpenAIFiles : BaseTest
     {
         this.WriteLine("======== OpenAI File-Service ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            this.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
         // Initialize file-service
         var kernel =
-            Kernel.CreateBuilder()
-                .AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey)
-                .Build();
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
+                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
 
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
 
@@ -49,7 +51,7 @@ public sealed class Example79_OpenAIFiles : BaseTest
         WriteLine("SOURCE:");
         WriteLine($"# Name: {fileReference.FileName}");
         WriteLine("# Content:");
-        WriteLine(await fileContent.GetContentAsync());
+        WriteLine(Encoding.UTF8.GetString((await fileContent.GetContentAsync()).Span));
 
         try
         {

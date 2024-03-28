@@ -6,9 +6,7 @@ from typing import List
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 def test_prompt_template_config_initialization_minimal():
@@ -69,7 +67,7 @@ def test_get_kernel_parameter_metadata_with_variables():
     assert metadata[0].description == "A variable"
     assert metadata[0].default_value == "default_val"
     assert metadata[0].type_ == "string"
-    assert metadata[0].required is True
+    assert metadata[0].is_required is True
 
 
 def test_restore():
@@ -96,3 +94,56 @@ def test_restore():
     assert (
         restored_template.execution_settings["default"] == execution_settings
     ), "The execution_settings attribute does not match the expected value."
+
+
+def test_prompt_template_config_initialization_full_handlebars():
+    input_variables = [
+        InputVariable(
+            name="var1", description="A variable", default="default_val", is_required=True, json_schema="string"
+        )
+    ]
+    execution_settings = {"setting1": PromptExecutionSettings(setting_value="value1")}
+    config = PromptTemplateConfig(
+        name="Test Config",
+        description="Test Description",
+        template="Example template",
+        template_format="handlebars",
+        input_variables=input_variables,
+        execution_settings=execution_settings,
+    )
+    assert config.name == "Test Config"
+    assert config.description == "Test Description"
+    assert config.template_format == "handlebars"
+    assert len(config.input_variables) == 1
+    assert config.execution_settings is not None
+
+
+def test_restore_handlebars():
+    name = "Test Template"
+    description = "This is a test template."
+    template = "Hello, {{name}}!"
+    template_format = "handlebars"
+    input_variables = [InputVariable(name="name", description="Name of the person to greet", type="string")]
+    execution_settings = PromptExecutionSettings(timeout=30, max_tokens=100)
+
+    restored_template = PromptTemplateConfig.restore(
+        name=name,
+        description=description,
+        template=template,
+        input_variables=input_variables,
+        template_format=template_format,
+        execution_settings={"default": execution_settings},
+    )
+
+    assert restored_template.name == name, "The name attribute does not match the expected value."
+    assert restored_template.description == description, "The description attribute does not match the expected value."
+    assert restored_template.template == template, "The template attribute does not match the expected value."
+    assert (
+        restored_template.input_variables == input_variables
+    ), "The input_variables attribute does not match the expected value."
+    assert (
+        restored_template.execution_settings["default"] == execution_settings
+    ), "The execution_settings attribute does not match the expected value."
+    assert (
+        restored_template.template_format == template_format
+    ), "The template_format attribute does not match the expected value."

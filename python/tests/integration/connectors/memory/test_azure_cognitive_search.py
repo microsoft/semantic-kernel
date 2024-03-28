@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import time
 from random import randint
 
@@ -36,7 +37,7 @@ async def test_collections():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
-        time.sleep(1)
+        await asyncio.sleep(1)
         try:
             assert await memory_store.does_collection_exist(collection)
         except:
@@ -127,7 +128,7 @@ async def test_search():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
-        time.sleep(1)
+        await asyncio.sleep(1)
         try:
             assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
@@ -140,7 +141,7 @@ async def test_search():
                 embedding=np.array([0.1, 0.2, 0.3, 0.4]),
             )
             await memory_store.upsert(collection, rec)
-            time.sleep(1)
+            await asyncio.sleep(1)
             result = await memory_store.get_nearest_match(collection, np.array([0.1, 0.2, 0.3, 0.38]))
             assert result[0]._id == rec._id
         except:
