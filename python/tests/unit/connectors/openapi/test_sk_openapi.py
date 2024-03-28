@@ -1,5 +1,5 @@
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import yaml
@@ -11,6 +11,9 @@ from semantic_kernel.connectors.openapi.kernel_openapi import (
     OpenApiRunner,
     PreparedRestApiRequest,
     RestApiOperation,
+)
+from semantic_kernel.connectors.openapi.openapi_function_execution_parameters import (
+    OpenAPIFunctionExecutionParameters,
 )
 from semantic_kernel.exceptions import ServiceInvalidRequestError
 
@@ -291,6 +294,67 @@ def openapi_runner():
     operations = parser.create_rest_api_operations(parsed_doc)
     runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
     return runner, operations
+
+
+@pytest.fixture
+def openapi_runner_with_url_override():
+    parser = OpenApiParser()
+    parsed_doc = parser.parse(openapi_document)
+    exec_settings = OpenAPIFunctionExecutionParameters(server_url_override="http://urloverride.com")
+    operations = parser.create_rest_api_operations(parsed_doc, execution_settings=exec_settings)
+    runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
+    return runner, operations
+
+
+@pytest.fixture
+def openapi_runner_with_auth_callback():
+    async def dummy_auth_callback(**kwargs):
+        return {"Authorization": "Bearer dummy-token"}
+
+    parser = OpenApiParser()
+    parsed_doc = parser.parse(openapi_document)
+    exec_settings = OpenAPIFunctionExecutionParameters(server_url_override="http://urloverride.com")
+    operations = parser.create_rest_api_operations(parsed_doc, execution_settings=exec_settings)
+    runner = OpenApiRunner(
+        parsed_openapi_document=parsed_doc,
+        auth_callback=dummy_auth_callback,
+    )
+    return runner, operations
+
+
+@pytest.mark.asyncio
+@patch("aiohttp.ClientSession.request")
+async def test_run_operation_with_auth_callback(mock_request, openapi_runner_with_auth_callback):
+    runner, operations = openapi_runner_with_auth_callback
+    operation = operations["addTodo"]
+    headers = {"Authorization": "Bearer abc123"}
+    request_body = {"title": "Buy milk", "completed": False}
+
+    mock_response = AsyncMock()
+    mock_response.status = 200
+    mock_request.return_value.__aenter__.return_value = mock_response
+
+    assert operation.server_url == "http://urloverride.com"
+    response = await runner.run_operation(operation, headers=headers, request_body=request_body)
+    assert response is not None
+
+    _, kwargs = mock_request.call_args
+
+    assert "Authorization" in kwargs["headers"]
+    assert kwargs["headers"]["Authorization"] == "Bearer dummy-token"
+
+
+@patch("aiohttp.ClientSession.request")
+@pytest.mark.asyncio
+async def test_run_operation_with_url_override(mock_request, openapi_runner_with_url_override):
+    runner, operations = openapi_runner_with_url_override
+    operation = operations["addTodo"]
+    headers = {"Authorization": "Bearer abc123"}
+    request_body = {"title": "Buy milk", "completed": False}
+    mock_request.return_value.__aenter__.return_value.text.return_value = 200
+    assert operation.server_url == "http://urloverride.com"
+    response = await runner.run_operation(operation, headers=headers, request_body=request_body)
+    assert response == 200
 
 
 @patch("aiohttp.ClientSession.request")

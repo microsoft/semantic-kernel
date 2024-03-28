@@ -7,8 +7,8 @@ import logging
 
 import httpx
 
+from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIAuthenticationConfig,
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.connectors.openapi import import_plugin_from_openapi
@@ -24,7 +24,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 async def import_plugin_from_openai(
     kernel: Kernel,
     plugin_name: str,
-    plugin_url: str,
+    plugin_url: str | None = None,
+    plugin_str: str | None = None,
     execution_parameters: OpenAIFunctionExecutionParameters | None = None,
 ) -> KernelPlugin:
     """Create a plugin from the Open AI manifest."""
@@ -36,11 +37,17 @@ async def import_plugin_from_openai(
 
     validate_plugin_name(plugin_name)
 
-    http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
-
-    openai_manifest = await DocumentLoader.load_document_from_uri(
-        url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
-    )
+    if plugin_str is not None:
+        # Load plugin from the provided JSON string/YAML string
+        openai_manifest = plugin_str
+    elif plugin_url is not None:
+        # Load plugin from the URL
+        http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+        openai_manifest = await DocumentLoader.load_document_from_uri(
+            url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
+        )
+    else:
+        raise ServiceInvalidExecutionSettingsError("Either plugin_url or plugin_json must be provided.")
 
     return await _create_plugin(
         kernel=kernel,
@@ -65,12 +72,12 @@ async def _create_plugin(
 
     # Modify the auth callback in execution parameters if it's provided
     if execution_parameters and execution_parameters.auth_callback:
-        original_callback = execution_parameters.auth_callback
+        initial_auth_callback = execution_parameters.auth_callback
 
-        async def modified_auth_callback(client, url):
-            await original_callback(client, url, plugin_name, openai_auth_config)
+        async def custom_auth_callback(**kwargs):
+            return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)
 
-        execution_parameters.auth_callback = modified_auth_callback
+        execution_parameters.auth_callback = custom_auth_callback
 
     openapi_spec_url = parse_openai_manifest_for_openapi_spec_url(plugin_json)
 
@@ -78,11 +85,21 @@ async def _create_plugin(
         kernel=kernel,
         plugin_name=plugin_name,
         openapi_document=openapi_spec_url,
+        execution_settings=execution_parameters,
     )
 
 
 def parse_openai_manifest_for_openapi_spec_url(plugin_json):
     """Extract the OpenAPI Spec URL from the plugin JSON."""
+
+    try:
+        api_type = plugin_json["api"]["type"]
+    except KeyError as ex:
+        raise KernelException("OpenAI manifest is missing the API type.") from ex
+
+    if api_type != "openapi":
+        raise KernelException("OpenAI manifest is not of type OpenAPI.")
+
     try:
         return plugin_json["api"]["url"]
     except KeyError as ex:

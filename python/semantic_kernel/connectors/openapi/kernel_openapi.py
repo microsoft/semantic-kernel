@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from typing import Dict, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -26,6 +28,14 @@ from semantic_kernel.exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+        OpenAIFunctionExecutionParameters,
+    )
+    from semantic_kernel.connectors.openapi.openapi_function_execution_parameters import (
+        OpenAPIFunctionExecutionParameters,
+    )
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -72,13 +82,13 @@ class RestApiOperation:
         method: str,
         server_url: str,
         path: str,
-        summary: Optional[str] = None,
-        description: Optional[str] = None,
-        params: Optional[Mapping[str, str]] = None,
-        request_body: Optional[Mapping[str, str]] = None,
+        summary: str | None = None,
+        description: str | None = None,
+        params: Mapping[str, str] | None = None,
+        request_body: Mapping[str, str] | None = None,
     ):
         self.id = id
-        self.method = method
+        self.method = method.upper()
         self.server_url = server_url
         self.path = path
         self.summary = summary
@@ -98,14 +108,11 @@ class RestApiOperation:
     def url_join(self, base_url, path):
         """Join a base URL and a path, correcting for any missing slashes."""
         parsed_base = urlparse(base_url)
-        # Ensure the base path ends with a slash
-        if not parsed_base.path.endswith('/'):
-            base_path = parsed_base.path + '/'
+        if not parsed_base.path.endswith("/"):
+            base_path = parsed_base.path + "/"
         else:
             base_path = parsed_base.path
-        # Correctly join the base path and the additional path, avoiding duplicate slashes
-        full_path = urljoin(base_path, path.lstrip('/'))
-        # Reconstruct the full URL
+        full_path = urljoin(base_path, path.lstrip("/"))
         return urlunparse(parsed_base._replace(path=full_path))
 
     def prepare_request(
@@ -139,7 +146,7 @@ class RestApiOperation:
                     raise ServiceInvalidRequestError(f"Required path parameter {param_name} not provided")
 
         processed_payload = None
-        if self.request_body:
+        if self.request_body and (self.method == "POST" or self.method == "PUT"):
             if request_body is None and "required" in self.request_body and self.request_body["required"]:
                 raise ServiceInvalidRequestError("Payload is required but was not provided")
             content = self.request_body["content"]
@@ -189,14 +196,23 @@ class OpenApiParser:
     :return: A dictionary of RestApiOperation objects keyed by operationId
     """
 
-    def create_rest_api_operations(self, parsed_document) -> Dict[str, RestApiOperation]:
+    def create_rest_api_operations(
+        self,
+        parsed_document: Any,
+        execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
+    ) -> Dict[str, RestApiOperation]:
         paths = parsed_document.get("paths", {})
         request_objects = {}
+
+        base_url = "/"
+        servers = parsed_document.get("servers", [])
+        base_url = servers[0].get("url") if servers else "/"
+
+        if execution_settings and execution_settings.server_url_override:
+            base_url = execution_settings.server_url_override
+
         for path, methods in paths.items():
             for method, details in methods.items():
-                server_url = parsed_document.get("servers", [])
-                server_url = server_url[0].get("url") if server_url else "/"
-
                 request_method = method.lower()
 
                 parameters = details.get("parameters", [])
@@ -207,7 +223,7 @@ class OpenApiParser:
                 rest_api_operation = RestApiOperation(
                     id=operationId,
                     method=request_method,
-                    server_url=server_url,
+                    server_url=base_url,
                     path=path,
                     params=parameters,
                     request_body=details.get("requestBody", None),
@@ -223,26 +239,34 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
+        auth_callback: Callable[[Dict[str, str]], Dict[str, str]] | None = None,
     ):
         self.spec = Spec.from_dict(parsed_openapi_document)
+        self.auth_callback = auth_callback
 
     async def run_operation(
         self,
         operation: RestApiOperation,
-        path_params: Optional[Dict[str, str]] = None,
-        query_params: Optional[Dict[str, str]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        request_body: Optional[Union[str, Dict[str, str]]] = None,
+        path_params: Dict[str, str] | None = None,
+        query_params: Dict[str, str] | None = None,
+        headers: Dict[str, str] | None = None,
+        request_body: str | Dict[str, str] | None = None,
     ) -> str:
+        if headers is None:
+            headers = {}
+
+        if self.auth_callback:
+            headers_update = await self.auth_callback(headers=headers)
+            headers.update(headers_update)
+
         prepared_request = operation.prepare_request(
             path_params=path_params,
             query_params=query_params,
             headers=headers,
             request_body=request_body,
         )
-        is_valid = prepared_request.validate_request(spec=self.spec)
-        if not is_valid:
-            return None
+        # TODO - figure out how to validate a request that has a dynamic API
+        # against a spec that has a template path
 
         async with aiohttp.ClientSession(raise_for_status=True) as session:
             async with session.request(
@@ -268,11 +292,16 @@ def import_plugin_from_openapi(
     kernel: Kernel,
     plugin_name: str,
     openapi_document: str,
+    execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
 ) -> Dict[str, KernelFunction]:
     parser = OpenApiParser()
     parsed_doc = parser.parse(openapi_document)
-    operations = parser.create_rest_api_operations(parsed_doc)
-    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc)
+    operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
+
+    auth_callback = None
+    if execution_settings and execution_settings.auth_callback:
+        auth_callback = execution_settings.auth_callback
+    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc, auth_callback=auth_callback)
 
     plugin = {}
 
@@ -282,10 +311,10 @@ def import_plugin_from_openapi(
             name=operation_id,
         )
         async def run_openapi_operation(
-            path_params: Annotated[Optional[Union[Dict, str]], "A dictionary of path parameters"] = None,
-            query_params: Annotated[Optional[Union[Dict, str]], "A dictionary of query parameters"] = None,
-            headers: Annotated[Optional[Union[Dict, str]], "A dictionary of headers"] = None,
-            request_body: Annotated[Optional[Union[Dict, str]], "A dictionary of the request body"] = None,
+            path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
+            query_params: Annotated[dict | str | None, "A dictionary of query parameters"] = None,
+            headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
+            request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
         ) -> str:
             response = await runner.run_operation(
                 operation,
