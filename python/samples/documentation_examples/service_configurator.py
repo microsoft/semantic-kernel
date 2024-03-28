@@ -34,7 +34,7 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
 
     # Configure AI service used by the kernel. Load settings from the .env file.
     if llm_service == "AzureOpenAI":
-        deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        _, api_key, endpoint = sk.azure_openai_settings_from_dot_env(include_deployment=False)
         deployment_name = (config.get("AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME") if use_chat 
                            else config.get("AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME"))
 
@@ -45,7 +45,7 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
             kernel.add_service(
                 AzureChatCompletion(
                     service_id=service_id,
-                    deployment_name=deployment,
+                    deployment_name=deployment_name,
                     endpoint=endpoint,
                     api_key=api_key,
                 ),
@@ -54,7 +54,7 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
             kernel.add_service(
                 AzureTextCompletion(
                     service_id=service_id,
-                    deployment_name=deployment,
+                    deployment_name=deployment_name,
                     endpoint=endpoint,
                     api_key=api_key,
                 ),
