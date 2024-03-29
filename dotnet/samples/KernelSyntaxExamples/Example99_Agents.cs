@@ -34,7 +34,9 @@ public class Example99_Agents : BaseTest
         var agent =
             CreateChatAgent(
                 "Parrot",
-                "Repeat the user message in the voice of a pirate and then end with a parrot sound.");
+                "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.");
+
+        agent.InstructionArguments = new() { { "count", 3 } };
 
         await RunSingleAgentAsync(agent);
     }
@@ -83,6 +85,8 @@ public class Example99_Agents : BaseTest
             await CreateGptAgentAsync(
                 "Parrot",
                 "Repeat the user message in the voice of a pirate and then end with a parrot sound.");
+
+        agent.InstructionArguments = new() { { "count", 3 } };
 
         await RunSingleAgentAsync(agent);
     }
@@ -377,9 +381,7 @@ public class Example99_Agents : BaseTest
     /// <summary>
     /// Common chat loop.
     /// </summary>
-    private async Task<AgentNexus> ChatAsync(
-        Agent agent,
-        params string[] messages)
+    private async Task<AgentNexus> ChatAsync(Agent agent, params string[] messages)
     {
         this.WriteLine("[TEST]");
         WriteAgent(agent);
@@ -482,8 +484,10 @@ public class Example99_Agents : BaseTest
                 CreateKernel(plugin),
                 instructions,
                 description: null,
-                name,
-                new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions });
+                name)
+            {
+                ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
+            };
     }
 
     private string GetApiKey()

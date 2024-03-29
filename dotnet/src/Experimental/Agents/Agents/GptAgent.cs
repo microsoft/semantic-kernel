@@ -27,11 +27,6 @@ public sealed partial class GptAgent : KernelAgent
     /// <inheritdoc/>
     public override string Id => this._assistant.Id;
 
-    /// <summary>
-    /// The instructions of the agent (optional)
-    /// </summary>
-    public string? Instructions => this._assistant.Instructions;
-
     /// <inheritdoc/>
     public override string? Name => this._assistant.Name;
 
@@ -93,7 +88,7 @@ public sealed partial class GptAgent : KernelAgent
     /// Initializes a new instance of the <see cref="GptAgent"/> class.
     /// </summary>
     private GptAgent(AssistantsClient client, Assistant model, Kernel kernel, string partitionKey)
-        : base(kernel)
+        : base(kernel, model.Instructions)
     {
         this._assistant = model;
         this._client = client;

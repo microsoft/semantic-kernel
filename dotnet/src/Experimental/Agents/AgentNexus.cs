@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -29,10 +30,11 @@ public record AgentMessageSource(string AgentId, string? MessageId = null)
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
-public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
+public abstract class AgentNexus
 {
     private static readonly SHA256CryptoServiceProvider s_sha256 = new();
 
+    private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
     private readonly Dictionary<Agent, string> _channelMap;
     private int _isActive;
@@ -53,7 +55,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     {
         if (agent == null)
         {
-            return this.History.Reverse().ToAsyncEnumerable(); // $$$ PERF
+            return this.History.ToDescending();
         }
 
         var channelKey = this.GetHash(agent);
@@ -75,7 +77,6 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         Agent agent,
         ChatMessageContent? input = null,
-        /*KernelArguments $$$ TODO: TEMPLATING/CONTEXT,*/
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Verify only a single operation is active
@@ -97,7 +98,7 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
             }
 
             // Invoke agent & process response
-            List<ChatMessageContent> messages = new();
+            List<ChatMessageContent> messages = [];
             await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
             {
                 // Add to primary history
@@ -108,11 +109,12 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
                 yield return message;
             }
 
-            // $$$ BACKGROUND QUEUE W/ RETRY | ANY AGENT W/ CHANNEL QUEUED BLOCKS
             // Broadcast message to other channels (in parallel)
-            var otherChannels = this._agentChannels.Values.Where(c => c != channel);
-            var tasks = otherChannels.Select(c => c.RecieveAsync(messages)).ToArray();
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            var channelRefs =
+                this._agentChannels
+                    .Where(kvp => kvp.Value != channel)
+                    .Select(kvp => new ChannelRef(kvp.Value, kvp.Key));
+            this._broadcastQueue.Queue(channelRefs, messages);
         }
         finally
         {
@@ -123,6 +125,8 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
     private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)
     {
         var channelKey = this.GetHash(agent);
+
+        await this._broadcastQueue.IsRecievingAsync(channelKey).ConfigureAwait(false);
 
         if (!this._agentChannels.TryGetValue(channelKey, out var channel))
         {
@@ -173,5 +177,79 @@ public abstract class AgentNexus /*: $$$ TODO: PLUGIN ??? */
         this._agentChannels = [];
         this._channelMap = [];
         this.History = [];
+        this._broadcastQueue = new();
+    }
+
+    private record ChannelRef(AgentChannel Channel, string Hash);
+    private class ChannelQueue : ConcurrentQueue<IList<ChatMessageContent>>;
+
+    private class BroadcastQueue
+    {
+        private readonly Dictionary<string, ChannelQueue> _queue = [];
+        private readonly Dictionary<string, Task> _tasks = [];
+        private readonly object _queueLock = new();
+
+        public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(1);
+
+        public void Queue(IEnumerable<ChannelRef> channels, IList<ChatMessageContent> messages)
+        {
+            lock (this._queueLock)
+            {
+                foreach (var channel in channels)
+                {
+                    var queue = GetQueue(channel);
+                    queue.Enqueue(messages);
+
+                    if (!this._tasks.ContainsKey(channel.Hash))
+                    {
+                        this._tasks.Add(channel.Hash, RecieveAsync(channel, queue));
+                    }
+                }
+            }
+
+            ChannelQueue GetQueue(ChannelRef channel)
+            {
+                if (!this._queue.TryGetValue(channel.Hash, out var queue))
+                {
+                    queue = new ChannelQueue();
+                    this._queue.Add(channel.Hash, queue);
+                }
+
+                return queue;
+            }
+
+            async Task RecieveAsync(ChannelRef channel, ChannelQueue queue)
+            {
+                while (queue.TryDequeue(out var messages))
+                {
+                    await channel.Channel.RecieveAsync(messages).ConfigureAwait(false);
+                }
+
+                lock (this._queueLock)
+                {
+                    this._tasks.Remove(channel.Hash);
+                }
+            }
+        }
+
+        public async Task<bool> IsRecievingAsync(string hash)
+        {
+            ChannelQueue queue;
+
+            lock (this._queueLock)
+            {
+                if (!this._queue.TryGetValue(hash, out queue))
+                {
+                    return false;
+                }
+            }
+
+            while (queue.Count > 0)
+            {
+                await Task.Delay(this.BlockDuration).ConfigureAwait(false);
+            }
+
+            return false;
+        }
     }
 }

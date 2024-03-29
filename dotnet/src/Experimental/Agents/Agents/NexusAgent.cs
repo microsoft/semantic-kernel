@@ -43,11 +43,13 @@ public sealed class NexusAgent : Agent, ILocalAgent
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new LocalChannel(this));
+        return Task.FromResult<AgentChannel>(new LocalChannel()); // $$$ ???
     }
 
     /// <inheritdoc/>
-    async IAsyncEnumerable<ChatMessageContent> ILocalAgent.InvokeAsync(IEnumerable<ChatMessageContent> history, [EnumeratorCancellation] CancellationToken cancellationToken)
+    async IAsyncEnumerable<ChatMessageContent> ILocalAgent.InvokeAsync(
+        IEnumerable<ChatMessageContent> history,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var message in this._invocationCallback.Invoke(cancellationToken))
         {
@@ -66,8 +68,9 @@ public sealed class NexusAgent : Agent, ILocalAgent
         string? description = null,
         string? name = null)
     {
-        this.Id = Guid.NewGuid().ToString();
         this._invocationCallback = invocationCallback;
+
+        this.Id = Guid.NewGuid().ToString();
         this.Description = description;
         this.Name = name;
     }

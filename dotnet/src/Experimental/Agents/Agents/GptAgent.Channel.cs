@@ -12,6 +12,7 @@ using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Agents.Exceptions;
 using Microsoft.SemanticKernel.Experimental.Agents.Extensions;
+using Microsoft.SemanticKernel.Experimental.Agents.Filters;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Agents;
 
@@ -57,6 +58,7 @@ public sealed partial class GptAgent : KernelAgent
                     actorLabel = $"{message.Name ?? message.Role.Label}: ";
                 }
 
+                // $$$ RETRY !!!
                 await this._client.CreateMessageAsync(
                     this._threadId,
                     MessageRole.User,
@@ -68,7 +70,10 @@ public sealed partial class GptAgent : KernelAgent
         }
 
         /// <inheritdoc/>
-        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(GptAgent agent, ChatMessageContent? input, [EnumeratorCancellation] CancellationToken cancellationToken)
+        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+            GptAgent agent,
+            ChatMessageContent? input,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (input.TryGetContent(out var content))
             {
@@ -86,10 +91,11 @@ public sealed partial class GptAgent : KernelAgent
                 this._agentNames.Add(agent.Id, agent.Name!);
             }
 
-            var options =
-                new CreateRunOptions(agent.Id)
+            string instructions = await agent.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false);
+            CreateRunOptions options =
+                new(agent.Id)
                 {
-                    OverrideInstructions = null, // $$$ TODO: TEMPLATING ???
+                    OverrideInstructions = instructions,
                     OverrideTools = tools,
                 };
 
@@ -100,7 +106,7 @@ public sealed partial class GptAgent : KernelAgent
             await PollRunStatus().ConfigureAwait(false);
 
             // Evaluate status and process steps and messages, as encountered.
-            var processedMessageIds = new HashSet<string>();
+            HashSet<string> processedMessageIds = [];
             do
             {
                 if (run.Status == RunStatus.Failed)

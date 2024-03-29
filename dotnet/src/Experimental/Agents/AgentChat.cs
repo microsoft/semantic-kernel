@@ -54,6 +54,15 @@ public sealed class AgentChat : AgentNexus
     }
 
     /// <summary>
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        CancellationToken cancellationToken = default) =>
+            this.InvokeAsync(default(ChatMessageContent), cancellationToken);
+
+    /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="input">Optional user input.</param>
@@ -172,15 +181,6 @@ public sealed class AgentChat : AgentNexus
             }
         }
     }
-
-    /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        CancellationToken cancellationToken = default) =>
-            this.InvokeAsync(default(ChatMessageContent), cancellationToken);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
