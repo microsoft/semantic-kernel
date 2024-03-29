@@ -84,7 +84,7 @@ public class Example99_Agents : BaseTest
         var agent =
             await CreateGptAgentAsync(
                 "Parrot",
-                "Repeat the user message in the voice of a pirate and then end with a parrot sound.");
+                "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.");
 
         agent.InstructionArguments = new() { { "count", 3 } };
 
