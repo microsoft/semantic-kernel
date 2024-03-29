@@ -302,6 +302,7 @@ class OpenApiRunner:
             ) as response:
                 return await response.text()
 
+
 class OpenAPIPlugin:
     @staticmethod
     def create(
@@ -344,7 +345,9 @@ class OpenAPIPlugin:
                 response = await runner.run_operation(
                     operation,
                     path_params=(
-                        json.loads(path_params) if isinstance(path_params, str) else path_params if path_params else None
+                        json.loads(path_params)
+                        if isinstance(path_params, str)
+                        else path_params if path_params else None
                     ),
                     query_params=(
                         json.loads(query_params)

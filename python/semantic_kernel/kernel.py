@@ -21,10 +21,10 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
     OpenAPIFunctionExecutionParameters,
 )
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
