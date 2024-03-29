@@ -7,16 +7,16 @@ using Microsoft.SemanticKernel.Experimental.Agents.Filters;
 namespace Microsoft.SemanticKernel.Experimental.Agents;
 
 /// <summary>
-/// $$$
+/// Extension methods for <see cref="KernelAgent"/>
 /// </summary>
 public static  class KernelAgentExtensions
 {
     /// <summary>
-    /// $$$
+    /// Render the provided instructions using the specified arguments.
     /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="agent">A <see cref="KernelAgent"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The rendered instructions</returns>
     public static Task<string?> FormatInstructionsAsync(this KernelAgent agent, CancellationToken cancellationToken = default)
     {
         return PromptRenderer.FormatInstructionsAsync(agent, cancellationToken);

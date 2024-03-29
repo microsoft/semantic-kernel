@@ -43,7 +43,7 @@ public sealed class NexusAgent : Agent, ILocalAgent
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new LocalChannel()); // $$$ ???
+        return Task.FromResult<AgentChannel>(new LocalChannel());
     }
 
     /// <inheritdoc/>

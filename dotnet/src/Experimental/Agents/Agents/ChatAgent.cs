@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Experimental.Agents.Filters;
 
 #pragma warning disable IDE0290 // Use primary constructor
 
@@ -25,7 +24,7 @@ public sealed class ChatAgent : LocalKernelAgent
     public override string? Name { get; }
 
     /// <summary>
-    /// $$$
+    /// Optional execution settings for the agent.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings { get; set; }
 
