@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
@@ -22,18 +23,20 @@ internal static class KernelFunctionHelpers
     /// <param name="handlebarsInstance">The <see cref="IHandlebars"/>-context.</param>
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="executionContext">Kernel arguments maintained as the executing context.</param>
+    /// <param name="promptModel">The associated prompt template configuration.</param>
     /// <param name="nameDelimiter">The character used to delimit the plugin name and function name in a Handlebars template.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static void Register(
         IHandlebars handlebarsInstance,
         Kernel kernel,
         KernelArguments executionContext,
+        PromptTemplateConfig promptModel,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptModel.EncodeTags, nameDelimiter, cancellationToken);
         }
     }
 
@@ -44,6 +47,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
+        bool encodeTags,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -74,7 +78,14 @@ internal static class KernelFunctionHelpers
                 KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
                 // Invoke the function and write the result to the template
-                return InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+                var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+
+                if (encodeTags && result is string resultAsString)
+                {
+                    result = Encode(resultAsString);
+                }
+
+                return result;
             });
     }
 
@@ -228,6 +239,20 @@ internal static class KernelFunctionHelpers
         }
 
         return resultAsObject;
+    }
+
+    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
+
+    private static string ReplaceMessageTag(Match match)
+    {
+        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
+    }
+
+    private static string Encode(string value)
+    {
+        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
+        result = result.Replace("</message>", "&lt;/message&gt;");
+        return result;
     }
 
     #endregion
