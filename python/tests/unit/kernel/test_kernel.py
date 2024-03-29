@@ -494,10 +494,16 @@ def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-async def test_import_plugin_from_openai(kernel: Kernel):
+@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+async def test_import_openai_plugin_from_file(mock_parse_openai_manifest, kernel: Kernel):
     openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
     with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
         openai_spec = file.read()
+
+    openapi_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+    mock_parse_openai_manifest.return_value = openapi_spec_file_path
 
     plugin = await kernel.import_plugin_from_openai(
         plugin_name="TestOpenAIPlugin",
@@ -517,12 +523,18 @@ async def test_import_plugin_from_openai(kernel: Kernel):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_import_plugin_from_url(mock_get, kernel: Kernel):
+@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, kernel: Kernel):
     openai_spec_file_path = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json"
     )
     with open(openai_spec_file_path, "r") as file:
         openai_spec = file.read()
+
+    openapi_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+    mock_parse_openai_manifest.return_value = openapi_spec_file_path
 
     request = httpx.Request(method="GET", url="http://fake-url.com/akv-openai.json")
 
