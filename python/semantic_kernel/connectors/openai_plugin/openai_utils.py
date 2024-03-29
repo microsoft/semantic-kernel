@@ -8,6 +8,7 @@ from semantic_kernel.exceptions.function_exceptions import PluginInitializationE
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+
 class OpenAIUtils:
     """Utility functions for OpenAI plugins."""
 
