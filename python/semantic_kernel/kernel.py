@@ -21,7 +21,7 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin import openapi_manager
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
     OpenAPIFunctionExecutionParameters,
 )
@@ -758,7 +758,7 @@ class Kernel(KernelBaseModel):
         if not openapi_document_path:
             raise PluginInitializationError("OpenAPI document path is required.")
 
-        plugin = openapi_manager.create(
+        plugin = OpenAPIPlugin.create(
             plugin_name=plugin_name,
             openapi_document_path=openapi_document_path,
             execution_settings=execution_settings,

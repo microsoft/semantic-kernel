@@ -3,6 +3,6 @@
 from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
     OpenAPIFunctionExecutionParameters,
 )
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import create
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 
-__all__ = ["create", "OpenAPIFunctionExecutionParameters"]
+__all__ = ["OpenAPIPlugin", "OpenAPIFunctionExecutionParameters"]
