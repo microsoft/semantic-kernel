@@ -17,8 +17,8 @@ public static  class KernelAgentExtensions
     /// <param name="agent"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<string> FormatInstructionsAsync(this KernelAgent agent, CancellationToken cancellationToken = default)
+    public static Task<string?> FormatInstructionsAsync(this KernelAgent agent, CancellationToken cancellationToken = default)
     {
-        return PromptRenderer.FormatInstructionsAsync(agent.Kernel, agent.Instructions!, agent.InstructionArguments, cancellationToken);
+        return PromptRenderer.FormatInstructionsAsync(agent, cancellationToken);
     }
 }

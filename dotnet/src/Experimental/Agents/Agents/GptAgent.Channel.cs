@@ -91,7 +91,7 @@ public sealed partial class GptAgent : KernelAgent
                 this._agentNames.Add(agent.Id, agent.Name!);
             }
 
-            string instructions = await agent.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false);
+            string? instructions = await agent.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false);
             CreateRunOptions options =
                 new(agent.Id)
                 {

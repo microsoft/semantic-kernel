@@ -14,29 +14,34 @@ internal static class PromptRenderer
     /// <summary>
     /// Render the provided instructions using the specified arguments.
     /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="instructions">The agent instructions</param>
-    /// <param name="arguments">Context arguments.</param>
+    /// <param name="agent">A <see cref="KernelAgent"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rendered instructions</returns>
-    public static async Task<string> FormatInstructionsAsync(Kernel kernel, string instructions, KernelArguments? arguments, CancellationToken cancellationToken)
+    public static async Task<string?> FormatInstructionsAsync(KernelAgent agent, CancellationToken cancellationToken)
     {
-        if (arguments != null)
+        if (string.IsNullOrWhiteSpace(agent.Instructions))
         {
-            if (!s_templates.TryGetValue(instructions, out IPromptTemplate template))
+            return null;
+        }
+
+        string? instructions = null;
+
+        if (agent.InstructionArguments != null)
+        {
+            if (!s_templates.TryGetValue(agent.Id, out IPromptTemplate template)) // $$$ INSTRUCTION CONSISTENCY
             {
                 template =
                     s_factory.Create(
                         new PromptTemplateConfig
                         {
-                            Template = instructions
+                            Template = agent.Instructions!
                         });
 
-                // Discard local instance if already present
-                s_templates.TryAdd(instructions, template);
+                // Discard local instance if already present in dictionary
+                s_templates.TryAdd(agent.Id, template);
             }
 
-            instructions = await template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            instructions = await template.RenderAsync(agent.Kernel, agent.InstructionArguments, cancellationToken).ConfigureAwait(false);
         }
 
         return instructions;

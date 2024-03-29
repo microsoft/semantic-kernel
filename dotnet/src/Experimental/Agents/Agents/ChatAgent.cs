@@ -38,7 +38,7 @@ public sealed class ChatAgent : LocalKernelAgent
 
         if (!string.IsNullOrWhiteSpace(this.Instructions))
         {
-            string instructions = await this.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false);
+            string instructions = (await this.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false))!;
 
             chat.AddMessage(AuthorRole.System, instructions, name: this.Name);
         }
