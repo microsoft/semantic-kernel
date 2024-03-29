@@ -38,7 +38,6 @@ from semantic_kernel.exceptions import (
     KernelServiceNotFoundError,
     PluginInitializationError,
     PluginInvalidNameError,
-    ServiceInvalidExecutionSettingsError,
     ServiceInvalidRequestError,
     ServiceInvalidTypeError,
     TemplateSyntaxError,

@@ -9,7 +9,6 @@ from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 

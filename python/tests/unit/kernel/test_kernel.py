@@ -1,18 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import httpx
 import os
 import sys
 from typing import Union
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import OpenAIFunctionExecutionParameters
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
+)
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -514,9 +516,11 @@ async def test_import_plugin_from_openai(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-@patch('httpx.AsyncClient.get')
+@patch("httpx.AsyncClient.get")
 async def test_import_plugin_from_url(mock_get, kernel: Kernel):
-    openai_spec_file_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json")
+    openai_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json"
+    )
     with open(openai_spec_file_path, "r") as file:
         openai_spec = file.read()
 
@@ -545,7 +549,9 @@ async def test_import_plugin_from_url(mock_get, kernel: Kernel):
 
 
 def test_import_plugin_from_openapi(kernel: Kernel):
-    openapi_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml")
+    openapi_spec_file = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
 
     plugin = kernel.import_plugin_from_openapi(
         plugin_name="TestOpenAPIPlugin",
@@ -564,6 +570,7 @@ def test_import_plugin_from_openapi_missing_document_throws(kernel: Kernel):
             plugin_name="TestOpenAPIPlugin",
             openapi_document_path=None,
         )
+
 
 # endregion
 # region Functions

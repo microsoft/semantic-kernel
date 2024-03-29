@@ -8,9 +8,11 @@ async def main():
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_plugin = kernel.import_plugin_from_openapi(plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml")
+    openapi_plugin = kernel.import_plugin_from_openapi(
+        plugin_name="openApiPlugin", openapi_document_path="./openapi.yaml"
+    )
 
-    arguments={
+    arguments = {
         "request_body": '{"input": "hello world"}',
         "path_params": '{"name": "mark"}',
         "query_params": '{"q": "0.7"}',
@@ -22,6 +24,7 @@ async def main():
     result = kernel.invoke(openapi_plugin["helloWorld"], arguments=kernel_arguments)
 
     print(result)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
