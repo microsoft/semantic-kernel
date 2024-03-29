@@ -1148,6 +1148,8 @@ internal abstract class ClientCore
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
+#pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
