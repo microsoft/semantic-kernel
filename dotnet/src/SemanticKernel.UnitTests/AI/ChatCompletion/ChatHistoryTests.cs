@@ -19,7 +19,7 @@ public class ChatHistoryTests
         // Arrange
         var options = new JsonSerializerOptions();
         var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.System, "You are a polite bot.", name: "ChatBot");
+        chatHistory.AddMessage("ChatBot", AuthorRole.System, "You are a polite bot.");
         chatHistory.AddMessage(AuthorRole.User, "Hello");
         chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);

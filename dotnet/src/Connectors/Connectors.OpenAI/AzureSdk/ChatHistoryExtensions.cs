@@ -57,13 +57,14 @@ public static class ChatHistoryExtensions
         {
             var role = streamedRole ?? AuthorRole.Assistant;
 
-            chatHistory.Add(new OpenAIChatMessageContent(
-                role,
-                contentBuilder?.ToString() ?? string.Empty,
-                messageContents[0].ModelId!,
-                OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
-                metadata,
-                streamedName));
+            chatHistory.Add(
+                new OpenAIChatMessageContent(
+                    streamedName,
+                    role,
+                    contentBuilder?.ToString() ?? string.Empty,
+                    messageContents[0].ModelId!,
+                    OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    metadata));
         }
     }
 }

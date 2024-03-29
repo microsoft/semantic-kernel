@@ -574,7 +574,7 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata, streamedName));
+            chat.Add(new OpenAIChatMessageContent(streamedName, streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)

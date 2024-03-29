@@ -20,7 +20,7 @@ public sealed class OpenAIChatMessageContentTests
         List<ChatCompletionsToolCall> toolCalls = [new FakeChatCompletionsToolCall("id")];
 
         // Act
-        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls, name: "Fred");
+        var content1 = new OpenAIChatMessageContent("Fred", new ChatRole("user"), "content1", "model-id1", toolCalls);
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls);
 
         // Assert

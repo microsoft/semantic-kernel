@@ -73,8 +73,8 @@ public class Example37_CompletionIdentity : BaseTest
     {
         var chatHistory = new ChatHistory();
 
-        chatHistory.AddSystemMessage("Write one paragraph in response to the user that rhymes", withName ? "Echo" : null);
-        chatHistory.AddUserMessage("Why is AI awesome", withName ? "Ralph" : null);
+        chatHistory.AddSystemMessageWithName(withName ? "Echo" : null, "Write one paragraph in response to the user that rhymes");
+        chatHistory.AddUserMessageWithName(withName ? "Ralph" : null, "Why is AI awesome");
 
         return chatHistory;
     }
