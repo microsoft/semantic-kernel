@@ -6,12 +6,12 @@ from semantic_kernel.connectors.openai_plugin.openai_authentication_config impor
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
-from semantic_kernel.connectors.openai_plugin.utils import (
-    parse_openai_manifest_for_openapi_spec_url,
+from semantic_kernel.connectors.openai_plugin.openai_utils import (
+    OpenAIUtils,
 )
 
 __all__ = [
-    "parse_openai_manifest_for_openapi_spec_url",
+    "OpenAIUtils",
     "OpenAIFunctionExecutionParameters",
     "OpenAIAuthenticationConfig",
 ]

@@ -12,7 +12,7 @@
     },
     "api": {
         "type": "openapi",
-        "url": "file:///./python/samples/kernel-syntax-examples/resources/open_ai_plugins/akv-openapi.yaml"
+        "url": "file:///./python/tests/assets/test_plugins/TestPlugin/TestOpenAPIPlugin/akv-openapi.yaml"
     },
     "logo_url": "",
     "contact_email": "",

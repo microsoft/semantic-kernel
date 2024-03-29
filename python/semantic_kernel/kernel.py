@@ -16,7 +16,7 @@ import yaml
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin import utils
+from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
 from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
@@ -724,7 +724,7 @@ class Kernel(KernelBaseModel):
             execution_parameters.auth_callback = custom_auth_callback
 
         try:
-            openapi_spec_url = utils.parse_openai_manifest_for_openapi_spec_url(plugin_json)
+            openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json)
         except PluginInitializationError as ex:
             raise KernelPluginInvalidConfigurationError(
                 "Parsing of Open AI manifest for OpenAPI spec URL failed."
