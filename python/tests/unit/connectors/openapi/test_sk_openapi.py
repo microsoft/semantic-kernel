@@ -6,13 +6,13 @@ import yaml
 from openapi_core import Spec
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
-from semantic_kernel.connectors.openapi.kernel_openapi import (
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
     OpenApiParser,
     OpenApiRunner,
     PreparedRestApiRequest,
     RestApiOperation,
 )
-from semantic_kernel.connectors.openapi.openapi_function_execution_parameters import (
+from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
     OpenAPIFunctionExecutionParameters,
 )
 from semantic_kernel.exceptions import ServiceInvalidRequestError

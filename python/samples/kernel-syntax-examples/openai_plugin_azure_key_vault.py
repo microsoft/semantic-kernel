@@ -8,9 +8,6 @@ from typing import Dict, Optional
 import httpx
 from aiohttp import ClientSession
 
-from semantic_kernel.connectors.openai_plugin import (
-    import_plugin_from_openai,
-)
 from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationType
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
@@ -145,14 +142,13 @@ async def main():
         os.path.dirname(os.path.realpath(__file__)), "resources", "open_ai_plugins", "akv-openai.json"
     )
     with open(openai_spec_file, "r") as file:
-        openapi_spec = file.read()
+        openai_spec = file.read()
 
     http_client = httpx.AsyncClient()
 
-    plugin = await import_plugin_from_openai(
-        kernel=kernel,
+    plugin = await kernel.import_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",
-        plugin_str=openapi_spec,
+        plugin_str=openai_spec,
         execution_parameters=OpenAIFunctionExecutionParameters(
             http_client=http_client,
             auth_callback=authentication_provider.authenticate_request,

@@ -7,8 +7,8 @@ from urllib.parse import urlparse
 
 from pydantic import Field
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
@@ -26,6 +26,8 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     operations_to_exclude: List[str] = Field(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
+        from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+
         if self.server_url_override:
             parsed_url = urlparse(self.server_url_override)
             if not parsed_url.scheme or not parsed_url.netloc:

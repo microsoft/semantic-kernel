@@ -13,7 +13,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class DocumentLoader:
 
     @staticmethod
-    async def load_document_from_uri(
+    async def from_uri(
         url: str,
         http_client: httpx.AsyncClient,
         auth_callback: Optional[Callable[[Any], None]],
@@ -27,9 +27,7 @@ class DocumentLoader:
 
             logger.info(f"Importing document from {url}")
 
-            # Sending the request
             response = await client.get(url, headers=headers)
             response.raise_for_status()
 
-            # Returning the response content
             return response.text

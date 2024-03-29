@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Awaitable, Callable
 
-from semantic_kernel.connectors.openapi.openapi_function_execution_parameters import OpenAPIFunctionExecutionParameters
+from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+    OpenAPIFunctionExecutionParameters,
+)
 
 OpenAIAuthCallbackType = Callable[..., Awaitable[Any]]
 

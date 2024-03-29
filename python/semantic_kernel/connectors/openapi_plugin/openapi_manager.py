@@ -23,17 +23,15 @@ from prance import ResolvingParser
 from semantic_kernel.connectors.ai.open_ai.const import (
     USER_AGENT,
 )
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.exceptions import ServiceInvalidRequestError
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
         OpenAIFunctionExecutionParameters,
     )
-    from semantic_kernel.connectors.openapi.openapi_function_execution_parameters import (
+    from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
 
@@ -59,6 +57,7 @@ class PreparedRestApiRequest:
         )
 
     def validate_request(self, spec: Spec):
+        """Validate the request against the OpenAPI spec."""
         request = requests.Request(
             self.method,
             self.url,
@@ -96,15 +95,6 @@ class RestApiOperation:
         self.params = params
         self.request_body = request_body
 
-    """
-    Fills in this RestApiOperation's parameters and payload with the provided values
-    :param path_params: A dictionary of path parameters
-    :param query_params: A dictionary of query parameters
-    :param headers: A dictionary of headers
-    :param request_body: The payload of the request
-    :return: A PreparedRestApiRequest object
-    """
-
     def url_join(self, base_url, path):
         """Join a base URL and a path, correcting for any missing slashes."""
         parsed_base = urlparse(base_url)
@@ -116,8 +106,25 @@ class RestApiOperation:
         return urlunparse(parsed_base._replace(path=full_path))
 
     def prepare_request(
-        self, path_params=None, query_params=None, headers=None, request_body=None
+        self,
+        path_params: dict[str, Any] | None = None,
+        query_params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        request_body: Any | None = None,
     ) -> PreparedRestApiRequest:
+        """Prepare the request for this operation.
+
+        Args:
+            path_params: A dictionary of path parameters
+            query_params: A dictionary of query parameters
+            headers: A dictionary of headers
+            request_body: The payload of the request
+
+        Returns:
+            A PreparedRestApiRequest object
+        """
+        from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+
         path = self.path
         if path_params:
             path = path.format(**path_params)
@@ -184,25 +191,37 @@ class OpenApiParser:
     NOTE: SK Python only supports the OpenAPI Spec >=3.0
 
     Import an OpenAPI file.
+
+    Args:
+        openapi_file: The path to the OpenAPI file which can be local or a URL.
+
+    Returns:
+        The parsed OpenAPI file
+
+
     :param openapi_file: The path to the OpenAPI file which can be local or a URL.
     :return: The parsed OpenAPI file
     """
 
-    def parse(self, openapi_document):
+    def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
+        """Parse the OpenAPI document."""
         parser = ResolvingParser(openapi_document)
         return parser.specification
-
-    """
-    Creates a RestApiOperation object for each path/method combination
-    :param parsed_document: The parsed OpenAPI document
-    :return: A dictionary of RestApiOperation objects keyed by operationId
-    """
 
     def create_rest_api_operations(
         self,
         parsed_document: Any,
         execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
     ) -> Dict[str, RestApiOperation]:
+        """Create the REST API Operations from the parsed OpenAPI document.
+
+        Args:
+            parsed_document: The parsed OpenAPI document
+            execution_settings: The execution settings
+
+        Returns:
+            A dictionary of RestApiOperation objects keyed by operationId
+        """
         paths = parsed_document.get("paths", {})
         request_objects = {}
 
@@ -238,6 +257,8 @@ class OpenApiParser:
 
 
 class OpenApiRunner:
+    """The OpenApiRunner that runs the operations defined in the OpenAPI manifest"""
+
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
@@ -254,6 +275,7 @@ class OpenApiRunner:
         headers: Dict[str, str] | None = None,
         request_body: str | Dict[str, str] | None = None,
     ) -> str:
+        """Runs the operation defined in the OpenAPI manifest"""
         if headers is None:
             headers = {}
 
@@ -281,23 +303,24 @@ class OpenApiRunner:
                 return await response.text()
 
 
-"""
-Imports a plugin with the kernel that can run OpenAPI operations.
-:param kernel: The kernel to register the plugin with
-:param plugin_name: The name of the plugin
-:param openapi_document: The OpenAPI document to register. Can be a filename or URL
-:return: A dictionary of KernelFunctions keyed by operationId
-"""
-
-
-def import_plugin_from_openapi(
-    kernel: Kernel,
+@staticmethod
+def create(
     plugin_name: str,
-    openapi_document: str,
+    openapi_document_path: str,
     execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
-) -> Dict[str, KernelFunction]:
+) -> KernelPlugin:
+    """Creates an OpenAPI plugin
+
+    Args:
+        plugin_name: The name of the plugin
+        openapi_document_path: The OpenAPI document path, it must be a file path to the spec.
+        execution_settings: The execution settings
+
+    Returns:
+        The KernelPlugin
+    """
     parser = OpenApiParser()
-    parsed_doc = parser.parse(openapi_document)
+    parsed_doc = parser.parse(openapi_document_path)
     operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 
     auth_callback = None
@@ -310,7 +333,7 @@ def import_plugin_from_openapi(
     def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
         @kernel_function(
             description=operation.summary if operation.summary else operation.description,
-            name=operation_id,
+            name=operation.id,
         )
         async def run_openapi_operation(
             path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
@@ -342,4 +365,4 @@ def import_plugin_from_openapi(
     for operation_id, operation in operations.items():
         logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation_id}")
         plugin[operation_id] = create_run_operation_function(openapi_runner, operation)
-    return kernel.import_plugin_from_object(plugin, plugin_name)
+    return plugin
