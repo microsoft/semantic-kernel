@@ -5,7 +5,7 @@ repos:
     rev: 1.1.0
     hooks:
       - id: sync_with_poetry
-        args: [--config=python/.conf/.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
+        args: [--config=.pre-commit-config.yaml, --db=python/.conf/packages_list.json, python/poetry.lock]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
@@ -18,28 +18,21 @@ repos:
       - id: mixed-line-ending
         files: \.py$
   - repo: https://github.com/psf/black
-    rev: 24.2.0
+    rev: 24.3.0
     hooks:
       - id: black
         files: \.py$
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.2
+    rev: v0.3.4
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
   - repo: local
     hooks:
     - id: mypy
+      files: ^python/semantic_kernel/
       name: mypy
-      entry: poetry -C python/ run python -m mypy --no-namespace-packages --config-file=python/mypy.ini 
+      entry: poetry -C python/ run python -m mypy -p semantic_kernel --config-file=python/mypy.ini
       language: system
       types: [python]
-      pass_filenames: true
-  - repo: local
-    hooks:
-    - id: tests
-      name: tests
-      entry: poetry -C python/ run coverage run -m pytest python/tests/unit
-      language: system
-      types: [python]
-      pass_filenames: true
+      pass_filenames: false

@@ -140,7 +140,7 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetChoiceMetadata(responseData, choice))).ToList();
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -161,26 +161,32 @@ internal abstract class ClientCore
         {
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetChoiceMetadata(completions, choice));
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
             }
         }
     }
 
-    private static Dictionary<string, object?> GetChoiceMetadata(Completions completions, Choice choice)
+    private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(8)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.Usage), completions.Usage },
             { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(choice.FinishReason), choice.FinishReason?.ToString() },
+
+            { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
+            { nameof(choice.Index), choice.Index },
         };
     }
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
-        return new Dictionary<string, object?>(6)
+        return new Dictionary<string, object?>(12)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
@@ -188,16 +194,27 @@ internal abstract class ClientCore
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
             { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
+
+            { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
+            { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
+            { nameof(chatChoice.Index), chatChoice.Index },
+            { nameof(chatChoice.Enhancements), chatChoice.Enhancements },
         };
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
 
@@ -507,7 +524,7 @@ internal abstract class ClientCore
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata = GetResponseMetadata(update);
                 streamedRole ??= update.Role;
                 finishReason = update.FinishReason ?? default;
 
@@ -772,7 +789,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
-            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt);
+            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt!);
             textRole = AuthorRole.User;
         }
 
@@ -1131,6 +1148,8 @@ internal abstract class ClientCore
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
+#pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

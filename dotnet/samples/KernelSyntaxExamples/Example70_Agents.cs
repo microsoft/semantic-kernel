@@ -24,6 +24,13 @@ public class Example70_Agent : BaseTest
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    private const bool ForceOpenAI = false;
+
+    /// <summary>
     /// Chat using the "Parrot" agent.
     /// Tools/functions: None
     /// </summary>
@@ -141,8 +148,7 @@ public class Example70_Agent : BaseTest
 
         // Create agent
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+            await CreateAgentBuilder()
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();
@@ -171,6 +177,14 @@ public class Example70_Agent : BaseTest
                 thread?.DeleteAsync() ?? Task.CompletedTask,
                 agent.DeleteAsync());
         }
+    }
+
+    private static AgentBuilder CreateAgentBuilder()
+    {
+        return
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+                new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 
     public Example70_Agent(ITestOutputHelper output) : base(output)
