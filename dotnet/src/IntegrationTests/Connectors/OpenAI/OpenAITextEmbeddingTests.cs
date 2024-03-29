@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -12,15 +11,13 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAITextEmbeddingTests : IDisposable
+public sealed class OpenAITextEmbeddingTests
 {
     private const int AdaVectorLength = 1536;
     private readonly IConfigurationRoot _configuration;
 
     public OpenAITextEmbeddingTests(ITestOutputHelper output)
     {
-        this._testOutputHelper = new RedirectOutput(output);
-
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -69,29 +66,4 @@ public sealed class OpenAITextEmbeddingTests : IDisposable
         Assert.Equal(AdaVectorLength, singleResult.Length);
         Assert.Equal(3, batchResult.Count);
     }
-
-    #region internals
-
-    private readonly RedirectOutput _testOutputHelper;
-
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~OpenAITextEmbeddingTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._testOutputHelper.Dispose();
-        }
-    }
-
-    #endregion
 }
