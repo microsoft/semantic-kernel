@@ -8,11 +8,11 @@ consulted: stoub
 informed: raulr
 ---
 
-# Optional Message Tag Injection
+# Optional Message Tag Insertion
 
 ## Context and Problem Statement
 
-Currently it is possible to use variables and function calls to generate `<message>` tags in a prompt as shown here:
+Currently it is possible to use variables and function calls to insert `<message>` tags into a prompt as shown here:
 
 ```csharp
 string system_message = "<message role='system'>This is the system message</message>";

@@ -181,14 +181,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-    private const string MessagePattern1 = "<message role='[^']+'>";
-    //private const string MessagePattern2 = "<message role=\"[^']+\">";
-
-    private static string ReplaceMessageTag(Match match)
-    {
-        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
-    }
-
     private static bool ShouldEncode(bool encodeTags, List<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
@@ -204,10 +196,16 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return false;
     }
 
+    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
+
+    private static string ReplaceMessageTag(Match match)
+    {
+        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
+    }
+
     private static string Encode(string value)
     {
-        string result = Regex.Replace(value, MessagePattern1, ReplaceMessageTag);
-        //result = Regex.Replace(value, MessagePattern2, ReplaceMessageTag);
+        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
         result = result.Replace("</message>", "&lt;/message&gt;");
         return result;
     }

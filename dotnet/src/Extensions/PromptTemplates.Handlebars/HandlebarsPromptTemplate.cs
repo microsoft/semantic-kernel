@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HandlebarsDotNet;
@@ -79,7 +80,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         });
 
         // Add helpers for kernel functions
-        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, this._options.PrefixSeparator, cancellationToken);
+        KernelFunctionHelpers.Register(handlebarsInstance, kernel, arguments, _promptModel, this._options.PrefixSeparator, cancellationToken);
 
         // Add any custom helpers
         this._options.RegisterCustomHelpers?.Invoke(
@@ -112,11 +113,50 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             {
                 if (kvp.Value is not null)
                 {
-                    result[kvp.Key] = kvp.Value;
+                    var value = kvp.Value;
+
+                    if (ShouldEncode(this._promptModel, kvp.Key, kvp.Value))
+                    {
+                        value = Encode(value.ToString());
+                    }
+
+                    result[kvp.Key] = value;
                 }
             }
         }
 
+        return result;
+    }
+
+    private static bool ShouldEncode(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string)
+        {
+            return false;
+        }
+
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Name == propertyName)
+            {
+                return inputVariable.EncodeTags;
+            }
+        }
+
+        return promptTemplateConfig.EncodeTags;
+    }
+
+    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
+
+    private static string ReplaceMessageTag(Match match)
+    {
+        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
+    }
+
+    private static string Encode(string value)
+    {
+        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
+        result = result.Replace("</message>", "&lt;/message&gt;");
         return result;
     }
 
