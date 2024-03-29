@@ -4,9 +4,7 @@ from typing import List, Optional
 
 from pydantic import PrivateAttr
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -15,6 +13,7 @@ from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryB
 
 class SemanticTextMemory(SemanticTextMemoryBase):
     _storage: MemoryStoreBase = PrivateAttr()
+    # TODO: replace with kernel and service_selector pattern
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
 
     def __init__(self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase) -> None:
