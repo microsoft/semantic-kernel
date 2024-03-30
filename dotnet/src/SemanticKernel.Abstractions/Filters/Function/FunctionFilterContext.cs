@@ -17,7 +17,7 @@ public abstract class FunctionFilterContext
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="metadata">A dictionary of metadata associated with the operation.</param>
-    internal FunctionFilterContext(KernelFunction function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata)
+    internal FunctionFilterContext(KernelFunction? function, KernelArguments arguments, IReadOnlyDictionary<string, object?>? metadata)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);
@@ -30,7 +30,7 @@ public abstract class FunctionFilterContext
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
-    public KernelFunction Function { get; }
+    public KernelFunction? Function { get; }
 
     /// <summary>
     /// Gets the arguments associated with the operation.

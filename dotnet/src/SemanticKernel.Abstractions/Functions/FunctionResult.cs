@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Functions;
 
 namespace Microsoft.SemanticKernel;
 
@@ -18,10 +20,8 @@ public sealed class FunctionResult
     /// <param name="value">The resulting object of the function's invocation.</param>
     /// <param name="culture">The culture configured on the <see cref="Kernel"/> that executed the function.</param>
     /// <param name="metadata">Metadata associated with the function's execution</param>
-    public FunctionResult(KernelFunction function, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
+    public FunctionResult(KernelFunction? function, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        Verify.NotNull(function);
-
         this.Function = function;
         this.Value = value;
         this.Culture = culture ?? CultureInfo.InvariantCulture;
@@ -31,7 +31,8 @@ public sealed class FunctionResult
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
     /// </summary>
-    public KernelFunction Function { get; }
+    [JsonIgnore]
+    public KernelFunction? Function { get; }
 
     /// <summary>
     /// Gets any metadata associated with the function's execution.
@@ -45,6 +46,7 @@ public sealed class FunctionResult
     /// This or a base type is the type expected to be passed as the generic
     /// argument to <see cref="GetValue{T}"/>.
     /// </remarks>
+    [JsonIgnore]
     public Type? ValueType => this.Value?.GetType();
 
     /// <summary>
@@ -87,10 +89,13 @@ public sealed class FunctionResult
     /// <summary>
     /// Function result object.
     /// </summary>
+    [JsonInclude]
     internal object? Value { get; }
 
     /// <summary>
     /// The culture configured on the Kernel that executed the function.
     /// </summary>
+    [JsonInclude]
+    [JsonConverter(typeof(CultureInfoJsonConverter))]
     internal CultureInfo Culture { get; }
 }

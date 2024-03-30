@@ -132,7 +132,7 @@ public sealed class Step7_Observability : BaseTest
 
         public void OnFunctionInvoking(FunctionInvokingContext context)
         {
-            this._output.WriteLine($"Invoking {context.Function.Name}");
+            this._output.WriteLine($"Invoking {context.Function?.Name}");
         }
     }
 

@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -133,5 +136,74 @@ public class FunctionResultTests
 
         Assert.Equal(valueType, target.GetValue<TextContent>());
         Assert.Equal(valueType, target.GetValue<KernelContent>());
+    }
+
+    [Fact]
+    public async Task ItCanBeSerializedAndDeserializedAsync()
+    {
+        // Arrange
+        string value = Guid.NewGuid().ToString();
+
+        FunctionResult target = new(KernelFunctionFactory.CreateFromMethod((int a) => a), value, CultureInfo.InvariantCulture, new Dictionary<string, object?> { { "key", "value" } });
+
+        // Act
+        string serialized = JsonSerializer.Serialize(target);
+
+        FunctionResult? deserialized = JsonSerializer.Deserialize<FunctionResult>(serialized);
+
+        // Assert
+        Assert.NotNull(deserialized);
+
+        // Function is lost during serialization
+        Assert.Null(deserialized!.Function);
+
+        // Value lost original .NET type during serialization
+        Assert.Equal(typeof(JsonElement), deserialized.ValueType);
+        Assert.Equal(typeof(JsonElement), deserialized.Value!.GetType());
+
+        Assert.Equal(value, deserialized.Value.ToString());
+        Assert.Equal(CultureInfo.InvariantCulture, deserialized.Culture);
+        Assert.NotNull(deserialized.Metadata);
+        Assert.Equal(target.Metadata!.Count, deserialized.Metadata!.Count);
+
+        // A try to invoke the function will fail because the function is lost during serialization
+        var kernel = new Kernel();
+
+        try
+        {
+            var res = await deserialized!.Function!.InvokeAsync(kernel);
+        }
+        catch (NullReferenceException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// The KernelFunctionTypeResolver is used to serialize and deserialize KernelFunction polymorphically.
+    /// </summary>
+    private sealed class KernelFunctionResolver : DefaultJsonTypeInfoResolver
+    {
+        public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            var jsonTypeInfo = base.GetTypeInfo(type, options);
+
+            if (jsonTypeInfo.Type != typeof(KernelFunction))
+            {
+                return jsonTypeInfo;
+            }
+
+            // It's possible to completely override the polymorphic configuration specified in the KernelContent class
+            // by using the '=' assignment operator instead of the ??= compound assignment one in the line below.
+            jsonTypeInfo.PolymorphismOptions ??= new JsonPolymorphismOptions();
+
+            // Add custom content type to the list of derived types declared on KernelContent class.
+            jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(new JsonDerivedType(typeof(KernelFunctionFromMethod), "KernelFunctionFromMethod"));
+            jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(new JsonDerivedType(typeof(KernelFunctionFromPrompt), "KernelFunctionFromPrompt"));
+
+            // Override type discriminator declared on KernelContent class as "$type", if needed.
+            jsonTypeInfo.PolymorphismOptions.TypeDiscriminatorPropertyName = "$type";
+
+            return jsonTypeInfo;
+        }
     }
 }
