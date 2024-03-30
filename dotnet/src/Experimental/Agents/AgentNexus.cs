@@ -42,7 +42,7 @@ public abstract class AgentNexus
     /// <summary>
     /// The primary nexus history.
     /// </summary>
-    internal ChatHistory History { get; }
+    internal ChatHistory History { get; } // $$$ PUBLIC LIST OF MESSAGESS
 
     /// <summary>
     /// Retrieve the message history, either the primary history or
@@ -120,6 +120,19 @@ public abstract class AgentNexus
         {
             Interlocked.Exchange(ref this._isActive, 0);
         }
+    }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="history"></param>
+    public void Bind(ChatHistory history) // $$$ SCOPE / CONTRACT (PROVIDER?)
+    {
+        if (this.History.Count == 0)
+        {
+            this.History.AddRange(history);
+        }
+        // $$$ ELSE EXCEPTION
     }
 
     private async Task<AgentChannel> GetChannelAsync(Agent agent, CancellationToken cancellationToken)

@@ -44,6 +44,6 @@ internal static class PromptRenderer
             instructions = await template.RenderAsync(agent.Kernel, agent.InstructionArguments, cancellationToken).ConfigureAwait(false);
         }
 
-        return instructions;
+        return instructions ?? agent.Instructions;
     }
 }

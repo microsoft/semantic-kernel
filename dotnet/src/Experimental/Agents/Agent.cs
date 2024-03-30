@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Agents;
 /// <remarks>
 /// Initializes a new instance of the <see cref="Agent"/> class.
 /// </remarks>
-public abstract class Agent /*: $$$ TODO: PLUGIN ??? */
+public abstract class Agent
 {
     /// <summary>
     /// The description of the agent (optional)

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -67,10 +68,60 @@ public class Example99_Agents : BaseTest
         var agent =
             CreateChatAgent(
                 "Host",
-                "Use tools to answer questions about menu.",
+                "Provide information about the menu.",
+                description: null,
                 plugin);
 
         await RunToolAgentAsync(agent);
+    }
+
+    /// <summary>
+    /// Demonstrate agent-as-a-plugin.
+    /// </summary>
+    [Fact]
+    public async Task RunChatPluginAgentAsync()
+    {
+        WriteLine("======== Run:Plugin Chat Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agentMenu =
+            CreateChatAgent(
+                "Host",
+                "Provide information about the menu.",
+                "Provides information about the menu.",
+                plugin);
+
+        var menuPlugin = agentMenu.AsPlugin();
+
+        var agentBot = CreateChatAgent("Bot", plugin: menuPlugin);
+
+        await RunPluginAgentAsync(
+            agentBot,
+            menuPlugin,
+            "How many items are on the menu?",
+            "How much for the first one?"); // $$$
+    }
+
+    /// <summary>
+    /// Demonstrate agent-as-a-plugin w/ seeded history.
+    /// </summary>
+    [Fact]
+    public async Task RunChatSummaryAgentAsync()
+    {
+        WriteLine("======== Run:Summary Chat Agent ========");
+
+        var agentPlugin =
+            CreateChatAgent(
+                "Reviewer",
+                "Only summarize the entire conversation without directly responding to user input.  Exclude previous summarization.",
+                "Provides a summary of the current conversation.").AsPlugin();
+
+        var agentBot = CreateChatAgent("Bot", plugin: agentPlugin);
+
+        await RunPluginAgent2Async( // $$$ DIFFERENT
+            agentBot,
+            agentPlugin,
+            "Please summarize"); // $$$
     }
 
     /// <summary>
@@ -118,9 +169,37 @@ public class Example99_Agents : BaseTest
             await CreateGptAgentAsync(
                 "Host",
                 "Use tools to answer questions about menu.",
+                description: null,
                 plugin);
 
         await RunToolAgentAsync(agent);
+    }
+
+    /// <summary>
+    /// Demonstrate agent-as-a-plugin.
+    /// </summary>
+    [Fact]
+    public async Task RunGptPluginAgentAsync()
+    {
+        WriteLine("======== Run:Plugin Chat Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agentMenu =
+            await CreateGptAgentAsync(
+                "Host",
+                "Provide information about the menu.",
+                "Provides information about the menu.",
+                plugin);
+
+        var menuPlugin = agentMenu.AsPlugin();
+
+        var agentBot = await CreateGptAgentAsync("Bot", plugin: menuPlugin);
+
+        await RunPluginAgentAsync(
+            agentBot,
+            menuPlugin,
+            "How many items are on the menu?",
+            "How much for the first one?"); // $$$
     }
 
     /// <summary>
@@ -136,7 +215,7 @@ public class Example99_Agents : BaseTest
                 "Coder",
                 enableCoding: true);
 
-        await ChatAsync(
+        await RunSingleAgentAsync(
             agent,
             "What is the solution to `3x + 2 = 14`?",
             "What is the fibinacci sequence until 101?");
@@ -161,7 +240,7 @@ public class Example99_Agents : BaseTest
                 enableRetrieval: true,
                 fileId: result.Id);
 
-        await ChatAsync(
+        await RunSingleAgentAsync(
             agent,
             "Where did sam go?",
             "When does the flight leave Seattle?",
@@ -182,7 +261,7 @@ public class Example99_Agents : BaseTest
                 "Create charts as requested without explanation.",
                 enableCoding: true);
 
-        await ChatAsync(
+        await RunSingleAgentAsync(
             agent,
             @"
             Display this data using a bar-chart:
@@ -209,6 +288,33 @@ public class Example99_Agents : BaseTest
         var agent2 = await CreateGptAgentAsync("Pessimistic", "Respond with extreme skeptism...don't be polite.");
 
         await RunDualAgentAsync(agent1, agent2, "I think I'm going to do something really important today!");
+    }
+
+    /// <summary>
+    /// Demonstrate agent-as-a-plugin.
+    /// </summary>
+    [Fact]
+    public async Task RunMixedPluginAgentAsync()
+    {
+        WriteLine("======== Run:Plugin Chat Agent ========");
+
+        var plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        var agentMenu =
+            CreateChatAgent(
+                "Host",
+                "Provide information about the menu.",
+                "Provides information about the menu.",
+                plugin);
+
+        var menuPlugin = agentMenu.AsPlugin();
+
+        var agentBot = await CreateGptAgentAsync("Bot", plugin: menuPlugin);
+
+        await RunPluginAgentAsync(
+            agentBot,
+            menuPlugin,
+            "How many items are on the menu?",
+            "How much for the first one?"); // $$$
     }
 
     /// <summary>
@@ -304,7 +410,7 @@ public class Example99_Agents : BaseTest
         var agent1 = CreateChatAgent("Optimistic", "Respond with optimism.");
         var agent2 = CreateChatAgent("Pessimistic", "Respond with extreme skeptism...don't be polite.");
         var agent3 = CreateChatAgent("Summarizer", "Summarize the conversation.");
-        var nexus = new AgentChat(agent1, agent2)
+        var innerNexus = new AgentChat(agent1, agent2)
         {
             ExecutionSettings = new()
             {
@@ -312,16 +418,16 @@ public class Example99_Agents : BaseTest
                 MaximumIterations = 4,
             }
         };
-        var agentX = new NexusAgent(nexus);
+        var agentX = new NexusAgent(innerNexus);
 
-        var chat = new AgentChat();
-        await ChatAsync(chat, agentX, "I think I'm going to do something really important today!");
-        await ChatAsync(chat, agent3);
+        var outerNexus = new AgentChat();
+        await WriteChatAsync(outerNexus, agentX, "I think I'm going to do something really important today!");
+        await WriteChatAsync(outerNexus, agent3);
     }
 
     private async Task RunSingleAgentAsync(KernelAgent agent)
     {
-        await ChatAsync(
+        await RunSingleAgentAsync(
             agent,
             "Fortune favors the bold.",
             "I came, I saw, I conquered.",
@@ -330,12 +436,31 @@ public class Example99_Agents : BaseTest
 
     private async Task RunToolAgentAsync(KernelAgent agent)
     {
-        await ChatAsync(
+        await RunSingleAgentAsync(
             agent,
             "What is the special soup?",
             "What is the special drink?",
             "How much for a soup and a drink?",
             "What else is available?");
+    }
+
+    private async Task<AgentNexus> RunSingleAgentAsync(Agent agent, params string[] messages)
+    {
+        this.WriteLine("[TEST]");
+        WriteAgent(agent);
+
+        var nexus = new AgentChat();
+
+        // Process each user message and agent response.
+        foreach (var message in messages)
+        {
+            await WriteChatAsync(nexus, agent, message);
+        }
+
+        await WriteHistoryAsync(nexus);
+        await WriteHistoryAsync(nexus, agent);
+
+        return nexus;
     }
 
     private async Task RunDualAgentAsync(KernelAgent agent1, KernelAgent agent2, string input)
@@ -346,8 +471,8 @@ public class Example99_Agents : BaseTest
 
         var nexus = new AgentChat();
 
-        await ChatAsync(nexus, agent1, input);
-        await ChatAsync(nexus, agent2);
+        await WriteChatAsync(nexus, agent1, input);
+        await WriteChatAsync(nexus, agent2);
 
         await WriteHistoryAsync(nexus);
         await WriteHistoryAsync(nexus, agent1);
@@ -378,29 +503,63 @@ public class Example99_Agents : BaseTest
         }
     }
 
-    /// <summary>
-    /// Common chat loop.
-    /// </summary>
-    private async Task<AgentNexus> ChatAsync(Agent agent, params string[] messages)
+    private async Task<AgentNexus> RunPluginAgentAsync(KernelAgent agentManager, NexusPlugin pluginAgent, params string[] messages)
     {
         this.WriteLine("[TEST]");
-        WriteAgent(agent);
+        WriteAgent(agentManager);
+        WriteAgent(pluginAgent.Agent);
 
         var nexus = new AgentChat();
 
         // Process each user message and agent response.
         foreach (var message in messages)
         {
-            await ChatAsync(nexus, agent, message);
+            await WriteChatAsync(nexus, agentManager, message);
         }
 
         await WriteHistoryAsync(nexus);
-        await WriteHistoryAsync(nexus, agent);
+        await WriteHistoryAsync(nexus, agentManager);
+
+        this.WriteLine("\n[plugin history]");
+        await WriteContentAsync(pluginAgent.History.ToAsyncEnumerable());
+        //await WriteHistoryAsync(nexus, agentPlugin);
 
         return nexus;
     }
 
-    private Task ChatAsync(AgentChat nexus, Agent agent, string? message = null)
+    private async Task<AgentNexus> RunPluginAgent2Async(KernelAgent agentManager, NexusPlugin pluginAgent, params string[] messages)
+    {
+        this.WriteLine("[TEST]");
+        WriteAgent(agentManager);
+        WriteAgent(pluginAgent.Agent);
+
+        var seed = new ChatHistory();
+        seed.AddUserMessage("Who am i?");
+        seed.AddAssistantMessage("You are special.");
+
+        var nexus = new AgentChat();
+        nexus.Bind(seed);
+
+        var history = await nexus.GetHistoryAsync().ToArrayAsync();
+        pluginAgent.Bind(new ChatHistory(history));
+
+        // Process each user message and agent response.
+        foreach (var message in messages)
+        {
+            await WriteChatAsync(nexus, agentManager, message);
+        }
+
+        await WriteHistoryAsync(nexus);
+        await WriteHistoryAsync(nexus, agentManager);
+
+        this.WriteLine("\n[plugin history]");
+        await WriteContentAsync(pluginAgent.History.ToAsyncEnumerable());
+        //await WriteHistoryAsync(nexus, agentPlugin);
+
+        return nexus;
+    }
+
+    private Task WriteChatAsync(AgentChat nexus, Agent agent, string? message = null)
     {
         return WriteContentAsync(nexus.InvokeAsync(agent, message));
     }
@@ -422,6 +581,7 @@ public class Example99_Agents : BaseTest
             }
         }
     }
+
     private Task WriteHistoryAsync(AgentNexus nexus, Agent? agent = null)
     {
         if (agent == null)
@@ -457,6 +617,7 @@ public class Example99_Agents : BaseTest
     private async Task<GptAgent> CreateGptAgentAsync(
         string name,
         string? instructions = null,
+        string? description = null,
         KernelPlugin? plugin = null,
         bool enableCoding = false,
         bool enableRetrieval = false,
@@ -467,7 +628,7 @@ public class Example99_Agents : BaseTest
                 CreateKernel(plugin),
                 GetApiKey(),
                 instructions,
-                description: null,
+                description,
                 name,
                 enableCoding,
                 enableRetrieval,
@@ -477,13 +638,14 @@ public class Example99_Agents : BaseTest
     private ChatAgent CreateChatAgent(
         string name,
         string? instructions = null,
+        string? description = null,
         KernelPlugin? plugin = null)
     {
         return
             new ChatAgent(
                 CreateKernel(plugin),
                 instructions,
-                description: null,
+                description,
                 name)
             {
                 ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
