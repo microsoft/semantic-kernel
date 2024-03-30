@@ -46,7 +46,7 @@ internal sealed class ChatCompletionRequest
     /// Construct an instance of <see cref="ChatCompletionRequest"/>.
     /// </summary>
     /// <param name="model">ID of the model to use.</param>
-    [JsonConstructorAttribute]
+    [JsonConstructor]
     internal ChatCompletionRequest(string model)
     {
         this.Model = model;
