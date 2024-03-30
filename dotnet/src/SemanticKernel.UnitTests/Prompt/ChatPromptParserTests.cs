@@ -91,6 +91,29 @@ public sealed class ChatPromptParserTests
                              && ((ImageContent)c.Items![1]).Uri!.AbsoluteUri == "https://fake-link-to-image/"));
     }
 
+    [Fact]
+    public void ItReturnsChatHistoryWithValidContentItemsIncludeCData()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithCDataSection();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("""
+                              <message role='system'><text>Text content</text></message>
+                              """, c.Content),
+            c => Assert.Equal("""
+                              <text>explain image</text>
+                              <image>https://fake-link-to-image/</image>
+                              """, c.Content));
+    }
+
     private static string GetSimpleValidPrompt()
     {
         return
@@ -133,6 +156,27 @@ public sealed class ChatPromptParserTests
             <message role='user'>
                 <text>explain image</text>
                 <image>https://fake-link-to-image/</image>
+            </message>
+
+            """;
+    }
+
+    private static string GetValidPromptWithCDataSection()
+    {
+        return
+            """
+
+            <message role="assistant">
+            <![CDATA[
+            <message role='system'><text>Text content</text></message>
+            ]]>
+            </message>
+
+            <message role='user'>
+            <![CDATA[
+            <text>explain image</text>
+            <image>https://fake-link-to-image/</image>
+            ]]>
             </message>
 
             """;

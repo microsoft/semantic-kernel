@@ -176,9 +176,9 @@ public sealed class HandlebarsPromptTemplateTests
         var target = this._factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            EncodeTags = false,
+            DisableTagEncoding = true,
             InputVariables = [
-                new() { Name = "input", EncodeTags = false }
+                new() { Name = "input", DisableTagEncoding = true }
             ]
         });
 
@@ -228,7 +228,7 @@ public sealed class HandlebarsPromptTemplateTests
             """
             &lt;message role='system'&gt;This is the system message&lt;/message&gt;
             &lt;message role="user"&gt;First user message&lt;/message&gt;
-            <message role='user'><text>Second user message</text></message>
+            <message role='user'>&lt;text&gt;Second user message&lt;/text&gt;</message>
             &lt;message role='user'&gt;Third user message&lt;/message&gt;
             """;
         Assert.Equal(expected, result);
@@ -256,11 +256,11 @@ public sealed class HandlebarsPromptTemplateTests
         var target = this._factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            EncodeTags = false,
+            DisableTagEncoding = true,
             InputVariables = [
-                new() { Name = "system_message", EncodeTags = false },
-                new() { Name = "user_message", EncodeTags = false },
-                new() { Name = "user_input", EncodeTags = false }
+                new() { Name = "system_message", DisableTagEncoding = true },
+                new() { Name = "user_message", DisableTagEncoding = true },
+                new() { Name = "user_input", DisableTagEncoding = true }
             ]
         });
 
@@ -299,7 +299,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = this._factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            InputVariables = [new() { Name = "safe_input", EncodeTags = false }]
+            InputVariables = [new() { Name = "safe_input", DisableTagEncoding = true }]
         });
 
         // Act
@@ -334,7 +334,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = this._factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            InputVariables = [new() { Name = "system_message", EncodeTags = false }, new() { Name = "safe_input", EncodeTags = false }]
+            InputVariables = [new() { Name = "system_message", DisableTagEncoding = true }, new() { Name = "safe_input", DisableTagEncoding = true }]
         });
 
         // Act
@@ -371,7 +371,7 @@ public sealed class HandlebarsPromptTemplateTests
         var target = this._factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            InputVariables = [new() { Name = "safe_input", EncodeTags = false }]
+            InputVariables = [new() { Name = "safe_input", DisableTagEncoding = false }]
         });
 
         // Act

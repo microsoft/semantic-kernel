@@ -35,7 +35,7 @@ public sealed class InputVariable
         this.Default = inputVariable.Default;
         this.IsRequired = inputVariable.IsRequired;
         this.JsonSchema = inputVariable.JsonSchema;
-        this.EncodeTags = inputVariable.EncodeTags;
+        this.DisableTagEncoding = inputVariable.DisableTagEncoding;
     }
 
     /// <summary>
@@ -91,11 +91,11 @@ public sealed class InputVariable
     public string? JsonSchema { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to encode message tags in the prompt template.
+    /// Gets or sets a value indicating whether to encode tags.
     /// </summary>
     /// <remarks>
-    /// The default is true.
+    /// The default is false.
     /// </remarks>
-    [JsonPropertyName("encode_tags")]
-    public bool EncodeTags { get; set; } = true;
+    [JsonPropertyName("disable_tag_encoding")]
+    public bool DisableTagEncoding { get; set; } = false;
 }

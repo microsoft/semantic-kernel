@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -42,8 +41,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._encodeTags = promptConfig.EncodeTags;
-        this._safeBlocks = promptConfig.InputVariables.Where(iv => !iv.EncodeTags).Select(iv => iv.Name).ToList();
+        this._disableTagEncoding = promptConfig.DisableTagEncoding;
+        this._safeBlocks = promptConfig.InputVariables.Where(iv => iv.DisableTagEncoding).Select(iv => iv.Name).ToList();
     }
 
     /// <inheritdoc/>
@@ -57,7 +56,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
-    private readonly bool _encodeTags;
+    private readonly bool _disableTagEncoding;
     private readonly List<string> _safeBlocks;
 
     /// <summary>
@@ -117,9 +116,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
             if (blockResult is not null)
             {
-                if (ShouldEncode(this._encodeTags, this._safeBlocks, block!))
+                if (ShouldEncodeTags(this._disableTagEncoding, this._safeBlocks, block!))
                 {
-                    blockResult = Encode(blockResult);
+                    blockResult = PromptTemplateConfig.EncodeTags(blockResult);
                 }
                 result.Append(blockResult);
             }
@@ -181,14 +180,14 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-    private static bool ShouldEncode(bool encodeTags, List<string> safeBlocks, Block block)
+    private static bool ShouldEncodeTags(bool disableTagEncoding, List<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
         {
             return !safeBlocks.Contains(varBlock.Name);
         }
 
-        if (encodeTags && block is not TextBlock)
+        if (!disableTagEncoding && block is not TextBlock)
         {
             return true;
         }
@@ -196,18 +195,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return false;
     }
 
-    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
 
-    private static string ReplaceMessageTag(Match match)
-    {
-        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
-    }
-
-    private static string Encode(string value)
-    {
-        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
-        result = result.Replace("</message>", "&lt;/message&gt;");
-        return result;
-    }
     #endregion
 }

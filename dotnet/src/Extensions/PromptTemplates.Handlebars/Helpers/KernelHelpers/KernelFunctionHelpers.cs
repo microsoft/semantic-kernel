@@ -36,7 +36,7 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptModel.EncodeTags, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptModel.DisableTagEncoding, nameDelimiter, cancellationToken);
         }
     }
 
@@ -47,7 +47,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        bool encodeTags,
+        bool disableTagEncoding,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -80,7 +80,7 @@ internal static class KernelFunctionHelpers
                 // Invoke the function and write the result to the template
                 var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
 
-                if (encodeTags && result is string resultAsString)
+                if (!disableTagEncoding && result is string resultAsString)
                 {
                     result = Encode(resultAsString);
                 }
