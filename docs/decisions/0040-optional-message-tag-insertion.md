@@ -67,7 +67,7 @@ This ADR details the changes so developers need to opt in to support message tag
 ## Considered Options
 
 - Encode input variables and function return values by default.
-- Require developers handle the encoding.
+- Recommend developers use CData sections where content may be unsafe.
 
 ## Decision Outcome
 
