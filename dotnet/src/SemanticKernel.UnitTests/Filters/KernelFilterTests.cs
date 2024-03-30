@@ -537,7 +537,6 @@ public class KernelFilterTests
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<NotImplementedException>(exception);
     }
 
     [Fact]
@@ -563,6 +562,26 @@ public class KernelFilterTests
 
         // Assert
         Assert.Equal("Result ignoring exception.", resultValue);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanRethrowAnotherTypeOfExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                throw new InvalidOperationException("Exception from filter");
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal("Exception from filter", exception.Message);
     }
 
     private Kernel GetKernelWithFilters(

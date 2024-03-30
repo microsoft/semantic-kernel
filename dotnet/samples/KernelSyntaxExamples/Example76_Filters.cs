@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -111,6 +112,22 @@ public class Example76_Filters : BaseTest
 
             // Example: get token usage from metadata
             var usage = context.Result.Metadata?["Usage"];
+
+            // Example: check for exception during function execution
+            // If it's not null, then some exception occurred
+            if (context.Exception is not null)
+            {
+                // Possible options to handle it:
+
+                // 1. Do not throw an exception that occurred during function execution
+                context.CancelException();
+
+                // 2. Override the result with some value, that is meaningful to LLM
+                context.SetResultValue("Friendly message instead of exception");
+
+                // 3. Rethrow another type of exception if needed.
+                throw new Exception("New exception");
+            }
         }
 
         public void OnFunctionInvoking(FunctionInvokingContext context)
