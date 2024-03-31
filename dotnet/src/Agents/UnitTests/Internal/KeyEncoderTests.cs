@@ -9,7 +9,7 @@ namespace SemanticKernel.Agents.UnitTests.Internal;
 public class KeyEncoderTests
 {
     [Fact]
-    public void VerifyHashUniquenessTest()
+    public void VerifyKeyEncoderUniquenessTest()
     {
         this.VerifyHashEquivalancy(Array.Empty<string>());
         this.VerifyHashEquivalancy(typeof(KeyEncoderTests).FullName);

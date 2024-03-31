@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Castle.Core.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -10,7 +9,7 @@ namespace SemanticKernel.Agents.UnitTests.Extensions;
 public class ChatMessageContentExtensionsTests
 {
     [Fact]
-    public void ContentExistenceTest()
+    public void VerifyChatMessageContentExtensionsExistenceTest()
     {
         ChatMessageContent messageWithNullContent = new(AuthorRole.User, content: null);
         ChatMessageContent messageWithEmptyContent = new(AuthorRole.User, content: string.Empty);

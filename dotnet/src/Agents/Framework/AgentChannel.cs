@@ -66,11 +66,11 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
         ChatMessageContent? input = null,
         CancellationToken cancellationToken = default)
     {
-        if (agent is not TAgent castAgent)
+        if (agent.GetType() != typeof(TAgent))
         {
             throw new AgentException($"Invalid agent channel: {typeof(TAgent).Name}/{agent.GetType().Name}");
         }
 
-        return this.InvokeAsync(castAgent, input, cancellationToken);
+        return this.InvokeAsync((TAgent)agent, input, cancellationToken);
     }
 }
