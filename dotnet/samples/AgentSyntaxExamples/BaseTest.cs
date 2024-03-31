@@ -4,6 +4,7 @@ using System.Reflection;
 using Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using RepoUtils;
 using Xunit.Abstractions;
 
@@ -11,9 +12,53 @@ namespace Examples;
 
 public abstract class BaseTest
 {
+    /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    protected virtual bool ForceOpenAI { get; } = false;
+
     protected ITestOutputHelper Output { get; }
 
     protected ILoggerFactory LoggerFactory { get; }
+
+    protected string GetApiKey()
+    {
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        {
+            return TestConfiguration.OpenAI.ApiKey;
+        }
+
+        return TestConfiguration.AzureOpenAI.ApiKey;
+    }
+
+    protected Kernel CreateKernelWithChatCompletion(KernelPlugin? plugin = null)
+    {
+        var builder = Kernel.CreateBuilder();
+
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        {
+            builder.AddOpenAIChatCompletion(
+                "gpt-4-turbo-preview",
+                //TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddAzureOpenAIChatCompletion(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+        }
+
+        if (plugin != null)
+        {
+            builder.Plugins.Add(plugin);
+        }
+
+        return builder.Build();
+    }
 
     protected BaseTest(ITestOutputHelper output)
     {

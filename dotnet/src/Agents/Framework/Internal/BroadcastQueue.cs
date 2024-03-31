@@ -47,7 +47,7 @@ internal sealed class BroadcastQueue
     /// </summary>
     /// <param name="channels"></param>
     /// <param name="messages"></param>
-    public void Queue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
+    public void Enqueue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
     {
         lock (this._queueLock)
         {

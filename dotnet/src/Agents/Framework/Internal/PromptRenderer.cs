@@ -19,7 +19,7 @@ internal static class PromptRenderer
     /// <param name="agent">A <see cref="KernelAgent"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rendered instructions</returns>
-    public static async Task<string?> FormatInstructionsAsync(KernelAgent agent, CancellationToken cancellationToken)
+    public static async Task<string?> FormatInstructionsAsync(KernelAgent agent, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(agent.Instructions))
         {
@@ -31,7 +31,7 @@ internal static class PromptRenderer
         if (agent.InstructionArguments != null)
         {
             if (!s_templates.TryGetValue(agent.Id, out TemplateReference templateReference) ||
-                !templateReference.IsConsistent(agent.Instructions))
+                !templateReference.IsConsistent(agent.Instructions!))
             {
                 // Generate and cache prompt template if does not exist or if instructions have changed.
                 IPromptTemplate template =
@@ -41,7 +41,7 @@ internal static class PromptRenderer
                             Template = agent.Instructions!
                         });
 
-                templateReference = new(template, instructions);
+                templateReference = new(template, agent.Instructions!);
                 s_templates[agent.Id] = templateReference;
             }
 
@@ -54,21 +54,21 @@ internal static class PromptRenderer
     /// <summary>
     /// Tracks template with ability to verify instruction consistency.
     /// </summary>
-    private readonly struct TemplateReference
+    private class TemplateReference
     {
         private readonly int _instructionHash;
 
         public IPromptTemplate Template { get; }
 
-        public bool IsConsistent(string? instructions)
+        public bool IsConsistent(string instructions)
         {
-            return this._instructionHash == (instructions?.GetHashCode() ?? 0);
+            return this._instructionHash == instructions.GetHashCode();
         }
 
-        public TemplateReference(IPromptTemplate template, string? instructions)
+        public TemplateReference(IPromptTemplate template, string instructions)
         {
             this.Template = template;
-            this._instructionHash = instructions?.GetHashCode() ?? 0;
+            this._instructionHash = instructions.GetHashCode();
         }
     }
 }

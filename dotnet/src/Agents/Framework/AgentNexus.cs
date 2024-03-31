@@ -34,7 +34,7 @@ public abstract class AgentNexus
     {
         if (agent == null)
         {
-            return this._history.ToDescending();
+            return this._history.ToDescendingAsync();
         }
 
         var channelKey = this.GetAgentHash(agent);
@@ -93,7 +93,7 @@ public abstract class AgentNexus
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Queue(channelRefs, messages);
+            this._broadcastQueue.Enqueue(channelRefs, messages);
         }
         finally
         {

@@ -50,7 +50,7 @@ public class LocalChannel : AgentChannel
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return this._chat.ToDescending();
+        return this._chat.ToDescendingAsync();
     }
 
     /// <summary>

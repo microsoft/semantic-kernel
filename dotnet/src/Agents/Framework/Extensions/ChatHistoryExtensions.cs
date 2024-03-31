@@ -11,19 +11,23 @@ namespace Microsoft.SemanticKernel.Agents.Extensions;
 public static class ChatHistoryExtensions
 {
     /// <summary>
+    /// Enumeration of chat-history in descending order.
+    /// </summary>
+    /// <param name="history">The chat-history</param>
+    public static IEnumerable<ChatMessageContent> ToDescending(this ChatHistory history)
+    {
+        for (int index = history.Count; index > 0; --index)
+        {
+            yield return history[index - 1];
+        }
+    }
+
+    /// <summary>
     /// Asynchronous enumeration of chat-history in descending order.
     /// </summary>
     /// <param name="history">The chat-history</param>
-    public static IAsyncEnumerable<ChatMessageContent> ToDescending(this ChatHistory history)
+    public static IAsyncEnumerable<ChatMessageContent> ToDescendingAsync(this ChatHistory history)
     {
-        return Reverse().ToAsyncEnumerable();
-
-        IEnumerable<ChatMessageContent> Reverse()
-        {
-            for (int index = history.Count - 1; index >= 0; --index)
-            {
-                yield return history[index];
-            }
-        }
+        return history.ToDescending().ToAsyncEnumerable();
     }
 }

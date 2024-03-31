@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0050</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0050;SKEXP0110</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,7 +38,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Framework\Agents.Framework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\" />
   </ItemGroup>
 
 </Project>
