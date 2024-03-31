@@ -47,6 +47,22 @@ public abstract class AgentNexus
     }
 
     /// <summary>
+    /// Append messages to the conversation.
+    /// </summary>
+    /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
+    public void AppendHistory(IEnumerable<ChatMessageContent> messages)
+    {
+        var cleanMessages = messages.Where(m => m.Role != AuthorRole.System).ToArray();
+
+        // Broadcast message to other channels (in parallel)
+        var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
+        this._broadcastQueue.Enqueue(channelRefs, cleanMessages);
+
+        // Append to nexus history
+        this._history.AddRange(cleanMessages);
+    }
+
+    /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
@@ -151,8 +167,8 @@ public abstract class AgentNexus
     protected AgentNexus()
     {
         this._agentChannels = new();
+        this._broadcastQueue = new();
         this._channelMap = new();
         this._history = new();
-        this._broadcastQueue = new();
     }
 }

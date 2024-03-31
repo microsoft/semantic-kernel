@@ -15,7 +15,7 @@ public class PromptRendererTests
     private readonly TestFilter _filter = new();
 
     [Fact]
-    public async Task VerifyPromptRendererNullInstructionsTestAsync()
+    public async Task VerifyPromptRendererNullInstructionsAsync()
     {
         await this.VerifyRenderSkippedAsync(instructions: null);
         await this.VerifyRenderSkippedAsync(instructions: string.Empty);
@@ -25,7 +25,7 @@ public class PromptRendererTests
     }
 
     [Fact]
-    public async Task VerifyPromptRendererBasicInstructionsTestAsync()
+    public async Task VerifyPromptRendererBasicInstructionsAsync()
     {
         await this.VerifyRenderAsync(instructions: "Do something");
         await this.VerifyRenderAsync(instructions: "Do something", expectCached: true);
@@ -33,7 +33,7 @@ public class PromptRendererTests
     }
 
     [Fact]
-    public async Task VerifyPromptRendererTemplateInstructionsTestAsync()
+    public async Task VerifyPromptRendererTemplateInstructionsAsync()
     {
         KernelArguments arguments = new() { { "n", 3 } };
         await this.VerifyRenderAsync(instructions: "Do something: {{$n}}", arguments);

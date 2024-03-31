@@ -9,7 +9,7 @@ namespace SemanticKernel.Agents.UnitTests.Extensions;
 public class ChatMessageContentExtensionsTests
 {
     [Fact]
-    public void VerifyChatMessageContentExtensionsExistenceTest()
+    public void VerifyChatMessageContentExtensionsExistence()
     {
         ChatMessageContent messageWithNullContent = new(AuthorRole.User, content: null);
         ChatMessageContent messageWithEmptyContent = new(AuthorRole.User, content: string.Empty);

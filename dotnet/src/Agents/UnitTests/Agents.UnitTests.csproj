@@ -42,8 +42,4 @@
     <ProjectReference Include="..\Framework\Agents.Framework.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Core\" />
-  </ItemGroup>
-
 </Project>

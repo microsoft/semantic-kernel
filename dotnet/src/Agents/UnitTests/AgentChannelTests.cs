@@ -15,7 +15,7 @@ namespace SemanticKernel.Agents.UnitTests;
 public class AgentChannelTests
 {
     [Fact]
-    public async Task VerifyAgentChannelUpcastTestAsync()
+    public async Task VerifyAgentChannelUpcastAsync()
     {
         TestChannel channel = new();
         Assert.Equal(0, channel.InvokeCount);

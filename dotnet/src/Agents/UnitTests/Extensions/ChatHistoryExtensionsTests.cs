@@ -11,7 +11,7 @@ namespace SemanticKernel.Agents.UnitTests.Extensions;
 public class ChatHistoryExtensionsTests
 {
     [Fact]
-    public void ChatHistoryOrderingTest()
+    public void VerifyChatHistoryOrdering()
     {
         ChatHistory history = new();
         history.AddUserMessage("Hi");
@@ -25,7 +25,7 @@ public class ChatHistoryExtensionsTests
     }
 
     [Fact]
-    public async Task ChatHistoryOrderingTestAsync()
+    public async Task VerifyChatHistoryOrderingAsync()
     {
         ChatHistory history = new();
         history.AddUserMessage("Hi");

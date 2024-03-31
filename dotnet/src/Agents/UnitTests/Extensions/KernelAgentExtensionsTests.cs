@@ -13,7 +13,7 @@ namespace SemanticKernel.Agents.UnitTests.Extensions;
 public class KernelAgentExtensionsTests
 {
     [Fact]
-    public async Task TestKernelAgentExtensionsFormatInstructionsAsync()
+    public async Task VerifyKernelAgentExtensionsFormatInstructionsAsync()
     {
         TestAgent agent = new(Kernel.CreateBuilder().Build(), "test");
 

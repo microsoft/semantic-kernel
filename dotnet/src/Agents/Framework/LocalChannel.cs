@@ -16,7 +16,7 @@ public class LocalChannel : AgentChannel
     private readonly ChatHistory _chat;
 
     /// <inheritdoc/>
-    protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+    protected internal sealed override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
         ChatMessageContent? input,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ public class LocalChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._chat.AddRange(history);
 
@@ -48,7 +48,7 @@ public class LocalChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
+    protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
         return this._chat.ToDescendingAsync();
     }
