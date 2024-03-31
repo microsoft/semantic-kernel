@@ -1,26 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ChannelQueue = System.Collections.Concurrent.ConcurrentQueue<System.Collections.Generic.IList<Microsoft.SemanticKernel.ChatMessageContent>>;
 
 namespace Microsoft.SemanticKernel.Agents.Internal;
-
-/// <summary>
-/// Tracks channel along with its key (hashed)
-/// </summary>
-internal readonly struct ChannelReference
-{
-    public AgentChannel Channel { get; }
-
-    public string Hash { get; }
-
-    public ChannelReference(AgentChannel channel, string hash)
-    {
-        this.Channel = channel;
-        this.Hash = hash;
-    }
-}
 
 /// <summary>
 /// Utility class used by <see cref="AgentNexus"/> to manage the broadcast of
@@ -32,9 +17,10 @@ internal readonly struct ChannelReference
 /// </remarks>
 internal sealed class BroadcastQueue
 {
+    private int _isActive;
     private readonly Dictionary<string, ChannelQueue> _queue = new();
     private readonly Dictionary<string, Task> _tasks = new();
-    private readonly object _queueLock = new();
+    private readonly object _queueLock = new(); // Synchronize access to _isActive, _queue and _tasks.
 
     /// <summary>
     /// Defines the yield duration when blocking for a channel-queue.
@@ -43,10 +29,26 @@ internal sealed class BroadcastQueue
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
+    /// $$$
+    /// </summary>
+    public bool IsActive => this._isActive != 0;
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    public async Task FlushAsync()
+    {
+        while (this.IsActive)
+        {
+            await Task.Delay(this.BlockDuration).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Enqueue a set of messages for a given channel.
     /// </summary>
-    /// <param name="channels"></param>
-    /// <param name="messages"></param>
+    /// <param name="channels">$$$</param>
+    /// <param name="messages">$$$</param>
     public void Enqueue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
     {
         lock (this._queueLock)
@@ -76,7 +78,9 @@ internal sealed class BroadcastQueue
 
         async Task ReceiveAsync(ChannelReference channel, ChannelQueue queue)
         {
-            while (queue.TryDequeue(out var messages))
+            Interlocked.CompareExchange(ref this._isActive, 1, 0); // Set regardless of current state.
+
+            while (queue.TryDequeue(out var messages)) // ChannelQueue is ConcurrentQueue, no need for _queueLock
             {
                 await channel.Channel.ReceiveAsync(messages).ConfigureAwait(false);
             }
@@ -84,6 +88,7 @@ internal sealed class BroadcastQueue
             lock (this._queueLock)
             {
                 this._tasks.Remove(channel.Hash);
+                this._isActive = this._tasks.Count == 0 ? 0 : this._isActive; // Clear if channel queue has drained.
             }
         }
     }
@@ -105,7 +110,7 @@ internal sealed class BroadcastQueue
             }
         }
 
-        while (!queue.IsEmpty)
+        while (!queue.IsEmpty) // ChannelQueue is ConcurrentQueue, no need for _queueLock
         {
             await Task.Delay(this.BlockDuration).ConfigureAwait(false);
         }

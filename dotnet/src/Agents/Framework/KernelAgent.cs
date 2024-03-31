@@ -28,6 +28,7 @@ public abstract class KernelAgent : Agent
     /// <param name="instructions">The agent instructions</param>
     protected KernelAgent(Kernel kernel, string? instructions = null)
     {
+        // $$$ VERIFY
         this.Kernel = kernel;
         this.Instructions = instructions;
     }
