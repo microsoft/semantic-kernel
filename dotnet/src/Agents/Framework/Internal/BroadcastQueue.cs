@@ -94,11 +94,11 @@ internal sealed class BroadcastQueue
     }
 
     /// <summary>
-    /// Blocks until a channel-queue is not in a recieve state.
+    /// Blocks until a channel-queue is not in a receive state.
     /// </summary>
     /// <param name="hash">The base-64 encoded channel hash.</param>
-    /// <returns>false when channel is no longer recieving.</returns>
-    public async Task<bool> IsRecievingAsync(string hash)
+    /// <returns>false when channel is no longer receiving.</returns>
+    public async Task<bool> IsReceivingAsync(string hash)
     {
         ChannelQueue queue;
 

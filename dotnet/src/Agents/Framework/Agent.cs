@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Base abstraction for all Semantic Kernel agents.  An agent instance
 /// may participate in one or more conversations, or <see cref="AgentNexus"/>.
-/// A converstation may include one or more agents.
+/// A conversation may include one or more agents.
 /// </summary>
 /// <remarks>
 /// In addition to identity and descriptive meta-data, an <see cref="Agent"/>

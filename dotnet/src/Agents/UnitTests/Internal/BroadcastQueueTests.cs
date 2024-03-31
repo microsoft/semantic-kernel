@@ -77,7 +77,7 @@ public class BroadcastQueueTests
 
         for (int count = 0; count < 10; ++count)
         {
-            await queue.IsRecievingAsync($"test{count}");
+            await queue.IsReceivingAsync($"test{count}");
         }
 
         Assert.NotEmpty(channel.ReceivedMessages);
@@ -86,7 +86,7 @@ public class BroadcastQueueTests
 
     private static async Task VerifyReceivingStateAsync(int receiveCount, BroadcastQueue queue, TestChannel channel, string hash)
     {
-        bool isReceiving = await queue.IsRecievingAsync(hash);
+        bool isReceiving = await queue.IsReceivingAsync(hash);
         Assert.False(isReceiving);
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }

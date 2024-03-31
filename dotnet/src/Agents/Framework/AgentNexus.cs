@@ -105,7 +105,7 @@ public abstract class AgentNexus
     {
         var channelKey = this.GetAgentHash(agent);
 
-        await this._broadcastQueue.IsRecievingAsync(channelKey).ConfigureAwait(false);
+        await this._broadcastQueue.IsReceivingAsync(channelKey).ConfigureAwait(false);
 
         if (!this._agentChannels.TryGetValue(channelKey, out var channel))
         {
