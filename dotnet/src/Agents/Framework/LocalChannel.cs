@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -40,7 +40,7 @@ public class LocalChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal override Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._chat.AddRange(history);
 

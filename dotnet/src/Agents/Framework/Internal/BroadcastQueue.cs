@@ -25,7 +25,7 @@ internal readonly struct ChannelReference
 /// <summary>
 /// Utility class used by <see cref="AgentNexus"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
-/// (<see cref="AgentChannel.RecieveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
+/// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
 /// </summary>
 /// <remarks>
 /// Maintains a set of channel specific queues.
@@ -58,7 +58,7 @@ internal sealed class BroadcastQueue
 
                 if (!this._tasks.ContainsKey(channel.Hash))
                 {
-                    this._tasks.Add(channel.Hash, RecieveAsync(channel, queue));
+                    this._tasks.Add(channel.Hash, ReceiveAsync(channel, queue));
                 }
             }
         }
@@ -74,11 +74,11 @@ internal sealed class BroadcastQueue
             return queue;
         }
 
-        async Task RecieveAsync(ChannelReference channel, ChannelQueue queue)
+        async Task ReceiveAsync(ChannelReference channel, ChannelQueue queue)
         {
             while (queue.TryDequeue(out var messages))
             {
-                await channel.Channel.RecieveAsync(messages).ConfigureAwait(false);
+                await channel.Channel.ReceiveAsync(messages).ConfigureAwait(false);
             }
 
             lock (this._queueLock)

@@ -12,11 +12,11 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class AgentChannel
 {
     /// <summary>
-    /// Recieve the converation messages.  Used when joining a converation and also during each agent interaction..
+    /// Receive the converation messages.  Used when joining a converation and also during each agent interaction..
     /// </summary>
     /// <param name="history">The nexus history at the point the channel is created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    protected internal abstract Task RecieveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
+    protected internal abstract Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentNexus"/>.

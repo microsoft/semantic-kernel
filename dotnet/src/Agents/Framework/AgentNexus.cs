@@ -113,7 +113,7 @@ public abstract class AgentNexus
 
             if (this._history.Count > 0)
             {
-                await channel.RecieveAsync(this._history, cancellationToken).ConfigureAwait(false);
+                await channel.ReceiveAsync(this._history, cancellationToken).ConfigureAwait(false);
             }
 
             this._agentChannels.Add(channelKey, channel);
