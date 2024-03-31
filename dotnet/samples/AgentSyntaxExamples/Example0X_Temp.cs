@@ -15,7 +15,7 @@ namespace Examples;
 /// <summary>
 /// $$$
 /// </summary>
-public class Example02_Plugins : BaseTest
+public class Example0X_Temp : BaseTest
 {
     [Fact]
     public async Task RunAsync()
@@ -95,7 +95,7 @@ public class Example02_Plugins : BaseTest
         await WriteContentAsync(history.Reverse().ToAsyncEnumerable());
     }
 
-    public Example02_Plugins(ITestOutputHelper output) : base(output)
+    public Example0X_Temp(ITestOutputHelper output) : base(output)
     {
     }
 
