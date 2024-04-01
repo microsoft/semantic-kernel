@@ -194,33 +194,19 @@ public abstract class KernelFunction
 
             return functionResult;
         }
-        catch (Exception ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception exception)
+#pragma warning restore CA1031
         {
-            functionResult = new(this);
-            var exception = HandleException(ex, logger, activity, this, kernel, arguments, functionResult, ref tags);
-
-            // Invoke post-invocation filter with exception.
-            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult, exception);
-
-            // No registered filters, throw original exception.
-            if (invokedContext is null)
-            {
-                throw exception;
-            }
-
-            // Filter is registered, exception was not canceled, throw the exception. 
-            if (invokedContext.Exception is not null)
-            {
-                throw invokedContext.Exception;
-            }
-
-            // Exception was canceled, override function result.
-            if (invokedContext is not null)
-            {
-                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
-            }
-
-            return functionResult;
+            return HandleExceptionWithFilter(
+                exception,
+                logger,
+                activity,
+                this,
+                kernel,
+                arguments,
+                new(this),
+                ref tags);
         }
         finally
         {
@@ -349,8 +335,6 @@ public abstract class KernelFunction
                     yield return enumerator.Current;
                 }
             }
-
-            // The FunctionInvoked filter are not used when streaming.
         }
         finally
         {
@@ -419,5 +403,42 @@ public abstract class KernelFunction
         return exception is OperationCanceledException cancelException ?
             new KernelFunctionCanceledException(kernel, kernelFunction, arguments, result, cancelException) :
             exception;
+    }
+
+    /// <summary>Handles special-cases for exception handling with filter when invoking a function.</summary>
+    private static FunctionResult HandleExceptionWithFilter(
+        Exception exception,
+        ILogger logger,
+        Activity? activity,
+        KernelFunction kernelFunction,
+        Kernel kernel,
+        KernelArguments arguments,
+        FunctionResult functionResult,
+        ref TagList tags)
+    {
+        exception = HandleException(exception, logger, activity, kernelFunction, kernel, arguments, functionResult, ref tags);
+
+        // Invoke post-invocation filter with exception.
+        var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult, exception);
+
+        // No registered filters, throw original exception.
+        if (invokedContext is null)
+        {
+            throw exception;
+        }
+
+        // Filter is registered, exception was not canceled, throw the exception. 
+        if (invokedContext.Exception is not null)
+        {
+            throw invokedContext.Exception;
+        }
+
+        // Exception was canceled, override function result.
+        if (invokedContext is not null)
+        {
+            functionResult = new FunctionResult(kernelFunction, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
+        }
+
+        return functionResult;
     }
 }
