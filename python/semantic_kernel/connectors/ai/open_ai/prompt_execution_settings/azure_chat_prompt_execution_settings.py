@@ -1,10 +1,10 @@
 import logging
 from typing import Any, Dict, List, Literal, Optional, Union
-from typing_extensions import Annotated
 
 from pydantic import AliasGenerator, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_snake
 from pydantic.functional_validators import AfterValidator
+from typing_extensions import Annotated
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
