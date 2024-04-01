@@ -62,7 +62,8 @@ public class AgentChannelTests
     }
 
     private sealed class NextAgent()
-        : TestAgent() { }
+        : TestAgent()
+    { }
 
     private class TestAgent()
         : KernelAgent(Kernel.CreateBuilder().Build())

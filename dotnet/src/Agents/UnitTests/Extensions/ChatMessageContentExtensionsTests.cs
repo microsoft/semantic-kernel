@@ -30,8 +30,7 @@ public class ChatMessageContentExtensionsTests
         Assert.True(messageWithContent.HasContent());
 
         // Verify TryGetContent
-        string? content;
-        Assert.False(messageWithNullContent.TryGetContent(out content));
+        Assert.False(messageWithNullContent.TryGetContent(out string? content));
         Assert.False(messageWithEmptyContent.TryGetContent(out content));
         Assert.True(messageWithContent.TryGetContent(out content));
         Assert.Equal("hi", content);

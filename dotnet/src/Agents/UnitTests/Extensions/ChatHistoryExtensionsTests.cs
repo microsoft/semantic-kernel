@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel;
-using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Extensions;
 
