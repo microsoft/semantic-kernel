@@ -29,7 +29,10 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
     /// <summary>Gets the raw result of the function's invocation.</summary>
     internal object? ResultValue { get; private set; }
 
-    /// <summary>Sets an object to use as the overridden new result for the function's invocation.</summary>
+    /// <summary>
+    /// Sets an object to use as the overridden new result for the function's invocation.
+    /// Has no effect on streaming.
+    /// </summary>
     /// <param name="value">The value to use as the new result of the function's invocation.</param>
     public void SetResultValue(object? value)
     {

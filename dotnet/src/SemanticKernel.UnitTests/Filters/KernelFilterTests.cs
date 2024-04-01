@@ -168,7 +168,7 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task PostInvocationFunctionFilterIsNotTriggeredOnStreamingAsync()
+    public async Task FunctionFiltersAreTriggeredOnStreamingAsync()
     {
         // Arrange
         var functionInvocations = 0;
@@ -195,7 +195,7 @@ public class KernelFilterTests
         // Assert
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(0, postFilterInvocations);
+        Assert.Equal(1, postFilterInvocations);
     }
 
     [Fact]

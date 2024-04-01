@@ -283,6 +283,8 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+        FunctionResult functionResult = new(this);
+
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -322,13 +324,23 @@ public abstract class KernelFunction
                         // Move to the next streaming result.
                         if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                         {
+                            kernel.OnFunctionInvokedFilter(arguments, functionResult);
                             break;
                         }
                     }
-                    catch (Exception ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception exception)
+#pragma warning restore CA1031
                     {
-                        var exception = HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
-                        throw exception;
+                        HandleExceptionWithFilter(
+                            exception,
+                            logger,
+                            activity,
+                            this,
+                            kernel,
+                            arguments,
+                            functionResult,
+                            ref tags);
                     }
 
                     // Yield the next streaming result.
