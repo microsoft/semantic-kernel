@@ -131,7 +131,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        use_extensions: bool = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -155,9 +154,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         default_headers: The default headers mapping of string keys to
             string values for HTTP requests. (Optional)
         log: The logger instance to use. (Optional)
-        use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
-            When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
-            The default value is False.
         """
 
     def __init__(
@@ -172,7 +168,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
-        use_extensions: bool = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -202,19 +197,14 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-            use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
-                When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
-                The default value is False.
         """
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
-        if use_extensions and endpoint and deployment_name:
-            base_url = HttpsUrl(
-                f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
+        if endpoint and deployment_name:
+            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
         super().__init__(
             deployment_name=deployment_name,
-            endpoint=endpoint if not isinstance(
-                endpoint, str) else HttpsUrl(endpoint),
+            endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
             base_url=base_url,
             api_version=api_version,
             service_id=service_id,
@@ -262,8 +252,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=response,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(
-                choice.message.role) if choice.message.role is not None else None,
+            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
             content=choice.message.content,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
@@ -284,11 +273,9 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(
-                choice.delta.role) if choice.delta.role is not None else None,
+            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
             content=choice.delta.content,
-            finish_reason=FinishReason(
-                choice.finish_reason) if choice.finish_reason is not None else None,
+            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
             function_call=self._get_function_call_from_chat_choice(choice),
             tool_calls=self._get_tool_calls_from_chat_choice(choice),
             tool_message=self._get_tool_message_from_chat_choice(choice),

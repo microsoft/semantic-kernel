@@ -97,10 +97,7 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
                     parameters=AzureAISearchDataSourceParameters(
                         index_name=collection,
                         endpoint=search_endpoint,
-                        authentication={
-                            "type": "api_key",
-                            "api_key": search_api_key
-                        },
+                        authentication={"type": "api_key", "api_key": search_api_key},
                         query_type="simple",
                         fields_mapping={
                             "titleField": "Description",
@@ -125,8 +122,7 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
 
         exec_settings = PromptExecutionSettings(
             service_id="chat-gpt-extensions",
-            extension_data={"max_tokens": 2000, "temperature": 0.7,
-                            "top_p": 0.8, "extra_body": extra},
+            extension_data={"max_tokens": 2000, "temperature": 0.7, "top_p": 0.8, "extra_body": extra},
         )
 
         prompt_template_config = PromptTemplateConfig(
@@ -159,8 +155,7 @@ async def test_azure_e2e_chat_completion_with_extensions(
 
     chat_history = ChatHistory()
     chat_history.add_user_message("A story about Emily and David...")
-    arguments = KernelArguments(
-        input="who are Emily and David?", chat_history=chat_history)
+    arguments = KernelArguments(input="who are Emily and David?", chat_history=chat_history)
 
     # TODO: get streaming working for this test
     use_streaming = False

@@ -1,55 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
-from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class AzureChatCompletionSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="AZURE_OPENAI_", extra='ignore')
-
-    api_key: str
-    endpoint: str
-    deployment_name: str
-    api_version: str = "2024-02-15-preview"
-
-
-class AzureAISearchSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="AZURE_AISEARCH_", extra='ignore')
-
-    url: str
-    service: str
-    api_key: str
-    index_name: str
-    index_language: Optional[str] = None
-    query_type: Literal['simple', 'vector', 'semantic',
-                        'vector_simple_hybrid', 'vector_semantic_hybrid'] = 'simple'
-    embedding_deployment_name: Optional[str] = None
-    use_semantic_search: bool = False
-    semantic_search_config: str = "default"
-    index_is_prechunked: bool = False
-    top_k: int = 5
-    strictness: int = 3
-    enable_in_domain: bool = True
-    url_column: Optional[str] = None
-    title_column: Optional[str] = None
-    filepath_column: Optional[str] = None
-    content_columns: Optional[List[str]] = None
-    vector_columns: Optional[List[str]] = None
-    permitted_groups_column: Optional[str] = None
-    filter: Optional[str] = None
-
-    @field_validator('content_columns', 'vector_columns', mode='before')
-    @classmethod
-    def split_columns(cls, comma_separated_string: str):
-        '''
-        Split comma-separated values into a list.
-        '''
-        return comma_separated_string.strip().replace(' ', '').split(',')
 
 
 def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
@@ -341,6 +294,5 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
     Returns:
         Dict[str, str]: the Azure AI search environment variables
     """
-    api_key, url, index_name = azure_aisearch_settings_from_dot_env(
-        include_index_name=True)
+    api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
     return {"authentication": {"type": "api_key", "key": api_key}, "endpoint": url, "index_name": index_name}

@@ -1,14 +1,6 @@
 import logging
 
-from typing import (
-    Annotated,
-    Any,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Union
-)
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import AliasGenerator, ConfigDict, Field
 
@@ -26,28 +18,24 @@ logger = logging.getLogger(__name__)
 
 class AzureChatRequestBase(KernelBaseModel):
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_camel, serialization_alias=to_snake),
+        alias_generator=AliasGenerator(validation_alias=to_camel, serialization_alias=to_snake),
         use_enum_values=True,
-        extra='allow'
+        extra="allow",
     )
 
 
 class ConnectionStringAuthentication(AzureChatRequestBase):
-    type: Annotated[Literal["ConnectionString", "connection_string"],
-                    AfterValidator(to_snake)] = "connection_string"
+    type: Annotated[Literal["ConnectionString", "connection_string"], AfterValidator(to_snake)] = "connection_string"
     connection_string: Optional[str] = None
 
 
 class ApiKeyAuthentication(AzureChatRequestBase):
-    type: Annotated[Literal["APIKey", "api_key"],
-                    AfterValidator(to_snake)] = "api_key"
+    type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
     key: Optional[str] = None
 
 
 class AzureEmbeddingDependency(AzureChatRequestBase):
-    type: Annotated[Literal["DeploymentName", "deployment_name"],
-                    AfterValidator(to_snake)] = "deployment_name"
+    type: Annotated[Literal["DeploymentName", "deployment_name"], AfterValidator(to_snake)] = "deployment_name"
     deployment_name: Optional[str] = None
 
 
@@ -81,14 +69,15 @@ class AzureCosmosDBDataSourceParameters(AzureDataSourceParameters):
 
 
 class AzureCosmosDBDataSource(AzureChatRequestBase):
-    type: Literal['azure_cosmos_db']
+    type: Literal["azure_cosmos_db"]
     parameters: AzureCosmosDBDataSourceParameters
 
 
 class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
     endpoint: Optional[str] = None
-    query_type: Annotated[Literal["simple", "semantic", "vector", "vectorSimpleHybrid",
-                                  "vectorSemanticHybrid"], AfterValidator(to_snake)] = "simple"
+    query_type: Annotated[
+        Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"], AfterValidator(to_snake)
+    ] = "simple"
     authentication: Optional[ApiKeyAuthentication] = None
 
     @staticmethod
@@ -98,7 +87,8 @@ class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
         if "vector" in azure_aisearch_settings.query_type:
             if not azure_aisearch_settings.embedding_deployment_name:
                 raise ValueError(
-                    "No embedding deployment name found in the environment.  Please set AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME and try again.")
+                    "No embedding deployment name found in the environment.  Please set AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME and try again."
+                )
 
             embedding_dependency = AzureEmbeddingDependency(
                 deployment_name=azure_aisearch_settings.embedding_deployment_name
@@ -112,7 +102,7 @@ class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
                 url_field=azure_aisearch_settings.url_column,
                 filepath_field=azure_aisearch_settings.filepath_column,
                 content_fields=azure_aisearch_settings.content_columns,
-                vector_fields=azure_aisearch_settings.vector_columns
+                vector_fields=azure_aisearch_settings.vector_columns,
             ),
             in_scope=azure_aisearch_settings.enable_in_domain,
             top_n_documents=azure_aisearch_settings.top_k,
@@ -120,29 +110,24 @@ class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
             semantic_configuration=azure_aisearch_settings.semantic_search_config,
             filter=azure_aisearch_settings.filter,
             embedding_dependency=embedding_dependency,
-            authentication=ApiKeyAuthentication(
-                key=azure_aisearch_settings.api_key
-            ),
+            authentication=ApiKeyAuthentication(key=azure_aisearch_settings.api_key),
             query_type=azure_aisearch_settings.query_type,
-            endpoint=azure_aisearch_settings.url
+            endpoint=azure_aisearch_settings.url,
         )
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):
-    type: Literal['azure_search'] = "azure_search"
+    type: Literal["azure_search"] = "azure_search"
     parameters: Annotated[dict, AzureAISearchDataSourceParameters]
 
 
-DataSource = Annotated[Union[AzureAISearchDataSource,
-                             AzureCosmosDBDataSource], Field(discriminator="type")]
+DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], Field(discriminator="type")]
 
 
 class ExtraBody(KernelBaseModel):
     data_sources: Optional[List[DataSource]] = None
-    input_language: Optional[str] = Field(
-        None, serialization_alias="inputLanguage")
-    output_language: Optional[str] = Field(
-        None, serialization_alias="outputLanguage")
+    input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
+    output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
         return getattr(self, item)

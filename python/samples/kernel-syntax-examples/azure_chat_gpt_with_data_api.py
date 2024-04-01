@@ -18,13 +18,16 @@ from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.settings import AzureChatCompletionSettings
+from semantic_kernel.utils.settings import (
+    azure_aisearch_settings_from_dot_env_as_dict,
+    azure_openai_settings_from_dot_env_as_dict,
+)
 
 kernel = sk.Kernel()
 logging.basicConfig(level=logging.DEBUG)
 
 # Load Azure OpenAI Settings
-aoai_settings = AzureChatCompletionSettings()
+aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 
 # For example, AI Search index may contain the following document:
 
@@ -32,35 +35,27 @@ aoai_settings = AzureChatCompletionSettings()
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-datasource_parameters_dict = AzureAISearchDataSourceParameters.from_dotenv().model_dump()
+azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 
 # Our example index has fields "source_title", "source_text", "source_url", and "source_file".
 # Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
-# azure_ai_search_settings["fieldsMapping"] = {
-#     "titleField": "source_title",
-#     "urlField": "source_url",
-#     "contentFields": ["source_text"],
-#     "filepathField": "source_file",
-# }
-
-datasource_parameters_dict["fieldsMapping"] = {
-    "titleField": "title",
-    "urlField": "url",
-    "contentFields": ["content"],
-    "filepathField": "filepath"
+azure_ai_search_settings["fieldsMapping"] = {
+    "titleField": "source_title",
+    "urlField": "source_url",
+    "contentFields": ["source_text"],
+    "filepathField": "source_file",
 }
 
 # Create the data source settings
 
-az_source = AzureAISearchDataSource(parameters=datasource_parameters_dict)
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
-req_settings = AzureChatPromptExecutionSettings(
-    service_id="default", extra_body=extra)
+req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
-    **aoai_settings.model_dump(),
+    **aoai_settings,
 )
 kernel.add_service(chat_service)
 
@@ -69,10 +64,8 @@ prompt_template_config = PromptTemplateConfig(
     name="chat",
     template_format="semantic-kernel",
     input_variables=[
-        InputVariable(name="chat_history",
-                      description="The chat history", is_required=True),
-        InputVariable(name="request",
-                      description="The user input", is_required=True),
+        InputVariable(name="chat_history", description="The chat history", is_required=True),
+        InputVariable(name="request", description="The user input", is_required=True),
     ],
     execution_settings={"default": req_settings},
 )
@@ -81,8 +74,7 @@ chat_function = kernel.create_function_from_prompt(
 )
 
 chat_history = ChatHistory()
-chat_history.add_system_message(
-    "I am an AI assistant here to answer your questions.")
+chat_history.add_system_message("I am an AI assistant here to answer your questions.")
 
 
 async def chat() -> bool:
@@ -102,8 +94,7 @@ async def chat() -> bool:
     # Non streaming
     # answer = await kernel.run(chat_function, input_vars=context_vars)
     # print(f"Assistant:> {answer}")
-    arguments = KernelArguments(
-        chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
+    arguments = KernelArguments(chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
 
     full_message = None
     print("Assistant:> ", end="")
@@ -122,14 +113,12 @@ async def chat() -> bool:
                     tool_calls=[
                         ToolCall(
                             id="chat_with_your_data",
-                            function=FunctionCall(
-                                name="chat_with_your_data", arguments=""),
+                            function=FunctionCall(name="chat_with_your_data", arguments=""),
                         )
                     ],
                 )
             )
-            chat_history.add_tool_message(full_message.tool_message, {
-                                          "tool_call_id": "chat_with_your_data"})
+            chat_history.add_tool_message(full_message.tool_message, {"tool_call_id": "chat_with_your_data"})
         if full_message.role is None:
             full_message.role = ChatRole.ASSISTANT
         chat_history.add_assistant_message(full_message.content)

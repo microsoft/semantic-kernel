@@ -158,8 +158,7 @@ async def test_azure_chat_completion_call_with_parameters(
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     chat_history.add_user_message("hello world")
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        service_id="test_service_id")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -180,8 +179,7 @@ async def test_azure_chat_completion_call_with_parameters(
         stream=False,
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
-        messages=azure_chat_completion._prepare_chat_history_for_request(
-            chat_history),
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
 
 
@@ -215,8 +213,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=azure_chat_completion._prepare_chat_history_for_request(
-            chat_history),
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -329,8 +326,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         ]
     }
 
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        extra_body=expected_data_settings)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(extra_body=expected_data_settings)
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
@@ -346,8 +342,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=azure_chat_completion._prepare_chat_history_for_request(
-            messages_out),
+        messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         temperature=complete_prompt_execution_settings.temperature,
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         presence_penalty=complete_prompt_execution_settings.presence_penalty,
@@ -372,8 +367,13 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     chat_history.add_user_message(prompt)
 
-    ai_source = AzureAISearchDataSource(parameters={
-        "indexName": "test-index", "endpoint": "test-endpoint", "authentication": {"type": "api_key", "api_key": "test-key"}})
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
     extra = ExtraBody(data_sources=[ai_source])
 
     azure_chat_completion = AzureChatCompletion(
@@ -401,8 +401,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=azure_chat_completion._prepare_chat_history_for_request(
-            chat_history),
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -432,8 +431,13 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_prompt_execution_settings.stop = stop
 
-    ai_source = AzureAISearchDataSource(parameters={
-        "indexName": "test-index", "endpoint": "test-endpoint", "authentication": {"type": "api_key", "api_key": "test-key"}})
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
     extra = ExtraBody(data_sources=[ai_source])
 
     complete_prompt_execution_settings.extra_body = extra
@@ -452,8 +456,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
-        messages=azure_chat_completion._prepare_chat_history_for_request(
-            chat_history),
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
         n=complete_prompt_execution_settings.number_of_responses,
@@ -611,8 +614,7 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create
     api_version = "2023-03-15-preview"
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        auto_invoke_kernel_functions=True)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(auto_invoke_kernel_functions=True)
 
     mock_create.side_effect = openai.BadRequestError(
         "The request was bad.", response=Response(400, request=Request("POST", endpoint)), body={}
