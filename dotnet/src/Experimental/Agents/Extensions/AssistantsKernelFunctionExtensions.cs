@@ -74,11 +74,6 @@ internal static class AssistantsKernelFunctionExtensions
             return "string";
         }
 
-        if (type.IsInteger())
-        {
-            return "integer";
-        }
-
         if (type.IsNumber())
         {
             return "number";
