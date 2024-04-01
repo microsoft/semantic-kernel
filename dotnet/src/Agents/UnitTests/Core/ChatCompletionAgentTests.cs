@@ -32,6 +32,9 @@ public class ChatCompletionAgentTests
         Assert.Null(agent.ExecutionSettings);
         Assert.Null(agent.InstructionArguments);
         Assert.Null(agent.ExtraInstructions);
+
+        agent.ExtraInstructions = "something";
+        Assert.NotNull(agent.ExtraInstructions);
     }
 
     /// <summary>
