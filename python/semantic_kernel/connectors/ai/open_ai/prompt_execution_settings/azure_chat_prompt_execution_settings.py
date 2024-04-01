@@ -1,5 +1,6 @@
 import logging
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
+from typing_extensions import Annotated
 
 from pydantic import AliasGenerator, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_snake
