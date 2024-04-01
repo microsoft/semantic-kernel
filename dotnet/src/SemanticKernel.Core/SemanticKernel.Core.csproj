@@ -8,7 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
-    <EnablePackageValidation>false</EnablePackageValidation>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
