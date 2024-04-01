@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -23,6 +24,11 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
     public override string? Name { get; }
 
     /// <summary>
+    /// Additional instructions to always append to end of history (optional)
+    /// </summary>
+    public string? ExtraInstructions { get; set; }
+
+    /// <summary>
     /// Optional execution settings for the agent.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings { get; set; }
@@ -32,18 +38,12 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
         IEnumerable<ChatMessageContent> history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ChatHistory chat = new();
-
-        if (!string.IsNullOrWhiteSpace(this.Instructions))
-        {
-            string instructions = (await this.FormatInstructionsAsync(cancellationToken).ConfigureAwait(false))!;
-
-            chat.AddMessage(AuthorRole.System, instructions/*, name: this.Name*/); // $$$ IDENTITY
-        }
-
-        chat.AddRange(history);
-
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatHistory chat = new();
+        await FormatInstructionsAsync(this.Instructions, cancellationToken).ConfigureAwait(false);
+        chat.AddRange(history);
+        await FormatInstructionsAsync(this.ExtraInstructions, cancellationToken).ConfigureAwait(false);
 
         var messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -57,6 +57,16 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
             // message.Source = new AgentMessageSource(this.Id).ToJson(); $$$ MESSAGE SOURCE
 
             yield return message;
+        }
+
+        async Task FormatInstructionsAsync(string? instructions, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(instructions))
+            {
+                instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
+
+                chat.AddMessage(AuthorRole.System, instructions/*, name: this.Name*/); // $$$ IDENTITY
+            }
         }
     }
 

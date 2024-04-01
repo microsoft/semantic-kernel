@@ -17,38 +17,37 @@ internal static class PromptRenderer
     /// Render the provided instructions using the specified arguments.
     /// </summary>
     /// <param name="agent">A <see cref="KernelAgent"/>.</param>
+    /// <param name="instructions">The instructions to format.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rendered instructions</returns>
-    public static async Task<string?> FormatInstructionsAsync(KernelAgent agent, CancellationToken cancellationToken = default)
+    public static async Task<string?> FormatInstructionsAsync(KernelAgent agent, string? instructions, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(agent.Instructions))
+        if (string.IsNullOrWhiteSpace(instructions))
         {
             return null;
         }
 
-        string? instructions = null;
-
         if (agent.InstructionArguments != null)
         {
             if (!s_templates.TryGetValue(agent.Id, out TemplateReference templateReference) ||
-                !templateReference.IsConsistent(agent.Instructions!))
+                !templateReference.IsConsistent(instructions!))
             {
                 // Generate and cache prompt template if does not exist or if instructions have changed.
                 IPromptTemplate template =
                     s_factory.Create(
                         new PromptTemplateConfig
                         {
-                            Template = agent.Instructions!
+                            Template = instructions!
                         });
 
-                templateReference = new(template, agent.Instructions!);
+                templateReference = new(template, instructions!);
                 s_templates[agent.Id] = templateReference;
             }
 
             instructions = await templateReference.Template.RenderAsync(agent.Kernel, agent.InstructionArguments, cancellationToken).ConfigureAwait(false);
         }
 
-        return instructions ?? agent.Instructions;
+        return instructions;
     }
 
     /// <summary>

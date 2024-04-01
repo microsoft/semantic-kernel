@@ -23,7 +23,7 @@ public class KernelAgentExtensionsTests
     {
         TestAgent agent = new(Kernel.CreateBuilder().Build(), "test");
 
-        var instructions = await agent.FormatInstructionsAsync();
+        var instructions = await agent.FormatInstructionsAsync(agent.Instructions);
 
         Assert.Equal("test", instructions);
     }

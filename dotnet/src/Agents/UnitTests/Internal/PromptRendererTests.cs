@@ -74,7 +74,7 @@ public class PromptRendererTests
 
         agent.InstructionArguments = arguments;
 
-        return await PromptRenderer.FormatInstructionsAsync(agent);
+        return await PromptRenderer.FormatInstructionsAsync(agent, agent.Instructions);
     }
 
     private Kernel CreateKernel()
