@@ -80,3 +80,4 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | | | | | | | |
 | SKEXP0110 | Agent Framework | | | | | |
 | SKEXP0111 | ChatCompletionAgent | | | | | |
+| SKEXP0112 | AgentChat | | | | | |
