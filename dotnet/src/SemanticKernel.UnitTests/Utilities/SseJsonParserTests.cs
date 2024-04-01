@@ -73,12 +73,18 @@ public sealed class SseJsonParserTests
         event: userconnect
         data: {"username": "bobby", "time": "02:33:48"}
 
+        data: none
+
         event: usermessage
         data: {"username": "bobby", "time": "02:34:11", "text": "Hi everyone."}
 
         event: userdisconnect
         data: {"username": "bobby", "time": "02:34:23"}
+        data:
+        data
         id: 3
+
+        data: [DONE]
 
         event: usermessage
         data: {"username": "sean", "time": "02:34:36", "text": "Bye, bobby."}
@@ -126,7 +132,27 @@ public sealed class SseJsonParserTests
     }
 
     [Fact]
-    public async Task ItReturnsParsedDataAsync()
+    public async Task ItReturnsAllParsedJsonsAsync()
+    {
+        // Arrange
+        using var stream = new MemoryStream();
+        WriteToStream(stream, SampleSseData1);
+
+        // Act
+        var result = await SseJsonParser.ParseAsync(stream,
+                line =>
+                {
+                    var obj = JsonSerializer.Deserialize<object>(line.FieldValue.Span, JsonOptionsCache.ReadPermissive);
+                    return new SseData(line.EventName, obj!);
+                })
+            .ToListAsync();
+
+        // Assert
+        Assert.True(result.Count == 8);
+    }
+
+    [Fact]
+    public async Task ItReturnsValidParsedDataAsync()
     {
         // Arrange
         using var stream = new MemoryStream();
