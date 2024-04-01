@@ -112,7 +112,7 @@ public sealed class FunctionCallingStepwisePlanner
             // Check for final answer in the function response
             foreach (OpenAIFunctionToolCall functionResponse in functionResponses)
             {
-                if (this.TryFindFinalAnswer(functionResponse, out string finalAnswer, out string? finalAnswerError))
+                if (this.TryFindFinalAnswer(functionResponse, stepExecutionSettings.ToolCallBehavior, out string finalAnswer, out string? finalAnswerError))
                 {
                     if (finalAnswerError is not null)
                     {
@@ -141,7 +141,7 @@ public sealed class FunctionCallingStepwisePlanner
                     {
                         // Execute function and add to result to chat history
                         var result = (await clonedKernel.InvokeAsync(pluginFunction, arguments, cancellationToken).ConfigureAwait(false)).GetValue<object>();
-                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, ParseObjectAsString(result, stepExecutionSettings.ToolCallBehavior), metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -240,7 +240,7 @@ public sealed class FunctionCallingStepwisePlanner
         return functionResponses is { Count: > 0 };
     }
 
-    private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, out string finalAnswer, out string? errorMessage)
+    private bool TryFindFinalAnswer(OpenAIFunctionToolCall functionResponse, ToolCallBehavior? toolCallBehavior, out string finalAnswer, out string? errorMessage)
     {
         finalAnswer = string.Empty;
         errorMessage = null;
@@ -249,7 +249,7 @@ public sealed class FunctionCallingStepwisePlanner
         {
             if (functionResponse.Arguments is { Count: > 0 } arguments && arguments.TryGetValue("answer", out object? valueObj))
             {
-                finalAnswer = ParseObjectAsString(valueObj);
+                finalAnswer = ParseObjectAsString(valueObj, toolCallBehavior);
             }
             else
             {
@@ -260,11 +260,15 @@ public sealed class FunctionCallingStepwisePlanner
         return false;
     }
 
-    private static string ParseObjectAsString(object? valueObj)
+    private static string ParseObjectAsString(object? valueObj, ToolCallBehavior? toolCallBehavior)
     {
         string resultStr = string.Empty;
 
-        if (valueObj is RestApiOperationResponse apiResponse)
+        if (valueObj is ChatMessageContent chatMessageContent)
+        {
+            return chatMessageContent.ToString();
+        }
+        else if (valueObj is RestApiOperationResponse apiResponse)
         {
             resultStr = apiResponse.Content as string ?? string.Empty;
         }
@@ -285,7 +289,9 @@ public sealed class FunctionCallingStepwisePlanner
         }
         else
         {
-            resultStr = JsonSerializer.Serialize(valueObj);
+#pragma warning disable CS0618 // Type or member is obsolete
+            resultStr = JsonSerializer.Serialize(valueObj, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         return resultStr;
