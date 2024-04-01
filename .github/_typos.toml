@@ -17,8 +17,10 @@ extend-exclude = [
 ]
 
 [default.extend-words]
-ACI = "ACI" # Azure Container Instance
-exercize = "exercize" #test typos
+ACI = "ACI"               # Azure Container Instance
+exercize = "exercize"     #test typos
+gramatical = "gramatical" #test typos
+Guid = "Guid"             # Globally Unique Identifier
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
