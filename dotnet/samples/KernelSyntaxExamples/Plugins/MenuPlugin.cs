@@ -20,9 +20,19 @@ Special Drink: Chai Tea
 
     [KernelFunction, Description("Provides the price of the requested menu item.")]
     public string GetItemPrice(
-        [Description("The name of the menu item.")]
+            [Description("The name of the menu item.")]
             string menuItem)
     {
         return "$9.99";
+    }
+
+    [KernelFunction, Description("Returns true if the kitchen has ran out of the item.")]
+    public bool IsItem86d(
+            [Description("The name of the menu item.")]
+            string menuItem,
+            [Description("The number of items requested.")]
+            int count)
+    {
+        return count < 3;
     }
 }
