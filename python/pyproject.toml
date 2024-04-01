@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.9.4b1"
+version = "0.9.5b1"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -34,7 +34,7 @@ defusedxml = "^0.7.1"
 pybars4 = "^0.9.13"
 jinja2 = "^3.1.3"
 nest-asyncio = "^1.6.0"
-eval_type_backport = { version = "^0.1.3", markers = "python_version < '3.9'" }
+eval_type_backport = { version = "^0.1.3", markers = "python_version < '3.10'" }
 
 # Optional dependencies
 ipykernel = { version = "^6.21.1", optional = true}
