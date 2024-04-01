@@ -61,12 +61,12 @@ public class Example02_Plugins : BaseTest
     }
 
     /// <summary>
+    /// 
     /// A basic nexus for the agent example.
     /// </summary>
     /// <remarks>
     /// For further exploration of AgentNexus, see: Example03_Chat.
     /// </remarks>
-
     private sealed class TestChat : AgentNexus
     {
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(

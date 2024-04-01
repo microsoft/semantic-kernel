@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 namespace AgentSyntaxExamples;
 
 public static partial class AgentInventory
