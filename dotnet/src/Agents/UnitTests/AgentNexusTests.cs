@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Xunit;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Runtime.CompilerServices;
-using System.Linq;
+using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
 
