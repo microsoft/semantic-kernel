@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AgentSyntaxExamples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,83 +21,37 @@ public class Example02_Plugins : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        // $$$
         Kernel kernel = this.CreateKernelWithChatCompletion();
-        var agent = AgentInventory.OpenAI.CreateParrotAgent(kernel);
-        agent.InstructionArguments = new() { { "count", 3 } };
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        kernel.Plugins.Add(plugin);
+
+        var agent = AgentInventory.OpenAI.CreateHostAgent(kernel);
 
         // $$$
         var nexus = new TestChat();
 
-        await WriteContentAsync(nexus.InvokeAsync(agent, "Fortune favors the bold."));
-        await WriteContentAsync(nexus.InvokeAsync(agent, "I came, I saw, I conquered."));
-        await WriteContentAsync(nexus.InvokeAsync(agent, "Practice makes perfect."));
-    }
+        // $$$
+        await WriteAgentResponseAsync("Hello");
+        await WriteAgentResponseAsync("What is the special soup?");
+        await WriteAgentResponseAsync("What is the special drink?");
+        await WriteAgentResponseAsync("Thank you");
 
-    private async Task<AgentNexus> RunSingleAgentAsync(Agent agent, params string[] messages)
-    {
-        this.WriteLine("[AGENTS]");
-        WriteAgent(agent, full: true);
-        WriteLine();
-
-        this.WriteLine("[CHAT]");
-        var nexus = new TestChat();
-
-        // Process each user message and agent response.
-        foreach (var message in messages)
+        // $$$
+        async Task WriteAgentResponseAsync(string input)
         {
-            await WriteChatAsync(nexus, agent, message);
-        }
-
-        this.WriteLine("\n[HISTORY]");
-        await WriteHistoryAsync(nexus);
-        await WriteHistoryAsync(nexus, agent);
-
-        return nexus;
-    }
-
-    private Task WriteChatAsync(TestChat nexus, Agent agent, string? message = null)
-    {
-        return WriteContentAsync(nexus.InvokeAsync(agent, message));
-    }
-
-    private void WriteAgent(Agent agent, bool full = false)
-    {
-        this.WriteLine($"[{agent.GetType().Name}:{agent.Id}:{agent.Name ?? "*"}]");
-        if (agent is KernelAgent kernelAgent)
-        {
-            this.WriteLine($"\t> {kernelAgent.Instructions ?? "*"}");
+            await foreach (var content in nexus.InvokeAsync(agent, input))
+            {
+                this.WriteLine($"# {content.Role}: '{content.Content}'");
+                //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+            }
         }
     }
 
-    private async Task WriteContentAsync(IAsyncEnumerable<ChatMessageContent> messages)
+    public Example02_Plugins(ITestOutputHelper output)
+        : base(output)
     {
-        await foreach (var content in messages)
-        {
-            this.WriteLine($"# {content.Role}: '{content.Content}'");
-            //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
-        }
-    }
-
-    private async Task WriteHistoryAsync(AgentNexus nexus, Agent? agent = null)
-    {
-        if (agent == null)
-        {
-            this.WriteLine("\n[PRIMARY]");
-        }
-        else
-        {
-            this.WriteLine();
-            this.WriteAgent(agent);
-        }
-
-        var history = await nexus.GetHistoryAsync(agent).ToArrayAsync();
-
-        await WriteContentAsync(history.Reverse().ToAsyncEnumerable());
-    }
-
-    public Example02_Plugins(ITestOutputHelper output) : base(output)
-    {
+        // Nothing to do...
     }
 
     /// <summary>

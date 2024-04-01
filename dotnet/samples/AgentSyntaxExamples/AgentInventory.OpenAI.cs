@@ -16,6 +16,12 @@ public static partial class AgentInventory
                 name: ParrotName,
                 instructions: ParrotInstructions);
 
+        public static ChatCompletionAgent CreateHostAgent(Kernel kernel) =>
+            CreateChatAgent(
+                kernel,
+                name: HostName,
+                instructions: HostInstructions);
+
         public static ChatCompletionAgent CreateChatAgent(
             Kernel kernel,
             string name,
