@@ -5,6 +5,8 @@
     <AssemblyName>Microsoft.SemanticKernel.Agents.Framework</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -14,8 +16,6 @@
     <Title>Semantic Kernel Agents - Framework</Title>
     <Description>Semantic Kernel Agents framework and abstractions. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
     <VersionSuffix>preview</VersionSuffix>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
