@@ -49,10 +49,12 @@ public sealed class FunctionCallingStepwisePlanner
     {
         var logger = kernel.LoggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
 
+#pragma warning disable CS8604 // Possible null reference argument.
         return PlannerInstrumentation.InvokePlanAsync(
             static (FunctionCallingStepwisePlanner plan, Kernel kernel, Tuple<string?, ChatHistory?>? input, CancellationToken cancellationToken)
-                => plan.ExecuteCoreAsync(kernel, input?.Item1!, input?.Item2!, cancellationToken),
+                => plan.ExecuteCoreAsync(kernel, input?.Item1!, input?.Item2, cancellationToken),
             this, kernel, new Tuple<string?, ChatHistory?>(question, chatHistoryForSteps), logger, cancellationToken);
+#pragma warning restore CS8604 // Possible null reference argument.
     }
 
     #region private
