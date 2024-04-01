@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -11,9 +12,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-/// <remarks>
-/// $$$
-/// </remarks>
 public sealed class ChatCompletionAgent : LocalKernelAgent
 {
     /// <inheritdoc/>
@@ -57,7 +55,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
 
         foreach (var message in messages)
         {
-            // message.Source = new AgentMessageSource(this.Id).ToJson(); $$$
+            // message.Source = new AgentMessageSource(this.Id).ToJson(); $$$ MESSAGE SOURCE
 
             yield return message;
         }

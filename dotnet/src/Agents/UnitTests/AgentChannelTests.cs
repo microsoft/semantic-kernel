@@ -12,8 +12,15 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
 
+/// <summary>
+/// Unit testing of <see cref="AgentChannel"/>.
+/// </summary>
 public class AgentChannelTests
 {
+    /// <summary>
+    /// Verify a <see cref="AgentChannel{TAgent}"/> throws if passed
+    /// an agent type that does not match declared agant type (TAgent).
+    /// </summary>
     [Fact]
     public async Task VerifyAgentChannelUpcastAsync()
     {
@@ -23,7 +30,7 @@ public class AgentChannelTests
         var messages = channel.InvokeAgentAsync(new TestAgent()).ToArrayAsync();
         Assert.Equal(1, channel.InvokeCount);
 
-        Assert.Throws<AgentException>(() => messages = channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync());
+        await Assert.ThrowsAsync<AgentException>(async () => await channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync());
         Assert.Equal(1, channel.InvokeCount);
     }
 
@@ -38,7 +45,7 @@ public class AgentChannelTests
         protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(TestAgent agent, ChatMessageContent? input = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            this.InvokeCount += 1;
+            this.InvokeCount++;
 
             yield break;
         }

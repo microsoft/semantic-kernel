@@ -5,10 +5,16 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
 
+/// <summary>
+/// Unit testing of <see cref="AgentException"/>.
+/// </summary>
 public class AgentExceptionTests
 {
+    /// <summary>
+    /// Exercise usage of the various constructors.
+    /// </summary>
     [Fact]
-    public void VerifyAgentException()
+    public void VerifyAgentExceptionThrown()
     {
         Assert.Throws<AgentException>(this.ThrowException);
         Assert.Throws<AgentException>(() => this.ThrowException("test"));
@@ -17,16 +23,43 @@ public class AgentExceptionTests
 
     private void ThrowException()
     {
-        throw new AgentException();
+        try
+        {
+            throw new AgentException();
+        }
+        catch (AgentException exception)
+        {
+            Assert.NotNull(exception.Message);
+            Assert.Null(exception.InnerException);
+            throw;
+        }
     }
 
     private void ThrowException(string message)
     {
-        throw new AgentException(message);
+        try
+        {
+            throw new AgentException(message);
+        }
+        catch (AgentException exception)
+        {
+            Assert.Equivalent(message, exception.Message);
+            Assert.Null(exception.InnerException);
+            throw;
+        }
     }
 
     private void ThrowWrappedException(string message)
     {
-        throw new AgentException(message, new InvalidOperationException());
+        try
+        {
+            throw new AgentException(message, new InvalidOperationException());
+        }
+        catch (AgentException exception)
+        {
+            Assert.Equivalent(message, exception.Message);
+            Assert.NotNull(exception.InnerException);
+            throw;
+        }
     }
 }

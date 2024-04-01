@@ -11,8 +11,14 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Internal;
 
+/// <summary>
+/// Unit testing of <see cref="BroadcastQueue"/>.
+/// </summary>
 public class BroadcastQueueTests
 {
+    /// <summary>
+    /// Verify the default configuratin.
+    /// </summary>
     [Fact]
     public void VerifyBroadcastQueueDefaultConfiguration()
     {
@@ -21,29 +27,36 @@ public class BroadcastQueueTests
         Assert.True(queue.BlockDuration.TotalSeconds > 0);
     }
 
+    /// <summary>
+    /// Verify behavior of <see cref="BroadcastQueue"/> over the course of multiple interactions.
+    /// </summary>
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        TestChannel channel = new();
+        // Create nexus and channel.
         BroadcastQueue queue =
             new()
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-
+        TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
+        // Verify initial state
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
         Assert.Empty(channel.ReceivedMessages);
 
+        // Verify empty invocation with no channels.
         queue.Enqueue(Array.Empty<ChannelReference>(), Array.Empty<ChatMessageContent>());
         await VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
         Assert.Empty(channel.ReceivedMessages);
 
+        // Verify empty invocation of channel.
         queue.Enqueue([reference], Array.Empty<ChatMessageContent>());
         await VerifyReceivingStateAsync(receiveCount: 1, queue, channel, "test");
         Assert.Empty(channel.ReceivedMessages);
 
+        // Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
         await VerifyReceivingStateAsync(receiveCount: 2, queue, channel, "test");
         Assert.NotEmpty(channel.ReceivedMessages);
@@ -51,21 +64,22 @@ public class BroadcastQueueTests
         await queue.FlushAsync();
     }
 
+    /// <summary>
+    /// Verify behavior of <see cref="BroadcastQueue"/> with queuing of multiple channels.
+    /// </summary>
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        TestChannel channel = new();
+        // Create nexus and channel.
         BroadcastQueue queue =
             new()
             {
                 BlockDuration = TimeSpan.FromSeconds(0.08),
             };
-
+        TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        await BroadcastQueueTests.VerifyReceivingStateAsync(receiveCount: 0, queue, channel, "test");
-        Assert.Empty(channel.ReceivedMessages);
-
+        // Enqueue multple channels
         object syncObject = new();
 
         for (int count = 0; count < 10; ++count)
@@ -73,13 +87,13 @@ public class BroadcastQueueTests
             queue.Enqueue([new(channel, $"test{count}")], [new ChatMessageContent(AuthorRole.User, "hi")]);
         }
 
-        await queue.FlushAsync();
-
+        // Drain all queues.
         for (int count = 0; count < 10; ++count)
         {
             await queue.IsReceivingAsync($"test{count}");
         }
 
+        // Verify result
         Assert.NotEmpty(channel.ReceivedMessages);
         Assert.Equal(10, channel.ReceivedMessages.Count);
     }
@@ -90,8 +104,6 @@ public class BroadcastQueueTests
         Assert.False(isReceiving);
         Assert.Equal(receiveCount, channel.ReceiveCount);
     }
-
-    // TEST W/ MULTIPLE TASKS ENQUEUE
 
     private sealed class TestChannel : AgentChannel
     {

@@ -5,18 +5,19 @@
     <AssemblyName>Microsoft.SemanticKernel.Agents.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);SKEXP0110</NoWarn>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <NoWarn>$(NoWarn);SKEXP0110</NoWarn>    
   </PropertyGroup>
 
-  <!--<Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />-->
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - Core</Title>
     <Description>Semantic Kernel Core Agents.</Description>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionSuffix>preview</VersionSuffix>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

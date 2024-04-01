@@ -10,10 +10,16 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Internal;
 
+/// <summary>
+/// Unit testing of <see cref="PromptRenderer"/>.
+/// </summary>
 public class PromptRendererTests
 {
     private readonly TestFilter _filter = new();
 
+    /// <summary>
+    /// Verify short-ciruit for rendering empty content.
+    /// </summary>
     [Fact]
     public async Task VerifyPromptRendererNullInstructionsAsync()
     {
@@ -24,6 +30,9 @@ public class PromptRendererTests
         await this.VerifyRenderSkippedAsync(instructions: "   ");
     }
 
+    /// <summary>
+    /// Verify result for rendering simple instructions (no parameters).
+    /// </summary>
     [Fact]
     public async Task VerifyPromptRendererBasicInstructionsAsync()
     {
@@ -32,6 +41,9 @@ public class PromptRendererTests
         await this.VerifyRenderAsync(instructions: "Do something else");
     }
 
+    /// <summary>
+    /// Verify result for rendering parameterized instructions.
+    /// </summary>
     [Fact]
     public async Task VerifyPromptRendererTemplateInstructionsAsync()
     {
@@ -45,7 +57,7 @@ public class PromptRendererTests
     {
         var rendered = await this.RenderInstructionsAsync(instructions, arguments);
         Assert.NotNull(rendered);
-        Assert.Equal(expectCached ? 0 : arguments == null ? 0 : 0, this._filter.RenderCount); // $$$ FILTER BUG
+        Assert.Equal(expectCached ? 0 : arguments == null ? 0 : 1, this._filter.RenderCount);
     }
 
     private async Task VerifyRenderSkippedAsync(string? instructions)

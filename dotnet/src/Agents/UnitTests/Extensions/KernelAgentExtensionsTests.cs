@@ -10,8 +10,14 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Extensions;
 
+/// <summary>
+/// Unit testing of <see cref="KernelAgentExtensions"/>.
+/// </summary>
 public class KernelAgentExtensionsTests
 {
+    /// <summary>
+    /// Verify behavior of <see cref="KernelAgentExtensions.FormatInstructionsAsync"/> extension.
+    /// </summary>
     [Fact]
     public async Task VerifyKernelAgentExtensionsFormatInstructionsAsync()
     {

@@ -12,40 +12,60 @@ using System.Linq;
 
 namespace SemanticKernel.Agents.UnitTests;
 
+/// <summary>
+/// Unit testing of <see cref="AgentNexus"/>.
+/// </summary>
 public class AgentNexusTests
 {
+    /// <summary>
+    /// Verify behavior of <see cref="AgentNexus"/> over the course of agent interactions.
+    /// </summary>
     [Fact]
     public async Task VerifyAgentNexusLifecycleAsync()
     {
+        // Create nexus
         TestNexus nexus = new();
-        var messages = await nexus.GetHistoryAsync().ToArrayAsync();
-        Assert.Empty(messages);
-        messages = await nexus.GetHistoryAsync(nexus.Agent).ToArrayAsync();
-        Assert.Empty(messages);
 
+        // Verify initial state
+        await this.VerifyHistoryAsync(expectedCount: 0, nexus.GetHistoryAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, nexus.GetHistoryAsync(nexus.Agent)); // Agent history
+
+        // Inject history
         nexus.AppendHistory([new ChatMessageContent(AuthorRole.User, "More")]);
         nexus.AppendHistory([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
-        //await Task.Delay(1000);
+        // Verify updated history
+        await this.VerifyHistoryAsync(expectedCount: 2, nexus.GetHistoryAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, nexus.GetHistoryAsync(nexus.Agent)); // Agent hasn't joined
 
-        messages = await nexus.GetHistoryAsync().ToArrayAsync();
-        Assert.NotEmpty(messages);
-        Assert.Equal(2, messages.Length);
-        messages = await nexus.GetHistoryAsync(nexus.Agent).ToArrayAsync();
-        Assert.Empty(messages); // Agent hasn't joined
-
-        messages = await nexus.InvokeAsync("hi").ToArrayAsync();
+        // Invoke with input & verify (agent joins chat)
+        await nexus.InvokeAsync("hi").ToArrayAsync();
         Assert.Equal(1, nexus.Agent.InvokeCount);
 
-        messages = await nexus.InvokeAsync().ToArrayAsync();
+        // Verify updated history
+        await this.VerifyHistoryAsync(expectedCount: 4, nexus.GetHistoryAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 4, nexus.GetHistoryAsync(nexus.Agent)); // Agent history
+
+        // Invoke without input & verify
+        await nexus.InvokeAsync().ToArrayAsync();
         Assert.Equal(2, nexus.Agent.InvokeCount);
 
-        messages = await nexus.GetHistoryAsync().ToArrayAsync();
-        Assert.NotEmpty(messages);
-        Assert.Equal(5, messages.Length);
-        messages = await nexus.GetHistoryAsync(nexus.Agent).ToArrayAsync();
-        Assert.NotEmpty(messages); // Agent joined
-        Assert.Equal(5, messages.Length);
+        // Verify final history
+        await this.VerifyHistoryAsync(expectedCount: 5, nexus.GetHistoryAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 5, nexus.GetHistoryAsync(nexus.Agent)); // Agent history
+    }
+
+    private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
+    {
+        if (expectedCount == 0)
+        {
+            Assert.Empty(history);
+        }
+        else
+        {
+            Assert.NotEmpty(history);
+            Assert.Equal(expectedCount, await history.CountAsync());
+        }
     }
 
     private sealed class TestNexus : AgentNexus
@@ -58,7 +78,7 @@ public class AgentNexusTests
                 this.InvokeAgentAsync(this.Agent, CreateUserMessage(input), cancellationToken);
     }
 
-    private class TestAgent()
+    private sealed class TestAgent()
         : LocalKernelAgent(Kernel.CreateBuilder().Build())
     {
         public override string? Description { get; } = null;

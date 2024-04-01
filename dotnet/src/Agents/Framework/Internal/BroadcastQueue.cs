@@ -29,13 +29,16 @@ internal sealed class BroadcastQueue
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// $$$
+    /// Indicates if the queue is broadcasting messages.
     /// </summary>
     public bool IsActive => this._isActive != 0;
 
     /// <summary>
-    /// $$$
+    /// Block until queue not broadcasting messages.
     /// </summary>
+    /// <remarks>
+    /// No guarantee that it won't be broadcasting immediately after drained.
+    /// </remarks>
     public async Task FlushAsync()
     {
         while (this.IsActive)
@@ -47,8 +50,8 @@ internal sealed class BroadcastQueue
     /// <summary>
     /// Enqueue a set of messages for a given channel.
     /// </summary>
-    /// <param name="channels">$$$</param>
-    /// <param name="messages">$$$</param>
+    /// <param name="channels">The target channels for which to broadcast.</param>
+    /// <param name="messages">The messages being broadcast.</param>
     public void Enqueue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
     {
         lock (this._queueLock)

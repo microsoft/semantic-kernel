@@ -8,12 +8,18 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.Agents.UnitTests.Extensions;
 
+/// <summary>
+/// Unit testing of <see cref="Microsoft.SemanticKernel.Agents.Extensions.ChatHistoryExtensions"/>.
+/// </summary>
 public class ChatHistoryExtensionsTests
 {
+    /// <summary>
+    /// Verify ability to reverse history in-place.
+    /// </summary>
     [Fact]
     public void VerifyChatHistoryOrdering()
     {
-        ChatHistory history = new();
+        ChatHistory history = [];
         history.AddUserMessage("Hi");
         history.AddAssistantMessage("Hi");
 
@@ -24,10 +30,13 @@ public class ChatHistoryExtensionsTests
         VerifyRole(AuthorRole.Assistant, history.ToDescending().First());
     }
 
+    /// <summary>
+    /// Verify ability to asynchronously reverse history in-place.
+    /// </summary>
     [Fact]
     public async Task VerifyChatHistoryOrderingAsync()
     {
-        ChatHistory history = new();
+        ChatHistory history = [];
         history.AddUserMessage("Hi");
         history.AddAssistantMessage("Hi");
 

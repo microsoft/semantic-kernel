@@ -6,21 +6,30 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Extensions;
 
+/// <summary>
+/// Unit testing of <see cref="ChatMessageContentExtensions"/>.
+/// </summary>
 public class ChatMessageContentExtensionsTests
 {
+    /// <summary>
+    /// Verify behavior of content accessor extensions for <see cref="ChatMessageContent"/>.
+    /// </summary>
     [Fact]
     public void VerifyChatMessageContentExtensionsExistence()
     {
+        // Create various messages
         ChatMessageContent messageWithNullContent = new(AuthorRole.User, content: null);
         ChatMessageContent messageWithEmptyContent = new(AuthorRole.User, content: string.Empty);
         ChatMessageContent messageWithContent = new(AuthorRole.User, content: "hi");
         ChatMessageContent? nullMessage = null;
 
+        // Verify HasContent
         Assert.False(nullMessage.HasContent());
         Assert.False(messageWithNullContent.HasContent());
         Assert.False(messageWithEmptyContent.HasContent());
         Assert.True(messageWithContent.HasContent());
 
+        // Verify TryGetContent
         string? content;
         Assert.False(messageWithNullContent.TryGetContent(out content));
         Assert.False(messageWithEmptyContent.TryGetContent(out content));

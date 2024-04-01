@@ -8,7 +8,7 @@ namespace AgentSyntaxExamples;
 
 public static partial class AgentInventory
 {
-    public static class OpenAI
+    public static class ChatAgents
     {
         public static ChatCompletionAgent CreateParrotAgent(Kernel kernel) =>
             CreateChatAgent(

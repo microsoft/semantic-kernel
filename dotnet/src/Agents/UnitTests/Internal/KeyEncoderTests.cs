@@ -6,14 +6,20 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Internal;
 
+/// <summary>
+/// Unit testing of <see cref="KeyEncoder"/>.
+/// </summary>
 public class KeyEncoderTests
 {
+    /// <summary>
+    /// Validate the production of unique and consistent hashes.
+    /// </summary>
     [Fact]
     public void VerifyKeyEncoderUniqueness()
     {
         this.VerifyHashEquivalancy(Array.Empty<string>());
-        this.VerifyHashEquivalancy(typeof(KeyEncoderTests).FullName);
-        this.VerifyHashEquivalancy(typeof(KeyEncoderTests).FullName, "http://localhost", "zoo");
+        this.VerifyHashEquivalancy(nameof(KeyEncoderTests));
+        this.VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
     }
 
     private void VerifyHashEquivalancy(params string[] keys)

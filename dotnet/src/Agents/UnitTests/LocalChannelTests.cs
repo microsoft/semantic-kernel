@@ -11,8 +11,15 @@ using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
 
+/// <summary>
+/// Unit testing of <see cref="LocalChannel"/>.
+/// </summary>
 public class LocalChannelTests
 {
+    /// <summary>
+    /// Verify a <see cref="LocalChannel"/> throws if passed an agent that
+    /// does not implement <see cref="ILocalAgent"/>.
+    /// </summary>
     [Fact]
     public async Task VerifyLocalChannelAgentTypeAsync()
     {
@@ -27,7 +34,7 @@ public class LocalChannelTests
             => base.InvokeAsync(agent, new ChatMessageContent(AuthorRole.User, "hi"), cancellationToken);
     }
 
-    private class TestAgent()
+    private sealed class TestAgent()
         : KernelAgent(Kernel.CreateBuilder().Build())
     {
         public override string? Description { get; } = null;
