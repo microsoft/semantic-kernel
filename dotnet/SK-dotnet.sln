@@ -215,6 +215,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-A
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
 		src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs = src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs
+		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs
+		src\InternalUtilities\src\Text\SseLine.cs = src\InternalUtilities\src\Text\SseLine.cs
+		src\InternalUtilities\src\Text\SseReader.cs = src\InternalUtilities\src\Text\SseReader.cs
+		src\InternalUtilities\src\Text\SseData.cs = src\InternalUtilities\src\Text\SseData.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
