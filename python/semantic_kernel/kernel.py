@@ -4,16 +4,28 @@ from __future__ import annotations
 import glob
 import importlib
 import inspect
+import json
 import logging
 import os
 from copy import copy
 from types import MethodType
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, ItemsView, Literal, Type, TypeVar, Union
 
+import httpx
 import yaml
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
+)
+from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
+from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+    OpenAPIFunctionExecutionParameters,
+)
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
+from semantic_kernel.connectors.utils.document_loader import DocumentLoader
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     FunctionInitializationError,
@@ -21,6 +33,7 @@ from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelFunctionNotFoundError,
     KernelInvokeException,
+    KernelPluginInvalidConfigurationError,
     KernelPluginNotFoundError,
     KernelServiceNotFoundError,
     PluginInitializationError,
@@ -655,6 +668,102 @@ class Kernel(KernelBaseModel):
                     )
 
         return KernelPlugin(name=plugin_directory_name, functions=functions)
+
+    async def import_plugin_from_openai(
+        self,
+        plugin_name: str,
+        plugin_url: str | None = None,
+        plugin_str: str | None = None,
+        execution_parameters: OpenAIFunctionExecutionParameters | None = None,
+    ) -> KernelPlugin:
+        """Create a plugin from the Open AI manifest.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            plugin_url (str | None): The URL of the plugin
+            plugin_str (str | None): The JSON string of the plugin
+            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+
+        Returns:
+            KernelPlugin: The imported plugin
+
+        Raises:
+            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
+        """
+
+        if execution_parameters is None:
+            execution_parameters = OpenAIFunctionExecutionParameters()
+
+        validate_plugin_name(plugin_name)
+
+        if plugin_str is not None:
+            # Load plugin from the provided JSON string/YAML string
+            openai_manifest = plugin_str
+        elif plugin_url is not None:
+            # Load plugin from the URL
+            http_client = execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient()
+            openai_manifest = await DocumentLoader.from_uri(
+                url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
+            )
+        else:
+            raise PluginInitializationError("Either plugin_url or plugin_json must be provided.")
+
+        try:
+            plugin_json = json.loads(openai_manifest)
+            openai_auth_config = OpenAIAuthenticationConfig(**plugin_json["auth"])
+        except json.JSONDecodeError as ex:
+            raise KernelPluginInvalidConfigurationError("Parsing of Open AI manifest for auth config failed.") from ex
+
+        # Modify the auth callback in execution parameters if it's provided
+        if execution_parameters and execution_parameters.auth_callback:
+            initial_auth_callback = execution_parameters.auth_callback
+
+            async def custom_auth_callback(**kwargs):
+                return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)
+
+            execution_parameters.auth_callback = custom_auth_callback
+
+        try:
+            openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json)
+        except PluginInitializationError as ex:
+            raise KernelPluginInvalidConfigurationError(
+                "Parsing of Open AI manifest for OpenAPI spec URL failed."
+            ) from ex
+
+        return self.import_plugin_from_openapi(
+            plugin_name=plugin_name,
+            openapi_document_path=openapi_spec_url,
+            execution_settings=execution_parameters,
+        )
+
+    def import_plugin_from_openapi(
+        self,
+        plugin_name: str,
+        openapi_document_path: str,
+        execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
+    ) -> KernelPlugin:
+        """Create a plugin from an OpenAPI manifest.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            openapi_document_path (str): The OpenAPI document path
+            execution_settings (OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None):
+                The execution settings
+
+        Returns:
+            KernelPlugin: The imported plugin
+        """
+        validate_plugin_name(plugin_name)
+
+        if not openapi_document_path:
+            raise PluginInitializationError("OpenAPI document path is required.")
+
+        plugin = OpenAPIPlugin.create(
+            plugin_name=plugin_name,
+            openapi_document_path=openapi_document_path,
+            execution_settings=execution_settings,
+        )
+        return self.import_plugin_from_object(plugin, plugin_name)
 
     def _validate_plugin_directory(self, parent_directory: str, plugin_directory_name: str) -> str:
         """Validate the plugin name and that the plugin directory exists.
