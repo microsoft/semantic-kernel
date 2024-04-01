@@ -52,7 +52,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        foreach (var message in messages)
+        foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
         {
             // message.Source = new AgentMessageSource(this.Id).ToJson(); $$$ MESSAGE SOURCE
 
