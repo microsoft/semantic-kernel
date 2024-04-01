@@ -59,7 +59,6 @@ az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
-# When using data, set use_extensions=True and use the 2023-12-01-preview API version.
 # When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
