@@ -61,7 +61,7 @@ public class Example02_Plugins : BaseTest
     }
 
     /// <summary>
-    /// 
+    ///
     /// A basic nexus for the agent example.
     /// </summary>
     /// <remarks>

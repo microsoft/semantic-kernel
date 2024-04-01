@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -21,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="C:\Users\crickman\source\repos\semantic-kernel8\dotnet\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
