@@ -33,6 +33,8 @@ class AIServiceSelector:
             for id, settings in func_exec_settings.items():
                 if id not in execution_settings_dict:
                     execution_settings_dict[id] = settings
+        if not execution_settings_dict:
+            execution_settings_dict = {"default": PromptExecutionSettings()}
         for service_id, settings in execution_settings_dict.items():
             service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
             if service:
