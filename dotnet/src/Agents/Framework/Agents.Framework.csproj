@@ -20,12 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="C:\Users\crickman\source\repos\semantic-kernel8\dotnet\src\InternalUtilities\src\Linq\AsyncEnumerable.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
