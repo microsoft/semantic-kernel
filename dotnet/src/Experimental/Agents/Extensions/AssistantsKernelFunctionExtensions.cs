@@ -74,9 +74,19 @@ internal static class AssistantsKernelFunctionExtensions
             return "string";
         }
 
+        if (type.IsInteger())
+        {
+            return "integer";
+        }
+
         if (type.IsNumber())
         {
             return "number";
+        }
+
+        if (type == typeof(bool))
+        {
+            return "boolean";
         }
 
         if (type.IsEnum)
@@ -84,6 +94,11 @@ internal static class AssistantsKernelFunctionExtensions
             return "enum";
         }
 
-        return type.Name;
+        if (type.IsArray)
+        {
+            return "array";
+        }
+
+        return "object";
     }
 }
