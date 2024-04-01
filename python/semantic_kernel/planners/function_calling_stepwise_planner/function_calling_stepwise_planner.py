@@ -8,6 +8,9 @@ from typing import Optional
 
 import yaml
 
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.utils import (
@@ -115,10 +118,14 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 f"The service with id `{self.service_id}` is not an OpenAI based service."
             )
 
-        prompt_execution_settings = (
-            self.options.execution_settings
-            or chat_completion.get_prompt_execution_settings_class()(service_id=self.service_id)
+        prompt_execution_settings: (
+            OpenAIChatPromptExecutionSettings
+        ) = self.options.execution_settings or chat_completion.get_prompt_execution_settings_class()(
+            service_id=self.service_id
         )
+        if self.options.max_completion_tokens:
+            prompt_execution_settings.max_tokens = self.options.max_completion_tokens
+        prompt_execution_settings.max_auto_invoke_attempts = self.options.max_iterations
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         cloned_kernel = copy(kernel)
