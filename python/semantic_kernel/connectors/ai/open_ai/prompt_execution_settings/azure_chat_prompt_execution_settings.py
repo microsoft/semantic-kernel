@@ -1,17 +1,14 @@
 import logging
-
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from pydantic import AliasGenerator, ConfigDict, Field
-
-from pydantic.alias_generators import to_snake, to_camel
+from pydantic.alias_generators import to_camel, to_snake
 from pydantic.functional_validators import AfterValidator
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
 
 logger = logging.getLogger(__name__)
 

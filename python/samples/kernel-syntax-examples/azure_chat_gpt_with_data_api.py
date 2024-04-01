@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
@@ -9,7 +10,6 @@ from semantic_kernel.connectors.ai.open_ai.contents.function_call import Functio
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureAISearchDataSource,
-    AzureAISearchDataSourceParameters,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )

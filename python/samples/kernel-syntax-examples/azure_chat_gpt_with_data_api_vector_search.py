@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import (
@@ -19,7 +20,6 @@ from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env_as_dict,
     azure_openai_settings_from_dot_env_as_dict,
