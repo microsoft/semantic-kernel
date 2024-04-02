@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Base strategy class for defining completion criteria for a <see cref="AgentChat"/>.
 /// </summary>
+[Experimental("SKEXP0112")]
 public abstract class SelectionStrategy
 {
     /// <summary>
@@ -26,5 +28,5 @@ public abstract class SelectionStrategy
     /// <param name="history">The chat history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The agent who shall take the next turn.</returns>
-    public abstract Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
+    public abstract Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default);
 }
