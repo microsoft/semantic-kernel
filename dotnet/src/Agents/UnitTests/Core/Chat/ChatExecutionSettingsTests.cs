@@ -32,8 +32,11 @@ public class ChatExecutionSettingsTests
         ChatExecutionSettings settings =
             new()
             {
+                MaximumIterations = 3,
                 ContinuationStrategy = strategyMock.Object
             };
+
+        Assert.Equal(3, settings.MaximumIterations);
         Assert.NotNull(settings.ContinuationStrategy);
     }
 

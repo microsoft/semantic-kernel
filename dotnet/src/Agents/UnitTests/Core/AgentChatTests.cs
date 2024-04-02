@@ -60,7 +60,7 @@ public class AgentChatTests
         string id = Guid.NewGuid().ToString();
         ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
         agent.SetupGet(a => a.Id).Returns(id);
-        agent.SetupGet(a => a.InvokeAsync(It.IsAny<IEnumerable<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
+        agent.Setup(a => a.InvokeAsync(It.IsAny<IEnumerable<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
     }
