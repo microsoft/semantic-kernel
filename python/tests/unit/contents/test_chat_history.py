@@ -49,7 +49,7 @@ def test_add_system_message(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == ChatRole.SYSTEM
 
 
-def test_add_system_message_at_init(chat_history: ChatHistory):
+def test_add_system_message_at_init():
     content = "System message"
     chat_history = ChatHistory(system_message=content)
     assert chat_history.messages[-1].content == content
@@ -188,6 +188,17 @@ def test_serialize():  # ignore: E501
         json_str
         == '{\n    "messages": [\n        {\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "system",\n            "content": "a test system prompt"\n        },\n        {\n            "metadata": {},\n            "type": "ChatMessageContent",\n            "role": "user",\n            "content": "Message"\n        }\n    ],\n    "message_type": "ChatMessageContent"\n}'  # noqa: E501
     )
+
+
+def test_serialize_and_deserialize_to_chat_history_mixed_content():
+    system_msg = "a test system prompt"
+    msgs = [ChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)]
+    msgs.extend([OpenAIChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)])
+    msgs.extend([AzureChatMessageContent(role=ChatRole.USER, content=f"Message {i}") for i in range(3)])
+    chat_history = ChatHistory(messages=msgs, system_message=system_msg)
+    json_str = chat_history.serialize()
+    new_chat_history = ChatHistory.restore_chat_history(json_str)
+    assert new_chat_history == chat_history
 
 
 def test_serialize_and_deserialize_to_chat_history():
