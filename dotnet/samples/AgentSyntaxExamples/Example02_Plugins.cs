@@ -25,7 +25,8 @@ public class Example02_Plugins : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.HostInstructions)
+                instructions: AgentInventory.HostInstructions,
+                name: AgentInventory.HostName)
             {
                 ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }
             };
@@ -48,8 +49,7 @@ public class Example02_Plugins : BaseTest
         {
             await foreach (var content in nexus.InvokeAsync(agent, input))
             {
-                this.WriteLine($"# {content.Role}: '{content.Content}'");
-                //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'"); // TODO: MERGE IDENTITY - PR #5725
+                this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
             }
         }
     }

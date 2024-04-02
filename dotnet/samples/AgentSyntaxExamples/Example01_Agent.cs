@@ -23,7 +23,8 @@ public class Example01_Agent : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.ParrotInstructions)
+                instructions: AgentInventory.ParrotInstructions,
+                name: AgentInventory.ParrotName)
             {
                 InstructionArguments = new() { { "count", 3 } },
             };
@@ -41,8 +42,7 @@ public class Example01_Agent : BaseTest
         {
             await foreach (var content in nexus.InvokeAsync(agent, input))
             {
-                this.WriteLine($"# {content.Role}: '{content.Content}'");
-                //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'"); // TODO: MERGE IDENTITY - PR #5725
+                this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
             }
         }
     }

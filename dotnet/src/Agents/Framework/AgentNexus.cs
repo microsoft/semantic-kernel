@@ -86,10 +86,9 @@ public abstract class AgentNexus
             // Manifest the required channel
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
-            if (input.TryGetContent(out var content))
+            if (input.HasContent())
             {
-                this._history.AddUserMessage(content);
-                //this._history.AddUserMessage(content, input!.Name); // TODO: MERGE IDENTITY - PR #5725
+                this._history.Add(input!);
                 yield return input!;
             }
 
