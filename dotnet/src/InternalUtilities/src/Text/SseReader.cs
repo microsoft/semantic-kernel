@@ -129,7 +129,7 @@ internal sealed class SseReader : IDisposable
 #if NET7_0_OR_GREATER
         string lineText = await this._reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 #else
-        string lineText = await this._reader.ReadLineAsync().ConfigureAwait(false);
+        string? lineText = await this._reader.ReadLineAsync().ConfigureAwait(false);
 #endif
         if (lineText == null)
         {

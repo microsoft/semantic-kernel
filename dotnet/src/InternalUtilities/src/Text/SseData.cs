@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Text;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
 /// <summary>
 /// Represents a single Server-Sent Events (SSE) data object.
 /// </summary>

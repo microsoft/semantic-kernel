@@ -6,8 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit;
 using Microsoft.SemanticKernel.Text;
+using Xunit;
+
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
 namespace SemanticKernel.UnitTests.Utilities;
 
