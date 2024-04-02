@@ -44,7 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj"/>
-    <ProjectReference Include="..\Connectors.Google\Connectors.Anthropic.csproj"/>
+    <ProjectReference Include="..\Connectors.Anthropic\Connectors.Anthropic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
