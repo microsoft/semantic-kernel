@@ -11,8 +11,11 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
 
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
+
 /// <summary>
-/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="Microsoft.SemanticKernel.Text.StreamJsonParser"/>.
+/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="StreamJsonParser"/>.
 /// </summary>
 public sealed class GeminiStreamResponseTests
 {
