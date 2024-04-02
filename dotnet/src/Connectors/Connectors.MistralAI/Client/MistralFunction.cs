@@ -24,12 +24,14 @@ internal class MistralFunction
     /// The description of the function to help the model determine when and how to invoke it.
     /// </summary>
     [JsonPropertyName("description")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
 
     /// <summary>
     /// The function parameters, defined using a JSON Schema object. If omitted, the function is considered to have an empty parameter list.
     /// </summary>
     [JsonPropertyName("parameters")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MistralParameters? Parameters { get; set; }
 
     /// <summary>

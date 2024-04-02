@@ -11,12 +11,14 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 internal class MistralChatMessage
 {
     [JsonPropertyName("role")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Role { get; set; }
 
     [JsonPropertyName("content")]
     public string Content { get; set; }
 
     [JsonPropertyName("tool_calls")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<MistralToolCall>? ToolCalls { get; set; }
 
     /// <summary>

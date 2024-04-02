@@ -6,5 +6,6 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 internal class MistralToolCall
 {
     [JsonPropertyName("function")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MistralFunction? Function { get; set; }
 }

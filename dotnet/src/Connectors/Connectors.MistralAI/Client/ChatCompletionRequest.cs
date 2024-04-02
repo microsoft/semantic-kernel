@@ -23,6 +23,7 @@ internal sealed class ChatCompletionRequest
     public double TopP { get; set; } = 1;
 
     [JsonPropertyName("max_tokens")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens { get; set; }
 
     [JsonPropertyName("stream")]
@@ -40,6 +41,7 @@ internal sealed class ChatCompletionRequest
     public string? ToolChoice { get; set; }
 
     [JsonPropertyName("random_seed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? RandomSeed { get; set; }
 
     /// <summary>
