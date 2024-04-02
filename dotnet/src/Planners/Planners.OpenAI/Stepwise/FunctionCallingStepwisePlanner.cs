@@ -70,18 +70,18 @@ public sealed class FunctionCallingStepwisePlanner
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
         ILoggerFactory loggerFactory = kernel.LoggerFactory;
         ILogger logger = loggerFactory.CreateLogger(this.GetType()) ?? NullLogger.Instance;
-        var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
         var stepExecutionSettings = this._options.ExecutionSettings ?? new OpenAIPromptExecutionSettings();
 
         // Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         var clonedKernel = kernel.Clone();
         clonedKernel.ImportPluginFromType<UserInteraction>();
 
-        // Create and invoke a kernel function to generate the initial plan
-        var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
-
         if (chatHistoryForSteps is null)
         {
+            // Create and invoke a kernel function to generate the initial plan
+            var promptTemplateFactory = new KernelPromptTemplateFactory(loggerFactory);
+            var initialPlan = await this.GeneratePlanAsync(question, clonedKernel, logger, cancellationToken).ConfigureAwait(false);
+
             // Build chat history for the first step
             chatHistoryForSteps = await this.BuildChatHistoryForStepAsync(question, initialPlan, clonedKernel, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
         }
