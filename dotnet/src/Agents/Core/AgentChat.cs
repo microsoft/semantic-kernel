@@ -111,7 +111,7 @@ public sealed class AgentChat : AgentNexus
 
                 if (message.Role == AuthorRole.Assistant)
                 {
-                    var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(this.History, cancellationToken) ?? Task.FromResult(false);
+                    var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
                     bool shallContinue = await task.ConfigureAwait(false);
                     this.IsComplete = !shallContinue;
                 }
@@ -169,7 +169,7 @@ public sealed class AgentChat : AgentNexus
 
             if (message.Role == AuthorRole.Assistant)
             {
-                var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(this.History, cancellationToken) ?? Task.FromResult(false);
+                var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
                 bool shallContinue = await task.ConfigureAwait(false);
                 this.IsComplete = !shallContinue;
             }
