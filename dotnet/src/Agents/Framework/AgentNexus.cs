@@ -19,7 +19,7 @@ public abstract class AgentNexus
     /// <summary>
     /// Expose the nexus history.
     /// </summary>
-    protected IReadOnlyCollection<ChatMessageContent> History => (IReadOnlyCollection<ChatMessageContent>)this._history;
+    protected IReadOnlyList<ChatMessageContent> History => this._history;
 
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;

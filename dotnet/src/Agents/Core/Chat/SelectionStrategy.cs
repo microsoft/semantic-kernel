@@ -26,5 +26,5 @@ public abstract class SelectionStrategy
     /// <param name="history">The chat history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The agent who shall take the next turn.</returns>
-    public abstract Task<Agent> NextAsync(IEnumerable<Agent> agents, IReadOnlyCollection<ChatMessageContent> history, CancellationToken cancellationToken);
+    public abstract Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 }

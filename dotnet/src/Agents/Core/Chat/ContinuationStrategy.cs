@@ -25,5 +25,5 @@ public abstract class ContinuationStrategy
     /// <param name="history">The most recent message</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True when complete.</returns>
-    public abstract Task<bool> IsCompleteAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken);
+    public abstract Task<bool> IsCompleteAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 }

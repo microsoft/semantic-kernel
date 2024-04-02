@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>True to continue.</returns>
-public delegate Task<bool> ContinuationCriteriaCallback(IReadOnlyCollection<ChatMessageContent> history, CancellationToken cancellationToken);
+public delegate Task<bool> ContinuationCriteriaCallback(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
 /// Delegate definition for <see cref="ChatExecutionSettings.SelectionStrategy"/>.
@@ -21,7 +21,7 @@ public delegate Task<bool> ContinuationCriteriaCallback(IReadOnlyCollection<Chat
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>The agent who shall take the next turn.</returns>
-public delegate Task<Agent> SelectionCriteriaCallback(IEnumerable<Agent> agents, IReadOnlyCollection<ChatMessageContent> history, CancellationToken cancellationToken);
+public delegate Task<Agent> SelectionCriteriaCallback(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
 /// Settings that affect behavior of <see cref="AgentChat"/>.
