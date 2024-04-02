@@ -40,6 +40,7 @@
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
