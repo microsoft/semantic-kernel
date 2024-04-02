@@ -88,7 +88,8 @@ public abstract class AgentNexus
 
             if (input.TryGetContent(out var content))
             {
-                this._history.AddUserMessage(content/*, input!.Name*/); // $$$ IDENTITY
+                this._history.AddUserMessage(content);
+                //this._history.AddUserMessage(content, input!.Name); // TODO: MERGE IDENTITY - PR #5725
                 yield return input!;
             }
 

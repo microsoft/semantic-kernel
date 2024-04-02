@@ -56,7 +56,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
 
         foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
         {
-            // message.Source = new AgentMessageSource(this.Id).ToJson(); $$$ MESSAGE SOURCE
+            // TODO: MESSAGE SOURCE - ISSUE #5731
 
             yield return message;
         }
@@ -67,7 +67,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
             {
                 instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
 
-                chat.AddMessage(AuthorRole.System, instructions/*, name: this.Name*/); // $$$ IDENTITY
+                chat.AddMessage(AuthorRole.System, instructions/*, name: this.Name*/); // TODO: MERGE IDENTITY - PR #5725
             }
         }
     }
