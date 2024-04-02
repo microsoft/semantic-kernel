@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Round-robin turn-taking strategy.
 /// </summary>
-[Experimental("SKEXP0112")]
 public sealed class SequentialSelectionStrategy : SelectionStrategy
 {
     private int _index = 0;

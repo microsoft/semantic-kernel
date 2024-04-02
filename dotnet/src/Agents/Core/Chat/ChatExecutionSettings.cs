@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>True to continue.</returns>
-[Experimental("SKEXP0112")]
 public delegate Task<bool> ContinuationCriteriaCallback(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
@@ -24,7 +22,6 @@ public delegate Task<bool> ContinuationCriteriaCallback(Agent agent, IReadOnlyLi
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>The agent who shall take the next turn.</returns>
-[Experimental("SKEXP0112")]
 public delegate Task<Agent?> SelectionCriteriaCallback(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
@@ -33,7 +30,6 @@ public delegate Task<Agent?> SelectionCriteriaCallback(IReadOnlyList<Agent> agen
 /// <remarks>
 /// Default behavior result in no agent selection or chat continuation.
 /// </remarks>
-[Experimental("SKEXP0112")]
 public class ChatExecutionSettings
 {
     /// <summary>

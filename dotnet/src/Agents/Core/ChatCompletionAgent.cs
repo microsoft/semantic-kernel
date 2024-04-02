@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,10 +9,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents;
+
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-[Experimental("SKEXP0111")]
 public sealed class ChatCompletionAgent : LocalKernelAgent
 {
     /// <inheritdoc/>
@@ -57,6 +56,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
         foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
+            message.Name = this.Name;
 
             yield return message;
         }
@@ -67,7 +67,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
             {
                 instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
 
-                chat.AddMessage(AuthorRole.System, instructions/*, name: this.Name*/); // TODO: MERGE IDENTITY - PR #5725
+                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { Name = $"{this.Name} Instructions" });
             }
         }
     }

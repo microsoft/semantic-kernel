@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110,SKEXP0111,SKEXP0112</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

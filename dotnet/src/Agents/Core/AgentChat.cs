@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A an <see cref="AgentNexus"/> that supports multi-turn interactions.
 /// </summary>
-[Experimental("SKEXP0112")]
 public sealed class AgentChat : AgentNexus
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test
