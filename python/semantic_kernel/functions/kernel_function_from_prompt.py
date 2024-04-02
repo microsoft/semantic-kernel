@@ -13,15 +13,16 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
@@ -41,7 +42,7 @@ PROMPT_RETURN_PARAM = KernelParameterMetadata(
 class KernelFunctionFromPrompt(KernelFunction):
     """Semantic Kernel Function from a prompt."""
 
-    prompt_template: KernelPromptTemplate
+    prompt_template: PromptTemplateBase
     prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     def __init__(
@@ -50,8 +51,8 @@ class KernelFunctionFromPrompt(KernelFunction):
         plugin_name: str,
         description: Optional[str] = None,
         prompt: Optional[str] = None,
-        template_format: Optional[str] = "semantic-kernel",
-        prompt_template: Optional[KernelPromptTemplate] = None,
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
+        prompt_template: Optional[PromptTemplateBase] = None,
         prompt_template_config: Optional[PromptTemplateConfig] = None,
         prompt_execution_settings: Optional[
             Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
@@ -89,7 +90,7 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
-            prompt_template = KernelPromptTemplate(prompt_template_config=prompt_template_config)
+            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)
 
         try:
             metadata = KernelFunctionMetadata(
@@ -172,7 +173,7 @@ through prompt_template_config or in the prompt_template."
         arguments: KernelArguments,
     ) -> FunctionResult:
         """Handles the chat service call."""
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
+        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
 
         # pass the kernel in for auto function calling
         kwargs = {}
@@ -180,6 +181,7 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
+            kwargs["arguments"] = arguments
 
         try:
             completions = await service.complete_chat(
@@ -234,7 +236,7 @@ through prompt_template_config or in the prompt_template."
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
         """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
@@ -246,6 +248,7 @@ through prompt_template_config or in the prompt_template."
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
+                arguments=arguments,
             ):
                 yield content
             return
@@ -267,7 +270,8 @@ through prompt_template_config or in the prompt_template."
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+        arguments: KernelArguments,
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
         """Handles the chat service call."""
 
         # pass the kernel in for auto function calling
@@ -276,8 +280,11 @@ through prompt_template_config or in the prompt_template."
             service, ChatCompletionClientBase
         ):
             kwargs["kernel"] = kernel
+            kwargs["arguments"] = arguments
 
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
+        chat_history = ChatHistory.from_rendered_prompt(
+            prompt,
+        )
         try:
             async for partial_content in service.complete_chat_stream(
                 chat_history=chat_history,
@@ -296,7 +303,7 @@ through prompt_template_config or in the prompt_template."
         service: TextCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
         """Handles the text service call."""
         try:
             async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):

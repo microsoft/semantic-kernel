@@ -49,13 +49,16 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Returns:
             List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
         """
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.prompt = prompt
         settings.stream = False
         async with AsyncSession(self.session) as session:
             async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
                 response.raise_for_status()
-                text = await response.text()
-                return [TextContent(inner_content=text, ai_model_id=self.ai_model_id, text=text)]
+                inner_content = await response.json()
+                text = inner_content["response"]
+                return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
     async def complete_stream(
         self,
@@ -74,6 +77,8 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Yields:
             List[StreamingTextContent] -- Completion result.
         """
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
         settings.prompt = prompt
         settings.stream = True
         async with AsyncSession(self.session) as session:

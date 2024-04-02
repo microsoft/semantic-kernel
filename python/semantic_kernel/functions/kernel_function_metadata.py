@@ -18,7 +18,17 @@ class KernelFunctionMetadata(KernelBaseModel):
     is_asynchronous: Optional[bool] = Field(default=True)
     return_parameter: Optional[KernelParameterMetadata] = None
 
-    def __eq__(self, other: "KernelFunctionMetadata") -> bool:
+    @property
+    def fully_qualified_name(self) -> str:
+        """
+        Get the fully qualified name of the function.
+
+        Returns:
+            The fully qualified name of the function.
+        """
+        return f"{self.plugin_name}-{self.name}" if self.plugin_name else self.name
+
+    def __eq__(self, other: object) -> bool:
         """
         Compare to another KernelFunctionMetadata instance.
 

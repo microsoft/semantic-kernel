@@ -17,7 +17,7 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
     path = __file__
     path = os.path.dirname(path)
 
-    with open(os.path.join(path, "tests.txt"), "r") as file:
+    with open(os.path.join(path, "semantic-kernel-tests.txt"), "r") as file:
         content = file.readlines()
 
     key = ""

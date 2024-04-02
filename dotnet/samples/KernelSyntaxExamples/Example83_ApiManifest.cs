@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
@@ -30,6 +31,13 @@ public class Example83_ApiManifest : BaseTest
         new object[] { "DriveItemPlugin", "driverootGetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin" },
         new object[] { "ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin" },
         new object[] { "CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"},
+
+#region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
+        // Graph API uses MSAL
+        new object[] { "AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin" },
+        // Astronomy API uses API key authentication
+        new object[] { "AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin" },
+#endregion
     };
 
     [Theory, MemberData(nameof(s_parameters))]
@@ -56,7 +64,7 @@ public class Example83_ApiManifest : BaseTest
 
     private async Task AddApiManifestPluginsAsync(Kernel kernel, params string[] pluginNames)
     {
-#pragma warning disable SKEXP0053
+#pragma warning disable SKEXP0050
         if (TestConfiguration.MSGraph.Scopes == null)
         {
             throw new InvalidOperationException("Missing Scopes configuration for Microsoft Graph API.");
@@ -69,25 +77,47 @@ public class Example83_ApiManifest : BaseTest
                         TestConfiguration.MSGraph.TenantId,
                         TestConfiguration.MSGraph.Scopes.ToArray(),
                         TestConfiguration.MSGraph.RedirectUri).ConfigureAwait(false);
-#pragma warning restore SKEXP0053
+#pragma warning restore SKEXP0050
 
         BearerAuthenticationProviderWithCancellationToken authenticationProvider = new(() => Task.FromResult(token));
+#pragma warning disable SKEXP0040
+#pragma warning disable SKEXP0043
+
+        // Microsoft Graph API execution parameters
+        var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
+            authCallback: authenticationProvider.AuthenticateRequestAsync,
+            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"));
+
+        // NASA API execution parameters
+        var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
+            authCallback: async (request, cancellationToken) =>
+            {
+                var uriBuilder = new UriBuilder(request.RequestUri ?? throw new InvalidOperationException("The request URI is null."));
+                var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                query["api_key"] = "DEMO_KEY";
+                uriBuilder.Query = query.ToString();
+                request.RequestUri = uriBuilder.Uri;
+            });
+
+        var apiManifestPluginParameters = new ApiManifestPluginParameters(
+            functionExecutionParameters: new()
+            {
+                { "microsoft.graph", graphOpenApiFunctionExecutionParameters },
+                { "nasa", nasaOpenApiFunctionExecutionParameters }
+            });
 
         foreach (var pluginName in pluginNames)
         {
             try
             {
-#pragma warning disable SKEXP0042
-#pragma warning disable SKEXP0043
                 KernelPlugin plugin =
                 await kernel.ImportPluginFromApiManifestAsync(
                     pluginName,
                     $"Plugins/ApiManifestPlugins/{pluginName}/apimanifest.json",
-                    new OpenApiFunctionExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync
-                    , serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0")))
+                    apiManifestPluginParameters)
                     .ConfigureAwait(false);
                 this.WriteLine($">> {pluginName} is created.");
-#pragma warning restore SKEXP0042
+#pragma warning restore SKEXP0040
 #pragma warning restore SKEXP0043
             }
             catch (Exception ex)

@@ -6,17 +6,10 @@ from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import (
-    SearchableField,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-)
+from azure.search.documents.indexes.models import SearchableField, SearchField, SearchFieldDataType, SimpleField
 from dotenv import load_dotenv
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -88,7 +81,7 @@ def get_search_index_async_client(
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 
 
-def get_index_schema(vector_size: int) -> list:
+def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     """Return the schema of search indexes.
 
     Arguments:
@@ -119,7 +112,7 @@ def get_index_schema(vector_size: int) -> list:
             type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
             searchable=True,
             vector_search_dimensions=vector_size,
-            vector_search_configuration="az-vector-config",
+            vector_search_profile_name=vector_search_profile_name,
         ),
         SimpleField(
             name=SEARCH_FIELD_SRC,

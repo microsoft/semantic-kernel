@@ -4,9 +4,7 @@ from semantic_kernel import core_plugins, memory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template.prompt_template_config import (
-    PromptTemplateConfig,
-)
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.logging import setup_logging
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
