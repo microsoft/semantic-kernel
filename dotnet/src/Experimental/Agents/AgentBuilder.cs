@@ -312,8 +312,11 @@ public partial class AgentBuilder
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve defined agents from an Azure OpenAI endpoint.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="AgentReference.Id"/> can be used to retrieve a hydrated agent via <see cref="GetAsync(string, CancellationToken)"/>/
+    /// </remarks>
     public static async Task<IList<AgentReference>> GetAzureOpenAIAgentsAsync(string endpoint, string apiKey, string? version = null)
     {
         endpoint = $"{endpoint}/openai";
@@ -333,8 +336,11 @@ public partial class AgentBuilder
     }
 
     /// <summary>
-    /// $$$
+    /// Retrieve defined agents from OpenAI services.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="AgentReference.Id"/> can be used to retrieve a hydrated agent via <see cref="GetAsync(string, CancellationToken)"/>/
+    /// </remarks>
     public static async Task<IList<AgentReference>> GetOpenAIAgentsAsync(string apiKey)
     {
         var context = new OpenAIRestContext(OpenAIBaseUrl, apiKey);
