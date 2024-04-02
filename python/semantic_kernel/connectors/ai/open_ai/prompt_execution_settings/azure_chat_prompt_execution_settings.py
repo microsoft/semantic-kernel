@@ -67,7 +67,7 @@ class AzureCosmosDBDataSourceParameters(AzureDataSourceParameters):
 
 
 class AzureCosmosDBDataSource(AzureChatRequestBase):
-    type: Literal["azure_cosmos_db"]
+    type: Literal["azure_cosmos_db"] = "azure_cosmos_db"
     parameters: AzureCosmosDBDataSourceParameters
 
 
