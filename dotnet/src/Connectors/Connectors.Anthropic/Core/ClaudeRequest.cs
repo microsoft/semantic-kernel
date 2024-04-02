@@ -75,6 +75,7 @@ internal sealed class ClaudeRequest
 
     internal sealed class Message
     {
+        [JsonConverter(typeof(AuthorRoleConverter))]
         [JsonPropertyName("role")]
         public AuthorRole Role { get; set; }
 
