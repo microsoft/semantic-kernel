@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
@@ -67,6 +68,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
+    [Experimental("SKEXP0011")]
     public void AddMessage(string? name, AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(name, authorRole, content, null, null, encoding, metadata));
 
@@ -86,6 +88,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
+    [Experimental("SKEXP0011")]
     public void AddMessage(string? name, AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(name, authorRole, contentItems, null, null, encoding, metadata));
 
@@ -101,6 +104,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="name">Name of the author of the message</param>
     /// <param name="content">Message content</param>
+    [Experimental("SKEXP0011")]
     public void AddUserMessageWithName(string? name, string content) =>
         this.AddMessage(name, AuthorRole.User, content);
 
@@ -116,6 +120,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="name">Name of the author of the message</param>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    [Experimental("SKEXP0011")]
     public void AddUserMessageWithName(string? name, ChatMessageContentItemCollection contentItems) =>
         this.AddMessage(name, AuthorRole.User, contentItems);
 
@@ -131,6 +136,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="name">Name of the author of the message</param>
     /// <param name="content">Message content</param>
+    [Experimental("SKEXP0011")]
     public void AddAssistantMessageWithName(string? name, string content) =>
         this.AddMessage(name, AuthorRole.Assistant, content);
 
@@ -146,6 +152,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     /// <param name="name">Name of the author of the message</param>
     /// <param name="content">Message content</param>
+    [Experimental("SKEXP0011")]
     public void AddSystemMessageWithName(string? name, string content) =>
         this.AddMessage(name, AuthorRole.System, content);
 

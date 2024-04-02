@@ -18,6 +18,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
+    [Experimental("SKEXP0011")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; set; }
 
@@ -155,6 +156,7 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    [Experimental("SKEXP0011")]
     public ChatMessageContent(
         string? name,
         AuthorRole role,
@@ -204,6 +206,7 @@ public class ChatMessageContent : KernelContent
     /// <param name="innerContent">Inner content object reference</param>
     /// <param name="encoding">Encoding of the text</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
+    [Experimental("SKEXP0011")]
     public ChatMessageContent(
         string? name,
         AuthorRole role,
