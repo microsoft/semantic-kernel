@@ -64,7 +64,7 @@ public static class ChatHistoryExtensions
                     messageContents[0].ModelId!,
                     OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                     metadata)
-                { Name = streamedName});
+                { Name = streamedName });
         }
     }
 }
