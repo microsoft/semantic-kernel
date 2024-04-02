@@ -20,11 +20,11 @@ public abstract class SelectionStrategy
     }
 
     /// <summary>
-    /// Evaluate the input message and determine if the nexus has met its completion criteria.
+    /// Determine which agent goes next.
     /// </summary>
     /// <param name="agents">The agents participating in chat.</param>
-    /// <param name="history">The most recent message</param>
+    /// <param name="history">The chat history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>True when complete.</returns>
+    /// <returns>The agent who shall take the next turn.</returns>
     public abstract Task<Agent> NextAsync(IEnumerable<Agent> agents, IReadOnlyCollection<ChatMessageContent> history, CancellationToken cancellationToken);
 }
