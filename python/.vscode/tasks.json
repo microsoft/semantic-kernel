@@ -11,8 +11,6 @@
                 "run",
                 "pre-commit",
                 "run",
-                "-c",
-                ".conf/.pre-commit-config.yaml",
                 "-a"
             ],
             "problemMatcher": {
@@ -41,8 +39,6 @@
                 "run",
                 "pre-commit",
                 "run",
-                "-c",
-                ".conf/.pre-commit-config.yaml"
             ],
             "problemMatcher": {
                 "owner": "python",
@@ -70,8 +66,6 @@
                 "run",
                 "pre-commit",
                 "run",
-                "-c",
-                ".conf/.pre-commit-config.yaml",
                 "-a",
                 "mypy"
             ],
