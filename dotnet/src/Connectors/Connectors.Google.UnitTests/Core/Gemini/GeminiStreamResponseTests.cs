@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
+using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
 
 /// <summary>
-/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="StreamJsonParser"/>.
+/// Tests for parsing <see cref="GeminiResponse"/> with <see cref="Microsoft.SemanticKernel.Text.StreamJsonParser"/>.
 /// </summary>
 public sealed class GeminiStreamResponseTests
 {
