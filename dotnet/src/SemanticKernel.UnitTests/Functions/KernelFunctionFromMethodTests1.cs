@@ -1296,18 +1296,20 @@ public sealed class KernelFunctionFromMethodTests1
             _ => throw new ArgumentOutOfRangeException(nameof(paramType))
         };
 
-        this._kernel.SerializerOptions = new JsonSerializerOptions
+        var serializerOptions = new JsonSerializerOptions
         {
             // Registering a custom converter to always return 13 to make sure it's used
             Converters = { new CustomTypeForJsonTestsConverter(13) }
         };
+
+        var kernel = new Kernel(serializerOptions: serializerOptions);
 
         CustomTypeForJsonTests? actualArgValue = null;
 
         var func = KernelFunctionFactory.CreateFromMethod((CustomTypeForJsonTests param) => { actualArgValue = param; });
 
         // Act
-        var res = await func.InvokeAsync(this._kernel, new() { ["param"] = paramValue });
+        var res = await func.InvokeAsync(kernel, new() { ["param"] = paramValue });
 
         // Assert
         Assert.NotNull(actualArgValue);

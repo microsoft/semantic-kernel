@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -590,13 +591,15 @@ public class KernelTests
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
-        Kernel kernel1 = new(serviceProvider, plugins);
+        var serializeOptions = new JsonSerializerOptions();
+        Kernel kernel1 = new(serviceProvider, plugins, serializeOptions);
         kernel1.Data["key"] = "value";
 
         // Clone and validate it
         Kernel kernel2 = kernel1.Clone();
         Assert.Same(kernel1.Services, kernel2.Services);
         Assert.Same(kernel1.Culture, kernel2.Culture);
+        Assert.Same(kernel1.SerializerOptions, kernel2.SerializerOptions);
         Assert.NotSame(kernel1.Data, kernel2.Data);
         Assert.Equal(kernel1.Data.Count, kernel2.Data.Count);
         Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);

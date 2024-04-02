@@ -37,6 +37,8 @@ public sealed class Kernel
     private NonNullCollection<IFunctionFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IPromptFilter>? _promptFilters;
+    /// <summary>The <see cref="JsonSerializerOptions"/> options</summary>
+    private JsonSerializerOptions _serializerOptions;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -47,12 +49,14 @@ public sealed class Kernel
     /// If non-null, the supplied collection instance is used, not a copy; if it's desired for the <see cref="Kernel"/>
     /// to have a copy, the caller is responsible for supplying it.
     /// </param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> options.</param>
     /// <remarks>
     /// The KernelBuilder class provides a fluent API for constructing a <see cref="Kernel"/> instance.
     /// </remarks>
     public Kernel(
         IServiceProvider? services = null,
-        KernelPluginCollection? plugins = null)
+        KernelPluginCollection? plugins = null,
+        JsonSerializerOptions? serializerOptions = null)
     {
         // Store the provided services, or an empty singleton if there aren't any.
         this.Services = services ?? EmptyServiceProvider.Instance;
@@ -89,6 +93,12 @@ public sealed class Kernel
         {
             this._promptFilters = new(promptFilters);
         }
+
+        // Copy the original options to prevent them from being mutated.
+        this._serializerOptions = new JsonSerializerOptions(serializerOptions ?? this.Services.GetService<JsonSerializerOptions>() ?? JsonSerializerOptions.Default);
+
+        // Locking the Kernel options to prevent mutations.
+        this._serializerOptions.MakeReadOnly(populateMissingResolver: true);
     }
 
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
@@ -128,6 +138,7 @@ public sealed class Kernel
             PromptRendered = this.PromptRendered,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
+            _serializerOptions = this.SerializerOptions
         };
 
     /// <summary>
@@ -181,7 +192,7 @@ public sealed class Kernel
     /// Gets the Json serializer options currently associated with this <see cref="Kernel"/>.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public JsonSerializerOptions? SerializerOptions { get; set; }
+    public JsonSerializerOptions SerializerOptions => this._serializerOptions;
 
     /// <summary>
     /// Gets the <see cref="ILoggerFactory"/> associated with this <see cref="Kernel"/>.
