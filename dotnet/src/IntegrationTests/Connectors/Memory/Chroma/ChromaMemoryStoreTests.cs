@@ -402,13 +402,22 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public void Dispose()
     {
-        this._httpClient.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     #region private ================================================================================
 
     private readonly HttpClient _httpClient;
     private readonly ChromaMemoryStore _chromaMemoryStore;
+
+    private void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._httpClient.Dispose();
+        }
+    }
 
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {

@@ -14,8 +14,6 @@ namespace Examples;
 
 public class Example87_ChatHistorySerialization : BaseTest
 {
-    private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
-
     /// <summary>
     /// Demonstrates how to serialize and deserialize <see cref="ChatHistory"/> class
     /// with <see cref="ChatMessageContent"/> having SK various content types as items.
@@ -38,7 +36,7 @@ public class Example87_ChatHistorySerialization : BaseTest
 
         var chatHistory = new ChatHistory(new[] { message });
 
-        var chatHistoryJson = JsonSerializer.Serialize(chatHistory, s_options);
+        var chatHistoryJson = JsonSerializer.Serialize(chatHistory);
 
         var deserializedHistory = JsonSerializer.Deserialize<ChatHistory>(chatHistoryJson);
 
@@ -54,8 +52,6 @@ public class Example87_ChatHistorySerialization : BaseTest
         WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
 
         WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
-
-        WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
     /// <summary>
@@ -76,8 +72,7 @@ public class Example87_ChatHistorySerialization : BaseTest
         // The custom resolver should be used to serialize and deserialize the chat history with custom .
         var options = new JsonSerializerOptions
         {
-            TypeInfoResolver = new CustomResolver(),
-            WriteIndented = true,
+            TypeInfoResolver = new CustomResolver()
         };
 
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
@@ -92,7 +87,6 @@ public class Example87_ChatHistorySerialization : BaseTest
         WriteLine($"Text content: {(deserializedMessage.Items![0]! as TextContent)!.Text}");
 
         WriteLine($"Custom content: {(deserializedMessage.Items![1]! as CustomContent)!.Content}");
-        WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
     public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)

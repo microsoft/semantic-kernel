@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
 using Json.Schema;
 
@@ -35,9 +34,9 @@ public static class RestApiOperationResponseExtensions
 
         return response.ContentType switch
         {
-            var ct when ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) => ValidateJson(response),
-            var ct when ct.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase) => ValidateXml(response),
-            var ct when ct.StartsWith("text/plain", StringComparison.OrdinalIgnoreCase) || ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) => ValidateTextHtml(response),
+            "application/json" => ValidateJson(response),
+            "application/xml" => ValidateXml(response),
+            "text/plain" or "text/html" => ValidateTextHtml(response),
             _ => true,
         };
     }

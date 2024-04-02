@@ -84,10 +84,23 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <summary>
+    /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    private void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._search.Dispose();
+        }
+    }
+
+    /// <summary>
     /// Disposes the <see cref="GoogleConnector"/> instance.
     /// </summary>
     public void Dispose()
     {
-        this._search.Dispose();
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

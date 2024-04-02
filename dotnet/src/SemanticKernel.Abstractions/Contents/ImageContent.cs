@@ -19,7 +19,6 @@ public sealed class ImageContent : KernelContent
     /// <summary>
     /// The image data.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ReadOnlyMemory<byte>? Data { get; set; }
 
     /// <summary>

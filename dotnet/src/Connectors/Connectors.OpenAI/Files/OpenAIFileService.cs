@@ -22,49 +22,14 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [Experimental("SKEXP0010")]
 public sealed class OpenAIFileService
 {
-    private const string HeaderNameAuthorization = "Authorization";
-    private const string HeaderNameAzureApiKey = "api-key";
-    private const string HeaderNameOpenAIAssistant = "OpenAI-Beta";
-    private const string HeaderNameUserAgent = "User-Agent";
-    private const string HeaderOpenAIValueAssistant = "assistants=v1";
     private const string OpenAIApiEndpoint = "https://api.openai.com/v1/";
     private const string OpenAIApiRouteFiles = "files";
-    private const string AzureOpenAIApiRouteFiles = "openai/files";
-    private const string AzureOpenAIDefaultVersion = "2024-02-15-preview";
 
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Uri _serviceUri;
-    private readonly string? _version;
     private readonly string? _organization;
-
-    /// <summary>
-    /// Create an instance of the Azure OpenAI chat completion connector
-    /// </summary>
-    /// <param name="endpoint">Azure Endpoint URL</param>
-    /// <param name="apiKey">Azure OpenAI API Key</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
-    /// <param name="version">The API version to target.</param>
-    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenAIFileService(
-        Uri endpoint,
-        string apiKey,
-        string? organization = null,
-        string? version = null,
-        HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
-    {
-        Verify.NotNull(apiKey, nameof(apiKey));
-
-        this._apiKey = apiKey;
-        this._logger = loggerFactory?.CreateLogger(typeof(OpenAIFileService)) ?? NullLogger.Instance;
-        this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
-        this._serviceUri = new Uri(this._httpClient.BaseAddress ?? endpoint, AzureOpenAIApiRouteFiles);
-        this._version = version ?? AzureOpenAIDefaultVersion;
-        this._organization = organization;
-    }
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -121,7 +86,7 @@ public sealed class OpenAIFileService
     /// </summary>
     /// <param name="id">The uploaded file identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The metadata associated with the specified file identifier.</returns>
+    /// <returns>Thet metadata associated with the specified file identifier.</returns>
     public async Task<OpenAIFileReference> GetFileAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
@@ -135,7 +100,7 @@ public sealed class OpenAIFileService
     /// Retrieve metadata for all previously uploaded files.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The metadata of all uploaded files.</returns>
+    /// <returns>Thet metadata of all uploaded files.</returns>
     public async Task<IEnumerable<OpenAIFileReference>> GetFilesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).ConfigureAwait(false);
@@ -168,14 +133,14 @@ public sealed class OpenAIFileService
 
     private async Task ExecuteDeleteRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateDeleteRequest(this.PrepareUrl(url));
+        using var request = HttpRequest.CreateDeleteRequest(url);
         this.AddRequestHeaders(request);
         using var _ = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<TModel> ExecuteGetRequestAsync<TModel>(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
+        using var request = HttpRequest.CreateGetRequest(url);
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -193,7 +158,7 @@ public sealed class OpenAIFileService
 
     private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
-        using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
+        using var request = HttpRequest.CreateGetRequest(url);
         this.AddRequestHeaders(request);
         var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         try
@@ -212,7 +177,7 @@ public sealed class OpenAIFileService
 
     private async Task<TModel> ExecutePostRequestAsync<TModel>(string url, HttpContent payload, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, this.PrepareUrl(url)) { Content = payload };
+        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = payload };
         this.AddRequestHeaders(request);
         using var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -228,31 +193,11 @@ public sealed class OpenAIFileService
             };
     }
 
-    private string PrepareUrl(string url)
-    {
-        if (string.IsNullOrWhiteSpace(this._version))
-        {
-            return url;
-        }
-
-        return $"{url}?api-version={this._version}";
-    }
-
     private void AddRequestHeaders(HttpRequestMessage request)
     {
-        request.Headers.Add(HeaderNameOpenAIAssistant, HeaderOpenAIValueAssistant);
-        request.Headers.Add(HeaderNameUserAgent, HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        request.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(OpenAIFileService)));
-
-        if (!string.IsNullOrWhiteSpace(this._version))
-        {
-            // Azure OpenAI
-            request.Headers.Add(HeaderNameAzureApiKey, this._apiKey);
-            return;
-        }
-
-        // OpenAI
-        request.Headers.Add(HeaderNameAuthorization, $"Bearer {this._apiKey}");
 
         if (!string.IsNullOrEmpty(this._organization))
         {

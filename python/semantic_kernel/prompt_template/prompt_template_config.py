@@ -17,7 +17,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplateConfig(KernelBaseModel):
-    name: str = ""
+    name: Optional[str] = ""
     description: Optional[str] = ""
     template: Optional[str] = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME

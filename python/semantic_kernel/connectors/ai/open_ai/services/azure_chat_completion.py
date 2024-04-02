@@ -280,7 +280,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role) if choice.delta.role else ChatRole.ASSISTANT,
+            role=ChatRole(choice.delta.role) if choice.delta.role is not None else None,
             content=choice.delta.content,
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
             function_call=self._get_function_call_from_chat_choice(choice),
@@ -300,7 +300,3 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                     if "tool" in message["role"]:
                         return message["content"]
         return None
-
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "AzureChatMessageContent"

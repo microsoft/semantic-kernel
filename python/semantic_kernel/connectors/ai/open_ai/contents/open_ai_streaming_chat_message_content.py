@@ -1,13 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
+from typing import List, Optional
+from xml.etree.ElementTree import Element
 
-from typing import Any
+from defusedxml import ElementTree
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
+from semantic_kernel.contents import StreamingChatMessageContent
+from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class OpenAIStreamingChatMessageContent(StreamingContentMixin, OpenAIChatMessageContent):
+class OpenAIStreamingChatMessageContent(StreamingChatMessageContent):
     """This is the class for OpenAI streaming chat message response content.
 
     The end-user will have to either do something directly or gather them and combine them into a
@@ -32,18 +37,18 @@ class OpenAIStreamingChatMessageContent(StreamingContentMixin, OpenAIChatMessage
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    def __bytes__(self) -> bytes:
-        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
+    inner_content: ChatCompletionChunk
+    function_call: Optional[FunctionCall] = None
+    tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
 
-    def __add__(self, other: Any) -> "OpenAIStreamingChatMessageContent":
+    def __add__(self, other: "OpenAIStreamingChatMessageContent") -> "OpenAIStreamingChatMessageContent":
         """When combining two OpenAIStreamingChatMessageContent instances,
         the content fields are combined, as well as the arguments of the function or tool calls.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
         if role is set, they should be the same.
         """
-        if not isinstance(other, OpenAIStreamingChatMessageContent):
-            return self
         if self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -80,3 +85,41 @@ class OpenAIStreamingChatMessageContent(StreamingContentMixin, OpenAIChatMessage
             tool_calls=tc_list,
             tool_call_id=self.tool_call_id or other.tool_call_id,
         )
+
+    def to_prompt(self, root_key: str) -> str:
+        """Convert the OpenAIChatMessageContent to a prompt.
+
+        Returns:
+            str - The prompt from the ChatMessageContent.
+        """
+
+        root = Element(root_key)
+        if self.role:
+            root.set("role", self.role.value)
+        if self.function_call:
+            root.set("function_call", self.function_call.model_dump_json(exclude_none=True))
+        if self.tool_calls:
+            root.set("tool_calls", "|".join([call.model_dump_json(exclude_none=True) for call in self.tool_calls]))
+        if self.tool_call_id:
+            root.set("tool_call_id", self.tool_call_id)
+        root.text = self.content or ""
+        return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
+
+    @classmethod
+    def from_element(cls, element: Element) -> "StreamingChatMessageContent":
+        """Create a new instance of OpenAIChatMessageContent from a prompt.
+
+        Args:
+            prompt: str - The prompt to create the ChatMessageContent from.
+
+        Returns:
+            ChatMessageContent - The new instance of ChatMessageContent.
+        """
+        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
+        if function_call := element.get("function_call"):
+            args["function_call"] = FunctionCall.model_validate_json(function_call)
+        if tool_calls := element.get("tool_calls"):
+            args["tool_calls"] = [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
+        if tool_call_id := element.get("tool_call_id"):
+            args["tool_call_id"] = tool_call_id
+        return cls(**args)

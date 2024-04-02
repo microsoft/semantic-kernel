@@ -27,4 +27,4 @@ class TextContent(KernelContent):
     encoding: Optional[str] = None
 
     def __str__(self) -> str:
-        return self.text or ""
+        return self.text

@@ -15,10 +15,12 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
-public sealed class HandlebarsPlannerTests
+public sealed class HandlebarsPlannerTests : IDisposable
 {
     public HandlebarsPlannerTests(ITestOutputHelper output)
     {
+        this._testOutputHelper = new RedirectOutput(output);
+
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -152,6 +154,7 @@ public sealed class HandlebarsPlannerTests
         return builder.Build();
     }
 
+    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
     private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
@@ -179,5 +182,10 @@ public sealed class HandlebarsPlannerTests
 
         [KernelFunction, Description("Returns default Qux object.")]
         public Qux GetDefaultQux() => new("bar", 42);
+    }
+
+    public void Dispose()
+    {
+        this._testOutputHelper.Dispose();
     }
 }

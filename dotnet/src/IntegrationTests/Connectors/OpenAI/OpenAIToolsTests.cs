@@ -15,10 +15,12 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIToolsTests : BaseIntegrationTest
+public sealed class OpenAIToolsTests : BaseIntegrationTest, IDisposable
 {
     public OpenAIToolsTests(ITestOutputHelper output)
     {
+        this._testOutputHelper = new RedirectOutput(output);
+
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -196,7 +198,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         return kernel;
     }
 
+    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
+    public void Dispose() => this._testOutputHelper.Dispose();
 
     /// <summary>
     /// A plugin that returns the current time.

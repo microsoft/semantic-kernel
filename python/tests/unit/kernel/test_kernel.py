@@ -5,16 +5,12 @@ import sys
 from typing import Union
 from unittest.mock import AsyncMock, patch
 
-import httpx
 import pytest
 from pydantic import ValidationError
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -491,97 +487,6 @@ def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
     plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
     assert plugin is not None
     assert plugin["TestFunctionJinja2"] is not None
-
-
-@pytest.mark.asyncio
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_import_openai_plugin_from_file(mock_parse_openai_manifest, kernel: Kernel):
-    openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
-    with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    plugin = await kernel.import_plugin_from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_str=openai_spec,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(),
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-
-@pytest.mark.asyncio
-@patch("httpx.AsyncClient.get")
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, kernel: Kernel):
-    openai_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json"
-    )
-    with open(openai_spec_file_path, "r") as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    request = httpx.Request(method="GET", url="http://fake-url.com/akv-openai.json")
-
-    response = httpx.Response(200, text=openai_spec, request=request)
-    mock_get.return_value = response
-
-    fake_plugin_url = "http://fake-url.com/akv-openai.json"
-    plugin = await kernel.import_plugin_from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_url=fake_plugin_url,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": "Semantic-Kernel"})
-
-
-def test_import_plugin_from_openapi(kernel: Kernel):
-    openapi_spec_file = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-
-    plugin = kernel.import_plugin_from_openapi(
-        plugin_name="TestOpenAPIPlugin",
-        openapi_document_path=openapi_spec_file,
-    )
-
-    assert plugin is not None
-    assert plugin.name == "TestOpenAPIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-
-def test_import_plugin_from_openapi_missing_document_throws(kernel: Kernel):
-    with pytest.raises(PluginInitializationError):
-        kernel.import_plugin_from_openapi(
-            plugin_name="TestOpenAPIPlugin",
-            openapi_document_path=None,
-        )
 
 
 # endregion

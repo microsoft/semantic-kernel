@@ -209,7 +209,11 @@ class TimePlugin(KernelBaseModel):
         d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
-    @kernel_function(description="""Get the date of the last day matching the supplied week day name in English.""")
+    @kernel_function(
+        description="""Get the date of the last day matching the supplied week day name in English.
+        Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday,
+        16 May, 2023"""
+    )
     def date_matching_last_day_name(self, day_name: str) -> str:
         """
         Get the date of the last day matching the supplied day name

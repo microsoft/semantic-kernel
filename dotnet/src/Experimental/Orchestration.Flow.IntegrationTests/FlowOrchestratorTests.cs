@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Memory;
@@ -13,15 +14,19 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.Experimental.Orchestration.Flow.IntegrationTests;
 
-public sealed class FlowOrchestratorTests
+public sealed class FlowOrchestratorTests : IDisposable
 {
     private readonly string _bingApiKey;
 
-    public FlowOrchestratorTests()
+    public FlowOrchestratorTests(ITestOutputHelper output)
     {
+        this._logger = new XunitLogger<object>(output);
+        this._testOutputHelper = new RedirectOutput(output);
+
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -108,5 +113,31 @@ steps:
                 apiKey: azureOpenAIConfiguration.ApiKey);
     }
 
+    private readonly ILoggerFactory _logger;
+    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~FlowOrchestratorTests()
+    {
+        this.Dispose(false);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            if (this._logger is IDisposable ld)
+            {
+                ld.Dispose();
+            }
+
+            this._testOutputHelper.Dispose();
+        }
+    }
 }

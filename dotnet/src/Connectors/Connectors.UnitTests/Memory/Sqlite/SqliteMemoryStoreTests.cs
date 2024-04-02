@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
 [Collection("Sequential")]
-public sealed class SqliteMemoryStoreTests : IDisposable
+public class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";
     private bool _disposedValue = false;
@@ -33,9 +33,19 @@ public sealed class SqliteMemoryStoreTests : IDisposable
 
     public void Dispose()
     {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
         if (!this._disposedValue)
         {
-            File.Delete(DatabaseFile);
+            if (disposing)
+            {
+                File.Delete(DatabaseFile);
+            }
 
             this._disposedValue = true;
         }

@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public sealed class HttpPluginTests : IDisposable
+public class HttpPluginTests : IDisposable
 {
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
@@ -126,6 +126,15 @@ public sealed class HttpPluginTests : IDisposable
 
     public void Dispose()
     {
-        this._response.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._response.Dispose();
+        }
     }
 }

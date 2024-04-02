@@ -24,13 +24,6 @@ public sealed class Example85_AgentCharts : BaseTest
     private const string OpenAIFunctionEnabledModel = "gpt-4-1106-preview";
 
     /// <summary>
-    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
-    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
-    /// If 'false', Azure takes precedence.
-    /// </summary>
-    private const bool ForceOpenAI = false;
-
-    /// <summary>
     /// Create a chart and retrieve by file_id.
     /// </summary>
     [Fact(Skip = "Launches external processes")]
@@ -38,9 +31,21 @@ public sealed class Example85_AgentCharts : BaseTest
     {
         this.WriteLine("======== Using CodeInterpreter tool ========");
 
-        var fileService = CreateFileService();
+        if (TestConfiguration.OpenAI.ApiKey == null)
+        {
+            this.WriteLine("OpenAI apiKey not found. Skipping example.");
+            return;
+        }
 
-        var agent = await CreateAgentBuilder().WithCodeInterpreter().BuildAsync();
+        this.WriteLine(Environment.CurrentDirectory);
+
+        var fileService = new OpenAIFileService(TestConfiguration.OpenAI.ApiKey);
+
+        var agent =
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+                .WithCodeInterpreter()
+                .BuildAsync();
 
         try
         {
@@ -49,7 +54,7 @@ public sealed class Example85_AgentCharts : BaseTest
             await InvokeAgentAsync(
                 thread,
                 "1-first", @"
-Display this data using a bar-chart with no summation:
+Display this data using a bar-chart:
 
 Banding  Brown Pink Yellow  Sum
 X00000   339   433     126  898
@@ -73,13 +78,12 @@ Sum      426  1622     856 2904
                 if (message.ContentType == ChatMessageType.Image)
                 {
                     var filename = $"{imageName}.jpg";
-                    var path = Path.Combine(Environment.CurrentDirectory, filename);
-                    this.WriteLine($"# {message.Role}: {message.Content}");
-                    this.WriteLine($"# {message.Role}: {path}");
                     var content = fileService.GetFileContent(message.Content);
                     await using var outputStream = File.OpenWrite(filename);
                     await using var inputStream = await content.GetStreamAsync();
                     await inputStream.CopyToAsync(outputStream);
+                    var path = Path.Combine(Environment.CurrentDirectory, filename);
+                    this.WriteLine($"# {message.Role}: {path}");
                     Process.Start(
                         new ProcessStartInfo
                         {
@@ -95,22 +99,6 @@ Sum      426  1622     856 2904
 
             this.WriteLine();
         }
-    }
-
-    private static OpenAIFileService CreateFileService()
-    {
-        return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new OpenAIFileService(TestConfiguration.OpenAI.ApiKey) :
-                new OpenAIFileService(new Uri(TestConfiguration.AzureOpenAI.Endpoint), apiKey: TestConfiguration.AzureOpenAI.ApiKey);
-    }
-
-    private static AgentBuilder CreateAgentBuilder()
-    {
-        return
-            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
-                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
-                new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 
     public Example85_AgentCharts(ITestOutputHelper output) : base(output) { }

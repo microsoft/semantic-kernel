@@ -28,17 +28,17 @@ public static class ApiManifestKernelExtensions
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
-    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="executionParameters">Optional execution parameters for the plugin.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The imported plugin.</returns>
     public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        ApiManifestPluginParameters? pluginParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -49,21 +49,21 @@ public static class ApiManifestKernelExtensions
     /// <param name="kernel">The kernel instance.</param>
     /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="filePath">The file path of the API manifest.</param>
-    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="executionParameters">Optional execution parameters for the API functions.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
     public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
         this Kernel kernel,
         string pluginName,
         string filePath,
-        ApiManifestPluginParameters? pluginParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
+        var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
 #pragma warning restore CA2000
 
         if (!File.Exists(filePath))
@@ -92,7 +92,7 @@ public static class ApiManifestKernelExtensions
                 logger,
                 httpClient,
                 authCallback: null,
-                pluginParameters?.UserAgent,
+                executionParameters?.UserAgent,
                 cancellationToken).ConfigureAwait(false);
 
             OpenApiDiagnostic diagnostic = new();
@@ -125,20 +125,12 @@ public static class ApiManifestKernelExtensions
 
             var serverUrl = filteredOpenApiDocument.Servers.FirstOrDefault()?.Url;
 
-            var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.ContainsKey(apiName) == true
-                ? pluginParameters.FunctionExecutionParameters[apiName]
-                : null;
-
-#pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-            var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
-#pragma warning restore CA2000
-
             var runner = new RestApiOperationRunner(
-                operationRunnerHttpClient,
-                openApiFunctionExecutionParameters?.AuthCallback,
-                openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
+                httpClient,
+                executionParameters?.AuthCallback,
+                executionParameters?.UserAgent,
+                executionParameters?.EnableDynamicPayload ?? true,
+                executionParameters?.EnablePayloadNamespacing ?? false);
 
             foreach (var path in filteredOpenApiDocument.Paths)
             {
@@ -148,7 +140,7 @@ public static class ApiManifestKernelExtensions
                     try
                     {
                         logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
+                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, executionParameters, new Uri(serverUrl), loggerFactory));
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {

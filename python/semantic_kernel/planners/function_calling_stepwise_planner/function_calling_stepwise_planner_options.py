@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from pydantic import model_validator
 
@@ -15,15 +13,15 @@ from semantic_kernel.planners.planner_options import PlannerOptions
 class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     """The Function Calling Stepwise Planner Options."""
 
-    max_tokens: int | None = None
-    max_tokens_ratio: float | None = 0.1
-    max_completion_tokens: int | None = None
-    max_prompt_tokens: int | None = None
-    get_initial_plan: Callable[[], str] | None = None
-    get_step_prompt: Callable[[], str] | None = None
-    max_iterations: int | None = 15
-    min_iteration_time_ms: int | None = 100
-    execution_settings: OpenAIPromptExecutionSettings | None = None
+    max_tokens: Optional[int] = None
+    max_tokens_ratio: Optional[float] = 0.1
+    max_completion_tokens: Optional[int] = None
+    max_prompt_tokens: Optional[int] = None
+    get_initial_plan: Optional[Callable[[], str]] = None
+    get_step_prompt: Optional[Callable[[], str]] = None
+    max_iterations: Optional[int] = 15
+    min_iteration_time_ms: Optional[int] = 100
+    execution_settings: Optional[OpenAIPromptExecutionSettings] = None
 
     @model_validator(mode="before")
     @classmethod

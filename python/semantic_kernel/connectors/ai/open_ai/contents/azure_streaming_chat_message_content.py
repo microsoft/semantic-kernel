@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Any
+from typing import Optional
 
-from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
+    OpenAIStreamingChatMessageContent,
+)
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class AzureStreamingChatMessageContent(StreamingContentMixin, AzureChatMessageContent):
+class AzureStreamingChatMessageContent(OpenAIStreamingChatMessageContent):
     """This is the class for Azure OpenAI streaming chat message response content.
 
     The end-user will have to either do something directly or gather them and combine them into a
@@ -32,18 +33,15 @@ class AzureStreamingChatMessageContent(StreamingContentMixin, AzureChatMessageCo
         __add__: Combines two StreamingChatMessageContent instances.
     """
 
-    def __bytes__(self) -> bytes:
-        return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
+    tool_message: Optional[str] = None
 
-    def __add__(self, other: Any) -> "AzureStreamingChatMessageContent":
+    def __add__(self, other: "AzureStreamingChatMessageContent") -> "AzureStreamingChatMessageContent":
         """When combining two AzureOpenAIStreamingChatMessageContent instances,
         the content fields are combined, as well as the arguments of the function or tool calls.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
         if role is set, they should be the same.
         """
-        if not isinstance(other, AzureStreamingChatMessageContent):
-            return self
         if self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:

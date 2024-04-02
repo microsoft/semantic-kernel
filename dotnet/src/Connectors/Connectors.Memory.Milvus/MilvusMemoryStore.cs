@@ -21,7 +21,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 {
     private readonly int _vectorSize;
     private readonly SimilarityMetricType _metricType;
-    private readonly ConsistencyLevel _consistencyLevel;
     private readonly bool _ownsMilvusClient;
     private readonly string _indexName;
 
@@ -37,10 +36,18 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     private const string TimestampFieldName = "timestamp";
 
     private const int DefaultMilvusPort = 19530;
+    private const ConsistencyLevel DefaultConsistencyLevel = ConsistencyLevel.Session;
     private const int DefaultVarcharLength = 65_535;
 
-    private readonly QueryParameters _queryParametersWithEmbedding;
-    private readonly QueryParameters _queryParametersWithoutEmbedding;
+    private readonly QueryParameters _queryParametersWithEmbedding = new()
+    {
+        OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, EmbeddingFieldName, KeyFieldName, TimestampFieldName }
+    };
+
+    private readonly QueryParameters _queryParametersWithoutEmbedding = new()
+    {
+        OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, KeyFieldName, TimestampFieldName }
+    };
 
     private readonly SearchParameters _searchParameters = new()
     {
@@ -57,7 +64,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="port">The port to connect to. Defaults to 19530.</param>
@@ -66,7 +73,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
-    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -76,11 +82,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
-        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(
-            new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory),
-            indexName, vectorSize, metricType, consistencyLevel)
+        : this(new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -88,7 +91,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="username">The username to use for authentication.</param>
@@ -99,7 +102,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
-    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -111,11 +113,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
-        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(
-            new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory),
-            indexName, vectorSize, metricType, consistencyLevel)
+        : this(new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -123,7 +122,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
     /// For more advanced configuration opens, construct a <see cref="MilvusClient" /> instance and pass it to
-    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType, ConsistencyLevel)" />.
+    /// <see cref="MilvusMemoryStore(MilvusClient, string, int, SimilarityMetricType)" />.
     /// </summary>
     /// <param name="host">The hostname or IP address to connect to.</param>
     /// <param name="apiKey">An API key to be used for authentication, instead of a username and password.</param>
@@ -133,7 +132,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
-    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     /// <param name="loggerFactory">An optional logger factory through which the Milvus client will log.</param>
     public MilvusMemoryStore(
         string host,
@@ -144,11 +142,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         string? indexName = null,
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
-        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
-        : this(
-            new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory),
-            indexName, vectorSize, metricType, consistencyLevel)
+        : this(new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory), indexName, vectorSize, metricType)
     {
         this._ownsMilvusClient = true;
     }
@@ -160,43 +155,27 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// <param name="indexName">The name of the index to use. Defaults to <see cref="DefaultIndexName" />.</param>
     /// <param name="vectorSize">The size of the vectors used in Milvus. Defaults to 1536.</param>
     /// <param name="metricType">The metric used to measure similarity between vectors. Defaults to <see cref="SimilarityMetricType.Ip" />.</param>
-    /// <param name="consistencyLevel">The consistency level to be used in the search. Defaults to <see cref="ConsistencyLevel.Session"/>.</param>
     public MilvusMemoryStore(
         MilvusClient client,
         string? indexName = null,
         int vectorSize = 1536,
-        SimilarityMetricType metricType = SimilarityMetricType.Ip,
-        ConsistencyLevel consistencyLevel = ConsistencyLevel.Session)
-        : this(client, ownsMilvusClient: false, indexName, vectorSize, metricType, consistencyLevel)
+        SimilarityMetricType metricType = SimilarityMetricType.Ip)
+        : this(client, ownsMilvusClient: false, indexName, vectorSize, metricType)
     {
     }
 
     private MilvusMemoryStore(
         MilvusClient client,
         bool ownsMilvusClient,
-        string? indexName,
-        int vectorSize,
-        SimilarityMetricType metricType,
-        ConsistencyLevel consistencyLevel)
+        string? indexName = null,
+        int vectorSize = 1536,
+        SimilarityMetricType metricType = SimilarityMetricType.Ip)
     {
         this.Client = client;
         this._indexName = indexName ?? DefaultIndexName;
         this._vectorSize = vectorSize;
         this._metricType = metricType;
         this._ownsMilvusClient = ownsMilvusClient;
-        this._consistencyLevel = consistencyLevel;
-
-        this._queryParametersWithEmbedding = new()
-        {
-            OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, EmbeddingFieldName, KeyFieldName, TimestampFieldName },
-            ConsistencyLevel = this._consistencyLevel
-        };
-
-        this._queryParametersWithoutEmbedding = new()
-        {
-            OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, KeyFieldName, TimestampFieldName },
-            ConsistencyLevel = this._consistencyLevel
-        };
     }
 
     #endregion Constructors
@@ -217,7 +196,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
                 EnableDynamicFields = true
             };
 
-            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, this._consistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
+            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, DefaultConsistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, indexName: this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
             await collection.WaitForIndexBuildAsync("float_vector", this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -249,6 +228,8 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     {
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
+        await collection.DeleteAsync($@"{IdFieldName} in [""{record.Metadata.Id}""]", cancellationToken: cancellationToken).ConfigureAwait(false);
+
         var metadata = record.Metadata;
 
         List<FieldData> fieldData = new()
@@ -265,7 +246,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }, isDynamic: true)
         };
 
-        MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
+        MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return result.Ids.StringIds![0];
     }
@@ -276,6 +257,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // TODO: Milvus v2.3.0 will have a 1st-class upsert API which we should use.
+        // In the meantime, we do delete+insert, following the Python connector's example.
+
         StringBuilder idString = new();
 
         List<bool> isReferenceData = new();
@@ -311,6 +295,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
 
         MilvusCollection collection = this.Client.GetCollection(collectionName);
+        await collection.DeleteAsync($"{IdFieldName} in [{idString}]", cancellationToken: cancellationToken).ConfigureAwait(false);
 
         FieldData[] fieldData =
         {
@@ -326,7 +311,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             FieldData.Create(TimestampFieldName, timestampData, isDynamic: true)
         };
 
-        MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
+        MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         foreach (var id in result.Ids.StringIds!)
         {
@@ -370,10 +355,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         IReadOnlyList<FieldData> fields = await this.Client
             .GetCollection(collectionName)
-            .QueryAsync(
-                $"{IdFieldName} in [{idString}]",
-                withEmbeddings ? this._queryParametersWithEmbedding : this._queryParametersWithoutEmbedding,
-                cancellationToken: cancellationToken)
+            .QueryAsync($"{IdFieldName} in [{idString}]", withEmbeddings ? this._queryParametersWithEmbedding : this._queryParametersWithoutEmbedding, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         var rowCount = fields[0].RowCount;

@@ -2,7 +2,7 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Type, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -49,9 +49,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "OpenAIChatMessageContent"
+    def get_chat_message_content_class(self) -> Type[ChatMessageContent]:
+        """Get the chat message content types used by a class, default is ChatMessageContent."""
+        return OpenAIChatMessageContent
 
     async def complete_chat(
         self,
@@ -241,7 +241,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             inner_content=chunk,
             ai_model_id=self.ai_model_id,
             metadata=metadata,
-            role=ChatRole(choice.delta.role) if choice.delta.role else ChatRole.ASSISTANT,
+            role=ChatRole(choice.delta.role) if choice.delta.role else None,
             content=choice.delta.content,
             finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason else None,
             function_call=self._get_function_call_from_chat_choice(choice),

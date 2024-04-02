@@ -175,45 +175,15 @@ public sealed class ToolCallBehaviorTests
     }
 
     [Fact]
-    public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndNullKernelThrowsException()
-    {
-        // Arrange
-        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
-        var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(null, chatCompletionsOptions));
-        Assert.Equal($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.", exception.Message);
-    }
-
-    [Fact]
-    public void RequiredFunctionsConfigureOptionsWithAutoInvokeAndEmptyKernelThrowsException()
-    {
-        // Arrange
-        var function = this.GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToOpenAIFunction()).First();
-        var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var chatCompletionsOptions = new ChatCompletionsOptions();
-        var kernel = Kernel.CreateBuilder().Build();
-
-        // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions));
-        Assert.Equal($"The specified {nameof(RequiredFunction)} function MyPlugin-MyFunction is not available in the kernel.", exception.Message);
-    }
-
-    [Fact]
     public void RequiredFunctionConfigureOptionsAddsTools()
     {
         // Arrange
-        var plugin = this.GetTestPlugin();
-        var function = plugin.GetFunctionsMetadata()[0].ToOpenAIFunction();
+        var function = this.GetTestPlugin().GetFunctionsMetadata()[0].ToOpenAIFunction();
         var chatCompletionsOptions = new ChatCompletionsOptions();
         var requiredFunction = new RequiredFunction(function, autoInvoke: true);
-        var kernel = new Kernel();
-        kernel.Plugins.Add(plugin);
 
         // Act
-        requiredFunction.ConfigureOptions(kernel, chatCompletionsOptions);
+        requiredFunction.ConfigureOptions(null, chatCompletionsOptions);
 
         // Assert
         Assert.NotNull(chatCompletionsOptions.ToolChoice);

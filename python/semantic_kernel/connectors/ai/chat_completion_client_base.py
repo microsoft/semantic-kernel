@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Type
 
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "ChatMessageContent"
+    def get_chat_message_content_class(self) -> Type[ChatMessageContent]:
+        """Get the chat message content types used by a class, default is ChatMessageContent."""
+        return ChatMessageContent
 
     @abstractmethod
     async def complete_chat(

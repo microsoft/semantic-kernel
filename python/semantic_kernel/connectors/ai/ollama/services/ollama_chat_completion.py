@@ -106,7 +106,6 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                             inner_content=body,
                             ai_model_id=self.ai_model_id,
                             content=body.get("message", {"content": None}).get("content", None),
-                            role="assistant",
                         )
                     ]
                     if body.get("done"):

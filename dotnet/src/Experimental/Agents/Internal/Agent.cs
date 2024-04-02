@@ -119,9 +119,10 @@ internal sealed class Agent : IAgent
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         this.Kernel =
-            this._restContext.HasVersion ?
-                builder.AddAzureOpenAIChatCompletion(this._model.Model, this.GetAzureRootEndpoint(), this._restContext.ApiKey).Build() :
-                builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).Build();
+            Kernel
+                .CreateBuilder()
+                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
+                .Build();
 
         if (plugins is not null)
         {
@@ -262,12 +263,6 @@ internal sealed class Agent : IAgent
         }
 
         return factory.Create(config);
-    }
-
-    private string GetAzureRootEndpoint()
-    {
-        var endpointUri = new Uri(this._restContext.Endpoint);
-        return endpointUri.AbsoluteUri.Replace(endpointUri.AbsolutePath, string.Empty);
     }
 
     private void ThrowIfDeleted()

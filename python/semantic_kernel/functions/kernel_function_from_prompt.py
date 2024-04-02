@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
@@ -173,7 +173,7 @@ through prompt_template_config or in the prompt_template."
         arguments: KernelArguments,
     ) -> FunctionResult:
         """Handles the chat service call."""
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
+        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
 
         # pass the kernel in for auto function calling
         kwargs = {}
@@ -236,7 +236,7 @@ through prompt_template_config or in the prompt_template."
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
@@ -271,7 +271,7 @@ through prompt_template_config or in the prompt_template."
         execution_settings: PromptExecutionSettings,
         prompt: str,
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Handles the chat service call."""
 
         # pass the kernel in for auto function calling
@@ -282,9 +282,7 @@ through prompt_template_config or in the prompt_template."
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
-        chat_history = ChatHistory.from_rendered_prompt(
-            prompt,
-        )
+        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_class())
         try:
             async for partial_content in service.complete_chat_stream(
                 chat_history=chat_history,
@@ -303,7 +301,7 @@ through prompt_template_config or in the prompt_template."
         service: TextCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[StreamingKernelContent]]]:
         """Handles the text service call."""
         try:
             async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):
