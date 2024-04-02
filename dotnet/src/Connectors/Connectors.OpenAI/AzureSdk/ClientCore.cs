@@ -412,9 +412,7 @@ internal abstract class ClientCore
                     // as the called function could in turn telling the model about itself as a possible candidate for invocation.
                     functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception e)
-#pragma warning restore CA1031
+                catch (Exception e) when (!e.IsCriticalException())
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}", toolCall.Id, this.Logger);
                     continue;
@@ -574,9 +572,7 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-#pragma warning disable SKEXP0001 // Assigning nullable property self-consistent for internal/private code.
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { Name = streamedName });
-#pragma warning restore SKEXP0001
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
@@ -972,9 +968,7 @@ internal abstract class ClientCore
     {
         if (message.Role == AuthorRole.System)
         {
-#pragma warning disable SKEXP0001 // Assigning nullable property self-consistent for internal/private code.
             return new ChatRequestSystemMessage(message.Content) { Name = message.Name };
-#pragma warning restore SKEXP0001
         }
 
         if (message.Role == AuthorRole.User || message.Role == AuthorRole.Tool)
@@ -987,12 +981,9 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-#pragma warning disable SKEXP0001 // Assigning nullable property self-consistent for internal/private code.
                 return new ChatRequestUserMessage(textContent.Text) { Name = message.Name };
-#pragma warning restore SKEXP0001
             }
 
-#pragma warning disable SKEXP0001 // Assigning nullable property self-consistent for internal/private code.
             return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
             {
                 TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
@@ -1000,14 +991,11 @@ internal abstract class ClientCore
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
             { Name = message.Name };
-#pragma warning restore SKEXP0001
         }
 
         if (message.Role == AuthorRole.Assistant)
         {
-#pragma warning disable SKEXP0001 // Assigning nullable property self-consistent for internal/private code.
             var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.Name };
-#pragma warning restore SKEXP0001
 
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
