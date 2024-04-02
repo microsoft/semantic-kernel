@@ -510,10 +510,10 @@ class Kernel(KernelBaseModel):
                     ) from e
         if plugin is None:
             # If no plugin instance is provided, create a new KernelPlugin
-            plugin = KernelPlugin(name=plugin_name, functions=functions)
+            plugin = KernelPlugin(name=plugin_name, functions=functions)  # type: ignore
 
         if plugin_name in self.plugins:
-            self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)
+            self.plugins.add_functions_to_plugin(functions=functions, plugin_name=plugin_name)  # type: ignore
         else:
             self.plugins.add(plugin)
 

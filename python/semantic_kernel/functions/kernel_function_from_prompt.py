@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Optional
+from typing import TYPE_CHECKING, Any, AsyncIterable
 
 from pydantic import Field, ValidationError, model_validator
 
@@ -55,9 +55,9 @@ class KernelFunctionFromPrompt(KernelFunction):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
-        prompt_execution_settings: Optional[
-            PromptExecutionSettings | list[PromptExecutionSettings, dict[str, PromptExecutionSettings]]
-        ] = None,
+        prompt_execution_settings: (
+            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+        ) = None,
     ) -> None:
         """
         Initializes a new instance of the KernelFunctionFromPrompt class

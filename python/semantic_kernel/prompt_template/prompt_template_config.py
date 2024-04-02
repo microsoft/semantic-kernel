@@ -30,7 +30,7 @@ class PromptTemplateConfig(KernelBaseModel):
     @classmethod
     def rewrite_execution_settings(
         cls,
-        settings: PromptExecutionSettings | list[PromptExecutionSettings, dict[str, PromptExecutionSettings]] | None,
+        settings: PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None,
     ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary."""
         if not settings:
@@ -53,9 +53,9 @@ class PromptTemplateConfig(KernelBaseModel):
         return [
             KernelParameterMetadata(
                 name=variable.name,
-                description=variable.description,
+                description=variable.description or "",
                 default_value=variable.default,
-                type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
+                type=variable.json_schema,  # TODO: update to handle complex JSON schemas
                 is_required=variable.is_required,
             )
             for variable in self.input_variables
