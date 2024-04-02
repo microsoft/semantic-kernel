@@ -17,6 +17,33 @@ public sealed class ClaudeMetadata : ReadOnlyDictionary<string, object?>
     private ClaudeMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
+    /// Unique message object identifier.
+    /// </summary>
+    public string MessageId
+    {
+        get => this.GetValueFromDictionary(nameof(this.MessageId)) as string ?? string.Empty;
+        internal init => this.SetValueInDictionary(value, nameof(this.MessageId));
+    }
+
+    /// <summary>
+    /// The reason generating was stopped.
+    /// </summary>
+    public ClaudeFinishReason? FinishReason
+    {
+        get => (ClaudeFinishReason?)this.GetValueFromDictionary(nameof(this.FinishReason));
+        internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
+    }
+
+    /// <summary>
+    /// Which custom stop sequence was generated, if any.
+    /// </summary>
+    public string? StopSequence
+    {
+        get => this.GetValueFromDictionary(nameof(this.StopSequence)) as string;
+        internal init => this.SetValueInDictionary(value, nameof(this.StopSequence));
+    }
+
+    /// <summary>
     /// The number of input tokens which were used.
     /// </summary>
     public int InputTokenCount
