@@ -19,6 +19,8 @@ namespace Microsoft.SemanticKernel.Text;
 /// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
 /// </summary>
 /// <remarks>
+/// This is universal parser for parsing stream of text which contains a series of discrete JSON.<br/>
+/// If you need to specialized SSE parser, use <see cref="SseJsonParser"/> instead.<br/>
 /// This class is thread-safe.
 /// </remarks>
 [ExcludeFromCodeCoverage]

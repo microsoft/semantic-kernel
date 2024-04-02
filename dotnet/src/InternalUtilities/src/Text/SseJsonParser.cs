@@ -10,10 +10,13 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
-/// Provides methods to parse Server-Sent Events (SSE) data from a stream.
+/// Internal class for parsing Server-Sent Events (SSE) data from a stream.
 /// </summary>
 /// <remarks>
-/// <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream">SSE specification</a>
+/// This is specialized parser for Server-Sent Events (SSE) data that is formatted as JSON.<br/>
+/// If you need to parse non-structured json streaming data, use <see cref="StreamJsonParser"/> instead.<br/>
+/// <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream">SSE specification</a><br/>
+/// This class is thread-safe.
 /// </remarks>
 [ExcludeFromCodeCoverage]
 internal static class SseJsonParser
