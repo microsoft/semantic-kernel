@@ -44,7 +44,7 @@ public class Example03_Chat : BaseTest
                                 (agent, messages, cancellationToken) =>
                                 Task.FromResult(
                                     agent.Id != agentReviewer.Id ||
-                                    messages.Any(m => !m.Content?.Contains("Approved", StringComparison.OrdinalIgnoreCase) ?? false)),
+                                    messages.Any(m => !m.Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
                         // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
                         SelectionStrategy = new SequentialSelectionStrategy(),

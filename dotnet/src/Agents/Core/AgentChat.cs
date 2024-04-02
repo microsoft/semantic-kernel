@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,7 +29,7 @@ public sealed class AgentChat : AgentNexus
     /// <summary>
     /// Settings for controlling chat behavior.
     /// </summary>
-    public ChatExecutionSettings ExecutionSettings { get; set; } = ChatExecutionSettings.Default;
+    public ChatExecutionSettings? ExecutionSettings { get; set; }
 
     /// <summary>
     /// The agents participating in the nexus.
@@ -82,15 +83,10 @@ public sealed class AgentChat : AgentNexus
             yield break;
         }
 
-        // Use the the count, if defined and positive, otherwise:
-        // - Default to a maximum limit of 99 when only a criteria is defined.
-        // - Default to a single iteration if no count and no criteria is defined.
-        var maximumIterations =
-            this.ExecutionSettings.MaximumIterations > 0 ?
-                this.ExecutionSettings.MaximumIterations :
-                this.ExecutionSettings.ContinuationStrategy == null ? ChatExecutionSettings.DefaultMaximumIterations : 99;
+        // Use the the count, if defined and positive, otherwise use default maximum (1).
+        var maximumIterations = Math.Max(this.ExecutionSettings?.MaximumIterations ?? 0, ChatExecutionSettings.DefaultMaximumIterations);
 
-        var selectionStrategy = this.ExecutionSettings.SelectionStrategy;
+        var selectionStrategy = this.ExecutionSettings?.SelectionStrategy;
         if (selectionStrategy == null)
         {
             yield break;
@@ -111,7 +107,7 @@ public sealed class AgentChat : AgentNexus
 
                 if (message.Role == AuthorRole.Assistant)
                 {
-                    var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
+                    var task = this.ExecutionSettings?.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
                     bool shallContinue = await task.ConfigureAwait(false);
                     this.IsComplete = !shallContinue;
                 }
@@ -169,7 +165,7 @@ public sealed class AgentChat : AgentNexus
 
             if (message.Role == AuthorRole.Assistant)
             {
-                var task = this.ExecutionSettings.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
+                var task = this.ExecutionSettings?.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
                 bool shallContinue = await task.ConfigureAwait(false);
                 this.IsComplete = !shallContinue;
             }

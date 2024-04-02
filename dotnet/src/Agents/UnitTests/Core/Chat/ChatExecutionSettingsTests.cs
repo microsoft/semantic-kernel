@@ -18,12 +18,7 @@ public class ChatExecutionSettingsTests
     {
         ChatExecutionSettings settings = new();
         Assert.Null(settings.ContinuationStrategy);
-        Assert.Null(settings.MaximumIterations);
-        Assert.Null(settings.SelectionStrategy);
-
-        settings = ChatExecutionSettings.Default;
-        Assert.Null(settings.ContinuationStrategy);
-        Assert.Equal(1, settings.MaximumIterations);
+        Assert.Equal(ChatExecutionSettings.DefaultMaximumIterations, settings.MaximumIterations);
         Assert.Null(settings.SelectionStrategy);
     }
 

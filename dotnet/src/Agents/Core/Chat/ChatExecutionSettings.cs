@@ -42,14 +42,9 @@ public class ChatExecutionSettings
     public const int DefaultMaximumIterations = 1;
 
     /// <summary>
-    /// The default <see cref="ChatExecutionSettings"/>.
-    /// </summary>
-    public static readonly ChatExecutionSettings Default = new() { MaximumIterations = DefaultMaximumIterations };
-
-    /// <summary>
     /// The maximum number of agent interactions for a given nexus invocation.
     /// </summary>
-    public int? MaximumIterations { get; set; }
+    public int MaximumIterations { get; set; } = DefaultMaximumIterations;
 
     /// <summary>
     /// Optional strategy for evaluating the need to continue multiturn chat..
