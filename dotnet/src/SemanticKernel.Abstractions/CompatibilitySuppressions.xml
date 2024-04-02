@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Kernel.#ctor(System.IServiceProvider,Microsoft.SemanticKernel.KernelPluginCollection)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>
