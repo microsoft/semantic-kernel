@@ -5,7 +5,8 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.MistralAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <VersionSuffix>preview</VersionSuffix>
+    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>SKEXP0001,SKEXP0070</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
