@@ -16,6 +16,11 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class AgentNexus
 {
+    /// <summary>
+    /// Expose the nexus history.
+    /// </summary>
+    protected IReadOnlyCollection<ChatMessageContent> History => (IReadOnlyCollection<ChatMessageContent>)this._history;
+
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
     private readonly Dictionary<Agent, string> _channelMap;
