@@ -27,15 +27,15 @@ internal class MistralChatChoice
     /// <summary>
     /// Returns true if the finish reason is "tool_calls"
     /// </summary>
-    public bool IsToolCall => this.FinishReason?.Equals("tool_calls", StringComparison.Ordinal) ?? false;
+    internal bool IsToolCall => this.FinishReason?.Equals("tool_calls", StringComparison.Ordinal) ?? false;
 
     /// <summary>
     /// Returns the number of tool calls
     /// </summary>
-    public int ToolCallCount => this.Message?.ToolCalls?.Count ?? 0;
+    internal int ToolCallCount => this.Message?.ToolCalls?.Count ?? 0;
 
     /// <summary>
     /// Return the list of tools calls
     /// </summary>
-    public IList<MistralToolCall>? ToolCalls => this.Message?.ToolCalls;
+    internal IList<MistralToolCall>? ToolCalls => this.Message?.ToolCalls;
 }
