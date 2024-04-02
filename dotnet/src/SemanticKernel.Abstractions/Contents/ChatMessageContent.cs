@@ -18,7 +18,7 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Name of the author of the message
     /// </summary>
-    [Experimental("SKEXP0011")]
+    [Experimental("SKEXP0010")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; set; }
 
@@ -149,33 +149,6 @@ public class ChatMessageContent : KernelContent
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="role">Role of the author of the message</param>
-    /// <param name="content">Content of the message</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content object reference</param>
-    /// <param name="encoding">Encoding of the text</param>
-    /// <param name="metadata">Dictionary for any additional metadata</param>
-    [Experimental("SKEXP0011")]
-    public ChatMessageContent(
-        string? name,
-        AuthorRole role,
-        string? content,
-        string? modelId = null,
-        object? innerContent = null,
-        Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.Role = role;
-        this._encoding = encoding ?? Encoding.UTF8;
-        this.Content = content;
-        this.Name = name;
-    }
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
-    /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
     /// <param name="modelId">The model ID used to generate the content</param>
@@ -194,33 +167,6 @@ public class ChatMessageContent : KernelContent
         this.Role = role;
         this._encoding = encoding ?? Encoding.UTF8;
         this._items = items;
-    }
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="ChatMessageContent"/> class
-    /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="role">Role of the author of the message</param>
-    /// <param name="items">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content object reference</param>
-    /// <param name="encoding">Encoding of the text</param>
-    /// <param name="metadata">Dictionary for any additional metadata</param>
-    [Experimental("SKEXP0011")]
-    public ChatMessageContent(
-        string? name,
-        AuthorRole role,
-        ChatMessageContentItemCollection items,
-        string? modelId = null,
-        object? innerContent = null,
-        Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.Role = role;
-        this._encoding = encoding ?? Encoding.UTF8;
-        this._items = items;
-        this.Name = name;
     }
 
     /// <inheritdoc/>

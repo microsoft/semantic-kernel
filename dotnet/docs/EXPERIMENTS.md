@@ -39,7 +39,6 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0010 | OpenAI parameters | | | | | |
 | SKEXP0010 | OpenAI chat history extension | | | | | |
 | SKEXP0010 | OpenAI file service | | | | | |
-| SKEXP0011 | OpenAI message identity | | | | | |
 | | | | | | | |
 | SKEXP0020 | Azure AI Search memory connector | | | | | |
 | SKEXP0020 | Chroma memory connector | | | | | |

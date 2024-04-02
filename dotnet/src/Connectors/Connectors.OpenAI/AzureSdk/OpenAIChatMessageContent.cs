@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -36,16 +35,6 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    [Experimental("SKEXP0011")]
-    internal OpenAIChatMessageContent(string? name, ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(name, new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
-    {
-        this.ToolCalls = chatMessage.ToolCalls;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
-    /// </summary>
     internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
@@ -55,28 +44,8 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    [Experimental("SKEXP0011")]
-    internal OpenAIChatMessageContent(string? name, ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(name, new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
-    {
-        this.ToolCalls = toolCalls;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
-    /// </summary>
     internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
         : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
-    {
-        this.ToolCalls = toolCalls;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
-    /// </summary>
-    [Experimental("SKEXP0011")]
-    internal OpenAIChatMessageContent(string? name, AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(name, role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
     }

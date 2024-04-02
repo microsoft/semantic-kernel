@@ -62,17 +62,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
 
     /// <summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="authorRole">Role of the message author</param>
-    /// <param name="content">Message content</param>
-    /// <param name="encoding">Encoding of the message content</param>
-    /// <param name="metadata">Dictionary for any additional metadata</param>
-    /// </summary>
-    [Experimental("SKEXP0011")]
-    public void AddMessage(string? name, AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(name, authorRole, content, null, null, encoding, metadata));
-
-    /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
     /// <param name="encoding">Encoding of the message content</param>
@@ -80,17 +69,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
-
-    /// <summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="authorRole">Role of the message author</param>
-    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
-    /// <param name="encoding">Encoding of the message content</param>
-    /// <param name="metadata">Dictionary for any additional metadata</param>
-    /// </summary>
-    [Experimental("SKEXP0011")]
-    public void AddMessage(string? name, AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
-        this.Add(new ChatMessageContent(name, authorRole, contentItems, null, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -102,27 +80,9 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>
     /// Add a user message to the chat history
     /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="content">Message content</param>
-    [Experimental("SKEXP0011")]
-    public void AddUserMessageWithName(string? name, string content) =>
-        this.AddMessage(name, AuthorRole.User, content);
-
-    /// <summary>
-    /// Add a user message to the chat history
-    /// </summary>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
     public void AddUserMessage(ChatMessageContentItemCollection contentItems) =>
         this.AddMessage(AuthorRole.User, contentItems);
-
-    /// <summary>
-    /// Add a user message to the chat history
-    /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
-    [Experimental("SKEXP0011")]
-    public void AddUserMessageWithName(string? name, ChatMessageContentItemCollection contentItems) =>
-        this.AddMessage(name, AuthorRole.User, contentItems);
 
     /// <summary>
     /// Add an assistant message to the chat history
@@ -132,29 +92,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         this.AddMessage(AuthorRole.Assistant, content);
 
     /// <summary>
-    /// Add an assistant message to the chat history
-    /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="content">Message content</param>
-    [Experimental("SKEXP0011")]
-    public void AddAssistantMessageWithName(string? name, string content) =>
-        this.AddMessage(name, AuthorRole.Assistant, content);
-
-    /// <summary>
     /// Add a system message to the chat history
     /// </summary>
     /// <param name="content">Message content</param>
     public void AddSystemMessage(string content) =>
         this.AddMessage(AuthorRole.System, content);
-
-    /// <summary>
-    /// Add a system message to the chat history
-    /// </summary>
-    /// <param name="name">Name of the author of the message</param>
-    /// <param name="content">Message content</param>
-    [Experimental("SKEXP0011")]
-    public void AddSystemMessageWithName(string? name, string content) =>
-        this.AddMessage(name, AuthorRole.System, content);
 
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>

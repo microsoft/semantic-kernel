@@ -18,10 +18,12 @@ public class ChatHistoryTests
     {
         // Arrange
         var options = new JsonSerializerOptions();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddMessage("ChatBot", AuthorRole.System, "You are a polite bot.");
-        chatHistory.AddMessage(AuthorRole.User, "Hello");
-        chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(AuthorRole.System, "You are a polite bot.") { Name = "ChatBot" },
+            new ChatMessageContent(AuthorRole.User, "Hello") { Name = "ChatBot" },
+            new ChatMessageContent(AuthorRole.Assistant, "Hi") { Name = "ChatBot" },
+        };
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
 
         // Act

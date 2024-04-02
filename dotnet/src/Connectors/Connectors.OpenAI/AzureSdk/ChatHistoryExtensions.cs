@@ -59,12 +59,12 @@ public static class ChatHistoryExtensions
 
             chatHistory.Add(
                 new OpenAIChatMessageContent(
-                    streamedName,
                     role,
                     contentBuilder?.ToString() ?? string.Empty,
                     messageContents[0].ModelId!,
                     OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
-                    metadata));
+                    metadata)
+                { Name = streamedName});
         }
     }
 }

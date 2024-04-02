@@ -71,12 +71,12 @@ public class Example37_CompletionIdentity : BaseTest
 
     private static ChatHistory CreateHistory(bool withName)
     {
-        var chatHistory = new ChatHistory();
-
-        chatHistory.AddSystemMessageWithName(withName ? "Echo" : null, "Write one paragraph in response to the user that rhymes");
-        chatHistory.AddUserMessageWithName(withName ? "Ralph" : null, "Why is AI awesome");
-
-        return chatHistory;
+        return
+            new ChatHistory()
+            {
+                new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes") { Name = withName ? "Echo" : null },
+                new ChatMessageContent(AuthorRole.User, "Why is AI awesome") { Name = withName ? "Ralph" : null },
+            };
     }
 
     private void ValidateMessages(ChatHistory chatHistory, bool expectName)
