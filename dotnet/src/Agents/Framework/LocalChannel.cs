@@ -31,11 +31,15 @@ public class LocalChannel : AgentChannel
             this._chat.Add(input!);
         }
 
-        await foreach (var message in localAgent.InvokeAsync(this._chat, cancellationToken))
+        IAsyncEnumerable<ChatMessageContent> messages = localAgent.InvokeAsync(this._chat, cancellationToken);
+        if (messages != null)
         {
-            this._chat.Add(message);
+            await foreach (var message in messages)
+            {
+                this._chat.Add(message);
 
-            yield return message;
+                yield return message;
+            }
         }
     }
 
