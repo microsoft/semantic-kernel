@@ -103,11 +103,17 @@ public class KernelFilterTests
         var filterInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoking: (context) =>
-        {
-            filterInvocations++;
-            context.Cancel = true;
-        });
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoking: (context) =>
+            {
+                filterInvocations++;
+                context.Cancel = true;
+            },
+            onFunctionInvoked: (context) =>
+            {
+                Assert.NotNull(context.Exception);
+                Assert.IsType<KernelFunctionCanceledException>(context.Exception);
+            });
 
         // Act
         IAsyncEnumerable<StreamingKernelContent> enumerable = function.InvokeStreamingAsync<StreamingKernelContent>(kernel);
@@ -122,7 +128,6 @@ public class KernelFilterTests
         Assert.Equal(0, functionInvocations);
         Assert.Same(function, exception.Function);
         Assert.Same(kernel, exception.Kernel);
-        Assert.Null(exception.FunctionResult);
     }
 
     [Fact]
@@ -540,6 +545,29 @@ public class KernelFilterTests
     }
 
     [Fact]
+    public async Task FunctionFilterReceivesInvocationExceptionOnStreamingAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                Assert.NotNull(context.Exception);
+                Assert.IsType<NotImplementedException>(context.Exception);
+            });
+
+        // Act
+        IAsyncEnumerable<StreamingKernelContent> enumerable = function.InvokeStreamingAsync<StreamingKernelContent>(kernel);
+        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
+
+        var exception = await Assert.ThrowsAsync<NotImplementedException>(async () => await enumerator.MoveNextAsync());
+
+        // Assert
+        Assert.NotNull(exception);
+    }
+
+    [Fact]
     public async Task FunctionFilterCanCancelExceptionAsync()
     {
         // Arrange
@@ -565,6 +593,30 @@ public class KernelFilterTests
     }
 
     [Fact]
+    public async Task FunctionFilterCanCancelExceptionOnStreamingAsync()
+    {
+        // Arrange
+        var postFilterInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                context.CancelException();
+
+                postFilterInvocations++;
+            });
+
+        // Act
+        await foreach (var chunk in kernel.InvokeStreamingAsync(function))
+        {
+        }
+
+        // Assert
+        Assert.Equal(1, postFilterInvocations);
+    }
+
+    [Fact]
     public async Task FunctionFilterCanRethrowAnotherTypeOfExceptionAsync()
     {
         // Arrange
@@ -578,6 +630,29 @@ public class KernelFilterTests
 
         // Act
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal("Exception from filter", exception.Message);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanRethrowAnotherTypeOfExceptionOnStreamingAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvoked: (context) =>
+            {
+                throw new InvalidOperationException("Exception from filter");
+            });
+
+        // Act
+        IAsyncEnumerable<StreamingKernelContent> enumerable = function.InvokeStreamingAsync<StreamingKernelContent>(kernel);
+        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await enumerator.MoveNextAsync());
 
         // Assert
         Assert.NotNull(exception);

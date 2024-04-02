@@ -287,7 +287,7 @@ public abstract class KernelFunction
 
         try
         {
-            IAsyncEnumerator<TResult> enumerator;
+            IAsyncEnumerator<TResult>? enumerator = null;
             try
             {
                 // Quick check for cancellation after logging about function start but before doing any real work.
@@ -308,43 +308,65 @@ public abstract class KernelFunction
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
                 // to be lifted to be outside of the try/catch.
             }
-            catch (Exception ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception exception)
+#pragma warning restore CA1031
             {
-                var exception = HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
-                throw exception;
+                HandleExceptionWithFilter(
+                    exception,
+                    logger,
+                    activity,
+                    this,
+                    kernel,
+                    arguments,
+                    functionResult,
+                    ref tags);
             }
 
-            // Ensure we clean up after the enumerator.
-            await using (enumerator.ConfigureAwait(false))
+            if (enumerator is not null)
             {
-                while (true)
-                {
-                    try
-                    {
-                        // Move to the next streaming result.
-                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                        {
-                            kernel.OnFunctionInvokedFilter(arguments, functionResult);
-                            break;
-                        }
-                    }
-#pragma warning disable CA1031 // Do not catch general exception types
-                    catch (Exception exception)
-#pragma warning restore CA1031
-                    {
-                        HandleExceptionWithFilter(
-                            exception,
-                            logger,
-                            activity,
-                            this,
-                            kernel,
-                            arguments,
-                            functionResult,
-                            ref tags);
-                    }
+                var functionFilterInvoked = false;
 
-                    // Yield the next streaming result.
-                    yield return enumerator.Current;
+                // Ensure we clean up after the enumerator.
+                await using (enumerator.ConfigureAwait(false))
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            // Move to the next streaming result.
+                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                            {
+                                // The enumerator has passed the end of the collection, invoke post-function filter.
+                                // Checking if post-function filter was already invoked to avoid calling it twice.
+                                if (!functionFilterInvoked)
+                                {
+                                    kernel.OnFunctionInvokedFilter(arguments, functionResult);
+                                }
+
+                                break;
+                            }
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception exception)
+#pragma warning restore CA1031
+                        {
+                            HandleExceptionWithFilter(
+                                exception,
+                                logger,
+                                activity,
+                                this,
+                                kernel,
+                                arguments,
+                                functionResult,
+                                ref tags);
+
+                            functionFilterInvoked = true;
+                        }
+
+                        // Yield the next streaming result.
+                        yield return enumerator.Current;
+                    }
                 }
             }
         }
