@@ -17,7 +17,7 @@ namespace SemanticKernel.Agents.UnitTests.Internal;
 public class BroadcastQueueTests
 {
     /// <summary>
-    /// Verify the default configuratin.
+    /// Verify the default configuration.
     /// </summary>
     [Fact]
     public void VerifyBroadcastQueueDefaultConfiguration()
@@ -79,7 +79,7 @@ public class BroadcastQueueTests
         TestChannel channel = new();
         ChannelReference reference = new(channel, "test");
 
-        // Enqueue multple channels
+        // Enqueue multiple channels
         object syncObject = new();
 
         for (int count = 0; count < 10; ++count)

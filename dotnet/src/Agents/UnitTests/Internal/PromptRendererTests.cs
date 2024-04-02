@@ -18,7 +18,7 @@ public class PromptRendererTests
     private readonly TestFilter _filter = new();
 
     /// <summary>
-    /// Verify short-ciruit for rendering empty content.
+    /// Verify short-circuit for rendering empty content.
     /// </summary>
     [Fact]
     public async Task VerifyPromptRendererNullInstructionsAsync()
@@ -57,7 +57,7 @@ public class PromptRendererTests
     {
         var rendered = await this.RenderInstructionsAsync(instructions, arguments);
         Assert.NotNull(rendered);
-        //Assert.Equal(expectCached ? 0 : arguments == null ? 0 : 1, this._filter.RenderCount); // $$$ IPromptFilter
+        //Assert.Equal(expectCached ? 0 : arguments == null ? 0 : 1, this._filter.RenderCount); // TODO: PROMPTFILTER - ISSUE #5732
         Assert.Equal(expectCached ? 0 : arguments == null ? 0 : 0, this._filter.RenderCount);
     }
 

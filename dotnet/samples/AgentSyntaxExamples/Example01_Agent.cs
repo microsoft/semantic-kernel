@@ -42,7 +42,7 @@ public class Example01_Agent : BaseTest
             await foreach (var content in nexus.InvokeAsync(agent, input))
             {
                 this.WriteLine($"# {content.Role}: '{content.Content}'");
-                //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'"); // $$$ IDENTITY
+                //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'"); // TODO: MERGE IDENTITY - PR #5725
             }
         }
     }
