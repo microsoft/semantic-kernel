@@ -19,7 +19,7 @@ public class AgentChannelTests
 {
     /// <summary>
     /// Verify a <see cref="AgentChannel{TAgent}"/> throws if passed
-    /// an agent type that does not match declared agant type (TAgent).
+    /// an agent type that does not match declared agent type (TAgent).
     /// </summary>
     [Fact]
     public async Task VerifyAgentChannelUpcastAsync()

@@ -18,7 +18,7 @@ public class PromptRendererTests
     private readonly TestFilter _filter = new();
 
     /// <summary>
-    /// Verify short-ciruit for rendering empty content.
+    /// Verify short-circuit for rendering empty content.
     /// </summary>
     [Fact]
     public async Task VerifyPromptRendererNullInstructionsAsync()
