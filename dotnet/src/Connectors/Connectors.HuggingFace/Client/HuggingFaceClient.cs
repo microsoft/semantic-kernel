@@ -14,12 +14,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 internal sealed class HuggingFaceClient
 {
-    private readonly IStreamJsonParser _streamJsonParser;
+    private readonly StreamJsonParser _streamJsonParser;
     private readonly string _modelId;
     private readonly string? _apiKey;
     private readonly Uri? _endpoint;
@@ -32,7 +33,7 @@ internal sealed class HuggingFaceClient
         HttpClient httpClient,
         Uri? endpoint = null,
         string? apiKey = null,
-        IStreamJsonParser? streamJsonParser = null,
+        StreamJsonParser? streamJsonParser = null,
         ILogger? logger = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
@@ -45,7 +46,7 @@ internal sealed class HuggingFaceClient
         this._apiKey = apiKey;
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
-        this._streamJsonParser = streamJsonParser ?? new TextGenerationStreamJsonParser();
+        this._streamJsonParser = streamJsonParser ?? new StreamJsonParser();
     }
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
@@ -87,7 +88,7 @@ internal sealed class HuggingFaceClient
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
             .ConfigureAwait(false);
 
-        foreach (var streamingTextContent in this.ProcessTextResponseStream(responseStream, modelId))
+        await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingTextContent;
         }
@@ -151,39 +152,45 @@ internal sealed class HuggingFaceClient
         return response;
     }
 
-    private IEnumerable<StreamingChatMessageContent> ProcessChatResponseStream(Stream stream, string modelId)
+    private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        IAsyncEnumerator<TextGenerationStreamResponse>? responseEnumerator = null;
 
-    }
-
-    private IEnumerable<StreamingTextContent> ProcessTextResponseStream(Stream stream, string modelId)
-        => from response in this.ParseTextResponseStream(stream)
-           from textContent in this.GetTextStreamContentsFromResponse(response, modelId)
-           select GetStreamingTextContentFromTextContent(textContent);
-
-    private IEnumerable<TextGenerationStreamResponse> ParseTextResponseStream(Stream responseStream)
-        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<TextGenerationStreamResponse>);
-
-    private IEnumerable<ChatCompletionStreamResponse> ParseChatResponseStream(Stream responseStream)
-        => this._streamJsonParser.Parse(responseStream).Select(DeserializeResponse<ChatCompletionStreamResponse>);
-
-    private List<TextContent> GetTextStreamContentsFromResponse(TextGenerationStreamResponse response, string modelId)
-    {
-        return new List<TextContent>
+        try
         {
-            new(text: response.Token?.Text,
-                modelId: modelId,
-                innerContent: response,
-                metadata: new TextGenerationStreamMetadata(response))
-        };
+            var responseEnumerable = this.ParseTextResponseStreamAsync(stream, cancellationToken);
+            responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
+
+            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                var textContent = responseEnumerator.Current!;
+
+                yield return GetStreamingTextContentFromStreamResponse(textContent, modelId);
+            }
+        }
+        finally
+        {
+            if (responseEnumerator != null)
+            {
+                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
+        }
     }
 
-    private static StreamingTextContent GetStreamingTextContentFromTextContent(TextContent textContent)
+    private async IAsyncEnumerable<TextGenerationStreamResponse> ParseTextResponseStreamAsync(Stream responseStream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken))
+        {
+            yield return DeserializeResponse<TextGenerationStreamResponse>(json);
+        }
+    }
+
+    private static StreamingTextContent GetStreamingTextContentFromStreamResponse(TextGenerationStreamResponse response, string modelId)
         => new(
-            text: textContent.Text,
-            modelId: textContent.ModelId,
-            innerContent: textContent.InnerContent,
-            metadata: textContent.Metadata);
+            text: response.Token?.Text,
+            modelId: modelId,
+            innerContent: response,
+            metadata: new TextGenerationStreamMetadata(response));
 
     private TextGenerationRequest CreateTextRequest(
         string prompt,
