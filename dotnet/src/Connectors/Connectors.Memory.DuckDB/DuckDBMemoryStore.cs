@@ -181,31 +181,14 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    #region protected ================================================================================
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="DuckDBMemoryStore"/> instance.
-    /// </summary>
-    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    private void Dispose(bool disposing)
-    {
         if (!this._disposedValue)
         {
-            if (disposing)
-            {
-                this._dbConnection.Close();
-                this._dbConnection.Dispose();
-            }
+            this._dbConnection.Close();
+            this._dbConnection.Dispose();
 
             this._disposedValue = true;
         }
     }
-
-    #endregion
 
     #region private ================================================================================
 
