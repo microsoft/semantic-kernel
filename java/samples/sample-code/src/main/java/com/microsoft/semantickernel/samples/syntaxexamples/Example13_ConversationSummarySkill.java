@@ -90,7 +90,7 @@ public class Example13_ConversationSummarySkill {
                     Jane: Lorem ipsum dolor sit amet, con
                     Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
                     Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
-                    Jane: Darn, it's just repeating stuf now.
+                    Jane: Darn, it's just repeating stuff now.
                     John: I think we're done.
                     Jane: We're not though! We need like 1500 more characters.
                     John: Oh Cananda, our home and native land.
