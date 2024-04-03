@@ -33,6 +33,12 @@ class ChatHistoryHooked(ChatHistory):
         self.add_message(context.function_result.value[0])
         print(f"Mosscap:> {context.function_result}")
 
+    def pre_prompt_render(self, context):
+        print(f"{context.arguments=}")
+
+    def post_prompt_render(self, context):
+        print(f"{context.rendered_prompt=}")
+
 
 @kernel_hook_filter(include_functions=["chat"])
 def post_function_invoke(context: PostFunctionInvokeContext) -> None:
@@ -50,7 +56,7 @@ async def main() -> None:
         os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), "chat"
     )
     history = ChatHistoryHooked()
-    kernel.add_hook(history)
+    kernel.add_hook(hook=history)
     kernel.add_hook(hook=post_function_invoke)
     kernel.add_hook(lambda context: print("\nRun after func..."), "post_function_invoke")
 

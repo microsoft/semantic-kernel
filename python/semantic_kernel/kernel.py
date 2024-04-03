@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
 
-from pydantic import Field, PrivateAttr, field_validator
+from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -22,11 +23,15 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.hooks import HOOK_PROTOCOLS, PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.hooks.const import HookEnum
 from semantic_kernel.hooks.kernel_hook_filter_decorator import kernel_hook_filter
-from semantic_kernel.hooks.protocols.const import HookEnum
+from semantic_kernel.hooks.prompt.post_prompt_render_context import PostPromptRenderContext
+from semantic_kernel.hooks.prompt.pre_prompt_render_context import PrePromptRenderContext
 from semantic_kernel.hooks.utils import EmptyHook
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
@@ -76,7 +81,7 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    _hooks: list[tuple[int, Any]] = PrivateAttr(default_factory=list)
+    hooks: list[tuple[int, Any]] = Field(default_factory=list)
 
     def __init__(
         self,
@@ -279,8 +284,6 @@ class Kernel(KernelBaseModel):
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
 
-        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
-
         function = KernelFunctionFromPrompt(
             function_name=function_name,
             plugin_name=plugin_name,
@@ -292,68 +295,67 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Hooks
 
-    async def pre_function_invoke(
+    async def _pre_function_invoke(
         self,
-        kernel_function_metadata: KernelFunctionMetadata,
+        function: KernelFunction,
         arguments: KernelArguments,
         metadata: dict[str, Any] = {},
     ) -> PreFunctionInvokeContext | None:
-        context = PreFunctionInvokeContext(
-            kernel_function_metadata=kernel_function_metadata, arguments=arguments, metadata=metadata
-        )
-        if not self._hooks:
+        context = PreFunctionInvokeContext(function=function, arguments=arguments, metadata=metadata)
+        if not self.hooks:
             return None
         ran_hook = False
-        for hook_id, hook in self._hooks:
+        for hook_id, hook in self.hooks:
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["pre_function_invoke"]):
-                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
+                    logger.debug(f"Running Pre Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
                     await hook.pre_function_invoke(context=context)
                     ran_hook = True
             except Exception as exc:
                 logger.error(
-                    "An error occurred in the on_function_invoking event of hook: "
+                    "An error occurred in the pre_function_invoke function of hook: "
                     f"{hook.__class__.__name__} ({hook_id=}). "
                     f"Error description: {str(exc)}"
                 )
-            if context.is_cancel_requested:
-                raise OperationCancelledException(
-                    f"Execution was cancelled on function invoking event of pipeline step "
-                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
-                    f"{kernel_function_metadata.fully_qualified_name}."
-                )
-            if context.updated_arguments:
-                logger.info(
-                    f"Arguments updated by function_invoking_handler in pipeline step: "
-                    f"{metadata['pipeline_step']}, new arguments: {context.arguments}"
-                )
-            if context.is_skip_requested:
-                logger.info(
-                    f"Execution was skipped on function invoking event of pipeline step "
-                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
-                    f"{kernel_function_metadata.fully_qualified_name}."
-                )
+            else:
+                if context.is_cancel_requested:
+                    raise OperationCancelledException(
+                        f"Execution was cancelled on function invoking event of pipeline step "
+                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"{function.fully_qualified_name}."
+                    )
+                if context.updated_arguments:
+                    logger.info(
+                        f"Arguments updated by function_invoking_handler in pipeline step: "
+                        f"{metadata['pipeline_step']}, new arguments: {context.arguments}"
+                    )
+                if context.is_skip_requested:
+                    logger.info(
+                        f"Execution was skipped on function invoking event of pipeline step "
+                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"{function.fully_qualified_name}."
+                    )
         return context if ran_hook else None
 
-    async def post_function_invoke(
+    async def _post_function_invoke(
         self,
-        kernel_function_metadata: KernelFunctionMetadata,
+        function: KernelFunction,
         arguments: KernelArguments,
         function_result: FunctionResult | None = None,
         exception: Exception | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: dict[str, Any] = {},
     ) -> PostFunctionInvokeContext | None:
         context = PostFunctionInvokeContext(
-            kernel_function_metadata=kernel_function_metadata,
+            function=function,
             arguments=arguments,
-            metadata=metadata or {},
+            metadata=metadata,
             function_result=function_result,
             exception=exception or function_result.metadata.get("exception", None) if function_result else None,
         )
-        if not self._hooks:
+        if not self.hooks:
             return None
         ran_hook = False
-        for hook_id, hook in self._hooks:
+        for hook_id, hook in self.hooks:
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["post_function_invoke"]):
                     logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
@@ -361,35 +363,83 @@ class Kernel(KernelBaseModel):
                     ran_hook = True
             except Exception as exc:
                 logger.error(
-                    "An error occurred in the on_function_invoked event of hook: "
+                    "An error occurred in the post_function_invoke function of hook: "
                     f"{hook.__class__.__name__} ({hook_id=}). "
                     f"Error description: {str(exc)}"
                 )
-            if context.is_cancel_requested:
-                raise OperationCancelledException(
-                    f"Execution was cancelled on function invoking event of pipeline step "
-                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
-                    f"{kernel_function_metadata.fully_qualified_name}."
-                )
-            if context.updated_arguments:
-                logger.info(
-                    f"Arguments updated by function_invoked_handler in pipeline step: "
-                    f"{metadata.get('pipeline_step', '') if metadata else ''}, new arguments: {context.arguments}"
-                )
-            if context.is_repeat_requested:
-                logger.info(
-                    f"Execution was repeated on function invoked event of pipeline step "
-                    f"{metadata.get('pipeline_step', '') if metadata else ''}: "
-                    f"{kernel_function_metadata.fully_qualified_name}."
-                )
+            else:
+                if context.is_cancel_requested:
+                    raise OperationCancelledException(
+                        f"Execution was cancelled on function invoking event of pipeline step "
+                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"{function.fully_qualified_name}."
+                    )
+                if context.updated_arguments:
+                    logger.info(
+                        f"Arguments updated by function_invoked_handler in pipeline step: "
+                        f"{metadata.get('pipeline_step', '') if metadata else ''}, new arguments: {context.arguments}"
+                    )
+                if context.is_repeat_requested:
+                    logger.info(
+                        f"Execution was repeated on function invoked event of pipeline step "
+                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"{function.fully_qualified_name}."
+                    )
 
         return context if ran_hook else None
 
+    async def _pre_prompt_render(
+        self, function: KernelFunction, arguments: KernelArguments, metadata: dict[str, Any] = {}
+    ) -> PrePromptRenderContext | None:
+        if not self.hooks:
+            return None
+        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+        PrePromptRenderContext.model_rebuild()
+        context = PrePromptRenderContext(function=function, arguments=arguments, metadata=metadata, kernel=self)
+        ran_hook = False
+        for hook_id, hook in self.hooks:
+            try:
+                if isinstance(hook, HOOK_PROTOCOLS["pre_prompt_render"]):
+                    logger.debug(f"Running Pre Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
+                    await hook.pre_prompt_render(context=context)
+                    ran_hook = True
+            except Exception as exc:
+                logger.error(
+                    "An error occurred in the pre_prompt_render function of hook: "
+                    f"{hook.__class__.__name__} ({hook_id=}). "
+                    f"Error description: {str(exc)}"
+                )
+        return context if ran_hook else None
+
+    async def _post_prompt_render(
+        self, function: KernelFunction, arguments: KernelArguments, rendered_prompt: str, metadata: dict[str, Any] = {}
+    ) -> PostPromptRenderContext | None:
+        if not self.hooks:
+            return None
+        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+        PostPromptRenderContext.model_rebuild()
+        context = PostPromptRenderContext(
+            function=function, arguments=arguments, metadata=metadata, kernel=self, rendered_prompt=rendered_prompt
+        )
+        ran_hook = False
+        for hook_id, hook in self.hooks:
+            try:
+                if isinstance(hook, HOOK_PROTOCOLS["post_prompt_render"]):
+                    logger.debug(f"Running Post Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
+                    await hook.post_prompt_render(context=context)
+                    ran_hook = True
+            except Exception as exc:
+                logger.error(
+                    "An error occurred in the post_prompt_render function of hook: "
+                    f"{hook.__class__.__name__} ({hook_id=}). "
+                    f"Error description: {str(exc)}"
+                )
+        return context if ran_hook else None
+
     def add_hook(
-        self,
-        hook: object | Callable[[T], None],
-        hook_name: HookEnum | str | None = None,
-        position: int | None = None,
+        self, hook: object | Callable[..., Any], hook_name: HookEnum | str | None = None, position: int | None = None
     ) -> int:
         """Add a KernelHook to the Kernel.
 
@@ -400,35 +450,58 @@ class Kernel(KernelBaseModel):
             position (int | None): The position to add the hook
 
         Returns:
-            int: The id of the added hook
+            int: The id of the added hook, if you want to be able to remove it later, keep track of this.
 
         """
-        if isinstance(hook, Callable):
-            if hook_name is None:
-                if hook.__name__ not in HOOK_PROTOCOLS:
+        if not isinstance(hook, Callable):
+            for method_name, method in inspect.getmembers(hook, inspect.ismethod):
+                if method_name not in HOOK_PROTOCOLS:
+                    continue
+                if not isinstance(hook, HOOK_PROTOCOLS[method_name]):
                     raise HookInvalidSignatureError(
-                        f"Hook function {hook.__name__} does not match the expected names, "
-                        "should either supply a hook_name, "
-                        "or the name of the function needs to be one of the hooks."
+                        f"Hook function {method_name} does not match the expected signature."
                     )
-                hook_name = HookEnum(hook.__name__)
-            elif not isinstance(hook_name, HookEnum):
-                hook_name = HookEnum(hook_name)
-            hook_class = EmptyHook()
-            hook_class.__setattr__(hook_name.value, hook)
-            hook = hook_class
-        for attr in dir(hook):
-            if attr not in HOOK_PROTOCOLS:
-                continue
-            if not isinstance(hook, HOOK_PROTOCOLS[attr]):
-                raise HookInvalidSignatureError(f"Hook function {attr} does not match the expected signature.")
-            hook_function = getattr(hook, attr)
-            if not hasattr(hook_function, "__kernel_hook__"):
-                setattr(hook, attr, kernel_hook_filter()(hook_function))
-        if position is not None:
-            self._hooks.insert(position, (id(hook), hook))
+                if not hasattr(method, "__kernel_hook__"):
+                    object.__setattr__(hook, method_name, kernel_hook_filter()(method))
+
+                print(method)
+            return self._add_hook(hook, position)
+
+        if hook_name is None:
+            if hook.__name__ not in HOOK_PROTOCOLS:
+                raise HookInvalidSignatureError(
+                    f"Hook function {hook.__name__} does not match the expected names, "
+                    "should either supply a hook_name, "
+                    "or the name of the function needs to be one of the hooks."
+                )
+            hook_name = HookEnum(hook.__name__)
         else:
-            self._hooks.append((id(hook), hook))
+            if hook_name not in HOOK_PROTOCOLS:
+                raise HookInvalidSignatureError(
+                    f"Hook function {hook.__name__} does not match the expected names, "
+                    "should either supply a hook_name, "
+                    "or the name of the function needs to be one of the hooks."
+                )
+            if not isinstance(hook_name, HookEnum):
+                hook_name = HookEnum(hook_name)
+
+        if not hasattr(hook, "__kernel_hook__"):
+            hook = kernel_hook_filter()(hook)
+
+        hook_class = EmptyHook()
+        hook_class.__setattr__(hook_name.value, hook)
+        if not isinstance(hook_class, HOOK_PROTOCOLS[hook_name]):
+            raise HookInvalidSignatureError(
+                f"Hook function {hook_name}/{hook.__name__} does not match the expected signature."
+            )
+        return self._add_hook(hook_class, position)
+
+    def _add_hook(self, hook: object, position: int | None = None) -> int:
+        """Adds a hook class to the list of hooks, at the end or at position."""
+        if position is not None:
+            self.hooks.insert(position, (id(hook), hook))
+        else:
+            self.hooks.append((id(hook), hook))
         return id(hook)
 
     def remove_hook(self, hook_id: int | None = None, position: int | None = None) -> None:
@@ -441,11 +514,11 @@ class Kernel(KernelBaseModel):
         if hook_id is None and position is None:
             raise ValueError("Either hook_id or position should be provided.")
         if position is not None:
-            self._hooks.pop(position)
+            self.hooks.pop(position)
             return
-        for i, hooks in enumerate(self._hooks):
+        for i, hooks in enumerate(self.hooks):
             if hooks[0] == hook_id:
-                self._hooks.pop(i)
+                self.hooks.pop(i)
                 break
 
     # endregion

@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from semantic_kernel.hooks.contexts.kernel_hook_context_base import KernelHookContextBase
+from semantic_kernel.hooks.kernel_hook_context_base import KernelHookContextBase
 
 
-class PreFunctionInvokeContext(KernelHookContextBase):
-    """Function Invoking Event Args.
+class FunctionHookContextBase(KernelHookContextBase):
+    """Base class for Kernel Hook Contexts.
 
-    Receives relevant parts of the the execution, either before (invoking) the function is executed.
+    Receives relevant parts of the the execution, either before (invoking) or after (invoked) the function is executed.
     When a handler changes the arguments in the invoking event,
     the new arguments are passed to the invoked event,
     make sure to use the update_arguments function, since that also raises the flag that the arguments were updated.
@@ -21,16 +21,14 @@ class PreFunctionInvokeContext(KernelHookContextBase):
     Flags:
         updated_arguments (bool): Whether the arguments were updated, default False.
         is_cancel_requested (bool): Whether the function execution has to be canceled, default False.
-        is_skip_requested (bool): Whether the function execution has to be skipped, default False.
 
     Methods:
         cancel: Sets the is_cancel_requested flag to True.
         update_arguments: Updates the arguments and raises the updated_arguments flag.
-        skip: Sets the is_skip_requested flag to True.
 
     """
 
-    is_skip_requested: bool = Field(default=False, init_var=False)
+    is_cancel_requested: bool = Field(default=False, init_var=False)
 
-    def skip(self):
-        self.is_skip_requested = True
+    def cancel(self):
+        self.is_cancel_requested = True

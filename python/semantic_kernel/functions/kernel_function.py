@@ -190,9 +190,7 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         while True:
-            pre_hook_context = await kernel.pre_function_invoke(
-                kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
-            )
+            pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
             if pre_hook_context:
                 arguments = pre_hook_context.arguments
                 if pre_hook_context.is_skip_requested:
@@ -211,8 +209,8 @@ class KernelFunction(KernelBaseModel):
                 function_result = FunctionResult(function=self.metadata, value=None, metadata=metadata)
 
             # this allows a hook to alter the results before returning.
-            post_hook_context = await kernel.post_function_invoke(
-                kernel_function_metadata=self.metadata,
+            post_hook_context = await kernel._post_function_invoke(
+                function=self,
                 arguments=arguments,
                 function_result=function_result,
                 exception=exception,
@@ -260,9 +258,7 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        pre_hook_context = await kernel.pre_function_invoke(
-            kernel_function_metadata=self.metadata, arguments=arguments, metadata=metadata
-        )
+        pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
         if pre_hook_context:
             arguments = pre_hook_context.arguments
             if pre_hook_context.is_skip_requested:

@@ -7,7 +7,7 @@ from inspect import isawaitable
 from types import MethodType
 from typing import Any, Callable
 
-from semantic_kernel.hooks.contexts.kernel_hook_context_base import KernelHookContextBase
+from semantic_kernel.hooks.kernel_hook_context_base import KernelHookContextBase
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +56,9 @@ def kernel_hook_filter(
         async def wrapper(*args: Any, **kwargs: Any) -> None:
             if func.__kernel_hook_filtered__:
                 context: KernelHookContextBase = kwargs.get("context", None)
-                if not context:
-                    function_name = context.kernel_function_metadata.name
-                    plugin_name = context.kernel_function_metadata.plugin_name
+                if context:
+                    function_name = context.function.name
+                    plugin_name = context.function.plugin_name
                     if include_plugins:
                         if plugin_name not in include_plugins:
                             logger.debug(f"Plugin {plugin_name} not in {include_plugins}")

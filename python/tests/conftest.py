@@ -15,7 +15,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.hooks.contexts import PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.hooks import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.settings import (
@@ -54,10 +54,10 @@ def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClient
 
 @pytest.fixture(scope="function")
 def kernel_with_hooks(kernel: Kernel) -> Kernel:
-    def invoking_handler(e: PreFunctionInvokeContext) -> None:
+    def invoking_handler(context: PreFunctionInvokeContext) -> None:
         pass
 
-    def invoked_handler(e: PostFunctionInvokeContext) -> None:
+    def invoked_handler(context: PostFunctionInvokeContext) -> None:
         pass
 
     kernel.add_hook(invoking_handler, "pre_function_invoke")

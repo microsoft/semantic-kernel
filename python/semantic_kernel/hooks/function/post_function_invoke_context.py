@@ -5,10 +5,10 @@ from __future__ import annotations
 from pydantic import Field
 
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.hooks.contexts.kernel_hook_context_base import KernelHookContextBase
+from semantic_kernel.hooks.function.function_hook_context_base import FunctionHookContextBase
 
 
-class PostFunctionInvokeContext(KernelHookContextBase):
+class PostFunctionInvokeContext(FunctionHookContextBase):
     """Function Invoked Event Args.
 
     Receives relevant parts of the the execution, after (invoked) the function is executed.
