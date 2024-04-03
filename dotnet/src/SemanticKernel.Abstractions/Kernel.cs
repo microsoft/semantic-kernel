@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -559,6 +560,7 @@ public sealed class Kernel
 
     #region Obsolete
 
+#pragma warning disable CS0067 // The event is never used
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
@@ -582,6 +584,7 @@ public sealed class Kernel
     /// </summary>
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+#pragma warning restore CS0067 // The event is never used
 
     #endregion
 }
