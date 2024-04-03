@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -27,6 +28,40 @@ internal sealed class HuggingFaceClient
     private readonly string _separator;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+
+    private static readonly string s_namespace = typeof(HuggingFaceClient).Namespace!;
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new(s_namespace);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.total",
+            unit: "{token}",
+            description: "Number of total tokens used");
 
     internal HuggingFaceClient(
         string modelId,
@@ -62,11 +97,32 @@ internal sealed class HuggingFaceClient
             .ConfigureAwait(false);
 
         var response = DeserializeResponse<TextGenerationResponse>(body);
-        var textContents = GetTextContentFromResponse(response, modelId);
+        var textContents = GetTextContentsFromResponse(response, modelId);
 
         this.LogTextGenerationUsage(executionSettings);
 
         return textContents;
+    }
+
+    public async Task<IReadOnlyList<ChatMessageContent>> GenerateChatAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
+    {
+        string modelId = executionSettings?.ModelId ?? this._modelId;
+        var endpoint = this.GetChatGenerationEndpoint(modelId);
+        var request = this.CreateChatRequest(chatHistory, executionSettings);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
+
+        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        var response = DeserializeResponse<ChatCompletionResponse>(body);
+        var chatContents = GetChatMessageContentsFromResponse(response, modelId);
+
+        this.LogChatCompletionUsage(executionSettings, response);
+
+        return chatContents;
     }
 
     public async IAsyncEnumerable<StreamingTextContent> StreamGenerateTextAsync(
@@ -95,7 +151,7 @@ internal sealed class HuggingFaceClient
 
     public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatAsync(
         ChatHistory chatHistory,
-        PromptExecutionSettings executionSettings,
+        PromptExecutionSettings? executionSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         string modelId = executionSettings?.ModelId ?? this._modelId;
@@ -313,10 +369,40 @@ internal sealed class HuggingFaceClient
         }
     }
 
-    private static List<TextContent> GetTextContentFromResponse(TextGenerationResponse response, string modelId)
+    private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response, string modelId)
+    {
+        var chatMessageContents = new List<ChatMessageContent>();
+
+        foreach (var choice in response.Choices!)
+        {
+            var metadata = new Dictionary<string, object?>(8)
+            {
+                { "created", response.Created },
+                { "object", response.Object },
+                { "model", response.Model },
+                { "system_fingerprint", response.SystemFingerprint },
+                { "id", response.Id },
+                { "usage", response.Usage },
+                { "finish_reason", choice.FinishReason },
+                { "log_probs", choice.LogProbs },
+            };
+
+            chatMessageContents.Add(new ChatMessageContent(
+                role: new AuthorRole(choice.Message!.Role!),
+                content: choice.Message.Content,
+                modelId: modelId,
+                innerContent: response,
+                encoding: Encoding.UTF8,
+                metadata: metadata));
+        }
+
+        return chatMessageContents;
+    }
+
+    private static List<TextContent> GetTextContentsFromResponse(TextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
 
-    private static List<TextContent> GetTextContentFromResponse(ImageToTextGenerationResponse response, string modelId)
+    private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
 
     private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
@@ -324,6 +410,21 @@ internal sealed class HuggingFaceClient
         this._logger?.LogDebug(
             "HuggingFace text generation usage: ModelId: {ModelId}",
             executionSettings?.ModelId ?? this._modelId);
+    }
+
+    private void LogChatCompletionUsage(PromptExecutionSettings? executionSettings, ChatCompletionResponse chatCompletionResponse)
+    {
+        this._logger.Log(
+        LogLevel.Debug,
+        "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
+        chatCompletionResponse.Model,
+        chatCompletionResponse.Usage!.PromptTokens,
+        chatCompletionResponse.Usage!.CompletionTokens,
+        chatCompletionResponse.Usage!.TotalTokens);
+
+        s_promptTokensCounter.Add(chatCompletionResponse.Usage!.PromptTokens);
+        s_completionTokensCounter.Add(chatCompletionResponse.Usage!.CompletionTokens);
+        s_totalTokensCounter.Add(chatCompletionResponse.Usage!.TotalTokens);
     }
 
     private Uri GetTextGenerationEndpoint(string modelId)
@@ -350,7 +451,7 @@ internal sealed class HuggingFaceClient
             .ConfigureAwait(false);
 
         var response = DeserializeResponse<ImageToTextGenerationResponse>(body);
-        var textContents = GetTextContentFromResponse(response, executionSettings?.ModelId ?? this._modelId);
+        var textContents = GetTextContentsFromResponse(response, executionSettings?.ModelId ?? this._modelId);
 
         return textContents;
     }

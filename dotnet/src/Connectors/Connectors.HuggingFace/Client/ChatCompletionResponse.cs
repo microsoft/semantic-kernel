@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
-internal sealed class ChatCompletionStreamResponse
+internal sealed class ChatCompletionResponse
 {
     [JsonPropertyName("id")]
     public string? Id { get; set; }
@@ -25,39 +25,45 @@ internal sealed class ChatCompletionStreamResponse
     public string? SystemFingerprint { get; set; }
 
     [JsonPropertyName("choices")]
-    public List<ChatCompletionStreamChoice>? Choices { get; set; }
+    public List<ChatCompletionChoice>? Choices { get; set; }
 
-    internal sealed class ChatCompletionStreamChoice
+    [JsonPropertyName("usage")]
+    public ChatCompletionUsage? Usage { get; set; }
+
+    internal sealed class ChatCompletionChoice
     {
-        [JsonPropertyName("delta")]
-        public ChatCompletionStreamChoiceDelta? Delta { get; set; }
-
         [JsonPropertyName("logprobs")]
-        public ChatCompletionStreamChoiceLogProbs? LogProbs { get; set; }
+        public ChatCompletionChoiceLogProbs? LogProbs { get; set; }
 
         [JsonPropertyName("finish_reason")]
         public string? FinishReason { get; set; }
 
         [JsonPropertyName("index")]
         public int Index { get; set; }
+
+        [JsonPropertyName("message")]
+        public ChatCompletionMessage? Message { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDelta
+    internal sealed class ChatCompletionMessage
     {
         [JsonPropertyName("content")]
         public string? Content { get; set; }
 
         [JsonPropertyName("tool_calls")]
-        public List<ChatCompletionStreamChoiceDeltaToolCall>? ToolCalls { get; set; }
+        public List<ChatCompletionChoiceToolCall>? ToolCalls { get; set; }
 
         [JsonPropertyName("function_call")]
-        public ChatCompletionStreamChoiceDeltaToolCallFunction? FunctionCall { get; set; }
+        public ChatCompletionChoiceToolCallFunction? FunctionCall { get; set; }
 
         [JsonPropertyName("role")]
         public string? Role { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDeltaToolCall
+    internal sealed class ChatCompletionChoiceToolCall
     {
         [JsonPropertyName("index")]
         public int Index { get; set; }
@@ -69,10 +75,10 @@ internal sealed class ChatCompletionStreamResponse
         public string? Type { get; set; }
 
         [JsonPropertyName("function")]
-        public ChatCompletionStreamChoiceDeltaToolCallFunction? Function { get; set; }
+        public ChatCompletionChoiceToolCallFunction? Function { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDeltaToolCallFunction
+    internal sealed class ChatCompletionChoiceToolCallFunction
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }
@@ -81,12 +87,12 @@ internal sealed class ChatCompletionStreamResponse
         public string? Arguments { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceLogProbs
+    internal sealed class ChatCompletionChoiceLogProbs
     {
-        public List<ChatCompletionStreamChoiceLogProbsContent>? Content { get; set; }
+        public List<ChatCompletionChoiceLogProbsContent>? Content { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceLogProbsContent
+    internal sealed class ChatCompletionChoiceLogProbsContent
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }
@@ -98,10 +104,10 @@ internal sealed class ChatCompletionStreamResponse
         public int[]? Bytes { get; set; }
 
         [JsonPropertyName("top_logprobs")]
-        public List<ChatCompletionStreamChoiceTopLogProb>? TopLogProbs { get; set; }
+        public List<ChatCompletionChoiceTopLogProb>? TopLogProbs { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceTopLogProb
+    internal sealed class ChatCompletionChoiceTopLogProb
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }
@@ -111,5 +117,17 @@ internal sealed class ChatCompletionStreamResponse
 
         [JsonPropertyName("bytes")]
         public int[]? Bytes { get; set; }
+    }
+
+    internal sealed class ChatCompletionUsage
+    {
+        [JsonPropertyName("prompt_tokens")]
+        public int PromptTokens { get; set; }
+
+        [JsonPropertyName("completion_tokens")]
+        public int CompletionTokens { get; set; }
+
+        [JsonPropertyName("total_tokens")]
+        public int TotalTokens { get; set; }
     }
 }

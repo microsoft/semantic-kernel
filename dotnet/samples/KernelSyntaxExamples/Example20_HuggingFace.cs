@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
 using xRetry;
 using Xunit;
@@ -111,6 +113,83 @@ public class Example20_HuggingFace : BaseTest
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         WriteLine(result.GetValue<string>());
+    }
+
+    /// <summary>
+    /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
+    /// </summary>
+    [Fact]
+    public async Task RunTextGenerationInferenceChatCompletionAsync()
+    {
+        WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
+
+        // This example was run against one of the chat completion (Message API) supported models from HuggingFace, listed in here: <see href="https://huggingface.co/docs/text-generation-inference/main/en/supported_models"/>
+        // Starting a Local Docker i.e:
+        // docker run --gpus all --shm-size 1g -p 8080:80 -v "F:\temp\huggingface:/data" ghcr.io/huggingface/text-generation-inference:1.4 --model-id teknium/OpenHermes-2.5-Mistral-7B
+
+        // HuggingFace local HTTP server endpoint
+        var endpoint = new Uri("http://localhost:8080");
+
+        const string Model = "teknium/OpenHermes-2.5-Mistral-7B";
+
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceChatCompletion(
+                model: Model,
+                endpoint: endpoint)
+            .Build();
+
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+        var chatHistory = new ChatHistory("You are a helpful assistant.")
+        {
+            new ChatMessageContent(AuthorRole.User, "What is deep learning?")
+        };
+
+        var result = await chatCompletion.GetChatMessageContentAsync(chatHistory);
+
+        WriteLine(result.Role);
+        WriteLine(result.Content);
+    }
+
+    /// <summary>
+    /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
+    /// </summary>
+    [Fact]
+    public async Task RunTextGenerationInferenceStreamingChatCompletionAsync()
+    {
+        WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
+
+        // This example was run against one of the chat completion (Message API) supported models from HuggingFace, listed in here: <see href="https://huggingface.co/docs/text-generation-inference/main/en/supported_models"/>
+        // Starting a Local Docker i.e:
+        // docker run --gpus all --shm-size 1g -p 8080:80 -v "F:\temp\huggingface:/data" ghcr.io/huggingface/text-generation-inference:1.4 --model-id teknium/OpenHermes-2.5-Mistral-7B
+
+        // HuggingFace local HTTP server endpoint
+        var endpoint = new Uri("http://localhost:8080");
+
+        const string Model = "teknium/OpenHermes-2.5-Mistral-7B";
+
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddHuggingFaceChatCompletion(
+                model: Model,
+                endpoint: endpoint)
+            .Build();
+
+        var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+        var chatHistory = new ChatHistory("You are a helpful assistant.")
+        {
+            new ChatMessageContent(AuthorRole.User, "What is deep learning?")
+        };
+
+        AuthorRole? role = null;
+        await foreach (var chatMessageChunk in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
+        {
+            if (role == null)
+            {
+                Write(chatMessageChunk.Role);
+            }
+            Write(chatMessageChunk.Content);
+
+            role ??= chatMessageChunk.Role;
+        }
     }
 
     public Example20_HuggingFace(ITestOutputHelper output) : base(output)
