@@ -83,7 +83,7 @@ public abstract class AgentNexus
 
         try
         {
-            // Manifest the required channel
+            // Manifest the required channel.  Will throw if channel not in sync.
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
             if (input.HasContent())
