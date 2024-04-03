@@ -18,12 +18,14 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="builder">The <see cref="MemoryBuilder"/> instance</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
     public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -34,7 +36,7 @@ public static class GoogleAIMemoryBuilderExtensions
             new GoogleAITextEmbeddingGenerationService(
                 modelId: modelId,
                 apiKey: apiKey,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory: loggerFactory));
     }
-}

@@ -109,4 +109,12 @@ internal abstract class ClientBase
 #pragma warning restore CA2254
         }
     }
+
+    protected static string GetApiVersionSubLink(GoogleApiVersion apiVersion)
+        => apiVersion switch
+        {
+            GoogleApiVersion.Stable => "v1",
+            GoogleApiVersion.Beta => "v1beta",
+            _ => throw new NotSupportedException($"Google API version {apiVersion} is not supported.")
+        };
 }

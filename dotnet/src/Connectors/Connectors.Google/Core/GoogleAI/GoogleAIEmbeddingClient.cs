@@ -24,11 +24,13 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Embeddings generation model id</param>
     /// <param name="apiKey">Api key for GoogleAI endpoint</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GoogleAIEmbeddingClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -37,8 +39,10 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._embeddingModelId}:batchEmbedContents?key={apiKey}");
+        this._embeddingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._embeddingModelId}:batchEmbedContents?key={apiKey}");
     }
 
     /// <summary>

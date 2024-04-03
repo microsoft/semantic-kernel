@@ -20,12 +20,14 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="services">The service collection to add the Gemini Text Generation service to.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddGoogleAIGeminiChatCompletion(
         this IServiceCollection services,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -36,6 +38,7 @@ public static class GoogleAIServiceCollectionExtensions
             new GoogleAIGeminiChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;
@@ -47,12 +50,14 @@ public static class GoogleAIServiceCollectionExtensions
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddGoogleAIEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -63,6 +68,7 @@ public static class GoogleAIServiceCollectionExtensions
             new GoogleAITextEmbeddingGenerationService(
                 modelId: modelId,
                 apiKey: apiKey,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }

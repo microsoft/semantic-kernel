@@ -22,6 +22,7 @@ public static class VertexAIMemoryBuilderExtensions
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
     /// <remarks>
@@ -35,6 +36,7 @@ public static class VertexAIMemoryBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -49,6 +51,7 @@ public static class VertexAIMemoryBuilderExtensions
                 bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory: loggerFactory));
     }
@@ -61,6 +64,7 @@ public static class VertexAIMemoryBuilderExtensions
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated memory builder.</returns>
     public static MemoryBuilder WithVertexAITextEmbeddingGeneration(
@@ -69,6 +73,7 @@ public static class VertexAIMemoryBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -83,6 +88,7 @@ public static class VertexAIMemoryBuilderExtensions
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory: loggerFactory));
     }

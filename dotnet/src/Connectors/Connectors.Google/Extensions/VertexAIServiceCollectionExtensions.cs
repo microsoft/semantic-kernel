@@ -24,6 +24,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     /// <remarks>
@@ -37,6 +38,7 @@ public static class VertexAIServiceCollectionExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -51,6 +53,7 @@ public static class VertexAIServiceCollectionExtensions
                 bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;
@@ -64,6 +67,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddVertexAIGeminiChatCompletion(
@@ -72,6 +76,7 @@ public static class VertexAIServiceCollectionExtensions
         string bearerKey,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -86,6 +91,7 @@ public static class VertexAIServiceCollectionExtensions
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;
@@ -99,6 +105,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     /// <remarks>
@@ -112,6 +119,7 @@ public static class VertexAIServiceCollectionExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -126,6 +134,7 @@ public static class VertexAIServiceCollectionExtensions
                 bearerTokenProvider: bearerTokenProvider,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
@@ -138,6 +147,7 @@ public static class VertexAIServiceCollectionExtensions
     /// <param name="bearerKey">The Bearer Key for authentication.</param>
     /// <param name="location">The location to process the request</param>
     /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddVertexAIEmbeddingGeneration(
@@ -146,6 +156,7 @@ public static class VertexAIServiceCollectionExtensions
         string bearerKey,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -160,6 +171,7 @@ public static class VertexAIServiceCollectionExtensions
                 bearerKey: bearerKey,
                 location: location,
                 projectId: projectId,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }

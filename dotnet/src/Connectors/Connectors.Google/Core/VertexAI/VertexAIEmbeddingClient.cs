@@ -26,6 +26,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
     /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public VertexAIEmbeddingClient(
         HttpClient httpClient,
@@ -33,6 +34,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        GoogleApiVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -43,8 +45,10 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._embeddingModelId = modelId;
-        this._embeddingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
+        this._embeddingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._embeddingModelId}:predict");
     }
 
     /// <summary>

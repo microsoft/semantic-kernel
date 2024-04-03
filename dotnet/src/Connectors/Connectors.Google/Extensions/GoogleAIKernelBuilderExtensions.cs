@@ -21,6 +21,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -28,6 +29,7 @@ public static class GoogleAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -39,6 +41,7 @@ public static class GoogleAIKernelBuilderExtensions
             new GoogleAIGeminiChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
@@ -50,6 +53,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -57,6 +61,7 @@ public static class GoogleAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -68,6 +73,7 @@ public static class GoogleAIKernelBuilderExtensions
             new GoogleAITextEmbeddingGenerationService(
                 modelId: modelId,
                 apiKey: apiKey,
+                apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;

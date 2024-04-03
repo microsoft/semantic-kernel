@@ -25,11 +25,13 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
     /// </summary>
     /// <param name="modelId">The Gemini model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication.</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Gemini API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public GoogleAIGeminiChatCompletionService(
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -42,6 +44,7 @@ public sealed class GoogleAIGeminiChatCompletionService : IChatCompletionService
 #pragma warning restore CA2000
             modelId: modelId,
             apiKey: apiKey,
+            apiVersion: apiVersion,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAIGeminiChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }

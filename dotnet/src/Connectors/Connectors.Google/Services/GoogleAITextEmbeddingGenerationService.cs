@@ -26,11 +26,13 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
     /// </summary>
     /// <param name="modelId">The model identifier.</param>
     /// <param name="apiKey">The API key for authentication.</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="httpClient">The optional HTTP client.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public GoogleAITextEmbeddingGenerationService(
         string modelId,
         string apiKey,
+        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -43,6 +45,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
 #pragma warning restore CA2000
             modelId: modelId,
             apiKey: apiKey,
+            apiVersion: apiVersion,
             logger: loggerFactory?.CreateLogger(typeof(GoogleAITextEmbeddingGenerationService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
