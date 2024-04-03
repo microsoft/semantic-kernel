@@ -25,7 +25,7 @@ public abstract class BaseTest
 
     protected string GetApiKey()
     {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
         {
             return TestConfiguration.OpenAI.ApiKey;
         }
@@ -37,7 +37,7 @@ public abstract class BaseTest
     {
         var builder = Kernel.CreateBuilder();
 
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
         {
             builder.AddOpenAIChatCompletion(
                 TestConfiguration.OpenAI.ChatModelId,
@@ -64,11 +64,6 @@ public abstract class BaseTest
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
 
-        LoadUserSecrets();
-    }
-
-    private static void LoadUserSecrets()
-    {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json", true)
             .AddEnvironmentVariables()

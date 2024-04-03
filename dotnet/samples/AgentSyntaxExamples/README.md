@@ -1,6 +1,6 @@
 #Semantic Kernel: Agent syntax examples
 
-This project contains a collection examples on how to use SK Agents.
+This project contains a collection of examples on how to use SK Agents.
 
 The examples can be run as integration tests but their code can also be copied to stand-alone programs.
 
