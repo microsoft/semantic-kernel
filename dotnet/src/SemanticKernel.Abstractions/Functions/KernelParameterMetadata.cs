@@ -145,7 +145,7 @@ public sealed class KernelParameterMetadata
                     // This line must precede the JsonSchemaBuilder creation; otherwise, the registration will not take place.
                     AttributeHandler.AddHandler<DescriptionAttributeHandler>();
 
-                    var builder = new JsonSchemaBuilder().FromType(parameterType, new SchemaGeneratorConfiguration());
+                    var builder = new JsonSchemaBuilder().FromType(parameterType);
 
                     if (!string.IsNullOrWhiteSpace(description))
                     {
