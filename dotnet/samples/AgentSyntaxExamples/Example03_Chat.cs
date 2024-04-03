@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using AgentSyntaxExamples;
 using Microsoft.SemanticKernel.Agents;
@@ -41,8 +40,9 @@ public class Example03_Chat : BaseTest
                     new()
                     {
                         // In its simplest form, a strategy is simply a delegate or "func"",
-                        // but can also be assigned a ContinuationStrategy subclass.  Here,
-                        // custom logic is expressed as a func.
+                        // but can also be assigned a ContinuationStrategy subclass.
+                        // Here, custom logic is expressed as a func that will continue until
+                        // an assistant message contains the term "approve".
                         ContinuationStrategy = // ContinuationCriteriaCallback
                                 (agent, messages, cancellationToken) =>
                                 Task.FromResult(
