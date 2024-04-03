@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Text;
 
@@ -29,10 +31,10 @@ internal static class SseJsonParser
     /// <param name="cancellationToken">A cancellation token to stop the parsing process.</param>
     /// <remarks><paramref name="stream"/> will be disposed immediately once enumeration is complete.</remarks>
     /// <returns>An asynchronous enumerable sequence of <see cref="SseData"/> objects.</returns>
-    public static async IAsyncEnumerable<SseData> ParseAsync(
+    internal static async IAsyncEnumerable<SseData> ParseAsync(
         Stream stream,
         Func<SseLine, SseData?> parser,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         try
         {
@@ -66,6 +68,18 @@ internal static class SseJsonParser
 #else
             stream.Dispose();
 #endif
+        }
+    }
+
+    internal static async IAsyncEnumerable<T> ParseAsync<T>(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var sseData in ParseAsync(stream, (sseLine) =>
+        {
+            var obj = JsonSerializer.Deserialize<T>(sseLine.FieldValue.Span, JsonOptionsCache.ReadPermissive);
+            return new SseData(sseLine.EventName, obj!);
+        }, cancellationToken).ConfigureAwait(false))
+        {
+            yield return (T)sseData.Data;
         }
     }
 }

@@ -21,7 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 internal sealed class HuggingFaceClient
 {
-    private readonly StreamJsonParser _streamJsonParser;
     private readonly string _modelId;
     private readonly string? _apiKey;
     private readonly Uri? _endpoint;
@@ -47,7 +46,6 @@ internal sealed class HuggingFaceClient
         this._apiKey = apiKey;
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
-        this._streamJsonParser = streamJsonParser ?? new StreamJsonParser();
     }
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
@@ -202,13 +200,36 @@ internal sealed class HuggingFaceClient
         }
     }
 
-    private async IAsyncEnumerable<TextGenerationStreamResponse> ParseTextResponseStreamAsync(Stream responseStream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken))
+        IAsyncEnumerator<ChatCompletionStreamResponse>? responseEnumerator = null;
+
+        try
         {
-            yield return DeserializeResponse<TextGenerationStreamResponse>(json);
+            var responseEnumerable = this.ParseChatResponseStreamAsync(stream, cancellationToken);
+            responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
+
+            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                var content = responseEnumerator.Current!;
+
+                yield return GetStreamingChatMessageContentFromStreamResponse(content, modelId);
+            }
+        }
+        finally
+        {
+            if (responseEnumerator != null)
+            {
+                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
+
+    private IAsyncEnumerable<TextGenerationStreamResponse> ParseTextResponseStreamAsync(Stream responseStream, CancellationToken cancellationToken)
+        => SseJsonParser.ParseAsync<TextGenerationStreamResponse>(responseStream, cancellationToken);
+
+    private IAsyncEnumerable<ChatCompletionStreamResponse> ParseChatResponseStreamAsync(Stream responseStream, CancellationToken cancellationToken)
+        => SseJsonParser.ParseAsync<ChatCompletionStreamResponse>(responseStream, cancellationToken);
 
     private static StreamingTextContent GetStreamingTextContentFromStreamResponse(TextGenerationStreamResponse response, string modelId)
         => new(
@@ -216,6 +237,40 @@ internal sealed class HuggingFaceClient
             modelId: modelId,
             innerContent: response,
             metadata: new TextGenerationStreamMetadata(response));
+
+    private static StreamingChatMessageContent GetStreamingChatMessageContentFromStreamResponse(ChatCompletionStreamResponse response, string modelId)
+    {
+        var choice = response.Choices.FirstOrDefault();
+        if (choice is not null)
+        {
+            var metadata = new Dictionary<string, object?>(6)
+            {
+                { "created", response.Created },
+                { "object", response.Object },
+                { "model", response.Model },
+                { "system_fingerprint", response.SystemFingerprint },
+                { "id", response.Id },
+                { "finish_reason", choice.FinishReason },
+                { "log_probs", choice.LogProbs },
+            };
+
+            var streamChat = new StreamingChatMessageContent(
+                choice.Delta?.Role is not null ? new AuthorRole(choice.Delta.Role) : null,
+                choice.Delta?.Content,
+                response,
+                choice.Index,
+                modelId,
+                Encoding.UTF8,
+                metadata);
+
+            return streamChat;
+        }
+
+        throw new KernelException("Unexpected response from model")
+        {
+            Data = { { "ResponseData", response } },
+        };
+    }
 
     private TextGenerationRequest CreateTextRequest(
         string prompt,
@@ -227,13 +282,13 @@ internal sealed class HuggingFaceClient
         return request;
     }
 
-    private ChatGenerationRequest CreateChatRequest(
+    private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
-               PromptExecutionSettings promptExecutionSettings)
+        PromptExecutionSettings? promptExecutionSettings)
     {
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
-        var request = ChatGenerationRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
+        var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
         return request;
     }
 

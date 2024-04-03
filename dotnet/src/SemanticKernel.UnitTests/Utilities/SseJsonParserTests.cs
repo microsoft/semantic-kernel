@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
@@ -106,7 +107,8 @@ public sealed class SseJsonParserTests
 
         // Act
         var result = await SseJsonParser.ParseAsync(stream,
-                line => new SseData(line.EventName, line.FieldValue))
+                line => new SseData(line.EventName, line.FieldValue)
+                , CancellationToken.None)
             .ToListAsync();
 
         // Assert
@@ -121,8 +123,10 @@ public sealed class SseJsonParserTests
         WriteToStream(stream, SampleSseData2);
 
         // Act
-        var result = await SseJsonParser.ParseAsync(stream,
-                line => new SseData(line.EventName, line.FieldValue))
+        var result = await SseJsonParser.ParseAsync(
+                stream,
+                line => new SseData(line.EventName, line.FieldValue),
+                CancellationToken.None)
             .ToListAsync();
 
         // Assert
@@ -141,12 +145,14 @@ public sealed class SseJsonParserTests
         WriteToStream(stream, SampleSseData1);
 
         // Act
-        var result = await SseJsonParser.ParseAsync(stream,
+        var result = await SseJsonParser.ParseAsync(
+                stream,
                 line =>
                 {
                     var obj = JsonSerializer.Deserialize<object>(line.FieldValue.Span, JsonOptionsCache.ReadPermissive);
                     return new SseData(line.EventName, obj!);
-                })
+                },
+                CancellationToken.None)
             .ToListAsync();
 
         // Assert
@@ -171,7 +177,8 @@ public sealed class SseJsonParserTests
 
                     var userObject = JsonSerializer.Deserialize<UserObject>(line.FieldValue.Span, JsonOptionsCache.ReadPermissive);
                     return new SseData(line.EventName, userObject!);
-                })
+                },
+                CancellationToken.None)
             .ToListAsync();
 
         // Assert

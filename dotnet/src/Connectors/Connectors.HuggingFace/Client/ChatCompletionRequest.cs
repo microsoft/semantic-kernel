@@ -1,14 +1,17 @@
 ﻿
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
 /// <summary>
 /// HuggingFace text generation request object.
 /// </summary>
-internal sealed class ChatGenerationRequest
+internal sealed class ChatCompletionRequest
 {
     /// <summary>
     /// Model name to use for generation.
@@ -17,59 +20,133 @@ internal sealed class ChatGenerationRequest
     public string? Model { get; set; }
 
     /// <summary>
-    /// Enable streaming
+    /// Indicates whether to get the response as stream or not.
     /// </summary>
     [JsonPropertyName("stream")]
-    public bool Stream { get; set; } = false;
+    public bool Stream { get; set; }
+
+    [JsonPropertyName("messages")]
+    public List<ChatMessage>? Messages { get; set; }
 
     /// <summary>
-    /// Parameters used by the model for generation.
+    /// Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each
+    /// output token returned in the content of message.
     /// </summary>
-    [JsonPropertyName("parameters")]
-    public HuggingFaceTextParameters? Parameters { get; set; }
+    [JsonPropertyName("logprobs")]
+    public bool? LogProbs { get; set; }
 
     /// <summary>
-    /// Options used by the model for generation.
+    /// An integer between 0 and 5 specifying the number of most likely tokens to return at each token position, each with
+    /// an associated log probability. logprobs must be set to true if this parameter is used.
     /// </summary>
-    [JsonPropertyName("options")]
-    public HuggingFaceTextOptions? Options { get; set; }
+    [JsonPropertyName("top_logprobs")]
+    public int? TopLogProbs { get; set; }
+
+    /// <summary>
+    /// The maximum number of tokens that can be generated in the chat completion.
+    /// </summary>
+    [JsonPropertyName("max_tokens")]
+    public int? MaxTokens { get; set; }
+
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far,
+    /// increasing the model's likelihood to talk about new topics
+    /// </summary>
+    [JsonPropertyName("presence_penalty")]
+    public float? PresencePenalty { get; set; }
+
+    /// <summary>
+    /// Up to 4 sequences where the API will stop generating further tokens.
+    /// </summary>
+    [JsonPropertyName("stop")]
+    public List<string>? Stop { get; set; }
+
+    /// <summary>
+    /// The seed to use for generating a similar output.
+    /// </summary>
+    [JsonPropertyName("seed")]
+    public long? Seed { get; set; }
+
+    /// <summary>
+    /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while
+    /// lower values like 0.2 will make it more focused and deterministic.
+    ///
+    /// We generally recommend altering this or `top_p` but not both.
+    /// </summary>
+    [JsonPropertyName("temperature")]
+    public float? Temperature { get; set; }
+
+    /// <summary>
+    /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the
+    /// tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    /// </summary>
+    [JsonPropertyName("top_p")]
+    public float? TopP { get; set; }
 
     /// <summary>
     /// Converts a <see cref="PromptExecutionSettings" /> object to a <see cref="TextGenerationRequest" /> object.
     /// </summary>
-    /// <param name="prompt">Prompt text for generation.</param>
+    /// <param name="chatHistory">Chat history to be used for the request.</param>
     /// <param name="executionSettings">Execution settings to be used for the request.</param>
     /// <returns>TexGenerationtRequest object.</returns>
-    internal static TextGenerationRequest FromPromptAndExecutionSettings(string prompt, HuggingFacePromptExecutionSettings executionSettings)
+    internal static ChatCompletionRequest FromChatHistoryAndExecutionSettings(ChatHistory chatHistory, HuggingFacePromptExecutionSettings executionSettings)
     {
-        return new TextGenerationRequest
+        return new ChatCompletionRequest
         {
-            Inputs = prompt,
-            Parameters = new()
+            Messages = chatHistory.Select(message => new ChatMessage
             {
-                Temperature = executionSettings.Temperature,
-                MaxNewTokens = executionSettings.MaxTokens,
-                TopK = executionSettings.TopK,
-                TopP = executionSettings.TopP,
-                RepetitionPenalty = executionSettings.RepetitionPenalty,
-                MaxTime = executionSettings.MaxTime,
-                NumReturnSequences = executionSettings.ResultsPerPrompt
-            },
-            Options = new()
-            {
-                UseCache = executionSettings.UseCache,
-                WaitForModel = executionSettings.WaitForModel
-            }
+                Content = message.Content,
+                Role = message.Role.ToString(),
+            }).ToList(),
+            PresencePenalty = executionSettings.PresencePenalty,
+            LogProbs = executionSettings.LogProbs,
+            Seed = executionSettings.Seed,
+            Temperature = executionSettings.Temperature,
+            Stop = executionSettings.Stop,
+            MaxTokens = executionSettings.MaxTokens,
+            Model = executionSettings.ModelId ?? "tgi", // Text Generation Inference
+            TopP = executionSettings.TopP,
+            TopLogProbs = executionSettings.TopLogProbs
         };
     }
 
-    internal sealed class HuggingFaceTextParameters
+    internal sealed class ChatMessageToolCall
     {
-        /// <summary>
-        /// (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
-        /// </summary>
-        [JsonPropertyName("top_k")]
-        public int? TopK { get; set; }
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        [JsonPropertyName("function")]
+        public ChatMessageFunction? Function { get; set; }
+    }
+
+    internal sealed class ChatMessageFunction
+    {
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("parameters")]
+        public string? Parameters { get; set; }
+    }
+
+    internal sealed class ChatMessage
+    {
+        [JsonPropertyName("role")]
+        public string? Role { get; set; }
+
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("tool_calls")]
+        public List<ChatMessageToolCall>? ToolCalls { get; set; }
 
         /// <summary>
         /// (Default: None). Float to define the tokens that are within the sample operation of text generation.

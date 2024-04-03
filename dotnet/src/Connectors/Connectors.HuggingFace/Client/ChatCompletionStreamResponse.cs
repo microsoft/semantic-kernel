@@ -32,6 +32,9 @@ internal sealed class ChatCompletionStreamResponse
         [JsonPropertyName("delta")]
         public ChatCompletionStreamChoiceDelta? Delta { get; set; }
 
+        [JsonPropertyName("logprobs")]
+        public ChatCompletionStreamChoiceLogProbs? LogProbs { get; set; }
+
         [JsonPropertyName("finish_reason")]
         public string? FinishReason { get; set; }
 
@@ -76,5 +79,37 @@ internal sealed class ChatCompletionStreamResponse
 
         [JsonPropertyName("arguments")]
         public string? Arguments { get; set; }
+    }
+
+    internal sealed class ChatCompletionStreamChoiceLogProbs
+    {
+        public List<ChatCompletionStreamChoiceLogProbsContent>? Content { get; set; }
+    }
+
+    internal sealed class ChatCompletionStreamChoiceLogProbsContent
+    {
+        [JsonPropertyName("token")]
+        public string? Token { get; set; }
+
+        [JsonPropertyName("logprob")]
+        public float LogProb { get; set; }
+
+        [JsonPropertyName("bytes")]
+        public int[]? Bytes { get; set; }
+
+        [JsonPropertyName("top_logprobs")]
+        public List<ChatCompletionStreamChoiceTopLogProb>? TopLogProbs { get; set; }
+    }
+
+    internal sealed class ChatCompletionStreamChoiceTopLogProb
+    {
+        [JsonPropertyName("token")]
+        public string? Token { get; set; }
+
+        [JsonPropertyName("logprob")]
+        public float LogProb { get; set; }
+
+        [JsonPropertyName("bytes")]
+        public int[]? Bytes { get; set; }
     }
 }

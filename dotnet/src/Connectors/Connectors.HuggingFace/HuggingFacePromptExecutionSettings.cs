@@ -43,7 +43,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// 0 means always take the highest score, 100.0 is getting closer to uniform probability.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature
+    public float Temperature
     {
         get => this._temperature;
 
@@ -89,7 +89,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
     /// </summary>
     [JsonPropertyName("max_time")]
-    public double? MaxTime
+    public float? MaxTime
     {
         get => this._maxTime;
 
@@ -105,7 +105,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double? TopP
+    public float? TopP
     {
         get => this._topP;
 
@@ -121,7 +121,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// it is penalized to not be picked in successive generation passes.
     /// </summary>
     [JsonPropertyName("repetition_penalty")]
-    public double? RepetitionPenalty
+    public float? RepetitionPenalty
     {
         get => this._repetitionPenalty;
 
@@ -185,6 +185,84 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far,
+    /// increasing the model's likelihood to talk about new topics
+    /// </summary>
+    [JsonPropertyName("presence_penalty")]
+    public float? PresencePenalty
+    {
+        get => this._presencePenalty;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._presencePenalty = value;
+        }
+    }
+
+    /// <summary>
+    /// Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each
+    /// output token returned in the content of message.
+    /// </summary>
+    [JsonPropertyName("logprobs")]
+    public bool? LogProbs
+    {
+        get => this._logProbs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._logProbs = value;
+        }
+    }
+
+    /// <summary>
+    /// The seed to use for generating a similar output.
+    /// </summary>
+    [JsonPropertyName("seed")]
+    public long? Seed
+    {
+        get => this._seed;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._seed = value;
+        }
+    }
+
+    /// <summary>
+    /// Up to 4 sequences where the API will stop generating further tokens.
+    /// </summary>
+    [JsonPropertyName("stop")]
+    public List<string>? Stop
+    {
+        get => this._stop;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._stop = value;
+        }
+    }
+
+    /// <summary>
+    /// An integer between 0 and 5 specifying the number of most likely tokens to return at each token position, each with
+    /// an associated log probability. logprobs must be set to true if this parameter is used.
+    /// </summary>
+    [JsonPropertyName("top_logprobs")]
+    public int? TopLogProbs
+    {
+        get => this._topLogProbs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topLogProbs = value;
+        }
+    }
+
     /// <inheritdoc />
     public override PromptExecutionSettings Clone()
     {
@@ -204,12 +282,18 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         };
     }
 
+    private float? _presencePenalty;
+    private bool? _logProbs;
+    private long? _seed;
+    private List<string>? _stop;
+    private int? _topLogProbs;
+
     private int _resultsPerPrompt = 1;
-    private double _temperature = 1;
-    private double? _topP;
-    private double? _repetitionPenalty;
+    private float _temperature = 1;
+    private float? _topP;
+    private float? _repetitionPenalty;
     private int? _maxTokens;
-    private double? _maxTime;
+    private float? _maxTime;
     private int? _topK;
     private bool _useCache = true;
     private bool _waitForModel = false;

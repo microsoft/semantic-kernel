@@ -58,9 +58,9 @@ public class HuggingFacePromptExecutionSettingsTests
         Assert.Equal(0.5, huggingFaceExecutionSettings.Temperature);
         Assert.Equal(50, huggingFaceExecutionSettings.TopK);
         Assert.Equal(100, huggingFaceExecutionSettings.MaxTokens);
-        Assert.Equal(10.0, huggingFaceExecutionSettings.MaxTime);
-        Assert.Equal(0.9, huggingFaceExecutionSettings.TopP);
-        Assert.Equal(1.0, huggingFaceExecutionSettings.RepetitionPenalty);
+        Assert.Equal(10.0f, huggingFaceExecutionSettings.MaxTime);
+        Assert.Equal(0.9f, huggingFaceExecutionSettings.TopP);
+        Assert.Equal(1.0f, huggingFaceExecutionSettings.RepetitionPenalty);
         Assert.True(huggingFaceExecutionSettings.UseCache);
         Assert.Equal(1, huggingFaceExecutionSettings.ResultsPerPrompt);
         Assert.False(huggingFaceExecutionSettings.WaitForModel);
