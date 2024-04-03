@@ -60,8 +60,6 @@ public class BroadcastQueueTests
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
         await VerifyReceivingStateAsync(receiveCount: 2, queue, channel, "test");
         Assert.NotEmpty(channel.ReceivedMessages);
-
-        await queue.FlushAsync();
     }
 
     /// <summary>
