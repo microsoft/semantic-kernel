@@ -117,7 +117,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
-    /// <param name="apiVersion">Version of the Google API</param>
+    /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
@@ -159,7 +159,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
-        for (state.Iteration = 1;; state.Iteration++)
+        for (state.Iteration = 1; ; state.Iteration++)
         {
             var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
                     this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
@@ -204,7 +204,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
-        for (state.Iteration = 1;; state.Iteration++)
+        for (state.Iteration = 1; ; state.Iteration++)
         {
             using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
             using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
@@ -613,17 +613,17 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private static GeminiMetadata GetResponseMetadata(
         GeminiResponse geminiResponse,
         GeminiResponseCandidate candidate) => new()
-    {
-        FinishReason = candidate.FinishReason,
-        Index = candidate.Index,
-        PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
-        CurrentCandidateTokenCount = candidate.TokenCount,
-        CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
-        TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
-        PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
-        PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
-        ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
-    };
+        {
+            FinishReason = candidate.FinishReason,
+            Index = candidate.Index,
+            PromptTokenCount = geminiResponse.UsageMetadata?.PromptTokenCount ?? 0,
+            CurrentCandidateTokenCount = candidate.TokenCount,
+            CandidatesTokenCount = geminiResponse.UsageMetadata?.CandidatesTokenCount ?? 0,
+            TotalTokenCount = geminiResponse.UsageMetadata?.TotalTokenCount ?? 0,
+            PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
+            PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
+            ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+        };
 
     private void LogUsageMetadata(GeminiMetadata metadata)
     {
