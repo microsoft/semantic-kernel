@@ -18,8 +18,9 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 internal sealed class BroadcastQueue
 {
     private int _isActive;
-    private readonly Dictionary<string, ChannelQueue> _queue = new();
+    private readonly Dictionary<string, ChannelQueue> _queues = new();
     private readonly Dictionary<string, Task> _tasks = new();
+    private readonly Dictionary<string, Exception> _failures = new();
     private readonly object _queueLock = new(); // Synchronize access to _isActive, _queue and _tasks.
 
     /// <summary>
@@ -27,25 +28,6 @@ internal sealed class BroadcastQueue
     /// to drain.
     /// </summary>
     public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <summary>
-    /// Indicates if the queue is broadcasting messages.
-    /// </summary>
-    public bool IsActive => this._isActive != 0;
-
-    /// <summary>
-    /// Block until queue not broadcasting messages.
-    /// </summary>
-    /// <remarks>
-    /// No guarantee that it won't be broadcasting immediately after drained.
-    /// </remarks>
-    public async Task FlushAsync()
-    {
-        while (this.IsActive)
-        {
-            await Task.Delay(this.BlockDuration).ConfigureAwait(false);
-        }
-    }
 
     /// <summary>
     /// Enqueue a set of messages for a given channel.
@@ -58,56 +40,101 @@ internal sealed class BroadcastQueue
         {
             foreach (var channel in channels)
             {
-                var queue = GetQueue(channel);
+                var queue = this.GetQueue(channel);
                 queue.Enqueue(messages);
 
                 if (!this._tasks.ContainsKey(channel.Hash))
                 {
-                    this._tasks.Add(channel.Hash, ReceiveAsync(channel, queue));
+                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queue));
                 }
-            }
-        }
-
-        ChannelQueue GetQueue(ChannelReference channel)
-        {
-            if (!this._queue.TryGetValue(channel.Hash, out var queue))
-            {
-                queue = new ChannelQueue();
-                this._queue.Add(channel.Hash, queue);
-            }
-
-            return queue;
-        }
-
-        async Task ReceiveAsync(ChannelReference channel, ChannelQueue queue)
-        {
-            Interlocked.CompareExchange(ref this._isActive, 1, 0); // Set regardless of current state.
-
-            while (queue.TryDequeue(out var messages)) // ChannelQueue is ConcurrentQueue, no need for _queueLock
-            {
-                await channel.Channel.ReceiveAsync(messages).ConfigureAwait(false);
-            }
-
-            lock (this._queueLock)
-            {
-                this._tasks.Remove(channel.Hash);
-                this._isActive = this._tasks.Count == 0 ? 0 : this._isActive; // Clear if channel queue has drained.
             }
         }
     }
 
     /// <summary>
+    /// Ensure all channels are synchronized.
+    /// </summary>
+    public void Synchronize(IEnumerable<ChannelReference> channels)
+    {
+        lock (this._queueLock)
+        {
+            foreach (var channel in channels)
+            {
+                var queue = this.GetQueue(channel);
+                if (!queue.IsEmpty && !this._tasks.ContainsKey(channel.Hash))
+                {
+                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queue));
+                }
+            }
+        }
+    }
+
+    private async Task ReceiveAsync(ChannelReference channel, ChannelQueue queue)
+    {
+        Interlocked.CompareExchange(ref this._isActive, 1, 0); // Set regardless of current state.
+
+        Exception? failure = null;
+
+        while (!queue.IsEmpty)
+        {
+            if (queue.TryPeek(out var messages)) // Leave payload on queue for retry on failure
+            {
+                try
+                {
+                    await channel.Channel.ReceiveAsync(messages).ConfigureAwait(false);
+                    queue.TryDequeue(out _); // Queue has already been peeked.  Remove head on success.
+                }
+                catch (Exception exception) when (!exception.IsCriticalException())
+                {
+                    failure = exception;
+                    break;
+                }
+            }
+        }
+
+        lock (this._queueLock)
+        {
+            this._tasks.Remove(channel.Hash);
+            this._isActive = this._tasks.Count == 0 ? 0 : this._isActive; // Clear if channel queue has drained.
+            if (failure != null)
+            {
+                this._failures.Add(channel.Hash, failure);
+            }
+        }
+    }
+
+    private ChannelQueue GetQueue(ChannelReference channel)
+    {
+        if (!this._queues.TryGetValue(channel.Hash, out var queue))
+        {
+            queue = new ChannelQueue();
+            this._queues.Add(channel.Hash, queue);
+        }
+
+        return queue;
+    }
+
+    /// <summary>
     /// Blocks until a channel-queue is not in a receive state.
     /// </summary>
-    /// <param name="hash">The base-64 encoded channel hash.</param>
+    /// <param name="channel">A <see cref="ChannelReference"/> structure.</param>
     /// <returns>false when channel is no longer receiving.</returns>
-    public async Task<bool> IsReceivingAsync(string hash)
+    /// <throws>
+    /// When channel is out of sync.
+    /// </throws>
+    public async Task<bool> IsReceivingAsync(ChannelReference channel)
     {
         ChannelQueue queue;
 
         lock (this._queueLock)
         {
-            if (!this._queue.TryGetValue(hash, out queue))
+            if (this._failures.TryGetValue(channel.Hash, out var failure))
+            {
+                this._failures.Remove(channel.Hash);
+                throw new AgentException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
+            }
+
+            if (!this._queues.TryGetValue(channel.Hash, out queue))
             {
                 return false;
             }
