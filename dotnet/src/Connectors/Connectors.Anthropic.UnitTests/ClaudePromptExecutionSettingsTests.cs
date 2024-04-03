@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Connectors.Anthropic;
+namespace SemanticKernel.Connectors.Anthropic.UnitTests;
 
 public sealed class ClaudePromptExecutionSettingsTests
 {
@@ -34,7 +34,7 @@ public sealed class ClaudePromptExecutionSettingsTests
         ClaudePromptExecutionSettings actualSettings = new()
         {
             Temperature = 0.7,
-            TopP = 0.7,
+            TopP = 0.7f,
             TopK = 20,
             StopSequences = new[] { "foo", "bar" },
             MaxTokens = 128,
@@ -91,7 +91,7 @@ public sealed class ClaudePromptExecutionSettingsTests
         // Assert
         Assert.NotNull(executionSettings);
         Assert.Equal(0.7, executionSettings.Temperature);
-        Assert.Equal(0.7, executionSettings.TopP);
+        Assert.Equal(0.7f, executionSettings.TopP);
         Assert.Equal(25, executionSettings.TopK);
         Assert.Equal(new[] { "foo", "bar" }, executionSettings.StopSequences);
         Assert.Equal(128, executionSettings.MaxTokens);

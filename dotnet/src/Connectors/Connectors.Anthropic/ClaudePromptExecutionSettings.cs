@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
 {
     private double? _temperature;
-    private double? _topP;
+    private float? _topP;
     private int? _topK;
     private int? _maxTokens;
     private IList<string>? _stopSequences;
@@ -47,7 +47,7 @@ public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double? TopP
+    public float? TopP
     {
         get => this._topP;
         set
@@ -149,7 +149,7 @@ public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new ClaudePromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new ClaudePromptExecutionSettings { MaxTokens = DefaultTextMaxTokens };
             case ClaudePromptExecutionSettings settings:
                 return settings;
         }

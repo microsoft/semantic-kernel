@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -54,7 +56,7 @@ internal sealed class ClaudeRequest
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("temperature")]
-    public float? Temperature { get; set; }
+    public double? Temperature { get; set; }
 
     /// <summary>
     /// In nucleus sampling, we compute the cumulative distribution over all the options for each subsequent token
@@ -71,7 +73,66 @@ internal sealed class ClaudeRequest
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("top_k")]
-    public float? TopK { get; set; }
+    public int? TopK { get; set; }
+
+    /// <summary>
+    /// Creates a <see cref="ClaudeRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="ClaudePromptExecutionSettings"/>.
+    /// </summary>
+    /// <param name="chatHistory">The chat history to be assigned to the <see cref="ClaudeRequest"/>.</param>
+    /// <param name="executionSettings">The execution settings to be applied to the <see cref="ClaudeRequest"/>.</param>
+    /// <param name="streamingMode">Enables SSE streaming. (optional)</param>
+    /// <returns>A new instance of <see cref="ClaudeRequest"/>.</returns>
+    internal static ClaudeRequest FromChatHistoryAndExecutionSettings(
+        ChatHistory chatHistory,
+        ClaudePromptExecutionSettings executionSettings,
+        bool streamingMode = false)
+    {
+        ClaudeRequest request = CreateRequest(chatHistory, executionSettings, streamingMode);
+        AddMessages(chatHistory, request);
+        return request;
+    }
+
+    private static void AddMessages(ChatHistory chatHistory, ClaudeRequest request)
+    {
+        request.Messages = chatHistory.Select(message => new Message
+        {
+            Role = message.Role,
+            Contents = message.Items.Select(GetContentFromKernelContent).ToList()
+        }).ToList();
+    }
+
+    private static ClaudeRequest CreateRequest(ChatHistory chatHistory, ClaudePromptExecutionSettings executionSettings, bool streamingMode)
+    {
+        ClaudeRequest request = new()
+        {
+            ModelId = executionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided."),
+            MaxTokens = executionSettings.MaxTokens ?? throw new InvalidOperationException("Max tokens must be provided."),
+            SystemPrompt = chatHistory.SingleOrDefault(c => c.Role == AuthorRole.System)?.Content,
+            StopSequences = executionSettings.StopSequences,
+            Stream = streamingMode,
+            Temperature = executionSettings.Temperature,
+            TopP = executionSettings.TopP,
+            TopK = executionSettings.TopK
+        };
+        return request;
+    }
+
+    private static ClaudeContent GetContentFromKernelContent(KernelContent content) => content switch
+    {
+        TextContent textContent => new ClaudeContent { Type = "text", Text = textContent.Text },
+        ImageContent imageContent => new ClaudeContent
+        {
+            Type = "image", Image = new ClaudeContent.ImageContent
+            {
+                Type = "base64",
+                MediaType = imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
+                Data = imageContent.Data.HasValue
+                    ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
+                    : throw new InvalidOperationException("Image content must have a data.")
+            }
+        },
+        _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
+    };
 
     internal sealed class Message
     {
