@@ -282,7 +282,9 @@ public sealed class FunctionCallingStepwisePlanner
         }
         else
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             resultStr = JsonSerializer.Serialize(valueObj, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         return resultStr;
