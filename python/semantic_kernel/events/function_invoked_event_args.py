@@ -24,7 +24,7 @@ class FunctionInvokedEventArgs(KernelEventArgs):
         kernel_function_metadata (KernelFunctionMetadata): The function that is being executed.
         arguments (KernelArguments): The arguments that are being passed to the function.
         function_result (FunctionResult): The result of the function execution.
-        exception (Optional: Exception): The exception that was raised during the function execution.
+        exception (Exception, optional): The exception that was raised during the function execution.
 
     Flags:
         updated_arguments (bool): Whether the arguments were updated, default False.
