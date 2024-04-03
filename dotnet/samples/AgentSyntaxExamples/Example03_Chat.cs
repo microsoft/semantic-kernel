@@ -61,7 +61,7 @@ public class Example03_Chat : BaseTest
         // Invoke chat and display messages.
         await foreach (var content in nexus.InvokeAsync("concept: maps made out of egg cartons."))
         {
-            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
     }
 
