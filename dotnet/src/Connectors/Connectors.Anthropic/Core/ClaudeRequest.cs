@@ -117,19 +117,18 @@ internal sealed class ClaudeRequest
         return request;
     }
 
-    private static ClaudeContent GetContentFromKernelContent(KernelContent content) => content switch
+    private static ClaudeMessageContent GetContentFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new ClaudeContent { Type = "text", Text = textContent.Text },
-        ImageContent imageContent => new ClaudeContent
+        TextContent textContent => new ClaudeMessageContent { Type = "text", Text = textContent.Text },
+        ImageContent imageContent => new ClaudeMessageContent
         {
-            Type = "image", Image = new ClaudeContent.ImageContent
-            {
-                Type = "base64",
-                MediaType = imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
-                Data = imageContent.Data.HasValue
+            Type = "image", Image = new ClaudeMessageContent.SourceEntity(
+                type: "base64",
+                mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
+                data: imageContent.Data.HasValue
                     ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
                     : throw new InvalidOperationException("Image content must have a data.")
-            }
+            )
         },
         _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
     };
@@ -141,6 +140,6 @@ internal sealed class ClaudeRequest
         public AuthorRole Role { get; set; }
 
         [JsonPropertyName("content")]
-        public IList<ClaudeContent> Contents { get; set; } = null!;
+        public IList<ClaudeMessageContent> Contents { get; set; } = null!;
     }
 }

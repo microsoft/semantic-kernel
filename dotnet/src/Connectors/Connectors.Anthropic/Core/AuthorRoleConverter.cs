@@ -42,7 +42,7 @@ internal sealed class AuthorRoleConverter : JsonConverter<AuthorRole>
         }
         else
         {
-            throw new JsonException($"Gemini API doesn't support author role: {value}");
+            throw new JsonException($"Claude API doesn't support author role: {value}");
         }
     }
 }
