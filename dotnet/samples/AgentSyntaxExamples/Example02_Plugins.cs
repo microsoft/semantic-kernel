@@ -49,7 +49,7 @@ public class Example02_Plugins : BaseTest
         {
             await foreach (var content in nexus.InvokeAsync(agent, input))
             {
-                this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
+                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
