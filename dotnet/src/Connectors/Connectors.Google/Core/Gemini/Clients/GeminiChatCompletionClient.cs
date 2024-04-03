@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
@@ -501,7 +502,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, ct: ct))
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: ct))
         {
             yield return DeserializeResponse<GeminiResponse>(json);
         }
