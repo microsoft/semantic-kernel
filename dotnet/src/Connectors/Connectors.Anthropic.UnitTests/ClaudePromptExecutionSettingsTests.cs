@@ -74,15 +74,15 @@ public sealed class ClaudePromptExecutionSettingsTests
     public void ItCreatesExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
-        string json = $$"""
-                        {
-                          "temperature": 0.7,
-                          "top_p": 0.7,
-                          "top_k": 25,
-                          "stop_sequences": [ "foo", "bar" ],
-                          "max_tokens": 128
-                        }
-                        """;
+        string json = """
+                      {
+                        "temperature": 0.7,
+                        "top_p": 0.7,
+                        "top_k": 25,
+                        "stop_sequences": [ "foo", "bar" ],
+                        "max_tokens": 128
+                      }
+                      """;
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
@@ -101,16 +101,16 @@ public sealed class ClaudePromptExecutionSettingsTests
     public void PromptExecutionSettingsCloneWorksAsExpected()
     {
         // Arrange
-        string json = $$"""
-                        {
-                          "model_id": "claude-pro",
-                          "temperature": 0.7,
-                          "top_p": 0.7,
-                          "top_k": 25,
-                          "stop_sequences": [ "foo", "bar" ],
-                          "max_tokens": 128
-                        }
-                        """;
+        string json = """
+                      {
+                        "model_id": "claude-pro",
+                        "temperature": 0.7,
+                        "top_p": 0.7,
+                        "top_k": 25,
+                        "stop_sequences": [ "foo", "bar" ],
+                        "max_tokens": 128
+                      }
+                      """;
         var executionSettings = JsonSerializer.Deserialize<ClaudePromptExecutionSettings>(json);
 
         // Act
@@ -128,16 +128,16 @@ public sealed class ClaudePromptExecutionSettingsTests
     public void PromptExecutionSettingsFreezeWorksAsExpected()
     {
         // Arrange
-        string json = $$"""
-                        {
-                          "model_id": "claude-pro",
-                          "temperature": 0.7,
-                          "top_p": 0.7,
-                          "top_k": 25,
-                          "stop_sequences": [ "foo", "bar" ],
-                          "max_tokens": 128
-                        }
-                        """;
+        string json = """
+                      {
+                        "model_id": "claude-pro",
+                        "temperature": 0.7,
+                        "top_p": 0.7,
+                        "top_k": 25,
+                        "stop_sequences": [ "foo", "bar" ],
+                        "max_tokens": 128
+                      }
+                      """;
         var executionSettings = JsonSerializer.Deserialize<ClaudePromptExecutionSettings>(json);
 
         // Act
