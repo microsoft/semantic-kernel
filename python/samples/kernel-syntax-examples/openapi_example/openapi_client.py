@@ -21,7 +21,7 @@ async def main():
 
     kernel_arguments = KernelArguments(**arguments)
 
-    result = kernel.invoke(openapi_plugin["helloWorld"], arguments=kernel_arguments)
+    result = await kernel.invoke(openapi_plugin["helloWorld"], arguments=kernel_arguments)
 
     print(result)
 
