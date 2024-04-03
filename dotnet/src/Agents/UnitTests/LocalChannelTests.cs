@@ -25,7 +25,7 @@ public class LocalChannelTests
     {
         TestAgent agent = new();
         TestChannel channel = new(); // Not a local agent
-        await Assert.ThrowsAsync<AgentException>(async () => await channel.InvokeAsync(agent).ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<AgentException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
     }
 
     private sealed class TestChannel : LocalChannel

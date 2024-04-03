@@ -30,7 +30,7 @@ public class AgentChannelTests
         var messages = channel.InvokeAgentAsync(new TestAgent()).ToArrayAsync();
         Assert.Equal(1, channel.InvokeCount);
 
-        await Assert.ThrowsAsync<AgentException>(async () => await channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync());
+        await Assert.ThrowsAsync<AgentException>(() => channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync().AsTask());
         Assert.Equal(1, channel.InvokeCount);
     }
 

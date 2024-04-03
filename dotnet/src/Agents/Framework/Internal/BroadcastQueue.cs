@@ -52,20 +52,44 @@ internal sealed class BroadcastQueue
     }
 
     /// <summary>
-    /// Ensure all channels are synchronized.
+    /// Blocks until a channel-queue is not in a receive state.
     /// </summary>
-    public void Synchronize(IEnumerable<ChannelReference> channels)
+    /// <param name="channel">A <see cref="ChannelReference"/> structure.</param>
+    /// <returns>false when channel is no longer receiving.</returns>
+    /// <throws>
+    /// When channel is out of sync.
+    /// </throws>
+    public async Task EnsureSynchronizedAsync(ChannelReference channel)
     {
+        ChannelQueue queue;
+
         lock (this._queueLock)
         {
-            foreach (var channel in channels)
+            if (!this._queues.TryGetValue(channel.Hash, out queue))
             {
-                var queue = this.GetQueue(channel);
-                if (!queue.IsEmpty && !this._tasks.ContainsKey(channel.Hash))
+                return;
+            }
+        }
+
+        while (!queue.IsEmpty) // ChannelQueue is ConcurrentQueue, no need for _queueLock
+        {
+            lock (this._queueLock)
+            {
+                // Activate non-empty queue
+                if (!this._tasks.ContainsKey(channel.Hash))
                 {
                     this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queue));
                 }
+
+                // Propagate prior failure (inform caller of synchronization issue)
+                if (this._failures.TryGetValue(channel.Hash, out var failure))
+                {
+                    this._failures.Remove(channel.Hash);
+                    throw new AgentException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
+                }
             }
+
+            await Task.Delay(this.BlockDuration).ConfigureAwait(false);
         }
     }
 
@@ -112,39 +136,5 @@ internal sealed class BroadcastQueue
         }
 
         return queue;
-    }
-
-    /// <summary>
-    /// Blocks until a channel-queue is not in a receive state.
-    /// </summary>
-    /// <param name="channel">A <see cref="ChannelReference"/> structure.</param>
-    /// <returns>false when channel is no longer receiving.</returns>
-    /// <throws>
-    /// When channel is out of sync.
-    /// </throws>
-    public async Task<bool> IsReceivingAsync(ChannelReference channel)
-    {
-        ChannelQueue queue;
-
-        lock (this._queueLock)
-        {
-            if (this._failures.TryGetValue(channel.Hash, out var failure))
-            {
-                this._failures.Remove(channel.Hash);
-                throw new AgentException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
-            }
-
-            if (!this._queues.TryGetValue(channel.Hash, out queue))
-            {
-                return false;
-            }
-        }
-
-        while (!queue.IsEmpty) // ChannelQueue is ConcurrentQueue, no need for _queueLock
-        {
-            await Task.Delay(this.BlockDuration).ConfigureAwait(false);
-        }
-
-        return false;
     }
 }
