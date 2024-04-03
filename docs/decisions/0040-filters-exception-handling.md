@@ -18,44 +18,7 @@ There is a requirement to have the ability to override function result - instead
 
 ## Considered Options
 
-### [Option 1] Introduce new `IExceptionFilter` interface
-
-New interface will allow to receive exception objects and cancel exception throwing.
-
-```csharp
-public interface IExceptionFilter
-{
-    // Option 1.1 - FunctionExceptionContext class will contain information about actual exception and kernel function
-    void OnFunctionException(FunctionExceptionContext context);
-
-    // Option 1.2 - FunctionException will be inherited from System.Exception and will contain information about actual exception and kernel function
-    void OnFunctionException(FunctionException exception);
-}
-```
-
-Usage:
-
-```csharp
-public class MyFilter : IFunctionFilter, IExceptionFilter
-{
-    public void OnFunctionInvoking(FunctionInvokingContext context) { }
-
-    public void OnFunctionInvoked(FunctionInvokedContext context) { }
-
-    public void OnFunctionException(...) {}
-}
-```
-
-Advantages:
-
-- It's not a breaking change, and all exception handling logic should be added on top of existing filter mechanism.
-
-Disadvantages:
-
-- It may be not intuitive and hard to remember, that for exception handling, separate interface should be implemented.
-- It's not clear how to scale it in case we would like to add exception handling for function, prompt and other type of filters (e.g. function calling filters).
-
-### [Option 2] Add new method to existing `IFunctionFilter` interface
+### [Option 1] Add new method to existing `IFunctionFilter` interface
 
 ```csharp
 public interface IFunctionFilter
@@ -73,6 +36,40 @@ Disadvantages:
 
 - Adding new method to existing interface will be a breaking change, as it will force current filter users to implement new method.
 - This method will be always required to implement when using function filters, even when exception handling is not needed. On the other hand, this method won't return anything, so it could remain always empty, or with .NET multitargeting, it should be possible to define default implementation for C# 8 and above.
+
+### [Option 2] Introduce new `IExceptionFilter` interface
+
+New interface will allow to receive exception objects, cancel exception or rethrowing new type of exception.
+
+```csharp
+public interface IExceptionFilter
+{
+    // ExceptionContext class will contain information about actual exception, kernel function etc.
+    void OnException(ExceptionContext context);
+}
+```
+
+Usage:
+
+```csharp
+public class MyFilter : IFunctionFilter, IExceptionFilter
+{
+    public void OnFunctionInvoking(FunctionInvokingContext context) { }
+
+    public void OnFunctionInvoked(FunctionInvokedContext context) { }
+
+    public void OnException(ExceptionContext context) {}
+}
+```
+
+Advantages:
+
+- It's not a breaking change, and all exception handling logic should be added on top of existing filter mechanism.
+- Similar to action filters in ASP.NET.
+
+Disadvantages:
+
+- It may be not intuitive and hard to remember, that for exception handling, separate interface should be implemented.
 
 ### [Option 3] Extend Context model in existing `IFunctionFilter` interface
 
@@ -116,11 +113,15 @@ public class MyFilter : IFunctionFilter
 }
 ```
 
-This approach will require minimum changes to existing implementation and also it won't break existing filter users.
+Advantages:
 
-Another advantage is that the similar approach is used in ASP.NET action filters, where `ActionExecutedContext` model also has `Exception` property available for error that occurred during action execution, so it should be easier to understand the concept for those who already worked with action filters in ASP.NET.
+- Requires minimum changes to existing implementation and also it won't break existing filter users.
+- Similar to action filters in ASP.NET.
+- Scalable, because it will be possible to extend similar Context models for other type of filters when needed (prompt or function calling filters).
 
-This approach should be scalable, because it will be possible to extend similar Context models for other type of filters when needed (prompt or function calling filters).
+### [Option 4] Change `IFunctionFilter` signature by adding `next` delegate.
+
+TBD.
 
 ## Decision Outcome
 
