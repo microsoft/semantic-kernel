@@ -37,14 +37,12 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         var invokedFunctions = new List<string>();
 
-#pragma warning disable CS0618 // Events are deprecated
-        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        var filter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
         {
-            invokedFunctions.Add(e.Function.Name);
-        }
+            invokedFunctions.Add(context.Function.Name);
+        });
 
-        kernel.FunctionInvoking += MyInvokingHandler;
-#pragma warning restore CS0618 // Events are deprecated
+        kernel.FunctionFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -64,14 +62,12 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         var invokedFunctions = new List<string>();
 
-#pragma warning disable CS0618 // Events are deprecated
-        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        var filter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
         {
-            invokedFunctions.Add($"{e.Function.Name}({string.Join(", ", e.Arguments)})");
-        }
+            invokedFunctions.Add($"{context.Function.Name}({string.Join(", ", context.Arguments)})");
+        });
 
-        kernel.FunctionInvoking += MyInvokingHandler;
-#pragma warning restore CS0618 // Events are deprecated
+        kernel.FunctionFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -256,4 +252,28 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         public string Name { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
     }
+
+    #region private
+
+    private sealed class FakeFunctionFilter : IFunctionFilter
+    {
+        private readonly Action<FunctionInvokingContext>? _onFunctionInvoking;
+        private readonly Action<FunctionInvokedContext>? _onFunctionInvoked;
+
+        public FakeFunctionFilter(
+            Action<FunctionInvokingContext>? onFunctionInvoking = null,
+            Action<FunctionInvokedContext>? onFunctionInvoked = null)
+        {
+            this._onFunctionInvoking = onFunctionInvoking;
+            this._onFunctionInvoked = onFunctionInvoked;
+        }
+
+        public void OnFunctionInvoked(FunctionInvokedContext context) =>
+            this._onFunctionInvoked?.Invoke(context);
+
+        public void OnFunctionInvoking(FunctionInvokingContext context) =>
+            this._onFunctionInvoking?.Invoke(context);
+    }
+
+    #endregion
 }

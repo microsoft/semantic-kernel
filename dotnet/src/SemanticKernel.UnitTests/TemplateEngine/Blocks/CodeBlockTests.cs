@@ -400,17 +400,18 @@ public class CodeBlockTests
                 }
             );
 
-#pragma warning disable CS0618 // Events are deprecated
-        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
+        var promptFilter = new FakePromptFilter(onPromptRendering: (context) =>
         {
-            Assert.Equal(FooValue, e.Arguments[parameterName]);
-        };
+            Assert.Equal(FooValue, context.Arguments[parameterName]);
+        });
 
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        var functionFilter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
         {
-            Assert.Equal(FooValue, e.Arguments[parameterName]);
-        };
-#pragma warning restore CS0618 // Events are deprecated
+            Assert.Equal(FooValue, context.Arguments[parameterName]);
+        });
+
+        kernel.PromptFilters.Add(promptFilter);
+        kernel.FunctionFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel);
@@ -446,19 +447,20 @@ public class CodeBlockTests
                 }
             );
 
-#pragma warning disable CS0618 // Events are deprecated
-        kernel.PromptRendering += (object? sender, PromptRenderingEventArgs e) =>
+        var promptFilter = new FakePromptFilter(onPromptRendering: (context) =>
         {
-            Assert.Equal(FooValue, e.Arguments["foo"]);
-            Assert.Equal(FooValue, e.Arguments["x11"]);
-        };
+            Assert.Equal(FooValue, context.Arguments["foo"]);
+            Assert.Equal(FooValue, context.Arguments["x11"]);
+        });
 
-        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        var functionFilter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
         {
-            Assert.Equal(FooValue, e.Arguments["foo"]);
-            Assert.Equal(FooValue, e.Arguments["x11"]);
-        };
-#pragma warning restore CS0618 // Events are deprecated
+            Assert.Equal(FooValue, context.Arguments["foo"]);
+            Assert.Equal(FooValue, context.Arguments["x11"]);
+        });
+
+        kernel.PromptFilters.Add(promptFilter);
+        kernel.FunctionFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel, arguments);
@@ -497,4 +499,36 @@ public class CodeBlockTests
         var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
         Assert.Contains(FooValue, exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    #region private
+
+    private sealed class FakeFunctionFilter(
+        Action<FunctionInvokingContext>? onFunctionInvoking = null,
+        Action<FunctionInvokedContext>? onFunctionInvoked = null) : IFunctionFilter
+    {
+        private readonly Action<FunctionInvokingContext>? _onFunctionInvoking = onFunctionInvoking;
+        private readonly Action<FunctionInvokedContext>? _onFunctionInvoked = onFunctionInvoked;
+
+        public void OnFunctionInvoked(FunctionInvokedContext context) =>
+            this._onFunctionInvoked?.Invoke(context);
+
+        public void OnFunctionInvoking(FunctionInvokingContext context) =>
+            this._onFunctionInvoking?.Invoke(context);
+    }
+
+    private sealed class FakePromptFilter(
+        Action<PromptRenderingContext>? onPromptRendering = null,
+        Action<PromptRenderedContext>? onPromptRendered = null) : IPromptFilter
+    {
+        private readonly Action<PromptRenderingContext>? _onPromptRendering = onPromptRendering;
+        private readonly Action<PromptRenderedContext>? _onPromptRendered = onPromptRendered;
+
+        public void OnPromptRendered(PromptRenderedContext context) =>
+            this._onPromptRendered?.Invoke(context);
+
+        public void OnPromptRendering(PromptRenderingContext context) =>
+            this._onPromptRendering?.Invoke(context);
+    }
+
+    #endregion
 }

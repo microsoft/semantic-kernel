@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -121,10 +122,6 @@ public sealed class Kernel
     public Kernel Clone() =>
         new(this.Services, this._plugins is { Count: > 0 } ? new KernelPluginCollection(this._plugins) : null)
         {
-            FunctionInvoking = this.FunctionInvoking,
-            FunctionInvoked = this.FunctionInvoked,
-            PromptRendering = this.PromptRendering,
-            PromptRendered = this.PromptRendered,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
@@ -563,81 +560,35 @@ public sealed class Kernel
 
     #region Obsolete
 
+#pragma warning disable CS0067 // The event is never used
     /// <summary>
     /// Provides an event that's raised prior to a function's invocation.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <summary>
     /// Provides an event that's raised after a function's invocation.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Provides an event that's raised prior to a prompt being rendered.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
 
     /// <summary>
     /// Provides an event that's raised after a prompt is rendered.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
-    {
-        FunctionInvokingEventArgs? eventArgs = null;
-        if (this.FunctionInvoking is { } functionInvoking)
-        {
-            eventArgs = new(function, arguments);
-            functionInvoking.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
-    {
-        FunctionInvokedEventArgs? eventArgs = null;
-        if (this.FunctionInvoked is { } functionInvoked)
-        {
-            eventArgs = new(function, arguments, result);
-            functionInvoked.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
-    {
-        PromptRenderingEventArgs? eventArgs = null;
-        if (this.PromptRendering is { } promptRendering)
-        {
-            eventArgs = new(function, arguments);
-            promptRendering.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
-
-    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
-    {
-        PromptRenderedEventArgs? eventArgs = null;
-        if (this.PromptRendered is { } promptRendered)
-        {
-            eventArgs = new(function, arguments, renderedPrompt);
-            promptRendered.Invoke(this, eventArgs);
-        }
-
-        return eventArgs;
-    }
+#pragma warning restore CS0067 // The event is never used
 
     #endregion
 }
