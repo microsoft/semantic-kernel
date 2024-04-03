@@ -195,6 +195,5 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return false;
     }
 
-
     #endregion
 }
