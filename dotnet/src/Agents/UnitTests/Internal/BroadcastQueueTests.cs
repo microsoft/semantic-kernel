@@ -101,8 +101,6 @@ public class BroadcastQueueTests
         ChannelReference reference = new(channel, "test");
 
         // Enqueue multiple channels
-        object syncObject = new();
-
         for (int count = 0; count < 10; ++count)
         {
             queue.Enqueue([new(channel, $"test{count}")], [new ChatMessageContent(AuthorRole.User, "hi")]);

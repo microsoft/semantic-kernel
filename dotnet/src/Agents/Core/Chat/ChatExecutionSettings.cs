@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Delegate definition for <see cref="ChatExecutionSettings.ContinuationStrategy"/>.
+/// Delegate definition for <see cref="ChatExecutionSettings.TerminationStrategy"/>.
 /// </summary>
 /// <param name="agent">The agent actively interacting with the nexus.</param>
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-/// <returns>True to continue.</returns>
-public delegate Task<bool> ContinuationCriteriaCallback(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
+/// <returns>True to terminate chat loop.</returns>
+public delegate Task<bool> TerminationCriteriaCallback(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
 /// Delegate definition for <see cref="ChatExecutionSettings.SelectionStrategy"/>.
@@ -28,7 +28,7 @@ public delegate Task<Agent?> SelectionCriteriaCallback(IReadOnlyList<Agent> agen
 /// Settings that affect behavior of <see cref="AgentChat"/>.
 /// </summary>
 /// <remarks>
-/// Default behavior result in no agent selection or chat continuation.
+/// Default behavior result in no agent selection.
 /// </remarks>
 public class ChatExecutionSettings
 {
@@ -43,12 +43,12 @@ public class ChatExecutionSettings
     public int MaximumIterations { get; set; } = DefaultMaximumIterations;
 
     /// <summary>
-    /// Optional strategy for evaluating the need to continue multiturn chat..
+    /// Optional strategy for evaluating whether to terminate multiturn chat.
     /// </summary>
     /// <remarks>
-    /// See <see cref="ContinuationStrategy"/>.
+    /// See <see cref="TerminationStrategy"/>.
     /// </remarks>
-    public ContinuationCriteriaCallback? ContinuationStrategy { get; set; }
+    public TerminationCriteriaCallback? TerminationStrategy { get; set; }
 
     /// <summary>
     /// An optional strategy for selecting the next agent.

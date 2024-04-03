@@ -7,20 +7,20 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="ContinuationStrategy"/>.
+/// Unit testing of <see cref="TerminationStrategy"/>.
 /// </summary>
-public class ContinuationStrategyTests
+public class TerminationStrategyTests
 {
     /// <summary>
-    /// Verify <see cref="ContinuationStrategy"/> is able to cast to <see cref="ContinuationCriteriaCallback"/>.
+    /// Verify <see cref="TerminationStrategy"/> is able to cast to <see cref="TerminationCriteriaCallback"/>.
     /// </summary>
     [Fact]
     public void VerifySelectionStrategyCastAsCriteriaCallback()
     {
-        Mock<ContinuationStrategy> strategy = new();
+        Mock<TerminationStrategy> strategy = new();
         try
         {
-            ContinuationCriteriaCallback callback = (ContinuationCriteriaCallback)strategy.Object;
+            TerminationCriteriaCallback callback = (TerminationCriteriaCallback)strategy.Object;
         }
         catch (InvalidCastException exception)
         {

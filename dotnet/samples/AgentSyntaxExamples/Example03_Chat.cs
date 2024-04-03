@@ -43,11 +43,11 @@ public class Example03_Chat : BaseTest
                         // but can also be assigned a ContinuationStrategy subclass.
                         // Here, custom logic is expressed as a func that will continue until
                         // an assistant message contains the term "approve".
-                        ContinuationStrategy = // ContinuationCriteriaCallback
+                        TerminationStrategy = // ContinuationCriteriaCallback
                                 (agent, messages, cancellationToken) =>
                                 Task.FromResult(
-                                    agent.Id != agentReviewer.Id ||
-                                    (!messages[messages.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
+                                    agent.Id == agentReviewer.Id &&
+                                    (messages[messages.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
                         // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
                         SelectionStrategy = new SequentialSelectionStrategy(),

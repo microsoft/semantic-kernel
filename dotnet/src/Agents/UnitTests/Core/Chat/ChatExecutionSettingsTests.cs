@@ -17,27 +17,27 @@ public class ChatExecutionSettingsTests
     public void VerifyChatExecutionSettingsDefault()
     {
         ChatExecutionSettings settings = new();
-        Assert.Null(settings.ContinuationStrategy);
+        Assert.Null(settings.TerminationStrategy);
         Assert.Equal(ChatExecutionSettings.DefaultMaximumIterations, settings.MaximumIterations);
         Assert.Null(settings.SelectionStrategy);
     }
 
     /// <summary>
-    /// Verify accepts <see cref="ContinuationStrategy"/> for <see cref="ChatExecutionSettings.ContinuationStrategy"/>.
+    /// Verify accepts <see cref="TerminationStrategy"/> for <see cref="ChatExecutionSettings.TerminationStrategy"/>.
     /// </summary>
     [Fact]
     public void VerifyChatExecutionContinuationStrategyDefault()
     {
-        Mock<ContinuationStrategy> strategyMock = new();
+        Mock<TerminationStrategy> strategyMock = new();
         ChatExecutionSettings settings =
             new()
             {
                 MaximumIterations = 3,
-                ContinuationStrategy = strategyMock.Object
+                TerminationStrategy = strategyMock.Object
             };
 
         Assert.Equal(3, settings.MaximumIterations);
-        Assert.NotNull(settings.ContinuationStrategy);
+        Assert.NotNull(settings.TerminationStrategy);
     }
 
     /// <summary>

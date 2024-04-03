@@ -25,7 +25,7 @@ public sealed class AgentChat : AgentNexus
     public bool IsComplete { get; set; }
 
     /// <summary>
-    /// Settings for controlling chat behavior.
+    /// Settings for defining chat behavior.
     /// </summary>
     public ChatExecutionSettings? ExecutionSettings { get; set; }
 
@@ -64,7 +64,7 @@ public sealed class AgentChat : AgentNexus
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string? input = null,
         CancellationToken cancellationToken = default) =>
-            this.InvokeAsync(CreateUserMessage(input), cancellationToken);
+            this.InvokeAsync(CreateUserMessage(input), cancellationToken); // $$$ OPTIONAL INPUT ARG ???
 
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
@@ -105,9 +105,9 @@ public sealed class AgentChat : AgentNexus
 
                 if (message.Role == AuthorRole.Assistant)
                 {
-                    var task = this.ExecutionSettings?.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
-                    bool shallContinue = await task.ConfigureAwait(false);
-                    this.IsComplete = !shallContinue;
+                    // Null ExecutionSettings short-circuits prior to this due to null SelectionStrategy.
+                    var task = this.ExecutionSettings!.TerminationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
+                    this.IsComplete = await task.ConfigureAwait(false);
                 }
 
                 if (this.IsComplete)
@@ -136,7 +136,7 @@ public sealed class AgentChat : AgentNexus
         Agent agent,
         string? input = null,
         CancellationToken cancellationToken = default) =>
-        this.InvokeAgentAsync(agent, CreateUserMessage(input), cancellationToken);
+        this.InvokeAsync(agent, CreateUserMessage(input), isJoining: true, cancellationToken);
 
     /// <summary>
     /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
@@ -163,9 +163,8 @@ public sealed class AgentChat : AgentNexus
 
             if (message.Role == AuthorRole.Assistant)
             {
-                var task = this.ExecutionSettings?.ContinuationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
-                bool shallContinue = await task.ConfigureAwait(false);
-                this.IsComplete = !shallContinue;
+                var task = this.ExecutionSettings?.TerminationStrategy?.Invoke(agent, this.History, cancellationToken) ?? Task.FromResult(false);
+                this.IsComplete = await task.ConfigureAwait(false);
             }
 
             if (this.IsComplete)
