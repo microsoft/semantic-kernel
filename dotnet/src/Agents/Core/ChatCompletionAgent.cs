@@ -55,7 +55,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
         foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
-            message.Name = this.Name;
+            message.AuthorName = this.Name;
 
             yield return message;
         }
@@ -66,7 +66,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
             {
                 instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
 
-                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { Name = this.Name });
+                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
             }
         }
     }
