@@ -20,9 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
@@ -154,7 +156,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .getOptions();
 
         Mono<List<? extends ChatMessageContent>> result = client
-            .getChatCompletions(getModelId(), options)
+            .getChatCompletionsWithResponse(getModelId(), options,
+                OpenAIRequestSettings.getRequestOptions())
+            .flatMap(completionsResult -> {
+                if (completionsResult.getStatusCode() >= 400) {
+                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                        "Request failed: " + completionsResult.getStatusCode()));
+                }
+                return Mono.just(completionsResult.getValue());
+            })
             .flatMap(completions -> {
                 List<ChatResponseMessage> responseMessages = completions
                     .getChoices()
