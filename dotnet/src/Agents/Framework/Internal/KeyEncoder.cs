@@ -11,8 +11,6 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// </summary>
 internal static class KeyEncoder
 {
-    private static readonly SHA256CryptoServiceProvider s_sha256 = new();
-
     /// <summary>
     /// Produces a base-64 encoded hash for a set of input strings.
     /// </summary>
@@ -20,8 +18,10 @@ internal static class KeyEncoder
     /// <returns>A base-64 encoded hash</returns>
     public static string GenerateHash(IEnumerable<string> keys)
     {
+        using SHA256 shaProvider = SHA256Managed.Create();
+
         byte[] buffer = Encoding.UTF8.GetBytes(string.Join(":", keys));
-        byte[] hash = s_sha256.ComputeHash(buffer);
+        byte[] hash = shaProvider.ComputeHash(buffer);
         string encoding = Convert.ToBase64String(hash);
 
         return encoding;
