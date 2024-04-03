@@ -140,7 +140,13 @@ public sealed class KernelParameterMetadata
                         description += $"{(needsSpace ? " " : "")}(default value: {stringDefault})";
                     }
 
-                    var builder = new JsonSchemaBuilder().FromType(parameterType);
+                    // Register the handler for the 'System.ComponentModel.DescriptionAttribute' attribute to provide descriptions for .NET type members, such as fields and properties.
+                    // See the Attributes section for more details - https://docs.json-everything.net/schema/schemagen/schema-generation/.
+                    // This line must precede the JsonSchemaBuilder creation; otherwise, the registration will not take place.
+                    AttributeHandler.AddHandler<DescriptionAttributeHandler>();
+
+                    var builder = new JsonSchemaBuilder().FromType(parameterType, new SchemaGeneratorConfiguration());
+
                     if (!string.IsNullOrWhiteSpace(description))
                     {
                         builder = builder.Description(description!);

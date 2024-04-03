@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Text.Json;
+using Json.Schema.Generation;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -51,7 +53,7 @@ public class KernelParameterMetadataTests
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"boolean\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool) }.Schema));
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"object\" }")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(object) }.Schema));
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"array\",\"items\":{\"type\":\"boolean\"}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(bool[]) }.Schema));
-        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
+        Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\":\"object\",\"properties\":{\"Value1\":{\"type\":\"string\"},\"Value2\":{\"type\":\"integer\"},\"Value3\":{\"type\":\"number\", \"description\":\"This is the Value3 field.\"},\"Value4\":{\"type\":\"number\", \"description\":\"This is the Value4 property.\"}}}")), JsonSerializer.Serialize(new KernelParameterMetadata("p") { ParameterType = typeof(Example) }.Schema));
     }
 
     [Fact]
@@ -142,7 +144,10 @@ public class KernelParameterMetadataTests
     {
         public string? Value1;
         public int Value2;
+        [System.ComponentModel.Description("This is the Value3 field.")]
         public double Value3;
+        [System.ComponentModel.Description("This is the Value4 property.")]
+        public double Value4 { get; set; }
     }
 #pragma warning restore CA1812
 #pragma warning restore CS0649
