@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
@@ -91,6 +92,30 @@ internal sealed class HuggingFaceClient
         await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
             yield return streamingTextContent;
+        }
+    }
+
+    public async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatAsync(
+        ChatHistory chatHistory,
+        PromptExecutionSettings executionSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        string modelId = executionSettings?.ModelId ?? this._modelId;
+        var endpoint = this.GetChatGenerationEndpoint(modelId);
+        var request = this.CreateChatRequest(chatHistory, executionSettings);
+        request.Stream = true;
+
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this._apiKey);
+
+        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+
+        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
+            .ConfigureAwait(false);
+
+        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        {
+            yield return streamingChatContent;
         }
     }
 
@@ -202,6 +227,16 @@ internal sealed class HuggingFaceClient
         return request;
     }
 
+    private ChatGenerationRequest CreateChatRequest(
+        ChatHistory chatHistory,
+               PromptExecutionSettings promptExecutionSettings)
+    {
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
+        var request = ChatGenerationRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
+        return request;
+    }
+
     private static T DeserializeResponse<T>(string body)
     {
         try
@@ -238,6 +273,9 @@ internal sealed class HuggingFaceClient
 
     private Uri GetTextGenerationEndpoint(string modelId)
         => new($"{this._endpoint}{this._separator}models/{modelId}");
+
+    private Uri GetChatGenerationEndpoint(string modelId)
+        => new($"{this._endpoint}{this._separator}v1/chat/completions");
 
     private Uri GetEmbeddingGenerationEndpoint(string modelId)
         => new($"{this._endpoint}{this._separator}pipeline/feature-extraction/{modelId}");
