@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -181,6 +182,11 @@ public class ChatMessageContentTests
             ["metadata-key-6"] = "metadata-value-6"
         })
         { MimeType = "mime-type-6" });
+        items.Add(new FunctionResult(value: "content-7", culture: CultureInfo.GetCultureInfo("da-DK"), metadata: new Dictionary<string, object?>()
+        {
+            ["metadata-key-7"] = "metadata-value-7"
+        })
+        { MimeType = "mime-type-7" });
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
@@ -202,7 +208,7 @@ public class ChatMessageContentTests
         Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.ToString());
 
         Assert.NotNull(deserializedMessage?.Items);
-        Assert.Equal(6, deserializedMessage.Items.Count);
+        Assert.Equal(items.Count, deserializedMessage.Items.Count);
 
         var textContent = deserializedMessage.Items[0] as TextContent;
         Assert.NotNull(textContent);
@@ -261,5 +267,14 @@ public class ChatMessageContentTests
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
         Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
+
+        var functionResultContent = deserializedMessage.Items[6] as FunctionResult;
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        Assert.NotNull(functionResultContent);
+        Assert.Equal("content-7", functionResultContent.Value!.ToString());
+        Assert.Equal("mime-type-7", functionResultContent.MimeType);
+        Assert.NotNull(functionResultContent.Metadata);
+        Assert.Single(functionResultContent.Metadata);
+        Assert.Equal("metadata-value-7", functionResultContent.Metadata["metadata-key-7"]?.ToString());
     }
 }

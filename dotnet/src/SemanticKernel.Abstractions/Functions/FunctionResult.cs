@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the result of a <see cref="KernelFunction"/> invocation.
 /// </summary>
-public sealed class FunctionResult
+public sealed class FunctionResult : KernelContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
@@ -20,7 +20,7 @@ public sealed class FunctionResult
     /// <param name="value">The resulting object of the function's invocation.</param>
     /// <param name="culture">The culture configured on the <see cref="Kernel"/> that executed the function.</param>
     /// <param name="metadata">Metadata associated with the function's execution</param>
-    public FunctionResult(KernelFunction? function, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
+    public FunctionResult(KernelFunction? function = null, object? value = null, CultureInfo? culture = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.Function = function;
         this.Value = value;
@@ -33,11 +33,6 @@ public sealed class FunctionResult
     /// </summary>
     [JsonIgnore]
     public KernelFunction? Function { get; }
-
-    /// <summary>
-    /// Gets any metadata associated with the function's execution.
-    /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
 
     /// <summary>
     /// Gets the <see cref="Type"/> of the function's result.
