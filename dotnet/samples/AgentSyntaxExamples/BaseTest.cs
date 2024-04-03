@@ -25,7 +25,7 @@ public abstract class BaseTest
 
     protected string GetApiKey()
     {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || ForceOpenAI)
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
         {
             return TestConfiguration.OpenAI.ApiKey;
         }
@@ -37,7 +37,7 @@ public abstract class BaseTest
     {
         var builder = Kernel.CreateBuilder();
 
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || ForceOpenAI)
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
         {
             builder.AddOpenAIChatCompletion(
                 TestConfiguration.OpenAI.ChatModelId,
