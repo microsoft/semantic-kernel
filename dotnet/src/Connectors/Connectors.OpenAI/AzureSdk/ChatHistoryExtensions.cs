@@ -47,7 +47,7 @@ public static class ChatHistoryExtensions
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
-            streamedName ??= chatMessage.Name;
+            streamedName ??= chatMessage.AuthorName;
 
             messageContents.Add(chatMessage);
             yield return chatMessage;
@@ -64,7 +64,7 @@ public static class ChatHistoryExtensions
                     messageContents[0].ModelId!,
                     OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
                     metadata)
-                { Name = streamedName });
+                { AuthorName = streamedName });
         }
     }
 }

@@ -191,7 +191,7 @@ public class ChatMessageContentTests
         });
         sut.Content = "content-1-override"; // Override the content of the first text content item that has the "content-1" content  
         sut.Source = "Won't make it";
-        sut.Name = "Fred";
+        sut.AuthorName = "Fred";
 
         // Act
         var chatMessageJson = JsonSerializer.Serialize(sut);
@@ -200,7 +200,7 @@ public class ChatMessageContentTests
 
         // Assert
         Assert.Equal("message-model", deserializedMessage.ModelId);
-        Assert.Equal("Fred", deserializedMessage.Name);
+        Assert.Equal("Fred", deserializedMessage.AuthorName);
         Assert.Equal("message-model", deserializedMessage.ModelId);
         Assert.Equal("user", deserializedMessage.Role.Label);
         Assert.NotNull(deserializedMessage.Metadata);

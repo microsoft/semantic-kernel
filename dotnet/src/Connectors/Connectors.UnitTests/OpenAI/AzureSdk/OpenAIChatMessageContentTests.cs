@@ -20,7 +20,7 @@ public sealed class OpenAIChatMessageContentTests
         List<ChatCompletionsToolCall> toolCalls = [new FakeChatCompletionsToolCall("id")];
 
         // Act
-        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls) { Name = "Fred" };
+        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
         var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls);
 
         // Assert
@@ -96,7 +96,7 @@ public sealed class OpenAIChatMessageContentTests
     {
         Assert.Equal(expectedRole, actualContent.Role);
         Assert.Equal(expectedContent, actualContent.Content);
-        Assert.Equal(expectedName, actualContent.Name);
+        Assert.Equal(expectedName, actualContent.AuthorName);
         Assert.Equal(expectedModelId, actualContent.ModelId);
         Assert.Same(expectedToolCalls, actualContent.ToolCalls);
     }

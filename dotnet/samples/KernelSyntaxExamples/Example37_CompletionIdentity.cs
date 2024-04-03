@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
+using YamlDotNet.Core;
 
 namespace Examples;
 
@@ -74,8 +75,8 @@ public class Example37_CompletionIdentity : BaseTest
         return
             new ChatHistory()
             {
-                new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes") { Name = withName ? "Echo" : null },
-                new ChatMessageContent(AuthorRole.User, "Why is AI awesome") { Name = withName ? "Ralph" : null },
+                new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes") { AuthorName = withName ? "Echo" : null },
+                new ChatMessageContent(AuthorRole.User, "Why is AI awesome") { AuthorName = withName ? "Ralph" : null },
             };
     }
 
@@ -85,11 +86,11 @@ public class Example37_CompletionIdentity : BaseTest
         {
             if (expectName && message.Role != AuthorRole.Assistant)
             {
-                Assert.NotNull(message.Name);
+                Assert.NotNull(message.AuthorName);
             }
             else
             {
-                Assert.Null(message.Name);
+                Assert.Null(message.AuthorName);
             }
         }
     }
@@ -98,7 +99,7 @@ public class Example37_CompletionIdentity : BaseTest
     {
         foreach (var message in messages)
         {
-            WriteLine($"# {message.Role}:{message.Name ?? "?"} - {message.Content ?? "-"}");
+            WriteLine($"# {message.Role}:{message.AuthorName ?? "?"} - {message.Content ?? "-"}");
         }
 
         history?.AddRange(messages);

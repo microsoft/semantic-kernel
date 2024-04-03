@@ -541,7 +541,7 @@ internal abstract class ClientCore
                     OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { Name = streamedName };
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
             }
 
             // If we don't have a function to invoke, we're done.
@@ -574,7 +574,7 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { Name = streamedName });
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
@@ -972,7 +972,7 @@ internal abstract class ClientCore
     {
         if (message.Role == AuthorRole.System)
         {
-            return new ChatRequestSystemMessage(message.Content) { Name = message.Name };
+            return new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName };
         }
 
         if (message.Role == AuthorRole.User || message.Role == AuthorRole.Tool)
@@ -985,7 +985,7 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new ChatRequestUserMessage(textContent.Text) { Name = message.Name };
+                return new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName };
             }
 
             return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
@@ -994,12 +994,12 @@ internal abstract class ClientCore
                 ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
-            { Name = message.Name };
+            { Name = message.AuthorName };
         }
 
         if (message.Role == AuthorRole.Assistant)
         {
-            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.Name };
+            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
 
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
