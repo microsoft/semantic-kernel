@@ -41,7 +41,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = this.GetVariables(arguments);
+        arguments = this.GetVariables(kernel, arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
@@ -92,7 +92,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(KernelArguments? arguments)
+    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
     {
         KernelArguments result = new();
 
