@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
-using YamlDotNet.Core;
 
 namespace Examples;
 
