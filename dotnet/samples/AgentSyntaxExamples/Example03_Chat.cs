@@ -24,11 +24,14 @@ public class Example03_Chat : BaseTest
         ChatCompletionAgent agentReviewer =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.ReviewerInstructions);
+                instructions: AgentInventory.ReviewerInstructions,
+                name: AgentInventory.ReviewerName);
+
         ChatCompletionAgent agentWriter =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.CopyWriterInstructions);
+                instructions: AgentInventory.CopyWriterInstructions,
+                name: AgentInventory.CopyWriterName);
 
         // Create a nexus for agent interaction.
         var nexus =
@@ -44,7 +47,7 @@ public class Example03_Chat : BaseTest
                                 (agent, messages, cancellationToken) =>
                                 Task.FromResult(
                                     agent.Id != agentReviewer.Id ||
-                                    messages.Any(m => !m.Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
+                                    (!messages[messages.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
                         // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
                         SelectionStrategy = new SequentialSelectionStrategy(),
@@ -58,8 +61,7 @@ public class Example03_Chat : BaseTest
         // Invoke chat and display messages.
         await foreach (var content in nexus.InvokeAsync("concept: maps made out of egg cartons."))
         {
-            this.WriteLine($"# {content.Role}: '{content.Content}'");
-            //this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'"); // TODO: MERGE IDENTITY - PR #5725
+            this.WriteLine($"# {content.Role} - {content.Name ?? "*"}: '{content.Content}'");
         }
     }
 
