@@ -20,7 +20,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     [Experimental("SKEXP0001")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Name { get; set; }
+    public string? AuthorName { get; set; }
 
     /// <summary>
     /// Role of the author of the message

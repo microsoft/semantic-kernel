@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -8,9 +9,8 @@ from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content i
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureAISearchDataSources,
+    AzureAISearchDataSource,
     AzureChatPromptExecutionSettings,
-    AzureDataSources,
     ExtraBody,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -24,9 +24,10 @@ from semantic_kernel.utils.settings import (
 )
 
 kernel = sk.Kernel()
+logging.basicConfig(level=logging.DEBUG)
 
 # Load Azure OpenAI Settings
-aoai_settings = azure_openai_settings_from_dot_env_as_dict()
+aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 
 # For example, AI Search index may contain the following document:
 
@@ -46,15 +47,14 @@ azure_ai_search_settings["fieldsMapping"] = {
 }
 
 # Create the data source settings
-az_source = AzureAISearchDataSources(**azure_ai_search_settings)
-az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
-extra = ExtraBody(dataSources=[az_data])
+
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
-# When using data, set use_extensions=True and use the 2023-12-01-preview API version.
+# When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
     service_id="chat-gpt",
-    use_extensions=True,
     **aoai_settings,
 )
 kernel.add_service(chat_service)
@@ -121,7 +121,7 @@ async def chat() -> bool:
             chat_history.add_tool_message(full_message.tool_message, {"tool_call_id": "chat_with_your_data"})
         if full_message.role is None:
             full_message.role = ChatRole.ASSISTANT
-        chat_history.add_message(full_message)
+        chat_history.add_assistant_message(full_message.content)
     return True
 
 
