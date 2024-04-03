@@ -44,7 +44,7 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     /// Gets the exception that occurred during function invocation.
     /// If it's <see langword="null" />, it means that function invocation was completed successfully.
     /// </summary>
-    public Exception? Exception { get; private set; }
+    public Exception? Exception { get; internal set; }
 
     /// <summary>
     /// Gets the raw result of the function's invocation.

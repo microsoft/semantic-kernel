@@ -659,6 +659,90 @@ public class KernelFilterTests
         Assert.Equal("Exception from filter", exception.Message);
     }
 
+    [Fact]
+    public async Task MultipleFunctionFiltersReceiveInvocationExceptionAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        void OnFunctionInvoked(FunctionInvokedContext context)
+        {
+            filterInvocations++;
+
+            Assert.NotNull(context.Exception);
+            Assert.IsType<NotImplementedException>(context.Exception);
+        }
+
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvoked: OnFunctionInvoked);
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvoked: OnFunctionInvoked);
+        var functionFilter3 = new FakeFunctionFilter(onFunctionInvoked: OnFunctionInvoked);
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+
+        var kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal(3, filterInvocations);
+    }
+
+    [Fact]
+    public async Task MultipleFunctionFiltersPropagateExceptionCorrectlyAsync()
+    {
+        // Arrange
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception from method"); });
+
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvoked: (context) =>
+        {
+            Assert.NotNull(context.Exception);
+            Assert.Equal("Exception from method", context.Exception.Message);
+            Assert.IsType<KernelException>(context.Exception);
+
+            throw new KernelException("Exception from functionFilter1");
+        });
+
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvoked: (context) =>
+        {
+            Assert.NotNull(context.Exception);
+            Assert.Equal("Exception from functionFilter1", context.Exception.Message);
+            Assert.IsType<KernelException>(context.Exception);
+
+            throw new KernelException("Exception from functionFilter2");
+        });
+
+        var functionFilter3 = new FakeFunctionFilter(onFunctionInvoked: (context) =>
+        {
+            Assert.NotNull(context.Exception);
+            Assert.Equal("Exception from functionFilter2", context.Exception.Message);
+            Assert.IsType<KernelException>(context.Exception);
+
+            context.CancelException();
+            context.SetResultValue("Result from functionFilter3");
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+
+        var kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal("Result from functionFilter3", result.ToString());
+    }
+
     private Kernel GetKernelWithFilters(
         Action<FunctionInvokingContext>? onFunctionInvoking = null,
         Action<FunctionInvokedContext>? onFunctionInvoked = null,

@@ -308,7 +308,16 @@ public sealed class Kernel
 
             for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                this._functionFilters[i].OnFunctionInvoked(context);
+                try
+                {
+                    this._functionFilters[i].OnFunctionInvoked(context);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    context.Exception = ex;
+                }
             }
         }
 
