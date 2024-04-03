@@ -49,7 +49,7 @@ kernel.add_service(
 #   AzureChatCompletion(
 #       service_id="dv",
 #       deployment_name=deployment,
-#       base_url=endpoint,
+#       endpoint=endpoint,
 #       api_key=api_key
 #   )
 # )
