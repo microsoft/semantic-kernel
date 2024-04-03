@@ -41,7 +41,7 @@ public class Example03_Chat : BaseTest
                     {
                         // In its simplest form, a strategy is simply a delegate or "func"",
                         // but can also be assigned a ContinuationStrategy subclass.
-                        // Here, custom logic is expressed as a func that will continue until
+                        // Here, custom logic is expressed as a func that will terminate when
                         // an assistant message contains the term "approve".
                         TerminationStrategy = // ContinuationCriteriaCallback
                                 (agent, messages, cancellationToken) =>
