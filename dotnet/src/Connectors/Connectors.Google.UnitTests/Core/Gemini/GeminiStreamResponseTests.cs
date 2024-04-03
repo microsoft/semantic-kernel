@@ -6,9 +6,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
+using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
+
+#pragma warning disable CS0419 // Ambiguous StreamJsonParser reference in cref attribute (InternalUtilities)
+#pragma warning disable CS1574 // XML comment has cref StreamJsonParser that could not be resolved (InternalUtilities)
 
 /// <summary>
 /// Tests for parsing <see cref="GeminiResponse"/> with <see cref="StreamJsonParser"/>.
