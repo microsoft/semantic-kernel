@@ -65,4 +65,24 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("text", settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
     }
+
+    [Fact]
+    public void ItReturnsValidOpenAIAudioToTextExecutionSettingsWhenCloned()
+    {
+        // Arrange
+        var audioToTextSettings = new OpenAIAudioToTextExecutionSettings("file.mp3")
+        {
+            ModelId = "model_id",
+            Language = "en",
+            Prompt = "prompt",
+            ResponseFormat = "text",
+            Temperature = 0.2f
+        };
+
+        // Act
+        var settings = audioToTextSettings.Clone();
+
+        // Assert
+        Assert.Same(audioToTextSettings, settings);
+    }
 }
