@@ -4,7 +4,9 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
@@ -33,6 +35,39 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         mockLogger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
 
         this._mockLoggerFactory.Setup(l => l.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
+    }
+
+    [Fact]
+    public async Task ItSupportsOpenAIClientInjectionAsync()
+    {
+        // Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+        messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(@"{
+                                            ""created"": 1702575371,
+                                            ""data"": [
+                                                {
+                                                    ""revised_prompt"": ""A photo capturing the diversity of the Earth's landscapes."",
+                                                    ""url"": ""https://dalleprodsec.blob.core.windows.net/private/images/0f20c621-7eb0-449d-87fd-8dd2a3a15fbe/generated_00.png?se=2023-12-15T17%3A36%3A25Z&sig=jd2%2Fa8jOM9NmclrUbOLdRgAxcFDFPezOpG%2BSF82d7zM%3D&ske=2023-12-20T10%3A10%3A28Z&skoid=e52d5ed7-0657-4f62-bc12-7e5dbb260a96&sks=b&skt=2023-12-13T10%3A10%3A28Z&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skv=2020-10-02&sp=r&spr=https&sr=b&sv=2020-10-02""
+                                                }
+                                            ]
+                                        }", Encoding.UTF8, "application/json")
+        };
+        var clientOptions = new OpenAIClientOptions
+        {
+            Transport = new HttpClientTransport(httpClient),
+        };
+        var openAIClient = new OpenAIClient(new Uri("https://az.com"), new Azure.AzureKeyCredential("NOKEY"), clientOptions);
+
+        var textToImageCompletion = new AzureOpenAITextToImageService(deploymentName: "gpt-35-turbo", openAIClient, modelId: "gpt-3.5-turbo");
+
+        // Act
+        var result = await textToImageCompletion.GenerateImageAsync("anything", 1024, 1024);
+
+        // Assert
+        Assert.NotNull(result);
     }
 
     [Theory]
