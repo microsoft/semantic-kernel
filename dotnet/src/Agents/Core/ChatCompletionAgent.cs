@@ -41,9 +41,9 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = new();
-        await FormatInstructionsAsync(this.Instructions, cancellationToken).ConfigureAwait(false);
+        await AddedFormattedInstructionsToHistoryAsync(this.Instructions, cancellationToken).ConfigureAwait(false);
         chat.AddRange(history);
-        await FormatInstructionsAsync(this.ExtraInstructions, cancellationToken).ConfigureAwait(false);
+        await AddedFormattedInstructionsToHistoryAsync(this.ExtraInstructions, cancellationToken).ConfigureAwait(false);
 
         var messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -60,13 +60,13 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
             yield return message;
         }
 
-        async Task FormatInstructionsAsync(string? instructions, CancellationToken cancellationToken)
+        async Task AddedFormattedInstructionsToHistoryAsync(string? instructions, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(instructions))
             {
                 instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
 
-                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { Name = $"{this.Name} Instructions" });
+                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { Name = this.Name });
             }
         }
     }

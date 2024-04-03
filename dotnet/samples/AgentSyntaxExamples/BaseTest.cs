@@ -40,8 +40,7 @@ public abstract class BaseTest
         if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint))
         {
             builder.AddOpenAIChatCompletion(
-                "gpt-4-turbo-preview",
-                //TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
         else
