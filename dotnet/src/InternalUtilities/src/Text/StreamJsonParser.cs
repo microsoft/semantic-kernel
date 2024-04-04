@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,14 +10,20 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
+namespace Microsoft.SemanticKernel.Text;
+
+#pragma warning disable CA1812 // Internal class that is apparently never instantiated
+#pragma warning disable CA1846 // Prefer 'AsSpan' over 'Substring' when span-based overloads are available
 
 /// <summary>
 /// Internal class for parsing a stream of text which contains a series of discrete JSON strings into en enumerable containing each separate JSON string.
 /// </summary>
 /// <remarks>
+/// This is universal parser for parsing stream of text which contains a series of discrete JSON.<br/>
+/// If you need a specialized SSE parser, use <see cref="SseJsonParser"/> instead.<br/>
 /// This class is thread-safe.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 internal sealed class StreamJsonParser
 {
     /// <summary>
@@ -24,17 +31,17 @@ internal sealed class StreamJsonParser
     /// </summary>
     /// <param name="stream">The Stream containing the JSON data.</param>
     /// <param name="validateJson">Set to true to enable checking json chunks are well-formed. Default is false.</param>
-    /// <param name="ct">The cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An enumerable collection of string representing the individual JSON objects.</returns>
     /// <remarks>Stream will be disposed after parsing.</remarks>
     public async IAsyncEnumerable<string> ParseAsync(
         Stream stream,
         bool validateJson = false,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var reader = new StreamReader(stream, Encoding.UTF8);
         ChunkParser chunkParser = new(reader);
-        while (await chunkParser.ExtractNextChunkAsync(validateJson, ct).ConfigureAwait(false) is { } json)
+        while (await chunkParser.ExtractNextChunkAsync(validateJson, cancellationToken).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }

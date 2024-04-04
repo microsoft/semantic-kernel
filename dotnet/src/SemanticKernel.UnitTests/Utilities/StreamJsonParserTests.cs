@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Google.Core;
+using Microsoft.SemanticKernel.Text;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Google.UnitTests.Core;
+namespace SemanticKernel.UnitTests.Utilities;
 
 public sealed class StreamJsonParserTests
 {
