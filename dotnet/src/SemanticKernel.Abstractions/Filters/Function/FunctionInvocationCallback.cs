@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Delegate to the next filter in pipeline or functon itself.
+/// Delegate to the next filter in pipeline or function itself.
 /// </summary>
 /// <param name="context">Instance of <see cref="FunctionInvocationContext"/> with function invocation details.</param>
 [Experimental("SKEXP0001")]
