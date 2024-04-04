@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main"]
+    paths:
+      - "python/**"
   merge_group:
     branches: ["main"]
   schedule:
