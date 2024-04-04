@@ -1,19 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 import logging
+from functools import wraps
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    *,
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-):
+    func: Callable[..., Any] | None = None,
+    name: str | None = None,
+    description: str | None = None,
+) -> Callable[..., Any]:
     """
     Decorator for kernel functions.
 
@@ -42,7 +43,8 @@ def kernel_function(
 
     """
 
-    def decorator(func: Callable):
+    @wraps(func)
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or func.__doc__
         func.__kernel_function_name__ = name or func.__name__
@@ -62,10 +64,12 @@ def kernel_function(
         func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
         return func
 
+    if func:
+        return decorator(func)
     return decorator
 
 
-def _parse_parameter(param: Parameter) -> Dict[str, Any]:
+def _parse_parameter(param: Parameter) -> dict[str, Any]:
     logger.debug(f"Parsing param: {param}")
     ret = {}
     if param != Parameter.empty:
@@ -76,7 +80,7 @@ def _parse_parameter(param: Parameter) -> Dict[str, Any]:
     return ret
 
 
-def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
+def _parse_annotation(annotation: Parameter) -> dict[str, Any]:
     logger.debug(f"Parsing annotation: {annotation}")
     if annotation == Signature.empty:
         return {"type_": "Any", "is_required": True}
@@ -89,7 +93,7 @@ def _parse_annotation(annotation: Parameter) -> Dict[str, Any]:
     return ret
 
 
-def _parse_internal_annotation(annotation: Parameter, required: bool) -> Dict[str, Any]:
+def _parse_internal_annotation(annotation: Parameter, required: bool) -> dict[str, Any]:
     logger.debug(f"Internal {annotation=}")
     if hasattr(annotation, "__forward_arg__"):
         return {"type_": annotation.__forward_arg__, "is_required": required}
