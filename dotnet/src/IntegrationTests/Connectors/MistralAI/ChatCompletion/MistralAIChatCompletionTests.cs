@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -110,4 +112,64 @@ public sealed class MistralAIChatCompletionTests
         Assert.True(chunks.Count > 0);
         Assert.False(string.IsNullOrEmpty(content.ToString()));
     }
+
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetChatMessageContentsHasToolCallsResponseAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.EnableKernelFunctions };
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Equal("tool_calls", response[0].Metadata?["FinishReason"]);
+    }
+
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetChatMessageContentsWithAutoInvokeAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
+    }
+
+    public sealed class WeatherPlugin
+    {
+        [KernelFunction]
+        [Description("Get the current weather in a given location.")]
+        public string GetWeather(
+            [Description("The city and department, e.g. Marseille, 13")] string location
+            ) => $"Weather in {location} is sunny and 18 celsius";
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum TemperatureUnit { Celsius, Fahrenheit }
 }
