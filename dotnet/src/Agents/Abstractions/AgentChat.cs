@@ -64,6 +64,9 @@ public abstract class AgentChat
     /// Append messages to the conversation.
     /// </summary>
     /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
+    /// <remarks>
+    /// Will throw KernelException if a system message is present, without taking any other action.
+    /// </remarks>
     public void AppendHistory(IEnumerable<ChatMessageContent> messages)
     {
         bool hasSystemMessage = false;
