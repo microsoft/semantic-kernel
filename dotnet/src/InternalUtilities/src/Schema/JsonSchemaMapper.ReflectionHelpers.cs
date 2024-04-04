@@ -16,9 +16,9 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-internal
+    internal
 #endif
-static partial class JsonSchemaMapper
+    static partial class JsonSchemaMapper
 {
     // Uses reflection to determine the element type of an enumerable or dictionary type
     // Workaround for https://github.com/dotnet/runtime/issues/77306#issuecomment-2007887560
@@ -32,8 +32,10 @@ static partial class JsonSchemaMapper
     // cf. https://github.com/dotnet/runtime/issues/100095
     // Work around the issue by running a query for the relevant MemberInfo using the internal MemberName property
     // https://github.com/dotnet/runtime/blob/de774ff9ee1a2c06663ab35be34b755cd8d29731/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Metadata/JsonPropertyInfo.cs#L206
-    [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
-        Justification = "Members that already part of the source generated contract will not have been trimmed away.")]
+#if NETCOREAPP
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
+        Justification = "We're reading the internal JsonPropertyInfo.MemberName which cannot have been trimmed away.")]
+#endif
     private static ICustomAttributeProvider? ResolveAttributeProvider(JsonTypeInfo typeInfo, JsonPropertyInfo propertyInfo)
     {
         if (propertyInfo.AttributeProvider is { } provider)
@@ -52,16 +54,20 @@ static partial class JsonSchemaMapper
     }
 
     // Uses reflection to determine any custom converters specified for the element of a nullable type.
+#if NETCOREAPP
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "We're resolving private fields of the built-in Nullable converter which cannot have been trimmed away.")]
+#endif
     private static JsonConverter? ExtractCustomNullableConverter(JsonConverter? converter)
     {
         Debug.Assert(converter is null || IsBuiltInConverter(converter));
 
         // There is unfortunately no way in which we can obtain the element converter from a nullable converter without resorting to private reflection
         // https://github.com/dotnet/runtime/blob/5fda47434cecc590095e9aef3c4e560b7b7ebb47/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/NullableConverter.cs#L15-L17
-        if (converter != null && converter.GetType().Name == "NullableConverter`1")
+        Type? converterType = converter?.GetType();
+        if (converterType?.Name == "NullableConverter`1")
         {
-            FieldInfo? elementConverterField = converter.GetType().GetField("_elementConverter", BindingFlags.Instance | BindingFlags.NonPublic);
-            Debug.Assert(elementConverterField != null);
+            FieldInfo elementConverterField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_elementConverter");
             return (JsonConverter)elementConverterField!.GetValue(converter)!;
         }
 
@@ -70,6 +76,10 @@ static partial class JsonSchemaMapper
 
     // Uses reflection to determine serialization configuration for enum types
     // cf. https://github.com/dotnet/runtime/blob/5fda47434cecc590095e9aef3c4e560b7b7ebb47/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/EnumConverter.cs#L23-L25
+#if NETCOREAPP
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "We're resolving private fields of the built-in enum converter which cannot have been trimmed away.")]
+#endif
     private static bool TryGetStringEnumConverterValues(JsonTypeInfo typeInfo, JsonConverter converter, out JsonArray? values)
     {
         Debug.Assert(typeInfo.Type.IsEnum && IsBuiltInConverter(converter));
@@ -79,10 +89,9 @@ static partial class JsonSchemaMapper
             converter = factory.CreateConverter(typeInfo.Type, typeInfo.Options)!;
         }
 
-        FieldInfo? converterOptionsField = converter.GetType().GetField("_converterOptions", BindingFlags.Instance | BindingFlags.NonPublic);
-        FieldInfo? namingPolicyField = converter.GetType().GetField("_namingPolicy", BindingFlags.Instance | BindingFlags.NonPublic);
-        Debug.Assert(converterOptionsField != null);
-        Debug.Assert(namingPolicyField != null);
+        Type converterType = converter.GetType();
+        FieldInfo converterOptionsField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_converterOptions");
+        FieldInfo namingPolicyField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_namingPolicy");
 
         const int EnumConverterOptionsAllowStrings = 1;
         var converterOptions = (int)converterOptionsField!.GetValue(converter)!;
@@ -112,9 +121,27 @@ static partial class JsonSchemaMapper
         return false;
     }
 
+#if NETCOREAPP
+    [RequiresUnreferencedCode("Resolves unreferenced member metadata.")]
+#endif
+    private static FieldInfo GetPrivateFieldWithPotentiallyTrimmedMetadata(this Type type, string fieldName)
+    {
+        FieldInfo? field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        if (field is null)
+        {
+            throw new InvalidOperationException(
+                $"Could not resolve metadata for field '{fieldName}' in type '{type}'. " +
+                "If running Native AOT ensure that the 'IlcTrimMetadata' property has been disabled.");
+        }
+
+        return field;
+    }
+
     // Resolves the parameters of the deserialization constructor for a type, if they exist.
-    [SuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
+#if NETCOREAPP
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
         Justification = "The deserialization constructor should have already been referenced by the source generator and therefore will not have been trimmed.")]
+#endif
     private static Func<JsonPropertyInfo, ParameterInfo?> ResolveJsonConstructorParameterMapper(JsonTypeInfo typeInfo)
     {
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Object);
@@ -233,18 +260,6 @@ static partial class JsonSchemaMapper
     private static bool IsBuiltInConverter(JsonConverter converter) =>
         converter.GetType().Assembly == typeof(JsonConverter).Assembly;
 
-    private static bool TryGetNullableElement(Type type, [NotNullWhen(true)] out Type? elementType)
-    {
-        if (type.IsValueType && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            elementType = type.GetGenericArguments()[0];
-            return true;
-        }
-
-        elementType = null;
-        return false;
-    }
-
     // Resolves the nullable reference type annotations for a property or field,
     // additionally addressing a few known bugs of the NullabilityInfo pre .NET 9.
     private static NullabilityInfo GetMemberNullability(this NullabilityInfoContext context, MemberInfo memberInfo)
@@ -281,6 +296,10 @@ static partial class JsonSchemaMapper
             // Default to nullable.
             return NullabilityState.Nullable;
 
+#if NETCOREAPP
+            [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
+                Justification = "We're resolving private fields of the built-in enum converter which cannot have been trimmed away.")]
+#endif
             static byte[]? GetNullableFlags(MemberInfo member)
             {
                 Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
@@ -292,6 +311,10 @@ static partial class JsonSchemaMapper
                 return (byte[])attr?.GetType().GetField("NullableFlags")?.GetValue(attr)!;
             }
 
+#if NETCOREAPP
+            [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
+                Justification = "We're resolving private fields of the built-in enum converter which cannot have been trimmed away.")]
+#endif
             static byte? GetNullableContextFlag(MemberInfo member)
             {
                 Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
@@ -327,8 +350,10 @@ static partial class JsonSchemaMapper
         return parameter;
     }
 
-    [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
+#if NETCOREAPP
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.",
         Justification = "Looking up the generic member definition of the provided member.")]
+#endif
     private static MemberInfo GetGenericMemberDefinition(this MemberInfo member)
     {
         if (member is Type type)
@@ -353,5 +378,37 @@ static partial class JsonSchemaMapper
         }
 
         return member;
+    }
+
+    // Taken from https://github.com/dotnet/runtime/blob/903bc019427ca07080530751151ea636168ad334/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
+    private static object? GetNormalizedDefaultValue(this ParameterInfo parameterInfo)
+    {
+        Type parameterType = parameterInfo.ParameterType;
+        object? defaultValue = parameterInfo.DefaultValue;
+
+        if (defaultValue is null)
+        {
+            return null;
+        }
+
+        // DBNull.Value is sometimes used as the default value (returned by reflection) of nullable params in place of null.
+        if (defaultValue == DBNull.Value && parameterType != typeof(DBNull))
+        {
+            return null;
+        }
+
+        // Default values of enums or nullable enums are represented using the underlying type and need to be cast explicitly
+        // cf. https://github.com/dotnet/runtime/issues/68647
+        if (parameterType.IsEnum)
+        {
+            return Enum.ToObject(parameterType, defaultValue);
+        }
+
+        if (Nullable.GetUnderlyingType(parameterType) is Type underlyingType && underlyingType.IsEnum)
+        {
+            return Enum.ToObject(underlyingType, defaultValue);
+        }
+
+        return defaultValue;
     }
 }

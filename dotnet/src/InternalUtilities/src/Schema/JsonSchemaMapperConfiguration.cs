@@ -12,10 +12,10 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-[ExcludeFromCodeCoverage]
-internal
+    [ExcludeFromCodeCoverage]
+    internal
 #endif
-class JsonSchemaMapperConfiguration
+    class JsonSchemaMapperConfiguration
 {
     /// <summary>
     /// Gets the default configuration object used by <see cref="JsonSchemaMapper"/>.
@@ -49,15 +49,15 @@ class JsonSchemaMapperConfiguration
     public bool ResolveDescriptionAttributes { get; init; } = true;
 
     /// <summary>
-    /// Determines whether nullability should be included in the schema for reference types.
+    /// Determines the nullability behavior of reference types in the generated schema.
     /// </summary>
     /// <remarks>
-    /// Defaults to true. Currently STJ doesn't recognize non-nullable reference types
-    /// (https://github.com/dotnet/runtime/issues/1256) so the serializer will always treat
-    /// them as nullable. Disabling this option improves accuracy of the generated schema
-    /// with respect to the actual serialization behavior but can result in more noise.
+    /// Defaults to <see cref="ReferenceTypeNullability.Annotated"/>. Currently JsonSerializer
+    /// doesn't recognize non-nullable reference types (https://github.com/dotnet/runtime/issues/1256)
+    /// so the serializer will always treat them as nullable. Setting to <see cref="ReferenceTypeNullability.AlwaysNullable"/>
+    /// improves accuracy of the generated schema with respect to the actual serialization behavior but can result in more noise.
     /// </remarks>
-    public bool ResolveNullableReferenceTypes { get; init; } = true;
+    public ReferenceTypeNullability ReferenceTypeNullability { get; init; } = ReferenceTypeNullability.Annotated;
 
     /// <summary>
     /// Dtermines whether properties bound to non-optional constructor parameters should be flagged as required.
