@@ -309,7 +309,7 @@ class Kernel(KernelBaseModel):
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["pre_function_invoke"]):
                     logger.debug(f"Running Pre Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.pre_function_invoke(context=context)
+                    await hook.pre_function_invoke(context=context)  # type: ignore
                     ran_hook = True
             except Exception as exc:
                 logger.error(
@@ -359,7 +359,7 @@ class Kernel(KernelBaseModel):
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["post_function_invoke"]):
                     logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
-                    await hook.post_function_invoke(context=context)
+                    await hook.post_function_invoke(context=context)  # type: ignore
                     ran_hook = True
             except Exception as exc:
                 logger.error(
@@ -396,13 +396,13 @@ class Kernel(KernelBaseModel):
         from semantic_kernel.kernel import Kernel  # noqa: F403 F401
 
         PrePromptRenderContext.model_rebuild()
-        context = PrePromptRenderContext(function=function, arguments=arguments, metadata=metadata, kernel=self)
+        context = PrePromptRenderContext(function=function, arguments=arguments, metadata=metadata, kernel=self)  # type: ignore
         ran_hook = False
         for hook_id, hook in self.hooks:
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["pre_prompt_render"]):
                     logger.debug(f"Running Pre Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.pre_prompt_render(context=context)
+                    await hook.pre_prompt_render(context=context)  # type: ignore
                     ran_hook = True
             except Exception as exc:
                 logger.error(
@@ -420,7 +420,7 @@ class Kernel(KernelBaseModel):
         from semantic_kernel.kernel import Kernel  # noqa: F403 F401
 
         PostPromptRenderContext.model_rebuild()
-        context = PostPromptRenderContext(
+        context = PostPromptRenderContext(  # type: ignore
             function=function, arguments=arguments, metadata=metadata, kernel=self, rendered_prompt=rendered_prompt
         )
         ran_hook = False
@@ -428,7 +428,7 @@ class Kernel(KernelBaseModel):
             try:
                 if isinstance(hook, HOOK_PROTOCOLS["post_prompt_render"]):
                     logger.debug(f"Running Post Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.post_prompt_render(context=context)
+                    await hook.post_prompt_render(context=context)  # type: ignore
                     ran_hook = True
             except Exception as exc:
                 logger.error(
@@ -439,9 +439,21 @@ class Kernel(KernelBaseModel):
         return context if ran_hook else None
 
     def add_hook(
-        self, hook: object | Callable[..., Any], hook_name: HookEnum | str | None = None, position: int | None = None
+        self,
+        hook: object | Callable[..., Any],
+        hook_name: HookEnum | str | None = None,
+        position: int | None = None,
     ) -> int:
         """Add a KernelHook to the Kernel.
+
+        The supplied hooks are checked:
+        - When given a class with methods, it looks through the methods and
+        checks if there is at least one method that matches a hook and
+        it checks if they have a single parameter and nothing else.
+        - When given a function, it checks if the function name,
+        either the name of the function itself or when supplied the hook_name,
+        and then it checks if the function has a single parameter and nothing else.
+        - It does not check the type of the parameter, since the hooks are always called with a predefined context.
 
         Args:
             hook (object | Callable[[T], None]): The hook to add
@@ -453,48 +465,49 @@ class Kernel(KernelBaseModel):
             int: The id of the added hook, if you want to be able to remove it later, keep track of this.
 
         """
-        if not isinstance(hook, Callable):
-            for method_name, method in inspect.getmembers(hook, inspect.ismethod):
-                if method_name not in HOOK_PROTOCOLS:
-                    continue
-                if not isinstance(hook, HOOK_PROTOCOLS[method_name]):
+        if callable(hook):
+            if hook_name is None:
+                if hook.__name__ not in HOOK_PROTOCOLS:
                     raise HookInvalidSignatureError(
-                        f"Hook function {method_name} does not match the expected signature."
+                        f"Hook function {hook.__name__} does not match the expected names, "
+                        "should either supply a hook_name, "
+                        "or the name of the function needs to be one of the hooks."
+                    )
+                hook_name = HookEnum(hook.__name__)
+            else:
+                if hook_name not in HOOK_PROTOCOLS:
+                    raise HookInvalidSignatureError(
+                        f"Hook function {hook_name} does not match the expected names, "
+                        "should either supply a hook_name, "
+                        "or the name of the function needs to be one of the hooks."
+                    )
+                if not isinstance(hook_name, HookEnum):
+                    hook_name = HookEnum(hook_name)
+
+            if not hasattr(hook, "__kernel_hook__"):
+                hook = kernel_hook_filter()(hook)
+
+            sig = inspect.signature(hook)
+            if len(sig.parameters) != 1:
+                raise HookInvalidSignatureError(f"Hook function {hook_name} does not match the expected signature.")
+            hook_class = EmptyHook()
+            hook_class.__setattr__(hook_name.value, hook)
+            return self._add_hook(hook_class, position)
+
+        hook_found = False
+        for hook_name, protocol in HOOK_PROTOCOLS.items():
+            if isinstance(hook, protocol):
+                hook_found = True
+                method = getattr(hook, hook_name)
+                if len(inspect.signature(method).parameters) != 1:
+                    raise HookInvalidSignatureError(
+                        f"Method {hook_name} of hook {hook} does not match the expected signature."
                     )
                 if not hasattr(method, "__kernel_hook__"):
-                    object.__setattr__(hook, method_name, kernel_hook_filter()(method))
-
-                print(method)
-            return self._add_hook(hook, position)
-
-        if hook_name is None:
-            if hook.__name__ not in HOOK_PROTOCOLS:
-                raise HookInvalidSignatureError(
-                    f"Hook function {hook.__name__} does not match the expected names, "
-                    "should either supply a hook_name, "
-                    "or the name of the function needs to be one of the hooks."
-                )
-            hook_name = HookEnum(hook.__name__)
-        else:
-            if hook_name not in HOOK_PROTOCOLS:
-                raise HookInvalidSignatureError(
-                    f"Hook function {hook.__name__} does not match the expected names, "
-                    "should either supply a hook_name, "
-                    "or the name of the function needs to be one of the hooks."
-                )
-            if not isinstance(hook_name, HookEnum):
-                hook_name = HookEnum(hook_name)
-
-        if not hasattr(hook, "__kernel_hook__"):
-            hook = kernel_hook_filter()(hook)
-
-        hook_class = EmptyHook()
-        hook_class.__setattr__(hook_name.value, hook)
-        if not isinstance(hook_class, HOOK_PROTOCOLS[hook_name]):
-            raise HookInvalidSignatureError(
-                f"Hook function {hook_name}/{hook.__name__} does not match the expected signature."
-            )
-        return self._add_hook(hook_class, position)
+                    object.__setattr__(hook, hook_name, kernel_hook_filter()(method))
+        if not hook_found:
+            raise HookInvalidSignatureError("No hook functions found in the supplied object.")
+        return self._add_hook(hook, position)
 
     def _add_hook(self, hook: object, position: int | None = None) -> int:
         """Adds a hook class to the list of hooks, at the end or at position."""

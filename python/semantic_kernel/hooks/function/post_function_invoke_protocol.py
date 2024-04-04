@@ -13,4 +13,3 @@ class PostFunctionInvokeProtocol(Protocol):
 
     async def post_function_invoke(self, context: "PostFunctionInvokeContext") -> None:
         """post_function_invoke."""
-        ...

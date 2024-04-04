@@ -13,4 +13,3 @@ class PreFunctionInvokeProtocol(Protocol):
 
     async def pre_function_invoke(self, context: "PreFunctionInvokeContext") -> None:
         """pre_function_invoke."""
-        ...

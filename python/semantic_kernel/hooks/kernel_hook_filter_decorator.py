@@ -5,7 +5,7 @@ import functools
 import logging
 from inspect import isawaitable
 from types import MethodType
-from typing import Any, Callable
+from typing import Any, Callable, Coroutine
 
 from semantic_kernel.hooks.kernel_hook_context_base import KernelHookContextBase
 
@@ -18,7 +18,7 @@ def kernel_hook_filter(
     include_plugins: list[str] | None = None,
     exclude_functions: list[str] | None = None,
     include_functions: list[str] | None = None,
-) -> Callable[..., Callable[..., None]]:
+) -> Callable[..., Callable[..., Coroutine[Any, Any, None]]]:
     """Kernel Hook Filter, this allows you to control for which plugin and/or function this hook is executed.
 
     If include_* is used, it is assumed others are excluded, and exclude is not checked.
@@ -34,18 +34,18 @@ def kernel_hook_filter(
 
     def outer_wrapper(
         func: Callable[..., None],
-    ) -> Callable[..., None]:
+    ) -> Callable[..., Coroutine[Any, Any, None]]:
         if isinstance(func, MethodType):
-            func.__func__.__kernel_hook__: bool = True
-            func.__func__.__kernel_hook_filtered__: bool = not (
+            func.__func__.__kernel_hook__ = True  # type: ignore
+            func.__func__.__kernel_hook_filtered__ = not (  # type: ignore
                 exclude_plugins is None
                 and include_plugins is None
                 and exclude_functions is None
                 and include_functions is None
             )
         else:
-            func.__kernel_hook__: bool = True
-            func.__kernel_hook_filtered__: bool = not (
+            func.__kernel_hook__ = True  # type: ignore
+            func.__kernel_hook_filtered__ = not (  # type: ignore
                 exclude_plugins is None
                 and include_plugins is None
                 and exclude_functions is None
@@ -54,7 +54,7 @@ def kernel_hook_filter(
 
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> None:
-            if func.__kernel_hook_filtered__:
+            if getattr(func, "__kernel_hook_filtered__", False):
                 context: KernelHookContextBase = kwargs.get("context", None)
                 if context:
                     function_name = context.function.name

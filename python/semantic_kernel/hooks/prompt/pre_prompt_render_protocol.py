@@ -13,4 +13,3 @@ class PrePromptRenderProtocol(Protocol):
 
     async def pre_prompt_render(self, context: "PrePromptRenderContext") -> None:
         """pre_prompt_render."""
-        ...

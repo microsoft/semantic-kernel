@@ -114,6 +114,9 @@ def create_mock_function() -> Callable:
                 arguments: "KernelArguments",
             ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingContentMixin, Any]]]]:
                 self.call_count += 1
+                context = await kernel._pre_prompt_render(self, arguments)
+                if context:
+                    arguments = context.arguments
                 yield [StreamingTextContent(choice_index=0, text=value, metadata={})]
 
             async def _invoke_internal(
@@ -122,6 +125,12 @@ def create_mock_function() -> Callable:
                 arguments: "KernelArguments",
             ) -> "FunctionResult":
                 self.call_count += 1
+                context = await kernel._pre_prompt_render(self, arguments)
+                if context:
+                    arguments = context.arguments
+                context = await kernel._post_prompt_render(self, arguments, rendered_prompt="")
+                if context:
+                    arguments = context.arguments
                 return FunctionResult(function=kernel_function_metadata, value=value, metadata={})
 
         mock_function = CustomKernelFunction(metadata=kernel_function_metadata)

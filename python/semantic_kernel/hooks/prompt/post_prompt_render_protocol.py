@@ -13,4 +13,3 @@ class PostPromptRenderProtocol(Protocol):
 
     async def post_prompt_render(self, context: "PostPromptRenderContext") -> None:
         """post_prompt_render."""
-        ...
