@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
@@ -114,11 +116,39 @@ public class Example76_Filters : BaseTest
             // Example: get function result value
             var value = context.Result!.GetValue<object>();
 
-            // Example: override function result value
-            context.SetResultValue("new result value");
-
             // Example: get token usage from metadata
             var usage = context.Result.Metadata?["Usage"];
+
+            // Example: override function result value
+            context.SetResultValue("new result value");
+        }
+    }
+
+    private sealed class ExceptionHandlingFilterExample : IFunctionFilter
+    {
+        private readonly ILogger _logger;
+
+        public ExceptionHandlingFilterExample(ILogger logger)
+        {
+            this._logger = logger;
+        }
+
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (Exception exception)
+            {
+                this._logger.LogError(exception, "Something went wrong during function invocation");
+
+                // Example: override function result value
+                context.SetResultValue("Friendly message instead of exception");
+
+                // Example: Rethrow another type of exception if needed
+                throw new InvalidOperationException("New exception");
+            }
         }
     }
 

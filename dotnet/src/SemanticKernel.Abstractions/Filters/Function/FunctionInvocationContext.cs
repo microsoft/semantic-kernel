@@ -6,13 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Cclass with data related to function invocation.
+/// Class with data related to function invocation.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class FunctionInvocationContext
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionFilterContext"/> class.
+    /// Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
@@ -41,7 +41,7 @@ public class FunctionInvocationContext
     public IReadOnlyDictionary<string, object?>? Metadata { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the result of the function's invocation.
+    /// Gets the result of the function's invocation.
     /// </summary>
     public FunctionResult? Result { get; internal set; }
 

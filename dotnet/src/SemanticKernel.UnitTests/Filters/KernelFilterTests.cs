@@ -521,6 +521,185 @@ public class KernelFilterTests
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[5]);
     }
 
+    [Fact]
+    public async Task FunctionFilterReceivesInvocationExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                // Exception will occur here.
+                // Because it's not handled, it will be propagated to the caller.
+                await next(context);
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanCancelExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                try
+                {
+                    await next(context);
+                }
+                catch (NotImplementedException)
+                {
+                    context.SetResultValue("Result ignoring exception.");
+                }
+            });
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+        var resultValue = result.GetValue<string>();
+
+        // Assert
+        Assert.Equal("Result ignoring exception.", resultValue);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanRethrowAnotherTypeOfExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                try
+                {
+                    await next(context);
+                }
+                catch (NotImplementedException)
+                {
+                    throw new InvalidOperationException("Exception from filter");
+                }
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal("Exception from filter", exception.Message);
+    }
+
+    [Fact]
+    public async Task MultipleFunctionFiltersReceiveInvocationExceptionAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+
+        async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        {
+            filterInvocations++;
+
+            try
+            {
+                await next(context);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                Assert.IsType<NotImplementedException>(exception);
+                throw;
+            }
+        }
+
+        var functionFilter1 = new FakeFunctionFilter(OnFunctionInvocationAsync);
+        var functionFilter2 = new FakeFunctionFilter(OnFunctionInvocationAsync);
+        var functionFilter3 = new FakeFunctionFilter(OnFunctionInvocationAsync);
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+
+        var kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal(3, filterInvocations);
+    }
+
+    [Fact]
+    public async Task MultipleFunctionFiltersPropagateExceptionCorrectlyAsync()
+    {
+        // Arrange
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception from method"); });
+
+        var functionFilter1 = new FakeFunctionFilter(async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (KernelException exception)
+            {
+                Assert.Equal("Exception from functionFilter2", exception.Message);
+                context.SetResultValue("Result from functionFilter1");
+            }
+        });
+
+        var functionFilter2 = new FakeFunctionFilter(async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (KernelException exception)
+            {
+                Assert.Equal("Exception from functionFilter3", exception.Message);
+                throw new KernelException("Exception from functionFilter2");
+            }
+        });
+
+        var functionFilter3 = new FakeFunctionFilter(async (context, next) =>
+        {
+            try
+            {
+                await next(context);
+            }
+            catch (KernelException exception)
+            {
+                Assert.Equal("Exception from method", exception.Message);
+                throw new KernelException("Exception from functionFilter3");
+            }
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+
+        var kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal("Result from functionFilter1", result.ToString());
+    }
+
     private Kernel GetKernelWithFilters(
         Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation = null,
         Action<PromptRenderingContext>? onPromptRendering = null,

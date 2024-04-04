@@ -172,6 +172,8 @@ public abstract class KernelFunction
             {
                 // Invoke the function.
                 functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+
+                // Update context with result.
                 context.Result = functionResult;
             }).ConfigureAwait(false);
 
@@ -269,7 +271,6 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-        FunctionInvocationContext? invocationContext = null;
 
         try
         {
@@ -279,7 +280,7 @@ public abstract class KernelFunction
                 // Quick check for cancellation after logging about function start but before doing any real work.
                 cancellationToken.ThrowIfCancellationRequested();
 
-                invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, (context) =>
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, (context) =>
                 {
                     // Invoke the function and get its streaming enumerator.
                     enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
