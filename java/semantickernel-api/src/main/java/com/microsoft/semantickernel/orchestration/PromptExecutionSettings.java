@@ -17,58 +17,53 @@ import javax.annotation.Nullable;
 public class PromptExecutionSettings {
 
     /**
-     * The default for {@link #getServiceId()} if a 
-     * {@link Builder#withServiceId(String) service id} is not provided.
-     * Defaults to {@code "default"}
+     * The default for {@link #getServiceId()} if a {@link Builder#withServiceId(String) service id}
+     * is not provided. Defaults to {@code "default"}
      */
     public static final String DEFAULT_SERVICE_ID = "default";
 
     /**
-     * The default for {@link #getMaxTokens()} if 
-     * {@link Builder#withMaxTokens(int) max_tokens} is not provided.
-     * Defaults to {@code 256}
+     * The default for {@link #getMaxTokens()} if {@link Builder#withMaxTokens(int) max_tokens} is
+     * not provided. Defaults to {@code 256}
      */
     public static final int DEFAULT_MAX_TOKENS = 256;
 
     /**
-     * The default for {@link #getTemperature()} if 
-     * {@link Builder#withTemperature(double) temperature} is not provided.
-     * Defaults to {@code 1.0}
+     * The default for {@link #getTemperature()} if
+     * {@link Builder#withTemperature(double) temperature} is not provided. Defaults to {@code 1.0}
      */
     public static final double DEFAULT_TEMPERATURE = 1.0;
 
     /**
-     * The default for {@link #getTopP()} if 
-     * {@link Builder#withTopP(double) top_p} is not provided.
+     * The default for {@link #getTopP()} if {@link Builder#withTopP(double) top_p} is not provided.
      * Defaults to {@code 1.0}
      */
     public static final double DEFAULT_TOP_P = 1.0;
 
     /**
-     * The default for {@link #getPresencePenalty()} if 
-     * {@link Builder#withPresencePenalty(double) presence_penalty} is not provided.
-     * Defaults to {@code 0.0}
+     * The default for {@link #getPresencePenalty()} if
+     * {@link Builder#withPresencePenalty(double) presence_penalty} is not provided. Defaults to
+     * {@code 0.0}
      */
     public static final double DEFAULT_PRESENCE_PENALTY = 0.0;
 
     /**
-     * The default for {@link #getFrequencyPenalty()} if 
-     * {@link Builder#withMaxTokens(doulbe) frequency_penalty} is not provided.
-     * Defaults to {@code 0.0}
+     * The default for {@link #getFrequencyPenalty()} if
+     * {@link Builder#withMaxTokens(doulbe) frequency_penalty} is not provided. Defaults to
+     * {@code 0.0}
      */
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
 
     /**
-     * The default for {@link #getBestOf()} if 
-     * {@link Builder#withBestOf(int) best_of} is not provided.
-     * Defaults to {@code 1}
+     * The default for {@link #getBestOf()} if {@link Builder#withBestOf(int) best_of} is not
+     * provided. Defaults to {@code 1}
      */
     public static final int DEFAULT_BEST_OF = 1;
 
     /**
-     * The default for {@link #getResultsPerPrompt()} if 
-     * {@link Builder#withResultsPerPrompt(int) results per prompt (n)} is not provided.
-     * Defaults to {@code 1}
+     * The default for {@link #getResultsPerPrompt()} if
+     * {@link Builder#withResultsPerPrompt(int) results per prompt (n)} is not provided. Defaults to
+     * {@code 1}
      */
     public static final int DEFAULT_RESULTS_PER_PROMPT = 1;
 
@@ -87,6 +82,7 @@ public class PromptExecutionSettings {
     private static final String STOP_SEQUENCES = "stop_sequences";
     private static final String RESULTS_PER_PROMPT = "results_per_prompt";
     private static final String TOKEN_SELECTION_BIASES = "token_selection_biases";
+    private static final String RESPONSE_FORMAT = "response_format";
 
     private final String serviceId;
     private final String modelId;
@@ -100,6 +96,7 @@ public class PromptExecutionSettings {
     private final String user;
     private final List<String> stopSequences;
     private final Map<Integer, Integer> tokenSelectionBiases;
+    private final String responseFormat;
 
     /**
      * Create a new instance of PromptExecutionSettings.
@@ -116,6 +113,7 @@ public class PromptExecutionSettings {
      * @param user                 The user to associate with the prompt execution.
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
+     * @param responseFormat       The response format to use for prompt execution.
      */
     @JsonCreator
     public PromptExecutionSettings(
@@ -130,7 +128,8 @@ public class PromptExecutionSettings {
         @JsonProperty(BEST_OF) Integer bestOf,
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
-        @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases) {
+        @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases,
+        @Nullable @JsonProperty(RESPONSE_FORMAT) String responseFormat) {
         this.serviceId = serviceId != null ? serviceId : DEFAULT_SERVICE_ID;
         this.modelId = modelId != null ? modelId : "";
         this.temperature = clamp(temperature, 0d, 2d, DEFAULT_TEMPERATURE);
@@ -148,6 +147,7 @@ public class PromptExecutionSettings {
             ? new HashMap<>(tokenSelectionBiases)
             : Collections.emptyMap();
         this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100, 0));
+        this.responseFormat = responseFormat;
     }
 
     /**
@@ -307,41 +307,69 @@ public class PromptExecutionSettings {
     public int hashCode() {
         return Objects.hash(serviceId, modelId, temperature, topP, presencePenalty,
             frequencyPenalty,
-            maxTokens, bestOf, resultsPerPrompt, user, stopSequences, tokenSelectionBiases);
+            maxTokens, bestOf, resultsPerPrompt, user, stopSequences, tokenSelectionBiases,
+            responseFormat);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (!getClass().isInstance(obj))
+        }
+        if (!getClass().isInstance(obj)) {
             return false;
+        }
 
         PromptExecutionSettings other = (PromptExecutionSettings) obj;
 
-        if (!Objects.equals(serviceId, other.serviceId))
+        if (!Objects.equals(serviceId, other.serviceId)) {
             return false;
-        if (!Objects.equals(modelId, other.modelId))
+        }
+        if (!Objects.equals(modelId, other.modelId)) {
             return false;
-        if (Double.compare(temperature, other.temperature) != 0)
+        }
+        if (Double.compare(temperature, other.temperature) != 0) {
             return false;
-        if (Double.compare(topP, other.topP) != 0)
+        }
+        if (Double.compare(topP, other.topP) != 0) {
             return false;
-        if (Double.compare(presencePenalty, other.presencePenalty) != 0)
+        }
+        if (Double.compare(presencePenalty, other.presencePenalty) != 0) {
             return false;
-        if (Double.compare(frequencyPenalty, other.frequencyPenalty) != 0)
+        }
+        if (Double.compare(frequencyPenalty, other.frequencyPenalty) != 0) {
             return false;
-        if (maxTokens != other.maxTokens)
+        }
+        if (maxTokens != other.maxTokens) {
             return false;
-        if (bestOf != other.bestOf)
+        }
+        if (bestOf != other.bestOf) {
             return false;
-        if (resultsPerPrompt != other.resultsPerPrompt)
+        }
+        if (resultsPerPrompt != other.resultsPerPrompt) {
             return false;
-        if (!Objects.equals(user, other.user))
+        }
+        if (!Objects.equals(user, other.user)) {
             return false;
-        if (!Objects.equals(stopSequences, other.stopSequences))
+        }
+        if (!Objects.equals(stopSequences, other.stopSequences)) {
             return false;
+        }
+        if (!Objects.equals(responseFormat, other.responseFormat)) {
+            return false;
+        }
         return Objects.equals(tokenSelectionBiases, other.tokenSelectionBiases);
+    }
+
+    /**
+     * The response format to use for prompt execution. Currently this only applies to chat
+     * completions.
+     *
+     * @return The response format to use for prompt execution.
+     */
+    @Nullable
+    public String getResponseFormat() {
+        return responseFormat;
     }
 
     /**
@@ -508,6 +536,19 @@ public class PromptExecutionSettings {
         }
 
         /**
+         * Set the response format to use for prompt execution.
+         *
+         * @param responseFormat The response format to use for prompt execution.
+         * @return This builder.
+         */
+        public Builder withResponseFormat(String responseFormat) {
+            if (responseFormat != null) {
+                settings.put(RESPONSE_FORMAT, responseFormat);
+            }
+            return this;
+        }
+
+        /**
          * Build the PromptExecutionSettings.
          *
          * @return A new PromptExecutionSettings from this builder.
@@ -527,7 +568,8 @@ public class PromptExecutionSettings {
                 (String) settings.getOrDefault(USER, ""),
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
-                    Collections.emptyMap()));
+                    Collections.emptyMap()),
+                (String) settings.getOrDefault(RESPONSE_FORMAT, null));
         }
     }
 }
