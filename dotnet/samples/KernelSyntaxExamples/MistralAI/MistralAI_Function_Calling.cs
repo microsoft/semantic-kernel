@@ -42,7 +42,7 @@ public sealed class MistralAI_Function_Calling : BaseTest
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => $"Weather in {location} is sunny and 18 celsius";
+            ) => "17°C\nWind: 23 KMPH\nHumidity: 59%\nMostly cloudy";
     }
 
     public MistralAI_Function_Calling(ITestOutputHelper output) : base(output) { }
