@@ -28,7 +28,7 @@ def _describe_tool_call(function: KernelFunction) -> Dict[str, str]:
     return {
         "type": "function",
         "function": {
-            "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+            "name": func_metadata.fully_qualified_name,
             "description": func_metadata.description,
             "parameters": {
                 "type": "object",
@@ -61,7 +61,7 @@ def _describe_function(function: KernelFunction) -> Dict[str, str]:
     """
     func_metadata = function.metadata
     return {
-        "name": f"{func_metadata.plugin_name}-{func_metadata.name}",
+        "name": func_metadata.fully_qualified_name,
         "description": func_metadata.description,
         "parameters": {
             "type": "object",
@@ -157,9 +157,10 @@ def get_function_calling_object(
     ) in kernel.plugins.plugins.items():
         if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
             continue
-        for function_name, function in plugin.functions.items():
-            current_name = f"{plugin_name}-{function_name}"
-            if current_name in exclude_function or (include_function and current_name not in include_function):
+        for function in plugin.functions.values():
+            if function.fully_qualified_name in exclude_function or (
+                include_function and function.fully_qualified_name not in include_function
+            ):
                 continue
             result.append(_describe_tool_call(function) if is_tool_call else _describe_function(function))
     return result

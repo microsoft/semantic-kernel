@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Opti
 
 from pydantic import ValidationError
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -82,9 +82,7 @@ class KernelFunctionFromMethod(KernelFunction):
             "stream_method": (
                 stream_method
                 if stream_method is not None
-                else method
-                if isasyncgenfunction(method) or isgeneratorfunction(method)
-                else None
+                else method if isasyncgenfunction(method) or isgeneratorfunction(method) else None
             ),
         }
 
@@ -116,7 +114,7 @@ class KernelFunctionFromMethod(KernelFunction):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[List[StreamingKernelContent], Any]]:
+    ) -> AsyncIterable[Union[List[StreamingContentMixin], Any]]:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
         function_arguments = self.gather_function_parameters(kernel, arguments)
