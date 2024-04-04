@@ -280,7 +280,7 @@ An agent that relies solely on local chat-history can bind to the `LocalChannel`
 > Note now the `LocalChannel` accepts the static `InvokeAsync` as a callback which has private access to `agent`.
 
 ```c#
-public sealed class ChatCompletionAgent : KernelAgent
+public sealed class ChatCompletionAgent : LocalKernelAgent
 {
     private readonly PromptExecutionSettings? _executionSettings;
 
@@ -289,18 +289,6 @@ public sealed class ChatCompletionAgent : KernelAgent
     public override string? Name { get; }
 
     public string? Instructions { get; }
-
-    protected internal override Type ChannelType => 
-        typeof(LocalChannel<ChatCompletionAgent>);
-
-    protected internal override Task<AgentChannel> CreateChannelAsync(
-        AgentNexus nexus,
-        CancellationToken cancellationToken)
-    {
-        return 
-            Task.FromResult<AgentChannel>(
-                new LocalChannel<ChatCompletionAgent>(nexus, InvokeAsync));
-    }
 
     private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatAgent agent,
