@@ -44,7 +44,7 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     /// Gets the exception that occurred during function invocation.
     /// If it's <see langword="null" />, it means that function invocation was completed successfully.
     /// </summary>
-    public Exception? Exception { get; internal set; }
+    public Exception? Exception { get; set; }
 
     /// <summary>
     /// Gets the raw result of the function's invocation.
@@ -58,13 +58,5 @@ public sealed class FunctionInvokedContext : FunctionFilterContext
     public void SetResultValue(object? value)
     {
         this.ResultValue = value;
-    }
-
-    /// <summary>
-    /// Cancels exception throwing after function invocation.
-    /// </summary>
-    public void CancelException()
-    {
-        this.Exception = null;
     }
 }

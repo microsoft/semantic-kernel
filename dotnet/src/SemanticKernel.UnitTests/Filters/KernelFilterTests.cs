@@ -578,7 +578,7 @@ public class KernelFilterTests
             {
                 if (context.Exception is not null)
                 {
-                    context.CancelException();
+                    context.Exception = null;
                 }
 
                 context.SetResultValue("Result ignoring exception.");
@@ -602,7 +602,7 @@ public class KernelFilterTests
         var kernel = this.GetKernelWithFilters(
             onFunctionInvoked: (context) =>
             {
-                context.CancelException();
+                context.Exception = null;
 
                 postFilterInvocations++;
             });
@@ -715,7 +715,7 @@ public class KernelFilterTests
             Assert.Equal("Exception from functionFilter1", context.Exception.Message);
             Assert.IsType<KernelException>(context.Exception);
 
-            throw new KernelException("Exception from functionFilter2");
+            context.Exception = new KernelException("Exception from functionFilter2");
         });
 
         var functionFilter3 = new FakeFunctionFilter(onFunctionInvoked: (context) =>
@@ -724,7 +724,7 @@ public class KernelFilterTests
             Assert.Equal("Exception from functionFilter2", context.Exception.Message);
             Assert.IsType<KernelException>(context.Exception);
 
-            context.CancelException();
+            context.Exception = null;
             context.SetResultValue("Result from functionFilter3");
         });
 

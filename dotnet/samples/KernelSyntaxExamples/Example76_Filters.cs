@@ -132,12 +132,15 @@ public class Example76_Filters : BaseTest
                 // Possible options to handle it:
 
                 // 1. Do not throw an exception that occurred during function execution
-                context.CancelException();
+                context.Exception = null;
 
                 // 2. Override the result with some value, that is meaningful to LLM
                 context.SetResultValue("Friendly message instead of exception");
 
-                // 3. Rethrow another type of exception if needed.
+                // 3. Rethrow another type of exception if needed - Option 1.
+                context.Exception = new Exception("New exception");
+
+                // 3. Rethrow another type of exception if needed - Option 2.
                 throw new Exception("New exception");
             }
 
