@@ -90,8 +90,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5C246969-D794-4EC3-8E8F-F90D4D166420}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\test\AssertExtensions.cs = src\InternalUtilities\test\AssertExtensions.cs
-		src\InternalUtilities\test\HttpMessageHandlerStub.cs = src\InternalUtilities\test\HttpMessageHandlerStub.cs
-		src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs = src\InternalUtilities\test\MultipleHttpMessageHandlerStub.cs
 		src\InternalUtilities\test\TestInternalUtilities.props = src\InternalUtilities\test\TestInternalUtilities.props
 	EndProjectSection
 EndProject
@@ -217,10 +215,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-A
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
 		src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs = src\InternalUtilities\src\Text\ReadOnlyMemoryConverter.cs
-		src\InternalUtilities\src\Text\SseData.cs = src\InternalUtilities\src\Text\SseData.cs
-		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs
-		src\InternalUtilities\src\Text\SseLine.cs = src\InternalUtilities\src\Text\SseLine.cs
-		src\InternalUtilities\src\Text\SseReader.cs = src\InternalUtilities\src\Text\SseReader.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
@@ -232,9 +226,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.Un
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google", "src\Connectors\Connectors.Google\Connectors.Google.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google", "src\Connectors\Connectors.Google\Connectors.Google.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
 EndProject
@@ -583,8 +577,8 @@ Global
 		{D06465FA-0308-494C-920B-D502DA5690CB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20201FFA-8FE5-47BB-A4CC-516E03D28011}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F238CE75-C17C-471A-AC9A-6C94D3D946FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

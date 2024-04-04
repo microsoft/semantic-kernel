@@ -11,9 +11,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A an <see cref="AgentNexus"/> that supports multi-turn interactions.
+/// A an <see cref="AgentChat"/> that supports multi-turn interactions.
 /// </summary>
-public sealed class AgentChat : AgentNexus
+public sealed class AgentGroupChat : AgentChat
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test
     private readonly List<Agent> _agents; // Maintain order (fwiw)
@@ -47,7 +47,7 @@ public sealed class AgentChat : AgentNexus
     }
 
     /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -101,7 +101,7 @@ public sealed class AgentChat : AgentNexus
     }
 
     /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -115,7 +115,7 @@ public sealed class AgentChat : AgentNexus
         this.InvokeAsync(agent, isJoining: true, cancellationToken);
 
     /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="isJoining">Optional flag to control if agent is joining the nexus.</param>
@@ -152,7 +152,7 @@ public sealed class AgentChat : AgentNexus
     /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the nexus.</param>
-    public AgentChat(params Agent[] agents)
+    public AgentGroupChat(params Agent[] agents)
     {
         this._agents = new(agents);
         this._agentIds = new(this._agents.Select(a => a.Id));

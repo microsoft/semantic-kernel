@@ -16,7 +16,7 @@ namespace SemanticKernel.Agents.UnitTests.Core;
 /// <summary>
 /// Unit testing of <see cref="AgentChat"/>.
 /// </summary>
-public class AgentChatTests
+public class AgentGroupChatTests
 {
     /// <summary>
     /// Verify the default state of <see cref="AgentChat"/>.
@@ -24,7 +24,7 @@ public class AgentChatTests
     [Fact]
     public void VerifyAgentChatDefaultState()
     {
-        AgentChat chat = new();
+        AgentGroupChat chat = new();
         Assert.Empty(chat.Agents);
         Assert.Null(chat.ExecutionSettings);
         Assert.False(chat.IsComplete);
@@ -41,7 +41,7 @@ public class AgentChatTests
         Agent agent3 = CreateMockAgent().Object;
         Agent agent4 = CreateMockAgent().Object;
 
-        AgentChat chat = new(agent1, agent2);
+        AgentGroupChat chat = new(agent1, agent2);
         Assert.Equal(2, chat.Agents.Count);
 
         chat.AddAgent(agent3);
@@ -64,7 +64,7 @@ public class AgentChatTests
         Agent agent2 = CreateMockAgent().Object;
         Agent agent3 = CreateMockAgent().Object;
 
-        AgentChat chat =
+        AgentGroupChat chat =
             new(agent1, agent2, agent3)
             {
                 ExecutionSettings =
@@ -107,7 +107,7 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatNullSettingsAsync()
     {
-        AgentChat chat = Create3AgentChat();
+        AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings = null;
 
@@ -122,7 +122,7 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatNoStrategyAsync()
     {
-        AgentChat chat = Create3AgentChat();
+        AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
             new()
@@ -146,7 +146,7 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatNullSelectionAsync()
     {
-        AgentChat chat = Create3AgentChat();
+        AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
             new()
@@ -165,7 +165,7 @@ public class AgentChatTests
     [Fact]
     public async Task VerifyAgentChatMultiTurnTerminationAsync()
     {
-        AgentChat chat = Create3AgentChat();
+        AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
             new()
@@ -188,7 +188,7 @@ public class AgentChatTests
     {
         Agent agent1 = CreateMockAgent().Object;
 
-        AgentChat chat =
+        AgentGroupChat chat =
             new()
             {
                 ExecutionSettings =
@@ -204,7 +204,7 @@ public class AgentChatTests
         Assert.True(chat.IsComplete);
     }
 
-    private static AgentChat Create3AgentChat()
+    private static AgentGroupChat Create3AgentChat()
     {
         Agent agent1 = CreateMockAgent().Object;
         Agent agent2 = CreateMockAgent().Object;
@@ -213,14 +213,14 @@ public class AgentChatTests
         return new(agent1, agent2, agent3);
     }
 
-    private static Mock<LocalKernelAgent> CreateMockAgent()
+    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
     {
-        Mock<LocalKernelAgent> agent = new(Kernel.CreateBuilder().Build(), "test");
+        Mock<ChatHistoryKernelAgent> agent = new(Kernel.CreateBuilder().Build(), "test");
 
         string id = Guid.NewGuid().ToString();
         ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
         agent.SetupGet(a => a.Id).Returns(id);
-        agent.Setup(a => a.InvokeAsync(It.IsAny<IEnumerable<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
+        agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
     }

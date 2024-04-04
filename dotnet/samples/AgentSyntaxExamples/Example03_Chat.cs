@@ -35,8 +35,8 @@ public class Example03_Chat : BaseTest
                 name: AgentInventory.CopyWriterName);
 
         // Create a nexus for agent interaction.
-        var nexus =
-            new AgentChat(agentWriter, agentReviewer)
+        var chat =
+            new AgentGroupChat(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()
@@ -62,10 +62,10 @@ public class Example03_Chat : BaseTest
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        nexus.AppendUserMessageToHistory(input);
+        chat.AppendUserMessageToHistory(input);
         this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-        await foreach (var content in nexus.InvokeAsync())
+        await foreach (var content in chat.InvokeAsync())
         {
             this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
