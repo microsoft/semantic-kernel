@@ -57,8 +57,15 @@ internal static class PromptRenderer
     {
         private readonly int _instructionHash;
 
+        /// <summary>
+        /// The <see cref="IPromptTemplate"/> reference.
+        /// </summary>
         public IPromptTemplate Template { get; }
 
+        /// <summary>
+        /// Verifies if the provide instructions are consistent with the instructions
+        /// used to create the referenced <see cref="IPromptTemplate"/>.
+        /// </summary>
         public bool IsConsistent(string instructions)
         {
             return this._instructionHash == instructions.GetHashCode();

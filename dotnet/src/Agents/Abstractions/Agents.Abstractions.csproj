@@ -13,14 +13,15 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Agents - Framework</Title>
-    <Description>Semantic Kernel Agents framework and abstractions. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
+    <Title>Semantic Kernel Agents - Abstrations</Title>
+    <Description>Semantic Kernel Agents abstrations. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExceptionExtensions.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
