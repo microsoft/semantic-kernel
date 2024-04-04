@@ -246,7 +246,7 @@ Sample implementation:
 ```csharp
 public class EmbeddingGenerationService
         : IEmbeddingGenerationService<TextContent, float>,
-          IEmbeddingGenerationService<ImageContet, double>
+          IEmbeddingGenerationService<ImageContent, double>
 {
     public Task<IReadOnlyList<EmbeddingContent<float>>> GetEmbeddingContentsAsync(
         IEnumerable<TextContent> data,
@@ -255,7 +255,7 @@ public class EmbeddingGenerationService
         CancellationToken cancellationToken = default) { /* implementation */ }
 
     public Task<IReadOnlyList<EmbeddingContent<double>>> GetEmbeddingContentsAsync(
-        IEnumerable<ImageContet> data,
+        IEnumerable<ImageContent> data,
         Kernel? kernel = null,
         PromptExecutionSettings? executionSettings = null,
         CancellationToken cancellationToken = default) { /* implementation */ }
@@ -278,6 +278,38 @@ Chosen option: "{title of option 1}", because
 {justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
 
 <!-- This is an optional element. Feel free to remove. -->
+
+Sample:
+```csharp
+public interface IEmbeddingGenerationService<in TContent, TEmbedding> : IAIService
+    where TContent : KernelContent
+{
+    Task<IReadOnlyList<EmbeddingContent<TEmbedding>>> GenerateEmbeddingsAsync(
+        IEnumerable<TContent> data,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default);
+}
+
+public interface ITextEmbeddingGenerationService : IEmbeddingGenerationService<TextContent, float> { }
+
+public interface IImageEmbeddingGenerationService : IEmbeddingGenerationService<ImageContent, float> { }
+
+public class EmbeddingContent<TEmbedding> : KernelContent
+{
+    public EmbeddingContent(
+        ReadOnlyMemory<TEmbedding> data,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Data = data;
+    }
+
+    public ReadOnlyMemory<TEmbedding> Data { get; set; }
+}
+```
 
 ### Consequences
 
