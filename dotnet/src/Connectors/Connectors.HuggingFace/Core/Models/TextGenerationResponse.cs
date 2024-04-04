@@ -17,6 +17,9 @@ internal sealed class TextGenerationResponse : List<GeneratedTextItem>
         /// </summary>
         [JsonPropertyName("generated_text")]
         public string? GeneratedText { get; set; }
+
+        [JsonPropertyName("details")]
+        public TextGenerationDetails? Details { get; set; }
     }
 
     internal class TextGenerationPrefillToken
@@ -49,6 +52,9 @@ internal sealed class TextGenerationResponse : List<GeneratedTextItem>
         public long? Seed { get; set; }
 
         [JsonPropertyName("prefill")]
-        public string? Prefill { get; set; }
+        public List<TextGenerationPrefillToken>? Prefill { get; set; }
+
+        [JsonPropertyName("tokens")]
+        public List<TextGenerationToken>? Tokens { get; set; }
     }
 }
