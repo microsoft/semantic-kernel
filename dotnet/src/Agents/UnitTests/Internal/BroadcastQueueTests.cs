@@ -136,7 +136,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input = null, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -159,7 +159,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input = null, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

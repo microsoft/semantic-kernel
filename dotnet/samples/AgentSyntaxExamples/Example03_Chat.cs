@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using AgentSyntaxExamples;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -59,7 +61,11 @@ public class Example03_Chat : BaseTest
             };
 
         // Invoke chat and display messages.
-        await foreach (var content in nexus.InvokeAsync("concept: maps made out of egg cartons."))
+        string input = "concept: maps made out of egg cartons.";
+        nexus.AppendUserMessageToHistory(input);
+        this.WriteLine($"# {AuthorRole.User}: '{input}'");
+
+        await foreach (var content in nexus.InvokeAsync())
         {
             this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }

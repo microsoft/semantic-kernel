@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AgentSyntaxExamples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,7 +42,10 @@ public class Example01_Agent : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            await foreach (var content in nexus.InvokeAsync(agent, input))
+            nexus.AppendUserMessageToHistory(input);
+            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+
+            await foreach (var content in nexus.InvokeAsync(agent))
             {
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
@@ -63,8 +68,7 @@ public class Example01_Agent : BaseTest
     {
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             Agent agent,
-            string? input = null,
             CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, CreateUserMessage(input), cancellationToken);
+                base.InvokeAgentAsync(agent, cancellationToken);
     }
 }

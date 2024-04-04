@@ -50,7 +50,7 @@ public class AgentChatTests
         var messages = await chat.InvokeAsync(agent4, isJoining: false).ToArrayAsync();
         Assert.Equal(3, chat.Agents.Count);
 
-        messages = await chat.InvokeAsync(agent4, "test").ToArrayAsync();
+        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Equal(4, chat.Agents.Count);
     }
 
@@ -111,7 +111,7 @@ public class AgentChatTests
 
         chat.ExecutionSettings = null;
 
-        var messages = await chat.InvokeAsync(string.Empty).ToArrayAsync();
+        var messages = await chat.InvokeAsync().ToArrayAsync();
         Assert.Empty(messages);
         Assert.False(chat.IsComplete);
     }
@@ -130,12 +130,12 @@ public class AgentChatTests
                 MaximumIterations = int.MaxValue,
             };
 
-        var messages = await chat.InvokeAsync(string.Empty).ToArrayAsync();
+        var messages = await chat.InvokeAsync().ToArrayAsync();
         Assert.Empty(messages);
         Assert.False(chat.IsComplete);
 
         Agent agent4 = CreateMockAgent().Object;
-        messages = await chat.InvokeAsync(agent4, string.Empty).ToArrayAsync();
+        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Single(messages);
         Assert.False(chat.IsComplete);
     }
@@ -199,7 +199,7 @@ public class AgentChatTests
                     }
             };
 
-        var messages = await chat.InvokeAsync(agent1, string.Empty).ToArrayAsync();
+        var messages = await chat.InvokeAsync(agent1).ToArrayAsync();
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }

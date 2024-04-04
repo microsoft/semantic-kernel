@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -39,7 +40,8 @@ public class AgentNexusTests
         await this.VerifyHistoryAsync(expectedCount: 0, nexus.GetHistoryAsync(nexus.Agent)); // Agent hasn't joined
 
         // Invoke with input & verify (agent joins chat)
-        await nexus.InvokeAsync("hi").ToArrayAsync();
+        nexus.AppendUserMessageToHistory("hi");
+        await nexus.InvokeAsync().ToArrayAsync();
         Assert.Equal(1, nexus.Agent.InvokeCount);
 
         // Verify updated history
@@ -73,9 +75,8 @@ public class AgentNexusTests
         public TestAgent Agent { get; } = new TestAgent();
 
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            string? input = null,
             CancellationToken cancellationToken = default) =>
-                this.InvokeAgentAsync(this.Agent, CreateUserMessage(input), cancellationToken);
+                this.InvokeAgentAsync(this.Agent, cancellationToken);
     }
 
     private sealed class TestAgent()

@@ -51,30 +51,7 @@ public sealed class AgentChat : AgentNexus
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        CancellationToken cancellationToken = default) =>
-            this.InvokeAsync(default(ChatMessageContent), cancellationToken);
-
-    /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
-    /// </summary>
-    /// <param name="input">Optional user input.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
-    public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        string? input = null,
-        CancellationToken cancellationToken = default) =>
-            this.InvokeAsync(CreateUserMessage(input), cancellationToken); // $$$ OPTIONAL INPUT ARG ???
-
-    /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
-    /// </summary>
-    /// <param name="input">Optional user input.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Asynchronous enumeration of messages.</returns>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        ChatMessageContent? input = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (this.IsComplete)
         {
@@ -99,7 +76,7 @@ public sealed class AgentChat : AgentNexus
                 yield break;
             }
 
-            await foreach (var message in base.InvokeAgentAsync(agent, input, cancellationToken))
+            await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
             {
                 yield return message;
 
@@ -120,8 +97,6 @@ public sealed class AgentChat : AgentNexus
             {
                 break;
             }
-
-            input = null;
         }
     }
 
@@ -129,27 +104,26 @@ public sealed class AgentChat : AgentNexus
     /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
-    /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remark>
+    /// Specified agent joins the nexus.
+    /// </remark>>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
-        string? input = null,
         CancellationToken cancellationToken = default) =>
-        this.InvokeAsync(agent, CreateUserMessage(input), isJoining: true, cancellationToken);
+        this.InvokeAsync(agent, isJoining: true, cancellationToken);
 
     /// <summary>
     /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentNexus"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
-    /// <param name="input">Optional user input.</param>
     /// <param name="isJoining">Optional flag to control if agent is joining the nexus.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
-        ChatMessageContent? input = null,
-        bool isJoining = true,
+        bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (isJoining)
@@ -157,7 +131,7 @@ public sealed class AgentChat : AgentNexus
             this.AddAgent(agent);
         }
 
-        await foreach (var message in base.InvokeAgentAsync(agent, input, cancellationToken))
+        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
         {
             yield return message;
 

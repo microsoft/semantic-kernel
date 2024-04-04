@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -25,13 +24,13 @@ public class LocalChannelTests
     {
         TestAgent agent = new();
         TestChannel channel = new(); // Not a local agent
-        await Assert.ThrowsAsync<AgentException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<AgentException>(() => channel.TestInvokeAsync(agent).ToArrayAsync().AsTask());
     }
 
     private sealed class TestChannel : LocalChannel
     {
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-            => base.InvokeAsync(agent, new ChatMessageContent(AuthorRole.User, "hi"), cancellationToken);
+        public IAsyncEnumerable<ChatMessageContent> TestInvokeAsync(Agent agent, CancellationToken cancellationToken = default)
+            => base.InvokeAsync(agent, cancellationToken);
     }
 
     private sealed class TestAgent()
