@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
@@ -54,16 +53,6 @@ public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<strin
         get => this.GetValueFromDictionary(nameof(this.FinishReason)) as string;
         internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
     }
-    /*  { "created", response.Created },
-            { "object", response.Object
-},
-            { "model", response.Model },
-            { "system_fingerprint", response.SystemFingerprint },
-            { "id", response.Id },
-            { "usage", response.Usage },
-            { "finish_reason", choice.FinishReason },
-            { "log_probs", choice.LogProbs },
-    */
 
     /// <summary>
     /// System fingerprint.

@@ -18,4 +18,37 @@ internal sealed class TextGenerationResponse : List<GeneratedTextItem>
         [JsonPropertyName("generated_text")]
         public string? GeneratedText { get; set; }
     }
+
+    internal class TextGenerationPrefillToken
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
+
+        [JsonPropertyName("logprob")]
+        public double LogProb { get; set; }
+    }
+
+    internal sealed class TextGenerationToken : TextGenerationPrefillToken
+    {
+        [JsonPropertyName("special")]
+        public bool Special { get; set; }
+    }
+
+    internal sealed class TextGenerationDetails
+    {
+        [JsonPropertyName("finish_reason")]
+        public string? FinishReason { get; set; }
+
+        [JsonPropertyName("generated_tokens")]
+        public int GeneratedTokens { get; set; }
+
+        [JsonPropertyName("seed")]
+        public long? Seed { get; set; }
+
+        [JsonPropertyName("prefill")]
+        public string? Prefill { get; set; }
+    }
 }
