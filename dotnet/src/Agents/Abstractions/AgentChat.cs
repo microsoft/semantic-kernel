@@ -16,11 +16,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class AgentChat
 {
-    /// <summary>
-    /// Expose the chat history for subclasses.
-    /// </summary>
-    protected IReadOnlyList<ChatMessageContent> History => this._history; // $$$ SCOPE ???
-
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
     private readonly Dictionary<Agent, string> _channelMap;
