@@ -245,6 +245,13 @@ There are many people committing to Semantic Kernel, so it is important to keep 
     git rebase upstream/main
     git push --force-with-lease
 ```
+or:
+
+```bash
+    git fetch upstream main
+    git merge upstream/main
+    git push
+```
 
 This is assuming the upstream branch refers to the main repository. If you have a different name for the upstream branch, you can replace `upstream` with the name of your upstream branch.
 
