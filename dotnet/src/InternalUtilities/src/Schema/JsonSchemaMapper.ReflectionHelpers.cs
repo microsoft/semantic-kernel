@@ -16,9 +16,9 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    internal
+internal
 #endif
-    static partial class JsonSchemaMapper
+static partial class JsonSchemaMapper
 {
     // Uses reflection to determine the element type of an enumerable or dictionary type
     // Workaround for https://github.com/dotnet/runtime/issues/77306#issuecomment-2007887560

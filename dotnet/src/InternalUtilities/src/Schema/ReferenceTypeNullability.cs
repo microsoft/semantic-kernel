@@ -8,9 +8,9 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    internal
+internal
 #endif
-    enum ReferenceTypeNullability
+enum ReferenceTypeNullability
 {
     /// <summary>
     /// Always treat reference types as nullable. Follows the built-in behavior

@@ -21,10 +21,10 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    [ExcludeFromCodeCoverage]
-    internal
+[ExcludeFromCodeCoverage]
+internal
 #endif
-    static partial class JsonSchemaMapper
+static partial class JsonSchemaMapper
 {
     /// <summary>
     /// The JSON schema draft version used by the generated schemas.
@@ -44,7 +44,7 @@ namespace JsonSchemaMapper;
     {
         if (options is null)
         {
-           ThrowHelpers.ThrowArgumentNullException(nameof(options));
+            ThrowHelpers.ThrowArgumentNullException(nameof(options));
         }
 
         if (type is null)
@@ -518,7 +518,7 @@ namespace JsonSchemaMapper;
             schemaType |= JsonSchemaType.Null;
         }
 
-    ConstructSchemaDocument:
+ConstructSchemaDocument:
         return CreateSchemaDocument(
             ref state,
             title,
@@ -641,7 +641,7 @@ namespace JsonSchemaMapper;
         /// <summary>
         /// Looks up the schema path for the specified type configuration.
         /// </summary>
-        public readonly bool TryGetGeneratedSchemaPath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling, [NotNullWhen(true)]out string? value)
+        public readonly bool TryGetGeneratedSchemaPath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling, [NotNullWhen(true)] out string? value)
         {
             if (Configuration.AllowSchemaReferences)
             {

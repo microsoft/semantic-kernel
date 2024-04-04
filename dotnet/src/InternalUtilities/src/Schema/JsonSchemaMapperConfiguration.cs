@@ -12,10 +12,10 @@ namespace JsonSchemaMapper;
 #if EXPOSE_JSON_SCHEMA_MAPPER
     public
 #else
-    [ExcludeFromCodeCoverage]
-    internal
+[ExcludeFromCodeCoverage]
+internal
 #endif
-    class JsonSchemaMapperConfiguration
+class JsonSchemaMapperConfiguration
 {
     /// <summary>
     /// Gets the default configuration object used by <see cref="JsonSchemaMapper"/>.
