@@ -16,7 +16,7 @@ public abstract class TerminationStrategy
     /// <param name="strategy">A <see cref="TerminationStrategy"/> instance.</param>
     public static implicit operator TerminationCriteriaCallback(TerminationStrategy strategy)
     {
-        return strategy.ShouldContinue;
+        return strategy.ShouldTerminateAsync;
     }
 
     /// <summary>
@@ -26,5 +26,5 @@ public abstract class TerminationStrategy
     /// <param name="history">The most recent message</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True to terminate chat loop.</returns>
-    public abstract Task<bool> ShouldContinue(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default);
+    public abstract Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default);
 }
