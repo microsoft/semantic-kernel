@@ -86,15 +86,13 @@ def test_kernel_init_with_plugins():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2, 3])
-async def test_invoke_functions(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
-    functions = [mock_function] * pipeline_count
 
-    await kernel.invoke(functions, KernelArguments())
+    await kernel.invoke(mock_function, KernelArguments())
 
-    assert mock_function.invoke.call_count == pipeline_count
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -111,7 +109,7 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-async def test_invoke_functions_fail(kernel: Kernel, create_mock_function):
+async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
@@ -124,16 +122,14 @@ async def test_invoke_functions_fail(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2, 3])
-async def test_invoke_stream_functions(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
-    functions = [mock_function] * pipeline_count
 
-    async for part in kernel.invoke_stream(functions, input="test"):
+    async for part in kernel.invoke_stream(mock_function, input="test"):
         assert part[0].text == "test"
 
-    assert mock_function.invoke.call_count == pipeline_count - 1
+    assert mock_function.invoke.call_count == 0
 
 
 @pytest.mark.asyncio
@@ -200,8 +196,7 @@ def test_invoke_handles_remove(kernel_with_handlers: Kernel):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_pre_invocation(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_handles_pre_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
@@ -213,51 +208,17 @@ async def test_invoke_handles_pre_invocation(kernel: Kernel, pipeline_count: int
         return e
 
     kernel.add_function_invoking_handler(invoking_handler)
-    functions = [mock_function] * pipeline_count
 
     # Act
-    await kernel.invoke(functions, KernelArguments())
+    await kernel.invoke(mock_function, KernelArguments())
 
     # Assert
-    assert invoked == pipeline_count
-    assert mock_function.invoke.call_count == pipeline_count
-
-
-@pytest.mark.asyncio
-async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler(kernel: Kernel, create_mock_function):
-    mock_function1 = create_mock_function(name="SkipMe")
-    mock_function2 = create_mock_function(name="DontSkipMe")
-    invoked = 0
-    invoking = 0
-    invoked_function_name = ""
-
-    def invoking_handler(sender, e):
-        nonlocal invoking
-        invoking += 1
-        if e.kernel_function_metadata.name == "SkipMe":
-            e.skip()
-
-    def invoked_handler(sender, e):
-        nonlocal invoked_function_name, invoked
-        invoked_function_name = e.kernel_function_metadata.name
-        invoked += 1
-        return e
-
-    kernel.add_function_invoking_handler(invoking_handler)
-    kernel.add_function_invoked_handler(invoked_handler)
-
-    # Act
-    _ = await kernel.invoke([mock_function1, mock_function2], KernelArguments())
-
-    # Assert
-    assert invoking == 2
     assert invoked == 1
-    assert invoked_function_name == "DontSkipMe"
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_post_invocation(kernel: Kernel, pipeline_count, create_mock_function):
+async def test_invoke_handles_post_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function("test_function")
     invoked = 0
 
@@ -267,15 +228,14 @@ async def test_invoke_handles_post_invocation(kernel: Kernel, pipeline_count, cr
         return e
 
     kernel.add_function_invoked_handler(invoked_handler)
-    functions = [mock_function] * pipeline_count
 
     # Act
-    _ = await kernel.invoke(functions, KernelArguments())
+    _ = await kernel.invoke(mock_function, KernelArguments())
 
     # Assert
-    assert invoked == pipeline_count
+    assert invoked == 1
     mock_function.invoke.assert_called()
-    assert mock_function.invoke.call_count == pipeline_count
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -318,7 +278,7 @@ async def test_invoke_change_variable_invoking_handler(kernel: Kernel, create_mo
     kernel.add_function_invoking_handler(invoking_handler)
     arguments = KernelArguments(input=original_input)
     # Act
-    result = await kernel.invoke([mock_function], arguments)
+    result = await kernel.invoke(mock_function, arguments)
 
     # Assert
     assert str(result) == new_input
