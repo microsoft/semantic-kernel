@@ -71,9 +71,9 @@ public abstract class AgentNexus
             messages.Where(
                 m =>
                 {
-                    bool isSystemMessage = m.Role != AuthorRole.System;
+                    bool isSystemMessage = m.Role == AuthorRole.System;
                     hasSystemMessage |= isSystemMessage;
-                    return isSystemMessage;
+                    return !isSystemMessage;
                 }).ToArray();
 
         if (hasSystemMessage)
