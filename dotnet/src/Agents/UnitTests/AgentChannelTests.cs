@@ -33,7 +33,10 @@ public class AgentChannelTests
         Assert.Equal(1, channel.InvokeCount);
     }
 
-    private sealed class TestChannel : AgentChannel<TestAgent> // $$$ MOCK
+    /// <summary>
+    /// Not using mock as the goal here is to provide entrypoint to protected method.
+    /// </summary>
+    private sealed class TestChannel : AgentChannel<TestAgent>
     {
         public int InvokeCount { get; private set; }
 
