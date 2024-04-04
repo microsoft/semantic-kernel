@@ -284,5 +284,5 @@ To run the same checks that run during the GitHub Action build, you can use
 this command, from the [python](../python) folder:
 
 ```bash
-    poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
+    poetry run pre-commit run -c ../.pre-commit-config.yaml -a
 ```

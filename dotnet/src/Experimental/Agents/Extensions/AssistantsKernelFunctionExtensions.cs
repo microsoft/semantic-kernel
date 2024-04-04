@@ -78,12 +78,22 @@ internal static class AssistantsKernelFunctionExtensions
             return "number";
         }
 
+        if (type == typeof(bool))
+        {
+            return "boolean";
+        }
+
         if (type.IsEnum)
         {
             return "enum";
         }
 
-        return type.Name;
+        if (type.IsArray)
+        {
+            return "array";
+        }
+
+        return "object";
     }
 
     private static bool IsNumber(this Type type) =>
