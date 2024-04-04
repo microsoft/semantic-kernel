@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
@@ -104,7 +105,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\test_audio.wav">
+    <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

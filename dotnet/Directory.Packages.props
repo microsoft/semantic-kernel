@@ -5,13 +5,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.14" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.15" />
     <PackageVersion Include="Azure.Identity" Version="1.10.4" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.4" />
     <PackageVersion Include="Markdig" Version="0.36.2" />
-    <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
+    <PackageVersion Include="Handlebars.Net" Version="2.1.5" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="3.5.1" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
@@ -75,7 +75,7 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.4-preview" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.61.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.62.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.1.2" />
@@ -123,7 +123,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.11.0]" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.0]" />
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
