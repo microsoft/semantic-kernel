@@ -29,11 +29,11 @@ public class AgentChannelTests
         var messages = channel.InvokeAgentAsync(new TestAgent()).ToArrayAsync();
         Assert.Equal(1, channel.InvokeCount);
 
-        await Assert.ThrowsAsync<AgentException>(() => channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync().AsTask());
+        await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAgentAsync(new NextAgent()).ToArrayAsync().AsTask());
         Assert.Equal(1, channel.InvokeCount);
     }
 
-    private sealed class TestChannel : AgentChannel<TestAgent>
+    private sealed class TestChannel : AgentChannel<TestAgent> // $$$ MOCK
     {
         public int InvokeCount { get; private set; }
 

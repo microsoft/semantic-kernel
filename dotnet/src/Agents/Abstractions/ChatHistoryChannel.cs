@@ -9,9 +9,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="AgentChannel"/> specialization for managing local message history.
+/// A <see cref="AgentChannel"/> specialization for that acts upon a <see cref="IChatHistoryHandler"/>.
 /// </summary>
-public class LocalChannel : AgentChannel
+public class ChatHistoryChannel : AgentChannel
 {
     private readonly ChatHistory _chat;
 
@@ -20,20 +20,16 @@ public class LocalChannel : AgentChannel
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not ILocalAgent localAgent)
+        if (agent is not IChatHistoryHandler historyHandler)
         {
-            throw new AgentException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
+            throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        IAsyncEnumerable<ChatMessageContent> messages = localAgent.InvokeAsync(this._chat, cancellationToken);
-        if (messages != null)
+        await foreach (var message in historyHandler.InvokeAsync(this._chat, cancellationToken))
         {
-            await foreach (var message in messages)
-            {
-                this._chat.Add(message);
+            this._chat.Add(message);
 
-                yield return message;
-            }
+            yield return message;
         }
     }
 
@@ -52,9 +48,9 @@ public class LocalChannel : AgentChannel
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LocalChannel"/> class.
+    /// Initializes a new instance of the <see cref="ChatHistoryChannel"/> class.
     /// </summary>
-    public LocalChannel()
+    public ChatHistoryChannel()
     {
         this._chat = new();
     }

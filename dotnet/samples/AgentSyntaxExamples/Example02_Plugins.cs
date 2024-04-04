@@ -37,8 +37,8 @@ public class Example02_Plugins : BaseTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        // Create a nexus for agent interaction. For more, see: Example03_Chat.
-        var nexus = new TestChat();
+        // Create a chat for agent interaction. For more, see: Example03_Chat.
+        var chat = new TestChat();
 
         // Respond to user input, invoking functions where appropriate.
         await WriteAgentResponseAsync("Hello");
@@ -49,10 +49,10 @@ public class Example02_Plugins : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            nexus.AppendUserMessageToHistory(input);
+            chat.AppendUserMessageToHistory(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in nexus.InvokeAsync(agent))
+            await foreach (var content in chat.InvokeAsync(agent))
             {
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
@@ -67,12 +67,12 @@ public class Example02_Plugins : BaseTest
 
     /// <summary>
     ///
-    /// A basic nexus for the agent example.
+    /// A simple chat for the agent example.
     /// </summary>
     /// <remarks>
-    /// For further exploration of AgentNexus, see: Example03_Chat.
+    /// For further exploration of <see cref="AgentChat"/>, see: Example03_Chat.
     /// </remarks>
-    private sealed class TestChat : AgentNexus
+    private sealed class TestChat : AgentChat
     {
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             Agent agent,

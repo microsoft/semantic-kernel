@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Base abstraction for all Semantic Kernel agents.  An agent instance
-/// may participate in one or more conversations, or <see cref="AgentNexus"/>.
+/// may participate in one or more conversations, or <see cref="AgentChat"/>.
 /// A conversation may include one or more agents.
 /// </summary>
 /// <remarks>
@@ -50,7 +50,7 @@ public abstract class Agent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="AgentChannel"/> appropriate for the agent type.</returns>
     /// <remarks>
-    /// Every agent conversation, or <see cref="AgentNexus"/>, will establish one or more <see cref="AgentChannel"/>
+    /// Every agent conversation, or <see cref="AgentChat"/>, will establish one or more <see cref="AgentChannel"/>
     /// objects according to the specific <see cref="Agent"/> type.
     /// </remarks>
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);

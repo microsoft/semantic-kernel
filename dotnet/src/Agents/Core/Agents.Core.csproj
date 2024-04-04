@@ -24,8 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
-    <ProjectReference Include="..\Framework\Agents.Framework.csproj" />
+    <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
   </ItemGroup>
   
   <ItemGroup>

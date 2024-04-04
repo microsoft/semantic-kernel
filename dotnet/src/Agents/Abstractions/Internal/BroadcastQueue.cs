@@ -7,7 +7,7 @@ using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
 /// <summary>
-/// Utility class used by <see cref="AgentNexus"/> to manage the broadcast of
+/// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
 /// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
 /// </summary>
@@ -100,7 +100,7 @@ internal sealed class BroadcastQueue
                 if (this._failures.TryGetValue(channelRef.Hash, out var failure))
                 {
                     this._failures.Remove(channelRef.Hash); // Clearing failure means re-invoking EnsureSynchronizedAsync will activate empty queue
-                    throw new AgentException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType().Name}", failure);
+                    throw new KernelException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType().Name}", failure);
                 }
 
                 // Activate non-empty queue

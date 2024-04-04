@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
-public sealed class ChatCompletionAgent : LocalKernelAgent
+public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
     /// <inheritdoc/>
     public override string? Description { get; }
@@ -36,7 +35,7 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IEnumerable<ChatMessageContent> history,
+        IReadOnlyList<ChatMessageContent> history,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
@@ -80,7 +79,8 @@ public sealed class ChatCompletionAgent : LocalKernelAgent
     /// <param name="description">The agent description (optional)</param>
     /// <param name="name">The agent name</param>
     /// <remarks>
-    /// Enable <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/> for agent plugins.
+    /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+    /// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
     /// </remarks>
     public ChatCompletionAgent(
         Kernel kernel,

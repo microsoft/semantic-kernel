@@ -14,12 +14,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
-public abstract class AgentNexus
+public abstract class AgentChat
 {
     /// <summary>
-    /// Expose the nexus history.
+    /// Expose the chat history for subclasses.
     /// </summary>
-    protected IReadOnlyList<ChatMessageContent> History => this._history;
+    protected IReadOnlyList<ChatMessageContent> History => this._history; // $$$ SCOPE ???
 
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
@@ -64,6 +64,9 @@ public abstract class AgentNexus
     /// Append messages to the conversation.
     /// </summary>
     /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
+    /// <remarks>
+    /// Will throw KernelException if a system message is present, without taking any other action.
+    /// </remarks>
     public void AppendHistory(IEnumerable<ChatMessageContent> messages)
     {
         bool hasSystemMessage = false;
@@ -78,10 +81,10 @@ public abstract class AgentNexus
 
         if (hasSystemMessage)
         {
-            throw new AgentException($"History does not support messages with Role of {AuthorRole.System}.");
+            throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
         }
 
-        // Append to nexus history
+        // Append to chat history
         this._history.AddRange(cleanMessages);
 
         // Broadcast message to other channels (in parallel)
@@ -90,9 +93,9 @@ public abstract class AgentNexus
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
@@ -103,7 +106,7 @@ public abstract class AgentNexus
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
-            throw new AgentException("Unable to proceed while another agent is active.");
+            throw new KernelException("Unable to proceed while another agent is active.");
         }
 
         try
@@ -174,9 +177,9 @@ public abstract class AgentNexus
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentNexus"/> class.
+    /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>
-    protected AgentNexus()
+    protected AgentChat()
     {
         this._agentChannels = new();
         this._broadcastQueue = new();

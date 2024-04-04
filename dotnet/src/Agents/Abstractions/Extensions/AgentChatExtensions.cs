@@ -6,20 +6,20 @@ namespace Microsoft.SemanticKernel.Agents.Extensions;
 /// <summary>
 /// Extension methods for <see cref="KernelAgent"/>
 /// </summary>
-public static class AgentNexusExtensions
+public static class AgentChatExtensions
 {
     /// <summary>
-    /// Add user message to nexus history
+    /// Add user message to chat history
     /// </summary>
-    /// <param name="nexus">The target nexus.</param>
+    /// <param name="chat">The target chat.</param>
     /// <param name="input">Optional user input.</param>
-    public static ChatMessageContent? AppendUserMessageToHistory(this AgentNexus nexus, string? input)
+    public static ChatMessageContent? AppendUserMessageToHistory(this AgentChat chat, string? input)
     {
         var message = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
 
         if (message != null)
         {
-            nexus.AppendHistory(message);
+            chat.AppendHistory(message);
         }
 
         return message;

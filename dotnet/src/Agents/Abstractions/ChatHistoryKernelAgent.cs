@@ -6,33 +6,33 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// A <see cref="KernelAgent"/> specialization bound to a <see cref="LocalChannel"/>.
+/// A <see cref="KernelAgent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
 /// </summary>
-public abstract class LocalKernelAgent : KernelAgent, ILocalAgent
+public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
 {
     /// <inheritdoc/>
     protected internal sealed override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(LocalChannel).FullName;
+        yield return typeof(ChatHistoryChannel).FullName;
     }
 
     /// <inheritdoc/>
     protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<AgentChannel>(new LocalChannel());
+        return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
     }
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-        IEnumerable<ChatMessageContent> history,
+        IReadOnlyList<ChatMessageContent> history,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LocalKernelAgent"/> class.
+    /// Initializes a new instance of the <see cref="ChatHistoryKernelAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="instructions">The agent instructions</param>
-    protected LocalKernelAgent(Kernel kernel, string? instructions = null)
+    protected ChatHistoryKernelAgent(Kernel kernel, string? instructions = null)
         : base(kernel, instructions)
     {
         // Nothing to do...
