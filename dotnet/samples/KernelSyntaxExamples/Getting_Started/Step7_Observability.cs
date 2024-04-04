@@ -65,7 +65,7 @@ public sealed class Step7_Observability : BaseTest
             this._output = output;
         }
 
-        public void OnFunctionInvoked(FunctionInvokedContext context)
+        public async Task OnFunctionInvokedAsync(FunctionInvokedContext context)
         {
             var metadata = context.Result.Metadata;
 
@@ -73,12 +73,18 @@ public sealed class Step7_Observability : BaseTest
             {
                 this._output.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
             }
+
+            await AsyncOperation();
         }
 
-        public void OnFunctionInvoking(FunctionInvokingContext context)
+        public async Task OnFunctionInvokingAsync(FunctionInvokingContext context)
         {
             this._output.WriteLine($"Invoking {context.Function.Name}");
+
+            await AsyncOperation();
         }
+
+        private Task AsyncOperation() => Task.CompletedTask;
     }
 
     /// <summary>

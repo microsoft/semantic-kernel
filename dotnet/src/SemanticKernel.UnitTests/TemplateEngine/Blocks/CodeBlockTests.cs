@@ -509,11 +509,11 @@ public class CodeBlockTests
         private readonly Action<FunctionInvokingContext>? _onFunctionInvoking = onFunctionInvoking;
         private readonly Action<FunctionInvokedContext>? _onFunctionInvoked = onFunctionInvoked;
 
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._onFunctionInvoked?.Invoke(context);
+        public async Task OnFunctionInvokedAsync(FunctionInvokedContext context) =>
+            await Task.Run(() => this._onFunctionInvoked?.Invoke(context));
 
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._onFunctionInvoking?.Invoke(context);
+        public async Task OnFunctionInvokingAsync(FunctionInvokingContext context) =>
+            await Task.Run(() => this._onFunctionInvoking?.Invoke(context));
     }
 
     private sealed class FakePromptFilter(

@@ -278,7 +278,7 @@ public sealed class Kernel
     #region Internal Filtering
 
     [Experimental("SKEXP0001")]
-    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    internal async Task<FunctionInvokingContext?> OnFunctionInvokingFilterAsync(KernelFunction function, KernelArguments arguments)
     {
         FunctionInvokingContext? context = null;
 
@@ -288,7 +288,7 @@ public sealed class Kernel
 
             for (int i = 0; i < this._functionFilters.Count; i++)
             {
-                this._functionFilters[i].OnFunctionInvoking(context);
+                await this._functionFilters[i].OnFunctionInvokingAsync(context).ConfigureAwait(false);
             }
         }
 
@@ -296,7 +296,7 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result, Exception? exception = null)
+    internal async Task<FunctionInvokedContext?> OnFunctionInvokedFilterAsync(KernelArguments arguments, FunctionResult result, Exception? exception = null)
     {
         FunctionInvokedContext? context = null;
 
@@ -310,7 +310,7 @@ public sealed class Kernel
             {
                 try
                 {
-                    this._functionFilters[i].OnFunctionInvoked(context);
+                    await this._functionFilters[i].OnFunctionInvokedAsync(context).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)

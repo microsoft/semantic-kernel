@@ -170,7 +170,7 @@ public abstract class KernelFunction
             cancellationToken.ThrowIfCancellationRequested();
 
             // Invoke pre-invocation filter. If it requests cancellation, throw.
-            var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+            var invokingContext = await kernel.OnFunctionInvokingFilterAsync(this, arguments).ConfigureAwait(false);
 
             if (invokingContext?.Cancel is true)
             {
@@ -181,7 +181,7 @@ public abstract class KernelFunction
             functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
             // Invoke the post-invocation filter.
-            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
+            var invokedContext = await kernel.OnFunctionInvokedFilterAsync(arguments, functionResult).ConfigureAwait(false);
 
             if (invokedContext is not null)
             {
@@ -198,15 +198,9 @@ public abstract class KernelFunction
         catch (Exception exception)
 #pragma warning restore CA1031
         {
-            return HandleExceptionWithFilter(
-                exception,
-                logger,
-                activity,
-                this,
-                kernel,
-                arguments,
-                new(this),
-                ref tags);
+            LogException(exception, logger, activity, ref tags);
+
+            return await HandleExceptionWithFilterAsync(exception, this, kernel, arguments, new(this)).ConfigureAwait(false);
         }
         finally
         {
@@ -294,7 +288,7 @@ public abstract class KernelFunction
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Invoke pre-invocation filter. If it requests cancellation, throw.
-                var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+                var invokingContext = await kernel.OnFunctionInvokingFilterAsync(this, arguments).ConfigureAwait(false);
 
                 if (invokingContext?.Cancel is true)
                 {
@@ -312,15 +306,9 @@ public abstract class KernelFunction
             catch (Exception exception)
 #pragma warning restore CA1031
             {
-                HandleExceptionWithFilter(
-                    exception,
-                    logger,
-                    activity,
-                    this,
-                    kernel,
-                    arguments,
-                    functionResult,
-                    ref tags);
+                LogException(exception, logger, activity, ref tags);
+
+                await HandleExceptionWithFilterAsync(exception, this, kernel, arguments, functionResult).ConfigureAwait(false);
             }
 
             if (enumerator is not null)
@@ -341,7 +329,7 @@ public abstract class KernelFunction
                                 // Checking if post-function filter was already invoked to avoid calling it twice.
                                 if (!functionFilterInvoked)
                                 {
-                                    kernel.OnFunctionInvokedFilter(arguments, functionResult);
+                                    await kernel.OnFunctionInvokedFilterAsync(arguments, functionResult).ConfigureAwait(false);
                                 }
 
                                 break;
@@ -351,15 +339,9 @@ public abstract class KernelFunction
                         catch (Exception exception)
 #pragma warning restore CA1031
                         {
-                            HandleExceptionWithFilter(
-                                exception,
-                                logger,
-                                activity,
-                                this,
-                                kernel,
-                                arguments,
-                                functionResult,
-                                ref tags);
+                            LogException(exception, logger, activity, ref tags);
+
+                            await HandleExceptionWithFilterAsync(exception, this, kernel, arguments, functionResult).ConfigureAwait(false);
 
                             functionFilterInvoked = true;
                         }
@@ -413,22 +395,26 @@ public abstract class KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-    /// <summary>Handles special-cases for exception handling when invoking a function.</summary>
-    private static Exception HandleException(
+    /// <summary>Log the exception and add its type to the tags that'll be included with recording the invocation duration.</summary>
+    private static void LogException(
         Exception exception,
         ILogger logger,
         Activity? activity,
-        KernelFunction kernelFunction,
-        Kernel kernel,
-        KernelArguments arguments,
-        FunctionResult? result,
         ref TagList tags)
     {
-        // Log the exception and add its type to the tags that'll be included with recording the invocation duration.
         tags.Add(MeasurementErrorTagName, exception.GetType().FullName);
         activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
         logger.LogFunctionError(exception, exception.Message);
+    }
 
+    /// <summary>Get exception to throw during function invocation.</summary>
+    private static Exception GetException(
+        Exception exception,
+        KernelFunction kernelFunction,
+        Kernel kernel,
+        KernelArguments arguments,
+        FunctionResult? result)
+    {
         // If the exception is an OperationCanceledException, wrap it in a KernelFunctionCanceledException
         // in order to convey additional details about what function was canceled. This is particularly
         // important for cancellation that occurs in response to the FunctionInvoked event, in which case
@@ -440,20 +426,17 @@ public abstract class KernelFunction
     }
 
     /// <summary>Handles special-cases for exception handling with filter when invoking a function.</summary>
-    private static FunctionResult HandleExceptionWithFilter(
+    private static async Task<FunctionResult> HandleExceptionWithFilterAsync(
         Exception exception,
-        ILogger logger,
-        Activity? activity,
         KernelFunction kernelFunction,
         Kernel kernel,
         KernelArguments arguments,
-        FunctionResult functionResult,
-        ref TagList tags)
+        FunctionResult functionResult)
     {
-        exception = HandleException(exception, logger, activity, kernelFunction, kernel, arguments, functionResult, ref tags);
+        exception = GetException(exception, kernelFunction, kernel, arguments, functionResult);
 
         // Invoke post-invocation filter with exception.
-        var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult, exception);
+        var invokedContext = await kernel.OnFunctionInvokedFilterAsync(arguments, functionResult, exception).ConfigureAwait(false);
 
         // No registered filters, throw original exception.
         if (invokedContext is null)

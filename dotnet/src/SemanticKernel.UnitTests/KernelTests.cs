@@ -373,11 +373,9 @@ public class KernelTests
 
     private sealed class MyFunctionFilter : IFunctionFilter
     {
-        public void OnFunctionInvoked(FunctionInvokedContext context)
-        { }
+        public Task OnFunctionInvokedAsync(FunctionInvokedContext context) => Task.CompletedTask;
 
-        public void OnFunctionInvoking(FunctionInvokingContext context)
-        { }
+        public Task OnFunctionInvokingAsync(FunctionInvokingContext context) => Task.CompletedTask;
     }
 
     private sealed class MyPromptFilter : IPromptFilter
