@@ -13,8 +13,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel Agents - Abstrations</Title>
-    <Description>Semantic Kernel Agents abstrations. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
+    <Title>Semantic Kernel Agents - Abstractions</Title>
+    <Description>Semantic Kernel Agents abstractions. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
