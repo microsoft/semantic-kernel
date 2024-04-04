@@ -25,7 +25,7 @@ public enum AggregateTerminationCondition
 /// <summary>
 /// $$$
 /// </summary>
-public sealed class AggregateTerminationStrategy : AgentBoundTerminationStrategy
+public sealed class AggregatorTerminationStrategy : AgentBoundTerminationStrategy
 {
     private readonly TerminationStrategy[] _strategies;
 
@@ -49,10 +49,10 @@ public sealed class AggregateTerminationStrategy : AgentBoundTerminationStrategy
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateTerminationStrategy"/> class.
+    /// Initializes a new instance of the <see cref="AggregatorTerminationStrategy"/> class.
     /// </summary>
     /// <param name="strategies">$$$</param>
-    public AggregateTerminationStrategy(params TerminationStrategy[] strategies)
+    public AggregatorTerminationStrategy(params TerminationStrategy[] strategies)
     {
         this._strategies = strategies;
     }

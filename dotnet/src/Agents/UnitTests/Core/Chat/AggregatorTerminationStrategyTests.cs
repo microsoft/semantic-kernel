@@ -12,9 +12,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="AggregateTerminationStrategy"/>.
+/// Unit testing of <see cref="AggregatorTerminationStrategy"/>.
 /// </summary>
-public class AggregateTerminationStrategyTests
+public class AggregatorTerminationStrategyTests
 {
     /// <summary>
     /// $$$
@@ -22,7 +22,7 @@ public class AggregateTerminationStrategyTests
     [Fact]
     public void VerifyAggregateTerminationStrategyInitialState()
     {
-        AggregateTerminationStrategy strategy = new();
+        AggregatorTerminationStrategy strategy = new();
         Assert.Equal(AggregateTerminationCondition.All, strategy.Condition);
     }
 
@@ -151,7 +151,7 @@ public class AggregateTerminationStrategyTests
         return strategyMock;
     }
 
-    private static async Task VerifyResultAsync(bool expectedResult, Agent agent, AggregateTerminationStrategy strategyRoot)
+    private static async Task VerifyResultAsync(bool expectedResult, Agent agent, AggregatorTerminationStrategy strategyRoot)
     {
         var result = await strategyRoot.ShouldTerminateAsync(agent, Array.Empty<ChatMessageContent>());
         Assert.Equal(expectedResult, result);
