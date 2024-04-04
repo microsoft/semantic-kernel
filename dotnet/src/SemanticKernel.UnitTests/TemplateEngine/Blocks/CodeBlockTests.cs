@@ -410,8 +410,8 @@ public class CodeBlockTests
             Assert.Equal(FooValue, context.Arguments[parameterName]);
         });
 
-        kernel.FunctionFilters.Add(functionFilter);
         kernel.PromptFilters.Add(promptFilter);
+        kernel.FunctionFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel);
@@ -459,8 +459,8 @@ public class CodeBlockTests
             Assert.Equal(FooValue, context.Arguments["x11"]);
         });
 
-        kernel.FunctionFilters.Add(functionFilter);
         kernel.PromptFilters.Add(promptFilter);
+        kernel.FunctionFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel, arguments);

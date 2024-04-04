@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides an <see cref="OperationCanceledException"/>-derived exception type
 /// that's thrown from a <see cref="KernelFunction"/> invocation when a <see cref="Kernel"/>
-/// filter (e.g. <see cref="Kernel.FunctionFilters"/>) requests cancellation.
+/// function filter (e.g. <see cref="Kernel.FunctionFilters"/>) requests cancellation.
 /// </summary>
 public sealed class KernelFunctionCanceledException : OperationCanceledException
 {
