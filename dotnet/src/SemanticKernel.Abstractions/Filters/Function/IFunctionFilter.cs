@@ -17,6 +17,6 @@ public interface IFunctionFilter
     /// Method which is called asynchronously before function invocation.
     /// </summary>
     /// <param name="context">Instance of <see cref="FunctionInvocationContext"/> with function invocation details.</param>
-    /// <param name="next">Delegate to the next filter in pipeline or functon itself. If it's not invoked, next filter or function won't be invoked.</param>
+    /// <param name="next">Delegate to the next filter in pipeline or function itself. If it's not invoked, next filter or function won't be invoked.</param>
     Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next);
 }
