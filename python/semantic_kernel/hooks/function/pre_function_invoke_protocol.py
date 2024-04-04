@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 class PreFunctionInvokeProtocol(Protocol):
     """PreFunctionInvokeProtocol."""
 
-    async def pre_function_invoke(self, context: "PreFunctionInvokeContext") -> None:
+    def pre_function_invoke(self, context: "PreFunctionInvokeContext") -> None:
         """pre_function_invoke."""

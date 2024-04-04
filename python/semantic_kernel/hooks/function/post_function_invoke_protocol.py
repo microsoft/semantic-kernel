@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 class PostFunctionInvokeProtocol(Protocol):
     """PostFunctionInvokeProtocol."""
 
-    async def post_function_invoke(self, context: "PostFunctionInvokeContext") -> None:
+    def post_function_invoke(self, context: "PostFunctionInvokeContext") -> None:
         """post_function_invoke."""

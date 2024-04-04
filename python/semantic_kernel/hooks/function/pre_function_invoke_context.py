@@ -7,16 +7,17 @@ from semantic_kernel.hooks.function.function_hook_context_base import FunctionHo
 
 
 class PreFunctionInvokeContext(FunctionHookContextBase):
-    """Function Invoking Event Args.
+    """Pre Function Invoke Context.
 
-    Receives relevant parts of the the execution, either before (invoking) the function is executed.
+    Receives relevant parts of the the execution, before the function is executed.
     When a handler changes the arguments in the invoking event,
-    the new arguments are passed to the invoked event,
+    the whole new arguments are used, they are not updated, but replaced,
     make sure to use the update_arguments function, since that also raises the flag that the arguments were updated.
 
     Args:
-        kernel_function_metadata (KernelFunctionMetadata): The function that is being executed.
+        function (KernelFunction): The function that is being executed.
         arguments (KernelArguments): The arguments that are being passed to the function.
+        metadata (Dict[str, Any]): The metadata of the function that is being executed.
 
     Flags:
         updated_arguments (bool): Whether the arguments were updated, default False.

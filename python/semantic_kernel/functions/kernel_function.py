@@ -192,7 +192,8 @@ class KernelFunction(KernelBaseModel):
         while True:
             pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
             if pre_hook_context:
-                arguments = pre_hook_context.arguments
+                if pre_hook_context.updated_arguments:
+                    arguments = pre_hook_context.arguments
                 if pre_hook_context.is_skip_requested:
                     return FunctionResult(function=self.metadata, value=None, metadata=metadata)
                 metadata.update(pre_hook_context.metadata)
@@ -260,7 +261,8 @@ class KernelFunction(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
         if pre_hook_context:
-            arguments = pre_hook_context.arguments
+            if pre_hook_context.updated_arguments:
+                arguments = pre_hook_context.arguments
             if pre_hook_context.is_skip_requested:
                 return
             metadata.update(pre_hook_context.metadata)

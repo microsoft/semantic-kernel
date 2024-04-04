@@ -29,9 +29,13 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.hooks import HOOK_PROTOCOLS, PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.hooks.const import HookEnum
+from semantic_kernel.hooks.function.post_function_invoke_protocol import PostFunctionInvokeProtocol
+from semantic_kernel.hooks.function.pre_function_invoke_protocol import PreFunctionInvokeProtocol
 from semantic_kernel.hooks.kernel_hook_filter_decorator import kernel_hook_filter
 from semantic_kernel.hooks.prompt.post_prompt_render_context import PostPromptRenderContext
+from semantic_kernel.hooks.prompt.post_prompt_render_protocol import PostPromptRenderProtocol
 from semantic_kernel.hooks.prompt.pre_prompt_render_context import PrePromptRenderContext
+from semantic_kernel.hooks.prompt.pre_prompt_render_protocol import PrePromptRenderProtocol
 from semantic_kernel.hooks.utils import EmptyHook
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
@@ -306,11 +310,12 @@ class Kernel(KernelBaseModel):
             return None
         ran_hook = False
         for hook_id, hook in self.hooks:
+            if not isinstance(hook, PreFunctionInvokeProtocol):
+                continue
             try:
-                if isinstance(hook, HOOK_PROTOCOLS["pre_function_invoke"]):
-                    logger.debug(f"Running Pre Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.pre_function_invoke(context=context)  # type: ignore
-                    ran_hook = True
+                logger.debug(f"Running Pre Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
+                await hook.pre_function_invoke(context=context)  # type: ignore
+                ran_hook = True
             except Exception as exc:
                 logger.error(
                     "An error occurred in the pre_function_invoke function of hook: "
@@ -356,11 +361,12 @@ class Kernel(KernelBaseModel):
             return None
         ran_hook = False
         for hook_id, hook in self.hooks:
+            if not isinstance(hook, PostFunctionInvokeProtocol):
+                continue
             try:
-                if isinstance(hook, HOOK_PROTOCOLS["post_function_invoke"]):
-                    logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
-                    await hook.post_function_invoke(context=context)  # type: ignore
-                    ran_hook = True
+                logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
+                await hook.post_function_invoke(context=context)  # type: ignore
+                ran_hook = True
             except Exception as exc:
                 logger.error(
                     "An error occurred in the post_function_invoke function of hook: "
@@ -399,11 +405,12 @@ class Kernel(KernelBaseModel):
         context = PrePromptRenderContext(function=function, arguments=arguments, metadata=metadata, kernel=self)  # type: ignore
         ran_hook = False
         for hook_id, hook in self.hooks:
+            if not isinstance(hook, PrePromptRenderProtocol):
+                continue
             try:
-                if isinstance(hook, HOOK_PROTOCOLS["pre_prompt_render"]):
-                    logger.debug(f"Running Pre Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.pre_prompt_render(context=context)  # type: ignore
-                    ran_hook = True
+                logger.debug(f"Running Pre Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
+                await hook.pre_prompt_render(context=context)  # type: ignore
+                ran_hook = True
             except Exception as exc:
                 logger.error(
                     "An error occurred in the pre_prompt_render function of hook: "
@@ -425,11 +432,12 @@ class Kernel(KernelBaseModel):
         )
         ran_hook = False
         for hook_id, hook in self.hooks:
+            if not isinstance(hook, PostPromptRenderProtocol):
+                continue
             try:
-                if isinstance(hook, HOOK_PROTOCOLS["post_prompt_render"]):
-                    logger.debug(f"Running Post Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                    await hook.post_prompt_render(context=context)  # type: ignore
-                    ran_hook = True
+                logger.debug(f"Running Post Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
+                await hook.post_prompt_render(context=context)  # type: ignore
+                ran_hook = True
             except Exception as exc:
                 logger.error(
                     "An error occurred in the post_prompt_render function of hook: "

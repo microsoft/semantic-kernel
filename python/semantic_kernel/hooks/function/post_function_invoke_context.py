@@ -9,11 +9,11 @@ from semantic_kernel.hooks.function.function_hook_context_base import FunctionHo
 
 
 class PostFunctionInvokeContext(FunctionHookContextBase):
-    """Function Invoked Event Args.
+    """Post Function Invoke Context
 
-    Receives relevant parts of the the execution, after (invoked) the function is executed.
-    When a handler changes the arguments in the invoking event,
-    the new arguments are passed to the invoked event,
+    Receives relevant parts of the the execution, after the function is executed.
+    When a handler changes the arguments
+    the whole new arguments are used, they are not updated, but replaced,
     make sure to use the update_arguments function, since that also raises the flag that the arguments were updated.
 
     If exception is not None, the function execution failed,
@@ -21,10 +21,11 @@ class PostFunctionInvokeContext(FunctionHookContextBase):
     You can then also set the repeat flag to True, to repeat the function execution, possible with updated arguments.
 
     Args:
-        kernel_function_metadata (KernelFunctionMetadata): The function that is being executed.
+        function (KernelFunction): The function that is being executed.
         arguments (KernelArguments): The arguments that are being passed to the function.
         function_result (FunctionResult): The result of the function execution.
         exception (Exception, optional): The exception that was raised during the function execution.
+        metadata (Dict[str, Any]): The metadata of the function that is being executed.
 
     Flags:
         updated_arguments (bool): Whether the arguments were updated, default False.
@@ -33,7 +34,7 @@ class PostFunctionInvokeContext(FunctionHookContextBase):
 
     Methods:
         cancel: Sets the is_cancel_requested flag to True.
-        update_arguments: Updates the arguments and raises the updated_arguments flag.
+        update_arguments: Updates the arguments and sets the updated_arguments flag.
         repeat: Sets the is_repeat_requested flag to True.
     """
 

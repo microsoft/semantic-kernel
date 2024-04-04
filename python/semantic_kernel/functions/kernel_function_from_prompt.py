@@ -152,14 +152,18 @@ through prompt_template_config or in the prompt_template."
         """Invokes the function with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
-        context = await kernel._pre_prompt_render(self, arguments)
-        if context is not None:
-            arguments = context.arguments
+
+        pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
+        if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
+            arguments = pre_prompt_context.arguments
+
         prompt = await self.prompt_template.render(kernel, arguments)
-        context = await kernel._post_prompt_render(self, arguments, prompt)
-        if context is not None:
-            arguments = context.arguments
-            prompt = context.rendered_prompt
+
+        post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
+        if post_prompt_context is not None:
+            if post_prompt_context.updated_arguments:
+                arguments = post_prompt_context.arguments
+            prompt = post_prompt_context.rendered_prompt
 
         if isinstance(service, ChatCompletionClientBase):
             return await self._handle_complete_chat(
@@ -254,14 +258,17 @@ through prompt_template_config or in the prompt_template."
         """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
-        context = await kernel._pre_prompt_render(self, arguments)
-        if context is not None:
-            arguments = context.arguments
+
+        pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
+        if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
+            arguments = pre_prompt_context.arguments
+
         prompt = await self.prompt_template.render(kernel, arguments)
-        context = await kernel._post_prompt_render(self, arguments, prompt)
-        if context is not None:
-            arguments = context.arguments
-            prompt = context.rendered_prompt
+
+        post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
+        if post_prompt_context is not None:
+            arguments = post_prompt_context.arguments
+            prompt = post_prompt_context.rendered_prompt
 
         if isinstance(service, ChatCompletionClientBase):
             async for content in self._handle_complete_chat_stream(

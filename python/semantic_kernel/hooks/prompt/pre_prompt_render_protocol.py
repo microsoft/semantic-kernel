@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 class PrePromptRenderProtocol(Protocol):
     """PrePromptRenderProtocol."""
 
-    async def pre_prompt_render(self, context: "PrePromptRenderContext") -> None:
+    def pre_prompt_render(self, context: "PrePromptRenderContext") -> None:
         """pre_prompt_render."""

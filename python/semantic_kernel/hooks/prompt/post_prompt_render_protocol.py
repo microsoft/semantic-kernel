@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 class PostPromptRenderProtocol(Protocol):
     """PostPromptRenderProtocol."""
 
-    async def post_prompt_render(self, context: "PostPromptRenderContext") -> None:
+    def post_prompt_render(self, context: "PostPromptRenderContext") -> None:
         """post_prompt_render."""

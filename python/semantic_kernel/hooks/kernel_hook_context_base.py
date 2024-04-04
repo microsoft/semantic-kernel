@@ -12,18 +12,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class KernelHookContextBase(KernelBaseModel):
-    """Base class for Kernel Hook Contexts.
-
-    Args:
-        arguments (KernelArguments): The arguments that are being passed to the function.
-
-    Flags:
-        updated_arguments (bool): Whether the arguments were updated, default False.
-
-    Methods:
-        update_arguments: Updates the arguments and raises the updated_arguments flag.
-
-    """
+    """Base class for Kernel Hook Contexts."""
 
     function: KernelFunction
     arguments: KernelArguments
