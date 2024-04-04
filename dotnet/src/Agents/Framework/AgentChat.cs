@@ -81,7 +81,7 @@ public abstract class AgentChat
             throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
         }
 
-        // Append to nexus history
+        // Append to chat history
         this._history.AddRange(cleanMessages);
 
         // Broadcast message to other channels (in parallel)

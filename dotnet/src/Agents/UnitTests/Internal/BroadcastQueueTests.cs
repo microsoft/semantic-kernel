@@ -33,7 +33,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -68,7 +68,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueFailureAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -91,7 +91,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {
