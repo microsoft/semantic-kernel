@@ -392,6 +392,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
+            apiVersion: GoogleApiVersion.Stable,
             apiKey: "fake-key");
     }
 

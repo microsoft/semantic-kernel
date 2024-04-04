@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
@@ -147,6 +148,7 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             modelId: modelId,
+            apiVersion: GoogleApiVersion.Stable,
             apiKey: "fake-key");
         return client;
     }

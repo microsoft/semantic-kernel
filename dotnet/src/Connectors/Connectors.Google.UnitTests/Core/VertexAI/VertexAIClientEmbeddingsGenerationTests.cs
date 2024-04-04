@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
@@ -143,6 +144,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             httpClient: this._httpClient,
             modelId: modelId,
             bearerTokenProvider: () => Task.FromResult(bearerKey ?? "fake-key"),
+            apiVersion: GoogleApiVersion.Stable,
             location: "us-central1",
             projectId: "fake-project-id");
         return client;
