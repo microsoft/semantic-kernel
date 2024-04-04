@@ -3,7 +3,7 @@
 status: proposed
 contact: dmytrostruk
 date: 2024-04-04
-deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk
+deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, stoub
 ---
 
 # Exception handling in filters
