@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// Queue specific locks exist to synchronize access to an individual queue without blocking
 /// other queue operations or global state.
 /// Locking order always state-lock > queue-lock or just single lock, never queue-lock => state-lock.
-/// A deadlock cannot occur if locks are always aquired in same order.
+/// A deadlock cannot occur if locks are always acquired in same order.
 /// </remarks>
 internal sealed class BroadcastQueue
 {
@@ -87,7 +87,7 @@ internal sealed class BroadcastQueue
         bool isEmpty = true;
         do
         {
-            // Queue state is only changed within aquired QueueLock.
+            // Queue state is only changed within acquired QueueLock.
             // If its empty here, it is synchronized.
             lock (queueRef.QueueLock)
             {
@@ -133,7 +133,7 @@ internal sealed class BroadcastQueue
         {
             Task receiveTask;
 
-            // Queue state is only changed within aquired QueueLock.
+            // Queue state is only changed within acquired QueueLock.
             // If its empty here, it is synchronized.
             lock (queueRef.QueueLock)
             {

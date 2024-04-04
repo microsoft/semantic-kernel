@@ -28,7 +28,7 @@ public enum AggregateTerminationCondition
 public sealed class AggregateTerminationStrategy : TerminationStrategy
 {
     private readonly Agent? _agent;
-    private readonly TerminationStrategy[] _strategies; // $$$ ANY / ALL
+    private readonly TerminationStrategy[] _strategies;
 
     /// <summary>
     /// $$$
