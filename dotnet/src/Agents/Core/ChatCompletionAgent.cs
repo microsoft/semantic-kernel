@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -80,7 +79,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <param name="description">The agent description (optional)</param>
     /// <param name="name">The agent name</param>
     /// <remarks>
-    /// Enable <see cref="OpenAIPromptExecutionSettings.ToolCallBehavior"/> for agent plugins.
+    /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+    /// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
     /// </remarks>
     public ChatCompletionAgent(
         Kernel kernel,
