@@ -40,3 +40,4 @@ public static class GoogleAIMemoryBuilderExtensions
                 httpClient: HttpClientProvider.GetHttpClient(httpClient ?? builderHttpClient),
                 loggerFactory: loggerFactory));
     }
+}
