@@ -339,6 +339,26 @@ public class KernelFilterTests
     }
 
     [Fact]
+    public async Task PostInvocationPromptFilterCancellationWorksCorrectlyAsync()
+    {
+        // Arrange
+        var mockTextGeneration = this.GetMockTextGeneration();
+        var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRendered: (context) =>
+            {
+                context.Cancel = true;
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.Same(function, exception.Function);
+        Assert.Same(kernel, exception.Kernel);
+    }
+
+    [Fact]
     public async Task FunctionAndPromptFiltersAreExecutedInCorrectOrderAsync()
     {
         // Arrange

@@ -144,7 +144,7 @@ public class Example76_Filters : BaseTest
                 throw new Exception("New exception");
             }
 
-            // Example: call asynchronous operations
+            // Example: call asynchronous operation
             await AsyncOperation();
         }
 
@@ -156,7 +156,7 @@ public class Example76_Filters : BaseTest
             // Example: cancel function execution
             context.Cancel = true;
 
-            // Example: call asynchronous operations
+            // Example: call asynchronous operation
             await AsyncOperation();
         }
 

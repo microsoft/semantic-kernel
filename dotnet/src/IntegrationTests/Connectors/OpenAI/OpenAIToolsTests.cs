@@ -252,6 +252,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         public string Name { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
     }
+
     #region private
 
     private sealed class FakeFunctionFilter : IFunctionFilter

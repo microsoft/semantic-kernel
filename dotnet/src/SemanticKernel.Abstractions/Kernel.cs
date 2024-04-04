@@ -599,7 +599,6 @@ public sealed class Kernel
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/KernelSyntaxExamples/Getting_Started/Step7_Observability.cs of Semantic Kernel repository.")]
     public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
-
 #pragma warning restore CS0067 // The event is never used
 
     #endregion
