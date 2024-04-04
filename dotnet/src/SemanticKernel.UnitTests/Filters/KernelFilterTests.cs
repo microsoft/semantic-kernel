@@ -16,24 +16,52 @@ namespace SemanticKernel.UnitTests.Filters;
 public class KernelFilterTests
 {
     [Fact]
-    public async Task PreInvocationFunctionFilterIsTriggeredAsync()
+    public async Task FunctionFilterIsTriggeredAsync()
     {
         // Arrange
         var functionInvocations = 0;
-        var filterInvocations = 0;
+        var preFunctionInvocations = 0;
+        var postFunctionInvocations = 0;
+
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoking: (context) =>
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
-            filterInvocations++;
+            preFunctionInvocations++;
+            await next(context);
+            postFunctionInvocations++;
+        });
+
+        // Act
+        await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal(1, functionInvocations);
+        Assert.Equal(1, preFunctionInvocations);
+        Assert.Equal(1, postFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task FunctionFilterContextHasResultAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            Assert.Null(context.Result);
+
+            await next(context);
+
+            Assert.NotNull(context.Result);
+            Assert.Equal("Result", context.Result.ToString());
         });
 
         // Act
         var result = await kernel.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(1, functionInvocations);
-        Assert.Equal(1, filterInvocations);
+        Assert.Equal("Result", result.ToString());
     }
 
     [Fact]
@@ -43,9 +71,10 @@ public class KernelFilterTests
         const string OriginalInput = "OriginalInput";
         const string NewInput = "NewInput";
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoking: (context) =>
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
             context.Arguments["originalInput"] = NewInput;
+            await next(context);
         });
 
         var function = KernelFunctionFactory.CreateFromMethod((string originalInput) => originalInput);
@@ -58,86 +87,52 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task PreInvocationFunctionFilterCancellationWorksCorrectlyAsync()
-    {
-        // Arrange
-        var functionInvocations = 0;
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
-
-        var kernel = this.GetKernelWithFilters(
-            onFunctionInvoking: (context) =>
-            {
-                preFilterInvocations++;
-                context.Cancel = true;
-            },
-            onFunctionInvoked: (context) =>
-            {
-                postFilterInvocations++;
-            });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function));
-
-        // Assert
-        Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(0, functionInvocations);
-        Assert.Equal(0, postFilterInvocations);
-        Assert.Same(function, exception.Function);
-        Assert.Null(exception.FunctionResult);
-    }
-
-    [Fact]
-    public async Task PreInvocationFunctionFilterCancellationWorksCorrectlyOnStreamingAsync()
+    public async Task FunctionFilterCancellationWorksCorrectlyAsync()
     {
         // Arrange
         var functionInvocations = 0;
         var filterInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoking: (context) =>
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-            context.Cancel = true;
+            // next(context) is not called here, function invocation is cancelled.
+            return Task.CompletedTask;
         });
 
         // Act
-        IAsyncEnumerable<StreamingKernelContent> enumerable = function.InvokeStreamingAsync<StreamingKernelContent>(kernel);
-        IAsyncEnumerator<StreamingKernelContent> enumerator = enumerable.GetAsyncEnumerator();
-
-        Assert.Equal(0, filterInvocations);
-
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(async () => await enumerator.MoveNextAsync());
+        await kernel.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, filterInvocations);
         Assert.Equal(0, functionInvocations);
-        Assert.Same(function, exception.Function);
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Null(exception.FunctionResult);
     }
 
     [Fact]
-    public async Task PostInvocationFunctionFilterIsTriggeredAsync()
+    public async Task FunctionFilterCancellationWorksCorrectlyOnStreamingAsync()
     {
         // Arrange
         var functionInvocations = 0;
         var filterInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
+            // next(context) is not called here, function invocation is cancelled.
+            return Task.CompletedTask;
         });
 
         // Act
-        var result = await kernel.InvokeAsync(function);
+        await foreach (var chunk in kernel.InvokeStreamingAsync(function))
+        {
+            functionInvocations++;
+        }
 
         // Assert
-        Assert.Equal(1, functionInvocations);
         Assert.Equal(1, filterInvocations);
+        Assert.Equal(0, functionInvocations);
     }
 
     [Fact]
@@ -149,8 +144,9 @@ public class KernelFilterTests
 
         var function = KernelFunctionFactory.CreateFromMethod(() => OriginalResult);
 
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
+            await next(context);
             context.SetResultValue(NewResult);
         });
 
@@ -162,104 +158,19 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task PostInvocationFunctionFilterCancellationWorksCorrectlyAsync()
-    {
-        // Arrange
-        const int Result = 42;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => Result);
-        var args = new KernelArguments() { { "a", "b" } };
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
-        {
-            context.Cancel = true;
-        });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function, args));
-
-        // Assert
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Same(function, exception.Function);
-        Assert.Same(args, exception.Arguments);
-        Assert.NotNull(exception.FunctionResult);
-        Assert.Equal(Result, exception.FunctionResult.GetValue<int>());
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterCancellationWithModifiedResultAsync()
-    {
-        // Arrange
-        const int OriginalResult = 42;
-        const int NewResult = 84;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => OriginalResult);
-        var args = new KernelArguments() { { "a", "b" } };
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvoked: (context) =>
-        {
-            context.SetResultValue(NewResult);
-            context.Cancel = true;
-        });
-
-        // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function, args));
-
-        // Assert
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Same(function, exception.Function);
-        Assert.Same(args, exception.Arguments);
-        Assert.NotNull(exception.FunctionResult);
-        Assert.Equal(NewResult, exception.FunctionResult.GetValue<int>());
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterIsNotTriggeredOnStreamingAsync()
-    {
-        // Arrange
-        var functionInvocations = 0;
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
-
-        var kernel = this.GetKernelWithFilters(
-            onFunctionInvoking: (context) =>
-            {
-                preFilterInvocations++;
-            },
-            onFunctionInvoked: (context) =>
-            {
-                postFilterInvocations++;
-            });
-
-        // Act
-        await foreach (var chunk in kernel.InvokeStreamingAsync(function))
-        {
-        }
-
-        // Assert
-        Assert.Equal(1, functionInvocations);
-        Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(0, postFilterInvocations);
-    }
-
-    [Fact]
     public async Task FunctionFiltersWithPromptsWorkCorrectlyAsync()
     {
         // Arrange
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
+        var preFunctionInvocations = 0;
+        var postFunctionInvocations = 0;
         var mockTextGeneration = this.GetMockTextGeneration();
 
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onFunctionInvoking: (context) =>
+            onFunctionInvocation: async (context, next) =>
             {
-                preFilterInvocations++;
-            },
-            onFunctionInvoked: (context) =>
-            {
-                postFilterInvocations++;
+                preFunctionInvocations++;
+                await next(context);
+                postFunctionInvocations++;
             });
 
         var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
@@ -268,8 +179,8 @@ public class KernelFilterTests
         var result = await kernel.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(1, postFilterInvocations);
+        Assert.Equal(1, preFunctionInvocations);
+        Assert.Equal(1, postFunctionInvocations);
         mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
@@ -397,7 +308,7 @@ public class KernelFilterTests
         // Assert
         Assert.Same(function, exception.Function);
         Assert.Same(kernel, exception.Kernel);
-        Assert.Null(exception.FunctionResult);
+        Assert.Null(exception.FunctionResult?.GetValue<object>());
     }
 
     [Fact]
@@ -410,13 +321,19 @@ public class KernelFilterTests
 
         var executionOrder = new List<string>();
 
-        var functionFilter1 = new FakeFunctionFilter(
-            (context) => executionOrder.Add("FunctionFilter1-Invoking"),
-            (context) => executionOrder.Add("FunctionFilter1-Invoked"));
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvocation: async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter1-Invoking");
+            await next(context);
+            executionOrder.Add("FunctionFilter1-Invoked");
+        });
 
-        var functionFilter2 = new FakeFunctionFilter(
-            (context) => executionOrder.Add("FunctionFilter2-Invoking"),
-            (context) => executionOrder.Add("FunctionFilter2-Invoked"));
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvocation: async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter2-Invoking");
+            await next(context);
+            executionOrder.Add("FunctionFilter2-Invoked");
+        });
 
         var promptFilter1 = new FakePromptFilter(
             (context) => executionOrder.Add("PromptFilter1-Rendering"),
@@ -446,8 +363,8 @@ public class KernelFilterTests
         Assert.Equal("PromptFilter2-Rendering", executionOrder[3]);
         Assert.Equal("PromptFilter1-Rendered", executionOrder[4]);
         Assert.Equal("PromptFilter2-Rendered", executionOrder[5]);
-        Assert.Equal("FunctionFilter1-Invoked", executionOrder[6]);
-        Assert.Equal("FunctionFilter2-Invoked", executionOrder[7]);
+        Assert.Equal("FunctionFilter2-Invoked", executionOrder[6]);
+        Assert.Equal("FunctionFilter1-Invoked", executionOrder[7]);
     }
 
     [Fact]
@@ -458,18 +375,18 @@ public class KernelFilterTests
         var filterInvocations = 0;
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var functionFilter1 = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvocation: (context, next) =>
         {
             filterInvocations++;
-            context.Cancel = true;
+            // next(context) is not called here, function invocation is cancelled.
+            return Task.CompletedTask;
         });
 
-        var functionFilter2 = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvocation: (context, next) =>
         {
-            Assert.True(context.Cancel);
-
             filterInvocations++;
-            context.Cancel = false;
+            // next(context) is not called here, function invocation is cancelled.
+            return Task.CompletedTask;
         });
 
         var builder = Kernel.CreateBuilder();
@@ -483,8 +400,8 @@ public class KernelFilterTests
         var result = await kernel.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(1, functionInvocations);
-        Assert.Equal(2, filterInvocations);
+        Assert.Equal(0, functionInvocations);
+        Assert.Equal(1, filterInvocations);
     }
 
     [Fact]
@@ -494,8 +411,17 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
-        var functionFilter1 = new FakeFunctionFilter((context) => executionOrder.Add("FunctionFilter1-Invoking"));
-        var functionFilter2 = new FakeFunctionFilter((context) => executionOrder.Add("FunctionFilter2-Invoking"));
+        var functionFilter1 = new FakeFunctionFilter(async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter1-Invoking");
+            await next(context);
+        });
+
+        var functionFilter2 = new FakeFunctionFilter(async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter2-Invoking");
+            await next(context);
+        });
 
         var builder = Kernel.CreateBuilder();
 
@@ -553,17 +479,26 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
         var executionOrder = new List<string>();
 
-        var functionFilter1 = new FakeFunctionFilter(
-            (context) => executionOrder.Add("FunctionFilter1-Invoking"),
-            (context) => executionOrder.Add("FunctionFilter1-Invoked"));
+        var functionFilter1 = new FakeFunctionFilter(onFunctionInvocation: async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter1-Invoking");
+            await next(context);
+            executionOrder.Add("FunctionFilter1-Invoked");
+        });
 
-        var functionFilter2 = new FakeFunctionFilter(
-            (context) => executionOrder.Add("FunctionFilter2-Invoking"),
-            (context) => executionOrder.Add("FunctionFilter2-Invoked"));
+        var functionFilter2 = new FakeFunctionFilter(onFunctionInvocation: async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter2-Invoking");
+            await next(context);
+            executionOrder.Add("FunctionFilter2-Invoked");
+        });
 
-        var functionFilter3 = new FakeFunctionFilter(
-            (context) => executionOrder.Add("FunctionFilter3-Invoking"),
-            (context) => executionOrder.Add("FunctionFilter3-Invoked"));
+        var functionFilter3 = new FakeFunctionFilter(onFunctionInvocation: async (context, next) =>
+        {
+            executionOrder.Add("FunctionFilter3-Invoking");
+            await next(context);
+            executionOrder.Add("FunctionFilter3-Invoked");
+        });
 
         var builder = Kernel.CreateBuilder();
 
@@ -581,24 +516,26 @@ public class KernelFilterTests
         Assert.Equal("FunctionFilter1-Invoking", executionOrder[0]);
         Assert.Equal("FunctionFilter3-Invoking", executionOrder[1]);
         Assert.Equal("FunctionFilter2-Invoking", executionOrder[2]);
-        Assert.Equal("FunctionFilter1-Invoked", executionOrder[3]);
+        Assert.Equal("FunctionFilter2-Invoked", executionOrder[3]);
         Assert.Equal("FunctionFilter3-Invoked", executionOrder[4]);
-        Assert.Equal("FunctionFilter2-Invoked", executionOrder[5]);
+        Assert.Equal("FunctionFilter1-Invoked", executionOrder[5]);
     }
 
     private Kernel GetKernelWithFilters(
-        Action<FunctionInvokingContext>? onFunctionInvoking = null,
-        Action<FunctionInvokedContext>? onFunctionInvoked = null,
+        Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation = null,
         Action<PromptRenderingContext>? onPromptRendering = null,
         Action<PromptRenderedContext>? onPromptRendered = null,
         ITextGenerationService? textGenerationService = null)
     {
         var builder = Kernel.CreateBuilder();
-        var functionFilter = new FakeFunctionFilter(onFunctionInvoking, onFunctionInvoked);
         var promptFilter = new FakePromptFilter(onPromptRendering, onPromptRendered);
 
         // Add function filter before kernel construction
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter);
+        if (onFunctionInvocation is not null)
+        {
+            var functionFilter = new FakeFunctionFilter(onFunctionInvocation);
+            builder.Services.AddSingleton<IFunctionFilter>(functionFilter);
+        }
 
         if (textGenerationService is not null)
         {
@@ -628,17 +565,12 @@ public class KernelFilterTests
     }
 
     private sealed class FakeFunctionFilter(
-        Action<FunctionInvokingContext>? onFunctionInvoking = null,
-        Action<FunctionInvokedContext>? onFunctionInvoked = null) : IFunctionFilter
+        Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation) : IFunctionFilter
     {
-        private readonly Action<FunctionInvokingContext>? _onFunctionInvoking = onFunctionInvoking;
-        private readonly Action<FunctionInvokedContext>? _onFunctionInvoked = onFunctionInvoked;
+        private readonly Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? _onFunctionInvocation = onFunctionInvocation;
 
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._onFunctionInvoked?.Invoke(context);
-
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._onFunctionInvoking?.Invoke(context);
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     private sealed class FakePromptFilter(

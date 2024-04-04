@@ -279,36 +279,32 @@ public sealed class Kernel
     #region Internal Filtering
 
     [Experimental("SKEXP0001")]
-    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    internal async Task<FunctionInvocationContext?> OnFunctionInvocationAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        FunctionInvocationCallback functionCallback)
     {
-        FunctionInvokingContext? context = null;
+        FunctionInvocationContext? context = new(function, arguments);
 
         if (this._functionFilters is { Count: > 0 })
         {
-            context = new(function, arguments);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
+            async Task InvokeFilterOrFunctionAsync(FunctionInvocationContext context, int index = 0)
             {
-                this._functionFilters[i].OnFunctionInvoking(context);
+                if (index < this._functionFilters.Count)
+                {
+                    await this._functionFilters[index].OnFunctionInvocationAsync(context, (context) => InvokeFilterOrFunctionAsync(context, index + 1)).ConfigureAwait(false);
+                }
+                else
+                {
+                    await functionCallback(context).ConfigureAwait(false);
+                }
             }
+
+            await InvokeFilterOrFunctionAsync(context).ConfigureAwait(false);
         }
-
-        return context;
-    }
-
-    [Experimental("SKEXP0001")]
-    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
-    {
-        FunctionInvokedContext? context = null;
-
-        if (this._functionFilters is { Count: > 0 })
+        else
         {
-            context = new(arguments, result);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
-            {
-                this._functionFilters[i].OnFunctionInvoked(context);
-            }
+            await functionCallback(context).ConfigureAwait(false);
         }
 
         return context;

@@ -65,19 +65,18 @@ public sealed class Step7_Observability : BaseTest
             this._output = output;
         }
 
-        public void OnFunctionInvoked(FunctionInvokedContext context)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
         {
-            var metadata = context.Result.Metadata;
+            this._output.WriteLine($"Invoking {context.Function.Name}");
+
+            await next(context);
+
+            var metadata = context.Result?.Metadata;
 
             if (metadata is not null && metadata.ContainsKey("Usage"))
             {
                 this._output.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
             }
-        }
-
-        public void OnFunctionInvoking(FunctionInvokingContext context)
-        {
-            this._output.WriteLine($"Invoking {context.Function.Name}");
         }
     }
 

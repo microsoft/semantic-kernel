@@ -56,11 +56,12 @@ public class Example76_Filters : BaseTest
             this._output = output;
         }
 
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
-
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        {
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
+            await next(context);
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
+        }
     }
 
     private sealed class SecondFunctionFilter : IFunctionFilter
@@ -72,11 +73,12 @@ public class Example76_Filters : BaseTest
             this._output = output;
         }
 
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
-
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        {
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
+            await next(context);
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
+        }
     }
 
     private sealed class FirstPromptFilter : IPromptFilter
@@ -101,25 +103,22 @@ public class Example76_Filters : BaseTest
 
     private sealed class FunctionFilterExample : IFunctionFilter
     {
-        public void OnFunctionInvoked(FunctionInvokedContext context)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
         {
+            // Example: override kernel arguments
+            context.Arguments["input"] = "new input";
+
+            // Without calling next(context), next filters in pipeline and actual function won't be invoked.
+            await next(context);
+
             // Example: get function result value
-            var value = context.Result.GetValue<object>();
+            var value = context.Result!.GetValue<object>();
 
             // Example: override function result value
             context.SetResultValue("new result value");
 
             // Example: get token usage from metadata
             var usage = context.Result.Metadata?["Usage"];
-        }
-
-        public void OnFunctionInvoking(FunctionInvokingContext context)
-        {
-            // Example: override kernel arguments
-            context.Arguments["input"] = "new input";
-
-            // Example: cancel function execution
-            context.Cancel = true;
         }
     }
 

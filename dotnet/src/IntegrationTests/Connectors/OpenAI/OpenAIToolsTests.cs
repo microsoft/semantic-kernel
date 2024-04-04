@@ -37,9 +37,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         var invokedFunctions = new List<string>();
 
-        var filter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var filter = new FakeFunctionFilter(async (context, next) =>
         {
             invokedFunctions.Add(context.Function.Name);
+            await next(context);
         });
 
         kernel.FunctionFilters.Add(filter);
@@ -62,9 +63,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         var invokedFunctions = new List<string>();
 
-        var filter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var filter = new FakeFunctionFilter(async (context, next) =>
         {
             invokedFunctions.Add($"{context.Function.Name}({string.Join(", ", context.Arguments)})");
+            await next(context);
         });
 
         kernel.FunctionFilters.Add(filter);
@@ -257,22 +259,16 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
     private sealed class FakeFunctionFilter : IFunctionFilter
     {
-        private readonly Action<FunctionInvokingContext>? _onFunctionInvoking;
-        private readonly Action<FunctionInvokedContext>? _onFunctionInvoked;
+        private readonly Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? _onFunctionInvocation;
 
         public FakeFunctionFilter(
-            Action<FunctionInvokingContext>? onFunctionInvoking = null,
-            Action<FunctionInvokedContext>? onFunctionInvoked = null)
+            Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation = null)
         {
-            this._onFunctionInvoking = onFunctionInvoking;
-            this._onFunctionInvoked = onFunctionInvoked;
+            this._onFunctionInvocation = onFunctionInvocation;
         }
 
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._onFunctionInvoked?.Invoke(context);
-
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._onFunctionInvoking?.Invoke(context);
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     #endregion
