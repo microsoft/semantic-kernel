@@ -12,23 +12,23 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
-/// Unit testing of <see cref="LocalChannel"/>.
+/// Unit testing of <see cref="ChatHistoryChannel"/>.
 /// </summary>
-public class LocalChannelTests
+public class ChatHistoryChannelTests
 {
     /// <summary>
-    /// Verify a <see cref="LocalChannel"/> throws if passed an agent that
-    /// does not implement <see cref="ILocalAgent"/>.
+    /// Verify a <see cref="ChatHistoryChannel"/> throws if passed an agent that
+    /// does not implement <see cref="IChatHistoryHandler"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyLocalChannelAgentTypeAsync()
+    public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
     {
-        TestAgent agent = new();
-        TestChannel channel = new(); // Not a local agent
-        await Assert.ThrowsAsync<AgentException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
+        TestAgent agent = new(); // Not a IChatHistoryHandler
+        TestChannel channel = new(); // Requires IChatHistoryHandler
+        await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
     }
 
-    private sealed class TestChannel : LocalChannel
+    private sealed class TestChannel : ChatHistoryChannel
     {
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
             => base.InvokeAsync(agent, new ChatMessageContent(AuthorRole.User, "hi"), cancellationToken);

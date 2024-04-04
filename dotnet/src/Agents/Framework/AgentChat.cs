@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Point of interaction for one or more agents.
 /// </summary>
-public abstract class AgentNexus
+public abstract class AgentChat
 {
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
@@ -58,14 +58,14 @@ public abstract class AgentNexus
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
         this._broadcastQueue.Enqueue(channelRefs, cleanMessages);
 
-        // Append to nexus history
+        // Append to chat history
         this._history.AddRange(cleanMessages);
     }
 
     /// <summary>
-    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentNexus"/>.
+    /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
@@ -78,7 +78,7 @@ public abstract class AgentNexus
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
-            throw new AgentException("Unable to proceed while another agent is active.");
+            throw new KernelException("Unable to proceed while another agent is active.");
         }
 
         try
@@ -164,9 +164,9 @@ public abstract class AgentNexus
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentNexus"/> class.
+    /// Initializes a new instance of the <see cref="AgentChat"/> class.
     /// </summary>
-    protected AgentNexus()
+    protected AgentChat()
     {
         this._agentChannels = new();
         this._broadcastQueue = new();

@@ -23,8 +23,8 @@ public class KeyEncoderTests
         this.VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
 
         // Verify "well-known" value
-        string localHash = KeyEncoder.GenerateHash(new[] { typeof(LocalChannel).FullName! });
-        Assert.Equal("+Fz7zTPIcqXwFSRSTU0AYHVp8rWt9O7LChf2QTjkm2M=", localHash);
+        string localHash = KeyEncoder.GenerateHash(new[] { typeof(ChatHistoryChannel).FullName! });
+        Assert.Equal("Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=", localHash);
     }
 
     private void VerifyHashEquivalancy(params string[] keys)

@@ -8,7 +8,7 @@ using ChannelQueue = System.Collections.Concurrent.ConcurrentQueue<System.Collec
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
 /// <summary>
-/// Utility class used by <see cref="AgentNexus"/> to manage the broadcast of
+/// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
 /// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
 /// </summary>
@@ -85,7 +85,7 @@ internal sealed class BroadcastQueue
                 if (this._failures.TryGetValue(channel.Hash, out var failure))
                 {
                     this._failures.Remove(channel.Hash);
-                    throw new AgentException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
+                    throw new KernelException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
                 }
             }
 

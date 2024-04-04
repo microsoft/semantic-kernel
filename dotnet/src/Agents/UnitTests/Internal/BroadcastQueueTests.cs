@@ -33,7 +33,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -68,7 +68,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueFailureAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {
@@ -80,9 +80,9 @@ public class BroadcastQueueTests
         // Verify expected invocation of channel.
         queue.Enqueue([reference], [new ChatMessageContent(AuthorRole.User, "hi")]);
 
-        await Assert.ThrowsAsync<AgentException>(() => queue.EnsureSynchronizedAsync(reference));
-        await Assert.ThrowsAsync<AgentException>(() => queue.EnsureSynchronizedAsync(reference));
-        await Assert.ThrowsAsync<AgentException>(() => queue.EnsureSynchronizedAsync(reference));
+        await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
+        await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
+        await Assert.ThrowsAsync<KernelException>(() => queue.EnsureSynchronizedAsync(reference));
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        // Create nexus and channel.
+        // Create queue and channel.
         BroadcastQueue queue =
             new()
             {

@@ -29,8 +29,8 @@ public class Example01_Agent : BaseTest
                 InstructionArguments = new() { { "count", 3 } },
             };
 
-        // Create a nexus for agent interaction. For more, see: Example03_Chat.
-        var nexus = new TestChat();
+        // Create a chat for agent interaction. For more, see: Example03_Chat.
+        var chat = new TestChat();
 
         // Respond to user input
         await WriteAgentResponseAsync("Fortune favors the bold.");
@@ -40,7 +40,7 @@ public class Example01_Agent : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            await foreach (var content in nexus.InvokeAsync(agent, input))
+            await foreach (var content in chat.InvokeAsync(agent, input))
             {
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
@@ -54,12 +54,12 @@ public class Example01_Agent : BaseTest
     }
 
     /// <summary>
-    /// A basic nexus for the agent example.
+    /// A simple chat for the agent example.
     /// </summary>
     /// <remarks>
-    /// For further exploration of AgentNexus, see: Example03_Chat.
+    /// For further exploration of <see cref="AgentChat"/>, see: Example03_Chat.
     /// </remarks>
-    private sealed class TestChat : AgentNexus
+    private sealed class TestChat : AgentChat
     {
         public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             Agent agent,
