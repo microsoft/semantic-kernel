@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Agents.Framework</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Agents.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnablePackageValidation>false</EnablePackageValidation>
