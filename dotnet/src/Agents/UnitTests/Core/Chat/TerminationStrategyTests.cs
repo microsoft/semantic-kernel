@@ -17,10 +17,10 @@ public class TerminationStrategyTests
     [Fact]
     public void VerifySelectionStrategyCastAsCriteriaCallback()
     {
-        Mock<TerminationStrategy> strategy = new();
+        Mock<TerminationStrategy> strategyMock = new();
         try
         {
-            TerminationCriteriaCallback callback = (TerminationCriteriaCallback)strategy.Object;
+            TerminationCriteriaCallback callback = (TerminationCriteriaCallback)strategyMock.Object;
         }
         catch (InvalidCastException exception)
         {
