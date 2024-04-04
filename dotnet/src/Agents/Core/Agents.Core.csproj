@@ -15,7 +15,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - Core</Title>
-    <Description>Semantic Kernel Core Agents.</Description>
+    <Description>Defines core set of concrete Agent and AgentChat classes, based on the Agent Abstractions.</Description>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
