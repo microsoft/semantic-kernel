@@ -2,6 +2,7 @@
 
 
 import logging
+from functools import wraps
 from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
 from typing import Any, Callable, Dict, Optional
 
@@ -10,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    *,
+    func: Callable[..., Any] | None = None,
     name: Optional[str] = None,
     description: Optional[str] = None,
-):
+) -> Callable[..., Any]:
     """
     Decorator for kernel functions.
 
@@ -42,7 +43,8 @@ def kernel_function(
 
     """
 
-    def decorator(func: Callable):
+    @wraps(func)
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         func.__kernel_function__ = True
         func.__kernel_function_description__ = description or func.__doc__
         func.__kernel_function_name__ = name or func.__name__
@@ -62,6 +64,8 @@ def kernel_function(
         func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
         return func
 
+    if func:
+        return decorator(func)
     return decorator
 
 
