@@ -38,7 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
-    <ProjectReference Include="..\..\src\Agents\Framework\Agents.Framework.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Framework\Agents.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->

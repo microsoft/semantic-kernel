@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
-    <ProjectReference Include="..\Framework\Agents.Framework.csproj" />
+    <ProjectReference Include="..\Framework\Agents.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
