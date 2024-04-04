@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -34,15 +33,15 @@ public class AgentChannelTests
         Assert.Equal(1, channel.InvokeCount);
     }
 
-    private sealed class TestChannel : AgentChannel<TestAgent>
+    private sealed class TestChannel : AgentChannel<TestAgent> // $$$ MOCK
     {
         public int InvokeCount { get; private set; }
 
         public IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(Agent agent, CancellationToken cancellationToken = default)
-            => base.InvokeAsync(agent, new ChatMessageContent(AuthorRole.User, "hi"), cancellationToken);
+            => base.InvokeAsync(agent, cancellationToken);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(TestAgent agent, ChatMessageContent? input = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        protected internal override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(TestAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             this.InvokeCount++;

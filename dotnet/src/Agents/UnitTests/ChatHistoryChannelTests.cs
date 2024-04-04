@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -24,14 +23,8 @@ public class ChatHistoryChannelTests
     public async Task VerifyAgentWithoutIChatHistoryHandlerAsync()
     {
         TestAgent agent = new(); // Not a IChatHistoryHandler
-        TestChannel channel = new(); // Requires IChatHistoryHandler
+        ChatHistoryChannel channel = new(); // Requires IChatHistoryHandler
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
-    }
-
-    private sealed class TestChannel : ChatHistoryChannel
-    {
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
-            => base.InvokeAsync(agent, new ChatMessageContent(AuthorRole.User, "hi"), cancellationToken);
     }
 
     private sealed class TestAgent()

@@ -33,7 +33,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueReceiveAsync()
     {
-        // Create queue and channel.
+        // Create nexus and channel.
         BroadcastQueue queue =
             new()
             {
@@ -68,7 +68,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueFailureAsync()
     {
-        // Create queue and channel.
+        // Create nexus and channel.
         BroadcastQueue queue =
             new()
             {
@@ -91,7 +91,7 @@ public class BroadcastQueueTests
     [Fact]
     public async Task VerifyBroadcastQueueConcurrencyAsync()
     {
-        // Create queue and channel.
+        // Create nexus and channel.
         BroadcastQueue queue =
             new()
             {
@@ -101,8 +101,6 @@ public class BroadcastQueueTests
         ChannelReference reference = new(channel, "test");
 
         // Enqueue multiple channels
-        object syncObject = new();
-
         for (int count = 0; count < 10; ++count)
         {
             queue.Enqueue([new(channel, $"test{count}")], [new ChatMessageContent(AuthorRole.User, "hi")]);
@@ -138,7 +136,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input = null, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -161,7 +159,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, ChatMessageContent? input = null, CancellationToken cancellationToken = default)
+        protected internal override IAsyncEnumerable<ChatMessageContent> InvokeAsync(Agent agent, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

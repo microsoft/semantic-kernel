@@ -16,6 +16,11 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class AgentChat
 {
+    /// <summary>
+    /// Expose the chat history for subclasses.
+    /// </summary>
+    protected IReadOnlyList<ChatMessageContent> History => this._history; // $$$ SCOPE ???
+
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
     private readonly Dictionary<Agent, string> _channelMap;
@@ -49,29 +54,49 @@ public abstract class AgentChat
     /// <summary>
     /// Append messages to the conversation.
     /// </summary>
+    /// <param name="message">Set of non-system messages with which to seed the conversation.</param>
+    public void AppendHistory(ChatMessageContent message)
+    {
+        this.AppendHistory(new[] { message });
+    }
+
+    /// <summary>
+    /// Append messages to the conversation.
+    /// </summary>
     /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
     public void AppendHistory(IEnumerable<ChatMessageContent> messages)
     {
-        var cleanMessages = messages.Where(m => m.Role != AuthorRole.System).ToArray();
+        bool hasSystemMessage = false;
+        var cleanMessages =
+            messages.Where(
+                m =>
+                {
+                    bool isSystemMessage = m.Role == AuthorRole.System;
+                    hasSystemMessage |= isSystemMessage;
+                    return !isSystemMessage;
+                }).ToArray();
+
+        if (hasSystemMessage)
+        {
+            throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
+        }
+
+        // Append to nexus history
+        this._history.AddRange(cleanMessages);
 
         // Broadcast message to other channels (in parallel)
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
         this._broadcastQueue.Enqueue(channelRefs, cleanMessages);
-
-        // Append to chat history
-        this._history.AddRange(cleanMessages);
     }
 
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
-    /// <param name="input">Optional user input.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         Agent agent,
-        ChatMessageContent? input = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Verify only a single operation is active
@@ -86,15 +111,9 @@ public abstract class AgentChat
             // Manifest the required channel.  Will throw if channel not in sync.
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
-            if (input.HasContent())
-            {
-                this._history.Add(input!);
-                yield return input!;
-            }
-
             // Invoke agent & process response
             List<ChatMessageContent> messages = new();
-            await foreach (var message in channel.InvokeAsync(agent, input, cancellationToken).ConfigureAwait(false))
+            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 // Add to primary history
                 this._history.Add(message);
@@ -152,15 +171,6 @@ public abstract class AgentChat
         this._channelMap.Add(agent, hash);
 
         return hash;
-    }
-
-    /// <summary>
-    /// Transform text into a user message.
-    /// </summary>
-    /// <param name="input">Optional user input.</param>
-    protected static ChatMessageContent? CreateUserMessage(string? input)
-    {
-        return string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
     }
 
     /// <summary>

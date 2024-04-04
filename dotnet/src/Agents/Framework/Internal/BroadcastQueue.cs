@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using ChannelQueue = System.Collections.Concurrent.ConcurrentQueue<System.Collections.Generic.IList<Microsoft.SemanticKernel.ChatMessageContent>>;
+using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IList<Microsoft.SemanticKernel.ChatMessageContent>>;
 
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
@@ -13,21 +12,24 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
 /// </summary>
 /// <remarks>
-/// Maintains a set of channel specific queues.
+/// Maintains a set of channel specific queues, each with individual locks, in addition to a global state lock.
+/// Queue specific locks exist to synchronize access to an individual queue without blocking
+/// other queue operations or global state.
+/// Locking order always state-lock > queue-lock or just single lock, never queue-lock => state-lock.
+/// A deadlock cannot occur if locks are always acquired in same order.
 /// </remarks>
 internal sealed class BroadcastQueue
 {
-    private int _isActive;
-    private readonly Dictionary<string, ChannelQueue> _queues = new();
+    private readonly Dictionary<string, QueueReference> _queues = new();
     private readonly Dictionary<string, Task> _tasks = new();
     private readonly Dictionary<string, Exception> _failures = new();
-    private readonly object _queueLock = new(); // Synchronize access to _isActive, _queue and _tasks.
+    private readonly object _stateLock = new(); // Synchronize access to object state.
 
     /// <summary>
-    /// Defines the yield duration when blocking for a channel-queue.
+    /// Defines the yield duration when waiting on a channel-queue to synchronize.
     /// to drain.
     /// </summary>
-    public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(1);
+    public TimeSpan BlockDuration { get; set; } = TimeSpan.FromSeconds(0.1);
 
     /// <summary>
     /// Enqueue a set of messages for a given channel.
@@ -36,16 +38,24 @@ internal sealed class BroadcastQueue
     /// <param name="messages">The messages being broadcast.</param>
     public void Enqueue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
     {
-        lock (this._queueLock)
+        lock (this._stateLock)
         {
             foreach (var channel in channels)
             {
-                var queue = this.GetQueue(channel);
-                queue.Enqueue(messages);
+                if (!this._queues.TryGetValue(channel.Hash, out var queueRef))
+                {
+                    queueRef = new();
+                    this._queues.Add(channel.Hash, queueRef);
+                }
+
+                lock (queueRef.QueueLock)
+                {
+                    queueRef.Queue.Enqueue(messages);
+                }
 
                 if (!this._tasks.ContainsKey(channel.Hash))
                 {
-                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queue));
+                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queueRef));
                 }
             }
         }
@@ -54,87 +64,144 @@ internal sealed class BroadcastQueue
     /// <summary>
     /// Blocks until a channel-queue is not in a receive state.
     /// </summary>
-    /// <param name="channel">A <see cref="ChannelReference"/> structure.</param>
+    /// <param name="channelRef">A <see cref="ChannelReference"/> structure.</param>
     /// <returns>false when channel is no longer receiving.</returns>
     /// <throws>
     /// When channel is out of sync.
     /// </throws>
-    public async Task EnsureSynchronizedAsync(ChannelReference channel)
+    public async Task EnsureSynchronizedAsync(ChannelReference channelRef)
     {
-        ChannelQueue queue;
+        QueueReference queueRef;
 
-        lock (this._queueLock)
+        lock (this._stateLock)
         {
-            if (!this._queues.TryGetValue(channel.Hash, out queue))
+            // Either won race with Enqueue or lost race with ReceiveAsync.
+            // Missing queue is synchronized by definition.
+            if (!this._queues.TryGetValue(channelRef.Hash, out queueRef))
             {
                 return;
             }
         }
 
-        while (!queue.IsEmpty) // ChannelQueue is ConcurrentQueue, no need for _queueLock
+        // Evaluate queue state
+        bool isEmpty = true;
+        do
         {
-            lock (this._queueLock)
+            // Queue state is only changed within acquired QueueLock.
+            // If its empty here, it is synchronized.
+            lock (queueRef.QueueLock)
             {
-                // Activate non-empty queue
-                if (!this._tasks.ContainsKey(channel.Hash))
+                isEmpty = queueRef.IsEmpty;
+            }
+
+            lock (this._stateLock)
+            {
+                // Propagate prior failure (inform caller of synchronization issue)
+                if (this._failures.TryGetValue(channelRef.Hash, out var failure))
                 {
-                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queue));
+                    this._failures.Remove(channelRef.Hash); // Clearing failure means re-invoking EnsureSynchronizedAsync will activate empty queue
+                    throw new KernelException($"Unexpected failure broadcasting to channel: {channelRef.Channel.GetType().Name}", failure);
                 }
 
-                // Propagate prior failure (inform caller of synchronization issue)
-                if (this._failures.TryGetValue(channel.Hash, out var failure))
+                // Activate non-empty queue
+                if (!isEmpty)
                 {
-                    this._failures.Remove(channel.Hash);
-                    throw new KernelException($"Unexpected failure broadcasting to channel: {channel.Channel.GetType().Name}", failure);
+                    if (!this._tasks.TryGetValue(channelRef.Hash, out Task task) || task.IsCompleted)
+                    {
+                        this._tasks[channelRef.Hash] = this.ReceiveAsync(channelRef, queueRef);
+                    }
                 }
             }
 
-            await Task.Delay(this.BlockDuration).ConfigureAwait(false);
+            if (!isEmpty)
+            {
+                await Task.Delay(this.BlockDuration).ConfigureAwait(false);
+            }
         }
+        while (!isEmpty);
     }
 
-    private async Task ReceiveAsync(ChannelReference channel, ChannelQueue queue)
+    /// <summary>
+    /// Processes the specified queue with the provided channel, until queue is empty.
+    /// </summary>
+    private async Task ReceiveAsync(ChannelReference channelRef, QueueReference queueRef)
     {
-        Interlocked.CompareExchange(ref this._isActive, 1, 0); // Set regardless of current state.
-
         Exception? failure = null;
 
-        while (!queue.IsEmpty)
+        bool isEmpty = true; // Default to fall-through state
+        do
         {
-            if (queue.TryPeek(out var messages)) // Leave payload on queue for retry on failure
+            Task receiveTask;
+
+            // Queue state is only changed within acquired QueueLock.
+            // If its empty here, it is synchronized.
+            lock (queueRef.QueueLock)
             {
-                try
+                isEmpty = queueRef.IsEmpty;
+
+                // Process non empty queue
+                if (isEmpty)
                 {
-                    await channel.Channel.ReceiveAsync(messages).ConfigureAwait(false);
-                    queue.TryDequeue(out _); // Queue has already been peeked.  Remove head on success.
-                }
-                catch (Exception exception) when (!exception.IsCriticalException())
-                {
-                    failure = exception;
                     break;
                 }
-            }
-        }
 
-        lock (this._queueLock)
-        {
-            this._tasks.Remove(channel.Hash);
-            this._isActive = this._tasks.Count == 0 ? 0 : this._isActive; // Clear if channel queue has drained.
-            if (failure != null)
+                var messages = queueRef.Queue.Peek();
+                receiveTask = channelRef.Channel.ReceiveAsync(messages);
+            }
+
+            // Queue not empty.
+            try
             {
-                this._failures.Add(channel.Hash, failure);
+                await receiveTask.ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsCriticalException())
+            {
+                failure = exception;
+            }
+
+            // Propagate failure or update queue
+            lock (this._stateLock)
+            {
+                // A failure on non empty queue means, still not empty.
+                // Empty queue will have null failure
+                if (failure != null)
+                {
+                    this._failures.Add(channelRef.Hash, failure);
+                    break; // Skip dequeue
+                }
+
+                // Dequeue processed messages and re-evaluate
+                lock (queueRef.QueueLock)
+                {
+                    // Queue has already been peeked.  Remove head on success.
+                    queueRef.Queue.Dequeue();
+
+                    isEmpty = queueRef.IsEmpty;
+                }
             }
         }
+        while (!isEmpty);
     }
 
-    private ChannelQueue GetQueue(ChannelReference channel)
+    /// <summary>
+    /// Utility class to associate a queue with its specific lock.
+    /// </summary>
+    private sealed class QueueReference
     {
-        if (!this._queues.TryGetValue(channel.Hash, out var queue))
-        {
-            queue = new ChannelQueue();
-            this._queues.Add(channel.Hash, queue);
-        }
+        /// <summary>
+        /// Queue specific lock to control queue access with finer granularity
+        /// than the state-lock.
+        /// </summary>
+        public object QueueLock { get; } = new object();
 
-        return queue;
+        /// <summary>
+        /// The target queue.
+        /// </summary>
+        public ChannelQueue Queue { get; } = new ChannelQueue();
+
+        /// <summary>
+        /// Convenience logic
+        /// </summary>
+        public bool IsEmpty => this.Queue.Count == 0;
     }
 }

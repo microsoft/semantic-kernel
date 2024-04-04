@@ -18,17 +18,11 @@ public class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected internal sealed override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
-        ChatMessageContent? input,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (agent is not IChatHistoryHandler historyHandler)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
-        }
-
-        if (input.HasContent())
-        {
-            this._chat.Add(input!);
         }
 
         await foreach (var message in historyHandler.InvokeAsync(this._chat, cancellationToken))
