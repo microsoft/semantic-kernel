@@ -17,7 +17,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 public class AggregatorTerminationStrategyTests
 {
     /// <summary>
-    /// $$$
+    /// Verify initial state.
     /// </summary>
     [Fact]
     public void VerifyAggregateTerminationStrategyInitialState()
@@ -27,7 +27,7 @@ public class AggregatorTerminationStrategyTests
     }
 
     /// <summary>
-    /// $$$
+    /// Verify evaluation of AggregateTerminationCondition.Any.
     /// </summary>
     [Fact]
     public async Task VerifyAggregateTerminationStrategyAnyAsync()
@@ -63,7 +63,7 @@ public class AggregatorTerminationStrategyTests
     }
 
     /// <summary>
-    /// $$$
+    /// Verify evaluation of AggregateTerminationCondition.All.
     /// </summary>
     [Fact]
     public async Task VerifyAggregateTerminationStrategyAllAsync()
@@ -99,7 +99,7 @@ public class AggregatorTerminationStrategyTests
     }
 
     /// <summary>
-    /// $$$
+    /// Verify evaluation of agent scope evaluation.
     /// </summary>
     [Fact]
     public async Task VerifyAggregateTerminationStrategyAgentAsync()

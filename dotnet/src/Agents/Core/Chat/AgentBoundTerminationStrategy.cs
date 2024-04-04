@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public abstract class AgentBoundTerminationStrategy : TerminationStrategy
 {
     /// <summary>
-    /// $$$
+    /// Set of agents for which this strategy is applicable.
     /// </summary>
     public IReadOnlyList<Agent>? Agents { get; set; }
 

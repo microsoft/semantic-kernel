@@ -15,7 +15,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 public class ExpressionTerminationStrategyTest
 {
     /// <summary>
-    /// $$$
+    /// Verify abililty of strategy to match expression.
     /// </summary>
     [Fact]
     public async Task VerifyExpressionTerminationStrategyAsync()
