@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 using Microsoft.SemanticKernel.Text;
 using Xunit;
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 
 /// <summary>
 /// HuggingFace text generation request object.

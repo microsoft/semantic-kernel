@@ -2,18 +2,18 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using static Microsoft.SemanticKernel.Connectors.HuggingFace.Client.TextGenerationResponse;
+using static Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models.TextGenerationResponse;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 
-internal sealed class ImageToTextGenerationResponse : List<GeneratedTextItem>
+internal sealed class TextGenerationResponse : List<GeneratedTextItem>
 {
     internal sealed class GeneratedTextItem
     {
         /// <summary>
-        /// The generated string
+        /// The continuated string
         /// </summary>
         [JsonPropertyName("generated_text")]
         public string? GeneratedText { get; set; }

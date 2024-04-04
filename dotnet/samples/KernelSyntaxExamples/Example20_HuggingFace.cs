@@ -118,7 +118,7 @@ public class Example20_HuggingFace : BaseTest
     /// <summary>
     /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires TGI (text generation inference) deployment")]
     public async Task RunTextGenerationInferenceChatCompletionAsync()
     {
         WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
@@ -182,13 +182,12 @@ public class Example20_HuggingFace : BaseTest
         AuthorRole? role = null;
         await foreach (var chatMessageChunk in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory))
         {
-            if (role == null)
+            if (role is null)
             {
-                Write(chatMessageChunk.Role);
+                role = chatMessageChunk.Role;
+                Write(role);
             }
             Write(chatMessageChunk.Content);
-
-            role ??= chatMessageChunk.Role;
         }
     }
 

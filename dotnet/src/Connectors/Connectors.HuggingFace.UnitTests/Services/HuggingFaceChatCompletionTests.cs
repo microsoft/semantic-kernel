@@ -17,12 +17,12 @@ namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 /// <summary>
 /// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
 /// </summary>
-public sealed class HuggingFaceTextGenerationTests : IDisposable
+public sealed class HuggingFaceChatCompletionTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public HuggingFaceTextGenerationTests()
+    public HuggingFaceChatCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("completion_test_response.json"));
