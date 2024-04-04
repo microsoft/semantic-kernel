@@ -57,6 +57,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
     /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
     [JsonPropertyName("top_k")]
     public int? TopK
     {
@@ -88,6 +91,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum.
     /// Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
     /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
     [JsonPropertyName("max_time")]
     public float? MaxTime
     {
@@ -120,6 +126,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// (Default: None). Float (0.0-100.0). The more a token is used within generation the more
     /// it is penalized to not be picked in successive generation passes.
     /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
     [JsonPropertyName("repetition_penalty")]
     public float? RepetitionPenalty
     {
@@ -138,6 +147,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used
     /// resulting in a real new query.
     /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
     [JsonPropertyName("use_cache")]
     public bool UseCache
     {
@@ -155,6 +167,9 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// It limits the number of requests required to get your inference done.
     /// It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.
     /// </summary>
+    /// <remarks>
+    /// This may not be supported by all models/inference API.
+    /// </remarks>
     [JsonPropertyName("wait_for_model")]
     public bool WaitForModel
     {
@@ -279,6 +294,11 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
             UseCache = this.UseCache,
             WaitForModel = this.WaitForModel,
             ResultsPerPrompt = this.ResultsPerPrompt,
+            PresencePenalty = this.PresencePenalty,
+            LogProbs = this.LogProbs,
+            Seed = this.Seed,
+            Stop = this.Stop is not null ? new List<string>(this.Stop) : null,
+            TopLogProbs = this.TopLogProbs
         };
     }
 
@@ -287,7 +307,6 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private long? _seed;
     private List<string>? _stop;
     private int? _topLogProbs;
-
     private int _resultsPerPrompt = 1;
     private float _temperature = 1;
     private float? _topP;

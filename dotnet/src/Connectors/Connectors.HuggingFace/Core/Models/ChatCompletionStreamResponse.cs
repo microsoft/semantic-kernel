@@ -83,6 +83,7 @@ internal sealed class ChatCompletionStreamResponse
 
     internal sealed class ChatCompletionStreamChoiceLogProbs
     {
+        [JsonPropertyName("content")]
         public List<ChatCompletionStreamChoiceLogProbsContent>? Content { get; set; }
     }
 
@@ -92,9 +93,10 @@ internal sealed class ChatCompletionStreamResponse
         public string? Token { get; set; }
 
         [JsonPropertyName("logprob")]
-        public float LogProb { get; set; }
+        public double LogProb { get; set; }
 
         [JsonPropertyName("bytes")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[]? Bytes { get; set; }
 
         [JsonPropertyName("top_logprobs")]
@@ -107,9 +109,10 @@ internal sealed class ChatCompletionStreamResponse
         public string? Token { get; set; }
 
         [JsonPropertyName("logprob")]
-        public float LogProb { get; set; }
+        public double LogProb { get; set; }
 
         [JsonPropertyName("bytes")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[]? Bytes { get; set; }
     }
 }

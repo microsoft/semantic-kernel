@@ -25,7 +25,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
     public HuggingFaceTextGenerationTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("completion_test_response.json"));
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("textgeneration_test_response.json"));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }

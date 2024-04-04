@@ -61,13 +61,13 @@ internal sealed class HuggingFaceOpenAIClient
         this._clientCore = clientCore;
     }
 
-    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatAsync(
+    internal async IAsyncEnumerable<StreamingChatMessageContent> StreamCompleteChatMessageAsync(
       ChatHistory chatHistory,
       PromptExecutionSettings? executionSettings,
       [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
-        var endpoint = this.GetChatGenerationEndpoint(modelId);
+        var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
 
@@ -85,13 +85,13 @@ internal sealed class HuggingFaceOpenAIClient
         }
     }
 
-    internal async Task<IReadOnlyList<ChatMessageContent>> GenerateChatAsync(
+    internal async Task<IReadOnlyList<ChatMessageContent>> CompleteChatMessageAsync(
         ChatHistory chatHistory,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
-        var endpoint = this.GetChatGenerationEndpoint(modelId);
+        var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
@@ -127,17 +127,19 @@ internal sealed class HuggingFaceOpenAIClient
 
         foreach (var choice in response.Choices!)
         {
-            var metadata = new Dictionary<string, object?>(8)
-        {
-            { "created", response.Created },
-            { "object", response.Object },
-            { "model", response.Model },
-            { "system_fingerprint", response.SystemFingerprint },
-            { "id", response.Id },
-            { "usage", response.Usage },
-            { "finish_reason", choice.FinishReason },
-            { "log_probs", choice.LogProbs },
-        };
+            var metadata = new HuggingFaceChatCompletionMetadata
+            {
+                Id = response.Id,
+                Model = response.Model,
+                @Object = response.Object,
+                SystemFingerPrint = response.SystemFingerprint,
+                Created = response.Created,
+                FinishReason = choice.FinishReason,
+                LogProbs = choice.LogProbs,
+                UsageCompletionTokens = response.Usage!.CompletionTokens,
+                UsagePromptTokens = response.Usage!.PromptTokens,
+                UsageTotalTokens = response.Usage!.TotalTokens,
+            };
 
             chatMessageContents.Add(new ChatMessageContent(
                 role: new AuthorRole(choice.Message!.Role!),
@@ -156,16 +158,16 @@ internal sealed class HuggingFaceOpenAIClient
         var choice = response.Choices.FirstOrDefault();
         if (choice is not null)
         {
-            var metadata = new Dictionary<string, object?>(6)
-        {
-            { "created", response.Created },
-            { "object", response.Object },
-            { "model", response.Model },
-            { "system_fingerprint", response.SystemFingerprint },
-            { "id", response.Id },
-            { "finish_reason", choice.FinishReason },
-            { "log_probs", choice.LogProbs },
-        };
+            var metadata = new HuggingFaceChatCompletionMetadata
+            {
+                Id = response.Id,
+                Model = response.Model,
+                @Object = response.Object,
+                SystemFingerPrint = response.SystemFingerprint,
+                Created = response.Created,
+                FinishReason = choice.FinishReason,
+                LogProbs = choice.LogProbs,
+            };
 
             var streamChat = new StreamingChatMessageContent(
                 choice.Delta?.Role is not null ? new AuthorRole(choice.Delta.Role) : null,
@@ -215,6 +217,8 @@ internal sealed class HuggingFaceOpenAIClient
         PromptExecutionSettings? promptExecutionSettings)
     {
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
+        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
+
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
         var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
         return request;
@@ -223,6 +227,6 @@ internal sealed class HuggingFaceOpenAIClient
     private IAsyncEnumerable<ChatCompletionStreamResponse> ParseChatResponseStreamAsync(Stream responseStream, CancellationToken cancellationToken)
         => SseJsonParser.ParseAsync<ChatCompletionStreamResponse>(responseStream, cancellationToken);
 
-    private Uri GetChatGenerationEndpoint(string modelId)
+    private Uri GetChatGenerationEndpoint()
         => new($"{this._clientCore.Endpoint}{this._clientCore.Separator}v1/chat/completions");
 }

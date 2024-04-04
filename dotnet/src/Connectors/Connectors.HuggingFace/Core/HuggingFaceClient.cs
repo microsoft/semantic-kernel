@@ -308,10 +308,10 @@ internal sealed class HuggingFaceClient
     #region Chat Commpletion
 
     internal Task<IReadOnlyList<ChatMessageContent>> GenerateChatAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
-        => this._openAIClient.GenerateChatAsync(chatHistory, executionSettings, cancellationToken);
+        => this._openAIClient.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
     internal IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
-        => this._openAIClient.StreamGenerateChatAsync(chatHistory, executionSettings, cancellationToken);
+        => this._openAIClient.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
     #endregion
 }
