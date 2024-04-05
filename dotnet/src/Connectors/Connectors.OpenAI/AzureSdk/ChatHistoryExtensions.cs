@@ -31,7 +31,9 @@ public static class ChatHistoryExtensions
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
         Dictionary<string, object?>? metadata = null;
-        AuthorRole? streamedRole = default;
+        AuthorRole? streamedRole = null;
+        string? streamedName = null;
+
         await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
             metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
@@ -45,6 +47,7 @@ public static class ChatHistoryExtensions
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
             streamedRole ??= chatMessage.Role;
+            streamedName ??= chatMessage.AuthorName;
 
             messageContents.Add(chatMessage);
             yield return chatMessage;
@@ -52,12 +55,16 @@ public static class ChatHistoryExtensions
 
         if (messageContents.Count != 0)
         {
-            chatHistory.Add(new OpenAIChatMessageContent(
-                streamedRole ?? AuthorRole.Assistant,
-                contentBuilder?.ToString() ?? string.Empty,
-                messageContents[0].ModelId!,
-                OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
-                metadata));
+            var role = streamedRole ?? AuthorRole.Assistant;
+
+            chatHistory.Add(
+                new OpenAIChatMessageContent(
+                    role,
+                    contentBuilder?.ToString() ?? string.Empty,
+                    messageContents[0].ModelId!,
+                    OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex),
+                    metadata)
+                { AuthorName = streamedName });
         }
     }
 }
