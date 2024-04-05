@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 public sealed class ClaudeChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = new();
-    private readonly ClaudeChatCompletionClient _chatCompletionClient;
+    private readonly ClaudeClient _client;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClaudeChatCompletionService"/> class.
@@ -37,7 +37,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._chatCompletionClient = new ClaudeChatCompletionClient(
+        this._client = new ClaudeClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -65,7 +65,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(endpoint);
 
-        this._chatCompletionClient = new ClaudeChatCompletionClient(
+        this._client = new ClaudeClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -86,7 +86,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return this._client.GenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -96,6 +96,6 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return this._chatCompletionClient.StreamGenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return this._client.StreamGenerateChatMessageAsync(chatHistory, executionSettings, kernel, cancellationToken);
     }
 }
