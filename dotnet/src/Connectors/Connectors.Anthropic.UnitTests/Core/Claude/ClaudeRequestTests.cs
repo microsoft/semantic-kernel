@@ -248,9 +248,9 @@ public sealed class ClaudeRequestTests
         var kvp = KeyValuePair.Create("sampleKey", "sampleValue");
         var expectedArgs = new JsonObject { [kvp.Key] = kvp.Value };
         var toolCallPart = new ClaudeToolCallContent
-            { ToolId = "any uid1", FunctionName = "function-name", Arguments = expectedArgs };
+        { ToolId = "any uid1", FunctionName = "function-name", Arguments = expectedArgs };
         var toolCallPart2 = new ClaudeToolCallContent
-            { ToolId = "any uid2", FunctionName = "function2-name", Arguments = expectedArgs };
+        { ToolId = "any uid2", FunctionName = "function2-name", Arguments = expectedArgs };
         chatHistory.Add(new ClaudeChatMessageContent(AuthorRole.Assistant, "tool-message", "model-id", functionsToolCalls: [toolCallPart]));
         chatHistory.Add(new ClaudeChatMessageContent(AuthorRole.Assistant, "tool-message2", "model-id2", functionsToolCalls: [toolCallPart2]));
         var executionSettings = new ClaudePromptExecutionSettings { ModelId = "model-id", MaxTokens = 128 };
