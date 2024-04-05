@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents a chat completion service using Google AI Claude API.
+/// Represents a chat completion service using Anthropic Claude API.
 /// </summary>
 public sealed class ClaudeChatCompletionService : IChatCompletionService
 {
