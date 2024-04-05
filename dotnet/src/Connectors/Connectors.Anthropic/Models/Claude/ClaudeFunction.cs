@@ -130,10 +130,10 @@ public sealed class ClaudeFunction
 
     /// <summary>
     /// Converts the <see cref="ClaudeFunction"/> representation to the Gemini API's
-    /// <see cref="GeminiTool.FunctionDeclaration"/> representation.
+    /// <see cref="ClaudeToolFunctionDeclaration"/> representation.
     /// </summary>
-    /// <returns>A <see cref="GeminiTool.FunctionDeclaration"/> containing all the function information.</returns>
-    internal GeminiTool.FunctionDeclaration ToFunctionDeclaration()
+    /// <returns>A <see cref="ClaudeToolFunctionDeclaration"/> containing all the function information.</returns>
+    internal ClaudeToolFunctionDeclaration ToFunctionDeclaration()
     {
         Dictionary<string, object?>? resultParameters = null;
 
@@ -159,7 +159,7 @@ public sealed class ClaudeFunction
             };
         }
 
-        return new GeminiTool.FunctionDeclaration
+        return new ClaudeToolFunctionDeclaration
         {
             Name = this.FullyQualifiedName,
             Description = this.Description ?? throw new InvalidOperationException(
