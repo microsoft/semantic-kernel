@@ -15,8 +15,8 @@ public sealed class ClaudeFunctionToolCall
 {
     private string? _fullyQualifiedFunctionName;
 
-    /// <summary>Initialize the <see cref="ClaudeFunctionToolCall"/> from a <see cref="GeminiPart.FunctionCallPart"/>.</summary>
-    internal ClaudeFunctionToolCall(GeminiPart.FunctionCallPart functionToolCall)
+    /// <summary>Initialize the <see cref="ClaudeFunctionToolCall"/> from a <see cref="ClaudeToolCallContent"/>.</summary>
+    internal ClaudeFunctionToolCall(ClaudeToolCallContent functionToolCall)
     {
         Verify.NotNull(functionToolCall);
         Verify.NotNull(functionToolCall.FunctionName);

@@ -81,10 +81,11 @@ public sealed class ClaudeRequestTests
         var request = ClaudeRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
+        Assert.All(request.Messages, c => Assert.IsType<ClaudeTextContent>(c.Contents[0]));
         Assert.Collection(request.Messages,
-            c => Assert.Equal(chatHistory[0].Content, c.Contents[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Contents[0].Text),
-            c => Assert.Equal(chatHistory[2].Content, c.Contents[0].Text));
+            c => Assert.Equal(chatHistory[0].Content, ((ClaudeTextContent)c.Contents[0]).Text),
+            c => Assert.Equal(chatHistory[1].Content, ((ClaudeTextContent)c.Contents[0]).Text),
+            c => Assert.Equal(chatHistory[2].Content, ((ClaudeTextContent)c.Contents[0]).Text));
         Assert.Collection(request.Messages,
             c => Assert.Equal(chatHistory[0].Role, c.Role),
             c => Assert.Equal(chatHistory[1].Role, c.Role),
@@ -109,10 +110,11 @@ public sealed class ClaudeRequestTests
         var request = ClaudeRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
 
         // Assert
+        Assert.All(request.Messages, c => Assert.IsType<ClaudeTextContent>(c.Contents[0]));
         Assert.Collection(request.Messages,
-            c => Assert.Equal(chatHistory[0].Content, c.Contents[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Contents[0].Text),
-            c => Assert.Equal(chatHistory[2].Items.Cast<TextContent>().Single().Text, c.Contents[0].Text));
+            c => Assert.Equal(chatHistory[0].Content, ((ClaudeTextContent)c.Contents[0]).Text),
+            c => Assert.Equal(chatHistory[1].Content, ((ClaudeTextContent)c.Contents[0]).Text),
+            c => Assert.Equal(chatHistory[2].Items.Cast<TextContent>().Single().Text, ((ClaudeTextContent)c.Contents[0]).Text));
     }
 
     [Fact]
@@ -136,12 +138,16 @@ public sealed class ClaudeRequestTests
 
         // Assert
         Assert.Collection(request.Messages,
-            c => Assert.Equal(chatHistory[0].Content, c.Contents[0].Text),
-            c => Assert.Equal(chatHistory[1].Content, c.Contents[0].Text),
+            c => Assert.IsType<ClaudeTextContent>(c.Contents[0]),
+            c => Assert.IsType<ClaudeTextContent>(c.Contents[0]),
+            c => Assert.IsType<ClaudeImageContent>(c.Contents[0]));
+        Assert.Collection(request.Messages,
+            c => Assert.Equal(chatHistory[0].Content, ((ClaudeTextContent)c.Contents[0]).Text),
+            c => Assert.Equal(chatHistory[1].Content, ((ClaudeTextContent)c.Contents[0]).Text),
             c =>
             {
-                Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().MimeType, c.Contents[0].Image!.MediaType);
-                Assert.True(imageAsBytes.ToArray().SequenceEqual(Convert.FromBase64String(c.Contents[0].Image!.Data)));
+                Assert.Equal(chatHistory[2].Items.Cast<ImageContent>().Single().MimeType, ((ClaudeImageContent)c.Contents[0]).Source.MediaType);
+                Assert.True(imageAsBytes.ToArray().SequenceEqual(Convert.FromBase64String(((ClaudeImageContent)c.Contents[0]).Source.Data)));
             });
     }
 

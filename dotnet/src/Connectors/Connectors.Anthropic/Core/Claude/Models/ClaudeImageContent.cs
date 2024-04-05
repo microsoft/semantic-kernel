@@ -9,14 +9,14 @@ internal sealed class ClaudeImageContent : ClaudeMessageContent
     [JsonConstructor]
     public ClaudeImageContent(string type, string mediaType, string data)
     {
-        this.Image = new SourceEntity(type, mediaType, data);
+        this.Source = new SourceEntity(type, mediaType, data);
     }
 
     /// <summary>
     /// Only used when type is "image". The image content.
     /// </summary>
     [JsonPropertyName("source")]
-    public SourceEntity Image { get; set; }
+    public SourceEntity Source { get; set; }
 
     internal sealed class SourceEntity
     {

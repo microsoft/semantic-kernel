@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
-using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models.Claude;
@@ -51,7 +50,7 @@ public sealed class ClaudeFunctionTests
             () => { }, "myfunc", "This is a description of the function.").Metadata.ToClaudeFunction();
 
         // Act
-        ClaudeTool.FunctionDeclaration result = sut.ToFunctionDeclaration();
+        var result = sut.ToFunctionDeclaration();
 
         // Assert
         Assert.Equal(sut.FunctionName, result.Name);
@@ -81,7 +80,7 @@ public sealed class ClaudeFunctionTests
         }).GetFunctionsMetadata()[0].ToClaudeFunction();
 
         // Act
-        ClaudeTool.FunctionDeclaration result = sut.ToFunctionDeclaration();
+        var result = sut.ToFunctionDeclaration();
 
         // Assert
         Assert.Equal($"myplugin{ClaudeFunction.NameSeparator}myfunc", result.Name);
@@ -110,7 +109,7 @@ public sealed class ClaudeFunctionTests
 
         ClaudeFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
 
-        ClaudeTool.FunctionDeclaration functionDefinition = sut.ToFunctionDeclaration();
+        var functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
         Assert.Equal($"Tests{ClaudeFunction.NameSeparator}TestFunction", functionDefinition.Name);
@@ -141,7 +140,7 @@ public sealed class ClaudeFunctionTests
 
         ClaudeFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
 
-        ClaudeTool.FunctionDeclaration functionDefinition = sut.ToFunctionDeclaration();
+        var functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
         Assert.Equal($"Tests{ClaudeFunction.NameSeparator}TestFunction", functionDefinition.Name);
@@ -159,7 +158,7 @@ public sealed class ClaudeFunctionTests
             parameters: new[] { new KernelParameterMetadata("param1") }).Metadata.ToClaudeFunction();
 
         // Act
-        ClaudeTool.FunctionDeclaration result = f.ToFunctionDeclaration();
+        var result = f.ToFunctionDeclaration();
 
         // Assert
         Assert.Equal(
@@ -176,7 +175,7 @@ public sealed class ClaudeFunctionTests
             parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).Metadata.ToClaudeFunction();
 
         // Act
-        ClaudeTool.FunctionDeclaration result = f.ToFunctionDeclaration();
+        var result = f.ToFunctionDeclaration();
 
         // Assert
         Assert.Equal(

@@ -20,7 +20,7 @@ public sealed class ClaudeFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName)
     {
         // Arrange
-        var toolCallPart = new ClaudePart.FunctionCallPart { FunctionName = toolCallName };
+        var toolCallPart = new ClaudeToolCallContent { FunctionName = toolCallName };
         var functionToolCall = new ClaudeFunctionToolCall(toolCallPart);
 
         // Act & Assert
@@ -31,7 +31,7 @@ public sealed class ClaudeFunctionToolCallTests
     public void ArgumentsReturnsCorrectValue()
     {
         // Arrange
-        var toolCallPart = new ClaudePart.FunctionCallPart
+        var toolCallPart = new ClaudeToolCallContent
         {
             FunctionName = "MyPlugin_MyFunction",
             Arguments = new JsonObject
@@ -54,7 +54,7 @@ public sealed class ClaudeFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
-        var toolCallPart = new ClaudePart.FunctionCallPart
+        var toolCallPart = new ClaudeToolCallContent
         {
             FunctionName = "MyPlugin_MyFunction",
             Arguments = new JsonObject
