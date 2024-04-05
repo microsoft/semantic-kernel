@@ -33,6 +33,7 @@ public sealed class ClaudeFunctionToolCall
         }
 
         this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
+        this.ToolUseId = functionToolCall.ToolId;
         this.PluginName = pluginName;
         this.FunctionName = functionName;
         if (functionToolCall.Arguments is not null)
@@ -40,6 +41,11 @@ public sealed class ClaudeFunctionToolCall
             this.Arguments = functionToolCall.Arguments.Deserialize<Dictionary<string, object?>>();
         }
     }
+
+    /// <summary>
+    /// The id of tool returned by the claude.
+    /// </summary>
+    public string ToolUseId { get; }
 
     /// <summary>Gets the name of the plugin with which this function is associated, if any.</summary>
     public string? PluginName { get; }

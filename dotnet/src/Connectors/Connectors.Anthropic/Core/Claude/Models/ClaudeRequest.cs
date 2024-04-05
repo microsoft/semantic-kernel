@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -85,6 +86,14 @@ internal sealed class ClaudeRequest
         this.Tools.Add(function.ToFunctionDeclaration());
     }
 
+    public void AddChatMessage(ChatMessageContent message)
+    {
+        Verify.NotNull(this.Messages);
+        Verify.NotNull(message);
+
+        this.Messages.Add(CreateClaudeMessageFromChatMessage(message));
+    }
+
     /// <summary>
     /// Creates a <see cref="ClaudeRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="ClaudePromptExecutionSettings"/>.
     /// </summary>
@@ -103,12 +112,15 @@ internal sealed class ClaudeRequest
     }
 
     private static void AddMessages(ChatHistory chatHistory, ClaudeRequest request)
+        => request.Messages = chatHistory.Select(CreateClaudeMessageFromChatMessage).ToList();
+
+    private static Message CreateClaudeMessageFromChatMessage(ChatMessageContent message)
     {
-        request.Messages = chatHistory.Select(message => new Message
+        return new Message
         {
             Role = message.Role,
-            Contents = message.Items.Select(GetContentFromKernelContent).ToList()
-        }).ToList();
+            Contents = CreateClaudeMessages(message)
+        };
     }
 
     private static ClaudeRequest CreateRequest(ChatHistory chatHistory, ClaudePromptExecutionSettings executionSettings, bool streamingMode)
@@ -127,7 +139,41 @@ internal sealed class ClaudeRequest
         return request;
     }
 
-    private static ClaudeMessageContent GetContentFromKernelContent(KernelContent content) => content switch
+    private static List<ClaudeMessageContent> CreateClaudeMessages(ChatMessageContent content)
+    {
+        List<ClaudeMessageContent> messages = new();
+        switch (content)
+        {
+            case ClaudeChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
+                messages.Add(new ClaudeToolResultContent
+                {
+                    ToolId = contentWithCalledTool.CalledToolResult.ToolUseId ?? throw new InvalidOperationException("Tool ID must be provided."),
+                    Content = new ClaudeTextContent(contentWithCalledTool.CalledToolResult.FunctionResult.ToString())
+                });
+                break;
+            case ClaudeChatMessageContent { ToolCalls: not null } contentWithToolCalls:
+                messages.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
+                    new ClaudeToolCallContent
+                    {
+                        ToolId = toolCall.ToolUseId,
+                        FunctionName = toolCall.FullyQualifiedName,
+                        Arguments = JsonSerializer.SerializeToNode(toolCall.Arguments),
+                    }));
+                break;
+            default:
+                messages.AddRange(content.Items.Select(GetClaudeMessageFromKernelContent));
+                break;
+        }
+
+        if (messages.Count == 0)
+        {
+            messages.Add(new ClaudeTextContent(content.Content ?? string.Empty));
+        }
+
+        return messages;
+    }
+
+    private static ClaudeMessageContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
     {
         TextContent textContent => new ClaudeTextContent(textContent.Text ?? string.Empty),
         ImageContent imageContent => new ClaudeImageContent(

@@ -12,13 +12,15 @@ public sealed class ClaudeFunctionToolResult
     /// </summary>
     /// <param name="toolCall">The called function.</param>
     /// <param name="functionResult">The result of the function.</param>
-    public ClaudeFunctionToolResult(ClaudeFunctionToolCall toolCall, FunctionResult functionResult)
+    /// <param name="toolUseId">The id of tool returned by the claude.</param>
+    public ClaudeFunctionToolResult(ClaudeFunctionToolCall toolCall, FunctionResult functionResult, string? toolUseId)
     {
         Verify.NotNull(toolCall);
         Verify.NotNull(functionResult);
 
         this.FunctionResult = functionResult;
         this.FullyQualifiedName = toolCall.FullyQualifiedName;
+        this.ToolUseId = toolUseId;
     }
 
     /// <summary>
@@ -29,4 +31,9 @@ public sealed class ClaudeFunctionToolResult
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <seealso cref="ClaudeFunctionToolCall.FullyQualifiedName">ClaudeFunctionToolCall.FullyQualifiedName</seealso>
     public string FullyQualifiedName { get; }
+
+    /// <summary>
+    /// The id of tool returned by the claude.
+    /// </summary>
+    public string? ToolUseId { get; }
 }
