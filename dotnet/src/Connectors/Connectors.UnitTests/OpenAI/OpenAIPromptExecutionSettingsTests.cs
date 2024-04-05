@@ -160,7 +160,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Theory]
-    [InlineData("", "Assistant is a large language model.")]
+    [InlineData("", "")]
     [InlineData("System prompt", "System prompt")]
     public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
     {
@@ -202,7 +202,9 @@ public class OpenAIPromptExecutionSettingsTests
             ""temperature"": 0.5,
             ""top_p"": 0.0,
             ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
+            ""frequency_penalty"": 0.0,
+            ""stop_sequences"": [ ""DONE"" ],
+            ""token_selection_biases"": { ""1"": 2, ""3"": 4 }
         }";
         var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
@@ -214,6 +216,23 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gpt-4");
         Assert.Throws<InvalidOperationException>(() => executionSettings.ResultsPerPrompt = 2);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 1);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.TopP = 1);
+        Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences?.Add("STOP"));
+        Assert.Throws<NotSupportedException>(() => executionSettings.TokenSelectionBiases?.Add(5, 6));
+    }
+
+    [Fact]
+    public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings();
+        executionSettings.StopSequences = Array.Empty<string>();
+
+        // Act
+        var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+
+        // Assert
+        Assert.Null(executionSettingsWithData.StopSequences);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

@@ -29,6 +29,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         this._httpClient = new HttpClient();
     }
 
+    #region Text generation
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -147,6 +149,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAITextGenerationService);
     }
 
+    #endregion
+
+    #region Text embeddings
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -264,6 +270,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextEmbeddingGenerationService);
     }
+
+    #endregion
+
+    #region Chat completion
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -405,8 +415,46 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAIChatCompletionService);
     }
 
+    #endregion
+
+    #region Text to image
+
     [Fact]
-    public void KernelBuilderAddAzureOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder = builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -422,7 +470,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -438,7 +486,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void KernelBuilderAddOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -454,7 +502,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -468,6 +516,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
     }
+
+    #endregion
+
+    #region Text to audio
 
     [Fact]
     public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
@@ -532,6 +584,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToAudioService);
     }
+
+    #endregion
+
+    #region Audio to text
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -650,6 +706,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAIAudioToTextService);
     }
+
+    #endregion
 
     public void Dispose()
     {

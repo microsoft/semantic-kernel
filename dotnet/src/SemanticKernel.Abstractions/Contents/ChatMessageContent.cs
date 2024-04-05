@@ -16,6 +16,13 @@ namespace Microsoft.SemanticKernel;
 public class ChatMessageContent : KernelContent
 {
     /// <summary>
+    /// Name of the author of the message
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AuthorName { get; set; }
+
+    /// <summary>
     /// Role of the author of the message
     /// </summary>
     public AuthorRole Role { get; set; }
@@ -24,6 +31,7 @@ public class ChatMessageContent : KernelContent
     /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="TextContent"/> type.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
     public string? Content
     {
         get

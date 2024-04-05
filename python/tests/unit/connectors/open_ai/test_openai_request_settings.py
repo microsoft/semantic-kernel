@@ -3,9 +3,8 @@
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureAISearchDataSources,
+    AzureAISearchDataSource,
     AzureChatPromptExecutionSettings,
-    AzureDataSources,
     ExtraBody,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -195,9 +194,14 @@ def test_create_options():
 
 
 def test_create_options_azure_data():
-    az_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    az_data = AzureDataSources(type="AzureCognitiveSearch", parameters=az_source)
-    extra = ExtraBody(dataSources=[az_data])
+    az_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
+    extra = ExtraBody(dataSources=[az_source])
     settings = AzureChatPromptExecutionSettings(extra_body=extra)
     options = settings.prepare_settings_dict()
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)

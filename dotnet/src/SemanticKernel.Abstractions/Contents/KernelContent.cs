@@ -33,16 +33,19 @@ public abstract class KernelContent
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
     /// <summary>
     /// MIME type of the content.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? MimeType { get; set; }
 
     /// <summary>

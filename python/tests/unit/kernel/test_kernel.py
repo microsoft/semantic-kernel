@@ -5,12 +5,16 @@ import sys
 from typing import Union
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
+)
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -82,15 +86,13 @@ def test_kernel_init_with_plugins():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2, 3])
-async def test_invoke_functions(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
-    functions = [mock_function] * pipeline_count
 
-    await kernel.invoke(functions, KernelArguments())
+    await kernel.invoke(mock_function, KernelArguments())
 
-    assert mock_function.invoke.call_count == pipeline_count
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -107,7 +109,7 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-async def test_invoke_functions_fail(kernel: Kernel, create_mock_function):
+async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
@@ -120,16 +122,14 @@ async def test_invoke_functions_fail(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2, 3])
-async def test_invoke_stream_functions(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
-    functions = [mock_function] * pipeline_count
 
-    async for part in kernel.invoke_stream(functions, input="test"):
+    async for part in kernel.invoke_stream(mock_function, input="test"):
         assert part[0].text == "test"
 
-    assert mock_function.invoke.call_count == pipeline_count - 1
+    assert mock_function.invoke.call_count == 0
 
 
 @pytest.mark.asyncio
@@ -196,8 +196,7 @@ def test_invoke_handles_remove(kernel_with_handlers: Kernel):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_pre_invocation(kernel: Kernel, pipeline_count: int, create_mock_function):
+async def test_invoke_handles_pre_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
     kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
@@ -209,51 +208,17 @@ async def test_invoke_handles_pre_invocation(kernel: Kernel, pipeline_count: int
         return e
 
     kernel.add_function_invoking_handler(invoking_handler)
-    functions = [mock_function] * pipeline_count
 
     # Act
-    await kernel.invoke(functions, KernelArguments())
+    await kernel.invoke(mock_function, KernelArguments())
 
     # Assert
-    assert invoked == pipeline_count
-    assert mock_function.invoke.call_count == pipeline_count
-
-
-@pytest.mark.asyncio
-async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler(kernel: Kernel, create_mock_function):
-    mock_function1 = create_mock_function(name="SkipMe")
-    mock_function2 = create_mock_function(name="DontSkipMe")
-    invoked = 0
-    invoking = 0
-    invoked_function_name = ""
-
-    def invoking_handler(sender, e):
-        nonlocal invoking
-        invoking += 1
-        if e.kernel_function_metadata.name == "SkipMe":
-            e.skip()
-
-    def invoked_handler(sender, e):
-        nonlocal invoked_function_name, invoked
-        invoked_function_name = e.kernel_function_metadata.name
-        invoked += 1
-        return e
-
-    kernel.add_function_invoking_handler(invoking_handler)
-    kernel.add_function_invoked_handler(invoked_handler)
-
-    # Act
-    _ = await kernel.invoke([mock_function1, mock_function2], KernelArguments())
-
-    # Assert
-    assert invoking == 2
     assert invoked == 1
-    assert invoked_function_name == "DontSkipMe"
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_post_invocation(kernel: Kernel, pipeline_count, create_mock_function):
+async def test_invoke_handles_post_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function("test_function")
     invoked = 0
 
@@ -263,15 +228,14 @@ async def test_invoke_handles_post_invocation(kernel: Kernel, pipeline_count, cr
         return e
 
     kernel.add_function_invoked_handler(invoked_handler)
-    functions = [mock_function] * pipeline_count
 
     # Act
-    _ = await kernel.invoke(functions, KernelArguments())
+    _ = await kernel.invoke(mock_function, KernelArguments())
 
     # Assert
-    assert invoked == pipeline_count
+    assert invoked == 1
     mock_function.invoke.assert_called()
-    assert mock_function.invoke.call_count == pipeline_count
+    assert mock_function.invoke.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -314,7 +278,7 @@ async def test_invoke_change_variable_invoking_handler(kernel: Kernel, create_mo
     kernel.add_function_invoking_handler(invoking_handler)
     arguments = KernelArguments(input=original_input)
     # Act
-    result = await kernel.invoke([mock_function], arguments)
+    result = await kernel.invoke(mock_function, arguments)
 
     # Assert
     assert str(result) == new_input
@@ -454,6 +418,130 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     assert func.name == "TestFunction"
     assert func.description == "Write a short story."
     assert len(func.parameters) == 2
+
+
+def test_create_function_from_yaml_empty_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("", "plugin_name")
+
+
+def test_create_function_from_yaml_malformed_string(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+
+
+def test_create_function_from_valid_yaml(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
+    assert plugin is not None
+
+
+def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    assert plugin is not None
+    assert plugin["TestFunctionHandlebars"] is not None
+
+
+def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+
+    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    assert plugin is not None
+    assert plugin["TestFunctionJinja2"] is not None
+
+
+@pytest.mark.asyncio
+@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+async def test_import_openai_plugin_from_file(mock_parse_openai_manifest, kernel: Kernel):
+    openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+    with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
+        openai_spec = file.read()
+
+    openapi_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+    mock_parse_openai_manifest.return_value = openapi_spec_file_path
+
+    plugin = await kernel.import_plugin_from_openai(
+        plugin_name="TestOpenAIPlugin",
+        plugin_str=openai_spec,
+        execution_parameters=OpenAIFunctionExecutionParameters(
+            http_client=AsyncMock(),
+            auth_callback=AsyncMock(),
+            server_url_override="http://localhost",
+            enable_dynamic_payload=True,
+        ),
+    )
+    assert plugin is not None
+    assert plugin.name == "TestOpenAIPlugin"
+    assert plugin.functions.get("GetSecret") is not None
+    assert plugin.functions.get("SetSecret") is not None
+
+
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.get")
+@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
+async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, kernel: Kernel):
+    openai_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json"
+    )
+    with open(openai_spec_file_path, "r") as file:
+        openai_spec = file.read()
+
+    openapi_spec_file_path = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+    mock_parse_openai_manifest.return_value = openapi_spec_file_path
+
+    request = httpx.Request(method="GET", url="http://fake-url.com/akv-openai.json")
+
+    response = httpx.Response(200, text=openai_spec, request=request)
+    mock_get.return_value = response
+
+    fake_plugin_url = "http://fake-url.com/akv-openai.json"
+    plugin = await kernel.import_plugin_from_openai(
+        plugin_name="TestOpenAIPlugin",
+        plugin_url=fake_plugin_url,
+        execution_parameters=OpenAIFunctionExecutionParameters(
+            auth_callback=AsyncMock(),
+            server_url_override="http://localhost",
+            enable_dynamic_payload=True,
+        ),
+    )
+
+    assert plugin is not None
+    assert plugin.name == "TestOpenAIPlugin"
+    assert plugin.functions.get("GetSecret") is not None
+    assert plugin.functions.get("SetSecret") is not None
+
+    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": "Semantic-Kernel"})
+
+
+def test_import_plugin_from_openapi(kernel: Kernel):
+    openapi_spec_file = os.path.join(
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+    )
+
+    plugin = kernel.import_plugin_from_openapi(
+        plugin_name="TestOpenAPIPlugin",
+        openapi_document_path=openapi_spec_file,
+    )
+
+    assert plugin is not None
+    assert plugin.name == "TestOpenAPIPlugin"
+    assert plugin.functions.get("GetSecret") is not None
+    assert plugin.functions.get("SetSecret") is not None
+
+
+def test_import_plugin_from_openapi_missing_document_throws(kernel: Kernel):
+    with pytest.raises(PluginInitializationError):
+        kernel.import_plugin_from_openapi(
+            plugin_name="TestOpenAPIPlugin",
+            openapi_document_path=None,
+        )
 
 
 # endregion

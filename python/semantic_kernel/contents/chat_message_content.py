@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
-from typing import Optional
+from enum import Enum
+from typing import Literal, Optional
 from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
 
+from semantic_kernel.contents.chat_message_content_base import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT
+from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class ChatMessageContent(KernelContent):
@@ -29,12 +33,45 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+    type: Literal[CHAT_MESSAGE_CONTENT] = CHAT_MESSAGE_CONTENT  # type: ignore
     role: ChatRole
     content: Optional[str] = None
     encoding: Optional[str] = None
+    finish_reason: Optional[FinishReason] = None
 
     def __str__(self) -> str:
         return self.content or ""
+
+    def to_element(self, root_key: str) -> Element:
+        """Convert the ChatMessageContent to an XML Element.
+
+        Args:
+            root_key: str - The key to use for the root of the XML Element.
+
+        Returns:
+            Element - The XML Element representing the ChatMessageContent.
+        """
+        root = Element(root_key)
+        for field in self.model_fields_set:
+            if field in ["content", DISCRIMINATOR_FIELD]:
+                continue
+            value = getattr(self, field)
+            if value is None:
+                continue
+            if isinstance(value, Enum):
+                value = value.value
+            if isinstance(value, KernelBaseModel):
+                value = value.model_dump_json(exclude_none=True)
+            if isinstance(value, list):
+                if isinstance(value[0], KernelBaseModel):
+                    value = "|".join([val.model_dump_json(exclude_none=True) for val in value])
+                else:
+                    value = "|".join(value)
+            root.set(field, value)
+        if self.type != CHAT_MESSAGE_CONTENT:
+            root.set(DISCRIMINATOR_FIELD, self.type)
+        root.text = self.content or ""
+        return root
 
     def to_prompt(self, root_key: str) -> str:
         """Convert the ChatMessageContent to a prompt.
@@ -43,23 +80,5 @@ class ChatMessageContent(KernelContent):
             str - The prompt from the ChatMessageContent.
         """
 
-        root = Element(root_key)
-        root.set("role", self.role.value)
-        root.set("metadata", json.dumps(self.metadata))
-        root.text = self.content or ""
+        root = self.to_element(root_key)
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
-
-    @classmethod
-    def from_element(cls, element: Element) -> "ChatMessageContent":
-        """Create a new instance of ChatMessageContent from a prompt.
-
-        Args:
-            prompt: str - The prompt to create the ChatMessageContent from.
-
-        Returns:
-            ChatMessageContent - The new instance of ChatMessageContent.
-        """
-        args = {"role": element.get("role", ChatRole.USER.value), "content": element.text}
-        if metadata := element.get("metadata"):
-            args["metadata"] = json.loads(metadata)
-        return cls(**args)

@@ -4,7 +4,6 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -12,14 +11,17 @@ from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterM
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
+    JINJA2_TEMPLATE_FORMAT_NAME,
     KERNEL_TEMPLATE_FORMAT_NAME,
     TEMPLATE_FORMAT_TYPES,
 )
 from semantic_kernel.prompt_template.handlebars_prompt_template import HandlebarsPromptTemplate
+from semantic_kernel.prompt_template.jinja2_prompt_template import Jinja2PromptTemplate
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
     from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
     from semantic_kernel.kernel import Kernel
@@ -32,6 +34,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 TEMPLATE_FORMAT_MAP = {
     KERNEL_TEMPLATE_FORMAT_NAME: KernelPromptTemplate,
     HANDLEBARS_TEMPLATE_FORMAT_NAME: HandlebarsPromptTemplate,
+    JINJA2_TEMPLATE_FORMAT_NAME: Jinja2PromptTemplate,
 }
 
 
@@ -194,7 +197,7 @@ class KernelFunction(KernelBaseModel):
         self,
         kernel: "Kernel",
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
         pass
 
     async def invoke_stream(
@@ -202,7 +205,7 @@ class KernelFunction(KernelBaseModel):
         kernel: "Kernel",
         arguments: Optional[KernelArguments] = None,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+    ) -> AsyncIterable[Union[FunctionResult, List[Union["StreamingContentMixin", Any]]]]:
         """
         Invoke a stream async function with the given arguments.
 

@@ -9,6 +9,11 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
+// This tests a type that contains experimental features.
+#pragma warning disable SKEXP0001
+#pragma warning disable SKEXP0010
+#pragma warning disable SKEXP0101
+
 namespace SemanticKernel.UnitTests.Contents;
 public class ChatMessageContentTests
 {
@@ -74,6 +79,7 @@ public class ChatMessageContentTests
 
         // Assert
         Assert.Null(sut.Content);
+        Assert.Equal(string.Empty, sut.ToString());
     }
 
     [Fact]
@@ -84,6 +90,7 @@ public class ChatMessageContentTests
 
         // Act and assert
         Assert.Equal("fake-content", sut.Content);
+        Assert.Equal("fake-content", sut.ToString());
     }
 
     [Fact]
@@ -196,19 +203,23 @@ public class ChatMessageContentTests
             ["message-metadata-key-1"] = "message-metadata-value-1"
         });
         sut.Content = "content-1-override"; // Override the content of the first text content item that has the "content-1" content  
+        sut.Source = "Won't make it";
+        sut.AuthorName = "Fred";
 
         // Act
         var chatMessageJson = JsonSerializer.Serialize(sut);
 
-        var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson);
+        var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson)!;
 
         // Assert
-        Assert.Equal("content-1-override", deserializedMessage!.Content);
+        Assert.Equal("message-model", deserializedMessage.ModelId);
+        Assert.Equal("Fred", deserializedMessage.AuthorName);
         Assert.Equal("message-model", deserializedMessage.ModelId);
         Assert.Equal("user", deserializedMessage.Role.Label);
         Assert.NotNull(deserializedMessage.Metadata);
         Assert.Single(deserializedMessage.Metadata);
         Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.ToString());
+        Assert.Null(deserializedMessage.Source);
 
         Assert.NotNull(deserializedMessage?.Items);
         Assert.Equal(items.Count, deserializedMessage.Items.Count);
@@ -231,9 +242,7 @@ public class ChatMessageContentTests
         Assert.Single(imageContent.Metadata);
         Assert.Equal("metadata-value-2", imageContent.Metadata["metadata-key-2"]?.ToString());
 
-#pragma warning disable SKEXP0010
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
-#pragma warning restore SKEXP0010
         Assert.NotNull(binaryContent);
         Assert.True(binaryContent.Content?.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
@@ -242,9 +251,7 @@ public class ChatMessageContentTests
         Assert.Single(binaryContent.Metadata);
         Assert.Equal("metadata-value-3", binaryContent.Metadata["metadata-key-3"]?.ToString());
 
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var audioContent = deserializedMessage.Items[3] as AudioContent;
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Assert.NotNull(audioContent);
         Assert.True(audioContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 3, 2, 1 })));
         Assert.Equal("model-4", audioContent.ModelId);
