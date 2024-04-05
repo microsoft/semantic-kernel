@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 

@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
+namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 internal sealed class ClaudeTextContent : ClaudeMessageContent
 {
