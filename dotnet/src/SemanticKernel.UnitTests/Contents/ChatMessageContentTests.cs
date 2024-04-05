@@ -166,22 +166,18 @@ public class ChatMessageContentTests
         })
         { MimeType = "mime-type-2" });
 
-#pragma warning disable SKEXP0010
         items.Add(new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-3"] = "metadata-value-3"
         })
         { MimeType = "mime-type-3" });
 
-#pragma warning restore SKEXP0010
-#pragma warning disable SKEXP0001
         items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-4"] = "metadata-value-4"
         })
         { MimeType = "mime-type-4" });
 
-#pragma warning restore SKEXP0001
         items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-5"] = "metadata-value-5"
