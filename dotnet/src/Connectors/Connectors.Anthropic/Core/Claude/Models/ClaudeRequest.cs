@@ -23,6 +23,10 @@ internal sealed class ClaudeRequest
     [JsonPropertyName("messages")]
     public IList<Message> Messages { get; set; } = null!;
 
+    [JsonPropertyName("tools")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IList<ClaudeToolFunctionDeclaration>? Tools { get; set; }
+
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
 
@@ -75,6 +79,12 @@ internal sealed class ClaudeRequest
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
 
+    public void AddFunction(ClaudeFunction function)
+    {
+        this.Tools ??= new List<ClaudeToolFunctionDeclaration>();
+        this.Tools.Add(function.ToFunctionDeclaration());
+    }
+
     /// <summary>
     /// Creates a <see cref="ClaudeRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="ClaudePromptExecutionSettings"/>.
     /// </summary>
@@ -119,17 +129,14 @@ internal sealed class ClaudeRequest
 
     private static ClaudeMessageContent GetContentFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new ClaudeMessageContent { Type = "text", Text = textContent.Text },
-        ImageContent imageContent => new ClaudeMessageContent
-        {
-            Type = "image", Image = new ClaudeMessageContent.SourceEntity(
-                type: "base64",
-                mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
-                data: imageContent.Data.HasValue
-                    ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
-                    : throw new InvalidOperationException("Image content must have a data.")
-            )
-        },
+        TextContent textContent => new ClaudeTextContent(textContent.Text ?? string.Empty),
+        ImageContent imageContent => new ClaudeImageContent(
+            type: "base64",
+            mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
+            data: imageContent.Data.HasValue
+                ? Convert.ToBase64String(imageContent.Data.Value.ToArray())
+                : throw new InvalidOperationException("Image content must have a data.")
+        ),
         _ => throw new NotSupportedException($"Content type '{content.GetType().Name}' is not supported.")
     };
 

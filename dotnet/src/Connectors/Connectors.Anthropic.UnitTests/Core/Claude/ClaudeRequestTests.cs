@@ -166,6 +166,42 @@ public sealed class ClaudeRequestTests
         Assert.Throws<NotSupportedException>(Act);
     }
 
+    [Fact]
+    public void AddFunctionItAddsFunctionToClaudeRequest()
+    {
+        // Arrange
+        var request = new ClaudeRequest();
+        var function = new ClaudeFunction("function-name", "function-description", "desc", null, null);
+
+        // Act
+        request.AddFunction(function);
+
+        // Assert
+        Assert.Collection(request.Tools,
+            func => Assert.Equivalent(function.ToFunctionDeclaration(), func, strict: true));
+    }
+
+    [Fact]
+    public void AddMultipleFunctionsItAddsFunctionsToClaudeRequest()
+    {
+        // Arrange
+        var request = new ClaudeRequest();
+        var functions = new[]
+        {
+            new ClaudeFunction("function-name", "function-description", "desc", null, null),
+            new ClaudeFunction("function-name2", "function-description2", "desc2", null, null)
+        };
+
+        // Act
+        request.AddFunction(functions[0]);
+        request.AddFunction(functions[1]);
+
+        // Assert
+        Assert.Collection(request.Tools,
+            func => Assert.Equivalent(functions[0].ToFunctionDeclaration(), func, strict: true),
+            func => Assert.Equivalent(functions[1].ToFunctionDeclaration(), func, strict: true));
+    }
+
     private sealed class DummyContent : KernelContent
     {
         public DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
