@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Text;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
@@ -49,6 +48,7 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("chatcompletion_test_stream_response.txt"));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
     }
 
     [Fact]
@@ -145,9 +145,9 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
             JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
-            Assert.IsType<HuggingFaceChatCompletionMetadata>(messageChunk.Metadata);
+            Assert.IsType<ChatCompletionMetadata>(messageChunk.Metadata);
 
-            var metadata = messageChunk.Metadata as HuggingFaceChatCompletionMetadata;
+            var metadata = messageChunk.Metadata as ChatCompletionMetadata;
 
             Assert.Equal(jsonRootChunk.GetProperty("id").GetString(), metadata!.Id);
             Assert.Equal(jsonRootChunk.GetProperty("created").GetInt64(), metadata.Created);

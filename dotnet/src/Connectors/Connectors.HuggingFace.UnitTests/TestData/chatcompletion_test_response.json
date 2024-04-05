@@ -9,7 +9,7 @@
             "index": 0,
             "message": {
                 "role": "assistant",
-                "content": "Deep learning is a subset of machine learning that involves training artificial neural networks with multiple layers to recognize patterns and make complex computations. These networks are designed to mimic the structure and function of the human brain, allowing them to process and analyze large amounts of data, identify patterns and make predictions. Deep learning is used in a variety of applications, such as image and speech recognition, natural language processing, and self-driving cars."
+                "content": "This is a testing chat completion response"
             },
             "logprobs": {
                 "content": []

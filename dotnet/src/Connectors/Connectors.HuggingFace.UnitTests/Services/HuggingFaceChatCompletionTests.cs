@@ -6,16 +6,15 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
-using Microsoft.SemanticKernel.TextGeneration;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="HuggingFaceTextGenerationService"/> class.
+/// Unit tests for <see cref="HuggingFaceChatCompletionTests"/> class.
 /// </summary>
 public sealed class HuggingFaceChatCompletionTests : IDisposable
 {
@@ -28,29 +27,35 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("chatcompletion_test_response.json"));
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
+        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
     }
 
     [Fact]
-    public async Task SpecifiedModelShouldBeUsedAsync()
+    public async Task ShouldContainModelInRequestBodyAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        string modelId = "fake-model234";
+        var sut = new HuggingFaceChatCompletionService(modelId, httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        Assert.EndsWith("/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(this._messageHandlerStub.RequestContent);
+        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
+
+        Assert.Contains(modelId, requestContent, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task NoAuthorizationHeaderShouldBeAddedIfApiKeyIsNotProvidedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", apiKey: null, httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", apiKey: null, httpClient: this._httpClient);
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync("fake-text");
 
         //Assert
         Assert.False(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
@@ -60,10 +65,10 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
     public async Task AuthorizationHeaderShouldBeAddedIfApiKeyIsProvidedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", apiKey: "fake-api-key", httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", apiKey: "fake-api-key", httpClient: this._httpClient);
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync("fake-text");
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("Authorization"));
@@ -78,10 +83,11 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -96,10 +102,11 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
     public async Task ProvidedEndpointShouldBeUsedAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -111,65 +118,57 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         //Arrange
         this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
 
-        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
         Assert.StartsWith("https://fake-random-test-host/fake-path", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task DefaultAddressShouldBeUsedAsync()
+    public void ShouldThrowIfNotEndpointIsProvided()
     {
-        //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        // Act
+        this._httpClient.BaseAddress = null;
 
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.StartsWith("https://api-inference.huggingface.co/models", this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task ModelUrlShouldBeBuiltSuccessfullyAsync()
-    {
-        //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-
-        //Act
-        await sut.GetTextContentsAsync("fake-text");
-
-        //Assert
-        Assert.Equal("https://fake-random-test-host/fake-path/models/fake-model", this._messageHandlerStub.RequestUri?.AbsoluteUri);
+        // Assert
+        Assert.Throws<ArgumentNullException>(() => new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient));
     }
 
     [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        await sut.GetTextContentsAsync("fake-text");
+        await sut.GetChatMessageContentAsync(chatHistory);
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<TextGenerationRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<ChatCompletionRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
 
-        Assert.Equal("fake-text", requestPayload.Inputs);
+        Assert.Equal(chatHistory.Count, requestPayload.Messages!.Count);
+        for (var i = 0; i < chatHistory.Count; i++)
+        {
+            Assert.Equal(chatHistory[i].Content, requestPayload.Messages[i].Content);
+            Assert.Equal(chatHistory[i].Role.ToString(), requestPayload.Messages[i].Role);
+        }
     }
 
     [Fact]
     public async Task ShouldHandleServiceResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        var contents = await sut.GetTextContentsAsync("fake-test");
+        var contents = await sut.GetChatMessageContentsAsync(chatHistory);
 
         //Assert
         Assert.NotNull(contents);
@@ -177,69 +176,67 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         var content = contents.SingleOrDefault();
         Assert.NotNull(content);
 
-        Assert.Equal("This is test completion response", content.Text);
+        Assert.Equal("This is a testing chat completion response", content.Content);
     }
 
     [Fact]
-    public async Task GetTextContentsShouldHaveModelIdDefinedAsync()
+    public async Task GetChatShouldHaveModelIdFromResponseAsync()
     {
         //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var sut = new HuggingFaceChatCompletionService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
+        var chatHistory = CreateSampleChatHistory();
 
         //Act
-        var contents = await sut.GetTextContentsAsync("fake-test");
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"
-            [
+            Content = new StringContent(
+                """
                 {
-                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
+                    "id": "",
+                    "object": "text_completion",
+                    "created": 1712235475,
+                    "model": "teknium/OpenHermes-2.5-Mistral-7B",
+                    "system_fingerprint": "1.4.4-sha-6c4496a",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": "Deep learning is a form of artificial intelligence that is modeled after the structure and function of the human brain. It uses algorithms, called artificial neural networks, to learn and make predictions based on large amounts of data. These networks are designed to recognize patterns and make predictions, and they improve their accuracy with more data and experience. Deep learning is used in a variety of applications, such as image and speech recognition, natural language processing, and drug discovery. It has proven to be highly effective in tasks that"
+                            },
+                            "logprobs": {
+                                "content": []
+                            },
+                            "finish_reason": "length"
+                        }
+                    ],
+                    "usage": {
+                        "prompt_tokens": 27,
+                        "completion_tokens": 100,
+                        "total_tokens": 127
+                    }
                 }
-            ]",
+                """,
             Encoding.UTF8,
             "application/json")
         };
 
         // Act
-        var textContent = await sut.GetTextContentAsync("Any prompt");
+        var content = await sut.GetChatMessageContentAsync(chatHistory);
 
         // Assert
-        Assert.NotNull(textContent.ModelId);
-        Assert.Equal("fake-model", textContent.ModelId);
+        Assert.NotNull(content.ModelId);
+        Assert.Equal("teknium/OpenHermes-2.5-Mistral-7B", content.ModelId);
     }
 
-    [Fact]
-    public async Task GetStreamingTextContentsShouldHaveModelIdDefinedAsync()
+    private static ChatHistory CreateSampleChatHistory()
     {
-        //Arrange
-        var sut = new HuggingFaceTextGenerationService("fake-model", endpoint: new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-
-        //Act
-        var contents = await sut.GetTextContentsAsync("fake-test");
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent(@"
-            [
-                {
-                    ""generated_text"": ""Why the sky is blue? | Dept. of Science & Mathematics Education | University of Notre Dame\nWhen I was in high school I had a pretty simple conception of reality. I believed that if something made sense to me, then it must also be true. I believed that some problems were so fundamental that I couldn’t understand""
-                }
-            ]",
-            Encoding.UTF8,
-            "application/json")
-        };
-
-        // Act
-        StreamingTextContent? lastTextContent = null;
-        await foreach (var textContent in sut.GetStreamingTextContentsAsync("Any prompt"))
-        {
-            lastTextContent = textContent;
-        };
-
-        // Assert
-        Assert.NotNull(lastTextContent!.ModelId);
-        Assert.Equal("fake-model", lastTextContent.ModelId);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+        chatHistory.AddUserMessage("How are you?");
+        return chatHistory;
     }
-
     public void Dispose()
     {
         this._httpClient.Dispose();

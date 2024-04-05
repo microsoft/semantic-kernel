@@ -127,7 +127,7 @@ internal sealed class HuggingFaceOpenAIClient
 
         foreach (var choice in response.Choices!)
         {
-            var metadata = new HuggingFaceChatCompletionMetadata
+            var metadata = new ChatCompletionMetadata
             {
                 Id = response.Id,
                 Model = response.Model,
@@ -144,7 +144,7 @@ internal sealed class HuggingFaceOpenAIClient
             chatMessageContents.Add(new ChatMessageContent(
                 role: new AuthorRole(choice.Message!.Role!),
                 content: choice.Message.Content,
-                modelId: modelId,
+                modelId: response.Model,
                 innerContent: response,
                 encoding: Encoding.UTF8,
                 metadata: metadata));
@@ -158,7 +158,7 @@ internal sealed class HuggingFaceOpenAIClient
         var choice = response.Choices.FirstOrDefault();
         if (choice is not null)
         {
-            var metadata = new HuggingFaceChatCompletionMetadata
+            var metadata = new ChatCompletionMetadata
             {
                 Id = response.Id,
                 Model = response.Model,

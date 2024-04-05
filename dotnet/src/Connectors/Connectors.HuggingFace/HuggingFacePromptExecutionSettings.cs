@@ -278,6 +278,20 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Show details of the generation. Including usage.
+    /// </summary>
+    public bool Details
+    {
+        get => this._details;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._details = value;
+        }
+    }
+
     /// <inheritdoc />
     public override PromptExecutionSettings Clone()
     {
@@ -316,4 +330,5 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private int? _topK;
     private bool _useCache = true;
     private bool _waitForModel = false;
+    private bool _details = true;
 }

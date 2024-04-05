@@ -53,7 +53,8 @@ internal sealed class TextGenerationRequest
                 TopP = executionSettings.TopP,
                 RepetitionPenalty = executionSettings.RepetitionPenalty,
                 MaxTime = executionSettings.MaxTime,
-                NumReturnSequences = executionSettings.ResultsPerPrompt
+                NumReturnSequences = executionSettings.ResultsPerPrompt,
+                Details = executionSettings.Details
             },
             Options = new()
             {
@@ -128,6 +129,14 @@ internal sealed class TextGenerationRequest
         /// </summary>
         [JsonPropertyName("do_sample")]
         public bool DoSample { get; set; } = true;
+
+        /// <summary>
+        /// (Optional: True) Bool. Whether or not to include the details of the generation.
+        /// </summary>
+        /// <remarks>
+        /// Disabling this won't provide information about token usage.
+        /// </remarks>
+        public bool Details { get; set; } = true;
     }
 
     internal sealed class HuggingFaceTextOptions

@@ -7,17 +7,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
-/// HuggingFace text generation service.
+/// HuggingFace chat completion service.
 /// </summary>
-public sealed class HuggingFaceTextGenerationService : ITextGenerationService
+public sealed class HuggingFaceChatCompletionService : IChatCompletionService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
     private HuggingFaceClient Client { get; }
@@ -33,7 +33,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public HuggingFaceTextGenerationService(
+    public HuggingFaceChatCompletionService(
         string model,
         Uri? endpoint = null,
         string? apiKey = null,
@@ -42,9 +42,12 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(model);
 
+        var clientEndpoint = endpoint ?? httpClient?.BaseAddress
+            ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion services requires a valid endpoint provided explicitly or via a http client base address");
+
         this.Client = new HuggingFaceClient(
         modelId: model,
-            endpoint: endpoint ?? httpClient?.BaseAddress,
+            endpoint: clientEndpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
@@ -54,10 +57,10 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.GenerateChatAsync(chatHistory, executionSettings, cancellationToken);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.StreamGenerateChatAsync(chatHistory, executionSettings, cancellationToken);
 }

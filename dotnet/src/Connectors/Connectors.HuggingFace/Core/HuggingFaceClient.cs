@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.TextGeneration;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -217,7 +216,7 @@ internal sealed class HuggingFaceClient
     }
 
     private static List<TextContent> GetTextContentsFromResponse(TextGenerationResponse response, string modelId)
-        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
+        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8, new TextGenerationMetadata(response))).ToList();
 
     private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
