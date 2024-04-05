@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
@@ -107,5 +109,74 @@ internal sealed class ClaudeChatCompletionClient
         await Task.Yield();
         throw new NotImplementedException("Implement this method in next PR.");
         yield break;
+    }
+
+    private static void ValidateMaxTokens(int? maxTokens)
+    {
+        // If maxTokens is null, it means that the user wants to use the default model value
+        if (maxTokens is < 1)
+        {
+            throw new ArgumentException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+        }
+    }
+
+    private async Task<string> SendRequestAndGetStringBodyAsync(
+        HttpRequestMessage httpRequestMessage,
+        CancellationToken cancellationToken)
+    {
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken)
+            .ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync()
+            .ConfigureAwait(false);
+        return body;
+    }
+
+    private async Task<HttpResponseMessage> SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(
+        HttpRequestMessage httpRequestMessage,
+        CancellationToken cancellationToken)
+    {
+        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+        return response;
+    }
+
+    private static T DeserializeResponse<T>(string body)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
+        }
+        catch (JsonException exc)
+        {
+            throw new KernelException("Unexpected response from model", exc)
+            {
+                Data = { { "ResponseData", body } },
+            };
+        }
+    }
+
+    private async Task<HttpRequestMessage> CreateHttpRequestAsync(object requestData, Uri endpoint)
+    {
+        var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
+        httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
+        httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
+            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClaudeChatCompletionClient)));
+
+        if (this._customRequestHandler != null)
+        {
+            await this._customRequestHandler(httpRequestMessage).ConfigureAwait(false);
+        }
+
+        return httpRequestMessage;
+    }
+
+    private void Log(LogLevel logLevel, string? message, params object[] args)
+    {
+        if (this._logger.IsEnabled(logLevel))
+        {
+#pragma warning disable CA2254 // Template should be a constant string.
+            this._logger.Log(logLevel, message, args);
+#pragma warning restore CA2254
+        }
     }
 }
