@@ -6,7 +6,9 @@ import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolCall;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
+import com.azure.ai.openai.models.ChatCompletionsJsonResponseFormat;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
+import com.azure.ai.openai.models.ChatCompletionsTextResponseFormat;
 import com.azure.ai.openai.models.ChatCompletionsToolCall;
 import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
@@ -406,6 +408,20 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
             .setLogitBias(logit);
+
+        if (promptExecutionSettings.getResponseFormat() != null) {
+            switch (promptExecutionSettings.getResponseFormat()) {
+                case JSON_OBJECT:
+                    options.setResponseFormat(new ChatCompletionsJsonResponseFormat());
+                    break;
+                case TEXT:
+                    options.setResponseFormat(new ChatCompletionsTextResponseFormat());
+                    break;
+                default:
+                    throw new SKException(
+                        "Unknown response format: " + promptExecutionSettings.getResponseFormat());
+            }
+        }
 
         return options;
     }

@@ -152,11 +152,18 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 PromptExecutionSettings executionSettings = aiServiceSelection.getSettings();
 
                 if (client instanceof ChatCompletionService) {
+                    InvocationContext contextWithExecutionSettings = context;
+                    if (context.getPromptExecutionSettings() == null) {
+                        contextWithExecutionSettings = InvocationContext.copy(context)
+                            .withPromptExecutionSettings(executionSettings)
+                            .build();
+                    }
+
                     result = ((ChatCompletionService) client)
                         .getChatMessageContentsAsync(
                             prompt,
                             kernel,
-                            context)
+                            contextWithExecutionSettings)
                         .flatMapMany(Flux::fromIterable)
                         .concatMap(chatMessageContent -> {
                             if (chatMessageContent.getAuthorRole() == AuthorRole.ASSISTANT) {

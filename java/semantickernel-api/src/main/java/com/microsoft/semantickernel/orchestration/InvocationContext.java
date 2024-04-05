@@ -98,6 +98,20 @@ public class InvocationContext {
     }
 
     /**
+     * Create a new instance of InvocationContext by copying the values from another instance.
+     *
+     * @param context The context to copy.
+     * @return The new instance of InvocationContext.
+     */
+    public static Builder copy(InvocationContext context) {
+        return new Builder()
+            .withKernelHooks(context.getKernelHooks())
+            .withContextVariableConverter(context.contextVariableTypes)
+            .withPromptExecutionSettings(context.getPromptExecutionSettings())
+            .withToolCallBehavior(context.getToolCallBehavior());
+    }
+
+    /**
      * Get the hooks to use for the invocation.
      *
      * @return The hooks to use for the invocation.
@@ -195,6 +209,17 @@ public class InvocationContext {
         public Builder withContextVariableConverter(ContextVariableTypeConverter<?> converter) {
             this.contextVariableTypes.putConverter(
                 converter);
+            return this;
+        }
+
+        /**
+         * Add a context variable type converter to the builder.
+         *
+         * @param contextVariableTypes the context variable types to add.
+         * @return this {@link Builder}
+         */
+        public Builder withContextVariableConverter(ContextVariableTypes contextVariableTypes) {
+            this.contextVariableTypes.putConverters(contextVariableTypes);
             return this;
         }
 
