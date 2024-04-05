@@ -673,6 +673,209 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("image_url", contentItems[1].GetProperty("type").GetString());
     }
 
+    [Fact]
+    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_multiple_function_calls_test_response.json"))
+        });
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Fake prompt");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(4, result.Items.Count);
+
+        var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallContent;
+        Assert.NotNull(getCurrentWeatherFunctionCall);
+        Assert.Equal("GetCurrentWeather", getCurrentWeatherFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", getCurrentWeatherFunctionCall.PluginName);
+        Assert.Equal("1", getCurrentWeatherFunctionCall.Id);
+        Assert.Equal("Boston, MA", getCurrentWeatherFunctionCall.Arguments?["location"]?.ToString());
+
+        var functionWithExceptionFunctionCall = result.Items[1] as FunctionCallContent;
+        Assert.NotNull(functionWithExceptionFunctionCall);
+        Assert.Equal("FunctionWithException", functionWithExceptionFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", functionWithExceptionFunctionCall.PluginName);
+        Assert.Equal("2", functionWithExceptionFunctionCall.Id);
+        Assert.Equal("value", functionWithExceptionFunctionCall.Arguments?["argument"]?.ToString());
+
+        var nonExistentFunctionCall = result.Items[2] as FunctionCallContent;
+        Assert.NotNull(nonExistentFunctionCall);
+        Assert.Equal("NonExistentFunction", nonExistentFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", nonExistentFunctionCall.PluginName);
+        Assert.Equal("3", nonExistentFunctionCall.Id);
+        Assert.Equal("value", nonExistentFunctionCall.Arguments?["argument"]?.ToString());
+
+        var invalidArgumentsFunctionCall = result.Items[3] as FunctionCallContent;
+        Assert.NotNull(invalidArgumentsFunctionCall);
+        Assert.Equal("InvalidArguments", invalidArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", invalidArgumentsFunctionCall.PluginName);
+        Assert.Equal("4", invalidArgumentsFunctionCall.Id);
+        Assert.Null(invalidArgumentsFunctionCall.Arguments);
+    }
+
+    [Fact]
+    public async Task FunctionCallsShouldBeReturnedToLLMAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        var items = new ChatMessageContentItemCollection
+        {
+            new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }),
+            new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" })
+        };
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Assistant, items)
+        };
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+
+        var assistantMessage = messages[1];
+        Assert.Equal("assistant", assistantMessage.GetProperty("role").GetString());
+
+        Assert.Equal(2, assistantMessage.GetProperty("tool_calls").GetArrayLength());
+
+        var tool1 = assistantMessage.GetProperty("tool_calls")[0];
+        Assert.Equal("1", tool1.GetProperty("id").GetString());
+        Assert.Equal("function", tool1.GetProperty("type").GetString());
+
+        var function1 = tool1.GetProperty("function");
+        Assert.Equal("MyPlugin-GetCurrentWeather", function1.GetProperty("name").GetString());
+        Assert.Equal("{\"location\":\"Boston, MA\"}", function1.GetProperty("arguments").GetString());
+
+        var tool2 = assistantMessage.GetProperty("tool_calls")[1];
+        Assert.Equal("2", tool2.GetProperty("id").GetString());
+        Assert.Equal("function", tool2.GetProperty("type").GetString());
+
+        var function2 = tool2.GetProperty("function");
+        Assert.Equal("MyPlugin-GetWeatherForecast", function2.GetProperty("name").GetString());
+        Assert.Equal("{\"location\":\"Boston, MA\"}", function2.GetProperty("arguments").GetString());
+    }
+
+    [Fact]
+    public async Task FunctionResultsCanBeProvidedToLLMAsOneResultPerChatMessageAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
+            {
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+            }),
+            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
+            {
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+            })
+        };
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(3, messages.GetArrayLength());
+
+        var assistantMessage = messages[1];
+        Assert.Equal("tool", assistantMessage.GetProperty("role").GetString());
+        Assert.Equal("rainy", assistantMessage.GetProperty("content").GetString());
+        Assert.Equal("1", assistantMessage.GetProperty("tool_call_id").GetString());
+
+        var assistantMessage2 = messages[2];
+        Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
+        Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
+        Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
+    }
+
+    [Fact]
+    public async Task FunctionResultsCanBeProvidedToLLMAsManyResultsInOneChatMessageAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var sut = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
+            {
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+            })
+        };
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(3, messages.GetArrayLength());
+
+        var assistantMessage = messages[1];
+        Assert.Equal("tool", assistantMessage.GetProperty("role").GetString());
+        Assert.Equal("rainy", assistantMessage.GetProperty("content").GetString());
+        Assert.Equal("1", assistantMessage.GetProperty("tool_call_id").GetString());
+
+        var assistantMessage2 = messages[2];
+        Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
+        Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
+        Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

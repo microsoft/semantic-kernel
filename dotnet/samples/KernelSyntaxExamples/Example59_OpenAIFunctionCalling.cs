@@ -2,10 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -70,40 +67,36 @@ public class Example59_OpenAIFunctionCalling : BaseTest
         WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
-            var chatHistory = new ChatHistory();
 
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+            var chatHistory = new ChatHistory();
             chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
-            while (true)
+
+            ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+            chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+
+            IEnumerable<FunctionCallContent> functionCalls = result.GetFunctionCalls(); // Getting list of function calls.
+
+            foreach (var functionCall in functionCalls)
             {
-                var result = (OpenAIChatMessageContent)await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
-
-                if (result.Content is not null)
+                try
                 {
-                    Write(result.Content);
+                    FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function. Can be done in parallel.
+
+                    chatHistory.AddMessage(AuthorRole.Tool, functionResult); // Adding function result to chat history.
                 }
-
-                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
-                if (toolCalls.Count == 0)
+                catch (Exception ex)
                 {
-                    break;
-                }
-
-                chatHistory.Add(result);
-                foreach (var toolCall in toolCalls)
-                {
-                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
-                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
-                        "Unable to find function. Please try again!";
-
-                    chatHistory.Add(new ChatMessageContent(
-                        AuthorRole.Tool,
-                        content,
-                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                    chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, ex)); // Adding exception to chat history.
+                    // or
+                    //string message = $"Error details that LLM can reason about.";
+                    //chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, message));
                 }
             }
 
-            WriteLine();
+            // Sending the functions invocation results to the LLM to get the final response.
+            WriteLine(await chat.GetChatMessageContentAsync(chatHistory, settings, kernel));
         }
 
         /* Uncomment this to try in a console chat loop.

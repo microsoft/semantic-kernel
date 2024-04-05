@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
@@ -68,6 +69,27 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
+
+    /// <summary>
+    /// Adds <see cref="ChatMessageContent"/> with content items./>
+    /// </summary>
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="items">The content items.</param>
+    [Experimental("SKEXP0001")]
+    public void AddMessage(AuthorRole authorRole, params KernelContent[] items)
+    {
+        Verify.NotNull(authorRole);
+        Verify.NotNull(items);
+
+        var collection = new ChatMessageContentItemCollection();
+
+        foreach (KernelContent item in items)
+        {
+            collection.Add(item);
+        }
+
+        this.AddMessage(authorRole, collection);
+    }
 
     /// <summary>
     /// Add a user message to the chat history

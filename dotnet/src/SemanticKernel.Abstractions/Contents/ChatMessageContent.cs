@@ -161,6 +161,16 @@ public class ChatMessageContent : KernelContent
         this._items = items;
     }
 
+    /// <summary>
+    /// Returns a list of function calls.
+    /// </summary>
+    /// <returns>The list of function calls.</returns>
+    [Experimental("SKEXP0001")]
+    public IEnumerable<FunctionCallContent> GetFunctionCalls()
+    {
+        return this.Items.OfType<FunctionCallContent>();
+    }
+
     /// <inheritdoc/>
     public override string ToString()
     {

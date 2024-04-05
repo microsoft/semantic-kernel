@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
@@ -20,6 +21,15 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
+    [JsonConstructor]
+    public KernelArguments()
+    {
+        this._arguments = new(StringComparer.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.

@@ -152,17 +152,20 @@ public class ChatMessageContentTests
             ["metadata-key-1"] = "metadata-value-1"
         })
         { MimeType = "mime-type-1" });
+
         items.Add(new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-2"] = "metadata-value-2"
         })
         { MimeType = "mime-type-2" });
+
 #pragma warning disable SKEXP0010
         items.Add(new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-3"] = "metadata-value-3"
         })
         { MimeType = "mime-type-3" });
+
 #pragma warning restore SKEXP0010
 #pragma warning disable SKEXP0001
         items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
@@ -170,17 +173,23 @@ public class ChatMessageContentTests
             ["metadata-key-4"] = "metadata-value-4"
         })
         { MimeType = "mime-type-4" });
+
 #pragma warning restore SKEXP0001
         items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-5"] = "metadata-value-5"
         })
         { MimeType = "mime-type-5" });
+
         items.Add(new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
         {
             ["metadata-key-6"] = "metadata-value-6"
         })
         { MimeType = "mime-type-6" });
+
+        items.Add(new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
+
+        items.Add(new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
@@ -202,7 +211,7 @@ public class ChatMessageContentTests
         Assert.Equal("message-metadata-value-1", deserializedMessage.Metadata["message-metadata-key-1"]?.ToString());
 
         Assert.NotNull(deserializedMessage?.Items);
-        Assert.Equal(6, deserializedMessage.Items.Count);
+        Assert.Equal(items.Count, deserializedMessage.Items.Count);
 
         var textContent = deserializedMessage.Items[0] as TextContent;
         Assert.NotNull(textContent);
@@ -261,5 +270,43 @@ public class ChatMessageContentTests
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
         Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
+
+        var functionCallContent = deserializedMessage.Items[6] as FunctionCallContent;
+        Assert.NotNull(functionCallContent);
+        Assert.Equal("function-name", functionCallContent.FunctionName);
+        Assert.Equal("plugin-name", functionCallContent.PluginName);
+        Assert.Equal("function-id", functionCallContent.Id);
+        Assert.NotNull(functionCallContent.Arguments);
+        Assert.Single(functionCallContent.Arguments);
+        Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
+
+        var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
+        Assert.NotNull(functionResultContent);
+        Assert.Equal("function-result", functionResultContent.Result?.ToString());
+        Assert.Equal("function-name", functionResultContent.FunctionCall.FunctionName);
+        Assert.Equal("function-id", functionResultContent.FunctionCall.Id);
+        Assert.Equal("plugin-name", functionResultContent.FunctionCall.PluginName);
+    }
+
+    [Fact]
+    public void GetFunctionCallsShouldReturnItemsOfFunctionCallContentType()
+    {
+        // Arrange
+        var items = new ChatMessageContentItemCollection();
+        items.Add(new TextContent("content-1"));
+        items.Add(new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
+        items.Add(new FunctionCallContent("function-name-1", "plugin-name-1", "function-id-1", new KernelArguments { ["parameter-1"] = "argument-1" }));
+        items.Add(new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"));
+
+        var sut = new ChatMessageContent(AuthorRole.Tool, items);
+
+        // Act
+        var functionCallContents = sut.GetFunctionCalls().ToArray();
+
+        // Assert
+        Assert.NotNull(functionCallContents);
+        Assert.Equal(2, functionCallContents.Length);
+
+        Assert.True(functionCallContents.All(item => item is FunctionCallContent));
     }
 }
