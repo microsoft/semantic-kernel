@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core;
+namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core.Claude;
 
 public sealed class ClaudeRequestTests
 {

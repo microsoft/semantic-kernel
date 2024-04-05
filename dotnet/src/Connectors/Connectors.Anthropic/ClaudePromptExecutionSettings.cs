@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
@@ -20,6 +21,7 @@ public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
     private int? _topK;
     private int? _maxTokens;
     private IList<string>? _stopSequences;
+    private ClaudeToolCallBehavior? _toolCallBehavior;
 
     /// <summary>
     /// Default max tokens for a text generation.
@@ -101,6 +103,43 @@ public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Gets or sets the behavior for how tool calls are handled.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable all tool calling, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to request one of any number of functions, set the property to an
+    /// instance returned from <see cref="ClaudeToolCallBehavior.EnableFunctions"/>, called with
+    /// a list of the functions available.
+    /// </item>
+    /// <item>
+    /// To allow the model to request one of any of the functions in the supplied <see cref="Kernel"/>,
+    /// set the property to <see cref="ClaudeToolCallBehavior.EnableKernelFunctions"/> if the client should simply
+    /// send the information about the functions and not handle the response in any special manner, or
+    /// <see cref="ClaudeToolCallBehavior.AutoInvokeKernelFunctions"/> if the client should attempt to automatically
+    /// invoke the function and send the result back to the service.
+    /// </item>
+    /// </list>
+    /// For all options where an instance is provided, auto-invoke behavior may be selected. If the service
+    /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
+    /// resolve that function from the functions available in the <see cref="Kernel"/>, and if found, rather
+    /// than returning the response back to the caller, it will handle the request automatically, invoking
+    /// the function, and sending back the result. The intermediate messages will be retained in the
+    /// <see cref="ChatHistory"/> if an instance was provided.
+    /// </remarks>
+    public ClaudeToolCallBehavior? ToolCallBehavior
+    {
+        get => this._toolCallBehavior;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._toolCallBehavior = value;
+        }
+    }
+
     /// <inheritdoc />
     public override void Freeze()
     {
@@ -129,6 +168,7 @@ public sealed class ClaudePromptExecutionSettings : PromptExecutionSettings
             TopK = this.TopK,
             MaxTokens = this.MaxTokens,
             StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            ToolCallBehavior = this.ToolCallBehavior?.Clone(),
         };
     }
 
