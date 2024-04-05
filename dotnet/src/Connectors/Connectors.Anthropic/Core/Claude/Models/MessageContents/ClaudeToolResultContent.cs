@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
@@ -15,8 +14,8 @@ internal sealed class ClaudeToolResultContent : ClaudeMessageContent
     /// Optional. The function parameters and values in JSON object format.
     /// </summary>
     [JsonPropertyName("content")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public JsonNode? Arguments { get; set; }
+    [JsonRequired]
+    public ClaudeMessageContent Content { get; set; } = null!;
 
     [JsonPropertyName("is_error")]
     public bool IsError { get; set; }
