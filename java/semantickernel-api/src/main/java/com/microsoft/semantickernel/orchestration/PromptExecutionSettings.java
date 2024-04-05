@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -96,7 +97,7 @@ public class PromptExecutionSettings {
     private final String user;
     private final List<String> stopSequences;
     private final Map<Integer, Integer> tokenSelectionBiases;
-    private final String responseFormat;
+    private final ResponseFormat responseFormat;
 
     /**
      * Create a new instance of PromptExecutionSettings.
@@ -113,7 +114,8 @@ public class PromptExecutionSettings {
      * @param user                 The user to associate with the prompt execution.
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
-     * @param responseFormat       The response format to use for prompt execution.
+     * @param responseFormat       The response format to use for prompt execution @{link
+     *                             ResponseFormat}.
      */
     @JsonCreator
     public PromptExecutionSettings(
@@ -147,7 +149,12 @@ public class PromptExecutionSettings {
             ? new HashMap<>(tokenSelectionBiases)
             : Collections.emptyMap();
         this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100, 0));
-        this.responseFormat = responseFormat;
+
+        if (responseFormat != null && !responseFormat.isEmpty()) {
+            this.responseFormat = ResponseFormat.valueOf(responseFormat.toUpperCase(Locale.ROOT));
+        } else {
+            this.responseFormat = null;
+        }
     }
 
     /**
@@ -368,7 +375,7 @@ public class PromptExecutionSettings {
      * @return The response format to use for prompt execution.
      */
     @Nullable
-    public String getResponseFormat() {
+    public ResponseFormat getResponseFormat() {
         return responseFormat;
     }
 
@@ -541,7 +548,7 @@ public class PromptExecutionSettings {
          * @param responseFormat The response format to use for prompt execution.
          * @return This builder.
          */
-        public Builder withResponseFormat(String responseFormat) {
+        public Builder withResponseFormat(ResponseFormat responseFormat) {
             if (responseFormat != null) {
                 settings.put(RESPONSE_FORMAT, responseFormat);
             }

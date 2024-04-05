@@ -411,10 +411,10 @@ public class OpenAIChatCompletion implements ChatCompletionService {
 
         if (promptExecutionSettings.getResponseFormat() != null) {
             switch (promptExecutionSettings.getResponseFormat()) {
-                case "json_object":
+                case JSON_OBJECT:
                     options.setResponseFormat(new ChatCompletionsJsonResponseFormat());
                     break;
-                case "text":
+                case TEXT:
                     options.setResponseFormat(new ChatCompletionsTextResponseFormat());
                     break;
                 default:
