@@ -45,7 +45,7 @@ internal sealed class ClaudeChatCompletionClient
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
         this._modelId = modelId;
-        this._endpoint = new Uri("https://api.anthropic.com/v1/messages");
+        this._endpoint = new Uri("https://api.anthropic.com/v1/messages"); // todo: add version selection parameter
     }
 
     /// <summary>
