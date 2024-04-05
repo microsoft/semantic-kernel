@@ -60,7 +60,7 @@ public class Example78_LMStudio : BaseTest
         this.WriteLine(response);
     }
 
-    [Fact(Skip = "Manual configuration needed")]
+    [Fact] //(Skip = "Manual configuration needed")]
     public async Task Llama2StreamingExampleAsync()
     {
         // Setup Llama2 as the model in LM Studio UI.

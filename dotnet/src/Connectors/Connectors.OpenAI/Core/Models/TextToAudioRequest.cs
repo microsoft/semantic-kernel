@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core;
 
 /// <summary>
 /// OpenAI text-to-audio request model, see <see href="https://platform.openai.com/docs/api-reference/audio/createSpeech"/>.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core;
 
 /// <summary>
 /// Text to image response
