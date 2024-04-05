@@ -10,9 +10,6 @@ internal sealed class ClaudeToolResultContent : ClaudeMessageContent
     [JsonRequired]
     public string ToolId { get; set; } = null!;
 
-    /// <summary>
-    /// Optional. The function parameters and values in JSON object format.
-    /// </summary>
     [JsonPropertyName("content")]
     [JsonRequired]
     public ClaudeMessageContent Content { get; set; } = null!;
