@@ -85,7 +85,9 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        var expectedExecutionSettings = executionSettings.Clone();
+        expectedExecutionSettings.Freeze();
+        Assert.Equivalent(expectedExecutionSettings, defaultExecutionSettings);
     }
 
     [Fact]
@@ -144,7 +146,9 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        var expectedExecutionSettings = executionSettings.Clone();
+        expectedExecutionSettings.Freeze();
+        Assert.Equivalent(expectedExecutionSettings, defaultExecutionSettings);
     }
 
     [Fact]
@@ -165,7 +169,9 @@ public class OrderedAIServiceSelectorTests
 
         // Assert
         Assert.Equal(kernel.GetRequiredService<ITextGenerationService>("service2"), aiService);
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        var expectedExecutionSettings = executionSettings.Clone();
+        expectedExecutionSettings.Freeze();
+        Assert.Equivalent(expectedExecutionSettings, defaultExecutionSettings);
     }
 
     [Theory]
@@ -222,7 +228,9 @@ public class OrderedAIServiceSelectorTests
         // Assert
         Assert.NotNull(aiService);
         Assert.Equal("model2", aiService.GetModelId());
-        Assert.Equal(executionSettings, defaultExecutionSettings);
+        var expectedExecutionSettings = executionSettings.Clone();
+        expectedExecutionSettings.Freeze();
+        Assert.Equivalent(expectedExecutionSettings, defaultExecutionSettings);
     }
 
     #region private

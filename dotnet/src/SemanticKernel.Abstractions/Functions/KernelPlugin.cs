@@ -83,7 +83,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         List<KernelFunctionMetadata> metadata = new(this.FunctionCount);
         foreach (KernelFunction function in this)
         {
-            metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = this.Name });
+            metadata.Add(function.Metadata);
         }
 
         return metadata;

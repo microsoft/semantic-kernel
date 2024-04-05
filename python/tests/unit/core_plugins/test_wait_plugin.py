@@ -1,8 +1,14 @@
+from unittest.mock import patch
+
 import pytest
 
 from semantic_kernel.core_plugins.wait_plugin import WaitPlugin
+from semantic_kernel.exceptions import FunctionExecutionException
 
 test_data_good = [
+    0,
+    1.0,
+    -2,
     "0",
     "1",
     "2.1",
@@ -11,7 +17,6 @@ test_data_good = [
     "0.001",
     "0.0001",
     "-0.0001",
-    "-10000",
 ]
 
 test_data_bad = [
@@ -38,10 +43,10 @@ def test_can_be_instantiated():
 @pytest.mark.parametrize("wait_time", test_data_good)
 async def test_wait_valid_params(wait_time):
     plugin = WaitPlugin()
+    with patch("asyncio.sleep") as patched_sleep:
+        await plugin.wait(wait_time)
 
-    await plugin.wait(wait_time)
-
-    assert True
+        patched_sleep.assert_called_once_with(abs(float(wait_time)))
 
 
 @pytest.mark.asyncio
@@ -49,7 +54,7 @@ async def test_wait_valid_params(wait_time):
 async def test_wait_invalid_params(wait_time):
     plugin = WaitPlugin()
 
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(FunctionExecutionException) as exc_info:
         await plugin.wait("wait_time")
 
     assert exc_info.value.args[0] == "seconds text must be a number"

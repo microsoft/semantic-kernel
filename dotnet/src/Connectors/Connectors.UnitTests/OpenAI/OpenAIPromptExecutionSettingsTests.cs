@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
@@ -63,7 +64,7 @@ public class OpenAIPromptExecutionSettingsTests
         // Arrange
         PromptExecutionSettings actualSettings = new()
         {
-            ExtensionData = new() {
+            ExtensionData = new Dictionary<string, object>() {
                 { "max_tokens", 1000 },
                 { "temperature", 0 }
             }
@@ -159,7 +160,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Theory]
-    [InlineData("", "Assistant is a large language model.")]
+    [InlineData("", "")]
     [InlineData("System prompt", "System prompt")]
     public void ItUsesCorrectChatSystemPrompt(string chatSystemPrompt, string expectedChatSystemPrompt)
     {
@@ -168,6 +169,70 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         Assert.Equal(expectedChatSystemPrompt, settings.ChatSystemPrompt);
+    }
+
+    [Fact]
+    public void PromptExecutionSettingsCloneWorksAsExpected()
+    {
+        // Arrange
+        string configPayload = @"{
+            ""max_tokens"": 60,
+            ""temperature"": 0.5,
+            ""top_p"": 0.0,
+            ""presence_penalty"": 0.0,
+            ""frequency_penalty"": 0.0
+        }";
+        var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
+
+        // Act
+        var clone = executionSettings!.Clone();
+
+        // Assert
+        Assert.NotNull(clone);
+        Assert.Equal(executionSettings.ModelId, clone.ModelId);
+        Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
+    }
+
+    [Fact]
+    public void PromptExecutionSettingsFreezeWorksAsExpected()
+    {
+        // Arrange
+        string configPayload = @"{
+            ""max_tokens"": 60,
+            ""temperature"": 0.5,
+            ""top_p"": 0.0,
+            ""presence_penalty"": 0.0,
+            ""frequency_penalty"": 0.0,
+            ""stop_sequences"": [ ""DONE"" ],
+            ""token_selection_biases"": { ""1"": 2, ""3"": 4 }
+        }";
+        var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
+
+        // Act
+        executionSettings!.Freeze();
+
+        // Assert
+        Assert.True(executionSettings.IsFrozen);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gpt-4");
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ResultsPerPrompt = 2);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 1);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.TopP = 1);
+        Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences?.Add("STOP"));
+        Assert.Throws<NotSupportedException>(() => executionSettings.TokenSelectionBiases?.Add(5, 6));
+    }
+
+    [Fact]
+    public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings();
+        executionSettings.StopSequences = Array.Empty<string>();
+
+        // Act
+        var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+
+        // Assert
+        Assert.Null(executionSettingsWithData.StopSequences);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)

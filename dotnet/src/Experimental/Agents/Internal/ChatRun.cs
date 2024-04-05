@@ -22,13 +22,12 @@ internal sealed class ChatRun
     public string Id => this._model.Id;
 
     /// <inheritdoc/>
-    public string AgentId => this._model.AgentId;
+    public string AgentId => this._model.AssistantId;
 
     /// <inheritdoc/>
     public string ThreadId => this._model.ThreadId;
 
     private const string ActionState = "requires_action";
-    private const string FailedState = "failed";
     private const string CompletedState = "completed";
     private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
@@ -38,6 +37,15 @@ internal sealed class ChatRun
         {
             "queued",
             "in_progress",
+            "cancelling",
+        };
+
+    private static readonly HashSet<string> s_terminalStates =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "expired",
+            "failed",
+            "cancelled",
         };
 
     private readonly OpenAIRestContext _restContext;
@@ -48,38 +56,32 @@ internal sealed class ChatRun
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetResultAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Poll until actionable
-        await PollRunStatus().ConfigureAwait(false);
-
-        // Retrieve steps
         var processedMessageIds = new HashSet<string>();
-        var steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
 
         do
         {
+            // Poll run and steps until actionable
+            var steps = await PollRunStatusAsync().ConfigureAwait(false);
+
+            // Is in terminal state?
+            if (s_terminalStates.Contains(this._model.Status))
+            {
+                throw new AgentException($"Run terminated - {this._model.Status} [{this.Id}]: {this._model.LastError?.Message ?? "Unknown"}");
+            }
+
             // Is tool action required?
             if (ActionState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
             {
                 // Execute functions in parallel and post results at once.
                 var tasks = steps.Data.SelectMany(step => this.ExecuteStep(step, cancellationToken)).ToArray();
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                var results = tasks.Select(t => t.Result).ToArray();
-                await this._restContext.AddToolOutputsAsync(this.ThreadId, this.Id, results, cancellationToken).ConfigureAwait(false);
-
-                // Refresh run as it goes back into pending state after posting function results.
-                await PollRunStatus(force: true).ConfigureAwait(false);
-
-                // Refresh steps to retrieve additional messages.
-                steps = await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+                if (tasks.Length > 0)
+                {
+                    var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+                    await this._restContext.AddToolOutputsAsync(this.ThreadId, this.Id, results, cancellationToken).ConfigureAwait(false);
+                }
             }
 
-            // Did fail?
-            if (FailedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new AgentException($"Unexpected failure processing run: {this.Id}: {this._model.LastError?.Message ?? "Unknown"}");
-            }
-
+            // Enumerate completed messages
             var newMessageIds =
                 steps.Data
                     .Where(s => s.StepDetails.MessageCreation != null)
@@ -96,21 +98,15 @@ internal sealed class ChatRun
         }
         while (!CompletedState.Equals(this._model.Status, StringComparison.OrdinalIgnoreCase));
 
-        async Task PollRunStatus(bool force = false)
+        async Task<ThreadRunStepListModel> PollRunStatusAsync()
         {
             int count = 0;
 
-            // Ignore model status when forced.
-            while (force || s_pollingStates.Contains(this._model.Status))
+            do
             {
-                if (!force)
-                {
-                    // Reduce polling frequency after a couple attempts
-                    await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
-                    ++count;
-                }
-
-                force = false;
+                // Reduce polling frequency after a couple attempts
+                await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
+                ++count;
 
                 try
                 {
@@ -121,6 +117,9 @@ internal sealed class ChatRun
                     // Retry anyway..
                 }
             }
+            while (s_pollingStates.Contains(this._model.Status));
+
+            return await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -153,11 +152,7 @@ internal sealed class ChatRun
     private async Task<ToolResultModel> ProcessFunctionStepAsync(string callId, ThreadRunStepModel.FunctionDetailsModel functionDetails, CancellationToken cancellationToken)
     {
         var result = await InvokeFunctionCallAsync().ConfigureAwait(false);
-        var toolResult = result as string;
-        if (toolResult == null)
-        {
-            toolResult = JsonSerializer.Serialize(result);
-        }
+        var toolResult = result as string ?? JsonSerializer.Serialize(result);
 
         return
             new ToolResultModel

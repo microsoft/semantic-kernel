@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,15 @@ public abstract class KernelFunction
     public string Name => this.Metadata.Name;
 
     /// <summary>
+    /// Gets the name of the plugin this function was added to.
+    /// </summary>
+    /// <remarks>
+    /// The plugin name will be null if the function has not been added to a plugin.
+    /// When a function is added to a plugin it will be cloned and the plugin name will be set.
+    /// </remarks>
+    public string? PluginName => this.Metadata.PluginName;
+
+    /// <summary>
     /// Gets a description of the function.
     /// </summary>
     /// <remarks>
@@ -73,7 +83,10 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    /// <remarks>
+    /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -87,17 +100,41 @@ public abstract class KernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+        : this(name, null, description, parameters, returnParameter, executionSettings)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelFunction"/> class.
+    /// </summary>
+    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
+    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="parameters">The metadata describing the parameters to the function.</param>
+    /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
+    /// <param name="executionSettings">
+    /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
+    /// overridden by settings passed into the invocation of the function.
+    /// </param>
+    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
         this.Metadata = new KernelFunctionMetadata(name)
         {
+            PluginName = pluginName,
             Description = description,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
         };
-        this.ExecutionSettings = executionSettings;
+
+        if (executionSettings is not null)
+        {
+            this.ExecutionSettings = executionSettings.ToDictionary(
+                entry => entry.Key,
+                entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
+        }
     }
 
     /// <summary>
@@ -184,7 +221,7 @@ public abstract class KernelFunction
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
-            logger.LogFunctionResultValue(functionResult.Value);
+            logger.LogFunctionResultValue(functionResult);
 
             return functionResult;
         }
@@ -341,6 +378,17 @@ public abstract class KernelFunction
             logger.LogFunctionStreamingComplete(duration.TotalSeconds);
         }
     }
+
+    /// <summary>
+    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
+    /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// <remarks>
+    /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
+    /// a function to a <see cref="KernelPlugin"/>.
+    /// </remarks>
+    public abstract KernelFunction Clone(string pluginName);
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.

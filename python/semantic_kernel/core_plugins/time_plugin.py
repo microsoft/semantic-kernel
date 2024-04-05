@@ -2,8 +2,9 @@
 
 import datetime
 
+from semantic_kernel.exceptions import FunctionExecutionException
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.plugin_definition import kernel_function
 
 
 class TimePlugin(KernelBaseModel):
@@ -12,7 +13,7 @@ class TimePlugin(KernelBaseModel):
                  to get the current time and date.
 
     Usage:
-        kernel.import_plugin(TimePlugin(), plugin_name="time")
+        kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
 
     Examples:
         {{time.date}}            => Sunday, 12 January, 2031
@@ -208,11 +209,7 @@ class TimePlugin(KernelBaseModel):
         d = datetime.date.today() - datetime.timedelta(days=int(days))
         return d.strftime("%A, %d %B, %Y")
 
-    @kernel_function(
-        description="""Get the date of the last day matching the supplied week day name in English.
-        Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday,
-        16 May, 2023"""
-    )
+    @kernel_function(description="""Get the date of the last day matching the supplied week day name in English.""")
     def date_matching_last_day_name(self, day_name: str) -> str:
         """
         Get the date of the last day matching the supplied day name
@@ -231,7 +228,7 @@ class TimePlugin(KernelBaseModel):
             d = d - datetime.timedelta(days=1)
             if d.strftime("%A") == day_name:
                 return d.strftime("%A, %d %B, %Y")
-        raise ValueError("day_name is not recognized")
+        raise FunctionExecutionException("day_name is not recognized")
 
     @kernel_function(description="Get the seconds on the current minute")
     def second(self) -> str:
