@@ -42,21 +42,6 @@ public sealed class AuthorRoleConverterTests
     }
 
     [Fact]
-    public void ReadWhenRoleIsNullReturnsNull()
-    {
-        // Arrange
-        var converter = new AuthorRoleConverter();
-        var reader = new Utf8JsonReader("null"u8);
-
-        // Act
-        reader.Read();
-        var result = converter.Read(ref reader, typeof(AuthorRole?), JsonSerializerOptions.Default);
-
-        // Assert
-        Assert.Null(result);
-    }
-
-    [Fact]
     public void ReadWhenRoleIsUnknownThrows()
     {
         // Arrange
@@ -102,21 +87,6 @@ public sealed class AuthorRoleConverterTests
 
         // Assert
         Assert.Equal("\"assistant\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
-    }
-
-    [Fact]
-    public void WriteWhenRoleIsNullReturnsNull()
-    {
-        // Arrange
-        var converter = new AuthorRoleConverter();
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
-
-        // Act
-        converter.Write(writer, null, JsonSerializerOptions.Default);
-
-        // Assert
-        Assert.Equal("null"u8, bufferWriter.GetSpan().Trim((byte)'\0'));
     }
 
     [Fact]

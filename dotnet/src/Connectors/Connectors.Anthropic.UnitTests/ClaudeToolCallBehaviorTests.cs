@@ -54,13 +54,13 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
 
         // Act
-        kernelFunctions.ConfigureClaudeRequest(null, ClaudeRequest);
+        kernelFunctions.ConfigureClaudeRequest(null, claudeRequest);
 
         // Assert
-        Assert.Null(ClaudeRequest.Tools);
+        Assert.Null(claudeRequest.Tools);
     }
 
     [Fact]
@@ -68,14 +68,14 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act
-        kernelFunctions.ConfigureClaudeRequest(kernel, ClaudeRequest);
+        kernelFunctions.ConfigureClaudeRequest(kernel, claudeRequest);
 
         // Assert
-        Assert.Null(ClaudeRequest.Tools);
+        Assert.Null(claudeRequest.Tools);
     }
 
     [Fact]
@@ -83,16 +83,16 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
         var kernel = Kernel.CreateBuilder().Build();
         var plugin = GetTestPlugin();
         kernel.Plugins.Add(plugin);
 
         // Act
-        kernelFunctions.ConfigureClaudeRequest(kernel, ClaudeRequest);
+        kernelFunctions.ConfigureClaudeRequest(kernel, claudeRequest);
 
         // Assert
-        AssertFunctions(ClaudeRequest);
+        AssertFunctions(claudeRequest);
     }
 
     [Fact]
@@ -100,13 +100,13 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions([], autoInvoke: false);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
 
         // Act
-        enabledFunctions.ConfigureClaudeRequest(null, ClaudeRequest);
+        enabledFunctions.ConfigureClaudeRequest(null, claudeRequest);
 
         // Assert
-        Assert.Null(ClaudeRequest.Tools);
+        Assert.Null(claudeRequest.Tools);
     }
 
     [Fact]
@@ -115,10 +115,10 @@ public sealed class ClaudeToolCallBehaviorTests
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => ClaudeKernelFunctionMetadataExtensions.ToClaudeFunction(function));
         var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(null, ClaudeRequest));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(null, claudeRequest));
         Assert.Equal(
             $"Auto-invocation with {nameof(ClaudeToolCallBehavior.EnabledFunctions)} is not supported when no kernel is provided.",
             exception.Message);
@@ -130,11 +130,11 @@ public sealed class ClaudeToolCallBehaviorTests
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
         var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(kernel, ClaudeRequest));
+        var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(kernel, claudeRequest));
         Assert.Equal(
             $"The specified {nameof(ClaudeToolCallBehavior.EnabledFunctions)} function MyPlugin{ClaudeFunction.NameSeparator}MyFunction is not available in the kernel.",
             exception.Message);
@@ -149,16 +149,16 @@ public sealed class ClaudeToolCallBehaviorTests
         var plugin = GetTestPlugin();
         var functions = plugin.GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
         var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke);
-        var ClaudeRequest = new ClaudeRequest();
+        var claudeRequest = new ClaudeRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         kernel.Plugins.Add(plugin);
 
         // Act
-        enabledFunctions.ConfigureClaudeRequest(kernel, ClaudeRequest);
+        enabledFunctions.ConfigureClaudeRequest(kernel, claudeRequest);
 
         // Assert
-        AssertFunctions(ClaudeRequest);
+        AssertFunctions(claudeRequest);
     }
 
     [Fact]
@@ -209,9 +209,8 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         Assert.NotNull(request.Tools);
         Assert.Single(request.Tools);
-        Assert.Single(request.Tools[0].Functions);
 
-        var function = request.Tools[0].Functions[0];
+        var function = request.Tools[0];
 
         Assert.NotNull(function);
 

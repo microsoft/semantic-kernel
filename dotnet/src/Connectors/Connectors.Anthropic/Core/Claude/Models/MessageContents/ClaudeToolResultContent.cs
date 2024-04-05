@@ -17,4 +17,7 @@ internal sealed class ClaudeToolResultContent : ClaudeMessageContent
     [JsonPropertyName("content")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonNode? Arguments { get; set; }
+
+    [JsonPropertyName("is_error")]
+    public bool IsError { get; set; }
 }
