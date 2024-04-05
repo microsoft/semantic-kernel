@@ -22,8 +22,10 @@ internal sealed class ClaudeClient
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly string _modelId;
+    private readonly string? _apiKey;
     private readonly Uri _endpoint;
     private readonly Func<HttpRequestMessage, Task>? _customRequestHandler;
+    private readonly AnthropicClientOptions _options;
 
     /// <summary>
     /// Represents a client for interacting with the chat completion Claude model.
@@ -31,11 +33,13 @@ internal sealed class ClaudeClient
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="apiKey">Api key</param>
+    /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public ClaudeClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
+        AnthropicClientOptions? options,
         ILogger? logger = null)
     {
         Verify.NotNull(httpClient);
@@ -45,7 +49,9 @@ internal sealed class ClaudeClient
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
         this._modelId = modelId;
-        this._endpoint = new Uri("https://api.anthropic.com/v1/messages"); // todo: add version selection parameter
+        this._apiKey = apiKey;
+        this._options = options ?? new AnthropicClientOptions();
+        this._endpoint = new Uri("https://api.anthropic.com/v1/messages");
     }
 
     /// <summary>
@@ -55,12 +61,14 @@ internal sealed class ClaudeClient
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
+    /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public ClaudeClient(
         HttpClient httpClient,
         string modelId,
         Uri endpoint,
         Func<HttpRequestMessage, Task>? requestHandler,
+        AnthropicClientOptions? options,
         ILogger? logger = null)
     {
         Verify.NotNull(httpClient);
@@ -72,6 +80,7 @@ internal sealed class ClaudeClient
         this._modelId = modelId;
         this._endpoint = endpoint;
         this._customRequestHandler = requestHandler;
+        this._options = options ?? new AnthropicClientOptions();
     }
 
     /// <summary>

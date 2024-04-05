@@ -22,12 +22,14 @@ public static class ClaudeServiceCollectionExtensions
     /// <param name="services">The service collection to add the Claude Text Generation service to.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Claude API.</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddClaudeChatCompletion(
         this IServiceCollection services,
         string modelId,
         string apiKey,
+        AnthropicClientOptions? options = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -38,6 +40,7 @@ public static class ClaudeServiceCollectionExtensions
             new ClaudeChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
+                options: options,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;
@@ -50,6 +53,7 @@ public static class ClaudeServiceCollectionExtensions
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddClaudeChatCompletion(
@@ -57,6 +61,7 @@ public static class ClaudeServiceCollectionExtensions
         string modelId,
         Uri endpoint,
         Func<HttpRequestMessage, Task>? requestHandler,
+        AnthropicClientOptions? options = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -68,6 +73,7 @@ public static class ClaudeServiceCollectionExtensions
                 modelId: modelId,
                 endpoint: endpoint,
                 requestHandler: requestHandler,
+                options: options,
                 httpClient: HttpClientProvider.GetHttpClient(serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return services;

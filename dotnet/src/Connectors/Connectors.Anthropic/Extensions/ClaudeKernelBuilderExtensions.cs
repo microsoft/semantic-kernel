@@ -22,6 +22,7 @@ public static class ClaudeKernelBuilderExtensions
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="apiKey">The API key for authentication Claude API.</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -29,6 +30,7 @@ public static class ClaudeKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
+        AnthropicClientOptions? options = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -40,6 +42,7 @@ public static class ClaudeKernelBuilderExtensions
             new ClaudeChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
+                options: options,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;
@@ -52,6 +55,7 @@ public static class ClaudeKernelBuilderExtensions
     /// <param name="modelId">The model for text generation.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
@@ -60,6 +64,7 @@ public static class ClaudeKernelBuilderExtensions
         string modelId,
         Uri endpoint,
         Func<HttpRequestMessage, Task>? requestHandler,
+        AnthropicClientOptions? options = null,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -72,6 +77,7 @@ public static class ClaudeKernelBuilderExtensions
                 modelId: modelId,
                 endpoint: endpoint,
                 requestHandler: requestHandler,
+                options: options,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         return builder;

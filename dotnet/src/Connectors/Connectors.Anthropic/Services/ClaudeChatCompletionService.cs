@@ -26,11 +26,13 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
     /// </summary>
     /// <param name="modelId">The Claude model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication.</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public ClaudeChatCompletionService(
         string modelId,
         string apiKey,
+        AnthropicClientOptions? options = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -43,6 +45,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
 #pragma warning restore CA2000
             modelId: modelId,
             apiKey: apiKey,
+            options: options,
             logger: loggerFactory?.CreateLogger(typeof(ClaudeChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
@@ -53,12 +56,14 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
     /// <param name="modelId">The Claude model for the chat completion service.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
+    /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public ClaudeChatCompletionService(
         string modelId,
         Uri endpoint,
         Func<HttpRequestMessage, Task>? requestHandler,
+        AnthropicClientOptions? options = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -72,6 +77,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
             modelId: modelId,
             endpoint: endpoint,
             requestHandler: requestHandler,
+            options: options,
             logger: loggerFactory?.CreateLogger(typeof(ClaudeChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
