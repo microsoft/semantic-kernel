@@ -152,13 +152,13 @@ data:{"index":76,"token":{"id":661,"text":" It","logprob":-0.2446289,"special":f
 
 data:{"index":77,"token":{"id":3006,"text":" comb","logprob":-0.7246094,"special":false},"generated_text":null,"details":null}
 
-data:{"index":78,"token":{"id":1303,"text":"ines","logprob":-9.536743e-7,"special":false},"generated_text":null,"details":null}
+data:{"index":78,"token":{"id":1303,"text":"lines","logprob":-9.536743e-7,"special":false},"generated_text":null,"details":null}
 
 data:{"index":79,"token":{"id":4118,"text":" various","logprob":-1.3476562,"special":false},"generated_text":null,"details":null}
 
 data:{"index":80,"token":{"id":11760,"text":" discipl","logprob":-0.4416504,"special":false},"generated_text":null,"details":null}
 
-data:{"index":81,"token":{"id":1303,"text":"ines","logprob":-0.0007596016,"special":false},"generated_text":null,"details":null}
+data:{"index":81,"token":{"id":1303,"text":"lines","logprob":-0.0007596016,"special":false},"generated_text":null,"details":null}
 
 data:{"index":82,"token":{"id":1259,"text":" such","logprob":-0.32226562,"special":false},"generated_text":null,"details":null}
 

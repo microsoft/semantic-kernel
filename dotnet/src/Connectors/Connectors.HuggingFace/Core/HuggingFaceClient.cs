@@ -304,7 +304,7 @@ internal sealed class HuggingFaceClient
 
     #endregion
 
-    #region Chat Commpletion
+    #region Chat Completion
 
     internal Task<IReadOnlyList<ChatMessageContent>> GenerateChatAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
         => this._openAIClient.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
