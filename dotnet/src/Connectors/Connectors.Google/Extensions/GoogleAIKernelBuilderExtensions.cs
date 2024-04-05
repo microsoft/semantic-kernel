@@ -29,7 +29,7 @@ public static class GoogleAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1_Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -61,7 +61,7 @@ public static class GoogleAIKernelBuilderExtensions
         this IKernelBuilder builder,
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1_Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null,
         HttpClient? httpClient = null)
     {

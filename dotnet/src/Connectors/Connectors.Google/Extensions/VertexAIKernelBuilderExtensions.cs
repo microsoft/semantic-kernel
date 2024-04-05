@@ -40,7 +40,7 @@ public static class VertexAIKernelBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -80,7 +80,7 @@ public static class VertexAIKernelBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -125,7 +125,7 @@ public static class VertexAIKernelBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {
@@ -165,7 +165,7 @@ public static class VertexAIKernelBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null,
         HttpClient? httpClient = null)
     {

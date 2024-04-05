@@ -36,7 +36,7 @@ public static class VertexAIMemoryBuilderExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -73,7 +73,7 @@ public static class VertexAIMemoryBuilderExtensions
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);

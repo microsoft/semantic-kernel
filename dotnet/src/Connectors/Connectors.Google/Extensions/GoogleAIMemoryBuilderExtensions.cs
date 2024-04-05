@@ -25,7 +25,7 @@ public static class GoogleAIMemoryBuilderExtensions
         this MemoryBuilder builder,
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Beta,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1_Beta,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);

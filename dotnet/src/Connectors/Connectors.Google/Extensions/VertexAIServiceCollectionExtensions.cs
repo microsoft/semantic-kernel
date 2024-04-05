@@ -38,7 +38,7 @@ public static class VertexAIServiceCollectionExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -76,7 +76,7 @@ public static class VertexAIServiceCollectionExtensions
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -119,7 +119,7 @@ public static class VertexAIServiceCollectionExtensions
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null)
     {
         Verify.NotNull(services);
@@ -156,7 +156,7 @@ public static class VertexAIServiceCollectionExtensions
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         string? serviceId = null)
     {
         Verify.NotNull(services);

@@ -2,18 +2,20 @@
 
 namespace Microsoft.SemanticKernel.Connectors.Google;
 
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+
 /// <summary>
 /// Represents the version of the Google API.
 /// </summary>
 public enum GoogleApiVersion
 {
     /// <summary>
-    /// Represents the stable version of the Google API.
+    /// Represents the V1 version of the Google API.
     /// </summary>
-    Stable,
+    V1,
 
     /// <summary>
-    /// Represents the Beta version of the Google API.
+    /// Represents the V1-beta version of the Google API.
     /// </summary>
-    Beta
+    V1_Beta
 }

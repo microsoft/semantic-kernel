@@ -36,7 +36,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         string bearerKey,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
         : this(modelId, () => Task.FromResult(bearerKey), location, projectId, apiVersion, httpClient, loggerFactory)
@@ -64,7 +64,7 @@ public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Stable,
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {

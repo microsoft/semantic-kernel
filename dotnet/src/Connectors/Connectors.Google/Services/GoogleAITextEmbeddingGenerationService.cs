@@ -32,7 +32,7 @@ public sealed class GoogleAITextEmbeddingGenerationService : ITextEmbeddingGener
     public GoogleAITextEmbeddingGenerationService(
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion = GoogleApiVersion.Beta, // todo: change beta to stable when stable version will be available
+        GoogleApiVersion apiVersion = GoogleApiVersion.V1_Beta, // todo: change beta to stable when stable version will be available
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {

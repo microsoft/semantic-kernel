@@ -435,7 +435,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
             return new GeminiChatCompletionClient(
                 httpClient: httpClient ?? this._httpClient,
                 modelId: modelId,
-                apiVersion: GoogleApiVersion.Stable,
+                apiVersion: GoogleApiVersion.V1,
                 bearerTokenProvider: () => Task.FromResult(bearerKey),
                 location: "fake-location",
                 projectId: "fake-project-id");
@@ -444,7 +444,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
-            apiVersion: GoogleApiVersion.Stable,
+            apiVersion: GoogleApiVersion.V1,
             apiKey: "fake-key");
     }
 

@@ -144,7 +144,7 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
             httpClient: this._httpClient,
             modelId: modelId,
             bearerTokenProvider: () => Task.FromResult(bearerKey ?? "fake-key"),
-            apiVersion: GoogleApiVersion.Stable,
+            apiVersion: GoogleApiVersion.V1,
             location: "us-central1",
             projectId: "fake-project-id");
         return client;

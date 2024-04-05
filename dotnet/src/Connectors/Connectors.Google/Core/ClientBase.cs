@@ -113,8 +113,8 @@ internal abstract class ClientBase
     protected static string GetApiVersionSubLink(GoogleApiVersion apiVersion)
         => apiVersion switch
         {
-            GoogleApiVersion.Stable => "v1",
-            GoogleApiVersion.Beta => "v1beta",
+            GoogleApiVersion.V1 => "v1",
+            GoogleApiVersion.V1_Beta => "v1beta",
             _ => throw new NotSupportedException($"Google API version {apiVersion} is not supported.")
         };
 }
