@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models.Claude;

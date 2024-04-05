@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
 
 /// <summary>
 /// Represents the request/response content of Claude.

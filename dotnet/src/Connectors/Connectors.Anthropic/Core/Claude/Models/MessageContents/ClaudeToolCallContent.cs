@@ -3,7 +3,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
 
 internal sealed class ClaudeToolCallContent : ClaudeMessageContent
 {

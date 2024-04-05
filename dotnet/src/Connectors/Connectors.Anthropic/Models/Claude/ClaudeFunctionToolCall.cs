@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
+using Microsoft.SemanticKernel.Connectors.Anthropic.Core.Claude.Models.Contents;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
