@@ -71,15 +71,24 @@ internal static class SseJsonParser
         }
     }
 
+    /// <summary>
+    /// Parses Server-Sent Events (SSE) data asynchronously from a stream and deserializes the data into the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the data into.</typeparam>
+    /// <param name="stream">The stream containing the SSE data.</param>
+    /// <param name="cancellationToken">A cancellation token to stop the parsing process.</param>
+    /// <returns>An asynchronous enumerable sequence of deserialized objects of type <typeparamref name="T"/>.</returns>
     internal static async IAsyncEnumerable<T> ParseAsync<T>(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var sseData in ParseAsync(stream, (sseLine) =>
+        await foreach (var sseData in ParseAsync(stream, DeserializeTargetType, cancellationToken).ConfigureAwait(false))
+        {
+            yield return (T)sseData.Data;
+        }
+
+        static SseData? DeserializeTargetType(SseLine sseLine)
         {
             var obj = JsonSerializer.Deserialize<T>(sseLine.FieldValue.Span, JsonOptionsCache.ReadPermissive);
             return new SseData(sseLine.EventName, obj!);
-        }, cancellationToken).ConfigureAwait(false))
-        {
-            yield return (T)sseData.Data;
         }
     }
 }
