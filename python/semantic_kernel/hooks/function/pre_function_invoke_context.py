@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from pydantic import Field
-
 from semantic_kernel.hooks.function.function_hook_context_base import FunctionHookContextBase
 
 
@@ -22,16 +20,11 @@ class PreFunctionInvokeContext(FunctionHookContextBase):
     Flags:
         updated_arguments (bool): Whether the arguments were updated, default False.
         is_cancel_requested (bool): Whether the function execution has to be canceled, default False.
-        is_skip_requested (bool): Whether the function execution has to be skipped, default False.
 
     Methods:
-        cancel: Sets the is_cancel_requested flag to True.
+        cancel(cancel_reason: str | None): Sets the is_cancel_requested flag to True and stores the cancel_reason.
         update_arguments: Updates the arguments and raises the updated_arguments flag.
-        skip: Sets the is_skip_requested flag to True.
 
     """
 
-    is_skip_requested: bool = Field(default=False, init_var=False)
-
-    def skip(self):
-        self.is_skip_requested = True
+    pass

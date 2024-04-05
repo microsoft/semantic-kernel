@@ -143,28 +143,6 @@ def test_remove_hook_fail(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_pre_invocation(kernel: Kernel, pipeline_count: int, create_mock_function):
-    func = create_mock_function(name="test_function")
-    kernel.plugins.add_plugin_from_functions("test", [func])
-    invoked = 0
-
-    def invoking_handler(context: PreFunctionInvokeContext) -> None:
-        nonlocal invoked
-        invoked += 1
-
-    kernel.add_hook(invoking_handler, "pre_function_invoke")
-    functions = [func] * pipeline_count
-
-    # Act
-    await kernel.invoke(functions, KernelArguments())
-
-    # Assert
-    assert func.call_count == pipeline_count
-    assert invoked == pipeline_count
-
-
-@pytest.mark.asyncio
 async def test_invoke_all_hooks(kernel: Kernel, create_mock_function):
     func = create_mock_function(name="test_function")
 
@@ -237,36 +215,6 @@ async def test_invoke_all_hooks_async(kernel: Kernel, create_mock_function):
 
 
 @pytest.mark.asyncio
-async def test_invoke_pre_invocation_skip_dont_trigger_invoked_handler(kernel: Kernel, create_mock_function):
-    mock_function1 = create_mock_function(name="SkipMe")
-    mock_function2 = create_mock_function(name="DontSkipMe")
-    invoked = 0
-    invoking = 0
-    invoked_function_name = ""
-
-    def invoking_handler(context: PreFunctionInvokeContext):
-        nonlocal invoking
-        invoking += 1
-        if context.function.name == "SkipMe":
-            context.skip()
-
-    def invoked_handler(context: PostFunctionInvokeContext):
-        nonlocal invoked_function_name, invoked
-        invoked_function_name = context.function.name
-        invoked += 1
-
-    kernel.add_hook(invoking_handler, "pre_function_invoke")
-    kernel.add_hook(invoked_handler, "post_function_invoke")
-    # Act
-    _ = await kernel.invoke([mock_function1, mock_function2])
-
-    # Assert
-    assert invoking == 2
-    assert invoked == 1
-    assert invoked_function_name == "DontSkipMe"
-
-
-@pytest.mark.asyncio
 async def test_invoke_pre_invocation_cancel(kernel: Kernel, create_mock_function):
     mock_function1 = create_mock_function(name="test")
     invoked = 0
@@ -308,27 +256,6 @@ async def test_invoke_post_invocation_cancel(kernel: Kernel, create_mock_functio
 
     # Assert
     assert invoked == 1
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("pipeline_count", [1, 2])
-async def test_invoke_handles_post_invocation(kernel: Kernel, pipeline_count, create_mock_function):
-    mock_function = create_mock_function("test_function")
-    invoked = 0
-
-    def invoked_handler(context: PostFunctionInvokeContext):
-        nonlocal invoked
-        invoked += 1
-
-    kernel.add_hook(invoked_handler, "post_function_invoke")
-    functions = [mock_function] * pipeline_count
-
-    # Act
-    _ = await kernel.invoke(functions)
-
-    # Assert
-    assert mock_function.call_count == pipeline_count
-    assert invoked == pipeline_count
 
 
 @pytest.mark.asyncio
@@ -374,7 +301,7 @@ async def test_invoke_change_variable_invoking_handler(kernel: Kernel, create_mo
     kernel.add_hook(invoking_handler, "pre_function_invoke")
     kernel.add_hook(pre_prompt_render, "pre_prompt_render")
     # Act
-    result = await kernel.invoke([mock_function], arguments=KernelArguments(input=original_input))
+    result = await kernel.invoke(mock_function, arguments=KernelArguments(input=original_input))
 
     # Assert
     assert pre_prompt_invoked == 1

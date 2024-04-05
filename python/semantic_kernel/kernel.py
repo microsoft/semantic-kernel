@@ -189,15 +189,28 @@ class Kernel(KernelBaseModel):
             function = self.get_function(plugin_name, function_name)
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
-        async for stream_message in function.invoke_stream(self, arguments):
-            if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get("exception", None)
-            ):
-                raise KernelInvokeException(
-                    f"Error occurred while invoking function: '{function.fully_qualified_name}'"
-                ) from exception
-            function_result.append(stream_message)
-            yield stream_message
+        try:
+            async for stream_message in function.invoke_stream(self, arguments):
+                if isinstance(stream_message, FunctionResult) and (
+                    exception := stream_message.metadata.get("exception", None)
+                ):
+                    raise KernelInvokeException(
+                        f"Error occurred while invoking streaming function: '{function.fully_qualified_name}'"
+                    ) from exception
+                function_result.append(stream_message)
+                yield stream_message
+        except OperationCancelledException:
+            return
+        except KernelInvokeException as exc:
+            raise exc
+        except Exception as exc:
+            logger.error(
+                "Something went wrong in function streaming invocation. During function:"
+                f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
+            )
+            raise KernelInvokeException(
+                f"Error occurred while invoking streaming function: '{function.fully_qualified_name}'"
+            ) from exc
 
         if return_function_results:
             output_function_result: list["StreamingContentMixin"] = []
@@ -246,7 +259,9 @@ class Kernel(KernelBaseModel):
             function = self.func(plugin_name, function_name)
 
         try:
-            return await function.invoke(self, arguments)
+            return await function.invoke(kernel=self, arguments=arguments, metadata=metadata)
+        except OperationCancelledException:
+            return None
         except Exception as exc:
             logger.error(
                 "Something went wrong in function invocation. During function invocation:"
@@ -325,21 +340,12 @@ class Kernel(KernelBaseModel):
             else:
                 if context.is_cancel_requested:
                     raise OperationCancelledException(
-                        f"Execution was cancelled on function invoking event of pipeline step "
-                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"Execution was cancelled on by pre_function_invoke hook, "
+                        f"reason: {context.cancel_reason} on function: "
                         f"{function.fully_qualified_name}."
                     )
                 if context.updated_arguments:
-                    logger.info(
-                        f"Arguments updated by function_invoking_handler in pipeline step: "
-                        f"{metadata['pipeline_step']}, new arguments: {context.arguments}"
-                    )
-                if context.is_skip_requested:
-                    logger.info(
-                        f"Execution was skipped on function invoking event of pipeline step "
-                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
-                        f"{function.fully_qualified_name}."
-                    )
+                    logger.info(f"Arguments updated by pre_function_hook, new arguments: {context.arguments}")
         return context if ran_hook else None
 
     async def _post_function_invoke(
@@ -376,19 +382,15 @@ class Kernel(KernelBaseModel):
             else:
                 if context.is_cancel_requested:
                     raise OperationCancelledException(
-                        f"Execution was cancelled on function invoking event of pipeline step "
-                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"Execution was cancelled on by post_function_invoke hook, "
+                        f"reason: {context.cancel_reason} on function: "
                         f"{function.fully_qualified_name}."
                     )
                 if context.updated_arguments:
-                    logger.info(
-                        f"Arguments updated by function_invoked_handler in pipeline step: "
-                        f"{metadata.get('pipeline_step', '') if metadata else ''}, new arguments: {context.arguments}"
-                    )
+                    logger.info(f"Arguments updated by post_function_invoke, new arguments: {context.arguments}")
                 if context.is_repeat_requested:
                     logger.info(
-                        f"Execution was repeated on function invoked event of pipeline step "
-                        f"{metadata.get('pipeline_step', '') if metadata else ''}: "
+                        f"Execution was repeated on by post_function_invoke hook, function: "
                         f"{function.fully_qualified_name}."
                     )
 

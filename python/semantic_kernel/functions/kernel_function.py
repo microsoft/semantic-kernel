@@ -192,12 +192,9 @@ class KernelFunction(KernelBaseModel):
         while True:
             pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
             if pre_hook_context:
+                metadata.update(pre_hook_context.metadata)
                 if pre_hook_context.updated_arguments:
                     arguments = pre_hook_context.arguments
-                if pre_hook_context.is_skip_requested:
-                    return FunctionResult(function=self.metadata, value=None, metadata=metadata)
-                metadata.update(pre_hook_context.metadata)
-            function_result = None
             exception = None
             try:
                 function_result = await self._invoke_internal(kernel, arguments)
@@ -217,12 +214,14 @@ class KernelFunction(KernelBaseModel):
                 exception=exception,
                 metadata=metadata,
             )
-            if post_hook_context:
-                function_result = post_hook_context.function_result
-                if post_hook_context.is_repeat_requested:
-                    arguments = post_hook_context.arguments
-                    continue
-            return function_result
+            if not post_hook_context:
+                return function_result
+            metadata.update(post_hook_context.metadata)
+            if post_hook_context.updated_arguments:
+                arguments = post_hook_context.arguments
+            if post_hook_context.is_repeat_requested:
+                continue
+            return post_hook_context.function_result
 
     @abstractmethod
     def _invoke_internal_stream(
@@ -263,8 +262,6 @@ class KernelFunction(KernelBaseModel):
         if pre_hook_context:
             if pre_hook_context.updated_arguments:
                 arguments = pre_hook_context.arguments
-            if pre_hook_context.is_skip_requested:
-                return
             metadata.update(pre_hook_context.metadata)
         exception = None
         try:
