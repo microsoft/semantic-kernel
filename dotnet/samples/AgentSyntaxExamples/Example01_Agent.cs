@@ -26,9 +26,9 @@ public class Example01_Agent : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: ParrotInstructions,
                 name: ParrotName)
             {
+                Instructions = ParrotInstructions,
                 InstructionArguments = new() { { "count", 3 } },
             };
 

@@ -14,7 +14,7 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// The instructions of the agent (optional)
     /// </summary>
-    public string? Instructions { get; }
+    public string? Instructions { get; init; }
 
     /// <summary>
     /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
@@ -25,10 +25,8 @@ public abstract class KernelAgent : Agent
     /// Initializes a new instance of the <see cref="KernelAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="instructions">The agent instructions</param>
-    protected KernelAgent(Kernel kernel, string? instructions = null)
+    protected KernelAgent(Kernel kernel)
     {
         this.Kernel = kernel;
-        this.Instructions = instructions;
     }
 }
