@@ -29,14 +29,18 @@ public class Example03_Chat : BaseTest
         ChatCompletionAgent agentReviewer =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: ReviewerInstructions,
-                name: ReviewerName);
+                name: ReviewerName)
+            {
+                Instructions = ReviewerInstructions,
+            };
 
         ChatCompletionAgent agentWriter =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: CopyWriterInstructions,
-                name: CopyWriterName);
+                name: CopyWriterName)
+            {
+                Instructions = CopyWriterInstructions,
+            };
 
         // Create a nexus for agent interaction.
         var chat =
