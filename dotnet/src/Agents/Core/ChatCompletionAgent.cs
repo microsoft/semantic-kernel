@@ -24,11 +24,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public override string? Name { get; }
 
     /// <summary>
-    /// Additional instructions to always append to end of history (optional)
-    /// </summary>
-    public string? ExtraInstructions { get; set; }
-
-    /// <summary>
     /// Optional execution settings for the agent.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings { get; set; }
@@ -41,9 +36,13 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = new();
-        await AddFormattedInstructionsToHistoryAsync(this.Instructions, cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(this.Instructions))
+        {
+            string instructions = (await this.FormatInstructionsAsync(this.Instructions, cancellationToken).ConfigureAwait(false))!;
+
+            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
+        }
         chat.AddRange(history);
-        await AddFormattedInstructionsToHistoryAsync(this.ExtraInstructions, cancellationToken).ConfigureAwait(false);
 
         var messages =
             await chatCompletionService.GetChatMessageContentsAsync(
@@ -58,16 +57,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             message.AuthorName = this.Name;
 
             yield return message;
-        }
-
-        async Task AddFormattedInstructionsToHistoryAsync(string? instructions, CancellationToken cancellationToken)
-        {
-            if (!string.IsNullOrWhiteSpace(instructions))
-            {
-                instructions = (await this.FormatInstructionsAsync(instructions, cancellationToken).ConfigureAwait(false))!;
-
-                chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
-            }
         }
     }
 

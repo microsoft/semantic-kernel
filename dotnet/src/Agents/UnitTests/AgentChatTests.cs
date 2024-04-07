@@ -28,33 +28,33 @@ public class AgentChatTests
         TestChat chat = new();
 
         // Verify initial state
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetHistoryAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetHistoryAsync(chat.Agent)); // Agent history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Inject history
-        chat.AppendHistory([new ChatMessageContent(AuthorRole.User, "More")]);
-        chat.AppendHistory([new ChatMessageContent(AuthorRole.User, "And then some")]);
+        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
+        chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
         // Verify updated history
-        await this.VerifyHistoryAsync(expectedCount: 2, chat.GetHistoryAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetHistoryAsync(chat.Agent)); // Agent hasn't joined
+        await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
         // Invoke with input & verify (agent joins chat)
-        chat.AppendUserMessageToHistory("hi");
+        chat.AddUserMessage("hi");
         await chat.InvokeAsync().ToArrayAsync();
         Assert.Equal(1, chat.Agent.InvokeCount);
 
         // Verify updated history
-        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetHistoryAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetHistoryAsync(chat.Agent)); // Agent history
+        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Invoke without input & verify
         await chat.InvokeAsync().ToArrayAsync();
         Assert.Equal(2, chat.Agent.InvokeCount);
 
         // Verify final history
-        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetHistoryAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetHistoryAsync(chat.Agent)); // Agent history
+        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
+        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
 
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)

@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AgentSyntaxExamples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,6 +16,9 @@ namespace Examples;
 /// </summary>
 public class Example01_Agent : BaseTest
 {
+    public const string ParrotName = "Parrot";
+    public const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -25,8 +26,8 @@ public class Example01_Agent : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.ParrotInstructions,
-                name: AgentInventory.ParrotName)
+                instructions: ParrotInstructions,
+                name: ParrotName)
             {
                 InstructionArguments = new() { { "count", 3 } },
             };
@@ -42,7 +43,7 @@ public class Example01_Agent : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            chat.AppendUserMessageToHistory(input);
+            chat.AddUserMessage(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
@@ -54,9 +55,7 @@ public class Example01_Agent : BaseTest
 
     public Example01_Agent(ITestOutputHelper output)
         : base(output)
-    {
-        // Nothing to do...
-    }
+    { }
 
     /// <summary>
     /// A simple chat for the agent example.

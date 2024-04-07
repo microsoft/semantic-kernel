@@ -31,10 +31,6 @@ public class ChatCompletionAgentTests
         Assert.Equal("test name", agent.Name);
         Assert.Null(agent.ExecutionSettings);
         Assert.Null(agent.InstructionArguments);
-        Assert.Null(agent.ExtraInstructions);
-
-        agent.ExtraInstructions = "something";
-        Assert.Equal("something", agent.ExtraInstructions);
     }
 
     /// <summary>

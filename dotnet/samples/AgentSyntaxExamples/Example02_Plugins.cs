@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AgentSyntaxExamples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Plugins;
@@ -20,6 +18,9 @@ namespace Examples;
 /// </summary>
 public class Example02_Plugins : BaseTest
 {
+    public const string HostName = "Host";
+    public const string HostInstructions = "Answer questions about the menu.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -27,8 +28,8 @@ public class Example02_Plugins : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.HostInstructions,
-                name: AgentInventory.HostName)
+                instructions: HostInstructions,
+                name: HostName)
             {
                 ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }
             };
@@ -49,7 +50,7 @@ public class Example02_Plugins : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            chat.AppendUserMessageToHistory(input);
+            chat.AddUserMessage(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
@@ -61,9 +62,7 @@ public class Example02_Plugins : BaseTest
 
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
-    {
-        // Nothing to do...
-    }
+    { }
 
     /// <summary>
     ///

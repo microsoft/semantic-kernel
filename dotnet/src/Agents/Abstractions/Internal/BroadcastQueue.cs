@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IList<Microsoft.SemanticKernel.ChatMessageContent>>;
+using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic.IReadOnlyList<Microsoft.SemanticKernel.ChatMessageContent>>;
 
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
@@ -36,7 +36,7 @@ internal sealed class BroadcastQueue
     /// </summary>
     /// <param name="channels">The target channels for which to broadcast.</param>
     /// <param name="messages">The messages being broadcast.</param>
-    public void Enqueue(IEnumerable<ChannelReference> channels, IList<ChatMessageContent> messages)
+    public void Enqueue(IEnumerable<ChannelReference> channels, IReadOnlyList<ChatMessageContent> messages)
     {
         lock (this._stateLock)
         {

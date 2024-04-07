@@ -34,7 +34,7 @@ public abstract class AgentChat
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The message history</returns>
-    public IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(Agent? agent = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(Agent? agent = null, CancellationToken cancellationToken = default)
     {
         if (agent == null)
         {
@@ -54,9 +54,14 @@ public abstract class AgentChat
     /// Append messages to the conversation.
     /// </summary>
     /// <param name="message">Set of non-system messages with which to seed the conversation.</param>
-    public void AppendHistory(ChatMessageContent message)
+    /// <remarks>
+    /// Adding a message to the conversation requires any active <see cref="AgentChannel"/> remains
+    /// synchronized, so the message is broadcast to all channels.
+    /// </remarks>
+    /// <throws>KernelException if a system message is present, without taking any other action</throws>
+    public void AddChatMessage(ChatMessageContent message)
     {
-        this.AppendHistory(new[] { message });
+        this.AddChatMessages(new[] { message });
     }
 
     /// <summary>
@@ -64,23 +69,18 @@ public abstract class AgentChat
     /// </summary>
     /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
     /// <remarks>
-    /// Will throw KernelException if a system message is present, without taking any other action.
+    /// Adding messages to the conversation requires any active <see cref="AgentChannel"/> remains
+    /// synchronized, so the messages are broadcast to all channels.
     /// </remarks>
-    public void AppendHistory(IEnumerable<ChatMessageContent> messages)
+    /// <throws>KernelException if a system message is present, without taking any other action</throws>
+    public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
     {
-        bool hasSystemMessage = false;
-        var cleanMessages =
-            messages.Where(
-                m =>
-                {
-                    bool isSystemMessage = m.Role == AuthorRole.System;
-                    hasSystemMessage |= isSystemMessage;
-                    return !isSystemMessage;
-                }).ToArray();
-
-        if (hasSystemMessage)
+        for (int index = 0; index < messages.Count; ++index)
         {
-            throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
+            if (messages[index].Role == AuthorRole.System)
+            {
+                throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
+            }
         }
 
         // Append to chat history
@@ -88,7 +88,23 @@ public abstract class AgentChat
 
         // Broadcast message to other channels (in parallel)
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-        this._broadcastQueue.Enqueue(channelRefs, cleanMessages);
+        this._broadcastQueue.Enqueue(channelRefs, messages);
+    }
+
+    /// <summary>
+    /// Add user message to chat history
+    /// </summary>
+    /// <param name="input">The user input, might be empty.</param>
+    public ChatMessageContent? AddUserMessage(string? input)
+    {
+        var message = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
+
+        if (message != null)
+        {
+            this.AddChatMessage(message);
+        }
+
+        return message;
     }
 
     /// <summary>
