@@ -9,7 +9,7 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// The arguments used to optionally format <see cref="Instructions"/>.
     /// </summary>
-    public KernelArguments? InstructionArguments { get; set; }
+    public KernelArguments? InstructionArguments { get; init; }
 
     /// <summary>
     /// The instructions of the agent (optional)
