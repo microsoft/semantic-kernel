@@ -23,7 +23,10 @@ public class ChatCompletionAgentTests
     public void VerifyChatCompletionAgentDefinition()
     {
         ChatCompletionAgent agent =
-            new(Kernel.CreateBuilder().Build(), description: "test description", name: "test name");
+            new(Kernel.CreateBuilder().Build(), description: "test description", name: "test name")
+            {
+                Instructions = "test instructions",
+            };
 
         Assert.NotNull(agent.Id);
         Assert.Equal("test instructions", agent.Instructions);
