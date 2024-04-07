@@ -51,7 +51,7 @@ public abstract class AgentChat
     /// </summary>
     /// <param name="message">Set of non-system messages with which to seed the conversation.</param>
     /// <remarks>
-    /// Adding a message to the conversation requries any active <see cref="AgentChannel"/> remains
+    /// Adding a message to the conversation requires any active <see cref="AgentChannel"/> remains
     /// synchronized, so the message is broadcast to all channels.
     /// </remarks>
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
@@ -65,7 +65,7 @@ public abstract class AgentChat
     /// </summary>
     /// <param name="messages">Set of non-system messages with which to seed the conversation.</param>
     /// <remarks>
-    /// Adding messages to the conversation requries any active <see cref="AgentChannel"/> remains
+    /// Adding messages to the conversation requires any active <see cref="AgentChannel"/> remains
     /// synchronized, so the messages are broadcast to all channels.
     /// </remarks>
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
@@ -92,6 +92,22 @@ public abstract class AgentChat
         // Broadcast message to other channels (in parallel)
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
         this._broadcastQueue.Enqueue(channelRefs, cleanMessages);
+    }
+
+    /// <summary>
+    /// Add user message to chat history
+    /// </summary>
+    /// <param name="input">The user input, might be empty.</param>
+    public ChatMessageContent? AddUserMessage(string? input)
+    {
+        var message = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
+
+        if (message != null)
+        {
+            this.AddChatMessage(message);
+        }
+
+        return message;
     }
 
     /// <summary>

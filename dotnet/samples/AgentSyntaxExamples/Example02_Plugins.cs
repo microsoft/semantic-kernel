@@ -49,7 +49,7 @@ public class Example02_Plugins : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponseAsync(string input)
         {
-            chat.AppendUserMessageToHistory(input);
+            chat.AddUserMessage(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))

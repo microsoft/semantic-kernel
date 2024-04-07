@@ -40,7 +40,7 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
         // Invoke with input & verify (agent joins chat)
-        chat.AppendUserMessageToHistory("hi");
+        chat.AddUserMessage("hi");
         await chat.InvokeAsync().ToArrayAsync();
         Assert.Equal(1, chat.Agent.InvokeCount);
 
