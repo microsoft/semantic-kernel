@@ -215,7 +215,7 @@ public class AgentGroupChatTests
 
     private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
     {
-        Mock<ChatHistoryKernelAgent> agent = new(Kernel.CreateBuilder().Build(), "test");
+        Mock<ChatHistoryKernelAgent> agent = new(Kernel.CreateBuilder().Build());
 
         string id = Guid.NewGuid().ToString();
         ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
