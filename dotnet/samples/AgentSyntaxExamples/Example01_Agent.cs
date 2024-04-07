@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AgentSyntaxExamples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,6 +16,10 @@ namespace Examples;
 /// </summary>
 public class Example01_Agent : BaseTest
 {
+
+    public const string ParrotName = "Parrot";
+    public const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -25,8 +27,8 @@ public class Example01_Agent : BaseTest
         ChatCompletionAgent agent =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.ParrotInstructions,
-                name: AgentInventory.ParrotName)
+                instructions: ParrotInstructions,
+                name: ParrotName)
             {
                 InstructionArguments = new() { { "count", 3 } },
             };
