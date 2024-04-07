@@ -96,9 +96,7 @@ public class PromptRendererTests
         }
 
         public void OnPromptRendering(PromptRenderingContext context)
-        {
-            // Nothing to do...
-        }
+        { }
     }
 
     private sealed class TestAgent(Kernel kernel, string? instructions = null)

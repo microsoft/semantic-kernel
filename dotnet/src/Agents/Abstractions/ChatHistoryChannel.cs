@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public class ChatHistoryChannel : AgentChannel
 {
-    private readonly ChatHistory _chat;
+    private readonly ChatHistory _history;
 
     /// <inheritdoc/>
     protected internal sealed override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -25,9 +25,9 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        await foreach (var message in historyHandler.InvokeAsync(this._chat, cancellationToken))
+        await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken))
         {
-            this._chat.Add(message);
+            this._history.Add(message);
 
             yield return message;
         }
@@ -36,7 +36,7 @@ public class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
-        this._chat.AddRange(history);
+        this._history.AddRange(history);
 
         return Task.CompletedTask;
     }
@@ -44,7 +44,7 @@ public class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected internal sealed override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return this._chat.ToDescendingAsync();
+        return this._history.ToDescendingAsync();
     }
 
     /// <summary>
@@ -52,6 +52,6 @@ public class ChatHistoryChannel : AgentChannel
     /// </summary>
     public ChatHistoryChannel()
     {
-        this._chat = new();
+        this._history = new();
     }
 }

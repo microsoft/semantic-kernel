@@ -19,7 +19,7 @@ public static class AgentChatExtensions
 
         if (message != null)
         {
-            chat.AppendHistory(message);
+            chat.AddChatMessage(message);
         }
 
         return message;

@@ -61,9 +61,7 @@ public class Example02_Plugins : BaseTest
 
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
-    {
-        // Nothing to do...
-    }
+    { }
 
     /// <summary>
     ///

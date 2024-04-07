@@ -34,7 +34,5 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <param name="instructions">The agent instructions</param>
     protected ChatHistoryKernelAgent(Kernel kernel, string? instructions = null)
         : base(kernel, instructions)
-    {
-        // Nothing to do...
-    }
+    { }
 }
