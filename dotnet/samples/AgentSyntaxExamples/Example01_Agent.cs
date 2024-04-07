@@ -16,8 +16,8 @@ namespace Examples;
 /// </summary>
 public class Example01_Agent : BaseTest
 {
-    public const string ParrotName = "Parrot";
-    public const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.";
+    private const string ParrotName = "Parrot";
+    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.";
 
     [Fact]
     public async Task RunAsync()

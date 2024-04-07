@@ -18,8 +18,8 @@ namespace Examples;
 /// </summary>
 public class Example02_Plugins : BaseTest
 {
-    public const string HostName = "Host";
-    public const string HostInstructions = "Answer questions about the menu.";
+    private const string HostName = "Host";
+    private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
     public async Task RunAsync()
