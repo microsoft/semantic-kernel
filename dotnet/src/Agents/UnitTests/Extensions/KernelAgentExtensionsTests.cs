@@ -21,15 +21,19 @@ public class KernelAgentExtensionsTests
     [Fact]
     public async Task VerifyKernelAgentExtensionsFormatInstructionsAsync()
     {
-        TestAgent agent = new(Kernel.CreateBuilder().Build(), "test");
+        TestAgent agent =
+            new(Kernel.CreateBuilder().Build())
+            {
+                Instructions = "test",
+            };
 
         var instructions = await agent.FormatInstructionsAsync(agent.Instructions);
 
         Assert.Equal("test", instructions);
     }
 
-    private sealed class TestAgent(Kernel kernel, string? instructions = null)
-        : KernelAgent(kernel, instructions)
+    private sealed class TestAgent(Kernel kernel)
+        : KernelAgent(kernel)
     {
         public override string? Description { get; } = null;
 

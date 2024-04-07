@@ -70,9 +70,12 @@ public class PromptRendererTests
 
     private async Task<string?> RenderInstructionsAsync(string? instructions, KernelArguments? arguments = null)
     {
-        TestAgent agent = new(this.CreateKernel(), instructions);
-
-        agent.InstructionArguments = arguments;
+        TestAgent agent =
+            new(this.CreateKernel())
+            {
+                Instructions = instructions,
+                InstructionArguments = arguments,
+            };
 
         return await PromptRenderer.FormatInstructionsAsync(agent, agent.Instructions);
     }
@@ -99,8 +102,8 @@ public class PromptRendererTests
         { }
     }
 
-    private sealed class TestAgent(Kernel kernel, string? instructions = null)
-        : KernelAgent(kernel, instructions)
+    private sealed class TestAgent(Kernel kernel)
+        : KernelAgent(kernel)
     {
         public override string? Description { get; } = null;
 

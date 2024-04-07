@@ -31,8 +31,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// Initializes a new instance of the <see cref="ChatHistoryKernelAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="instructions">The agent instructions</param>
-    protected ChatHistoryKernelAgent(Kernel kernel, string? instructions = null)
-        : base(kernel, instructions)
+    protected ChatHistoryKernelAgent(Kernel kernel)
+        : base(kernel)
     { }
 }

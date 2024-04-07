@@ -63,7 +63,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="instructions">The agent instructions</param>
     /// <param name="description">The agent description (optional)</param>
     /// <param name="name">The agent name</param>
     /// <remarks>
@@ -72,10 +71,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// </remarks>
     public ChatCompletionAgent(
         Kernel kernel,
-        string? instructions = null,
         string? description = null,
         string? name = null)
-       : base(kernel, instructions)
+       : base(kernel)
     {
         this.Id = Guid.NewGuid().ToString();
         this.Description = description;
