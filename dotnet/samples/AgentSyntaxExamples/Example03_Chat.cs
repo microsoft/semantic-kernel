@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Threading.Tasks;
-using AgentSyntaxExamples;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,6 +16,12 @@ namespace Examples;
 /// </summary>
 public class Example03_Chat : BaseTest
 {
+    private const string ReviewerName = "ArtDirector";
+    private const string ReviewerInstructions = "You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print.  If so, state that it is approved.  If not, provide insight on how to refine suggested copy without example.";
+
+    private const string CopyWriterName = "Writer";
+    private const string CopyWriterInstructions = "You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -25,14 +29,14 @@ public class Example03_Chat : BaseTest
         ChatCompletionAgent agentReviewer =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.ReviewerInstructions,
-                name: AgentInventory.ReviewerName);
+                instructions: ReviewerInstructions,
+                name: ReviewerName);
 
         ChatCompletionAgent agentWriter =
             new(
                 kernel: this.CreateKernelWithChatCompletion(),
-                instructions: AgentInventory.CopyWriterInstructions,
-                name: AgentInventory.CopyWriterName);
+                instructions: CopyWriterInstructions,
+                name: CopyWriterName);
 
         // Create a nexus for agent interaction.
         var chat =
@@ -62,7 +66,7 @@ public class Example03_Chat : BaseTest
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        chat.AppendUserMessageToHistory(input);
+        chat.AddUserMessage(input);
         this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())

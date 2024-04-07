@@ -84,7 +84,7 @@ public abstract class AgentChat
         }
 
         // Append to chat history
-        this.History.AddRange(cleanMessages);
+        this.History.AddRange(messages);
 
         // Broadcast message to other channels (in parallel)
         var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
