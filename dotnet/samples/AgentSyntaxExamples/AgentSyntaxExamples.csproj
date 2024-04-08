@@ -37,8 +37,9 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
   </ItemGroup>
   <ItemGroup>

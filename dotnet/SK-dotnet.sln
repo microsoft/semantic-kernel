@@ -226,9 +226,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureAISearch.Un
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.HuggingFace.UnitTests", "src\Connectors\Connectors.HuggingFace.UnitTests\Connectors.HuggingFace.UnitTests.csproj", "{1F96837A-61EC-4C8F-904A-07BEBD05FDEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google", "src\Connectors\Connectors.Google\Connectors.Google.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google", "src\Connectors\Connectors.Google\Connectors.Google.csproj", "{6578D31B-2CF3-4FF4-A845-7A0412FEB42E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
 EndProject
@@ -245,6 +245,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentSyntaxExamples", "samples\AgentSyntaxExamples\AgentSyntaxExamples.csproj", "{9753B382-8E17-4B03-B0D3-790F3466CB7D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.Core", "src\Agents\Core\Agents.Core.csproj", "{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.OpenAI", "src\Agents\OpenAI\Agents.OpenAI.csproj", "{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -599,6 +601,12 @@ Global
 		{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -685,6 +693,7 @@ Global
 		{F238CE75-C17C-471A-AC9A-6C94D3D946FD} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 		{9753B382-8E17-4B03-B0D3-790F3466CB7D} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
+		{5F5026FD-FEAD-4A6A-80FA-3E7C46952834} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

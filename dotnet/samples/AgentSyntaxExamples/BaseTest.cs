@@ -33,6 +33,16 @@ public abstract class BaseTest
         return TestConfiguration.AzureOpenAI.ApiKey;
     }
 
+    protected string GetModel()
+    {
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
+        {
+            return TestConfiguration.OpenAI.ChatModelId;
+        }
+
+        return TestConfiguration.AzureOpenAI.ChatDeploymentName;
+    }
+
     protected Kernel CreateKernelWithChatCompletion(KernelPlugin? plugin = null)
     {
         var builder = Kernel.CreateBuilder();
