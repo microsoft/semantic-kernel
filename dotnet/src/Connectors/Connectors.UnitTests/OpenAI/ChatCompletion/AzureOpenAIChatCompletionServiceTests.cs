@@ -786,9 +786,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(2, messages.GetArrayLength());
+        Assert.Equal(1, messages.GetArrayLength());
 
-        var assistantMessage = messages[1];
+        var assistantMessage = messages[0];
         Assert.Equal("assistant", assistantMessage.GetProperty("role").GetString());
 
         Assert.Equal(2, assistantMessage.GetProperty("tool_calls").GetArrayLength());
@@ -845,14 +845,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(3, messages.GetArrayLength());
+        Assert.Equal(2, messages.GetArrayLength());
 
-        var assistantMessage = messages[1];
+        var assistantMessage = messages[0];
         Assert.Equal("tool", assistantMessage.GetProperty("role").GetString());
         Assert.Equal("rainy", assistantMessage.GetProperty("content").GetString());
         Assert.Equal("1", assistantMessage.GetProperty("tool_call_id").GetString());
 
-        var assistantMessage2 = messages[2];
+        var assistantMessage2 = messages[1];
         Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
         Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
@@ -890,14 +890,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
 
         var messages = optionsJson.GetProperty("messages");
-        Assert.Equal(3, messages.GetArrayLength());
+        Assert.Equal(2, messages.GetArrayLength());
 
-        var assistantMessage = messages[1];
+        var assistantMessage = messages[0];
         Assert.Equal("tool", assistantMessage.GetProperty("role").GetString());
         Assert.Equal("rainy", assistantMessage.GetProperty("content").GetString());
         Assert.Equal("1", assistantMessage.GetProperty("tool_call_id").GetString());
 
-        var assistantMessage2 = messages[2];
+        var assistantMessage2 = messages[1];
         Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
         Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
