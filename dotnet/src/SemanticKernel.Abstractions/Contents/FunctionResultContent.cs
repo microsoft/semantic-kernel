@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -71,5 +72,33 @@ public sealed class FunctionResultContent : KernelContent
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FunctionResultContent"/> class.
+    /// </summary>
+    /// <param name="fullyQualifiedName">Fully-qualified name of the function.</param>
+    /// <param name="id">The function call ID.</param>
+    /// <param name="result">The function result.</param>
+    /// <param name="functionNameSeparator">The function name separator.</param>
+    public static FunctionResultContent Create(string fullyQualifiedName, string? id = null, object? result = null, string functionNameSeparator = "-")
+    {
+        Verify.NotNull(fullyQualifiedName);
+
+        string? pluginName = null;
+        string functionName = fullyQualifiedName;
+
+        int separatorPos = fullyQualifiedName.IndexOf(functionNameSeparator, StringComparison.Ordinal);
+        if (separatorPos >= 0)
+        {
+            pluginName = fullyQualifiedName.AsSpan(0, separatorPos).Trim().ToString();
+            functionName = fullyQualifiedName.AsSpan(separatorPos + functionNameSeparator.Length).Trim().ToString();
+        }
+
+        return new FunctionResultContent(
+            functionName: functionName,
+            pluginName: pluginName,
+            id: id,
+            result: result);
     }
 }

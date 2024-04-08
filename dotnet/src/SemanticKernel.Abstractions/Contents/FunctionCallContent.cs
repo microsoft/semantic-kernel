@@ -70,7 +70,7 @@ public sealed class FunctionCallContent : KernelContent
     /// <param name="id">The function call ID.</param>
     /// <param name="arguments">The function original arguments.</param>
     /// <param name="functionNameSeparator">The function name separator.</param>
-    public static FunctionCallContent Create(string fullyQualifiedName, string? id, KernelArguments? arguments = null, string functionNameSeparator = "-")
+    public static FunctionCallContent Create(string fullyQualifiedName, string? id = null, KernelArguments? arguments = null, string functionNameSeparator = "-")
     {
         Verify.NotNull(fullyQualifiedName);
 

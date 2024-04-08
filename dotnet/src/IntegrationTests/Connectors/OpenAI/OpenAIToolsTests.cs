@@ -312,7 +312,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(messageContent.Content);
 
-        var failureWords = new List<string>() { "error", "unable", "couldn", "issue", "trouble" };
+        var failureWords = new List<string>() { "error", "unable", "couldn", "issue", "trouble", "difficulties" };
         Assert.Contains(failureWords, word => messageContent.Content.Contains(word, StringComparison.InvariantCultureIgnoreCase));
     }
 

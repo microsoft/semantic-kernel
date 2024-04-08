@@ -86,4 +86,30 @@ public class FunctionResultContentTests
         Assert.Equal(sut.FunctionName, deserializedSut.FunctionName);
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
     }
+
+    [Fact]
+    public void ItShouldBeCreatedFromFullyQualifiedNameThatHasPluginNameAndFunctionName()
+    {
+        // Arrange & act
+        var sut = FunctionResultContent.Create("p1.f1", "id", "result", ".");
+
+        // Assert
+        Assert.Equal("f1", sut.FunctionName);
+        Assert.Equal("p1", sut.PluginName);
+        Assert.Equal("id", sut.Id);
+        Assert.Equal("result", sut.Result);
+    }
+
+    [Fact]
+    public void ItShouldBeCreatedFromFullyQualifiedNameThatHasFunctionNameOnly()
+    {
+        // Arrange & act
+        var sut = FunctionResultContent.Create("f1", "id", "result");
+
+        // Assert
+        Assert.Equal("f1", sut.FunctionName);
+        Assert.Null(sut.PluginName);
+        Assert.Equal("id", sut.Id);
+        Assert.Equal("result", sut.Result);
+    }
 }
