@@ -29,7 +29,7 @@ public sealed class FunctionResultContent : KernelContent
     public string FunctionName { get; }
 
     /// <summary>
-    /// The result of the function call.
+    /// The result of the function call, the function invocation exception or the custom error message.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Result { get; set; }

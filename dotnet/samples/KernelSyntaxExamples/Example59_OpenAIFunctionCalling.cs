@@ -95,7 +95,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 {
                     try
                     {
-                        FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function. Can be done in parallel.
+                        FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function.
 
                         chatHistory.AddMessage(AuthorRole.Tool, functionResult); // Adding function result to chat history.
                     }
