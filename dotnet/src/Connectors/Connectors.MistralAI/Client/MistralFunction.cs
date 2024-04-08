@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Json.Schema;
-using Json.Schema.Generation;
 
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
@@ -125,11 +122,7 @@ internal class MistralFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                new JsonSchemaBuilder()
-                .FromType(typeof(string))
-                .Description(description!)
-                .Build()));
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
