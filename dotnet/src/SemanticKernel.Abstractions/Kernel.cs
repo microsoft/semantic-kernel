@@ -279,12 +279,12 @@ public sealed class Kernel
     #region Internal Filtering
 
     [Experimental("SKEXP0001")]
-    internal async Task<FunctionInvocationContext?> OnFunctionInvocationAsync(
+    internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
         Func<FunctionInvocationContext, Task> functionCallback)
     {
-        FunctionInvocationContext? context = new(function, arguments);
+        FunctionInvocationContext context = new(function, arguments);
 
         if (this._functionFilters is { Count: > 0 })
         {

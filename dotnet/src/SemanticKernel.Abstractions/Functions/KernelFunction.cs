@@ -162,7 +162,7 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-        FunctionResult? functionResult = new(this);
+        FunctionResult? functionResult = null;
         try
         {
             // Quick check for cancellation after logging about function start but before doing any real work.
@@ -177,15 +177,12 @@ public abstract class KernelFunction
                 context.Result = functionResult;
             }).ConfigureAwait(false);
 
-            if (invocationContext is not null)
-            {
-                // Apply any changes from the function filters to final result.
-                functionResult = new FunctionResult(
-                    this,
-                    invocationContext.Result?.Value ?? functionResult.Value,
-                    functionResult.Culture,
-                    invocationContext.Metadata ?? functionResult.Metadata);
-            }
+            // Apply any changes from the function filters to final result.
+            functionResult = new FunctionResult(
+                this,
+                invocationContext.Result?.Value ?? functionResult?.Value,
+                functionResult?.Culture,
+                invocationContext.Metadata ?? functionResult?.Metadata);
 
             logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult.Value);
