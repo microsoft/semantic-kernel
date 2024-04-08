@@ -28,10 +28,10 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose. You are also a math wizard, 
+flowery prose. You are also a math wizard,
 especially for adding and subtracting.
 You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for, 
+Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
@@ -164,14 +164,11 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
     stream = True
     if stream:
         await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
     else:
-        result = await kernel.invoke(chat_function, arguments=arguments)
+        result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # OpenAIChatMessageContent with information about the tool calls, which need to be sent
