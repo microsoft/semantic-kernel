@@ -7,11 +7,6 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class KernelAgent : Agent
 {
     /// <summary>
-    /// The arguments used to optionally format <see cref="Instructions"/>.
-    /// </summary>
-    public KernelArguments? InstructionArguments { get; init; }
-
-    /// <summary>
     /// The instructions of the agent (optional)
     /// </summary>
     public string? Instructions { get; init; }
