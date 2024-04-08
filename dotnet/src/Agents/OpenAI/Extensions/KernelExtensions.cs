@@ -12,7 +12,7 @@ internal static class KernelExtensions
         return nameParts.Length switch
         {
             2 => kernel.Plugins.GetFunction(nameParts[0], nameParts[1]),
-            _ => throw new KernelException($"Unknown tool: {toolName}"),
+            _ => throw new KernelException($"Agent Failure - Unknown tool: {toolName}"),
         };
     }
 }
