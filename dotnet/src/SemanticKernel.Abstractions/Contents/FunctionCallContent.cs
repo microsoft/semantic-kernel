@@ -35,16 +35,6 @@ public sealed class FunctionCallContent : KernelContent
     public KernelArguments? Arguments { get; }
 
     /// <summary>
-    /// Gets the fully-qualified name of the function.
-    /// </summary>
-    /// <param name="functionNameSeparator">The function name separator.</param>
-    /// <returns>Fully-qualified name of the function.</returns>
-    public string GetFullyQualifiedName(string functionNameSeparator = "-")
-    {
-        return string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{functionNameSeparator}{this.FunctionName}";
-    }
-
-    /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
     /// <param name="functionName">The function name.</param>

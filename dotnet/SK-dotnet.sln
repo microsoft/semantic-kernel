@@ -245,7 +245,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Onnx.UnitTests",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{4DFB3897-0319-4DF2-BCFE-E6E0648297D2}"
 	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\src\Functions\FullyQualifiedFunctionName.cs = src\InternalUtilities\src\Functions\FullyQualifiedFunctionName.cs
+		src\InternalUtilities\src\Functions\FunctionName.cs = src\InternalUtilities\src\Functions\FunctionName.cs
 	EndProjectSection
 EndProject
 Global

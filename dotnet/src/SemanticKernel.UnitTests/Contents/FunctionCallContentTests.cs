@@ -28,19 +28,6 @@ public class FunctionCallContentTests
     }
 
     [Fact]
-    public void ItShouldCreateFullyQualifiedName()
-    {
-        // Arrange
-        var sut = new FunctionCallContent("f1", "p1", "id", this._arguments);
-
-        // Act
-        var fullyQualifiedName = sut.GetFullyQualifiedName(".");
-
-        // Assert
-        Assert.Equal("p1.f1", fullyQualifiedName);
-    }
-
-    [Fact]
     public async Task ItShouldFindKernelFunctionAndInvokeItAsync()
     {
         // Arrange

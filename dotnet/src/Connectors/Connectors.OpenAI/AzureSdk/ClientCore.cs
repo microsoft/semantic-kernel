@@ -448,8 +448,8 @@ internal abstract class ClientCore
                     {
                         // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
-                        var fqn = FullyQualifiedFunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
-                        message.Items.Add(new FunctionResultContent(fqn.FunctionName, fqn.PluginName, functionCall.Id, result));
+                        var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
+                        message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
                     }
 
                     chat.Add(message);
@@ -1083,7 +1083,7 @@ internal abstract class ClientCore
                     {
                         var argument = JsonSerializer.Serialize(fcContent.Arguments);
 
-                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcContent.Id, fcContent.GetFullyQualifiedName(OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcContent.Id, FunctionName.ToFullyQualifiedName(fcContent.FunctionName, fcContent.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
                     }
                 }
 
@@ -1151,9 +1151,9 @@ internal abstract class ClientCore
                     // The original arguments and function tool call will be available via the 'InnerContent' property for the connector caller to access.
                 }
 
-                var fqn = FullyQualifiedFunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
+                var fqn = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
                 var content = new FunctionCallContent(
-                    functionName: fqn.FunctionName,
+                    functionName: fqn.Name,
                     pluginName: fqn.PluginName,
                     id: functionToolCall.Id,
                     arguments: arguments);
