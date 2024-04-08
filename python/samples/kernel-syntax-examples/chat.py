@@ -22,7 +22,7 @@ ChatBot:>
 kernel = sk.Kernel()
 
 api_key, org_id = sk.openai_settings_from_dot_env()
-service_id = "chat-gpt"
+service_id = "chat"
 kernel.add_service(
     sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo-1106", api_key=api_key, org_id=org_id)
 )

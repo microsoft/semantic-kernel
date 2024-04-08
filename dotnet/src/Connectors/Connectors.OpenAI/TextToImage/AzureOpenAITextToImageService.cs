@@ -8,10 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
+using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToImage;
 
@@ -80,6 +79,78 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
             GetClientOptions(httpClient, apiVersion));
     }
 
+    /// <summary>
+    /// Create a new instance of Azure OpenAI image generation service
+    /// </summary>
+    /// <param name="deploymentName">Deployment name identifier</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL</param>
+    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
+    /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
+    public AzureOpenAITextToImageService(
+        string deploymentName,
+        string endpoint,
+        TokenCredential credential,
+        string? modelId,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null,
+        string? apiVersion = null)
+    {
+        Verify.NotNull(credential);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        this._deploymentName = deploymentName;
+
+        if (modelId is not null)
+        {
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+        this.AddAttribute(DeploymentNameKey, deploymentName);
+
+        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+
+        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
+        if (connectorEndpoint is null)
+        {
+            throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
+        }
+
+        this._client = new(new Uri(connectorEndpoint),
+            credential,
+            GetClientOptions(httpClient, apiVersion));
+    }
+
+    /// <summary>
+    /// Create a new instance of Azure OpenAI image generation service
+    /// </summary>
+    /// <param name="deploymentName">Deployment name identifier</param>
+    /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service.</param>
+    /// <param name="modelId">Model identifier</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
+    public AzureOpenAITextToImageService(
+        string deploymentName,
+        OpenAIClient openAIClient,
+        string? modelId,
+        ILoggerFactory? loggerFactory = null)
+    {
+        Verify.NotNull(openAIClient);
+        Verify.NotNullOrWhiteSpace(deploymentName);
+
+        this._deploymentName = deploymentName;
+
+        if (modelId is not null)
+        {
+            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+        }
+        this.AddAttribute(DeploymentNameKey, deploymentName);
+
+        this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
+
+        this._client = openAIClient;
+    }
+
     /// <inheritdoc/>
     public async Task<string> GenerateImageAsync(
         string description,
@@ -127,29 +198,12 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
         return imageGenerations.Value.Data[0].Url.AbsoluteUri;
     }
 
-    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, string? apiVersion)
-    {
-        OpenAIClientOptions.ServiceVersion version = apiVersion switch
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient, string? apiVersion) =>
+        ClientCore.GetOpenAIClientOptions(httpClient, apiVersion switch
         {
-            // DALL-E 3 is only supported post 2023-12-01-preview
+            // DALL-E 3 is supported in the latest API releases
             _ => OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview
-        };
-
-        var options = new OpenAIClientOptions(version)
-        {
-            Diagnostics = { ApplicationId = HttpHeaderConstant.Values.UserAgent }
-        };
-
-        if (httpClient != null)
-        {
-            // Disable retries when using a custom HttpClient
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
-
-            options.Transport = new HttpClientTransport(httpClient);
-        }
-
-        return options;
-    }
+        });
 
     internal void AddAttribute(string key, string? value)
     {

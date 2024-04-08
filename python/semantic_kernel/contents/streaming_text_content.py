@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Optional
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
+from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ContentAdditionException
 
 
-class StreamingTextContent(StreamingKernelContent):
+class StreamingTextContent(StreamingContentMixin, TextContent):
     """This is the base class for streaming text response content.
 
     All Text Completion Services should return a instance of this class as streaming response.
@@ -26,12 +26,6 @@ class StreamingTextContent(StreamingKernelContent):
         __bytes__: Returns the content of the response encoded in the encoding.
         __add__: Combines two StreamingTextContent instances.
     """
-
-    text: Optional[str] = None
-    encoding: Optional[str] = None
-
-    def __str__(self) -> str:
-        return self.text
 
     def __bytes__(self) -> bytes:
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
