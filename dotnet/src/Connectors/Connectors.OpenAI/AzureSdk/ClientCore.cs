@@ -448,7 +448,8 @@ internal abstract class ClientCore
                     {
                         // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
-                        message.Items.Add(FunctionResultContent.Create(functionCall.Name, functionCall.Id, result));
+                        var fqn = FullyQualifiedFunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
+                        message.Items.Add(new FunctionResultContent(fqn.FunctionName, fqn.PluginName, functionCall.Id, result));
                     }
 
                     chat.Add(message);
@@ -1148,11 +1149,12 @@ internal abstract class ClientCore
                     // The original arguments and function tool call will be available via the 'InnerContent' property for the connector caller to access.
                 }
 
-                var content = FunctionCallContent.Create(
-                    fullyQualifiedName: functionToolCall.Name,
+                var fqn = FullyQualifiedFunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
+                var content = new FunctionCallContent(
+                    functionName: fqn.FunctionName,
+                    pluginName: fqn.PluginName,
                     id: functionToolCall.Id,
-                    arguments: arguments,
-                    functionNameSeparator: OpenAIFunction.NameSeparator);
+                    arguments: arguments);
                 content.InnerContent = functionToolCall;
 
                 message.Items.Add(content);

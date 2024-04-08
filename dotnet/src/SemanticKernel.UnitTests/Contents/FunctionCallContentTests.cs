@@ -28,32 +28,6 @@ public class FunctionCallContentTests
     }
 
     [Fact]
-    public void ItShouldBeCreatedFromFullyQualifiedNameThatHasPluginNameAndFunctionName()
-    {
-        // Arrange & act
-        var sut = FunctionCallContent.Create("p1.f1", "id", this._arguments, ".");
-
-        // Assert
-        Assert.Equal("f1", sut.FunctionName);
-        Assert.Equal("p1", sut.PluginName);
-        Assert.Equal("id", sut.Id);
-        Assert.Same(this._arguments, sut.Arguments);
-    }
-
-    [Fact]
-    public void ItShouldBeCreatedFromFullyQualifiedNameThatHasFunctionNameOnly()
-    {
-        // Arrange & act
-        var sut = FunctionCallContent.Create("f1", "id", this._arguments);
-
-        // Assert
-        Assert.Equal("f1", sut.FunctionName);
-        Assert.Null(sut.PluginName);
-        Assert.Equal("id", sut.Id);
-        Assert.Same(this._arguments, sut.Arguments);
-    }
-
-    [Fact]
     public void ItShouldCreateFullyQualifiedName()
     {
         // Arrange
