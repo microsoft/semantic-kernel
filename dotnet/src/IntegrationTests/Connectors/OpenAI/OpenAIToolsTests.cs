@@ -248,7 +248,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.GetFunctionCalls().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -265,7 +265,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Sending the functions invocation results to the LLM to get the final response
             messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.GetFunctionCalls().ToArray();
+            functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
         }
 
         // Assert
@@ -288,7 +288,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.GetFunctionCalls().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -306,7 +306,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Sending the functions execution results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.GetFunctionCalls().ToArray();
+            functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
         }
 
         // Assert
@@ -332,7 +332,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.GetFunctionCalls().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
 
         while (functionCalls.Length > 0)
         {

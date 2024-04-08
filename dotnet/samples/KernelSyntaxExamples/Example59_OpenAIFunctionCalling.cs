@@ -82,8 +82,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                     Write(result.Content);
                 }
 
-                IEnumerable<FunctionCallContent> functionCalls = result.GetFunctionCalls(); // Getting list of function calls.
-
+                IEnumerable<FunctionCallContent> functionCalls = result.Items.OfType<FunctionCallContent>(); // Getting list of function calls.
                 if (!functionCalls.Any())
                 {
                     break;

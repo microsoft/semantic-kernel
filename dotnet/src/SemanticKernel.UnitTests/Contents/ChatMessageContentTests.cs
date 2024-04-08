@@ -290,26 +290,4 @@ public class ChatMessageContentTests
         Assert.Equal("function-id", functionResultContent.Id);
         Assert.Equal("plugin-name", functionResultContent.PluginName);
     }
-
-    [Fact]
-    public void GetFunctionCallsShouldReturnItemsOfFunctionCallContentType()
-    {
-        // Arrange
-        var items = new ChatMessageContentItemCollection();
-        items.Add(new TextContent("content-1"));
-        items.Add(new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
-        items.Add(new FunctionCallContent("function-name-1", "plugin-name-1", "function-id-1", new KernelArguments { ["parameter-1"] = "argument-1" }));
-        items.Add(new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"));
-
-        var sut = new ChatMessageContent(AuthorRole.Tool, items);
-
-        // Act
-        var functionCallContents = sut.GetFunctionCalls().ToArray();
-
-        // Assert
-        Assert.NotNull(functionCallContents);
-        Assert.Equal(2, functionCallContents.Length);
-
-        Assert.True(functionCallContents.All(item => item is FunctionCallContent));
-    }
 }
