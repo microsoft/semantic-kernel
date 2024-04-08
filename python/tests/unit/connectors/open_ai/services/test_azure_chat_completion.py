@@ -17,9 +17,8 @@ from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exceptio
     ContentFilterResultSeverity,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureAISearchDataSources,
+    AzureAISearchDataSource,
     AzureChatPromptExecutionSettings,
-    AzureDataSources,
     ExtraBody,
 )
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -334,7 +333,6 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
         endpoint=endpoint,
         api_version=api_version,
         api_key=api_key,
-        use_extensions=True,
     )
 
     await azure_chat_completion.complete_chat(
@@ -368,15 +366,20 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     prompt = "hello world"
     chat_history.add_user_message(prompt)
 
-    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
+    extra = ExtraBody(data_sources=[ai_source])
 
     azure_chat_completion = AzureChatCompletion(
         deployment_name=deployment_name,
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        use_extensions=True,
     )
 
     functions = [{"name": "test-function", "description": "test-description"}]
@@ -426,8 +429,14 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     stop = ["!"]
     complete_prompt_execution_settings.stop = stop
 
-    ai_source = AzureAISearchDataSources(indexName="test-index", endpoint="test-endpoint", key="test-key")
-    extra = ExtraBody(data_sources=[AzureDataSources(type="AzureCognitiveSearch", parameters=ai_source)])
+    ai_source = AzureAISearchDataSource(
+        parameters={
+            "indexName": "test-index",
+            "endpoint": "test-endpoint",
+            "authentication": {"type": "api_key", "api_key": "test-key"},
+        }
+    )
+    extra = ExtraBody(data_sources=[ai_source])
 
     complete_prompt_execution_settings.extra_body = extra
 
@@ -436,7 +445,6 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        use_extensions=True,
     )
 
     await azure_chat_completion.complete_chat(chat_history, complete_prompt_execution_settings, kernel=kernel)
