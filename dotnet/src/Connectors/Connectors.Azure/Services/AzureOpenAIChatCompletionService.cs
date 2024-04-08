@@ -26,7 +26,7 @@ public sealed class AzureChatCompletionService : IChatCompletionService, ITextGe
     /// Create an instance of the <see cref="AzureChatCompletionService"/> connector with API key auth.
     /// </summary>
     /// <param name="deploymentName">Azure deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
-    /// <param name="endpoint">Azure deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="endpoint">Azure endpoint URL, see https://learn.microsoft.com/en-us/azure/machine-learning/concept-endpoints?view=azureml-api-2</param>
     /// <param name="apiKey">Azure API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="modelId">Azure model id, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
