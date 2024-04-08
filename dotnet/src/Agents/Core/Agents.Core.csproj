@@ -8,6 +8,7 @@
     <NoWarn>$(NoWarn);SKEXP0110</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <IsPackable>false</IsPackable>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -16,7 +17,6 @@
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - Core</Title>
     <Description>Defines core set of concrete Agent and AgentChat classes, based on the Agent Abstractions.</Description>
-    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
