@@ -27,9 +27,16 @@ internal static class IListExtensions
             throw new ArgumentNullException(nameof(source));
         }
 
-        foreach (var item in source)
+        if (target is List<T> list)
         {
-            target.Add(item);
+            list.AddRange(source);
+        }
+        else
+        {
+            foreach (var item in source)
+            {
+                target.Add(item);
+            }
         }
     }
 }
