@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
