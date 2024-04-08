@@ -122,7 +122,6 @@ class FunctionResultContent : KernelContent
     public string? Id {get; private set;}
     public string? PluginName {get; private set;}
     public string FunctionName {get; private set;}
-    public FunctionCallContent FunctionCall {get; private set;}
 
     public object?/FunctionResult/string? Result {get; set;}
 }
