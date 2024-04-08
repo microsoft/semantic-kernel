@@ -32,7 +32,7 @@ public sealed class FunctionResultContent : KernelContent
     /// The result of the function call, the function invocation exception or the custom error message.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Result { get; set; }
+    public object? Result { get; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionResultContent"/> class.
