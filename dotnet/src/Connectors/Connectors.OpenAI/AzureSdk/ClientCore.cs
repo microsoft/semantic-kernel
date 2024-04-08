@@ -1018,7 +1018,7 @@ internal abstract class ClientCore
                 return toolMessages;
             }
 
-            throw new NotSupportedException("No function result provided in the tool massage.");
+            throw new NotSupportedException("No function result provided in the tool message.");
         }
 
         if (message.Role == AuthorRole.User)
