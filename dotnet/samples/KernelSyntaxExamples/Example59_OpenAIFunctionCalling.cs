@@ -104,7 +104,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                         chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, ex));
                         // Adding exception to chat history.
                         // or
-                        //string message = $"Error details that LLM can reason about.";
+                        //string message = "Error details that LLM can reason about.";
                         //chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, message));
                     }
                 }
