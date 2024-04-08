@@ -23,6 +23,7 @@ public sealed class FunctionResultContent : KernelContent
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PluginName { get; }
+
     /// <summary>
     /// The function name.
     /// </summary>
