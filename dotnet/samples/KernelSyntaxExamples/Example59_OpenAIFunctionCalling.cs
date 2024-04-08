@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -73,30 +74,43 @@ public class Example59_OpenAIFunctionCalling : BaseTest
             var chatHistory = new ChatHistory();
             chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-            ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
-
-            IEnumerable<FunctionCallContent> functionCalls = result.GetFunctionCalls(); // Getting list of function calls.
-
-            foreach (var functionCall in functionCalls)
+            while (true)
             {
-                try
+                ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+                if (result.Content is not null)
                 {
-                    FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function. Can be done in parallel.
+                    Write(result.Content);
+                }
 
-                    chatHistory.AddMessage(AuthorRole.Tool, functionResult); // Adding function result to chat history.
-                }
-                catch (Exception ex)
+                IEnumerable<FunctionCallContent> functionCalls = result.GetFunctionCalls(); // Getting list of function calls.
+
+                if (!functionCalls.Any())
                 {
-                    chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, ex)); // Adding exception to chat history.
-                    // or
-                    //string message = $"Error details that LLM can reason about.";
-                    //chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, message));
+                    break;
                 }
+
+                chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+
+                foreach (var functionCall in functionCalls)
+                {
+                    try
+                    {
+                        FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function. Can be done in parallel.
+
+                        chatHistory.AddMessage(AuthorRole.Tool, functionResult); // Adding function result to chat history.
+                    }
+                    catch (Exception ex)
+                    {
+                        chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, ex));
+                        // Adding exception to chat history.
+                        // or
+                        //string message = $"Error details that LLM can reason about.";
+                        //chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, message));
+                    }
+                }
+
+                WriteLine();
             }
-
-            // Sending the functions invocation results to the LLM to get the final response.
-            WriteLine(await chat.GetChatMessageContentAsync(chatHistory, settings, kernel));
         }
 
         /* Uncomment this to try in a console chat loop.
