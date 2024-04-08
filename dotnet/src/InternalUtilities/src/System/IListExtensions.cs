@@ -17,15 +17,8 @@ internal static class IListExtensions
     /// <param name="source">The source <see cref="IEnumerable{T}"/> containing elements to add to the target <see cref="IList{T}"/>.</param>
     internal static void AddRange<T>(this IList<T> target, IEnumerable<T> source)
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
-
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        Debug.Assert(target is not null);
+        Debug.Assert(source is not null);
 
         if (target is List<T> list)
         {
