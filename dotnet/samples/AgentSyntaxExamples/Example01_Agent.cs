@@ -17,7 +17,7 @@ namespace Examples;
 public class Example01_Agent : BaseTest
 {
     private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with {{$count}} parrot sounds.";
+    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
     public async Task RunAsync()
@@ -29,7 +29,6 @@ public class Example01_Agent : BaseTest
                 name: ParrotName)
             {
                 Instructions = ParrotInstructions,
-                InstructionArguments = new() { { "count", 3 } },
             };
 
         // Create a chat for agent interaction. For more, see: Example03_Chat.

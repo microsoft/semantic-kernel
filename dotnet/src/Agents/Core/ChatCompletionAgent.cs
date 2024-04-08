@@ -37,9 +37,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         ChatHistory chat = new();
         if (!string.IsNullOrWhiteSpace(this.Instructions))
         {
-            string instructions = (await this.FormatInstructionsAsync(this.Instructions, cancellationToken).ConfigureAwait(false))!;
-
-            chat.Add(new ChatMessageContent(AuthorRole.System, instructions) { AuthorName = this.Name });
+            chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
         }
         chat.AddRange(history);
 
