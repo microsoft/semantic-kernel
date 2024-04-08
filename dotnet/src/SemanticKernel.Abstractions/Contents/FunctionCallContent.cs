@@ -18,22 +18,22 @@ public sealed class FunctionCallContent : KernelContent
     /// <summary>
     /// The function call ID.
     /// </summary>
-    public string? Id { get; private set; }
+    public string? Id { get; }
 
     /// <summary>
     /// The plugin name.
     /// </summary>
-    public string? PluginName { get; private set; }
+    public string? PluginName { get; }
 
     /// <summary>
     /// The function name.
     /// </summary>
-    public string FunctionName { get; private set; }
+    public string FunctionName { get; }
 
     /// <summary>
     /// The kernel arguments.
     /// </summary>
-    public KernelArguments? Arguments { get; private set; }
+    public KernelArguments? Arguments { get; }
 
     /// <summary>
     /// Gets the fully-qualified name of the function.

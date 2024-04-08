@@ -286,9 +286,9 @@ public class ChatMessageContentTests
         var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
-        Assert.Equal("function-name", functionResultContent.FunctionCall.FunctionName);
-        Assert.Equal("function-id", functionResultContent.FunctionCall.Id);
-        Assert.Equal("plugin-name", functionResultContent.FunctionCall.PluginName);
+        Assert.Equal("function-name", functionResultContent.FunctionName);
+        Assert.Equal("function-id", functionResultContent.Id);
+        Assert.Equal("plugin-name", functionResultContent.PluginName);
     }
 
     [Fact]

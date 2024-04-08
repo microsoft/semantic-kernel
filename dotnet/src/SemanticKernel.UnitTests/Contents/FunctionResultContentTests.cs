@@ -45,16 +45,6 @@ public class FunctionResultContentTests
     }
 
     [Fact]
-    public void ItShouldHaveFunctionCallInitialized()
-    {
-        // Arrange & act
-        var sut = new FunctionResultContent(this._callContent, "result");
-
-        // Assert
-        Assert.Same(this._callContent, sut.FunctionCall);
-    }
-
-    [Fact]
     public void ItShouldHaveFunctionResultInitialized()
     {
         // Arrange & act
