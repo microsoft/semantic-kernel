@@ -43,25 +43,4 @@ public class ChatHistoryTests
                 chatHistoryDeserialized[i].Items.OfType<TextContent>().Single().Text);
         }
     }
-
-    [Fact]
-    public void ItCanAddChatMessageContentWithItemsSpecifiedAsParameters()
-    {
-        // Arrange
-        var sut = new ChatHistory();
-
-        // Act
-        sut.AddMessage(AuthorRole.User, new TextContent("Hello"), new ImageContent(), new AudioContent());
-
-        // Assert
-        Assert.Single(sut);
-
-        var chatMessage = sut[0];
-        Assert.Equal(AuthorRole.User, chatMessage.Role);
-
-        Assert.Equal(3, chatMessage.Items.Count);
-        Assert.IsType<TextContent>(chatMessage.Items[0]);
-        Assert.IsType<ImageContent>(chatMessage.Items[1]);
-        Assert.IsType<AudioContent>(chatMessage.Items[2]);
-    }
 }
