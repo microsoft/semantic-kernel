@@ -26,17 +26,27 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
-        private static readonly HashSet<RunStatus>
-            s_pollingStates = new()
+
+        private static readonly HashSet<RunStatus> s_pollingStates =
+            new()
             {
                 RunStatus.Queued,
                 RunStatus.InProgress,
+                RunStatus.Cancelling,
             };
 
-        //private readonly AssistantsClient _client; $$$
+        private static readonly HashSet<RunStatus> s_terminalStates =
+            new()
+            {
+                RunStatus.Expired,
+                RunStatus.Failed,
+                RunStatus.Cancelled,
+            };
+
+        private readonly AssistantsClient _client;
         private readonly string _threadId;
         private readonly Dictionary<string, ToolDefinition[]> _agentTools;
-        private readonly Dictionary<string, string> _agentNames; // $$$ WHY: HISTORY, CONCURRENCY ???
+        private readonly Dictionary<string, string> _agentNames; // Cache agent names by their identifier for GetHistoryAsync()
 
         /// <inheritdoc/>
         protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -48,28 +58,26 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     continue;
                 }
 
-                string? actorLabel = null;
-                if (message.Role == AuthorRole.Assistant) // $$$ NEEDED ??? ALWAYS? NEVER?
-                {
-                    actorLabel = $"{message.AuthorName ?? message.Role.Label}: ";
-                }
-
-                await Task.Yield(); // $$$
-                //await this._client.CreateMessageAsync( // $$$ agent.client ???
-                //    this._threadId,
-                //    MessageRole.User,
-                //    $"{actorLabel}{message.Content}",
-                //    fileIds: null,
-                //    metadata: null,
-                //    cancellationToken).ConfigureAwait(false);
+                await this._client.CreateMessageAsync(
+                    this._threadId,
+                    MessageRole.User,
+                    message.Content,
+                    fileIds: null,
+                    metadata: null,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc/>
-        protected override async IAsyncEnumerable<ChatMessageContent> InvokeAsync( // $$$ MISSING STATE
+        protected override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             OpenAIAssistantAgent agent,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            if (agent.IsDeleted)
+            {
+                throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
+            }
+
             if (!this._agentTools.TryGetValue(agent.Id, out var tools))
             {
                 tools = agent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name)))).ToArray();
@@ -91,42 +99,48 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             // Create run
             ThreadRun run = await agent._client.CreateRunAsync(this._threadId, options, cancellationToken).ConfigureAwait(false);
 
-            // Poll until actionable
-            await PollRunStatus().ConfigureAwait(false);
-
             // Evaluate status and process steps and messages, as encountered.
-            HashSet<string> processedMessageIds = new();
+            var processedMessageIds = new HashSet<string>();
+
             do
             {
-                if (run.Status == RunStatus.Failed)
+                // Poll run and steps until actionable
+                var steps = await PollRunStatusAsync().ConfigureAwait(false);
+
+                // Is in terminal state?
+                if (s_terminalStates.Contains(run.Status))
                 {
-                    throw new KernelException($"Unexpected failure processing run: {run.Id}: {run.LastError.Message ?? "Unknown"}");
+                    throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
                 }
 
-                PageableList<RunStep> steps = await agent._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
-
+                // Is tool action required?
                 if (run.Status == RunStatus.RequiresAction)
                 {
                     // Execute functions in parallel and post results at once.
                     var tasks = steps.Data.SelectMany(step => ExecuteStep(step, cancellationToken)).ToArray();
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    if (tasks.Length > 0)
+                    {
+                        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                    var results = tasks.Select(t => t.Result).ToArray();
-
-                    await agent._client.SubmitToolOutputsToRunAsync(run, results, cancellationToken).ConfigureAwait(false);
-
-                    // Refresh run as it goes back into pending state after posting function results. // $$$ PENDING MISNOMER
-                    await PollRunStatus(force: true).ConfigureAwait(false);
-
-                    steps = await agent._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        await this._client.SubmitToolOutputsToRunAsync(run, results, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
+                // Enumerate completed messages
                 var messageDetails =
                     steps
                         .OrderBy(s => s.CompletedAt)
                         .Select(s => s.StepDetails)
                         .OfType<RunStepMessageCreationDetails>()
                         .Where(d => !processedMessageIds.Contains(d.MessageCreation.MessageId));
+
+                //var newMessageIds =
+                //    steps.Data
+                //        .Where(s => s.StepDetails.MessageCreation != null)
+                //        .Select(s => (s.StepDetails.MessageCreation!.MessageId, s.CompletedAt))
+                //        .Where(t => !processedMessageIds.Contains(t.MessageId))
+                //        .OrderBy(t => t.CompletedAt)
+                //        .Select(t => t.MessageId);
 
                 foreach (var detail in messageDetails)
                 {
@@ -138,9 +152,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     {
                         try
                         {
-                            PageableList<MessageFile> files = await agent._client.GetMessageFilesAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken: cancellationToken).ConfigureAwait(false);
-                            //var messages = await this._client.GetMessagesAsync(this._threadId, cancellationToken: cancellationToken).ConfigureAwait(false);
-                            message = await agent._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false); // $$$ BUG: IMAGE FILES !!!
+                            PageableList<MessageFile> files = await this._client.GetMessageFilesAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken: cancellationToken).ConfigureAwait(false);
+                            message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false);
                         }
                         catch (RequestFailedException exception)
                         {
@@ -153,9 +166,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                     if (message != null)
                     {
-                        var role = new AuthorRole(message.Role.ToString());
+                        AuthorRole role = new(message.Role.ToString());
 
-                        foreach (var itemContent in message.ContentItems)
+                        foreach (IReadOnlyList<MessageContent> itemContent in message.ContentItems)
                         {
                             if (itemContent is MessageTextContent contentMessage)
                             {
@@ -168,7 +181,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                             if (itemContent is MessageImageFileContent contentImage)
                             {
-                                yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = agent.Name }; // $$$ CONTENT TYPE ???
+                                yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = agent.Name }; // $$$ CONTENT TYPE - ImageContent
                             }
                         }
                     }
@@ -176,22 +189,17 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     processedMessageIds.Add(detail.MessageCreation.MessageId);
                 }
             }
-            while (run.Status != RunStatus.Completed);
+            while (RunStatus.Completed != run.Status);
 
-            async Task PollRunStatus(bool force = false)
+            async Task<PageableList<RunStep>> PollRunStatusAsync()
             {
                 int count = 0;
 
                 do
                 {
-                    if (!force)
-                    {
-                        // Reduce polling frequency after a couple attempts
-                        await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
-                        ++count;
-                    }
-
-                    force = false;
+                    // Reduce polling frequency after a couple attempts
+                    await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
+                    ++count;
 
                     try
                     {
@@ -203,6 +211,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     }
                 }
                 while (s_pollingStates.Contains(run.Status));
+
+                //return await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
+                return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
             IEnumerable<Task<ToolOutput>> ExecuteStep(RunStep step, CancellationToken cancellationToken)
@@ -252,54 +263,52 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         /// <inheritdoc/>
         protected override async IAsyncEnumerable<ChatMessageContent> GetHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await Task.Yield(); // $$$
-            yield break; // $$$
-            //PageableList<ThreadMessage> messages;  // $$$
+            PageableList<ThreadMessage> messages;
 
-            //string? lastId = null;
-            //do
-            //{
-            //    messages = await this._client.GetMessagesAsync(this._threadId, limit: 100, ListSortOrder.Descending, after: lastId, null, cancellationToken).ConfigureAwait(false);
-            //    foreach (var message in messages)
-            //    {
-            //        var role = new AuthorRole(message.Role.ToString());
+            string? lastId = null;
+            do
+            {
+                messages = await this._client.GetMessagesAsync(this._threadId, limit: 100, ListSortOrder.Descending, after: lastId, null, cancellationToken).ConfigureAwait(false);
+                foreach (var message in messages)
+                {
+                    var role = new AuthorRole(message.Role.ToString());
 
-            //        string? assistantName = null;
-            //        if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
-            //            !this._agentNames.TryGetValue(message.AssistantId, out assistantName))
-            //        {
-            //            Assistant assistant = await this._client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
-            //            if (!string.IsNullOrWhiteSpace(assistant.Name))
-            //            {
-            //                this._agentNames.Add(assistant.Id, assistant.Name!);
-            //            }
-            //        }
+                    string? assistantName = null;
+                    if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
+                        !this._agentNames.TryGetValue(message.AssistantId, out assistantName))
+                    {
+                        Assistant assistant = await this._client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                        if (!string.IsNullOrWhiteSpace(assistant.Name))
+                        {
+                            this._agentNames.Add(assistant.Id, assistant.Name!);
+                        }
+                    }
 
-            //        foreach (var content in message.ContentItems)
-            //        {
-            //            if (content is MessageTextContent contentMessage)
-            //            {
-            //                yield return new ChatMessageContent(role, contentMessage.Text.Trim()) { AuthorName = assistantName ?? message.AssistantId };
-            //            }
+                    foreach (var content in message.ContentItems)
+                    {
+                        if (content is MessageTextContent contentMessage)
+                        {
+                            yield return new ChatMessageContent(role, contentMessage.Text.Trim()) { AuthorName = assistantName ?? message.AssistantId };
+                        }
 
-            //            if (content is MessageImageFileContent contentImage)
-            //            {
-            //                yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = assistantName ?? message.AssistantId }; // $$$ CONTENT TYPE
-            //            }
-            //        }
+                        if (content is MessageImageFileContent contentImage)
+                        {
+                            yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = assistantName ?? message.AssistantId }; // $$$ CONTENT TYPE
+                        }
+                    }
 
-            //        lastId = message.Id;
-            //    }
-            //}
-            //while (messages.HasMore);
+                    lastId = message.Id;
+                }
+            }
+            while (messages.HasMore);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Channel"/> class.
         /// </summary>
-        public Channel(/*AssistantsClient client, */string threadId)
+        public Channel(AssistantsClient client, string threadId)
         {
-            //this._client = client;
+            this._client = client;
             this._threadId = threadId;
             this._agentTools = new();
             this._agentNames = new();

@@ -17,9 +17,6 @@ namespace Examples;
 /// </summary>
 public class Example09_MixedChat : BaseTest
 {
-    /// <inheritdoc/>
-    protected override bool ForceOpenAI => true; // $$$
-
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions = "You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print.  If so, state that it is approved.  If not, provide insight on how to refine suggested copy without example.";
 
@@ -41,7 +38,7 @@ public class Example09_MixedChat : BaseTest
         OpenAIAssistantAgent agentWriter =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                options: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
                     Instructions = CopyWriterInstructions,

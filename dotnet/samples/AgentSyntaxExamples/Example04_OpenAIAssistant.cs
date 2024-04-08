@@ -14,9 +14,6 @@ namespace Examples;
 /// </summary>
 public class Example04_OpenAIAssistant : BaseTest
 {
-    /// <inheritdoc/>
-    protected override bool ForceOpenAI => true; // $$$
-
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
@@ -27,7 +24,7 @@ public class Example04_OpenAIAssistant : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                options: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.GetApiKey(), this.GetEndpoint()),
                 definition: new()
                 {
                     Instructions = ParrotInstructions,
@@ -47,7 +44,7 @@ public class Example04_OpenAIAssistant : BaseTest
         }
         finally
         {
-            //await OpenAIAssistantAgent.DeleteAsync(agent.Id); $$$
+            await agent.DeleteAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.

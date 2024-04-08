@@ -68,12 +68,6 @@ internal static class KernelFunctionExtensions
             return "string";
         }
 
-        if (type.IsAssignableFrom(typeof(int)) || // $$$
-            type.IsAssignableFrom(typeof(float)))
-        {
-            return "number";
-        }
-
         if (type == typeof(bool))
         {
             return "boolean";
@@ -87,6 +81,22 @@ internal static class KernelFunctionExtensions
         if (type.IsArray)
         {
             return "array";
+        }
+
+        switch (Type.GetTypeCode(type))
+        {
+            case TypeCode.SByte:
+            case TypeCode.Byte:
+            case TypeCode.Int16:
+            case TypeCode.UInt16:
+            case TypeCode.Int32:
+            case TypeCode.UInt32:
+            case TypeCode.Int64:
+            case TypeCode.UInt64:
+            case TypeCode.Single:
+            case TypeCode.Double:
+            case TypeCode.Decimal:
+                return "number";
         }
 
         return "object";
