@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -19,82 +22,138 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Define a new <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="apiKey">The Assistants API Key</param>
-    /// <param name="definition">$$$</param>
+    /// <param name="options">Options for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="definition">The assistant definition.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An agent instance</returns>
+    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
     public static async Task<OpenAIAssistantAgent> CreateAsync(
         Kernel kernel,
-        string apiKey,
+        OpenAIAssistantServiceOptions options,
         OpenAIAssistantDefinition definition,
         CancellationToken cancellationToken = default)
     {
-        //Verify.NotNullOrWhiteSpace(deploymentName); $$$
-        //Verify.NotNullOrWhiteSpace(endpoint);
-        //Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
-        //Verify.NotNullOrWhiteSpace(apiKey);
+        // Validate input
+        Verify.NotNull(options, nameof(options));
+        VerifyOptions(options);
 
-        AssistantsClient client = CreateClient(apiKey, endpoint: null, out var partitionKey); // $$$ ENDPOINT
+        // Create the client
+        AssistantsClient client = CreateClient(options);
 
-        AssistantCreationOptions options =
-            new(definition.Model)
+        // Create the assistant
+        AssistantCreationOptions assistantCreationOptions = CreateAssistantCreationOptions(definition);
+        Assistant model = await client.CreateAssistantAsync(assistantCreationOptions, cancellationToken).ConfigureAwait(false);
+
+        // Instantiate the agent
+        return new OpenAIAssistantAgent(kernel, client, model, options);
+
+        // Local function to define assistant creation options
+        static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
+        {
+            AssistantCreationOptions assistantCreationOptions =
+                new(definition.Model)
+                {
+                    Description = definition.Description,
+                    Instructions = definition.Instructions,
+                    Name = definition.Name,
+                    Metadata = definition.Metadata,
+                };
+
+            foreach (var fileId in definition.FileIds ?? Array.Empty<string>())
             {
-                Description = definition.Description,
-                Instructions = definition.Instructions,
-                Name = definition.Name,
-                Metadata = definition.Metadata,
-            };
+                assistantCreationOptions.FileIds.Add(fileId);
+            }
 
-        foreach (var fileId in definition.FileIds ?? Array.Empty<string>())
-        {
-            options.FileIds.Add(fileId);
+            if (definition.EnableCodeIntepreter)
+            {
+                assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
+            }
+
+            if (definition.EnableRetrieval)
+            {
+                assistantCreationOptions.Tools.Add(new RetrievalToolDefinition());
+            }
+
+            return assistantCreationOptions;
         }
+    }
 
-        if (definition.EnableCodeIntepreter)
+    /// <summary>
+    /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
+    /// </summary>
+    /// <param name="options">Options for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
+    public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListAsync(
+        OpenAIAssistantServiceOptions options,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        // Create the client
+        AssistantsClient client = CreateClient(options);
+
+        // Retrieve the assistants
+        PageableList<Assistant> assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, after: null, before: null, cancellationToken).ConfigureAwait(false);
+        foreach (Assistant assistant in assistants)
         {
-            options.Tools.Add(new CodeInterpreterToolDefinition());
+            yield return
+                new()
+                {
+                    //Id = assistant.Id, $$$
+                    Name = assistant.Name,
+                    Description = assistant.Description,
+                    Instructions = assistant.Instructions,
+                    EnableCodeIntepreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                    EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
+                    FileIds = assistant.FileIds,
+                    //Metadata = assistant.Metadata, $$$
+                    Model = assistant.Model,
+                };
         }
-
-        if (definition.EnableRetrieval)
-        {
-            options.Tools.Add(new RetrievalToolDefinition());
-        }
-
-        Assistant model = await client.CreateAssistantAsync(options, cancellationToken).ConfigureAwait(false);
-
-        return new OpenAIAssistantAgent(client, model, kernel, partitionKey);
     }
 
     /// <summary>
     /// Retrieve a <see cref="OpenAIAssistantAgent"/> by identifier.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="apiKey">The Assistants API Key</param>
+    /// <param name="options">Options for accessing the Assistants API service, such as the api-key.</param>
     /// <param name="id">The agent identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An agent instance</returns>
-    public static async Task<OpenAIAssistantAgent> RestoreAsync(Kernel kernel, string apiKey, string id, CancellationToken cancellationToken)
+    /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
+    public static async Task<OpenAIAssistantAgent> RestoreAsync(
+        Kernel kernel,
+        OpenAIAssistantServiceOptions options,
+        string id,
+        CancellationToken cancellationToken = default)
     {
-        AssistantsClient client = CreateClient(apiKey, endpoint: null, out var partitionKey); // $$$ ENDPOINT, VERSION, HTTPPIPELINETRANSPORT, RETRYOPTIONS
+        // Create the client
+        AssistantsClient client = CreateClient(options);
 
+        // Retrieve the assistant
         Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
-        return new OpenAIAssistantAgent(client, model, kernel, partitionKey);
+        // Instantiate the agent
+        return new OpenAIAssistantAgent(kernel, client, model, options);
     }
 
-    private static AssistantsClient CreateClient(string apiKey, string? endpoint, out string partitionKey)
+    // $$$ LIST ASYNC
+
+    private static AssistantsClient CreateClient(OpenAIAssistantServiceOptions options)
     {
-        if (!string.IsNullOrWhiteSpace(endpoint))
+        AssistantsClientOptions clientOptions = CreateClientOptions(options.HttpClient, options.Version);
+
+        // Inspect options
+        if (!string.IsNullOrWhiteSpace(options.Endpoint))
         {
-            partitionKey = endpoint!;
-            return new AssistantsClient(new Uri(endpoint), new AzureKeyCredential(apiKey), CreateClientOptions(null, null)); // $$$ OPTIONS PARAMS
+            // Create client configured for Azure Open AI, if endpoint definition is present.
+            return new AssistantsClient(new Uri(options.Endpoint), new AzureKeyCredential(options.ApiKey));
         }
 
-        partitionKey = "openai";
-        return new AssistantsClient(apiKey);
+        // Otherwise, create client configured for Open AI.
+        return new AssistantsClient(options.ApiKey);
     }
 
-    /// <summary>Gets options to use for an OpenAIClient</summary>
+    /// <summary>
+    /// $$$
+    /// </summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceVersion">Optional API version.</param>
     /// <returns>An instance of <see cref="AssistantsClientOptions"/>.</returns>
@@ -115,5 +174,16 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         }
 
         return options;
+    }
+
+    /// <summary>
+    /// $$$
+    /// </summary>
+    private static void VerifyOptions(OpenAIAssistantServiceOptions options)
+    {
+        //Verify.NotNullOrWhiteSpace(deploymentName); $$$
+        //Verify.NotNullOrWhiteSpace(endpoint);
+        //Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        //Verify.NotNullOrWhiteSpace(apiKey);
     }
 }

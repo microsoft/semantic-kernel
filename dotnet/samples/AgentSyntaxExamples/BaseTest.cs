@@ -33,6 +33,16 @@ public abstract class BaseTest
         return TestConfiguration.AzureOpenAI.ApiKey;
     }
 
+    protected string? GetEndpoint()
+    {
+        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
+        {
+            return null;
+        }
+
+        return TestConfiguration.AzureOpenAI.Endpoint;
+    }
+
     protected string GetModel()
     {
         if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
@@ -43,7 +53,12 @@ public abstract class BaseTest
         return TestConfiguration.AzureOpenAI.ChatDeploymentName;
     }
 
-    protected Kernel CreateKernelWithChatCompletion(KernelPlugin? plugin = null)
+    protected Kernel CreateEmptyKernel()
+    {
+        return Kernel.CreateBuilder().Build();
+    }
+
+    protected Kernel CreateKernelWithChatCompletion()
     {
         var builder = Kernel.CreateBuilder();
 
@@ -59,11 +74,6 @@ public abstract class BaseTest
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
-        }
-
-        if (plugin != null)
-        {
-            builder.Plugins.Add(plugin);
         }
 
         return builder.Build();

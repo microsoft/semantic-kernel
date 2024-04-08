@@ -81,11 +81,10 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 this._agentNames.Add(agent.Id, agent.Name!);
             }
 
-            string? instructions = await agent.FormatInstructionsAsync(agent.Instructions, cancellationToken).ConfigureAwait(false);
             CreateRunOptions options =
                 new(agent.Id)
                 {
-                    OverrideInstructions = instructions,
+                    OverrideInstructions = agent.Instructions,
                     OverrideTools = tools,
                 };
 

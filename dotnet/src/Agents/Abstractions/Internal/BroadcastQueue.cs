@@ -55,7 +55,7 @@ internal sealed class BroadcastQueue
 
                 if (!this._tasks.ContainsKey(channel.Hash))
                 {
-                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queueRef));
+                    this._tasks.Add(channel.Hash, this.ReceiveAsync(channel, queueRef)); // $$$ ASSISTANT CLIENT ???
                 }
             }
         }

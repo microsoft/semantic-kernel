@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,8 +26,8 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateKernelWithChatCompletion(),
-                apiKey: this.GetApiKey(),
+                kernel: this.CreateEmptyKernel(),
+                options: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
                     Instructions = ParrotInstructions,

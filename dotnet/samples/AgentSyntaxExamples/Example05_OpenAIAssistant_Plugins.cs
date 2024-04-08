@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,8 +28,8 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateKernelWithChatCompletion(),
-                apiKey: this.GetApiKey(),
+                kernel: this.CreateEmptyKernel(),
+                options: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
                     Instructions = ParrotInstructions,
@@ -34,15 +37,20 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
                     Model = this.GetModel(),
                 });
 
+        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
 
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync("Fortune favors the bold.");
-            await WriteAgentResponseAsync("I came, I saw, I conquered.");
-            await WriteAgentResponseAsync("Practice makes perfect.");
+            await WriteAgentResponseAsync("Hello");
+            await WriteAgentResponseAsync("What is the special soup?");
+            await WriteAgentResponseAsync("What is the special drink?");
+            await WriteAgentResponseAsync("Thank you");
         }
         finally
         {

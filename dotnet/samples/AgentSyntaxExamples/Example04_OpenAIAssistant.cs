@@ -26,9 +26,9 @@ public class Example04_OpenAIAssistant : BaseTest
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateKernelWithChatCompletion(),
-                apiKey: this.GetApiKey(),
-                new()
+                kernel: this.CreateEmptyKernel(),
+                options: new(this.GetApiKey(), this.GetEndpoint()),
+                definition: new()
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
