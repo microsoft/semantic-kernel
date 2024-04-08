@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -26,9 +26,9 @@ internal static class IListExtensions
         }
         else
         {
-            foreach (var item in source)
+            foreach (var item in source!)
             {
-                target.Add(item);
+                target!.Add(item);
             }
         }
     }
