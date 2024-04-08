@@ -35,7 +35,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(PromptExecutionSettings? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
 
