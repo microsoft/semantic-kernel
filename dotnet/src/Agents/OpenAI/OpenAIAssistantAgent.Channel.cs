@@ -134,14 +134,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                         .OfType<RunStepMessageCreationDetails>()
                         .Where(d => !processedMessageIds.Contains(d.MessageCreation.MessageId));
 
-                //var newMessageIds =
-                //    steps.Data
-                //        .Where(s => s.StepDetails.MessageCreation != null)
-                //        .Select(s => (s.StepDetails.MessageCreation!.MessageId, s.CompletedAt))
-                //        .Where(t => !processedMessageIds.Contains(t.MessageId))
-                //        .OrderBy(t => t.CompletedAt)
-                //        .Select(t => t.MessageId);
-
                 foreach (var detail in messageDetails)
                 {
                     ThreadMessage? message = null;

@@ -35,6 +35,7 @@ public class OpenAIAssistantAgentTests
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvocationAsync()
     {
+        await Task.Yield();
         //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
 
         //var result = await agent.InvokeAsync().ToArrayAsync();
