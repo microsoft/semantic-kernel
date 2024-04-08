@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace MistralAI;
 
 /// <summary>
-/// Represents a class that demonstrates image-to-text functionality.
+/// Demonstrates the use of chat prompts with MistralAI.
 /// </summary>
-public sealed class Example87_MistralAIChatCompletion : BaseTest
+public sealed class MistralAI_Chat_Prompt : BaseTest
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -57,5 +58,5 @@ public sealed class Example87_MistralAIChatCompletion : BaseTest
         WriteLine(chatPromptResult);
     }
 
-    public Example87_MistralAIChatCompletion(ITestOutputHelper output) : base(output) { }
+    public MistralAI_Chat_Prompt(ITestOutputHelper output) : base(output) { }
 }
