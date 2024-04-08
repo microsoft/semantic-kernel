@@ -373,7 +373,7 @@ public class KernelTests
 
     private sealed class MyFunctionFilter : IFunctionFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             await next(context);
         }

@@ -259,15 +259,15 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
     private sealed class FakeFunctionFilter : IFunctionFilter
     {
-        private readonly Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? _onFunctionInvocation;
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
 
         public FakeFunctionFilter(
-            Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation = null)
+            Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null)
         {
             this._onFunctionInvocation = onFunctionInvocation;
         }
 
-        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next) =>
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 

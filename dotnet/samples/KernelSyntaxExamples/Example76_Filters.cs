@@ -58,7 +58,7 @@ public class Example76_Filters : BaseTest
             this._output = output;
         }
 
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
             await next(context);
@@ -75,7 +75,7 @@ public class Example76_Filters : BaseTest
             this._output = output;
         }
 
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
             await next(context);
@@ -105,7 +105,7 @@ public class Example76_Filters : BaseTest
 
     private sealed class FunctionFilterExample : IFunctionFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             // Example: override kernel arguments
             context.Arguments["input"] = "new input";
@@ -133,7 +133,7 @@ public class Example76_Filters : BaseTest
             this._logger = logger;
         }
 
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             try
             {

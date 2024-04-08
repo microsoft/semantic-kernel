@@ -603,7 +603,7 @@ public class KernelFilterTests
         int filterInvocations = 0;
         KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
 
-        async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             filterInvocations++;
 
@@ -701,7 +701,7 @@ public class KernelFilterTests
     }
 
     private Kernel GetKernelWithFilters(
-        Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation = null,
+        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null,
         Action<PromptRenderingContext>? onPromptRendering = null,
         Action<PromptRenderedContext>? onPromptRendered = null,
         ITextGenerationService? textGenerationService = null)
@@ -744,11 +744,11 @@ public class KernelFilterTests
     }
 
     private sealed class FakeFunctionFilter(
-        Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? onFunctionInvocation) : IFunctionFilter
+        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionFilter
     {
-        private readonly Func<FunctionInvocationContext, FunctionInvocationCallback, Task>? _onFunctionInvocation = onFunctionInvocation;
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
 
-        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next) =>
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 

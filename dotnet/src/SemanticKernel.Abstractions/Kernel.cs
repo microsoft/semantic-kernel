@@ -282,7 +282,7 @@ public sealed class Kernel
     internal async Task<FunctionInvocationContext?> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
-        FunctionInvocationCallback functionCallback)
+        Func<FunctionInvocationContext, Task> functionCallback)
     {
         FunctionInvocationContext? context = new(function, arguments);
 

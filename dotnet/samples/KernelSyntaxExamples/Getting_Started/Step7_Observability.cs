@@ -65,7 +65,7 @@ public sealed class Step7_Observability : BaseTest
             this._output = output;
         }
 
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             this._output.WriteLine($"Invoking {context.Function.Name}");
 
