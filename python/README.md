@@ -4,6 +4,14 @@ Install the latest package:
 
     python -m pip install --upgrade semantic-kernel
 
+If you want to use some of the optional dependencies (OpenAI is installed by default), you can install them with:
+
+    python -m pip install --upgrade semantic-kernel[hugging_face]
+
+of all of them:
+    
+    python -m pip install --upgrade semantic-kernel[all]
+
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
@@ -55,7 +63,7 @@ kernel.add_service(
 # )
 
 # Define the request settings
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -80,6 +88,8 @@ prompt_template_config = sk.PromptTemplateConfig(
 )
 
 function = kernel.create_function_from_prompt(
+    function_name="tldr_function",
+    plugin_name="tldr_plugin",
     prompt_template_config=prompt_template_config,
 )
 
@@ -98,8 +108,10 @@ if __name__ == "__main__":
 ```python
 # Create a reusable function summarize function
 summarize = kernel.create_function_from_prompt(
-    template="{{$input}}\n\nOne line TLDR with the fewest words."
-    execution_settings=req_settings,
+        function_name="tldr_function",
+        plugin_name="tldr_plugin",
+        prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
+        prompt_template_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics
