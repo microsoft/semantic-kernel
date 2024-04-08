@@ -120,7 +120,7 @@ public class Example76_Filters : BaseTest
             var usage = context.Result.Metadata?["Usage"];
 
             // Example: override function result value
-            context.SetResultValue("new result value");
+            context.Result = new FunctionResult(context.Function, "new result value");
         }
     }
 
@@ -144,7 +144,7 @@ public class Example76_Filters : BaseTest
                 this._logger.LogError(exception, "Something went wrong during function invocation");
 
                 // Example: override function result value
-                context.SetResultValue("Friendly message instead of exception");
+                context.Result = new FunctionResult(context.Function, "Friendly message instead of exception");
 
                 // Example: Rethrow another type of exception if needed
                 throw new InvalidOperationException("New exception");

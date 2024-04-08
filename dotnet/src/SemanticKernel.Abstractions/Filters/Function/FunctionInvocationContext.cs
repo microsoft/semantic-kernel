@@ -41,21 +41,7 @@ public class FunctionInvocationContext
     public IReadOnlyDictionary<string, object?>? Metadata { get; internal set; }
 
     /// <summary>
-    /// Gets the result of the function's invocation.
+    /// Gets or sets the result of the function's invocation.
     /// </summary>
-    public FunctionResult? Result { get; internal set; }
-
-    /// <summary>
-    /// Gets the raw result of the function's invocation.
-    /// </summary>
-    internal object? ResultValue { get; private set; }
-
-    /// <summary>
-    /// Sets an object to use as the overridden new result for the function's invocation.
-    /// </summary>
-    /// <param name="value">The value to use as the new result of the function's invocation.</param>
-    public void SetResultValue(object? value)
-    {
-        this.ResultValue = value;
-    }
+    public FunctionResult? Result { get; set; }
 }

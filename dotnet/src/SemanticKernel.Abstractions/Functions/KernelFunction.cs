@@ -182,7 +182,7 @@ public abstract class KernelFunction
                 // Apply any changes from the function filters to final result.
                 functionResult = new FunctionResult(
                     this,
-                    invocationContext.ResultValue ?? functionResult.Value,
+                    invocationContext.Result?.Value ?? functionResult.Value,
                     functionResult.Culture,
                     invocationContext.Metadata ?? functionResult.Metadata);
             }

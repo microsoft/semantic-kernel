@@ -147,7 +147,7 @@ public class KernelFilterTests
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
             await next(context);
-            context.SetResultValue(NewResult);
+            context.Result = new FunctionResult(context.Function, NewResult);
         });
 
         // Act
@@ -557,7 +557,7 @@ public class KernelFilterTests
                 }
                 catch (NotImplementedException)
                 {
-                    context.SetResultValue("Result ignoring exception.");
+                    context.Result = new FunctionResult(context.Function, "Result ignoring exception.");
                 }
             });
 
@@ -655,7 +655,7 @@ public class KernelFilterTests
             catch (KernelException exception)
             {
                 Assert.Equal("Exception from functionFilter2", exception.Message);
-                context.SetResultValue("Result from functionFilter1");
+                context.Result = new FunctionResult(context.Function, "Result from functionFilter1");
             }
         });
 
