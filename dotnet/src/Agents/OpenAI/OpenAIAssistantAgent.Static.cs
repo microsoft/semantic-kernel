@@ -83,33 +83,53 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Retrieve a list of assistant definitions: <see cref="OpenAIAssistantDefinition"/>.
     /// </summary>
     /// <param name="config">Configuration for accessing the Assistants API service, such as the api-key.</param>
+    /// <param name="maxResults">The maximum number of assistant definitions to retrieve</param>
+    /// <param name="lastId">The identifier of the assistant beyond which to begin selection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListAsync(
         OpenAIAssistantConfiguration config,
+        int maxResults = 100,
+        string? lastId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Create the client
         AssistantsClient client = CreateClient(config);
 
         // Retrieve the assistants
-        PageableList<Assistant> assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, after: null, before: null, cancellationToken).ConfigureAwait(false); // $$$ LOOP
-        foreach (Assistant assistant in assistants)
+        PageableList<Assistant> assistants;
+
+        int resultCount = 0;
+        do
         {
-            yield return
-                new()
+            assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, after: null, before: null, cancellationToken).ConfigureAwait(false);
+            foreach (Assistant assistant in assistants)
+            {
+                resultCount++;
+
+                if (resultCount >= maxResults)
                 {
-                    Id = assistant.Id,
-                    Name = assistant.Name,
-                    Description = assistant.Description,
-                    Instructions = assistant.Instructions,
-                    EnableCodeInterpreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
-                    EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
-                    FileIds = assistant.FileIds,
-                    Metadata = assistant.Metadata,
-                    Model = assistant.Model,
-                };
+                    break;
+                }
+
+                yield return
+                    new()
+                    {
+                        Id = assistant.Id,
+                        Name = assistant.Name,
+                        Description = assistant.Description,
+                        Instructions = assistant.Instructions,
+                        EnableCodeInterpreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                        EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
+                        FileIds = assistant.FileIds,
+                        Metadata = assistant.Metadata,
+                        Model = assistant.Model,
+                    };
+
+                lastId = assistant.Id;
+            }
         }
+        while (assistants.HasMore && resultCount < maxResults);
     }
 
     /// <summary>

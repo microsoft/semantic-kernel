@@ -9,20 +9,13 @@ namespace Microsoft.SemanticKernel.Agents;
 internal static class KernelFunctionExtensions
 {
     /// <summary>
-    /// Produce a fully qualified toolname.
-    /// </summary>
-    public static string GetQualifiedName(this KernelFunction function, string pluginName) // $$$
-    {
-        return $"{pluginName}-{function.Name}";
-    }
-
-    /// <summary>
     /// Convert <see cref="KernelFunction"/> to an OpenAI tool model.
     /// </summary>
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
+    /// <param name="delimeter">The delimeter character</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName)
+    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimeter)
     {
         var metadata = function.Metadata;
         if (metadata.Parameters.Count > 0)
@@ -54,10 +47,10 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimeter), function.Description, BinaryData.FromObjectAsJson(spec));
         }
 
-        return new FunctionToolDefinition(function.GetQualifiedName(pluginName), function.Description);
+        return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimeter), function.Description);
     }
 
     private static string ConvertType(Type? type)
@@ -99,5 +92,12 @@ internal static class KernelFunctionExtensions
         }
 
         return "object";
+    }
+    /// <summary>
+    /// Produce a fully qualified toolname.
+    /// </summary>
+    public static string GetQualifiedName(this KernelFunction function, string pluginName, char delimeter)
+    {
+        return $"{pluginName}{delimeter}{function.Name}";
     }
 }
