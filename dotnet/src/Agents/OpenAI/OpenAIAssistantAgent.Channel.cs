@@ -168,7 +168,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     {
                         AuthorRole role = new(message.Role.ToString());
 
-                        foreach (IReadOnlyList<MessageContent> itemContent in message.ContentItems)
+                        foreach (MessageContent itemContent in message.ContentItems)
                         {
                             if (itemContent is MessageTextContent contentMessage)
                             {
