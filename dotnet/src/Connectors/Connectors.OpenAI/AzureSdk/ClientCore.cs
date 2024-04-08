@@ -999,7 +999,8 @@ internal abstract class ClientCore
 
             // Handling function call results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            if (message.Items.OfType<FunctionResultContent>() is { } resultContents && resultContents.Any())
+            var resultContents = message.Items.OfType<FunctionResultContent>().ToArray();
+            if (resultContents.Length != 0)
             {
                 var toolMessages = new List<ChatRequestToolMessage>();
 
@@ -1071,7 +1072,8 @@ internal abstract class ClientCore
             }
 
             // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
-            if (message.Items.OfType<FunctionCallContent>() is { } functionCallContents && functionCallContents.Any())
+            var functionCallContents = message.Items.OfType<FunctionCallContent>().ToArray();
+            if (functionCallContents.Length != 0)
             {
                 var ftcs = new List<ChatCompletionsToolCall>(tools ?? Enumerable.Empty<ChatCompletionsToolCall>());
 
