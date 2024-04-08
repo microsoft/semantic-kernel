@@ -65,7 +65,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 assistantCreationOptions.FileIds.Add(fileId);
             }
 
-            if (definition.EnableCodeIntepreter)
+            if (definition.EnableCodeInterpreter)
             {
                 assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
             }
@@ -103,7 +103,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     Name = assistant.Name,
                     Description = assistant.Description,
                     Instructions = assistant.Instructions,
-                    EnableCodeIntepreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
+                    EnableCodeInterpreter = assistant.Tools.Any(t => t is CodeInterpreterToolDefinition),
                     EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
                     FileIds = assistant.FileIds,
                     Metadata = assistant.Metadata,

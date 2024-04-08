@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// The data associated iwth an assistant's definition.
+/// The data associated with an assistant's definition.
 /// </summary>
 public sealed class OpenAIAssistantDefinition
 {
@@ -36,7 +36,7 @@ public sealed class OpenAIAssistantDefinition
     /// <summary>
     /// Set if code-interpreter is enabled.
     /// </summary>
-    public bool EnableCodeIntepreter { get; init; }
+    public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
     /// Set if retrieval is enabled.
