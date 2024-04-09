@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -103,6 +104,7 @@ public class Example76_Filters : BaseTest
 
     #region Filter capabilities
 
+    /// <summary>Shows syntax for function filter in non-streaming scenario.</summary>
     private sealed class FunctionFilterExample : IFunctionFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
@@ -110,7 +112,8 @@ public class Example76_Filters : BaseTest
             // Example: override kernel arguments
             context.Arguments["input"] = "new input";
 
-            // Without calling next(context), next filters in pipeline and actual function won't be invoked.
+            // This call is required to proceed with next filters in pipeline and actual function.
+            // Without this call next filters and function won't be invoked.
             await next(context);
 
             // Example: get function result value
@@ -124,6 +127,30 @@ public class Example76_Filters : BaseTest
         }
     }
 
+    /// <summary>Shows syntax for function filter in streaming scenario.</summary>
+    private sealed class StreamingFunctionFilterExample : IFunctionFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            // In streaming scenario, async enumerable is available in context result object.
+            // To override data: get async enumerable from function result, override data and set new async enumerable in context result:
+            var enumerable = context.Result?.GetValue<IAsyncEnumerable<int>>();
+            context.Result = new FunctionResult(context.Function, OverrideStreamingDataAsync(enumerable!));
+        }
+
+        private async IAsyncEnumerable<int> OverrideStreamingDataAsync(IAsyncEnumerable<int> data)
+        {
+            await foreach (var item in data)
+            {
+                // Example: override streaming data
+                yield return item * 2;
+            }
+        }
+    }
+
+    /// <summary>Shows syntax for exception handling in function filter in non-streaming scenario.</summary>
     private sealed class ExceptionHandlingFilterExample : IFunctionFilter
     {
         private readonly ILogger _logger;
@@ -152,6 +179,7 @@ public class Example76_Filters : BaseTest
         }
     }
 
+    /// <summary>Shows syntax for prompt filter.</summary>
     private sealed class PromptFilterExample : IPromptFilter
     {
         public void OnPromptRendered(PromptRenderedContext context)
