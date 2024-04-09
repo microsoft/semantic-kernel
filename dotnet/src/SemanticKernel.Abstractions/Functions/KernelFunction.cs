@@ -182,7 +182,7 @@ public abstract class KernelFunction
                 this,
                 invocationContext.Result?.Value ?? functionResult?.Value,
                 functionResult?.Culture,
-                invocationContext.Metadata ?? functionResult?.Metadata);
+                functionResult?.Metadata);
 
             logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult.Value);
@@ -283,7 +283,7 @@ public abstract class KernelFunction
                     var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
                     // Update context with enumerable as result value.
-                    context.Result = new FunctionResult(this, enumerable, metadata: context.Metadata);
+                    context.Result = new FunctionResult(this, enumerable);
 
                     return Task.CompletedTask;
                 }).ConfigureAwait(false);

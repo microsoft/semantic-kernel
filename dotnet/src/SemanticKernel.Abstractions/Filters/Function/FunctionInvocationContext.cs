@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -34,11 +33,6 @@ public class FunctionInvocationContext
     /// Gets the arguments associated with the operation.
     /// </summary>
     public KernelArguments Arguments { get; }
-
-    /// <summary>
-    /// Gets a dictionary of metadata associated with the operation.
-    /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; internal set; }
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.
