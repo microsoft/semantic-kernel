@@ -23,9 +23,11 @@ public class ChatCompletionAgentTests
     public void VerifyChatCompletionAgentDefinition()
     {
         ChatCompletionAgent agent =
-            new(Kernel.CreateBuilder().Build(), description: "test description", name: "test name")
+            new()
             {
+                Description = "test description",
                 Instructions = "test instructions",
+                Name = "test name",
             };
 
         Assert.NotNull(agent.Id);
@@ -49,8 +51,11 @@ public class ChatCompletionAgentTests
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(new ChatMessageContent[] { new(AuthorRole.Assistant, "what?") });
 
-        var kernel = CreateKernel(mockService.Object);
-        var agent = new ChatCompletionAgent(kernel, "fake-instructions");
+        var agent =
+            new ChatCompletionAgent()
+            {
+                Kernel = CreateKernel(mockService.Object)
+            };
 
         var result = await agent.InvokeAsync([]).ToArrayAsync();
 

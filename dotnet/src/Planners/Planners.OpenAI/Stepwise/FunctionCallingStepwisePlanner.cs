@@ -119,7 +119,7 @@ public sealed class FunctionCallingStepwisePlanner
                     {
                         // We found a final answer, but failed to parse it properly.
                         // Log the error message in chat history and let the planner try again.
-                        chatHistoryForSteps.AddUserMessage(finalAnswerError);
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, finalAnswerError, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                         continue;
                     }
 

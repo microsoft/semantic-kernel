@@ -92,22 +92,6 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Add user message to chat history
-    /// </summary>
-    /// <param name="input">The user input, might be empty.</param>
-    public ChatMessageContent? AddUserMessage(string? input)
-    {
-        var message = string.IsNullOrWhiteSpace(input) ? null : new ChatMessageContent(AuthorRole.User, input);
-
-        if (message != null)
-        {
-            this.AddChatMessage(message);
-        }
-
-        return message;
-    }
-
-    /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> an a <see cref="AgentChat"/>.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>

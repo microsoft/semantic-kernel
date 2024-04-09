@@ -14,14 +14,8 @@ public abstract class KernelAgent : Agent
     /// <summary>
     /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
     /// </summary>
-    public Kernel Kernel { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="KernelAgent"/> class.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    protected KernelAgent(Kernel kernel)
-    {
-        this.Kernel = kernel;
-    }
+    /// <remarks>
+    /// Defaults to empty Kernel, but may be overridden.
+    /// </remarks>
+    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
 }

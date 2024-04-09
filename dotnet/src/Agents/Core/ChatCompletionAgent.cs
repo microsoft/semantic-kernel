@@ -10,17 +10,12 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// A <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
+/// <remarks>
+/// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
+/// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
+/// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
-    /// <inheritdoc/>
-    public override string? Description { get; }
-
-    /// <inheritdoc/>
-    public override string Id { get; }
-
-    /// <inheritdoc/>
-    public override string? Name { get; }
-
     /// <summary>
     /// Optional execution settings for the agent.
     /// </summary>
@@ -54,26 +49,5 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             yield return message;
         }
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    /// <param name="description">The agent description (optional)</param>
-    /// <param name="name">The agent name</param>
-    /// <remarks>
-    /// NOTE: Enable OpenAIPromptExecutionSettings.ToolCallBehavior for agent plugins.
-    /// (<see cref="ChatCompletionAgent.ExecutionSettings"/>)
-    /// </remarks>
-    public ChatCompletionAgent(
-        Kernel kernel,
-        string? description = null,
-        string? name = null)
-       : base(kernel)
-    {
-        this.Id = Guid.NewGuid().ToString();
-        this.Description = description;
-        this.Name = name;
     }
 }

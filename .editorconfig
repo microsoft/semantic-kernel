@@ -163,11 +163,13 @@ dotnet_diagnostic.CA1510.severity = none
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
+dotnet_diagnostic.CA1849.severity = none # Use async equivalent; analyzer is currently noisy
 dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
