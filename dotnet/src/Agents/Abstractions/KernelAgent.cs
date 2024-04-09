@@ -15,7 +15,7 @@ public abstract class KernelAgent : Agent
     /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
     /// </summary>
     /// <remarks>
-    /// Defaults to empty Kernel, but may be overriden.
+    /// Defaults to empty Kernel, but may be overridden.
     /// </remarks>
     public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
 }
