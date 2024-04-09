@@ -111,7 +111,7 @@ public class MyFilter : IFunctionFilter
             context.Exception = null;
 
             // 2. Override the result with some value, that is meaningful to LLM
-            context.SetResultValue("Friendly message instead of exception");
+            context.Result = new FunctionResult(context.Function, "Friendly message instead of exception");
 
             // 3. Rethrow another type of exception if needed - Option 1.
             context.Exception = new Exception("New exception");
@@ -142,7 +142,7 @@ Abstraction:
 ```csharp
 public interface IFunctionFilter
 {
-    Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next);
+    Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next);
 }
 ```
 
@@ -151,7 +151,7 @@ Usage:
 ```csharp
 public class MyFilter : IFunctionFilter
 {
-    public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+    public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
     {
         // Perform some actions before function invocation
         await next(context);
@@ -163,7 +163,7 @@ public class MyFilter : IFunctionFilter
 Exception handling with native `try/catch` approach:
 
 ```csharp
-public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, FunctionInvocationCallback next)
+public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
 {
     try
     {
@@ -174,7 +174,7 @@ public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, F
         this._logger.LogError(exception, "Something went wrong during function invocation");
 
         // Example: override function result value
-        context.SetResultValue("Friendly message instead of exception");
+        context.Result = new FunctionResult(context.Function, "Friendly message instead of exception");
 
         // Example: Rethrow another type of exception if needed
         throw new InvalidOperationException("New exception");
@@ -186,13 +186,12 @@ Advantages:
 
 - Native way how to handle and rethrow exceptions.
 - Similar to `IAsyncActionFilter` and `IEndpointFilter` API in ASP.NET.
-- One filter method to implement instead of two (`Invoking/Invoked`).
+- One filter method to implement instead of two (`Invoking/Invoked`) - this allows to keep invocation context information in one method instead of storing it on class level. For example, to measure function execution time, `Stopwatch` can be created and started before `await next(context)` call and used after the call, while in approach with `Invoking/Invoked` methods the data should be passed between filter actions in other way, for example setting it on class level, which is harder to maintain.
 - No need in cancellation logic (e.g. `context.Cancel = true`). To cancel the operation, simply don't call `await next(context)`.
 
 Disadvantages:
 
 - Remember to call `await next(context)` manually in all filters. If it's not called, next filter in pipeline and/or function itself won't be called.
-- Since it's callback mechanism, for streaming scenarios only enumerator can be wrapped with filter. Which means that pre-invocation code will be applied (e.g. update arguments) but post-invocation code won't be applied (e.g. exception handling). `IEndpointFilter` in ASP.NET Minimal API doesn't handle exceptions in streaming scenario as well.
 
 ## Decision Outcome
 
