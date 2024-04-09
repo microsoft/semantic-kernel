@@ -40,13 +40,13 @@ public sealed class Example97_GeminiVision : BaseTest
         using var binaryReader = new BinaryReader(stream);
         var bytes = binaryReader.ReadBytes((int)stream.Length);
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection
-        {
+        chatHistory.AddUserMessage(
+        [
             new TextContent("What’s in this image?"),
             // Google AI Gemini API requires the image to be in base64 format, doesn't support URI
             // You have to always provide the mimeType for the image
             new ImageContent(bytes) { MimeType = "image/jpeg" },
-        });
+        ]);
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
@@ -108,8 +108,8 @@ public sealed class Example97_GeminiVision : BaseTest
         using var binaryReader = new BinaryReader(stream);
         var bytes = binaryReader.ReadBytes((int)stream.Length);
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection
-        {
+        chatHistory.AddUserMessage(
+        [
             new TextContent("What’s in this image?"),
             // Vertex AI Gemini API supports both base64 and URI format
             // You have to always provide the mimeType for the image
@@ -118,7 +118,7 @@ public sealed class Example97_GeminiVision : BaseTest
             // The bucket that stores the file must be in the same Google Cloud project that's sending the request.
             // new ImageContent(new Uri("gs://generativeai-downloads/images/scones.jpg"),
             //    metadata: new Dictionary<string, object?> { { "mimeType", "image/jpeg" } })
-        });
+        ]);
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 

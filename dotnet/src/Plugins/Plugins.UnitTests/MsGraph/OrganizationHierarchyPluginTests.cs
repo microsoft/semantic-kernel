@@ -17,7 +17,7 @@ public class OrganizationHierarchyPluginTests
     public async Task GetMyDirectReportsEmailAsyncSucceedsAsync()
     {
         // Arrange
-        string[] anyDirectReportsEmail = { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        string[] anyDirectReportsEmail = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyDirectReportsEmail);
         OrganizationHierarchyPlugin target = new(connectorMock.Object);

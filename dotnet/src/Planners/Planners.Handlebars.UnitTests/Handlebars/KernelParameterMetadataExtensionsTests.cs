@@ -213,7 +213,7 @@ public class KernelParameterMetadataExtensionsTests
 
         foreach (var pair in schemaTypeMap)
         {
-            var schema = KernelJsonSchema.Parse($"{{\"type\": \"{pair.Key}\"}}");
+            var schema = KernelJsonSchema.Parse($$"""{"type": "{{pair.Key}}"}""");
             var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
             // Act
@@ -228,7 +228,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsParameterWithSchemaForNonPrimitiveOrStringSchemaType()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -243,7 +243,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsIndentedJsonStringForJsonElement()
     {
         // Arrange
-        var jsonProperties = KernelJsonSchema.Parse("{\"name\": \"Alice\", \"age\": 25}").RootElement;
+        var jsonProperties = KernelJsonSchema.Parse("""{"name": "Alice", "age": 25}""").RootElement;
 
         // Act
         var result = jsonProperties.ToJsonString();
@@ -260,7 +260,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ReturnsParameterNameAndSchemaType()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Schema = schema };
 
         // Act
@@ -274,7 +274,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ConvertsReturnParameterMetadataToParameterMetadata()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var returnParameter = new KernelReturnParameterMetadata() { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act
@@ -292,7 +292,7 @@ public class KernelParameterMetadataExtensionsTests
     public void ConvertsParameterMetadataToReturnParameterMetadata()
     {
         // Arrange
-        var schema = KernelJsonSchema.Parse("{\"type\": \"object\", \"properties\": {\"name\": {\"type\": \"string\"}}}");
+        var schema = KernelJsonSchema.Parse("""{"type": "object", "properties": {"name": {"type": "string"}}}""");
         var parameter = new KernelParameterMetadata("test") { Description = "test", ParameterType = typeof(object), Schema = schema };
 
         // Act

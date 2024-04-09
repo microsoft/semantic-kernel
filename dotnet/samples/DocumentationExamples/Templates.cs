@@ -44,23 +44,21 @@ public class Templates : BaseTest
             Assistant: ");
 
         // Create choices
-        List<string> choices = new() { "ContinueConversation", "EndConversation" };
+        List<string> choices = ["ContinueConversation", "EndConversation"];
 
         // Create few-shot examples
         List<ChatHistory> fewShotExamples =
         [
-            new ChatHistory()
-            {
+            [
                 new ChatMessageContent(AuthorRole.User, "Can you send a very quick approval to the marketing team?"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "ContinueConversation")
-            },
-            new ChatHistory()
-            {
+            ],
+            [
                 new ChatMessageContent(AuthorRole.User, "Thanks, I'm done for now"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "EndConversation")
-            }
+            ]
         ];
 
         // Create handlebars template for intent
@@ -89,7 +87,7 @@ Choices: {{choices}}.</message>
             new HandlebarsPromptTemplateFactory()
         );
 
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Start the chat loop
         while (true)

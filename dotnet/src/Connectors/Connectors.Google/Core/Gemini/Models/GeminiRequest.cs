@@ -29,7 +29,7 @@ internal sealed class GeminiRequest
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
-        this.Tools ??= new List<GeminiTool>();
+        this.Tools ??= [];
         if (this.Tools.Count == 0)
         {
             this.Tools.Add(new GeminiTool());
@@ -74,19 +74,19 @@ internal sealed class GeminiRequest
     {
         GeminiRequest obj = new()
         {
-            Contents = new List<GeminiContent>
-            {
+            Contents =
+            [
                 new()
                 {
-                    Parts = new List<GeminiPart>
-                    {
+                    Parts =
+                    [
                         new()
                         {
                             Text = prompt
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         return obj;
     }
@@ -119,7 +119,7 @@ internal sealed class GeminiRequest
 
     private static List<GeminiPart> CreateGeminiParts(ChatMessageContent content)
     {
-        List<GeminiPart> parts = new();
+        List<GeminiPart> parts = [];
         switch (content)
         {
             case GeminiChatMessageContent { CalledToolResult: not null } contentWithCalledTool:

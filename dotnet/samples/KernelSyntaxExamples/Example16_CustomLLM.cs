@@ -111,10 +111,10 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
 
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent>
-            {
+            return Task.FromResult<IReadOnlyList<TextContent>>(
+            [
                 new(LLMResultText)
-            });
+            ]);
         }
     }
 

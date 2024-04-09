@@ -31,7 +31,7 @@ public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
     {
         // Arrange
         var embeddingGenerationMock = Mock.Of<ITextEmbeddingGenerationService>();
-        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("[\"fake-index1\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._messageHandlerStub.ResponseToReturn.Content = new StringContent("""["fake-index1"]""", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new MemoryBuilder();
         builder.WithPineconeMemoryStore("fake-environment", "fake-api-key", this._httpClient);

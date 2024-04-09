@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -50,11 +49,11 @@ public class ConfiguringPrompts : BaseTest
                             User: {{$request}}
                             Assistant: ",
                 TemplateFormat = "semantic-kernel",
-                InputVariables = new List<InputVariable>()
-                {
+                InputVariables =
+                [
                     new() { Name = "history", Description = "The history of the conversation.", IsRequired = false, Default = "" },
                     new() { Name = "request", Description = "The user's request.", IsRequired = true }
-                },
+                ],
                 ExecutionSettings =
                 {
                     {
@@ -88,7 +87,7 @@ public class ConfiguringPrompts : BaseTest
         // </FunctionFromPrompt>
 
         // Create chat history and choices
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Start the chat loop
         Write("User > ");

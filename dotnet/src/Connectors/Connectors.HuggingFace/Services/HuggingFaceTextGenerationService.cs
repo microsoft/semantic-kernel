@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />

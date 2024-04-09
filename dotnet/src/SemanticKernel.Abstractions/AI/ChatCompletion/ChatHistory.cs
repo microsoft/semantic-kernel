@@ -24,7 +24,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public ChatHistory()
     {
-        this._messages = new();
+        this._messages = [];
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNullOrWhiteSpace(systemMessage);
 
-        this._messages = new();
+        this._messages = [];
         this.AddSystemMessage(systemMessage);
     }
 

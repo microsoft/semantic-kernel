@@ -87,7 +87,7 @@ public sealed class NullMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<IList<string>>(new List<string>());
+        return Task.FromResult<IList<string>>([]);
     }
 
     private NullMemory()

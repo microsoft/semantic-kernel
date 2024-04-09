@@ -51,7 +51,7 @@ internal static class XmlPromptParser
         {
             if (GetPromptNode(node) is { } childPromptNode)
             {
-                (result ??= new()).Add(childPromptNode);
+                (result ??= []).Add(childPromptNode);
             }
         }
 

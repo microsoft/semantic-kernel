@@ -162,7 +162,7 @@ internal class FlowExecutor : IFlowExecutor
 
         // populate persisted state arguments
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
-        List<string> outputs = new();
+        List<string> outputs = [];
 
         while (executionState.CurrentStepIndex < sortedSteps.Count)
         {
@@ -508,7 +508,7 @@ internal class FlowExecutor : IFlowExecutor
         }
         else
         {
-            chatHistory = new ChatHistory();
+            chatHistory = [];
         }
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
@@ -654,7 +654,7 @@ internal class FlowExecutor : IFlowExecutor
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory is null)
                 {
-                    chatHistory = new ChatHistory();
+                    chatHistory = [];
                 }
                 else
                 {

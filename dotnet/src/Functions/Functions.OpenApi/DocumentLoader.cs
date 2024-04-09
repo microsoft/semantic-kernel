@@ -40,6 +40,8 @@ internal static class DocumentLoader
         ILogger logger,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var pluginJson = string.Empty;
 
         if (!File.Exists(filePath))
@@ -49,10 +51,8 @@ internal static class DocumentLoader
 
         logger.LogTrace("Importing document from {0}", filePath);
 
-        using (var sr = File.OpenText(filePath))
-        {
-            return await sr.ReadToEndAsync().ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
-        }
+        using var sr = File.OpenText(filePath);
+        return await sr.ReadToEndAsync().ConfigureAwait(false); // must await here to avoid stream reader being disposed before the string is read
     }
 
     internal static async Task<string> LoadDocumentFromStreamAsync(Stream stream)

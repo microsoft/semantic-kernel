@@ -28,7 +28,7 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
     /// <summary>Reusable options instance passed to OnnxSession.Run.</summary>
     private static readonly RunOptions s_runOptions = new();
     /// <summary>Reusable input name columns passed to OnnxSession.Run.</summary>
-    private static readonly string[] s_inputNames = new[] { "input_ids", "attention_mask", "token_type_ids" };
+    private static readonly string[] s_inputNames = ["input_ids", "attention_mask", "token_type_ids"];
 
     /// <summary>The ONNX session instance associated with this service. This may be used concurrently.</summary>
     private readonly InferenceSession _onnxSession;

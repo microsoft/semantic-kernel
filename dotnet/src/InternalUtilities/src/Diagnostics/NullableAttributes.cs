@@ -116,7 +116,7 @@ internal sealed class MemberNotNullAttribute : Attribute
     /// The field or property member that is promised to be not-null.
     /// </param>
     [SuppressMessage("Design", "CA1019:Define accessors for attribute arguments")]
-    public MemberNotNullAttribute(string member) => this.Members = new[] { member };
+    public MemberNotNullAttribute(string member) => this.Members = [member];
 
     /// <summary>Initializes the attribute with the list of field and property members.</summary>
     /// <param name="members">
@@ -144,7 +144,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
     public MemberNotNullWhenAttribute(bool returnValue, string member)
     {
         this.ReturnValue = returnValue;
-        this.Members = new[] { member };
+        this.Members = [member];
     }
 
     /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>

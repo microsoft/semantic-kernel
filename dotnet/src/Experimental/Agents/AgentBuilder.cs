@@ -36,9 +36,9 @@ public partial class AgentBuilder
     public AgentBuilder()
     {
         this._model = new AssistantModel();
-        this._plugins = new KernelPluginCollection();
+        this._plugins = [];
         this._tools = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        this._fileIds = new List<string>();
+        this._fileIds = [];
     }
 
     /// <summary>

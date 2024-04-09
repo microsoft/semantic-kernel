@@ -139,17 +139,19 @@ public class OpenAIPromptExecutionSettingsTests
     public void ItCreatesOpenAIExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
-        var json = @"{
-  ""temperature"": 0.7,
-  ""top_p"": 0.7,
-  ""frequency_penalty"": 0.7,
-  ""presence_penalty"": 0.7,
-  ""results_per_prompt"": 2,
-  ""stop_sequences"": [ ""foo"", ""bar"" ],
-  ""chat_system_prompt"": ""chat system prompt"",
-  ""token_selection_biases"": { ""1"": 2, ""3"": 4 },
-  ""max_tokens"": 128
-}";
+        var json = """
+            {
+              "temperature": 0.7,
+              "top_p": 0.7,
+              "frequency_penalty": 0.7,
+              "presence_penalty": 0.7,
+              "results_per_prompt": 2,
+              "stop_sequences": [ "foo", "bar" ],
+              "chat_system_prompt": "chat system prompt",
+              "token_selection_biases": { "1": 2, "3": 4 },
+              "max_tokens": 128
+            }
+            """;
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act

@@ -22,7 +22,7 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <summary>
     /// Initializes a new instance of the <see cref="NonNullCollection{T}"/> class.
     /// </summary>
-    public NonNullCollection() => this._items = new();
+    public NonNullCollection() => this._items = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NonNullCollection{T}"/> class.

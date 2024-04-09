@@ -24,7 +24,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -39,7 +39,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -54,7 +54,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -69,7 +69,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -85,7 +85,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             DefaultValue = "1",
             ParameterType = typeof(int),
             IsRequired = false,
-            Schema = withSchema ? KernelJsonSchema.Parse("{\"type\":\"integer\"}") : null,
+            Schema = withSchema ? KernelJsonSchema.Parse("""{"type":"integer"}""") : null,
         };
 
         var sut = new KernelFunctionMetadata("foo")
@@ -96,7 +96,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -113,7 +113,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -131,7 +131,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             ReturnParameter = new KernelReturnParameterMetadata
             {
                 Description = "retDesc",
-                Schema = KernelJsonSchema.Parse("{\"type\": \"object\" }"),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
             }
         };
 
@@ -146,7 +146,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
 
         Assert.NotNull(result.ReturnParameter);
         Assert.Equal("retDesc", result.ReturnParameter.Description);
-        Assert.Equivalent(KernelJsonSchema.Parse("{\"type\": \"object\" }"), result.ReturnParameter.Schema);
+        Assert.Equivalent(KernelJsonSchema.Parse("""{"type": "object" }"""), result.ReturnParameter.Schema);
         Assert.Null(result.ReturnParameter.ParameterType);
     }
 
@@ -196,7 +196,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\",\"parameter3\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"},\"parameter3\":{\"type\":\"string\",\"format\":\"date-time\",\"description\":\"DateTime parameter\"}}}",
+            """{"type":"object","required":["parameter1","parameter2","parameter3"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"},"parameter3":{"type":"string","format":"date-time","description":"DateTime parameter"}}}""",
             result.Parameters.ToString()
         );
     }
@@ -213,13 +213,13 @@ public sealed class KernelFunctionMetadataExtensionsTests
         {
             Name = "parameter1",
             Description = "String parameter",
-            JsonSchema = "{\"type\":\"string\",\"description\":\"String parameter\"}"
+            JsonSchema = """{"type":"string","description":"String parameter"}"""
         });
         promptTemplateConfig.InputVariables.Add(new InputVariable
         {
             Name = "parameter2",
             Description = "Enum parameter",
-            JsonSchema = "{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}"
+            JsonSchema = """{"enum":["Value1","Value2"],"description":"Enum parameter"}"""
         });
         var function = KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig);
         var functionMetadata = function.Metadata;
@@ -231,7 +231,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            "{\"type\":\"object\",\"required\":[\"parameter1\",\"parameter2\"],\"properties\":{\"parameter1\":{\"type\":\"string\",\"description\":\"String parameter\"},\"parameter2\":{\"enum\":[\"Value1\",\"Value2\"],\"description\":\"Enum parameter\"}}}",
+            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
             result.Parameters.ToString()
         );
     }

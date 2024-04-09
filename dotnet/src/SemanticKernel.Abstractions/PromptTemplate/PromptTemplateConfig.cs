@@ -159,7 +159,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
     {
-        get => this._inputVariables ??= new();
+        get => this._inputVariables ??= [];
         set
         {
             Verify.NotNull(value);
@@ -182,7 +182,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
-        get => this._executionSettings ??= new();
+        get => this._executionSettings ??= [];
         set
         {
             Verify.NotNull(value);
@@ -225,7 +225,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        KernelParameterMetadata[] result = Array.Empty<KernelParameterMetadata>();
+        KernelParameterMetadata[] result = [];
         if (this._inputVariables is List<InputVariable> inputVariables)
         {
             result = new KernelParameterMetadata[inputVariables.Count];

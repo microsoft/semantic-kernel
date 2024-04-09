@@ -24,7 +24,7 @@ public class Example71_AgentDelegation : BaseTest
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private static readonly List<IAgent> s_agents = [];
 
     /// <summary>
     /// Show how to combine coordinate multiple agents.

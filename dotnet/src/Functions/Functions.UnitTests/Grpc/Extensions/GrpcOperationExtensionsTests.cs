@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Plugins.Grpc;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 
@@ -18,9 +17,9 @@ public class GrpcOperationExtensionsTests
 
     public GrpcOperationExtensionsTests()
     {
-        this._request = new GrpcOperationDataContractType("fake-name", new List<GrpcOperationDataContractTypeFiled>());
+        this._request = new GrpcOperationDataContractType("fake-name", []);
 
-        this._response = new GrpcOperationDataContractType("fake-name", new List<GrpcOperationDataContractTypeFiled>());
+        this._response = new GrpcOperationDataContractType("fake-name", []);
 
         this._operation = new GrpcOperation("fake-service-name", "fake-operation-name", this._response, this._response);
     }
@@ -29,11 +28,11 @@ public class GrpcOperationExtensionsTests
     public void ThereShouldBeAddressParameter()
     {
         // Act
-        var parameters = this._operation.GetParameters();
+        var parameters = GrpcOperation.CreateParameters();
 
         // Assert
         Assert.NotNull(parameters);
-        Assert.True(parameters.Any());
+        Assert.NotEmpty(parameters);
 
         var addressParameter = parameters.SingleOrDefault(p => p.Name == "address");
         Assert.NotNull(addressParameter);
@@ -44,11 +43,11 @@ public class GrpcOperationExtensionsTests
     public void ThereShouldBePayloadParameter()
     {
         // Act
-        var parameters = this._operation.GetParameters();
+        var parameters = GrpcOperation.CreateParameters();
 
         // Assert
         Assert.NotNull(parameters);
-        Assert.True(parameters.Any());
+        Assert.NotEmpty(parameters);
 
         var payloadParameter = parameters.SingleOrDefault(p => p.Name == "payload");
         Assert.NotNull(payloadParameter);

@@ -59,7 +59,7 @@ Second line.
             new("message")
             {
                 Attributes = { { "role", "user" } },
-                ChildNodes = new List<PromptNode> { new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } } }
+                ChildNodes = [new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } }]
             },
         };
 

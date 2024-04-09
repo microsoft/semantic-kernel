@@ -29,7 +29,7 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
     {
         var store = new ReadOnlyMemoryStore(s_jsonVectorEntries);
 
-        var embedding = new ReadOnlyMemory<float>(new float[] { 22, 4, 6 });
+        var embedding = new ReadOnlyMemory<float>([22, 4, 6]);
 
         WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
@@ -136,7 +136,7 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            List<(MemoryRecord Record, double Score)> embeddings = new();
+            List<(MemoryRecord Record, double Score)> embeddings = [];
 
             foreach (var item in this._memoryRecords)
             {

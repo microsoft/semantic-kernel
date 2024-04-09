@@ -52,7 +52,7 @@ internal sealed class SearchVectorsResponse : QdrantResponse
 
     private SearchVectorsResponse()
     {
-        this.Results = new List<ScoredPoint>();
+        this.Results = [];
     }
 
     #endregion

@@ -43,10 +43,10 @@ public sealed class GeminiRequestTests
         var prompt = "prompt-example";
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -107,10 +107,10 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage("user-message2");
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act

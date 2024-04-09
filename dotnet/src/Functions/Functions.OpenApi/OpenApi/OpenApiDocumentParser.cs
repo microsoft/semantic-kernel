@@ -71,11 +71,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// List of supported Media Types.
     /// </summary>
-    private static readonly List<string> s_supportedMediaTypes = new()
-    {
+    private static readonly List<string> s_supportedMediaTypes =
+    [
         "application/json",
         "text/plain"
-    };
+    ];
 
     private readonly OpenApiStreamReader _openApiReader = new();
     private readonly ILogger _logger;
@@ -290,7 +290,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         if (schema == null)
         {
-            return new List<RestApiOperationPayloadProperty>();
+            return [];
         }
 
         if (level > PayloadPropertiesHierarchyMaxDepth)

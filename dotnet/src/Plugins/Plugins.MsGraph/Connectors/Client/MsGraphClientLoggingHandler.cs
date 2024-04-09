@@ -24,13 +24,13 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// </summary>
     private const string ClientRequestIdHeaderName = "client-request-id";
 
-    private readonly List<string> _headerNamesToLog = new()
-    {
+    private readonly List<string> _headerNamesToLog =
+    [
         ClientRequestIdHeaderName,
         "request-id",
         "x-ms-ags-diagnostic",
         "Date"
-    };
+    ];
 
     private readonly ILogger _logger;
 

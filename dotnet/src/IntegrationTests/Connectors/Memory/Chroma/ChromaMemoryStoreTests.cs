@@ -25,8 +25,10 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     public ChromaMemoryStoreTests()
     {
-        this._httpClient = new();
-        this._httpClient.BaseAddress = new Uri(BaseAddress);
+        this._httpClient = new()
+        {
+            BaseAddress = new Uri(BaseAddress)
+        };
 
         this._chromaMemoryStore = new(this._httpClient);
     }

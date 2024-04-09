@@ -94,13 +94,13 @@ internal sealed class ThreadRunModel
     /// The list of tools that the assistant used for this run.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolModel> Tools { get; set; } = new List<ToolModel>();
+    public List<ToolModel> Tools { get; set; } = [];
 
     /// <summary>
     /// The list of File IDs the assistant used for this run.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; } = new List<string>();
+    public List<string> FileIds { get; set; } = [];
 
     /// <summary>
     /// Set of 16 key-value pairs that can be attached to an object.
@@ -109,7 +109,7 @@ internal sealed class ThreadRunModel
     /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = [];
 
     /// <summary>
     /// Run error information.

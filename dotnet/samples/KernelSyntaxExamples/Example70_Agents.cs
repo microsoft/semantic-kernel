@@ -86,7 +86,7 @@ public class Example70_Agent : BaseTest
               functionName: "spellChecker",
               description: "Correct the spelling for the user input.");
 
-        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
+        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", [function]);
 
         // Call the common chat-loop
         return ChatAsync(

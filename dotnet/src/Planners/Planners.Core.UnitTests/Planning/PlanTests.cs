@@ -699,7 +699,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         var planStep = new Plan(function);
         planStep.Parameters.Set("input", "Function input.");
-        planStep.Parameters.Set("payload", @"{""prop"":""value"", ""$prop"": 3, ""prop2"": ""my name is $pop and $var""}");
+        planStep.Parameters.Set("payload", """{"prop":"value", "$prop": 3, "prop2": "my name is $pop and $var"}""");
         plan.AddSteps(planStep);
         plan.State.Set("var", "foobar");
 

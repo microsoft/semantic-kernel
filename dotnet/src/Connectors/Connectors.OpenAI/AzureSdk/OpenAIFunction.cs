@@ -74,11 +74,11 @@ public sealed class OpenAIFunction
     /// This is an optimization to avoid serializing the same JSON Schema over and over again
     /// for this relatively common case.
     /// </remarks>
-    private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");
+    private static readonly BinaryData s_zeroFunctionParametersSchema = new("""{"type":"object","required":[],"properties":{}}""");
     /// <summary>
     /// Cached schema for a descriptionless string.
     /// </summary>
-    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("{\"type\":\"string\"}");
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(

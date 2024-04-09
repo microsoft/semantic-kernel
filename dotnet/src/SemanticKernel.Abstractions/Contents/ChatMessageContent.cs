@@ -71,7 +71,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get => this._items ??= new ChatMessageContentItemCollection();
+        get => this._items ??= [];
         set => this._items = value;
     }
 

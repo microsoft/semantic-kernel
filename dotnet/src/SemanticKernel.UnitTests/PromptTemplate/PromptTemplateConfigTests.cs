@@ -14,13 +14,15 @@ public class PromptTemplateConfigTests
     public void DeserializingDoNotExpectChatSystemPromptToExist()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+            {
+                "max_tokens": 60,
+                "temperature": 0.5,
+                "top_p": 0.0,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0
+            }
+            """;
 
         // Act
         var settings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
@@ -34,14 +36,16 @@ public class PromptTemplateConfigTests
     public void DeserializingExpectChatSystemPromptToExists()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0,
-            ""chat_system_prompt"": ""I am a prompt""
-        }";
+        string configPayload = """
+            {
+                "max_tokens": 60,
+                "temperature": 0.5,
+                "top_p": 0.0,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0,
+                "chat_system_prompt": "I am a prompt"
+            }
+            """;
 
         // Act
         var settings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);

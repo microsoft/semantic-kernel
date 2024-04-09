@@ -88,14 +88,14 @@ provides:
         WriteLine("Answer: " + result.Metadata!["answer"]);
         WriteLine("Assistant: " + result.GetValue<List<string>>()!.Single());
 
-        string[] userInputs = new[]
-        {
+        string[] userInputs =
+        [
             "my email is bad*email&address",
             "my email is sample@xyz.com",
             "yes", // confirm to add another email address
             "I also want to notify foo@bar.com",
             "no I don't need notify any more address", // end of collect emails
-        };
+        ];
 
         foreach (var t in userInputs)
         {
@@ -170,7 +170,7 @@ Do not expose the regex in your response.
             this._chatRequestSettings = new OpenAIPromptExecutionSettings
             {
                 MaxTokens = this.MaxTokens,
-                StopSequences = new List<string>() { "Observation:" },
+                StopSequences = ["Observation:"],
                 Temperature = 0
             };
         }

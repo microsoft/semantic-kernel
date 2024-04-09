@@ -184,10 +184,10 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     {
         if (text == null)
         {
-            return System.Array.Empty<string>();
+            return [];
         }
 
-        string[] parts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, 2);
+        string[] parts = text.Split([Symbols.NamedArgBlockSeparator], 2);
         string[] result = new string[parts.Length];
         if (parts.Length > 0)
         {

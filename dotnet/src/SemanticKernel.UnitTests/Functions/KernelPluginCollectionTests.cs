@@ -18,7 +18,7 @@ public class KernelPluginCollectionTests
     {
         KernelPluginCollection c;
 
-        c = new();
+        c = [];
         Assert.Equal(0, c.Count);
         Assert.NotNull(c.GetEnumerator());
         Assert.False(c.GetEnumerator().MoveNext());
@@ -208,7 +208,7 @@ public class KernelPluginCollectionTests
         Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(null!));
         Assert.Throws<ArgumentNullException>(() => new KernelPluginCollection(new KernelPlugin[] { null! }));
 
-        KernelPluginCollection c = new();
+        KernelPluginCollection c = [];
         Assert.Throws<ArgumentNullException>(() => c.Add(null!));
         Assert.Throws<ArgumentNullException>(() => c.Remove(null!));
         Assert.Throws<ArgumentNullException>(() => c.Contains(null!));

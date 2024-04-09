@@ -244,10 +244,10 @@ public class RestApiOperationExtensionsTests
     public void ItShouldSetAlternativeNameToParametersForPutAndPostOperation(string method)
     {
         //Arrange
-        var latitude = new RestApiOperationPayloadProperty("location.latitude", "number", false, new List<RestApiOperationPayloadProperty>());
-        var place = new RestApiOperationPayloadProperty("place", "string", true, new List<RestApiOperationPayloadProperty>());
+        var latitude = new RestApiOperationPayloadProperty("location.latitude", "number", false, []);
+        var place = new RestApiOperationPayloadProperty("place", "string", true, []);
 
-        var payload = new RestApiOperationPayload("application/json", new[] { place, latitude });
+        var payload = new RestApiOperationPayload("application/json", [place, latitude]);
 
         var operation = CreateTestOperation(method, payload);
 
@@ -274,7 +274,7 @@ public class RestApiOperationExtensionsTests
                     path: "fake-path",
                     method: new HttpMethod(method),
                     description: "fake-description",
-                    parameters: new List<RestApiOperationParameter>(),
+                    parameters: [],
                     payload: payload);
     }
 
@@ -284,55 +284,55 @@ public class RestApiOperationExtensionsTests
             name: "name",
             type: "string",
             isRequired: true,
-            properties: new List<RestApiOperationPayloadProperty>(),
+            properties: [],
             description: "The name.");
 
         var leader = new RestApiOperationPayloadProperty(
             name: "leader",
             type: "string",
             isRequired: true,
-            properties: new List<RestApiOperationPayloadProperty>(),
+            properties: [],
             description: "The leader.");
 
         var landmarks = new RestApiOperationPayloadProperty(
             name: "landmarks",
             type: "array",
             isRequired: false,
-            properties: new List<RestApiOperationPayloadProperty>(),
+            properties: [],
             description: "The landmarks.");
 
         var location = new RestApiOperationPayloadProperty(
             name: "location",
             type: "object",
             isRequired: true,
-            properties: new[] { landmarks },
+            properties: [landmarks],
             description: "The location.");
 
         var rulingCouncil = new RestApiOperationPayloadProperty(
             name: "rulingCouncil",
             type: "object",
             isRequired: true,
-            properties: new[] { leader },
+            properties: [leader],
             description: "The ruling council.");
 
         var population = new RestApiOperationPayloadProperty(
             name: "population",
             type: "integer",
             isRequired: true,
-            properties: new List<RestApiOperationPayloadProperty>(),
+            properties: [],
             description: "The population.");
 
         var hasMagicWards = new RestApiOperationPayloadProperty(
             name: "hasMagicWards",
             type: "boolean",
             isRequired: false,
-            properties: new List<RestApiOperationPayloadProperty>());
+            properties: []);
 
-        return new RestApiOperationPayload("application/json", new[] { name, location, rulingCouncil, population, hasMagicWards });
+        return new RestApiOperationPayload("application/json", [name, location, rulingCouncil, population, hasMagicWards]);
     }
 
     private static RestApiOperationPayload CreateTestTextPayload()
     {
-        return new RestApiOperationPayload("text/plain", new List<RestApiOperationPayloadProperty>());
+        return new RestApiOperationPayload("text/plain", []);
     }
 }

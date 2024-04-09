@@ -13,17 +13,12 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.
 /// </summary>
-public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixture>
+public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : IClassFixture<MongoDBMemoryStoreTestsFixture>
 {
     // If null, all tests will be enabled
     private const string? SkipReason = "MongoDB Atlas cluster is required";
 
-    private readonly MongoDBMemoryStoreTestsFixture _fixture;
-
-    public MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture)
-    {
-        this._fixture = fixture;
-    }
+    private readonly MongoDBMemoryStoreTestsFixture _fixture = fixture;
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -276,7 +271,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         var collectionName = GetRandomName();
         var memoryStore = this._fixture.MemoryStore;
         var testRecords = DataHelper.CreateBatchRecords(10);
-        var ids = testRecords.Select(t => t.Metadata.Id).Concat(new[] { "a", "b", "c" }).ToArray();
+        var ids = testRecords.Select(t => t.Metadata.Id).Concat(["a", "b", "c"]).ToArray();
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);

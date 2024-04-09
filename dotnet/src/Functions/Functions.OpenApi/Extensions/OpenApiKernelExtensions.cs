@@ -327,7 +327,7 @@ public static class OpenApiKernelExtensions
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
                 ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
-                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
+                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
             })
             .ToList();
 
@@ -374,7 +374,7 @@ public static class OpenApiKernelExtensions
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
+        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
 
         return result;
     }

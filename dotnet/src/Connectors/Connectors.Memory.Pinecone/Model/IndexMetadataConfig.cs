@@ -66,8 +66,8 @@ public class MetadataIndexConfig
     ///     </item>
     /// </list>
     /// </remarks>
-    public static MetadataIndexConfig Default => new(new List<string>(new List<string>
-    {
+    public static MetadataIndexConfig Default => new(new List<string>(
+    [
         "document_Id",
         "source",
         "source_Id",
@@ -75,5 +75,5 @@ public class MetadataIndexConfig
         "type",
         "tags",
         "created_at"
-    }));
+    ]));
 }

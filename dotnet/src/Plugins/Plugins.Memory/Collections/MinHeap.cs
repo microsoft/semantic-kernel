@@ -15,7 +15,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private const int DefaultCapacity = 7;
     private const int MinCapacity = 0;
 
-    private static readonly T[] s_emptyBuffer = Array.Empty<T>();
+    private static readonly T[] s_emptyBuffer = [];
 
     private T[] _items;
     private int _count;

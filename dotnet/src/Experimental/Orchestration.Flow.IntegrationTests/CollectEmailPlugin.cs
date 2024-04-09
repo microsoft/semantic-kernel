@@ -37,7 +37,7 @@ Do not expose the regex unless asked.
         this._chatRequestSettings = new OpenAIPromptExecutionSettings
         {
             MaxTokens = this.MaxTokens,
-            StopSequences = new List<string>() { "Observation:" },
+            StopSequences = ["Observation:"],
             Temperature = 0
         };
     }

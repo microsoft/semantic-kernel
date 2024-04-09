@@ -310,7 +310,7 @@ Goal: tell me a joke.
             {
                 var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
                 var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
-                list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
+                list.AppendLine($"""Parameter "{p.Name}": {AddPeriod(description)} {defaultValueString}""");
             }
         }
     }

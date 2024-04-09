@@ -34,7 +34,7 @@ internal class TextToImageResponse
     /// List of possible images
     /// </summary>
     [JsonPropertyName("data")]
-    public IList<Image> Images { get; set; } = new List<Image>();
+    public IList<Image> Images { get; set; } = [];
 
     /// <summary>
     /// Creation time

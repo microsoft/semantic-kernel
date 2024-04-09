@@ -61,11 +61,8 @@ public sealed class TaskListPlugin
         [Description("Reminder for the task in DateTimeOffset (optional)")] string? reminder = null,
         CancellationToken cancellationToken = default)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
-        if (defaultTaskList == null)
-        {
+        TaskManagementTaskList defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException("No default task list found.");
-        }
 
         TaskManagementTask task = new(
             id: Guid.NewGuid().ToString(),
@@ -86,11 +83,8 @@ public sealed class TaskListPlugin
         [Description("Whether to include completed tasks (optional)")] string includeCompleted = "false",
         CancellationToken cancellationToken = default)
     {
-        TaskManagementTaskList? defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false);
-        if (defaultTaskList == null)
-        {
+        TaskManagementTaskList defaultTaskList = await this._connector.GetDefaultTaskListAsync(cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException("No default task list found.");
-        }
 
         if (!bool.TryParse(includeCompleted, out bool includeCompletedValue))
         {

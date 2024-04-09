@@ -32,5 +32,5 @@ internal sealed class JsonSchemaFunctionView
     /// The function response.
     /// </summary>
     [JsonPropertyName("responses")]
-    public Dictionary<string, JsonSchemaFunctionResponse> FunctionResponses { get; set; } = new Dictionary<string, JsonSchemaFunctionResponse>();
+    public Dictionary<string, JsonSchemaFunctionResponse> FunctionResponses { get; set; } = [];
 }

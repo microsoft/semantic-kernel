@@ -231,7 +231,7 @@ public class StepwisePlanner
                     step.Action, JsonSerializer.Serialize(step.ActionVariables));
 
                 // add [thought and] action to chat history
-                var actionMessage = $"{Action} {{\"action\": \"{step.Action}\",\"action_variables\": {JsonSerializer.Serialize(step.ActionVariables)}}}";
+                var actionMessage = $$"""{{Action}} {"action": "{{step.Action}}","action_variables": {{JsonSerializer.Serialize(step.ActionVariables)}}}""";
                 var message = string.IsNullOrEmpty(step.Thought) ? actionMessage : $"{Thought} {step.Thought}\n{actionMessage}";
 
                 chatHistory.AddAssistantMessage(message);

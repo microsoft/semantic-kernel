@@ -35,7 +35,7 @@ public static class EnumerableExtensions
                     yield return chunk;
                 }
 
-                chunk = new List<TSource>() { current };
+                chunk = [current];
                 aggregate = aggregator(seed, current);
                 index = 1;
             }

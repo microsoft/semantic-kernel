@@ -33,6 +33,6 @@ public static class EmbeddingGenerationExtensions
         where TEmbedding : unmanaged
     {
         Verify.NotNull(generator);
-        return (await generator.GenerateEmbeddingsAsync(new[] { value }, kernel, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
+        return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
     }
 }

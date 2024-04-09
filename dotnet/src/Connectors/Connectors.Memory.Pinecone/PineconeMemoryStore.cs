@@ -114,7 +114,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         Task request = operationType switch
         {
-            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, new[] { vectorData }, indexNamespace, cancellationToken),
+            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, [vectorData], indexNamespace, cancellationToken),
             OperationType.Update => this._pineconeClient.UpdateAsync(indexName, vectorData, indexNamespace, cancellationToken),
             OperationType.Skip => Task.CompletedTask,
             _ => Task.CompletedTask
@@ -155,8 +155,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        List<PineconeDocument> upsertDocuments = new();
-        List<PineconeDocument> updateDocuments = new();
+        List<PineconeDocument> upsertDocuments = [];
+        List<PineconeDocument> updateDocuments = [];
 
         foreach (MemoryRecord? record in records)
         {
@@ -184,7 +184,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             }
         }
 
-        List<Task> tasks = new();
+        List<Task> tasks = [];
 
         if (upsertDocuments.Count > 0)
         {
@@ -199,7 +199,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             tasks.AddRange(updates);
         }
 
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+        PineconeDocument[] vectorData = [.. upsertDocuments, .. updateDocuments];
 
         try
         {
@@ -243,7 +243,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
                                indexName,
-                               new[] { key },
+                               [key],
                                indexNamespace,
                                withEmbedding,
                                cancellationToken).ConfigureAwait(false))
@@ -314,7 +314,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, new[] { documentId }, limit, indexNamespace, withEmbedding, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, [documentId], limit, indexNamespace, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             yield return record;
         }
@@ -397,10 +397,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         try
         {
-            await this._pineconeClient.DeleteAsync(indexName, new[]
-                {
+            await this._pineconeClient.DeleteAsync(indexName,
+                [
                     key
-                },
+                ],
                 indexNamespace,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
@@ -668,7 +668,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         PineconeDocument vectorData = record.ToPineconeDocument();
 
-        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false, cancellationToken)
+        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, [key], indexNamespace, false, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         if (existingRecord is null)

@@ -43,7 +43,7 @@ public class VarBlockTests
         var target = new VarBlock("$var");
 
         // Act
-        var result = target.Render(new KernelArguments());
+        var result = target.Render([]);
 
         // Assert
         Assert.Null(result);
