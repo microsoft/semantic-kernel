@@ -2,8 +2,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
