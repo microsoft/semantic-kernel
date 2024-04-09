@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Xunit;
 using Xunit.Abstractions;
@@ -42,6 +43,98 @@ public class Example76_Filters : BaseTest
         var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
         WriteLine(result);
+    }
+
+    [Fact]
+    public async Task FunctionFilterResultOverrideAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter overrides result with "Result from filter" value.
+        builder.Services.AddSingleton<IFunctionFilter, FunctionFilterExample>();
+
+        var kernel = builder.Build();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result from method");
+
+        var result = await kernel.InvokeAsync(function);
+
+        WriteLine(result);
+
+        // Output: Result from filter.
+    }
+
+    [Fact]
+    public async Task FunctionFilterResultOverrideOnStreamingAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter overrides streaming results with "item * 2" logic.
+        builder.Services.AddSingleton<IFunctionFilter, StreamingFunctionFilterExample>();
+
+        var kernel = builder.Build();
+
+        static async IAsyncEnumerable<int> GetData()
+        {
+            yield return 1;
+            yield return 2;
+            yield return 3;
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+        {
+            WriteLine(item);
+        }
+
+        // Output: 2, 4, 6.
+    }
+
+    [Fact]
+    public async Task FunctionFilterExceptionHandlingAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter handles an exception and returns overridden result.
+        builder.Services.AddSingleton<IFunctionFilter>(new ExceptionHandlingFilterExample(NullLogger.Instance));
+
+        var kernel = builder.Build();
+
+        // Simulation of exception during function invocation.
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception in function"); });
+
+        var result = await kernel.InvokeAsync(function);
+
+        WriteLine(result);
+
+        // Output: Friendly message instead of exception.
+    }
+
+    [Fact]
+    public async Task FunctionFilterExceptionHandlingOnStreamingAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        // This filter handles an exception and returns overridden streaming result.
+        builder.Services.AddSingleton<IFunctionFilter>(new StreamingExceptionHandlingFilterExample(NullLogger.Instance));
+
+        var kernel = builder.Build();
+
+        static async IAsyncEnumerable<string> GetData()
+        {
+            yield return "first chunk";
+            // Simulation of exception during function invocation.
+            throw new KernelException("Exception in function");
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
+        {
+            WriteLine(item);
+        }
+
+        // Output: first chunk, chunk instead of exception.
     }
 
     public Example76_Filters(ITestOutputHelper output) : base(output)
@@ -123,7 +216,7 @@ public class Example76_Filters : BaseTest
             var usage = context.Result.Metadata?["Usage"];
 
             // Example: override function result value
-            context.Result = new FunctionResult(context.Function, "new result value");
+            context.Result = new FunctionResult(context.Function, "Result from filter");
         }
     }
 
@@ -174,7 +267,57 @@ public class Example76_Filters : BaseTest
                 context.Result = new FunctionResult(context.Function, "Friendly message instead of exception");
 
                 // Example: Rethrow another type of exception if needed
-                throw new InvalidOperationException("New exception");
+                // throw new InvalidOperationException("New exception");
+            }
+        }
+    }
+
+    /// <summary>Shows syntax for exception handling in function filter in streaming scenario.</summary>
+    private sealed class StreamingExceptionHandlingFilterExample : IFunctionFilter
+    {
+        private readonly ILogger _logger;
+
+        public StreamingExceptionHandlingFilterExample(ILogger logger)
+        {
+            this._logger = logger;
+        }
+
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
+            context.Result = new FunctionResult(context.Function, StreamingWithExceptionHandlingAsync(enumerable!));
+        }
+
+        private async IAsyncEnumerable<string> StreamingWithExceptionHandlingAsync(IAsyncEnumerable<string> data)
+        {
+            var enumerator = data.GetAsyncEnumerator();
+
+            await using (enumerator.ConfigureAwait(false))
+            {
+                while (true)
+                {
+                    string result;
+
+                    try
+                    {
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                        {
+                            break;
+                        }
+
+                        result = enumerator.Current;
+                    }
+                    catch (Exception exception)
+                    {
+                        this._logger.LogError(exception, "Something went wrong during function invocation");
+
+                        result = "chunk instead of exception";
+                    }
+
+                    yield return result;
+                }
             }
         }
     }
