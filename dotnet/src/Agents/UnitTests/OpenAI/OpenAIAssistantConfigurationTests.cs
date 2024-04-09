@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
+using System;
+using System.Net.Http;
+using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
@@ -12,41 +14,49 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 public class OpenAIAssistantConfigurationTests
 {
     /// <summary>
-    /// Verify $$$
+    /// Verify initial state.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIAssistantAgentDefinition()
+    public void VerifyOpenAIAssistantConfigurationInitialState()
     {
-        //OpenAIAssistantAgent agent =
-        //    new(CreateEmptyKernel(), description: "test description", name: "test name")
-        //    {
-        //        Instructions = "test instructions",
-        //    };
+        OpenAIAssistantConfiguration config = new(apiKey: "testkey");
 
-        //Assert.NotNull(agent.Id);
-        //Assert.Equal("test instructions", agent.Instructions);
-        //Assert.Equal("test description", agent.Description);
-        //Assert.Equal("test name", agent.Name);
+        Assert.Equal("testkey", config.ApiKey);
+        Assert.Null(config.Endpoint);
+        Assert.Null(config.HttpClient);
+        Assert.Null(config.Version);
     }
 
     /// <summary>
-    /// Verify $$$
+    /// Verify assignment.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvocationAsync()
+    public void VerifyOpenAIAssistantConfigurationAssignment()
     {
-        await Task.Yield();
-        //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
+        using HttpClient client = new();
 
-        //var result = await agent.InvokeAsync().ToArrayAsync();
+        OpenAIAssistantConfiguration config =
+            new(apiKey: "testkey", endpoint: "https://localhost")
+            {
+                HttpClient = client,
+                Version = AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview,
+            };
 
-        //mockService.Verify(
-        //    x =>
-        //        x.GetChatMessageContentsAsync(
-        //            It.IsAny<ChatHistory>(),
-        //            It.IsAny<PromptExecutionSettings>(),
-        //            It.IsAny<Kernel>(),
-        //            It.IsAny<CancellationToken>()),
-        //    Times.Once);
+        Assert.Equal("testkey", config.ApiKey);
+        Assert.Equal("https://localhost", config.Endpoint);
+        Assert.NotNull(config.HttpClient);
+        Assert.Equal(AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview, config.Version);
+    }
+
+    /// <summary>
+    /// Verify secure endpoint.
+    /// </summary>
+    [Fact]
+    public void VerifyOpenAIAssistantConfigurationThrows()
+    {
+        using HttpClient client = new();
+
+        Assert.Throws<ArgumentException>(
+            () => new OpenAIAssistantConfiguration(apiKey: "testkey", endpoint: "http://localhost"));
     }
 }

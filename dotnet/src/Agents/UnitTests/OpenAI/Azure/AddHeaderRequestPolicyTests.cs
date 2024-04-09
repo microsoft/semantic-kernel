@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using System.Linq;
+using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel.Agents.OpenAI.Azure;
 using Xunit;
 
@@ -13,46 +13,22 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Azure;
 public class AddHeaderRequestPolicyTests
 {
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify behavior of <see cref="AddHeaderRequestPolicy"/>.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIAssistantAgentDefinition()
+    public void VerifyAddHeaderRequestPolicyExecution()
     {
-        //OpenAIAssistantAgent agent =
-        //    new(CreateEmptyKernel(), description: "test description", name: "test name")
-        //    {
-        //        Instructions = "test instructions",
-        //    };
+        using HttpClientTransport clientTransport = new();
+        HttpPipeline pipeline = new(clientTransport);
 
-        //Assert.NotNull(agent.Id);
-        //Assert.Equal("test instructions", agent.Instructions);
-        //Assert.Equal("test description", agent.Description);
-        //Assert.Equal("test name", agent.Name);
-    }
+        HttpMessage message = pipeline.CreateMessage();
 
-    /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvocationAsync()
-    {
-        await Task.Yield();
-        //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
+        AddHeaderRequestPolicy policy = new(headerName: "testname", headerValue: "testvalue");
+        policy.OnSendingRequest(message);
 
-        //var result = await agent.InvokeAsync().ToArrayAsync();
-
-        //mockService.Verify(
-        //    x =>
-        //        x.GetChatMessageContentsAsync(
-        //            It.IsAny<ChatHistory>(),
-        //            It.IsAny<PromptExecutionSettings>(),
-        //            It.IsAny<Kernel>(),
-        //            It.IsAny<CancellationToken>()),
-        //    Times.Once);
-    }
-
-    private static Kernel CreateEmptyKernel()
-    {
-        return Kernel.CreateBuilder().Build();
+        Assert.Single(message.Request.Headers);
+        HttpHeader header = message.Request.Headers.Single();
+        Assert.Equal("testname", header.Name);
+        Assert.Equal("testvalue", header.Value);
     }
 }

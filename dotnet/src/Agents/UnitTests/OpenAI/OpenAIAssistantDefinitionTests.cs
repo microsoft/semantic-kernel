@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
@@ -11,41 +11,52 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 public class OpenAIAssistantDefinitionTests
 {
     /// <summary>
-    /// $$$
+    /// Verify initial state.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIAssistantAgentDefinition()
+    public void VerifyOpenAIAssistantDefinitionInitialState()
     {
-        //OpenAIAssistantAgent agent =
-        //    new(CreateEmptyKernel(), description: "test description", name: "test name")
-        //    {
-        //        Instructions = "test instructions",
-        //    };
+        OpenAIAssistantDefinition definition = new();
 
-        //Assert.NotNull(agent.Id);
-        //Assert.Equal("test instructions", agent.Instructions);
-        //Assert.Equal("test description", agent.Description);
-        //Assert.Equal("test name", agent.Name);
+        Assert.Null(definition.Id);
+        Assert.Null(definition.Name);
+        Assert.Null(definition.Model);
+        Assert.Null(definition.Instructions);
+        Assert.Null(definition.Description);
+        Assert.Null(definition.Metadata);
+        Assert.Null(definition.FileIds);
+        Assert.False(definition.EnableCodeInterpreter);
+        Assert.False(definition.EnableRetrieval);
     }
 
     /// <summary>
-    /// $$$
+    /// Verify initialization.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvocationAsync()
+    public void VerifyOpenAIAssistantDefinitionAssignment()
     {
-        await Task.Yield();
-        //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Id = "testid",
+                Name = "testname",
+                Model = "testmodel",
+                Instructions = "testinstructions",
+                Description = "testdescription",
+                FileIds = new[] { "id" },
+                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+                EnableCodeInterpreter = true,
+                EnableRetrieval = true,
+            };
 
-        //var result = await agent.InvokeAsync().ToArrayAsync();
-
-        //mockService.Verify(
-        //    x =>
-        //        x.GetChatMessageContentsAsync(
-        //            It.IsAny<ChatHistory>(),
-        //            It.IsAny<PromptExecutionSettings>(),
-        //            It.IsAny<Kernel>(),
-        //            It.IsAny<CancellationToken>()),
-        //    Times.Once);
+        Assert.Equal("testid", definition.Id);
+        Assert.Equal("testname", definition.Name);
+        Assert.Equal("testmodel", definition.Model);
+        Assert.Equal("testinstructions", definition.Instructions);
+        Assert.Equal("testdescription", definition.Description);
+        Assert.Single(definition.Metadata);
+        Assert.Single(definition.FileIds);
+        Assert.True(definition.EnableCodeInterpreter);
+        Assert.True(definition.EnableRetrieval);
     }
 }
