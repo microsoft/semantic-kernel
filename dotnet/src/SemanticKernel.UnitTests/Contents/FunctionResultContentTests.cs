@@ -7,11 +7,11 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Contents;
 public class FunctionResultContentTests
 {
-    private readonly FunctionCallContent _callContent;
+    private readonly FunctionCallRequestContent _callContent;
 
     public FunctionResultContentTests()
     {
-        this._callContent = new FunctionCallContent("f1", "p1", "id", []);
+        this._callContent = new FunctionCallRequestContent("f1", "p1", "id", []);
     }
 
     [Fact]

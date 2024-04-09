@@ -51,11 +51,11 @@ public sealed class FunctionResultContent : KernelContent
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
     /// </summary>
     /// <param name="functionCall">The function call.</param>
     /// <param name="result">The function result.</param>
-    public FunctionResultContent(FunctionCallContent functionCall, object? result = null)
+    public FunctionResultContent(FunctionCallRequestContent functionCall, object? result = null)
     {
         this.Id = functionCall.Id;
         this.PluginName = functionCall.PluginName;
@@ -64,11 +64,11 @@ public sealed class FunctionResultContent : KernelContent
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
     /// </summary>
     /// <param name="functionCallContent">The function call content.</param>
     /// <param name="result">The function result.</param>
-    public FunctionResultContent(FunctionCallContent functionCallContent, FunctionResult result) :
+    public FunctionResultContent(FunctionCallRequestContent functionCallContent, FunctionResult result) :
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;

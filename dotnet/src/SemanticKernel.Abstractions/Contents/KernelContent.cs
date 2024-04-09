@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore SKEXP0010
 #pragma warning disable SKEXP0001
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
-[JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
+[JsonDerivedType(typeof(FunctionCallRequestContent), typeDiscriminator: nameof(FunctionCallRequestContent))]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
 #pragma warning restore SKEXP0001
 public abstract class KernelContent

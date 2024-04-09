@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents a function call requested by LLM.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class FunctionCallContent : KernelContent
+public sealed class FunctionCallRequestContent : KernelContent
 {
     /// <summary>
     /// The function call ID.
@@ -35,14 +35,14 @@ public sealed class FunctionCallContent : KernelContent
     public KernelArguments? Arguments { get; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
     /// </summary>
     /// <param name="functionName">The function name.</param>
     /// <param name="pluginName">The plugin name.</param>
     /// <param name="id">The function call ID.</param>
     /// <param name="arguments">The function original arguments.</param>
     [JsonConstructor]
-    public FunctionCallContent(string functionName, string? pluginName = null, string? id = null, KernelArguments? arguments = null)
+    public FunctionCallRequestContent(string functionName, string? pluginName = null, string? id = null, KernelArguments? arguments = null)
     {
         Verify.NotNull(functionName);
 

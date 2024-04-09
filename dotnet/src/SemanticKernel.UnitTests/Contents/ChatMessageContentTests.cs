@@ -190,9 +190,9 @@ public class ChatMessageContentTests
         })
         { MimeType = "mime-type-6" });
 
-        items.Add(new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
+        items.Add(new FunctionCallRequestContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
 
-        items.Add(new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"));
+        items.Add(new FunctionResultContent(new FunctionCallRequestContent("function-name", "plugin-name", "function-id"), "function-result"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
@@ -274,7 +274,7 @@ public class ChatMessageContentTests
         Assert.Single(textContent.Metadata);
         Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
 
-        var functionCallContent = deserializedMessage.Items[6] as FunctionCallContent;
+        var functionCallContent = deserializedMessage.Items[6] as FunctionCallRequestContent;
         Assert.NotNull(functionCallContent);
         Assert.Equal("function-name", functionCallContent.FunctionName);
         Assert.Equal("plugin-name", functionCallContent.PluginName);

@@ -5,11 +5,11 @@ using Xunit;
 
 namespace Microsoft.SemanticKernel.Contents;
 
-public class FunctionCallContentTests
+public class FunctionCallRequestContentTests
 {
     private readonly KernelArguments _arguments;
 
-    public FunctionCallContentTests()
+    public FunctionCallRequestContentTests()
     {
         this._arguments = [];
     }
@@ -18,7 +18,7 @@ public class FunctionCallContentTests
     public void ItShouldBeInitializedFromFunctionAndPluginName()
     {
         // Arrange & act
-        var sut = new FunctionCallContent("f1", "p1", "id", this._arguments);
+        var sut = new FunctionCallRequestContent("f1", "p1", "id", this._arguments);
 
         // Assert
         Assert.Equal("f1", sut.FunctionName);
@@ -43,7 +43,7 @@ public class FunctionCallContentTests
 
         kernel.Plugins.AddFromFunctions("p1", [function]);
 
-        var sut = new FunctionCallContent("f1", "p1", "id", this._arguments);
+        var sut = new FunctionCallRequestContent("f1", "p1", "id", this._arguments);
 
         // Act
         var resultContent = await sut.InvokeAsync(kernel);

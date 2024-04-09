@@ -1072,18 +1072,18 @@ internal abstract class ClientCore
             }
 
             // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
-            var functionCallContents = message.Items.OfType<FunctionCallContent>().ToArray();
-            if (functionCallContents.Length != 0)
+            var functionCallRequests = message.Items.OfType<FunctionCallRequestContent>().ToArray();
+            if (functionCallRequests.Length != 0)
             {
                 var ftcs = new List<ChatCompletionsToolCall>(tools ?? Enumerable.Empty<ChatCompletionsToolCall>());
 
-                foreach (var fcContent in functionCallContents)
+                foreach (var fcRequest in functionCallRequests)
                 {
-                    if (!ftcs.Any(ftc => ftc.Id == fcContent.Id))
+                    if (!ftcs.Any(ftc => ftc.Id == fcRequest.Id))
                     {
-                        var argument = JsonSerializer.Serialize(fcContent.Arguments);
+                        var argument = JsonSerializer.Serialize(fcRequest.Arguments);
 
-                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcContent.Id, FunctionName.ToFullyQualifiedName(fcContent.FunctionName, fcContent.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcRequest.Id, FunctionName.ToFullyQualifiedName(fcRequest.FunctionName, fcRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
                     }
                 }
 
@@ -1155,15 +1155,16 @@ internal abstract class ClientCore
                     // The original arguments and function tool call will be available via the 'InnerContent' property for the connector caller to access.
                 }
 
-                var fqn = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
-                var content = new FunctionCallContent(
-                    functionName: fqn.Name,
-                    pluginName: fqn.PluginName,
+                var functionName = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
+
+                var functionCallRequestContent = new FunctionCallRequestContent(
+                    functionName: functionName.Name,
+                    pluginName: functionName.PluginName,
                     id: functionToolCall.Id,
                     arguments: arguments);
-                content.InnerContent = functionToolCall;
+                functionCallRequestContent.InnerContent = functionToolCall;
 
-                message.Items.Add(content);
+                message.Items.Add(functionCallRequestContent);
             }
         }
 

@@ -248,7 +248,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -265,7 +265,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Sending the functions invocation results to the LLM to get the final response
             messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
         }
 
         // Assert
@@ -288,7 +288,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -306,7 +306,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Sending the functions execution results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
         }
 
         // Assert
@@ -332,7 +332,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
 
         while (functionCalls.Length > 0)
         {
@@ -348,7 +348,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             }
 
             // Adding a simulated function call to the connector response message
-            var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+            var simulatedFunctionCall = new FunctionCallRequestContent("weather-alert", id: "call_123");
             messageContent.Items.Add(simulatedFunctionCall);
 
             // Adding a simulated function result to chat history
@@ -357,7 +357,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Sending the functions invocation results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallContent>().ToArray();
+            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
         }
 
         // Assert
