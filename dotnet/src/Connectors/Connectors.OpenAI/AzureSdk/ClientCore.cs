@@ -999,24 +999,29 @@ internal abstract class ClientCore
 
             // Handling function call results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            var resultContents = message.Items.OfType<FunctionCallResultContent>().ToArray();
-            if (resultContents.Length != 0)
+            List<ChatRequestToolMessage>? toolMessages = null;
+            foreach (var item in message.Items)
             {
-                var toolMessages = new List<ChatRequestToolMessage>();
-
-                foreach (var resultContent in resultContents)
+                if (item is not FunctionCallResultContent resultContent)
                 {
-                    if (resultContent.Result is Exception ex)
-                    {
-                        toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
-                        continue;
-                    }
-
-                    var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
-
-                    toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                    continue;
                 }
 
+                toolMessages ??= new();
+
+                if (resultContent.Result is Exception ex)
+                {
+                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    continue;
+                }
+
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+
+                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+            }
+
+            if (toolMessages is not null)
+            {
                 return toolMessages;
             }
 

@@ -388,6 +388,69 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Contains("'tool_calls' must be followed by tool", exception.Message, StringComparison.InvariantCulture);
     }
 
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal(5, chatHistory.Count);
+
+        var userMessage = chatHistory[0];
+        Assert.Equal(AuthorRole.User, userMessage.Role);
+
+        // LLM requested the current time.
+        var getCurrentTimeFunctionCallRequestMessage = chatHistory[1];
+        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallRequestMessage.Role);
+
+        var getCurrentTimeFunctionCallRequest = getCurrentTimeFunctionCallRequestMessage.Items.OfType<FunctionCallRequestContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallRequest.PluginName);
+        Assert.NotNull(getCurrentTimeFunctionCallRequest.Id);
+
+        // Connector invoked the GetCurrentUtcTime function and added result to chat history.
+        var getCurrentTimeFunctionCallResultMessage = chatHistory[2];
+        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionCallResultMessage.Role);
+        Assert.Single(getCurrentTimeFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionCallResultContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
+        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.Id);
+        Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
+
+        // LLM requested the weather for Boston.
+        var getWeatherForCityFunctionCallRequestMessage = chatHistory[3];
+        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallRequestMessage.Role);
+
+        var getWeatherForCityFunctionCallRequest = getWeatherForCityFunctionCallRequestMessage.Items.OfType<FunctionCallRequestContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallRequest.PluginName);
+        Assert.NotNull(getWeatherForCityFunctionCallRequest.Id);
+
+        // Connector invoked the Get_Weather_For_City function and added result to chat history.
+        var getWeatherForCityFunctionCallResultMessage = chatHistory[4];
+        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionCallResultMessage.Role);
+        Assert.Single(getWeatherForCityFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionCallResultContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
+        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.Id);
+        Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
+    }
+
     private Kernel InitializeKernel(bool importHelperPlugin = false)
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
