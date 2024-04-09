@@ -169,7 +169,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         var relevantFunctions = new List<KernelFunctionMetadata>();
-        await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
+        await foreach (var memoryEntry in memories.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
