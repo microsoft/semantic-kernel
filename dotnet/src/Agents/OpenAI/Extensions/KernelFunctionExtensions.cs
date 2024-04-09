@@ -13,9 +13,9 @@ internal static class KernelFunctionExtensions
     /// </summary>
     /// <param name="function">The source function</param>
     /// <param name="pluginName">The plugin name</param>
-    /// <param name="delimeter">The delimeter character</param>
+    /// <param name="delimiter">The delimiter character</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimeter)
+    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimiter)
     {
         var metadata = function.Metadata;
         if (metadata.Parameters.Count > 0)
@@ -47,10 +47,10 @@ internal static class KernelFunctionExtensions
                     required,
                 };
 
-            return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimeter), function.Description, BinaryData.FromObjectAsJson(spec));
+            return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimiter), function.Description, BinaryData.FromObjectAsJson(spec));
         }
 
-        return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimeter), function.Description);
+        return new FunctionToolDefinition(function.GetQualifiedName(pluginName, delimiter), function.Description);
     }
 
     private static string ConvertType(Type? type)
@@ -96,8 +96,8 @@ internal static class KernelFunctionExtensions
     /// <summary>
     /// Produce a fully qualified toolname.
     /// </summary>
-    public static string GetQualifiedName(this KernelFunction function, string pluginName, char delimeter)
+    public static string GetQualifiedName(this KernelFunction function, string pluginName, char delimiter)
     {
-        return $"{pluginName}{delimeter}{function.Name}";
+        return $"{pluginName}{delimiter}{function.Name}";
     }
 }

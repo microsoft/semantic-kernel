@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed partial class OpenAIAssistantAgent : KernelAgent
 {
-    private const char FunctionDelimeter = '-';
+    private const char Functiondelimiter = '-';
 
     /// <summary>
     /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
@@ -82,7 +82,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
             if (!this._agentTools.TryGetValue(agent.Id, out var tools))
             {
-                tools = agent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimeter)))).ToArray();
+                tools = agent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, Functiondelimiter)))).ToArray();
                 this._agentTools.Add(agent.Id, tools);
             }
 
@@ -235,7 +235,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                 async Task<object> InvokeFunctionCallAsync()
                 {
-                    var function = agent.Kernel.GetAssistantTool(functionDetails.Name, FunctionDelimeter);
+                    var function = agent.Kernel.GetAssistantTool(functionDetails.Name, Functiondelimiter);
 
                     var functionArguments = new KernelArguments();
                     if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
