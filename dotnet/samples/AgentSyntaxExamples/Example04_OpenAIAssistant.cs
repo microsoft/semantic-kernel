@@ -10,9 +10,13 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
+/// <remarks>
+/// This example demonstrates that outside of initialization (and cleanup), using
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// </remarks>
 public class Example04_OpenAIAssistant : BaseTest
 {
     private const string ParrotName = "Parrot";

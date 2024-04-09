@@ -11,9 +11,13 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> with a <see cref="KernelPlugin"/>,
+/// and then eliciting its response to explicit user messages.
 /// </summary>
+/// <remarks>
+/// This example demonstrates that outside of initialization (and cleanup), plugin
+/// usage for <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// </remarks>
 public class Example05_OpenAIAssistant_Plugins : BaseTest
 {
     private const string HostName = "Host";

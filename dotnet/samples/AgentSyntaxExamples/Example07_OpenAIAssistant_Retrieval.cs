@@ -10,8 +10,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
 public class Example07_OpenAIAssistant_Retrieval : BaseTest
 {
@@ -30,6 +29,7 @@ public class Example07_OpenAIAssistant_Retrieval : BaseTest
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
+                    EnableRetrieval = true, // Enable retrieval
                     Model = this.GetModel(),
                 });
 

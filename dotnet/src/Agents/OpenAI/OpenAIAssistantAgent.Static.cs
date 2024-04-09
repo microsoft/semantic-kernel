@@ -52,8 +52,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 Kernel = kernel,
             };
 
-// Local function to define assistant creation options
-static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
+        // Local function to define assistant creation options
+        static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
         {
             AssistantCreationOptions assistantCreationOptions =
                 new(definition.Model)

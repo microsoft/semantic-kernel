@@ -10,8 +10,8 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
+/// produce image content displays the requested charts.
 /// </summary>
 public class Example08_OpenAIAssistant_ChartMaker : BaseTest
 {
@@ -28,10 +28,10 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    Model = this.GetModel(),
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
+                    Model = this.GetModel(),
                 });
 
         // Create a chat for agent interaction.
