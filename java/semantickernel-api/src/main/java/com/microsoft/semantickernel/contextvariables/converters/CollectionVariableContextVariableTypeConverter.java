@@ -41,12 +41,15 @@ public class CollectionVariableContextVariableTypeConverter extends
         this(",");
     }
 
+    @SuppressWarnings("NullAway")
     public static ToPromptStringFunction<Collection> getString(String delimiter) {
         return (types, collection) -> {
-            return (String) collection
+            String formatted = (String) collection
                 .stream()
                 .map(t -> getString(types, t))
                 .collect(Collectors.joining(delimiter));
+
+            return escapeXmlString(formatted);
         };
     }
 

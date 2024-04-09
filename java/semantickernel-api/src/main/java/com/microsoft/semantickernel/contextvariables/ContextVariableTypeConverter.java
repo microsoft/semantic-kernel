@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables;
 
+import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class ContextVariableTypeConverter<T> {
         ContextVariableTypeConverter.class);
 
     public interface ToPromptStringFunction<T> {
+
         String toPromptString(ContextVariableTypes types, T t);
     }
 
@@ -388,5 +390,13 @@ public class ContextVariableTypeConverter<T> {
                 toPromptString,
                 fromPromptString);
         }
+    }
+
+    @Nullable
+    public static String escapeXmlString(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+        return StringEscapeUtils.escapeXml11(value);
     }
 }

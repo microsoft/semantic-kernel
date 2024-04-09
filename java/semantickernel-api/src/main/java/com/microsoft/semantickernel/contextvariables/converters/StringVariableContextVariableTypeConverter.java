@@ -23,7 +23,7 @@ public class StringVariableContextVariableTypeConverter extends
         super(
             String.class,
             s -> convert(s, String.class),
-            Object::toString,
+            ContextVariableTypeConverter::escapeXmlString,
             s -> s);
     }
 }

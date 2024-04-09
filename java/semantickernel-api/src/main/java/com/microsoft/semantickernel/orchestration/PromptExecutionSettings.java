@@ -50,7 +50,7 @@ public class PromptExecutionSettings {
 
     /**
      * The default for {@link #getFrequencyPenalty()} if
-     * {@link Builder#withMaxTokens(doulbe) frequency_penalty} is not provided. Defaults to
+     * {@link Builder#withFrequencyPenalty(double)} frequency_penalty} is not provided. Defaults to
      * {@code 0.0}
      */
     public static final double DEFAULT_FREQUENCY_PENALTY = 0.0;
@@ -97,6 +97,7 @@ public class PromptExecutionSettings {
     private final String user;
     private final List<String> stopSequences;
     private final Map<Integer, Integer> tokenSelectionBiases;
+    @Nullable
     private final ResponseFormat responseFormat;
 
     /**
@@ -114,8 +115,7 @@ public class PromptExecutionSettings {
      * @param user                 The user to associate with the prompt execution.
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
-     * @param responseFormat       The response format to use for prompt execution @{link
-     *                             ResponseFormat}.
+     * @param responseFormat       The response format to use for prompt execution {@link ResponseFormat}.
      */
     @JsonCreator
     public PromptExecutionSettings(
