@@ -14,8 +14,8 @@ namespace Examples;
 /// </summary>
 public class Example08_OpenAIAssistant_ChartMaker : BaseTest
 {
-    private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+    private const string AgentName = "ChartMaker";
+    private const string AgentInstructions = "Create charts as requested without explanation.";
 
     [Fact]
     public async Task RunAsync()
@@ -27,9 +27,10 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
                     Model = this.GetModel(),
+                    Instructions = AgentInstructions,
+                    Name = AgentName,
+                    EnableCodeInterpreter = true,
                 });
 
         // Create a chat for agent interaction.
@@ -38,9 +39,17 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync("Fortune favors the bold.");
-            await WriteAgentResponseAsync("I came, I saw, I conquered.");
-            await WriteAgentResponseAsync("Practice makes perfect.");
+            await WriteAgentResponseAsync(@"
+                Display this data using a bar-chart:
+
+                Banding  Brown Pink Yellow  Sum
+                X00000   339   433     126  898
+                X00300    48   421     222  691
+                X12345    16   395     352  763
+                Others    23   373     156  552
+                Sum      426  1622     856 2904");
+
+            await WriteAgentResponseAsync("Can you regenerate this same chart using the category names as the bar colors?");
         }
         finally
         {

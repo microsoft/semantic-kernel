@@ -167,9 +167,21 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                             if (itemContent is MessageTextContent contentMessage)
                             {
                                 var textContent = contentMessage.Text.Trim();
+
                                 if (!string.IsNullOrWhiteSpace(textContent))
                                 {
-                                    yield return new ChatMessageContent(role, textContent) { AuthorName = agent.Name };
+                                    ChatMessageContent messageContent =
+                                        new(role, textContent)
+                                        {
+                                            AuthorName = agent.Name
+                                        };
+
+                                    foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
+                                    {
+                                        messageContent.Items.Add(new AnnotationContent(annotation));
+                                    }
+
+                                    yield return messageContent;
                                 }
                             }
 

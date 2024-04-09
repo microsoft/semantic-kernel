@@ -16,8 +16,8 @@ namespace Examples;
 /// </summary>
 public class Example05_OpenAIAssistant_Plugins : BaseTest
 {
-    private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+    private const string HostName = "Host";
+    private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
     public async Task RunAsync()
@@ -29,8 +29,8 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
+                    Instructions = HostInstructions,
+                    Name = HostName,
                     Model = this.GetModel(),
                 });
 

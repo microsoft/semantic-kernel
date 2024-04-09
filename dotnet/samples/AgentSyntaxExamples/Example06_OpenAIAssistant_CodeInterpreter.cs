@@ -14,9 +14,6 @@ namespace Examples;
 /// </summary>
 public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
 {
-    private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
-
     [Fact]
     public async Task RunAsync()
     {
@@ -27,9 +24,8 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
                     Model = this.GetModel(),
+                    EnableCodeInterpreter = true,
                 });
 
         // Create a chat for agent interaction.
@@ -38,9 +34,8 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync("Fortune favors the bold.");
-            await WriteAgentResponseAsync("I came, I saw, I conquered.");
-            await WriteAgentResponseAsync("Practice makes perfect.");
+            await WriteAgentResponseAsync("What is the solution to `3x + 2 = 14`?");
+            await WriteAgentResponseAsync("What is the fibinacci sequence until 101?");
         }
         finally
         {
