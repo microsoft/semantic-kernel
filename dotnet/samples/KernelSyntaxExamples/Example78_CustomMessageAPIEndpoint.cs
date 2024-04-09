@@ -7,11 +7,11 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-
 namespace Examples;
 
 /// <summary>
+/// This example shows a way of using OpenAI connector with other APIs that supports the same ChatCompletion Message API standard from OpenAI.
+///
 /// To proceed with this example will be necessary to follow those steps:
 /// 1. Install LMStudio Platform in your environment
 /// 2. Open LM Studio
@@ -20,13 +20,13 @@ namespace Examples;
 /// 5. Run the examples.
 /// 6. Start the Ollama Message API Server on http://localhost:11434 using docker
 /// 7. docker run -d --gpus=all -v "d:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
-/// 8. Trigger Llama2 installation: docker exec -it ollama ollama run llama2
+/// 8. Set Llama2 as the current ollama model: docker exec -it ollama ollama run llama2
 /// </summary>
-public class Example78_LocalModelsCustomMessageAPIEndpoint : BaseTest
+public class Example78_CustomMessageAPIEndpoint : BaseTest
 {
     [Theory]//(Skip = "Manual configuration needed")] //(Skip = "Manual configuration needed")]
-    [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI.
-    [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Rest API Server on http://localhost:11434 using docker
+    [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
+    [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
     public async Task LocalModel_ExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
         WriteLine($"Example using local {messageAPIPlatform}");
@@ -83,7 +83,7 @@ public class Example78_LocalModelsCustomMessageAPIEndpoint : BaseTest
         };
     }
 
-    public Example78_LocalModelsCustomMessageAPIEndpoint(ITestOutputHelper output) : base(output)
+    public Example78_CustomMessageAPIEndpoint(ITestOutputHelper output) : base(output)
     {
     }
 }
