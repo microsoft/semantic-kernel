@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -215,11 +214,9 @@ public class AgentGroupChatTests
 
     private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
     {
-        Mock<ChatHistoryKernelAgent> agent = new(Kernel.CreateBuilder().Build());
+        Mock<ChatHistoryKernelAgent> agent = new();
 
-        string id = Guid.NewGuid().ToString();
         ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
-        agent.SetupGet(a => a.Id).Returns(id);
         agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;

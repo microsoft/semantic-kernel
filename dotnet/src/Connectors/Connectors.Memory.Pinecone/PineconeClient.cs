@@ -166,7 +166,7 @@ public sealed class PineconeClient : IPineconeClient
             includeValues,
             includeMetadata, cancellationToken);
 
-        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken))
+        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             if (match == null)
             {
@@ -209,7 +209,7 @@ public sealed class PineconeClient : IPineconeClient
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
         IAsyncEnumerable<PineconeDocument> validVectors = PineconeUtils.EnsureValidMetadataAsync(vectors.ToAsyncEnumerable());
 
-        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
+        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             totalBatches++;
 

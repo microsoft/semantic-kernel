@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,17 +20,20 @@ public abstract class Agent
     /// <summary>
     /// The description of the agent (optional)
     /// </summary>
-    public abstract string? Description { get; }
+    public string? Description { get; init; }
 
     /// <summary>
-    /// The identifier of the agent (optional)
+    /// The identifier of the agent (optional).
     /// </summary>
-    public abstract string Id { get; }
+    /// <reamarks>
+    /// Default to a random guid value, but may be overridden.
+    /// </reamarks>
+    public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The name of the agent (optional)
     /// </summary>
-    public abstract string? Name { get; }
+    public string? Name { get; init; }
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:

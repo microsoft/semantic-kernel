@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -24,25 +22,26 @@ public class Example01_Agent : BaseTest
     {
         // Define the agent
         ChatCompletionAgent agent =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: ParrotName)
+            new()
             {
+                Name = ParrotName,
                 Instructions = ParrotInstructions,
+                Kernel = this.CreateKernelWithChatCompletion(),
             };
 
         // Create a chat for agent interaction. For more, see: Example03_Chat.
-        var chat = new TestChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
-        await WriteAgentResponseAsync("Fortune favors the bold.");
-        await WriteAgentResponseAsync("I came, I saw, I conquered.");
-        await WriteAgentResponseAsync("Practice makes perfect.");
+        await InvokeAgentAsync("Fortune favors the bold.");
+        await InvokeAgentAsync("I came, I saw, I conquered.");
+        await InvokeAgentAsync("Practice makes perfect.");
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
@@ -55,18 +54,4 @@ public class Example01_Agent : BaseTest
     public Example01_Agent(ITestOutputHelper output)
         : base(output)
     { }
-
-    /// <summary>
-    /// A simple chat for the agent example.
-    /// </summary>
-    /// <remarks>
-    /// For further exploration of <see cref="AgentChat"/>, see: Example03_Chat.
-    /// </remarks>
-    private sealed class TestChat : AgentChat
-    {
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            Agent agent,
-            CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, cancellationToken);
-    }
 }
