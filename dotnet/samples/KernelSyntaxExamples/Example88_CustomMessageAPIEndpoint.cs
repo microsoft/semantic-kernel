@@ -22,7 +22,7 @@ namespace Examples;
 /// 7. docker run -d --gpus=all -v "d:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
 /// 8. Set Llama2 as the current ollama model: docker exec -it ollama ollama run llama2
 /// </summary>
-public class Example78_CustomMessageAPIEndpoint : BaseTest
+public class Example88_CustomMessageAPIEndpoint : BaseTest
 {
     [Theory]//(Skip = "Manual configuration needed")] //(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
@@ -83,7 +83,7 @@ public class Example78_CustomMessageAPIEndpoint : BaseTest
         };
     }
 
-    public Example78_CustomMessageAPIEndpoint(ITestOutputHelper output) : base(output)
+    public Example88_CustomMessageAPIEndpoint(ITestOutputHelper output) : base(output)
     {
     }
 }
