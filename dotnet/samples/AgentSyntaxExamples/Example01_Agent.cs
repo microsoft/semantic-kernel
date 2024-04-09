@@ -35,12 +35,12 @@ public class Example01_Agent : BaseTest
         var chat = new TestChat();
 
         // Respond to user input
-        await WriteAgentResponseAsync("Fortune favors the bold.");
-        await WriteAgentResponseAsync("I came, I saw, I conquered.");
-        await WriteAgentResponseAsync("Practice makes perfect.");
+        await InvokeAgentAsync("Fortune favors the bold.");
+        await InvokeAgentAsync("I came, I saw, I conquered.");
+        await InvokeAgentAsync("Practice makes perfect.");
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
             chat.AddUserMessage(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");

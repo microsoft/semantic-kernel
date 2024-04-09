@@ -42,13 +42,13 @@ public class Example02_Plugins : BaseTest
         var chat = new TestChat();
 
         // Respond to user input, invoking functions where appropriate.
-        await WriteAgentResponseAsync("Hello");
-        await WriteAgentResponseAsync("What is the special soup?");
-        await WriteAgentResponseAsync("What is the special drink?");
-        await WriteAgentResponseAsync("Thank you");
+        await InvokeAgentAsync("Hello");
+        await InvokeAgentAsync("What is the special soup?");
+        await InvokeAgentAsync("What is the special drink?");
+        await InvokeAgentAsync("Thank you");
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
             chat.AddUserMessage(input);
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
@@ -59,7 +59,7 @@ public class Example02_Plugins : BaseTest
             }
         }
     }
-
+        
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
     { }
