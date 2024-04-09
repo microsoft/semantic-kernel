@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -15,6 +16,11 @@ namespace Examples;
 /// </summary>
 public class Example08_OpenAIAssistant_ChartMaker : BaseTest
 {
+    /// <summary>
+    /// $$$
+    /// </summary>
+    protected override bool ForceOpenAI => true;
+
     private const string AgentName = "ChartMaker";
     private const string AgentInstructions = "Create charts as requested without explanation.";
 
@@ -40,7 +46,8 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(@"
+            await InvokeAgentAsync(
+                """
                 Display this data using a bar-chart:
 
                 Banding  Brown Pink Yellow  Sum
@@ -48,7 +55,8 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
                 X00300    48   421     222  691
                 X12345    16   395     352  763
                 Others    23   373     156  552
-                Sum      426  1622     856 2904");
+                Sum      426  1622     856 2904
+                """);
 
             await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
         }
@@ -64,9 +72,17 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
 
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agent))
+            await foreach (var message in chat.InvokeAsync(agent))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                if (!string.IsNullOrWhiteSpace(message.Content))
+                {
+                    this.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
+                }
+
+                foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
+                {
+                    this.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: #{fileReference.FileId}");
+                }
             }
         }
     }

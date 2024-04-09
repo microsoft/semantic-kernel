@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Azure.AI.OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// $$$
+/// Content type to support message annotations.
 /// </summary>
-internal class AnnotationContent : KernelContent
+public class AnnotationContent : KernelContent
 {
     /// <summary>
     /// The file identifier.
@@ -38,7 +39,16 @@ internal class AnnotationContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
-    public AnnotationContent(MessageTextAnnotation annotation)
+    /// <param name="annotation">The base annotion model.</param>
+    /// <param name="modelId">The model ID used to generate the content.</param>
+    /// <param name="innerContent">Inner content,</param>
+    /// <param name="metadata">Additional metadata</param>
+    public AnnotationContent(
+        MessageTextAnnotation annotation,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
     {
         this.Quote = annotation.Text;
         this.StartIndex = annotation.StartIndex;

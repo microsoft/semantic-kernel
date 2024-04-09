@@ -12,9 +12,8 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="ChatExecutionSettings"/>
-/// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
-/// number of agent interactions.
+/// Demonstrate that two different agent types are able to participate in the same converation.
+/// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
 public class Example09_MixedChat : BaseTest
 {

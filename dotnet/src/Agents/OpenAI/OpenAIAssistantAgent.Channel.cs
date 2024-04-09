@@ -187,7 +187,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                             if (itemContent is MessageImageFileContent contentImage)
                             {
-                                yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = agent.Name }; // $$$ CONTENT TYPE - ImageContent
+                                yield return
+                                    new ChatMessageContent(role, new ChatMessageContentItemCollection() { new FileReferenceContent(contentImage.FileId) })
+                                    {
+                                        AuthorName = agent.Name,
+                                    };
                             }
                         }
                     }
@@ -299,7 +303,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                         if (content is MessageImageFileContent contentImage)
                         {
-                            yield return new ChatMessageContent(role, contentImage.FileId) { AuthorName = assistantName ?? message.AssistantId }; // $$$ CONTENT TYPE
+                            yield return
+                                new ChatMessageContent(role, new ChatMessageContentItemCollection() { new FileReferenceContent(contentImage.FileId) })
+                                {
+                                    AuthorName = assistantName ?? message.AssistantId,
+                                };
                         }
                     }
 
