@@ -2,7 +2,6 @@
 using System;
 using System.Net.Http;
 using Azure.AI.OpenAI.Assistants;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
