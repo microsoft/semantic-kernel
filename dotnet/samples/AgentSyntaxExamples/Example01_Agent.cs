@@ -42,7 +42,8 @@ public class Example01_Agent : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))

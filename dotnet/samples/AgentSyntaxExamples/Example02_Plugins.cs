@@ -50,7 +50,7 @@ public class Example02_Plugins : BaseTest
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
@@ -59,7 +59,7 @@ public class Example02_Plugins : BaseTest
             }
         }
     }
-        
+
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
     { }
