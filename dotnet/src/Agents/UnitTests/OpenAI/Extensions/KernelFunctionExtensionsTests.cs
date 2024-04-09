@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
+using System;
+using System.ComponentModel;
+using Azure.AI.OpenAI.Assistants;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Xunit;
 
@@ -11,41 +15,37 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 public class KernelFunctionExtensionsTests
 {
     /// <summary>
-    /// $$$
+    /// Verify conversion from <see cref="KernelFunction"/> to <see cref="FunctionToolDefinition"/>.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIAssistantAgentDefinition()
+    public void VerifyKernelFunctionToFunctionTool()
     {
-        //OpenAIAssistantAgent agent =
-        //    new(CreateEmptyKernel(), description: "test description", name: "test name")
-        //    {
-        //        Instructions = "test instructions",
-        //    };
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
+        Assert.Equal(2, plugin.FunctionCount);
 
-        //Assert.NotNull(agent.Id);
-        //Assert.Equal("test instructions", agent.Instructions);
-        //Assert.Equal("test description", agent.Description);
-        //Assert.Equal("test name", agent.Name);
+        KernelFunction f1 = plugin[nameof(TestPlugin.TestFunction1)];
+        KernelFunction f2 = plugin[nameof(TestPlugin.TestFunction2)];
+
+        FunctionToolDefinition definition1 = f1.ToToolDefinition("testplugin", '-');
+        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction1)}", definition1.Name, StringComparison.Ordinal);
+        Assert.Equal("test description", definition1.Description);
+
+        FunctionToolDefinition definition2 = f2.ToToolDefinition("testplugin", '-');
+        Assert.StartsWith($"testplugin-{nameof(TestPlugin.TestFunction2)}", definition2.Name, StringComparison.Ordinal);
+        Assert.Equal("test description", definition2.Description);
     }
 
     /// <summary>
-    /// $$$
+    /// Exists only for parsing.
     /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvocationAsync()
+    private class TestPlugin()
     {
-        await Task.Yield();
-        //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
+        [KernelFunction]
+        [Description("test description")]
+        public void TestFunction1() { }
 
-        //var result = await agent.InvokeAsync().ToArrayAsync();
-
-        //mockService.Verify(
-        //    x =>
-        //        x.GetChatMessageContentsAsync(
-        //            It.IsAny<ChatHistory>(),
-        //            It.IsAny<PromptExecutionSettings>(),
-        //            It.IsAny<Kernel>(),
-        //            It.IsAny<CancellationToken>()),
-        //    Times.Once);
+        [KernelFunction]
+        [Description("test description")]
+        public void TestFunction2(string p1, bool p2, int p3, string[] p4, ConsoleColor p5, OpenAIAssistantDefinition p6) { }
     }
 }

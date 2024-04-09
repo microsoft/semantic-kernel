@@ -6,7 +6,7 @@ internal static class KernelExtensions
     /// <summary>
     /// Retrieve a kernel function based on the tool name.
     /// </summary>
-    public static KernelFunction GetAssistantTool(this Kernel kernel, string toolName, char delimiter)
+    public static KernelFunction GetKernelFunction(this Kernel kernel, string toolName, char delimiter)
     {
         string[] nameParts = toolName.Split(delimiter);
         return nameParts.Length switch

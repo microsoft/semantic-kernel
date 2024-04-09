@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Xunit;
 using KernelExtensions = Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 
@@ -11,41 +12,41 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 public class KernelExtensionsTests
 {
     /// <summary>
-    /// $$$
+    /// Verify function lookup using KernelExtensions.
     /// </summary>
     [Fact]
-    public void VerifyOpenAIAssistantAgentDefinition()
+    public void VerifyGetKernelFunctionLookup()
     {
-        //OpenAIAssistantAgent agent =
-        //    new(CreateEmptyKernel(), description: "test description", name: "test name")
-        //    {
-        //        Instructions = "test instructions",
-        //    };
+        Kernel kernel = Kernel.CreateBuilder().Build();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
+        kernel.Plugins.Add(plugin);
 
-        //Assert.NotNull(agent.Id);
-        //Assert.Equal("test instructions", agent.Instructions);
-        //Assert.Equal("test description", agent.Description);
-        //Assert.Equal("test name", agent.Name);
+        KernelFunction function = kernel.GetKernelFunction($"{nameof(TestPlugin)}-{nameof(TestPlugin.TestFunction)}", '-');
+        Assert.NotNull(function);
+        Assert.Equal(nameof(TestPlugin.TestFunction), function.Name);
     }
 
     /// <summary>
-    /// $$$
+    /// Verify error case for function lookup using KernelExtensions.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentInvocationAsync()
+    public void VerifyGetKernelFunctionInvalid()
     {
-        await Task.Yield();
-        //var agent = new OpenAIAssistantAgent(this.CreateEmptyKernel(), "fake-instructions");
+        Kernel kernel = Kernel.CreateBuilder().Build();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
+        kernel.Plugins.Add(plugin);
 
-        //var result = await agent.InvokeAsync().ToArrayAsync();
+        Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a", '-'));
+        Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a-b", ':'));
+        Assert.Throws<KernelException>(() => kernel.GetKernelFunction("a-b-c", '-'));
+    }
 
-        //mockService.Verify(
-        //    x =>
-        //        x.GetChatMessageContentsAsync(
-        //            It.IsAny<ChatHistory>(),
-        //            It.IsAny<PromptExecutionSettings>(),
-        //            It.IsAny<Kernel>(),
-        //            It.IsAny<CancellationToken>()),
-        //    Times.Once);
+    /// <summary>
+    /// Exists only for parsing.
+    /// </summary>
+    private class TestPlugin()
+    {
+        [KernelFunction]
+        public void TestFunction() { }
     }
 }

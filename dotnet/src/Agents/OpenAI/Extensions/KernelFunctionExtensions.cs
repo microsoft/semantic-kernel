@@ -15,7 +15,7 @@ internal static class KernelFunctionExtensions
     /// <param name="pluginName">The plugin name</param>
     /// <param name="delimiter">The delimiter character</param>
     /// <returns>An OpenAI tool definition</returns>
-    public static ToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimiter)
+    public static FunctionToolDefinition ToToolDefinition(this KernelFunction function, string pluginName, char delimiter)
     {
         var metadata = function.Metadata;
         if (metadata.Parameters.Count > 0)
