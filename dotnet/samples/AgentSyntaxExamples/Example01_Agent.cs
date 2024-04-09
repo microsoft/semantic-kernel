@@ -32,7 +32,7 @@ public class Example01_Agent : BaseTest
             };
 
         // Create a chat for agent interaction. For more, see: Example03_Chat.
-        var chat = new TestChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input
         await InvokeAgentAsync("Fortune favors the bold.");
@@ -56,18 +56,4 @@ public class Example01_Agent : BaseTest
     public Example01_Agent(ITestOutputHelper output)
         : base(output)
     { }
-
-    /// <summary>
-    /// A simple chat for the agent example.
-    /// </summary>
-    /// <remarks>
-    /// For further exploration of <see cref="AgentChat"/>, see: Example03_Chat.
-    /// </remarks>
-    private sealed class TestChat : AgentChat
-    {
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            Agent agent,
-            CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, cancellationToken);
-    }
 }

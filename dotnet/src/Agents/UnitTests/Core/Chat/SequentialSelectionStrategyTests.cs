@@ -20,8 +20,8 @@ public class SequentialSelectionStrategyTests
     [Fact]
     public async Task VerifySequentialSelectionStrategyTurnsAsync()
     {
-        Mock<Agent> agent1 = CreateMockAgent();
-        Mock<Agent> agent2 = CreateMockAgent();
+        Mock<Agent> agent1 = new();
+        Mock<Agent> agent2 = new();
 
         Agent[] agents = new[] { agent1.Object, agent2.Object };
         SequentialSelectionStrategy strategy = new();
@@ -42,17 +42,8 @@ public class SequentialSelectionStrategyTests
             Assert.NotNull(nextAgent);
             Assert.Equal(agent1.Id, nextAgent.Id);
         }
-
-        static Mock<Agent> CreateMockAgent()
-        {
-            Mock<Agent> agent = new();
-
-            string id = Guid.NewGuid().ToString();
-            agent.SetupGet(a => a.Id).Returns(id);
-
-            return agent;
-        }
     }
+
     /// <summary>
     /// Verify <see cref="SequentialSelectionStrategy"/> behavior with no agents.
     /// </summary>

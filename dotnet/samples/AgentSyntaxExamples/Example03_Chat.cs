@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -27,24 +28,24 @@ public class Example03_Chat : BaseTest
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: ReviewerName)
+            new()
             {
                 Instructions = ReviewerInstructions,
+                Name = ReviewerName,
+                Kernel = this.CreateKernelWithChatCompletion(),
             };
 
         ChatCompletionAgent agentWriter =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: CopyWriterName)
+            new()
             {
                 Instructions = CopyWriterInstructions,
+                Name = CopyWriterName,
+                Kernel = this.CreateKernelWithChatCompletion(),
             };
 
         // Create a nexus for agent interaction.
-        var chat =
-            new AgentGroupChat(agentWriter, agentReviewer)
+        AgentGroupChat chat =
+            new(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()
@@ -70,7 +71,7 @@ public class Example03_Chat : BaseTest
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        chat.AddUserMessage(input);
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())

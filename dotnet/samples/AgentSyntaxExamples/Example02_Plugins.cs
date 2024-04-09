@@ -39,7 +39,7 @@ public class Example02_Plugins : BaseTest
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction. For more, see: Example03_Chat.
-        var chat = new TestChat();
+        AgentGroupChat chat = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
@@ -63,19 +63,4 @@ public class Example02_Plugins : BaseTest
     public Example02_Plugins(ITestOutputHelper output)
         : base(output)
     { }
-
-    /// <summary>
-    ///
-    /// A simple chat for the agent example.
-    /// </summary>
-    /// <remarks>
-    /// For further exploration of <see cref="AgentChat"/>, see: Example03_Chat.
-    /// </remarks>
-    private sealed class TestChat : AgentChat
-    {
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            Agent agent,
-            CancellationToken cancellationToken = default) =>
-                base.InvokeAgentAsync(agent, cancellationToken);
-    }
 }

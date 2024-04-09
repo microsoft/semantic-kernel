@@ -35,7 +35,7 @@ public class AggregatorTerminationStrategyTests
         Mock<TerminationStrategy> strategyMockTrue = CreateMockStrategy(evaluate: true);
         Mock<TerminationStrategy> strategyMockFalse = CreateMockStrategy(evaluate: false);
 
-        Mock<Agent> agentMock = CreateMockAgent("test");
+        Mock<Agent> agentMock = new();
 
         await VerifyResultAsync(
             expectedResult: true,
@@ -71,7 +71,7 @@ public class AggregatorTerminationStrategyTests
         Mock<TerminationStrategy> strategyMockTrue = CreateMockStrategy(evaluate: true);
         Mock<TerminationStrategy> strategyMockFalse = CreateMockStrategy(evaluate: false);
 
-        Mock<Agent> agentMock = CreateMockAgent("test");
+        Mock<Agent> agentMock = new();
 
         await VerifyResultAsync(
             expectedResult: false,
@@ -107,8 +107,8 @@ public class AggregatorTerminationStrategyTests
         Mock<TerminationStrategy> strategyMockTrue = CreateMockStrategy(evaluate: true);
         Mock<TerminationStrategy> strategyMockFalse = CreateMockStrategy(evaluate: false);
 
-        Mock<Agent> agentMockA = CreateMockAgent("A");
-        Mock<Agent> agentMockB = CreateMockAgent("B");
+        Mock<Agent> agentMockA = new();
+        Mock<Agent> agentMockB = new();
 
         await VerifyResultAsync(
             expectedResult: false,
@@ -127,17 +127,6 @@ public class AggregatorTerminationStrategyTests
                 Agents = new[] { agentMockB.Object },
                 Condition = AggregateTerminationCondition.All,
             });
-    }
-
-    private static Mock<Agent> CreateMockAgent(string id)
-    {
-        Mock<Agent> agentMock = new();
-
-        agentMock
-            .SetupGet(a => a.Id)
-            .Returns(id);
-
-        return agentMock;
     }
 
     private static Mock<TerminationStrategy> CreateMockStrategy(bool evaluate)
