@@ -10,7 +10,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
-    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0110</NoWarn>
+    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0010,SKEXP0110</NoWarn>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
@@ -48,6 +48,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <Compile Remove="Resources\EmbeddedResource.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\travelinfo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="RepoUtils\EmbeddedResource.cs" />
   </ItemGroup>
 </Project>

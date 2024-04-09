@@ -37,7 +37,7 @@ public sealed class TestConfiguration
             throw new ArgumentNullException(nameof(caller));
         }
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-            throw new ConfigurationNotFoundException(section: caller);
+            throw new ConfigurationException(section: caller);
     }
 
     public class OpenAIConfig

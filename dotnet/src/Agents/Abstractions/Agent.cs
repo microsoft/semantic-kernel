@@ -42,9 +42,10 @@ public abstract class Agent
     /// </example>
     /// </summary>
     /// <remarks>
-    /// Any specific agent type may need to manage multiple channels.  For example, an
-    /// agents targeting two different Azure OpenAI endpoints each require their own channel.
-    /// In this case, the endpoint would be expressed as an additional key.
+    /// Two specific agents of the same type may each require their own channel.  This is
+    /// why the channel type alone is insufficient.
+    /// For example, two OpenAI Assistant agents each targeting a different Azure OpenAI endpoint
+    /// would require their own channel. In this case, the endpoint could be expressed as an additional key.
     /// </remarks>
     protected internal abstract IEnumerable<string> GetChannelKeys();
 

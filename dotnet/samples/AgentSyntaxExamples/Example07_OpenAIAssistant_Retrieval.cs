@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,12 +17,21 @@ namespace Examples;
 /// </summary>
 public class Example07_OpenAIAssistant_Retrieval : BaseTest
 {
-    private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
+    /// <summary>
+    /// Retrieval tool not supported on Azure OpenAI.
+    /// </summary>
+    protected override bool ForceOpenAI => true;
 
     [Fact]
     public async Task RunAsync()
     {
+        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
+
+        OpenAIFileReference uploadFile =
+            await fileService.UploadContentAsync(
+                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
@@ -27,10 +39,9 @@ public class Example07_OpenAIAssistant_Retrieval : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
                     EnableRetrieval = true, // Enable retrieval
                     Model = this.GetModel(),
+                    FileIds = new[] { uploadFile.Id } // Associate uploaded file
                 });
 
         // Create a chat for agent interaction.
@@ -39,9 +50,9 @@ public class Example07_OpenAIAssistant_Retrieval : BaseTest
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Fortune favors the bold.");
-            await InvokeAgentAsync("I came, I saw, I conquered.");
-            await InvokeAgentAsync("Practice makes perfect.");
+            await InvokeAgentAsync("Where did sam go?");
+            await InvokeAgentAsync("When does the flight leave Seattle?");
+            await InvokeAgentAsync("What is the hotel contact info at the destination?");
         }
         finally
         {

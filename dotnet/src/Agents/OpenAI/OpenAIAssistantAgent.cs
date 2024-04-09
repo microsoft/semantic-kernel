@@ -30,8 +30,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
+        // Distinguish from other channel types.
         yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName;
-        yield return this._config.Endpoint ?? "openai";
+
+        // Distinguish between different Azure OpenAI endpoints or OpenAI services.
+        yield return this._config.Endpoint ?? "openai"; 
 
         if (this._config.Version.HasValue)
         {
