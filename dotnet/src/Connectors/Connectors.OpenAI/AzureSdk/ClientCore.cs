@@ -1145,8 +1145,12 @@ internal abstract class ClientCore
                 {
                     arguments = JsonSerializer.Deserialize<KernelArguments>(functionToolCall.Arguments);
                 }
-                catch (JsonException)
+                catch (JsonException ex)
                 {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", functionToolCall.Name, functionToolCall.Id);
+                    }
                     // If the arguments are not valid JSON, we'll just leave them as null.
                     // The original arguments and function tool call will be available via the 'InnerContent' property for the connector caller to access.
                 }
