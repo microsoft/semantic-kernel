@@ -271,7 +271,7 @@ public abstract class KernelFunction
 
         try
         {
-            IAsyncEnumerator<TResult>? enumerator = null;
+            IAsyncEnumerator<TResult> enumerator;
             try
             {
                 // Quick check for cancellation after logging about function start but before doing any real work.
@@ -279,9 +279,8 @@ public abstract class KernelFunction
 
                 var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, (context) =>
                 {
-                    // Invoke the function and get its streaming enumerator.
+                    // Invoke the function and get its streaming enumerable.
                     var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
-                    enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                     // Update context with enumerable as result value.
                     context.Result = new FunctionResult(this, enumerable, metadata: context.Metadata);
@@ -290,7 +289,8 @@ public abstract class KernelFunction
                 }).ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
-                enumerator = invocationContext.Result?.GetValue<IAsyncEnumerable<TResult>>()?.GetAsyncEnumerator(cancellationToken);
+                var enumerable = invocationContext.Result?.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
+                enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -302,30 +302,27 @@ public abstract class KernelFunction
                 throw;
             }
 
-            if (enumerator is not null)
+            // Ensure we clean up after the enumerator.
+            await using (enumerator.ConfigureAwait(false))
             {
-                // Ensure we clean up after the enumerator.
-                await using (enumerator.ConfigureAwait(false))
+                while (true)
                 {
-                    while (true)
+                    try
                     {
-                        try
+                        // Move to the next streaming result.
+                        if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
                         {
-                            // Move to the next streaming result.
-                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                            {
-                                break;
-                            }
+                            break;
                         }
-                        catch (Exception ex)
-                        {
-                            HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
-                            throw;
-                        }
-
-                        // Yield the next streaming result.
-                        yield return enumerator.Current;
                     }
+                    catch (Exception ex)
+                    {
+                        HandleException(ex, logger, activity, this, kernel, arguments, result: null, ref tags);
+                        throw;
+                    }
+
+                    // Yield the next streaming result.
+                    yield return enumerator.Current;
                 }
             }
         }
