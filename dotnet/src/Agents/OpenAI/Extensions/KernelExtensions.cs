@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.Extensions;
+namespace Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 
 internal static class KernelExtensions
 {

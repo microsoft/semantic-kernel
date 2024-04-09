@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.OpenAI.Assistants;
 
-namespace Microsoft.SemanticKernel.Agents;
+namespace Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 
 internal static class KernelFunctionExtensions
 {

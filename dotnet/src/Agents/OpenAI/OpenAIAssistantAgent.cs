@@ -34,7 +34,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName;
 
         // Distinguish between different Azure OpenAI endpoints or OpenAI services.
-        yield return this._config.Endpoint ?? "openai"; 
+        yield return this._config.Endpoint ?? "openai";
 
         if (this._config.Version.HasValue)
         {
