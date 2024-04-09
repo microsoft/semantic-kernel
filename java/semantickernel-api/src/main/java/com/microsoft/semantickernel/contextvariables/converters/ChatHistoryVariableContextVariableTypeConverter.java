@@ -43,7 +43,7 @@ public class ChatHistoryVariableContextVariableTypeConverter extends
             .stream()
             .map(message -> String.format("<message role=\"%s\">%s</message>",
                 message.getAuthorRole(),
-                message.getContent()))
+                escapeXmlString(message.getContent())))
             .collect(Collectors.joining("\n"));
 
         return String.format("<messages>%n%s%n</messages>", messages);

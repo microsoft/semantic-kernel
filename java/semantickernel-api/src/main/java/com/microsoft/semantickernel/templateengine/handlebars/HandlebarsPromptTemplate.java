@@ -11,6 +11,7 @@ import com.github.jknack.handlebars.ValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
@@ -85,7 +86,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 if ("role".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getAuthorRole().name();
                 } else if ("content".equalsIgnoreCase(name)) {
-                    return ((ChatMessageContent) context).getContent();
+                    return ContextVariableTypeConverter
+                        .escapeXmlString(((ChatMessageContent) context).getContent());
                 }
             }
             return UNRESOLVED;
@@ -104,7 +106,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                     "<message role=\"%s\">%s</message>",
                     ((ChatMessageContent) context).getAuthorRole().toString()
                         .toLowerCase(Locale.ROOT),
-                    content);
+                    ContextVariableTypeConverter.escapeXmlString(content));
             }
             return UNRESOLVED;
         }
