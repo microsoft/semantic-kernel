@@ -12,7 +12,7 @@ public class FileReferenceContent : KernelContent
     /// <summary>
     /// The file identifier.
     /// </summary>
-    public string? FileId { get; internal init; }
+    public string? FileId { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.

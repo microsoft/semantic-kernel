@@ -13,22 +13,22 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// The file identifier.
     /// </summary>
-    public string? FileId { get; internal init; }
+    public string? FileId { get; }
 
     /// <summary>
     /// The citation.
     /// </summary>
-    public string? Quote { get; internal init; }
+    public string? Quote { get; }
 
     /// <summary>
     /// Start index of the citation.
     /// </summary>
-    public int StartIndex { get; internal init; }
+    public int StartIndex { get; }
 
     /// <summary>
     /// End index of the citation.
     /// </summary>
-    public int EndIndex { get; internal init; }
+    public int EndIndex { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.

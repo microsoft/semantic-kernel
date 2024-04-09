@@ -44,7 +44,9 @@ public class KernelExtensionsTests
     /// <summary>
     /// Exists only for parsing.
     /// </summary>
-    private class TestPlugin()
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    private sealed class TestPlugin()
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         [KernelFunction]
         public void TestFunction() { }
