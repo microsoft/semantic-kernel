@@ -26,12 +26,4 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatHistoryKernelAgent"/> class.
-    /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    protected ChatHistoryKernelAgent(Kernel kernel)
-        : base(kernel)
-    { }
 }

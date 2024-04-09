@@ -26,12 +26,12 @@ public class Example02_Plugins : BaseTest
     {
         // Define the agent
         ChatCompletionAgent agent =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: HostName)
+            new()
             {
+                Instructions = HostInstructions,
+                Name = HostName,
+                Kernel = this.CreateKernelWithChatCompletion(),
                 ExecutionSettings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions },
-                Instructions = HostInstructions
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

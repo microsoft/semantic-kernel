@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -78,22 +77,15 @@ public class AgentChatTests
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
     }
 
-    private sealed class TestAgent()
-        : ChatHistoryKernelAgent(Kernel.CreateBuilder().Build())
+    private sealed class TestAgent : ChatHistoryKernelAgent
     {
-        public override string? Description { get; } = null;
-
-        public override string Id => Guid.NewGuid().ToString();
-
-        public override string? Name { get; } = null;
-
         public int InvokeCount { get; private set; }
 
         public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(IReadOnlyList<ChatMessageContent> history, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await Task.Delay(0, cancellationToken);
 
-            this.InvokeCount += 1;
+            this.InvokeCount++;
 
             yield return new ChatMessageContent(AuthorRole.Assistant, "sup");
         }

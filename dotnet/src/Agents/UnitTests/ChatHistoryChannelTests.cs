@@ -27,15 +27,8 @@ public class ChatHistoryChannelTests
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent).ToArrayAsync().AsTask());
     }
 
-    private sealed class TestAgent()
-        : KernelAgent(Kernel.CreateBuilder().Build())
+    private sealed class TestAgent : KernelAgent
     {
-        public override string? Description { get; } = null;
-
-        public override string Id => Guid.NewGuid().ToString();
-
-        public override string? Name { get; } = null;
-
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

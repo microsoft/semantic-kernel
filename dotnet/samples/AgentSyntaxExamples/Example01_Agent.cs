@@ -24,11 +24,11 @@ public class Example01_Agent : BaseTest
     {
         // Define the agent
         ChatCompletionAgent agent =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: ParrotName)
+            new()
             {
+                Name = ParrotName,
                 Instructions = ParrotInstructions,
+                Kernel = this.CreateKernelWithChatCompletion(),
             };
 
         // Create a chat for agent interaction. For more, see: Example03_Chat.
