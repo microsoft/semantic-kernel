@@ -94,13 +94,13 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 {
                     try
                     {
-                        FunctionResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function.
+                        FunctionCallResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function.
 
                         chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { functionResult })); // Adding function result to chat history.
                     }
                     catch (Exception ex)
                     {
-                        chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionResultContent(functionCall, ex) })); // Adding function result to chat history.
+                        chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(functionCall, ex) })); // Adding function result to chat history.
                         // Adding exception to chat history.
                         // or
                         //string message = "Error details that LLM can reason about.";

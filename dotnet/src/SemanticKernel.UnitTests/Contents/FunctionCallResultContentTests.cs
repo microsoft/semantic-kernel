@@ -5,11 +5,11 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
-public class FunctionResultContentTests
+public class FunctionCallResultContentTests
 {
     private readonly FunctionCallRequestContent _callContent;
 
-    public FunctionResultContentTests()
+    public FunctionCallResultContentTests()
     {
         this._callContent = new FunctionCallRequestContent("f1", "p1", "id", []);
     }
@@ -18,7 +18,7 @@ public class FunctionResultContentTests
     public void ItShouldHaveFunctionIdInitialized()
     {
         // Arrange & act
-        var sut = new FunctionResultContent(this._callContent, "result");
+        var sut = new FunctionCallResultContent(this._callContent, "result");
 
         // Assert
         Assert.Equal("id", sut.Id);
@@ -28,7 +28,7 @@ public class FunctionResultContentTests
     public void ItShouldHavePluginNameInitialized()
     {
         // Arrange & act
-        var sut = new FunctionResultContent(this._callContent, "result");
+        var sut = new FunctionCallResultContent(this._callContent, "result");
 
         // Assert
         Assert.Equal("p1", sut.PluginName);
@@ -38,7 +38,7 @@ public class FunctionResultContentTests
     public void ItShouldHaveFunctionNameInitialized()
     {
         // Arrange & act
-        var sut = new FunctionResultContent(this._callContent, "result");
+        var sut = new FunctionCallResultContent(this._callContent, "result");
 
         // Assert
         Assert.Equal("f1", sut.FunctionName);
@@ -48,7 +48,7 @@ public class FunctionResultContentTests
     public void ItShouldHaveFunctionResultInitialized()
     {
         // Arrange & act
-        var sut = new FunctionResultContent(this._callContent, "result");
+        var sut = new FunctionCallResultContent(this._callContent, "result");
 
         // Assert
         Assert.Same("result", sut.Result);
@@ -62,7 +62,7 @@ public class FunctionResultContentTests
 
         var functionResult = new FunctionResult(function, "result");
 
-        var sut = new FunctionResultContent(this._callContent, functionResult);
+        var sut = new FunctionCallResultContent(this._callContent, functionResult);
 
         // Assert
         Assert.Equal("result", sut.Result);
@@ -72,12 +72,12 @@ public class FunctionResultContentTests
     public void ItShouldBeSerializableAndDeserializable()
     {
         // Arrange
-        var sut = new FunctionResultContent(this._callContent, "result");
+        var sut = new FunctionCallResultContent(this._callContent, "result");
 
         // Act
         var json = JsonSerializer.Serialize(sut);
 
-        var deserializedSut = JsonSerializer.Deserialize<FunctionResultContent>(json);
+        var deserializedSut = JsonSerializer.Deserialize<FunctionCallResultContent>(json);
 
         // Assert
         Assert.NotNull(deserializedSut);

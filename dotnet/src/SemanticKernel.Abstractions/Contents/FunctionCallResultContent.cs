@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents the result of a function call.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class FunctionResultContent : KernelContent
+public sealed class FunctionCallResultContent : KernelContent
 {
     /// <summary>
     /// The function call ID.
@@ -35,14 +35,14 @@ public sealed class FunctionResultContent : KernelContent
     public object? Result { get; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionResultContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallResultContent"/> class.
     /// </summary>
     /// <param name="functionName">The function name.</param>
     /// <param name="pluginName">The plugin name.</param>
     /// <param name="id">The function call ID.</param>
     /// <param name="result">The function result.</param>
     [JsonConstructor]
-    public FunctionResultContent(string functionName, string? pluginName = null, string? id = null, object? result = null)
+    public FunctionCallResultContent(string functionName, string? pluginName = null, string? id = null, object? result = null)
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
@@ -55,7 +55,7 @@ public sealed class FunctionResultContent : KernelContent
     /// </summary>
     /// <param name="functionCall">The function call.</param>
     /// <param name="result">The function result.</param>
-    public FunctionResultContent(FunctionCallRequestContent functionCall, object? result = null)
+    public FunctionCallResultContent(FunctionCallRequestContent functionCall, object? result = null)
     {
         this.Id = functionCall.Id;
         this.PluginName = functionCall.PluginName;
@@ -68,7 +68,7 @@ public sealed class FunctionResultContent : KernelContent
     /// </summary>
     /// <param name="functionCallContent">The function call content.</param>
     /// <param name="result">The function result.</param>
-    public FunctionResultContent(FunctionCallRequestContent functionCallContent, FunctionResult result) :
+    public FunctionCallResultContent(FunctionCallRequestContent functionCallContent, FunctionResult result) :
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;

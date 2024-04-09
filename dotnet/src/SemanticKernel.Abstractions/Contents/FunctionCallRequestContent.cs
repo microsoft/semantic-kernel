@@ -58,7 +58,7 @@ public sealed class FunctionCallRequestContent : KernelContent
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
-    public async Task<FunctionResultContent> InvokeAsync(Kernel kernel, CancellationToken cancellationToken = default)
+    public async Task<FunctionCallResultContent> InvokeAsync(Kernel kernel, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel, nameof(kernel));
 
@@ -66,7 +66,7 @@ public sealed class FunctionCallRequestContent : KernelContent
         {
             var result = await function.InvokeAsync(kernel, this.Arguments, cancellationToken).ConfigureAwait(false);
 
-            return new FunctionResultContent(this, result);
+            return new FunctionCallResultContent(this, result);
         }
 
         throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{this.PluginName}', function name - '{this.FunctionName}'.");

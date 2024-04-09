@@ -192,7 +192,7 @@ public class ChatMessageContentTests
 
         items.Add(new FunctionCallRequestContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }));
 
-        items.Add(new FunctionResultContent(new FunctionCallRequestContent("function-name", "plugin-name", "function-id"), "function-result"));
+        items.Add(new FunctionCallResultContent(new FunctionCallRequestContent("function-name", "plugin-name", "function-id"), "function-result"));
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
         {
@@ -283,7 +283,7 @@ public class ChatMessageContentTests
         Assert.Single(functionCallContent.Arguments);
         Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
 
-        var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
+        var functionResultContent = deserializedMessage.Items[7] as FunctionCallResultContent;
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-name", functionResultContent.FunctionName);

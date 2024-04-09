@@ -449,7 +449,7 @@ internal abstract class ClientCore
                         // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
-                        message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
+                        message.Items.Add(new FunctionCallResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
                     }
 
                     chat.Add(message);
@@ -999,7 +999,7 @@ internal abstract class ClientCore
 
             // Handling function call results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            var resultContents = message.Items.OfType<FunctionResultContent>().ToArray();
+            var resultContents = message.Items.OfType<FunctionCallResultContent>().ToArray();
             if (resultContents.Length != 0)
             {
                 var toolMessages = new List<ChatRequestToolMessage>();

@@ -301,7 +301,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
                 // Simulating an exception
                 var exception = new OperationCanceledException("The operation was canceled due to timeout.");
 
-                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionResultContent(functionCall, exception) });
+                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(functionCall, exception) });
             }
 
             // Sending the functions execution results back to the LLM to get the final response
@@ -353,7 +353,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Adding a simulated function result to chat history
             var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
-            chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult) });
+            chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult) });
 
             // Sending the functions invocation results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);

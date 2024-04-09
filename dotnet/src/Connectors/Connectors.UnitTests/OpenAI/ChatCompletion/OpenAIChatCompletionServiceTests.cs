@@ -448,11 +448,11 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         {
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionCallResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
             }),
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+                new FunctionCallResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
             })
         };
 
@@ -496,8 +496,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         {
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
-                new FunctionResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+                new FunctionCallResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionCallResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
             })
         };
 
