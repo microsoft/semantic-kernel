@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -39,7 +40,7 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync(@"
+            await InvokeAgentAsync(@"
                 Display this data using a bar-chart:
 
                 Banding  Brown Pink Yellow  Sum
@@ -49,7 +50,7 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
                 Others    23   373     156  552
                 Sum      426  1622     856 2904");
 
-            await WriteAgentResponseAsync("Can you regenerate this same chart using the category names as the bar colors?");
+            await InvokeAgentAsync("Can you regenerate this same chart using the category names as the bar colors?");
         }
         finally
         {
@@ -57,9 +58,10 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
         }
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))

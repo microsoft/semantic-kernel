@@ -16,18 +16,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     private readonly AssistantsClient _client;
     private readonly OpenAIAssistantConfiguration _config;
 
-    /// <inheritdoc/>
-    public override string? Description => this._assistant.Description;
-
-    /// <inheritdoc/>
-    public override string Id => this._assistant.Id;
-
-    /// <inheritdoc/>
-    public override string? Name => this._assistant.Name;
-
-    /// <inheritdoc/>
-    public new string? Instructions => base.Instructions;
-
     /// <summary>
     /// Expose predefined tools.
     /// </summary>
@@ -81,15 +69,17 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgent"/> class.
     /// </summary>
     private OpenAIAssistantAgent(
-        Kernel kernel,
         AssistantsClient client,
         Assistant model,
         OpenAIAssistantConfiguration config)
-        : base(kernel)
     {
         this._assistant = model;
         this._client = client;
         this._config = config;
-        base.Instructions = model.Instructions;
+
+        this.Description = this._assistant.Description;
+        this.Id = this._assistant.Id;
+        this.Name = this._assistant.Name;
+        this.Instructions = this._assistant.Instructions;
     }
 }

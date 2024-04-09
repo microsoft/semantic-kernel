@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -38,9 +39,9 @@ public class Example04_OpenAIAssistant : BaseTest
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync("Fortune favors the bold.");
-            await WriteAgentResponseAsync("I came, I saw, I conquered.");
-            await WriteAgentResponseAsync("Practice makes perfect.");
+            await InvokeAgentAsync("Fortune favors the bold.");
+            await InvokeAgentAsync("I came, I saw, I conquered.");
+            await InvokeAgentAsync("Practice makes perfect.");
         }
         finally
         {
@@ -48,9 +49,10 @@ public class Example04_OpenAIAssistant : BaseTest
         }
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))

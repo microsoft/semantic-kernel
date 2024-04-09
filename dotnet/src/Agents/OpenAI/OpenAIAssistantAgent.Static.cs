@@ -46,10 +46,14 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Assistant model = await client.CreateAssistantAsync(assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
-        return new OpenAIAssistantAgent(kernel, client, model, config);
+        return
+            new OpenAIAssistantAgent(client, model, config)
+            {
+                Kernel = kernel,
+            };
 
-        // Local function to define assistant creation options
-        static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
+// Local function to define assistant creation options
+static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
         {
             AssistantCreationOptions assistantCreationOptions =
                 new(definition.Model)
@@ -153,7 +157,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         Assistant model = await client.GetAssistantAsync(id, cancellationToken).ConfigureAwait(false);
 
         // Instantiate the agent
-        return new OpenAIAssistantAgent(kernel, client, model, config);
+        return
+            new OpenAIAssistantAgent(client, model, config)
+            {
+                Kernel = kernel,
+            };
     }
 
     private static AssistantsClient CreateClient(OpenAIAssistantConfiguration config)

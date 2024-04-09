@@ -44,10 +44,10 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
         // Respond to user input
         try
         {
-            await WriteAgentResponseAsync("Hello");
-            await WriteAgentResponseAsync("What is the special soup?");
-            await WriteAgentResponseAsync("What is the special drink?");
-            await WriteAgentResponseAsync("Thank you");
+            await InvokeAgentAsync("Hello");
+            await InvokeAgentAsync("What is the special soup?");
+            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("Thank you");
         }
         finally
         {
@@ -55,9 +55,10 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
         }
 
         // Local function to invoke agent and display the conversation messages.
-        async Task WriteAgentResponseAsync(string input)
+        async Task InvokeAgentAsync(string input)
         {
-            chat.AddUserMessage(input);
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))

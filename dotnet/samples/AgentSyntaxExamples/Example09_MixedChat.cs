@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -28,11 +29,11 @@ public class Example09_MixedChat : BaseTest
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
-            new(
-                kernel: this.CreateKernelWithChatCompletion(),
-                name: ReviewerName)
+            new()
             {
                 Instructions = ReviewerInstructions,
+                Name = ReviewerName,
+                Kernel = this.CreateKernelWithChatCompletion(),
             };
 
         OpenAIAssistantAgent agentWriter =
@@ -74,7 +75,7 @@ public class Example09_MixedChat : BaseTest
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
-        chat.AddUserMessage(input);
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())
