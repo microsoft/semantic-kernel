@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -10,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example100_FunctionCallingPlannerWithPromptFunctions : BaseTest
+public class Example80_FunctionCallingPlannerWithRAG : BaseTest
 {
     [Fact]
     public async Task RunAsync()
@@ -18,6 +17,8 @@ public class Example100_FunctionCallingPlannerWithPromptFunctions : BaseTest
         string[] questions = {
             "When should I use the name Bob?",
             "When should I use the name Tom?",
+            "When should I use the name Alice?",
+            "When should I use the name Harry?",
         };
 
         var kernel = InitializeKernel();
@@ -53,14 +54,10 @@ public class Example100_FunctionCallingPlannerWithPromptFunctions : BaseTest
 
         kernel.ImportPluginFromType<RetrievePlugin>();
 
-        var template = "{{$query}}\nUseful Information:\n{{RetrievePlugin.Retrieve query = $query}}";
-        var function = KernelFunctionFactory.CreateFromPrompt(template, functionName: "Instructor", description: "Provider useful information required to answer a question.");
-        kernel.ImportPluginFromFunctions("PlannerPlugin", new List<KernelFunction> { function });
-
         return kernel;
     }
 
-    public Example100_FunctionCallingPlannerWithPromptFunctions(ITestOutputHelper output) : base(output)
+    public Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : base(output)
     {
     }
 
