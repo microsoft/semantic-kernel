@@ -42,7 +42,7 @@ public class FunctionNameTests
     public void ItShouldCreateFullyQualifiedNameFromFunctionName()
     {
         // Act
-        var fullyQualifiedName = FunctionName.ToFullyQualifiedName("f1", ".");
+        var fullyQualifiedName = FunctionName.ToFullyQualifiedName("f1");
 
         // Assert
         Assert.Equal("f1", fullyQualifiedName);
