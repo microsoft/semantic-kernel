@@ -470,17 +470,22 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="endpoint">A Custom Message API compatible endpoint.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
-        string apiKey,
+        string? apiKey = null,
         string? orgId = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        Uri? endpoint = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
+        if (endpoint is null)
+        {
+            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+        }
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
             new(modelId,

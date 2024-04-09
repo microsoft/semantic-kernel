@@ -509,25 +509,33 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="endpoint">Custom OpenAI Compatible Message API endpoint</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        string apiKey,
+        string? apiKey = null,
         string? orgId = null,
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        Uri? endpoint = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
+
+        var clientEndpoint = endpoint ?? httpClient?.BaseAddress;
+        if (clientEndpoint is null)
+        {
+            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+        }
 
         Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
-            new(modelId,
-                apiKey,
-                orgId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>());
+            new(modelId: modelId,
+                apiKey: apiKey,
+                endpoint: clientEndpoint,
+                organization: orgId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
         builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -27,20 +28,28 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="endpoint">Custom Message API compatible endpoint</param>
     public OpenAIChatCompletionService(
         string modelId,
-        string apiKey,
+        string? apiKey = null,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        Uri? endpoint = null
+)
     {
         this._core = new(
             modelId: modelId,
             apiKey: apiKey,
+            endpoint: endpoint,
             organization: organization,
             httpClient: httpClient,
             logger: loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
+        if (endpoint != null)
+        {
+            this._core.AddAttribute(AIServiceExtensions.EndpointKey, endpoint.ToString());
+        }
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
     }
