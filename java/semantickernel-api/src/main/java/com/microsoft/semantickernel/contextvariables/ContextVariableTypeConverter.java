@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.contextvariables;
 
-import com.github.jknack.handlebars.internal.text.StringEscapeUtils;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -392,6 +392,12 @@ public class ContextVariableTypeConverter<T> {
         }
     }
 
+    /**
+     * To be used when toPromptString is called
+     *
+     * @param value the value to escape
+     * @return the escaped value
+     */
     @Nullable
     public static String escapeXmlString(@Nullable String value) {
         if (value == null) {

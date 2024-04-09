@@ -86,7 +86,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 if ("role".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getAuthorRole().name();
                 } else if ("content".equalsIgnoreCase(name)) {
-                    return ContextVariableTypeConverter.escapeXmlString(((ChatMessageContent) context).getContent());
+                    return ContextVariableTypeConverter
+                        .escapeXmlString(((ChatMessageContent) context).getContent());
                 }
             }
             return UNRESOLVED;

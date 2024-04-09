@@ -34,15 +34,9 @@ public class PrimitiveVariableContextVariableTypeConverter<T> extends
         super(
             clazz,
             s -> convert(s, clazz),
-            PrimitiveVariableContextVariableTypeConverter.toPromptStringFunction(toPromptString),
+            s -> escapeXmlString(toPromptString.apply(s)),
             fromPromptString);
         this.fromObject = fromObject;
-    }
-
-    private static <T> Function<T, String> toPromptStringFunction(
-        Function<T, String> toPromptString) {
-        return t -> escapeXmlString(toPromptString.apply(t));
-
     }
 
     @Override
