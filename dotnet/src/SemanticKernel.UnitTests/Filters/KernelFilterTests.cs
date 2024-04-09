@@ -158,6 +158,50 @@ public class KernelFilterTests
     }
 
     [Fact]
+    public async Task PostInvocationFunctionFilterReturnsModifiedResultOnStreamingAsync()
+    {
+        // Arrange
+        static async IAsyncEnumerable<int> GetData()
+        {
+            await Task.Delay(0);
+            yield return 1;
+            yield return 2;
+            yield return 3;
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            await next(context);
+
+            async static IAsyncEnumerable<int> GetModifiedData(IAsyncEnumerable<int> enumerable)
+            {
+                await foreach (var item in enumerable)
+                {
+                    yield return item * 2;
+                }
+            }
+
+            var enumerable = context.Result?.GetValue<IAsyncEnumerable<int>>();
+            context.Result = new FunctionResult(context.Function, GetModifiedData(enumerable!));
+        });
+
+        // Act
+        var resultArray = new List<int>();
+
+        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+        {
+            resultArray.Add(item);
+        }
+
+        // Assert
+        Assert.Equal(2, resultArray[0]);
+        Assert.Equal(4, resultArray[1]);
+        Assert.Equal(6, resultArray[2]);
+    }
+
+    [Fact]
     public async Task FunctionFiltersWithPromptsWorkCorrectlyAsync()
     {
         // Arrange
@@ -522,10 +566,10 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task FunctionFilterReceivesInvocationExceptionAsync()
+    public async Task FunctionFilterPropagatesExceptionToCallerAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException(); });
 
         var kernel = this.GetKernelWithFilters(
             onFunctionInvocation: async (context, next) =>
@@ -536,14 +580,46 @@ public class KernelFilterTests
             });
 
         // Act
-        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(function));
 
         // Assert
         Assert.NotNull(exception);
     }
 
     [Fact]
-    public async Task FunctionFilterCanCancelExceptionAsync()
+    public async Task FunctionFilterPropagatesExceptionToCallerOnStreamingAsync()
+    {
+        // Arrange
+        static async IAsyncEnumerable<int> GetData()
+        {
+            await Task.Delay(0);
+            yield return 1;
+            throw new KernelException();
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                // Exception will occur here.
+                // Because it's not handled, it will be propagated to the caller.
+                await next(context);
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<KernelException>(async () =>
+        {
+            await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+            { }
+        });
+
+        // Assert
+        Assert.NotNull(exception);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanHandleExceptionAsync()
     {
         // Arrange
         var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
@@ -570,10 +646,74 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task FunctionFilterCanRethrowAnotherTypeOfExceptionAsync()
+    public async Task FunctionFilterCanHandleExceptionOnStreamingAsync()
     {
         // Arrange
-        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+        static async IAsyncEnumerable<string> GetData()
+        {
+            await Task.Delay(0);
+            yield return "first chunk";
+            throw new KernelException();
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                await next(context);
+
+                async static IAsyncEnumerable<string> ProcessData(IAsyncEnumerable<string> enumerable)
+                {
+                    var enumerator = enumerable.GetAsyncEnumerator();
+
+                    await using (enumerator.ConfigureAwait(false))
+                    {
+                        while (true)
+                        {
+                            string result;
+
+                            try
+                            {
+                                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                                {
+                                    break;
+                                }
+
+                                result = enumerator.Current;
+                            }
+                            catch (KernelException)
+                            {
+                                result = "chunk instead of exception";
+                            }
+
+                            yield return result;
+                        }
+                    }
+                }
+
+                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+            });
+
+        // Act
+        var resultArray = new List<string>();
+
+        await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
+        {
+            resultArray.Add(item);
+        }
+
+        // Assert
+        Assert.Equal("first chunk", resultArray[0]);
+        Assert.Equal("chunk instead of exception", resultArray[1]);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanRethrowNewExceptionAsync()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception from method"); });
 
         var kernel = this.GetKernelWithFilters(
             onFunctionInvocation: async (context, next) =>
@@ -582,14 +722,73 @@ public class KernelFilterTests
                 {
                     await next(context);
                 }
-                catch (NotImplementedException)
+                catch (KernelException)
                 {
-                    throw new InvalidOperationException("Exception from filter");
+                    throw new KernelException("Exception from filter");
                 }
             });
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => kernel.InvokeAsync(function));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(function));
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal("Exception from filter", exception.Message);
+    }
+
+    [Fact]
+    public async Task FunctionFilterCanRethrowNewExceptionOnStreamingAsync()
+    {
+        // Arrange
+        static async IAsyncEnumerable<string> GetData()
+        {
+            await Task.Delay(0);
+            yield return "first chunk";
+            throw new KernelException("Exception from method");
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var kernel = this.GetKernelWithFilters(
+            onFunctionInvocation: async (context, next) =>
+            {
+                await next(context);
+
+                async static IAsyncEnumerable<string> ProcessData(IAsyncEnumerable<string> enumerable)
+                {
+                    var enumerator = enumerable.GetAsyncEnumerator();
+
+                    await using (enumerator.ConfigureAwait(false))
+                    {
+                        while (true)
+                        {
+                            try
+                            {
+                                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                                {
+                                    break;
+                                }
+                            }
+                            catch (KernelException)
+                            {
+                                throw new KernelException("Exception from filter");
+                            }
+
+                            yield return enumerator.Current;
+                        }
+                    }
+                }
+
+                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+            });
+
+        // Act
+        var exception = await Assert.ThrowsAsync<KernelException>(async () =>
+        {
+            await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
+            { }
+        });
 
         // Assert
         Assert.NotNull(exception);
@@ -601,21 +800,17 @@ public class KernelFilterTests
     {
         // Arrange
         int filterInvocations = 0;
-        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new NotImplementedException(); });
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException(); });
 
         async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
-            filterInvocations++;
-
             try
             {
                 await next(context);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception exception)
-#pragma warning restore CA1031 // Do not catch general exception types
+            catch (KernelException)
             {
-                Assert.IsType<NotImplementedException>(exception);
+                filterInvocations++;
                 throw;
             }
         }
@@ -633,7 +828,7 @@ public class KernelFilterTests
         var kernel = builder.Build();
 
         // Act
-        var exception = await Assert.ThrowsAsync<NotImplementedException>(() => kernel.InvokeAsync(function));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(function));
 
         // Assert
         Assert.NotNull(exception);
@@ -641,7 +836,7 @@ public class KernelFilterTests
     }
 
     [Fact]
-    public async Task MultipleFunctionFiltersPropagateExceptionCorrectlyAsync()
+    public async Task MultipleFunctionFiltersPropagateExceptionAsync()
     {
         // Arrange
         KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception from method"); });
@@ -698,6 +893,83 @@ public class KernelFilterTests
 
         // Assert
         Assert.Equal("Result from functionFilter1", result.ToString());
+    }
+
+    [Fact]
+    public async Task MultipleFunctionFiltersPropagateExceptionOnStreamingAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        KernelFunction function = KernelFunctionFactory.CreateFromMethod(() => { throw new KernelException("Exception from method"); });
+
+        async Task OnFunctionInvocationAsync(
+            string expectedExceptionMessage,
+            string exceptionMessage,
+            FunctionInvocationContext context,
+            Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+
+            async IAsyncEnumerable<string> ProcessData(IAsyncEnumerable<string> enumerable)
+            {
+                var enumerator = enumerable.GetAsyncEnumerator();
+
+                await using (enumerator.ConfigureAwait(false))
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                            {
+                                break;
+                            }
+                        }
+                        catch (KernelException exception)
+                        {
+                            filterInvocations++;
+                            Assert.Equal(expectedExceptionMessage, exception.Message);
+
+                            throw new KernelException(exceptionMessage);
+                        }
+
+                        yield return enumerator.Current;
+                    }
+                }
+            }
+
+            var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
+            context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+        }
+
+        var functionFilter1 = new FakeFunctionFilter(
+            async (context, next) => await OnFunctionInvocationAsync("Exception from functionFilter2", "Exception from functionFilter1", context, next));
+
+        var functionFilter2 = new FakeFunctionFilter(
+            async (context, next) => await OnFunctionInvocationAsync("Exception from functionFilter3", "Exception from functionFilter2", context, next));
+
+        var functionFilter3 = new FakeFunctionFilter(
+            async (context, next) => await OnFunctionInvocationAsync("Exception from method", "Exception from functionFilter3", context, next));
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+
+        var kernel = builder.Build();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<KernelException>(async () =>
+        {
+            await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
+            { }
+        });
+
+        // Assert
+        Assert.NotNull(exception);
+        Assert.Equal("Exception from functionFilter1", exception.Message);
+        Assert.Equal(3, filterInvocations);
     }
 
     private Kernel GetKernelWithFilters(

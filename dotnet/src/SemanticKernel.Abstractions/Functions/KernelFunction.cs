@@ -280,10 +280,17 @@ public abstract class KernelFunction
                 var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, (context) =>
                 {
                     // Invoke the function and get its streaming enumerator.
-                    enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                    var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+                    enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
+
+                    // Update context with enumerable as result value.
+                    context.Result = new FunctionResult(this, enumerable, metadata: context.Metadata);
 
                     return Task.CompletedTask;
                 }).ConfigureAwait(false);
+
+                // Apply changes from the function filters to final result.
+                enumerator = invocationContext.Result?.GetValue<IAsyncEnumerable<TResult>>()?.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
