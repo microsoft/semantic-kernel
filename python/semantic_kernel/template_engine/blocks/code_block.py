@@ -2,13 +2,12 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional
 
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
@@ -17,6 +16,7 @@ from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_plugin import KernelPlugin
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -154,7 +154,7 @@ these will be ignored."
         return arguments
 
     def _get_function_from_plugin_collection(
-        self, plugins: KernelPluginCollection, function_block: FunctionIdBlock
+        self, plugins: Dict[str, "KernelPlugin"], function_block: FunctionIdBlock
     ) -> Optional["KernelFunction"]:
         """
         Get the function from the plugin collection

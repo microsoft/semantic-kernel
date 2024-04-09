@@ -11,6 +11,7 @@ if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
+
 from urllib.parse import urljoin, urlparse, urlunparse
 
 import aiohttp
@@ -20,12 +21,9 @@ from openapi_core.contrib.requests import RequestsOpenAPIRequest
 from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_plugin import KernelPlugin
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -211,7 +209,7 @@ class OpenApiParser:
     def create_rest_api_operations(
         self,
         parsed_document: Any,
-        execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
+        execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
     ) -> Dict[str, RestApiOperation]:
         """Create the REST API Operations from the parsed OpenAPI document.
 
@@ -308,9 +306,9 @@ class OpenAPIPlugin:
     def create(
         plugin_name: str,
         openapi_document_path: str,
-        execution_settings: "OpenAIFunctionExecutionParameters" | "OpenAPIFunctionExecutionParameters" | None = None,
-    ) -> KernelPlugin:
-        """Creates an OpenAPI plugin
+        execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+    ) -> dict[str, Callable[..., Any]]:
+        """Creates the functions from OpenAPI document.
 
         Args:
             plugin_name: The name of the plugin
@@ -318,7 +316,7 @@ class OpenAPIPlugin:
             execution_settings: The execution settings
 
         Returns:
-            The KernelPlugin
+            dict[str, Callable[..., Any]: the operations as functions
         """
         parser = OpenApiParser()
         parsed_doc = parser.parse(openapi_document_path)
@@ -329,7 +327,7 @@ class OpenAPIPlugin:
             auth_callback = execution_settings.auth_callback
         openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc, auth_callback=auth_callback)
 
-        plugin = {}
+        plugin: dict[str, Callable[..., Any]] = {}
 
         def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
             @kernel_function(

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 
-class KernelArguments(dict):
+class KernelArguments(dict[str, Any]):
     def __init__(
         self,
         settings: Optional[Union["PromptExecutionSettings", List["PromptExecutionSettings"]]] = None,
