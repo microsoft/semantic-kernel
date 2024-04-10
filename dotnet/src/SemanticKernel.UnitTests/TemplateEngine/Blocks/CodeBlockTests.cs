@@ -400,9 +400,10 @@ public class CodeBlockTests
                 }
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: (context) =>
+        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments[parameterName]);
+            await next(context);
         });
 
         var functionFilter = new FakeFunctionFilter(async (context, next) =>
@@ -448,10 +449,11 @@ public class CodeBlockTests
                 }
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: (context) =>
+        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments["foo"]);
             Assert.Equal(FooValue, context.Arguments["x11"]);
+            await next(context);
         });
 
         var functionFilter = new FakeFunctionFilter(async (context, next) =>
@@ -514,17 +516,12 @@ public class CodeBlockTests
     }
 
     private sealed class FakePromptFilter(
-        Action<PromptRenderingContext>? onPromptRendering = null,
-        Action<PromptRenderedContext>? onPromptRendered = null) : IPromptFilter
+        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null) : IPromptFilter
     {
-        private readonly Action<PromptRenderingContext>? _onPromptRendering = onPromptRendering;
-        private readonly Action<PromptRenderedContext>? _onPromptRendered = onPromptRendered;
+        private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 
-        public void OnPromptRendered(PromptRenderedContext context) =>
-            this._onPromptRendered?.Invoke(context);
-
-        public void OnPromptRendering(PromptRenderingContext context) =>
-            this._onPromptRendering?.Invoke(context);
+        public Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next) =>
+            this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     #endregion

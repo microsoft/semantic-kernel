@@ -233,76 +233,64 @@ public class KernelFilterTests
     {
         // Arrange
         var functionInvocations = 0;
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
+        var filterInvocations = 0;
 
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(
-            onPromptRendering: (context) =>
-            {
-                preFilterInvocations++;
-            },
-            onPromptRendered: (context) =>
-            {
-                postFilterInvocations++;
-            });
+        var kernel = this.GetKernelWithFilters(onPromptRendering: async (context, next) =>
+        {
+            filterInvocations++;
+            await next(context);
+            filterInvocations++;
+        });
 
         // Act
         var result = await kernel.InvokeAsync(function);
 
         // Assert
         Assert.Equal(1, functionInvocations);
-        Assert.Equal(0, preFilterInvocations);
-        Assert.Equal(0, postFilterInvocations);
+        Assert.Equal(0, filterInvocations);
     }
 
     [Fact]
     public async Task PromptFiltersAreTriggeredForPromptsAsync()
     {
         // Arrange
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
+        var filterInvocations = 0;
         var mockTextGeneration = this.GetMockTextGeneration();
 
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: (context) =>
+            onPromptRendering: async (context, next) =>
             {
-                preFilterInvocations++;
-            },
-            onPromptRendered: (context) =>
-            {
-                postFilterInvocations++;
+                filterInvocations++;
+                await next(context);
+                filterInvocations++;
             });
 
         // Act
         var result = await kernel.InvokeAsync(function);
 
         // Assert
-        Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(1, postFilterInvocations);
+        Assert.Equal(2, filterInvocations);
     }
 
     [Fact]
     public async Task PromptFiltersAreTriggeredForPromptsStreamingAsync()
     {
         // Arrange
-        var preFilterInvocations = 0;
-        var postFilterInvocations = 0;
+        var filterInvocations = 0;
         var mockTextGeneration = this.GetMockTextGeneration();
 
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: (context) =>
+            onPromptRendering: async (context, next) =>
             {
-                preFilterInvocations++;
-            },
-            onPromptRendered: (context) =>
-            {
-                postFilterInvocations++;
+                filterInvocations++;
+                await next(context);
+                filterInvocations++;
             });
 
         // Act
@@ -311,8 +299,7 @@ public class KernelFilterTests
         }
 
         // Assert
-        Assert.Equal(1, preFilterInvocations);
-        Assert.Equal(1, postFilterInvocations);
+        Assert.Equal(2, filterInvocations);
     }
 
     [Fact]
@@ -322,8 +309,9 @@ public class KernelFilterTests
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendered: (context) =>
+            onPromptRendering: async (context, next) =>
             {
+                await next(context);
                 context.RenderedPrompt += " - updated from filter";
             });
 
@@ -341,18 +329,17 @@ public class KernelFilterTests
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendered: (context) =>
+            onPromptRendering: (context, next) =>
             {
-                context.Cancel = true;
+                // next(context) is not called here, prompt rendering is cancelled.
+                return Task.CompletedTask;
             });
 
         // Act
-        var exception = await Assert.ThrowsAsync<KernelFunctionCanceledException>(() => kernel.InvokeAsync(function));
+        var result = await kernel.InvokeAsync(function);
 
         // Assert
-        Assert.Same(function, exception.Function);
-        Assert.Same(kernel, exception.Kernel);
-        Assert.Null(exception.FunctionResult?.GetValue<object>());
+        mockTextGeneration.Verify(m => m.GetTextContentsAsync("", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -379,13 +366,19 @@ public class KernelFilterTests
             executionOrder.Add("FunctionFilter2-Invoked");
         });
 
-        var promptFilter1 = new FakePromptFilter(
-            (context) => executionOrder.Add("PromptFilter1-Rendering"),
-            (context) => executionOrder.Add("PromptFilter1-Rendered"));
+        var promptFilter1 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        {
+            executionOrder.Add("PromptFilter1-Rendering");
+            await next(context);
+            executionOrder.Add("PromptFilter1-Rendered");
+        });
 
-        var promptFilter2 = new FakePromptFilter(
-            (context) => executionOrder.Add("PromptFilter2-Rendering"),
-            (context) => executionOrder.Add("PromptFilter2-Rendered"));
+        var promptFilter2 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        {
+            executionOrder.Add("PromptFilter2-Rendering");
+            await next(context);
+            executionOrder.Add("PromptFilter2-Rendered");
+        });
 
         builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
         builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
@@ -405,8 +398,8 @@ public class KernelFilterTests
         Assert.Equal("FunctionFilter2-Invoking", executionOrder[1]);
         Assert.Equal("PromptFilter1-Rendering", executionOrder[2]);
         Assert.Equal("PromptFilter2-Rendering", executionOrder[3]);
-        Assert.Equal("PromptFilter1-Rendered", executionOrder[4]);
-        Assert.Equal("PromptFilter2-Rendered", executionOrder[5]);
+        Assert.Equal("PromptFilter2-Rendered", executionOrder[4]);
+        Assert.Equal("PromptFilter1-Rendered", executionOrder[5]);
         Assert.Equal("FunctionFilter2-Invoked", executionOrder[6]);
         Assert.Equal("FunctionFilter1-Invoked", executionOrder[7]);
     }
@@ -494,8 +487,17 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var executionOrder = new List<string>();
 
-        var promptFilter1 = new FakePromptFilter((context) => executionOrder.Add("PromptFilter1-Rendering"));
-        var promptFilter2 = new FakePromptFilter((context) => executionOrder.Add("PromptFilter2-Rendering"));
+        var promptFilter1 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        {
+            executionOrder.Add("PromptFilter1-Rendering");
+            await next(context);
+        });
+
+        var promptFilter2 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        {
+            executionOrder.Add("PromptFilter2-Rendering");
+            await next(context);
+        });
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextGeneration.Object);
@@ -974,12 +976,10 @@ public class KernelFilterTests
 
     private Kernel GetKernelWithFilters(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null,
-        Action<PromptRenderingContext>? onPromptRendering = null,
-        Action<PromptRenderedContext>? onPromptRendered = null,
+        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null,
         ITextGenerationService? textGenerationService = null)
     {
         var builder = Kernel.CreateBuilder();
-        var promptFilter = new FakePromptFilter(onPromptRendering, onPromptRendered);
 
         // Add function filter before kernel construction
         if (onFunctionInvocation is not null)
@@ -996,7 +996,10 @@ public class KernelFilterTests
         var kernel = builder.Build();
 
         // Add prompt filter after kernel construction
-        kernel.PromptFilters.Add(promptFilter);
+        if (onPromptRendering is not null)
+        {
+            kernel.PromptFilters.Add(new FakePromptFilter(onPromptRendering));
+        }
 
         return kernel;
     }
@@ -1025,16 +1028,11 @@ public class KernelFilterTests
     }
 
     private sealed class FakePromptFilter(
-        Action<PromptRenderingContext>? onPromptRendering = null,
-        Action<PromptRenderedContext>? onPromptRendered = null) : IPromptFilter
+        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering) : IPromptFilter
     {
-        private readonly Action<PromptRenderingContext>? _onPromptRendering = onPromptRendering;
-        private readonly Action<PromptRenderedContext>? _onPromptRendered = onPromptRendered;
+        private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 
-        public void OnPromptRendered(PromptRenderedContext context) =>
-            this._onPromptRendered?.Invoke(context);
-
-        public void OnPromptRendering(PromptRenderingContext context) =>
-            this._onPromptRendering?.Invoke(context);
+        public Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next) =>
+            this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
     }
 }

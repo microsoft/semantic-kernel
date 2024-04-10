@@ -311,36 +311,32 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
+    internal async Task<PromptRenderingContext> OnPromptRenderingAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        Func<PromptRenderingContext, Task> renderingCallback)
     {
-        PromptRenderingContext? context = null;
+        PromptRenderingContext context = new(function, arguments);
 
         if (this._promptFilters is { Count: > 0 })
         {
-            context = new(function, arguments);
-
-            for (int i = 0; i < this._promptFilters.Count; i++)
+            async Task InvokeFilterOrRenderingAsync(PromptRenderingContext context, int index = 0)
             {
-                this._promptFilters[i].OnPromptRendering(context);
+                if (index < this._promptFilters.Count)
+                {
+                    await this._promptFilters[index].OnPromptRenderingAsync(context, (context) => InvokeFilterOrRenderingAsync(context, index + 1)).ConfigureAwait(false);
+                }
+                else
+                {
+                    await renderingCallback(context).ConfigureAwait(false);
+                }
             }
+
+            await InvokeFilterOrRenderingAsync(context).ConfigureAwait(false);
         }
-
-        return context;
-    }
-
-    [Experimental("SKEXP0001")]
-    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
-    {
-        PromptRenderedContext? context = null;
-
-        if (this._promptFilters is { Count: > 0 })
+        else
         {
-            context = new(function, arguments, renderedPrompt);
-
-            for (int i = 0; i < this._promptFilters.Count; i++)
-            {
-                this._promptFilters[i].OnPromptRendered(context);
-            }
+            await renderingCallback(context).ConfigureAwait(false);
         }
 
         return context;

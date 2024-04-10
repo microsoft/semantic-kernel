@@ -381,10 +381,9 @@ public class KernelTests
 
     private sealed class MyPromptFilter : IPromptFilter
     {
-        public void OnPromptRendered(PromptRenderedContext context)
-        { }
-
-        public void OnPromptRendering(PromptRenderingContext context)
-        { }
+        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        {
+            await next(context);
+        }
     }
 }
