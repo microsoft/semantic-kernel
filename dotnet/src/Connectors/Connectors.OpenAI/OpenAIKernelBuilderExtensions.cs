@@ -514,7 +514,7 @@ public static class OpenAIKernelBuilderExtensions
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        string? apiKey = null,
+        string? apiKey,
         string? orgId = null,
         string? serviceId = null,
         HttpClient? httpClient = null,
@@ -554,7 +554,7 @@ public static class OpenAIKernelBuilderExtensions
     public static IKernelBuilder AddOpenAIChatCompletion(
         this IKernelBuilder builder,
         string modelId,
-        OpenAIClient? openAIClient,
+        OpenAIClient? openAIClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(builder);

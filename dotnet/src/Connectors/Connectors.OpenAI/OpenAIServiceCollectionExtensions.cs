@@ -475,7 +475,7 @@ public static class OpenAIServiceCollectionExtensions
     public static IServiceCollection AddOpenAIChatCompletion(
         this IServiceCollection services,
         string modelId,
-        string? apiKey = null,
+        string? apiKey,
         string? orgId = null,
         string? serviceId = null,
         Uri? endpoint = null)
@@ -510,7 +510,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(this IServiceCollection services,
         string modelId,
-        OpenAIClient? openAIClient,
+        OpenAIClient? openAIClient = null,
         string? serviceId = null)
     {
         Verify.NotNull(services);
