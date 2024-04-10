@@ -6,7 +6,7 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>10</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>

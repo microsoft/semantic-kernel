@@ -6,7 +6,6 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>11</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <NoWarn>CS1591,CA1852,CA1050</NoWarn> 

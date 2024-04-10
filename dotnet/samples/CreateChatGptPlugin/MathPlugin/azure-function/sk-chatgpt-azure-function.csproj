@@ -6,12 +6,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>skchatgptazurefunction</RootNamespace>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
     <OutputType>Exe</OutputType>
-    <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>

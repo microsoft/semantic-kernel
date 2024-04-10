@@ -157,7 +157,7 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        await foreach (Completions completions in response)
+        await foreach (Completions completions in response.ConfigureAwait(false))
         {
             foreach (Choice choice in completions.Choices)
             {
@@ -737,7 +737,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
+        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
