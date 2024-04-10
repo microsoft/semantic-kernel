@@ -151,7 +151,7 @@ public class KernelPluginCollectionTests
             })
         };
 
-        IList<KernelFunctionMetadata> metadata = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
+        List<KernelFunctionMetadata> metadata = c.GetFunctionsMetadata().OrderBy(f => f.Name).ToList();
 
         Assert.Equal("plugin1", metadata[0].PluginName);
         Assert.Equal("Function1", metadata[0].Name);

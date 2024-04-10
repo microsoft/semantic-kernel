@@ -60,7 +60,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken))
+        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
         {
             if (existingCollectionName == collectionName)
             {
