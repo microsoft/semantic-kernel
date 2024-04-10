@@ -65,7 +65,7 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
         ),
     )
 
-    kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+    kernel.add_plugin(MathPlugin(), plugin_name="math")
 
     execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
         service_id="chat-gpt",
@@ -110,7 +110,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
         ),
     )
 
-    kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+    kernel.add_plugin(MathPlugin(), plugin_name="math")
 
     execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
         service_id="chat-gpt",

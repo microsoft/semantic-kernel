@@ -14,15 +14,19 @@ from typing import TYPE_CHECKING, Any, ItemsView, List
 
 import httpx
 
+from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
     from typing_extensions import Annotated
 
 import yaml
-from pydantic import Field, StringConstraints, ValidationInfo, field_validator
-from pydantic.dataclasses import dataclass
+from pydantic import Field, StringConstraints
 
+from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
+from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
 from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError, PluginInitializationError
@@ -30,14 +34,12 @@ from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, Kerne
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX, validate_plugin_name
+from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
         OpenAIFunctionExecutionParameters,
     )
-    from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -46,8 +48,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class KernelPlugin:
+class KernelPlugin(KernelBaseModel):
     """
     Represents a Kernel Plugin with functions.
 
@@ -74,61 +75,44 @@ class KernelPlugin:
     description: str | None = None
     functions: dict[str, KernelFunction] = Field(default_factory=dict)
 
-    # region Validators
-
-    @field_validator("functions", mode="before")
-    @classmethod
-    def _validate_functions(
-        cls,
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
         functions: (
-            KernelFunction
-            | Callable[..., Any]
-            | list[KernelFunction | Callable[..., Any]]
-            | dict[str, KernelFunction | Callable[..., Any]]
+            KERNEL_FUNCTION_TYPE
             | KernelPlugin
-            | list[KernelPlugin]
+            | list[KERNEL_FUNCTION_TYPE | KernelPlugin]
+            | dict[str, KERNEL_FUNCTION_TYPE]
             | None
-        ),
-        info: ValidationInfo,
-    ) -> dict[str, KernelFunction]:
-        """Validates the functions and returns a dictionary of functions."""
-        plugin_name = info.data.get("name")
-        if not functions or not plugin_name:
-            # if the plugin_name is not present, the validation will fail, so no point in parsing.
-            return {}
-        if isinstance(functions, dict):
-            return {
-                name: cls._parse_or_copy(function=function, plugin_name=plugin_name)
-                for name, function in functions.items()
-            }
-        if isinstance(functions, KernelPlugin):
-            return {
-                name: function.function_copy(plugin_name=plugin_name) for name, function in functions.functions.items()
-            }
-        if isinstance(functions, KernelFunction):
-            return {functions.name: cls._parse_or_copy(function=functions, plugin_name=plugin_name)}
-        if isinstance(functions, Callable):
-            function = cls._parse_or_copy(function=functions, plugin_name=plugin_name)
-            return {function.name: function}
-        if isinstance(functions, list):
-            functions_dict: dict[str, KernelFunction] = {}
-            for function in functions:
-                if isinstance(function, (KernelFunction, Callable)):
-                    function = cls._parse_or_copy(function=function, plugin_name=plugin_name)
-                    functions_dict[function.name] = function
-                elif isinstance(function, KernelPlugin):  # type: ignore
-                    functions_dict.update(
-                        {
-                            name: cls._parse_or_copy(function=function, plugin_name=plugin_name)
-                            for name, function in function.functions.items()
-                        }
-                    )
-                else:
-                    raise ValueError(f"Invalid type for functions in list: {function} (type: {type(function)})")
-            return functions_dict
-        raise ValueError(f"Invalid type for supplied functions: {functions} (type: {type(functions)})")
+        ) = None,
+    ):
+        """Create a KernelPlugin
 
-    # endregion
+        Attributes:
+            name (str): The name of the plugin. The name can be upper/lower
+                case letters and underscores.
+            description (str, optional): The description of the plugin.
+            functions (Dict[str, KernelFunction]): The functions in the plugin,
+                indexed by their name, this can be supplied as:
+                    - KernelFunction
+                    - Callable
+                    - list of KernelFunctions or Callables
+                    - dict of names and KernelFunctions or Callables
+                    - KernelPlugin
+                    - list of KernelPlugins
+                    - None
+
+        Raises:
+            ValueError: If the functions are not of the correct type.
+            PydanticError: If the name is not a valid plugin name.
+        """
+        super().__init__(
+            name=name,
+            description=description,
+            functions=self._validate_functions(functions=functions, plugin_name=name),
+        )
+
     # region Dict like methods
 
     def __setitem__(self, key: str, value: KernelFunction) -> None:
@@ -388,7 +372,7 @@ class KernelPlugin:
         cls,
         plugin_name: str,
         openapi_document_path: str,
-        execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+        execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> "KernelPlugin":
         """Create a plugin from an OpenAPI document."""
@@ -480,7 +464,54 @@ class KernelPlugin:
     # region Static Methods
 
     @staticmethod
-    def _parse_or_copy(function: KernelFunction | Callable[..., Any], plugin_name: str) -> KernelFunction:
+    def _validate_functions(
+        functions: (
+            KERNEL_FUNCTION_TYPE
+            | list[KERNEL_FUNCTION_TYPE | KernelPlugin]
+            | dict[str, KERNEL_FUNCTION_TYPE]
+            | KernelPlugin
+            | None
+        ),
+        plugin_name: str,
+    ) -> dict[str, KernelFunction]:
+        """Validates the functions and returns a dictionary of functions."""
+        if not functions or not plugin_name:
+            # if the plugin_name is not present, the validation will fail, so no point in parsing.
+            return {}
+        if isinstance(functions, dict):
+            return {
+                name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                for name, function in functions.items()
+            }
+        if isinstance(functions, KernelPlugin):
+            return {
+                name: function.function_copy(plugin_name=plugin_name) for name, function in functions.functions.items()
+            }
+        if isinstance(functions, KernelFunction):
+            return {functions.name: KernelPlugin._parse_or_copy(function=functions, plugin_name=plugin_name)}
+        if isinstance(functions, Callable):
+            function = KernelPlugin._parse_or_copy(function=functions, plugin_name=plugin_name)
+            return {function.name: function}
+        if isinstance(functions, list):
+            functions_dict: dict[str, KernelFunction] = {}
+            for function in functions:
+                if isinstance(function, (KernelFunction, Callable)):
+                    function = KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                    functions_dict[function.name] = function
+                elif isinstance(function, KernelPlugin):  # type: ignore
+                    functions_dict.update(
+                        {
+                            name: KernelPlugin._parse_or_copy(function=function, plugin_name=plugin_name)
+                            for name, function in function.functions.items()
+                        }
+                    )
+                else:
+                    raise ValueError(f"Invalid type for functions in list: {function} (type: {type(function)})")
+            return functions_dict
+        raise ValueError(f"Invalid type for supplied functions: {functions} (type: {type(functions)})")
+
+    @staticmethod
+    def _parse_or_copy(function: KERNEL_FUNCTION_TYPE, plugin_name: str) -> KernelFunction:
         """Handle the function and return a KernelFunction instance."""
         if isinstance(function, KernelFunction):
             return function.function_copy(plugin_name=plugin_name)
@@ -503,8 +534,6 @@ class KernelPlugin:
             PluginInitializationError: If the plugin directory does not exist.
             PluginInvalidNameError: If the plugin name is invalid.
         """
-        validate_plugin_name(plugin_directory_name)
-
         plugin_directory = os.path.join(parent_directory, plugin_directory_name)
         plugin_directory = os.path.abspath(plugin_directory)
 

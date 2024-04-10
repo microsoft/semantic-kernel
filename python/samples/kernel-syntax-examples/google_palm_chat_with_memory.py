@@ -91,7 +91,7 @@ async def main() -> None:
     kernel.add_service(palm_chat_completion)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=palm_text_embed)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(memory)

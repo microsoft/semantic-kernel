@@ -52,8 +52,8 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
-kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
+kernel.add_plugin(MathPlugin(), plugin_name="math")
+kernel.add_plugin(TimePlugin(), plugin_name="time")
 
 chat_function = kernel.create_function_from_prompt(
     prompt="{{$chat_history}}{{$user_input}}",

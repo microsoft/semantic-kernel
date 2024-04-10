@@ -24,7 +24,9 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
@@ -34,7 +36,14 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
     from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
     from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+        OpenAIFunctionExecutionParameters,
+    )
+    from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
+        OpenAPIFunctionExecutionParameters,
+    )
     from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 
 T = TypeVar("T")
 
@@ -376,15 +385,49 @@ class Kernel(KernelBaseModel):
     # endregion
     # region Plugins & Functions
 
-    def add_plugin(self, plugin: KernelPlugin) -> None:
+    def add_plugin(
+        self,
+        plugin: KernelPlugin | Any | dict[str, Any] | None = None,
+        plugin_name: str | None = None,
+        parent_directory: str | None = None,
+        description: str | None = None,
+    ) -> None:
         """
-        Adds a plugin to the kernel's collection of plugins. If a plugin instance is provided,
+        Adds a plugin to the kernel's collection of plugins. If a plugin is provided,
         it uses that instance instead of creating a new KernelPlugin.
 
         Args:
-            plugin (KernelPlugin): The plugin to add.
+            plugin (KernelPlugin | Any | dict[str, Any]): The plugin to add.
+                This can be a KernelPlugin, in which case it is added straightaway and other parameters are ignored,
+                a custom class that contains methods with the kernel_function decorator
+                or a dictionary of functions with the kernel_function decorator for one or
+                several methods.
+            plugin_name (str | None): The name of the plugin, used if the plugin is not a KernelPlugin,
+                if the plugin is None and the parent_directory is set,
+                KernelPlugin.from_directory is called with those parameters,
+                see `KernelPlugin.from_directory` for details.
+            parent_directory (str | None): The parent directory path where the plugin directory resides
+            description (str | None): The description of the plugin, used if the plugin is not a KernelPlugin.
+
+        Raises:
+            ValidationError: If a KernelPlugin needs to be created, but it is not valid.
+
         """
-        self.plugins[plugin.name] = plugin
+        if isinstance(plugin, KernelPlugin):
+            self.plugins[plugin.name] = plugin
+            return
+        if not plugin_name:
+            raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+        if plugin:
+            self.plugins[plugin_name] = KernelPlugin.from_object(
+                plugin_name=plugin_name, plugin_instance=plugin, description=description
+            )
+            return
+        if plugin is None and parent_directory is not None:
+            self.plugins[plugin_name] = KernelPlugin.from_directory(
+                plugin_name=plugin_name, parent_directory=parent_directory, description=description
+            )
+        raise ValueError("plugin or parent_directory must be provided.")
 
     def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin]) -> None:
         """
@@ -397,20 +440,68 @@ class Kernel(KernelBaseModel):
             plugins = {plugin.name: plugin for plugin in plugins}
         self.plugins.update(plugins)
 
-    def add_function(self, plugin_name: str, function: "KernelFunction" | Callable[..., Any]) -> None:
+    def add_function(
+        self,
+        plugin_name: str,
+        *,
+        function: KERNEL_FUNCTION_TYPE | None = None,
+        function_name: str | None = None,
+        description: str | None = None,
+        prompt: str | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_execution_settings: (
+            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+        ) = None,
+        template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
+        prompt_template: PromptTemplateBase | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Adds a function to the specified plugin.
 
         Args:
             plugin_name (str): The name of the plugin to add the function to
             function (KernelFunction): The function to add
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
+            description (str | None): The description of the function
+            prompt (str | None): The prompt template.
+            prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
+            prompt_execution_settings (PromptExecutionSettings  | list[PromptExecutionSettings]
+                | dict[str, PromptExecutionSettings] | None):
+                The execution settings, will be parsed into a dict.
+            template_format (str | None): The format of the prompt template
+            prompt_template (PromptTemplateBase | None): The prompt template
+            kwargs (Any): Additional arguments
         """
+        if function is None:
+            if not function_name or (not prompt and not prompt_template_config and not prompt_template):
+                raise ValueError(
+                    "function_name and prompt, prompt_template_config or prompt_template must be provided if a function is not supplied."  # noqa: E501
+                )
+            if prompt_execution_settings is None and (
+                prompt_template_config is None or prompt_template_config.execution_settings is None
+            ):
+                prompt_execution_settings = PromptExecutionSettings(extension_data=kwargs)
+
+            from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+
+            function = KernelFunctionFromPrompt(
+                function_name=function_name,
+                plugin_name=plugin_name,
+                description=description,
+                prompt=prompt,
+                template_format=template_format,
+                prompt_template=prompt_template,
+                prompt_template_config=prompt_template_config,
+                prompt_execution_settings=prompt_execution_settings,
+            )
         return self.add_functions(plugin_name, [function])
 
     def add_functions(
         self,
         plugin_name: str,
-        functions: list["KernelFunction" | Callable[..., Any]] | dict[str, "KernelFunction" | Callable[..., Any]],
+        functions: list[KERNEL_FUNCTION_TYPE] | dict[str, KERNEL_FUNCTION_TYPE],
     ) -> None:
         """
         Adds a list of functions to the specified plugin.
@@ -423,26 +514,6 @@ class Kernel(KernelBaseModel):
             self.plugins[plugin_name].update(functions)
             return
         self.add_plugins({plugin_name: KernelPlugin(name=plugin_name, functions=functions)})  # type: ignore
-
-    def add_plugin_from_object(
-        self, plugin_name: str, plugin_instance: Any | dict[str, Any], description: str | None = None
-    ) -> None:
-        """
-        Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection
-
-        Args:
-            plugin_instance (Any | dict[str, Any]): The plugin instance. This can be a custom class or a
-                dictionary of classes that contains methods with the kernel_function decorator for one or
-                several methods. See `TextMemoryPlugin` as an example.
-            plugin_name (str): The name of the plugin. Allows chars: upper, lower ASCII and underscores.
-
-        Returns:
-            KernelPlugin: The imported plugin of type KernelPlugin.
-        """
-        plugin = KernelPlugin.from_object(
-            plugin_name=plugin_name, plugin_instance=plugin_instance, description=description
-        )
-        self.add_plugin(plugin)
 
     def add_plugin_from_directory(self, plugin_name: str, parent_directory: str, description: str | None = None):
         """Create a plugin from a specified directory and add it to the kernel.
@@ -487,7 +558,46 @@ class Kernel(KernelBaseModel):
         )
         self.add_plugin(plugin)
 
-    def func(self, plugin_name: str, function_name: str) -> "KernelFunction":
+    def add_plugin_from_openapi(
+        self,
+        plugin_name: str,
+        openapi_document_path: str,
+        execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
+        description: str | None = None,
+    ):
+        self.add_plugin(
+            KernelPlugin.from_openapi(
+                plugin_name=plugin_name,
+                openapi_document_path=openapi_document_path,
+                execution_settings=execution_settings,
+                description=description,
+            )
+        )
+
+    async def add_plugin_from_openai(
+        self,
+        plugin_name: str,
+        plugin_url: str | None = None,
+        plugin_str: str | None = None,
+        execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
+        description: str | None = None,
+    ):
+        self.add_plugin(
+            await KernelPlugin.from_openai(
+                plugin_name=plugin_name,
+                plugin_url=plugin_url,
+                plugin_str=plugin_str,
+                execution_parameters=execution_parameters,
+                description=description,
+            )
+        )
+
+    def func(self, plugin_name: str | None, function_name: str) -> "KernelFunction":
+        if plugin_name is None:
+            for plugin in self.plugins.values():
+                if function_name in plugin:
+                    return plugin[function_name]
+            raise KernelFunctionNotFoundError(f"Function '{function_name}' not found")
         if plugin_name not in self.plugins:
             raise KernelPluginNotFoundError(f"Plugin '{plugin_name}' not found")
         if function_name not in self.plugins[plugin_name]:

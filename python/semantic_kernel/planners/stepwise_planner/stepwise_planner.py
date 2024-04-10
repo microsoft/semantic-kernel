@@ -86,7 +86,7 @@ class StepwisePlanner:
         prompt_config.template = prompt_template
 
         self._system_step_function = self.import_function_from_prompt(kernel, "StepwiseStep", prompt_config)
-        self._native_functions = self._kernel.import_plugin_from_object(self, RESTRICTED_PLUGIN_NAME)
+        self._native_functions = self._kernel.add_plugin(self, RESTRICTED_PLUGIN_NAME)
 
         self._arguments = KernelArguments()
 
@@ -379,9 +379,10 @@ class StepwisePlanner:
         function_name: str,
         config: PromptTemplateConfig = None,
     ) -> "KernelFunction":
-        return kernel.create_function_from_prompt(
+        kernel.add_function(
             plugin_name=RESTRICTED_PLUGIN_NAME, function_name=function_name, prompt_template_config=config
         )
+        return kernel.func(RESTRICTED_PLUGIN_NAME, function_name)
 
     def to_manual_string(self, function: KernelFunctionMetadata) -> str:
         inputs = [

@@ -116,6 +116,7 @@ def create_mock_function() -> Callable:
         mock_function.invoke.return_value = FunctionResult(function=mock_function.metadata, value=value, metadata={})
         mock_function.invoke_stream = stream_func
         mock_function.function_copy.return_value = mock_function
+        mock_function.__kernel_function__ = True
 
         return mock_function
 

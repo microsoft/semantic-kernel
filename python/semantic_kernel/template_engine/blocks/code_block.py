@@ -116,7 +116,7 @@ these will be ignored."
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
         function_block = self.tokens[0]
-        function = self._get_function_from_plugin_collection(kernel.plugins, function_block)
+        function = kernel.func(function_block.plugin_name, function_block.function_name)
         if not function:
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)

@@ -6,7 +6,6 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.functions import kernel_function
@@ -19,7 +18,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 
 def test_throws_for_missing_name():
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeError):
         KernelPlugin(description="A unit test plugin")
 
 
@@ -29,6 +28,7 @@ def test_plugin_construction_with_no_functions():
     plugin = KernelPlugin(name=expected_plugin_name, description=expected_plugin_description)
     assert plugin.name == expected_plugin_name
     assert plugin.description == expected_plugin_description
+    assert not plugin.functions
 
 
 @pytest.fixture
