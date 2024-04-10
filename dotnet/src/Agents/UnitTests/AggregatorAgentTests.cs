@@ -1,0 +1,92 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
+using Xunit;
+
+namespace SemanticKernel.Agents.UnitTests;
+
+/// <summary>
+/// Unit testing of <see cref="AggregatorAgent"/>.
+/// </summary>
+public class AggregatorAgentTests
+{
+    /// <summary>
+    /// Verify usage of <see cref="AggregatorAgent"/> through various states.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAggregatorAgentUsageAsync()
+    {
+        Agent agent1 = CreateMockAgent().Object;
+        Agent agent2 = CreateMockAgent().Object;
+        Agent agent3 = CreateMockAgent().Object;
+
+        AgentGroupChat groupChat =
+            new(agent1, agent2, agent3)
+            {
+                ExecutionSettings =
+                    new()
+                    {
+                        SelectionStrategy = new SequentialSelectionStrategy(),
+                        MaximumIterations = 3,
+                        TerminationStrategy = (_, _, _) => Task.FromResult(false), // Continue to max iterations
+                    }
+            };
+
+        AggregatorAgent uberAgent = new(groupChat);
+        AgentGroupChat uberChat = new();
+
+        // Add message to outer chat (no agent has joined)
+        uberChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test uber"));
+
+        var messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Single(messages);
+
+        messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
+
+        messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Empty(messages); // Agent hasn't joined chat, no broadcast
+
+        // Add message to inner chat (not visible to parent)
+        groupChat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test inner"));
+
+        messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Single(messages);
+
+        messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        Assert.Empty(messages); // Agent still hasn't joined chat
+
+        messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Single(messages);
+
+        // Invoke outer chat (inner chat produces messages captured by parent)
+        messages = await uberChat.InvokeAsync(uberAgent).ToArrayAsync();
+        Assert.Equal(3, messages.Length); // New messages generated from inner chat
+
+        messages = await uberChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Equal(4, messages.Length); // Total messages on uber chat
+
+        messages = await uberChat.GetChatMessagesAsync(uberAgent).ToArrayAsync();
+        Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized
+
+        messages = await groupChat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized
+    }
+
+    private static Mock<ChatHistoryKernelAgent> CreateMockAgent()
+    {
+        Mock<ChatHistoryKernelAgent> agent = new();
+
+        ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test agent") };
+        agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
+
+        return agent;
+    }
+}

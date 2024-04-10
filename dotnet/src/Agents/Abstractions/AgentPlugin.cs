@@ -27,15 +27,6 @@ public sealed class AgentPlugin : KernelPlugin
     /// <summary>
     /// $$$
     /// </summary>
-    public IReadOnlyList<ChatMessageContent> History
-    {
-        get => this._chat.History;
-        init => this._chat.AddChatMessages(value);
-    }
-
-    /// <summary>
-    /// $$$
-    /// </summary>
     public Agent Agent { get; }
 
     private KernelFunction Function => this._functionAsk ??= KernelFunctionFactory.CreateFromMethod(this.InvokeAsync, FunctionName, description: this.Description);
@@ -100,8 +91,7 @@ public sealed class AgentPlugin : KernelPlugin
             this._agent = agent;
         }
 
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            CancellationToken cancellationToken = default) =>
+        public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default) =>
                 base.InvokeAgentAsync(this._agent, cancellationToken);
     }
 }

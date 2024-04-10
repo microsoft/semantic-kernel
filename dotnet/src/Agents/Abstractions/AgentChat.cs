@@ -28,13 +28,29 @@ public abstract class AgentChat
     protected ChatHistory History { get; }
 
     /// <summary>
+    /// $$$
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieve the message history, either the primary history or
+    /// an agent specific version.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The message history</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(CancellationToken cancellationToken = default) =>
+        this.GetChatMessagesAsync(agent: null, cancellationToken);
+
+    /// <summary>
     /// Retrieve the message history, either the primary history or
     /// an agent specific version.
     /// </summary>
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The message history</returns>
-    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(Agent? agent = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(Agent? agent, CancellationToken cancellationToken = default)
     {
         if (agent == null)
         {
@@ -59,10 +75,8 @@ public abstract class AgentChat
     /// synchronized, so the message is broadcast to all channels.
     /// </remarks>
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
-    public void AddChatMessage(ChatMessageContent message)
-    {
+    public void AddChatMessage(ChatMessageContent message) =>
         this.AddChatMessages(new[] { message });
-    }
 
     /// <summary>
     /// Append messages to the conversation.
