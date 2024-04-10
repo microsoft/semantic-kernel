@@ -86,7 +86,7 @@ public abstract class AgentChat
         }
         finally
         {
-            this.ClearActivitySignal(); // $$$ RACE ???
+            this.ClearActivitySignal();
         }
     }
 
