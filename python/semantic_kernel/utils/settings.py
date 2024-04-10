@@ -295,7 +295,7 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
         Dict[str, str]: the Azure AI search environment variables
     """
     api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
-    return {"key": api_key, "endpoint": url, "indexName": index_name}
+    return {"authentication": {"type": "api_key", "key": api_key}, "endpoint": url, "index_name": index_name}
 
 
 def azure_key_vault_settings_from_dot_env(
