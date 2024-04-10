@@ -19,7 +19,6 @@ public abstract class AgentChat
     private readonly BroadcastQueue _broadcastQueue;
     private readonly Dictionary<string, AgentChannel> _agentChannels;
     private readonly Dictionary<Agent, string> _channelMap;
-    private readonly ChatHistory _history;
 
     private int _isActive;
 
