@@ -195,4 +195,4 @@ Disadvantages:
 
 ## Decision Outcome
 
-TBD.
+Proceed with Option 4 and apply this approach to function, prompt and function calling filters.
