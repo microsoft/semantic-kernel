@@ -351,6 +351,70 @@ class Kernel(KernelBaseModel):
         )
         return await self.invoke(function=function, arguments=arguments)
 
+    async def invoke_prompt_stream(
+        self,
+        function_name: str,
+        plugin_name: str,
+        prompt: str,
+        arguments: KernelArguments | None = None,
+        template_format: Literal[
+            "semantic-kernel",
+            "handlebars",
+            "jinja2",
+        ] = KERNEL_TEMPLATE_FORMAT_NAME,
+        return_function_results: bool | None = False,
+        **kwargs: Any,
+    ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
+        """
+        Invoke a function from the provided prompt and stream the results
+
+        Args:
+            function_name (str): The name of the function
+            plugin_name (str): The name of the plugin
+            prompt (str): The prompt to use
+            arguments (KernelArguments | None): The arguments to pass to the function(s), optional
+            template_format (str | None): The format of the prompt template
+            kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
+
+        Returns:
+            AsyncIterable[StreamingContentMixin]: The content of the stream of the last function provided.
+        """
+        if not arguments:
+            arguments = KernelArguments(**kwargs)
+        if not prompt:
+            raise TemplateSyntaxError("The prompt is either null or empty.")
+
+        function = KernelFunctionFromPrompt(
+            function_name=function_name,
+            plugin_name=plugin_name,
+            prompt=prompt,
+            template_format=template_format,
+        )
+
+        function_result: list[list["StreamingContentMixin"] | Any] = []
+
+        async for stream_message in self.invoke_stream(function=function, arguments=arguments):
+            if isinstance(stream_message, FunctionResult) and (
+                exception := stream_message.metadata.get("exception", None)
+            ):
+                raise KernelInvokeException(
+                    f"Error occurred while invoking function: '{function.fully_qualified_name}'"
+                ) from exception
+            function_result.append(stream_message)
+            yield stream_message
+
+        if return_function_results:
+            output_function_result: list["StreamingContentMixin"] = []
+            for result in function_result:
+                for choice in result:
+                    if not isinstance(choice, StreamingContentMixin):
+                        continue
+                    if len(output_function_result) <= choice.choice_index:
+                        output_function_result.append(copy(choice))
+                    else:
+                        output_function_result[choice.choice_index] += choice
+            yield FunctionResult(function=function.metadata, value=output_function_result)
+
     # endregion
     # region Function Invoking/Invoked Events
 
