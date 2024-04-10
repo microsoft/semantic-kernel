@@ -91,8 +91,6 @@ internal sealed class AgentPlugin : KernelPlugin
     {
         private readonly Agent _agent;
 
-        public new ChatHistory History => base.History;
-
         public PluginChat(Agent agent)
         {
             this._agent = agent;
