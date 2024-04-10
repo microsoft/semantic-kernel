@@ -39,14 +39,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
 )
     {
         this._core = new(
-            modelId: modelId,
-            apiKey: apiKey,
-            endpoint: endpoint,
-            organization: organization,
-            httpClient: httpClient,
-            logger: loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+            modelId,
+            apiKey,
+            endpoint,
+            organization,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
-        if (endpoint != null)
+        if (endpoint is not null)
         {
             this._core.AddAttribute(AIServiceExtensions.EndpointKey, endpoint.ToString());
         }
@@ -65,7 +65,10 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, openAIClient: openAIClient, loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
+        this._core = new(
+            modelId,
+            openAIClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

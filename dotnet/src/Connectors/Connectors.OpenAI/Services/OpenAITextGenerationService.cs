@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -30,16 +29,14 @@ public sealed class OpenAITextGenerationService : ITextGenerationService
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="endpoint">Endpoint to override the original OpenAI API.</param>
     public OpenAITextGenerationService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null,
-        Uri? endpoint = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, endpoint, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
+        this._core = new(modelId, apiKey, endpoint: null, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);

@@ -46,6 +46,7 @@ public class Example88_CustomMessageAPIEndpoint : BaseTest
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: modelId,
+                apiKey: null,
                 endpoint: new Uri(url))
             .Build();
 
@@ -75,6 +76,7 @@ public class Example88_CustomMessageAPIEndpoint : BaseTest
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: modelId,
+                apiKey: null,
                 endpoint: new Uri(url))
             .Build();
 
