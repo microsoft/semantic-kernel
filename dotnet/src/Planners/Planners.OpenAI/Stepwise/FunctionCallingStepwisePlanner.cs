@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.More;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -120,7 +119,7 @@ public sealed class FunctionCallingStepwisePlanner
                     {
                         // We found a final answer, but failed to parse it properly.
                         // Log the error message in chat history and let the planner try again.
-                        chatHistoryForSteps.AddUserMessage(finalAnswerError);
+                        chatHistoryForSteps.AddMessage(AuthorRole.Tool, finalAnswerError, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, functionResponse.Id } });
                         continue;
                     }
 
@@ -286,7 +285,7 @@ public sealed class FunctionCallingStepwisePlanner
             }
             else
             {
-                resultStr = valueElement.ToJsonString();
+                resultStr = JsonSerializer.Serialize(valueElement);
             }
         }
         else

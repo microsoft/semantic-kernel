@@ -84,7 +84,7 @@ public static class TextGenerationExtensions
         if (textGenerationService is IChatCompletionService chatCompletion
             && ChatPromptParser.TryParse(prompt, out var chatHistory))
         {
-            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken))
+            await foreach (var chatMessage in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
             {
                 yield return new StreamingTextContent(chatMessage.Content, chatMessage.ChoiceIndex, chatMessage.ModelId, chatMessage, chatMessage.Encoding, chatMessage.Metadata);
             }
@@ -93,7 +93,7 @@ public static class TextGenerationExtensions
         }
 
         // When using against text generations, the prompt will be used as is.
-        await foreach (var textChunk in textGenerationService.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken))
+        await foreach (var textChunk in textGenerationService.GetStreamingTextContentsAsync(prompt, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
             yield return textChunk;
         }

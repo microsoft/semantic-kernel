@@ -946,6 +946,57 @@ public sealed class KernelFunctionFromMethodTests1
     }
 
     [Fact]
+    public async Task ItSupportsGenericArgumentsAndReturnTypesAsync()
+    {
+        List<string> expected = new() { "1", "2", "3" };
+        KernelArguments input = new() { ["val"] = expected };
+        KernelFunction func;
+        FunctionResult result;
+
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => val);
+        result = await func.InvokeAsync(this._kernel, input);
+        Assert.Equal(expected, result.Value);
+
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => Enumerable.Range(1, 3).Select(i => i.ToString(CultureInfo.InvariantCulture)));
+        result = await func.InvokeAsync(this._kernel, input);
+        Assert.Equal(expected, result.Value);
+
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => Task.FromResult(val));
+        result = await func.InvokeAsync(this._kernel, input);
+        Assert.Equal(expected, result.Value);
+
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => ValueTask.FromResult(val));
+        result = await func.InvokeAsync(this._kernel, input);
+        Assert.Equal(expected, result.Value);
+
+        func = KernelFunctionFactory.CreateFromMethod((List<string> val) => val.ToAsyncEnumerable());
+        result = await func.InvokeAsync(this._kernel, input);
+        Assert.Equal(expected, ((IAsyncEnumerable<string>)result.Value!).ToEnumerable());
+    }
+
+    [Fact]
+    public async Task ItSupportsNullableArgumentsAndReturnTypesAsync()
+    {
+        KernelFunction func;
+
+        func = KernelFunctionFactory.CreateFromMethod(int? (int? arg) => arg);
+        Assert.Equal(42, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
+        Assert.Null((await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
+
+        func = KernelFunctionFactory.CreateFromMethod(Task<int?> (int? arg) => Task.FromResult(arg));
+        Assert.Equal(42, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
+        Assert.Null((await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
+
+        func = KernelFunctionFactory.CreateFromMethod(ValueTask<int?> (int? arg) => ValueTask.FromResult(arg));
+        Assert.Equal(42, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
+        Assert.Null((await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
+
+        func = KernelFunctionFactory.CreateFromMethod(IEnumerable<int?> (int? arg) => (IEnumerable<int?>)[arg]);
+        Assert.Equal(new int?[] { 42 }, (await func.InvokeAsync(this._kernel, new() { ["arg"] = 42 })).Value);
+        Assert.Equal(new int?[] { null }, (await func.InvokeAsync(this._kernel, new() { ["arg"] = null })).Value);
+    }
+
+    [Fact]
     public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
         // Arrange

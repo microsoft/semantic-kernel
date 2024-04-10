@@ -214,7 +214,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         if (searchResult == null) { yield break; }
 
         var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
-        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             if (doc == null || doc.Score < minAzureSearchScore) { continue; }
 
@@ -332,7 +332,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
     private async Task<List<string>> UpsertBatchAsync(
         string indexName,
-        IList<AzureAISearchMemoryRecord> records,
+        List<AzureAISearchMemoryRecord> records,
         CancellationToken cancellationToken = default)
     {
         var keys = new List<string>();
