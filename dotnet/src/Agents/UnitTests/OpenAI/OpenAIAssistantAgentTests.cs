@@ -253,7 +253,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
     private OpenAIAssistantConfiguration CreateTestConfiguration(bool targetAzure = false, bool useVersion = false)
     {
-        return new(apiKey:"fakekey", endpoint: targetAzure ? "https://localhost" : null)
+        return new(apiKey: "fakekey", endpoint: targetAzure ? "https://localhost" : null)
         {
             HttpClient = this._httpClient,
             Version = useVersion ? AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview : null,
