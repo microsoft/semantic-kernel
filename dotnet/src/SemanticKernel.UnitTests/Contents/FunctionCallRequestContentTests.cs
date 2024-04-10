@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -52,5 +53,24 @@ public class FunctionCallRequestContentTests
         Assert.NotNull(resultContent);
         Assert.Equal("result", resultContent.Result);
         Assert.Same(this._arguments, actualArguments);
+    }
+
+    [Fact]
+    public async Task ItShouldHandleFunctionCallRequestExceptionAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+
+        var sut = new FunctionCallRequestContent("f1", "p1", "id")
+        {
+            Exception = new JsonException("Error: Function call arguments were invalid JSON.")
+        };
+
+        // Act
+        var resultContent = await sut.InvokeAsync(kernel);
+
+        // Assert
+        Assert.NotNull(resultContent);
+        Assert.Equal("Error: Function call arguments were invalid JSON.", resultContent.Result);
     }
 }

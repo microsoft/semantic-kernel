@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -35,6 +36,11 @@ public sealed class FunctionCallRequestContent : KernelContent
     public KernelArguments? Arguments { get; }
 
     /// <summary>
+    /// The exception that occurred while mapping original LLM function call request to the model class.
+    /// </summary>
+    public Exception? Exception { get; init; }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
     /// </summary>
     /// <param name="functionName">The function name.</param>
@@ -61,6 +67,11 @@ public sealed class FunctionCallRequestContent : KernelContent
     public async Task<FunctionCallResultContent> InvokeAsync(Kernel kernel, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel, nameof(kernel));
+
+        if (this.Exception is not null)
+        {
+            return new FunctionCallResultContent(this, this.Exception.Message);
+        }
 
         if (kernel.Plugins.TryGetFunction(this.PluginName, this.FunctionName, out KernelFunction? function))
         {

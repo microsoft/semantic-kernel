@@ -1076,7 +1076,7 @@ internal abstract class ClientCore
                 }
             }
 
-            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
+            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallRequestContent type.
             var functionCallRequests = message.Items.OfType<FunctionCallRequestContent>().ToArray();
             if (functionCallRequests.Length != 0)
             {
@@ -1141,10 +1141,11 @@ internal abstract class ClientCore
 
         foreach (var toolCall in chatChoice.Message.ToolCalls)
         {
-            // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
+            // Adding items of 'FunctionCallRequestContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
             // This allows consumers to work with functions in an LLM-agnostic way.
             if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
+                Exception? exception = null;
                 KernelArguments? arguments = null;
                 try
                 {
@@ -1152,12 +1153,12 @@ internal abstract class ClientCore
                 }
                 catch (JsonException ex)
                 {
+                    exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
+
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
                         this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", functionToolCall.Name, functionToolCall.Id);
                     }
-                    // If the arguments are not valid JSON, we'll just leave them as null.
-                    // The original arguments and function tool call will be available via the 'InnerContent' property for the connector caller to access.
                 }
 
                 var functionName = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
@@ -1166,8 +1167,11 @@ internal abstract class ClientCore
                     functionName: functionName.Name,
                     pluginName: functionName.PluginName,
                     id: functionToolCall.Id,
-                    arguments: arguments);
-                functionCallRequestContent.InnerContent = functionToolCall;
+                    arguments: arguments)
+                {
+                    InnerContent = functionToolCall,
+                    Exception = exception
+                };
 
                 message.Items.Add(functionCallRequestContent);
             }

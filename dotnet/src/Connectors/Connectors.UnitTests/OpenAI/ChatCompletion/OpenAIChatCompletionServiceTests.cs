@@ -373,6 +373,9 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("MyPlugin", invalidArgumentsFunctionCall.PluginName);
         Assert.Equal("4", invalidArgumentsFunctionCall.Id);
         Assert.Null(invalidArgumentsFunctionCall.Arguments);
+        Assert.NotNull(invalidArgumentsFunctionCall.Exception);
+        Assert.Equal("Error: Function call arguments were invalid JSON.", invalidArgumentsFunctionCall.Exception.Message);
+        Assert.NotNull(invalidArgumentsFunctionCall.Exception.InnerException);
     }
 
     [Fact]
