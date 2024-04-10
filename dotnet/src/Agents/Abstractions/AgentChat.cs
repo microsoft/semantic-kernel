@@ -202,7 +202,6 @@ public abstract class AgentChat
                 {
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
-
             }
 
             return channel;
