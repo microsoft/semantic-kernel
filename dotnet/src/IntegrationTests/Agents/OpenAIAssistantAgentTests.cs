@@ -124,21 +124,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._testOutputHelper.Dispose();
     }
 
-    private sealed class HttpHeaderHandler : DelegatingHandler
-    {
-        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
-
-        public HttpHeaderHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
-        {
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            this.RequestHeaders = request.Headers;
-            return await base.SendAsync(request, cancellationToken);
-        }
-    }
     public sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]
