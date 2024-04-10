@@ -17,7 +17,7 @@ namespace Examples;
 public class Example08_OpenAIAssistant_ChartMaker : BaseTest
 {
     /// <summary>
-    /// $$$
+    /// $$$ INVESTIGATE AZURE OPENAI
     /// </summary>
     protected override bool ForceOpenAI => true;
 

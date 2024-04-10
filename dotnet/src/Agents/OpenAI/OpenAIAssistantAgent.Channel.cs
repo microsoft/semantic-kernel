@@ -146,7 +146,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     {
                         try
                         {
-                            PageableList<MessageFile> files = await this._client.GetMessageFilesAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken: cancellationToken).ConfigureAwait(false);
                             message = await this._client.GetMessageAsync(this._threadId, detail.MessageCreation.MessageId, cancellationToken).ConfigureAwait(false);
                         }
                         catch (RequestFailedException exception)

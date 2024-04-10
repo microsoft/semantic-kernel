@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110</NoWarn>
+    <NoWarn>CA2007,CA1861,CA1063,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +35,11 @@
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/HttpMessageHandlerStub.cs" Link="%(RecursiveDir)Test/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

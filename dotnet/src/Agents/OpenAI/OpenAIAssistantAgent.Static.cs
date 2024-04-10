@@ -109,12 +109,12 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, after: null, before: null, cancellationToken).ConfigureAwait(false);
             foreach (Assistant assistant in assistants)
             {
-                resultCount++;
-
                 if (resultCount >= maxResults)
                 {
                     break;
                 }
+
+                resultCount++;
 
                 yield return
                     new()
@@ -172,11 +172,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         if (!string.IsNullOrWhiteSpace(config.Endpoint))
         {
             // Create client configured for Azure Open AI, if endpoint definition is present.
-            return new AssistantsClient(new Uri(config.Endpoint), new AzureKeyCredential(config.ApiKey));
+            return new AssistantsClient(new Uri(config.Endpoint), new AzureKeyCredential(config.ApiKey), clientOptions);
         }
 
         // Otherwise, create client configured for Open AI.
-        return new AssistantsClient(config.ApiKey);
+        return new AssistantsClient(config.ApiKey, clientOptions);
     }
 
     private static AssistantsClientOptions CreateClientOptions(OpenAIAssistantConfiguration config)
