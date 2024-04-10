@@ -22,6 +22,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0060 | Planners |
 | SKEXP0070 | AI connectors |
 | SKEXP0100 | Advanced Semantic Kernel features |
+| SKEXP0110 | Semantic Kernel Agents |
 
 ## Experimental Features Tracking
 
@@ -76,3 +77,5 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | | | | | | | |
 | SKEXP0101 | Experiment with Assistants | | | | | |
 | SKEXP0101 | Experiment with Flow Orchestration | | | | | |
+| | | | | | | |
+| SKEXP0110 | Agent Framework | | | | | |
