@@ -27,31 +27,29 @@ public sealed class AgentPlugin : KernelPlugin
     /// <summary>
     /// $$$
     /// </summary>
-    public IReadOnlyList<ChatMessageContent> History => this._chat.History;
+    public IReadOnlyList<ChatMessageContent> History
+    {
+        get => this._chat.History;
+        init => this._chat.AddChatMessages(value);
+    }
 
     /// <summary>
     /// $$$
     /// </summary>
     public Agent Agent { get; }
 
+    private KernelFunction Function => this._functionAsk ??= KernelFunctionFactory.CreateFromMethod(this.InvokeAsync, FunctionName, description: this.Description);
+
     private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
 
     private readonly PluginChat _chat;
-    private readonly KernelFunction _functionAsk;
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    /// <param name="history"></param>
-    public void Bind(ChatHistory history) // $$$ ROUGH
-    {
-        //this._chat.Bind(history);
-    }
+    private KernelFunction? _functionAsk;
 
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator()
     {
-        yield return this._functionAsk;
+        yield return this.Function;
     }
 
     /// <inheritdoc/>
@@ -59,7 +57,7 @@ public sealed class AgentPlugin : KernelPlugin
     {
         function =
             FunctionName.Equals(name, StringComparison.OrdinalIgnoreCase) ?
-            this._functionAsk :
+            this.Function :
             null;
 
         return function != null;
@@ -71,7 +69,6 @@ public sealed class AgentPlugin : KernelPlugin
     {
         this.Agent = agent;
         this._chat = new PluginChat(agent);
-        this._functionAsk = KernelFunctionFactory.CreateFromMethod(this.InvokeAsync, FunctionName, description: this.Description);
     }
 
     /// <summary>
@@ -80,11 +77,11 @@ public sealed class AgentPlugin : KernelPlugin
     /// <param name="input">Optional input</param>
     /// <param name="cancellationToken">A cancel token</param>
     /// <returns>The agent response</returns>
-    private async Task<string?> InvokeAsync(string? input, CancellationToken cancellationToken = default)
+    private async Task<string?> InvokeAsync(string? input, CancellationToken cancellationToken = default) // $$$ TYPE / GENERIC (INPUT/OUTPUT) ???
     {
         this._chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-        var message = await this._chat.InvokeAsync(cancellationToken).LastAsync(cancellationToken).ConfigureAwait(false);
+        var message = await this._chat.InvokeAsync(cancellationToken).LastAsync(cancellationToken).ConfigureAwait(false); // $$$ HACK: LAST / BEHAVIOR
 
         return message.Content;
     }
