@@ -49,7 +49,7 @@ public sealed class OpenAIAssistantDefinition
     public IEnumerable<string>? FileIds { get; init; }
 
     /// <summary>
-    /// A set of up to 16 key/value pairs that can be attached to an object, used for
+    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
     /// storing additional information about that object in a structured format.Keys
     /// may be up to 64 characters in length and values may be up to 512 characters in length.
     /// </summary>

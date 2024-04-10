@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -21,10 +23,11 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private readonly Kernel _emptyKernel;
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>.
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with only required properties defined.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentCreationAsync()
+    public async Task VerifyOpenAIAssistantAgentCreationEmptyAsync()
     {
         OpenAIAssistantDefinition definition =
             new()
@@ -37,7 +40,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 this._emptyKernel,
-                this.CreateTestConfiguration(),
+                this.CreateTestConfiguration(targetAzure: true, useVersion: true),
                 definition);
 
         Assert.NotNull(agent);
@@ -46,6 +49,71 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Null(agent.Name);
         Assert.Null(agent.Description);
         Assert.False(agent.IsDeleted);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent with optional properties defined.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationPropertiesAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Model = "testmodel",
+                Name = "testname",
+                Description = "testdescription",
+                Instructions = "testinstructions",
+            };
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentFull);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                this._emptyKernel,
+                this.CreateTestConfiguration(),
+                definition);
+
+        Assert.NotNull(agent);
+        Assert.NotNull(agent.Id);
+        Assert.NotNull(agent.Instructions);
+        Assert.NotNull(agent.Name);
+        Assert.NotNull(agent.Description);
+        Assert.False(agent.IsDeleted);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.CreateAsync"/>
+    /// for an agent that has all properties defined..
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentCreationEverythingAsync()
+    {
+        OpenAIAssistantDefinition definition =
+            new()
+            {
+                Model = "testmodel",
+                EnableCodeInterpreter = true,
+                EnableRetrieval = true,
+                FileIds = new[] { "#1", "#2" },
+                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+            };
+
+        this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentWithEverything);
+
+        OpenAIAssistantAgent agent =
+            await OpenAIAssistantAgent.CreateAsync(
+                this._emptyKernel,
+                this.CreateTestConfiguration(),
+                definition);
+
+        Assert.NotNull(agent);
+        Assert.Equal(2, agent.Tools.Count);
+        Assert.True(agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.True(agent.Tools.OfType<RetrievalToolDefinition>().Any());
+        Assert.NotEmpty(agent.FileIds);
+        Assert.NotEmpty(agent.Metadata);
     }
 
     /// <summary>
@@ -82,6 +150,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.DeleteAgent);
 
         await agent.DeleteAsync();
+        Assert.True(agent.IsDeleted);
+
+        await agent.DeleteAsync(); // Doesn't throw
         Assert.True(agent.IsDeleted);
     }
 
@@ -180,11 +251,12 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 definition);
     }
 
-    private OpenAIAssistantConfiguration CreateTestConfiguration()
+    private OpenAIAssistantConfiguration CreateTestConfiguration(bool targetAzure = false, bool useVersion = false)
     {
-        return new("fakekey")
+        return new(apiKey:"fakekey", endpoint: targetAzure ? "https://localhost" : null)
         {
             HttpClient = this._httpClient,
+            Version = useVersion ? AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview : null,
         };
     }
 
@@ -201,7 +273,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     {
         foreach (var item in content)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope $$$
+#pragma warning disable CA2000 // Dispose objects before losing scope
             this._messageHandlerStub.ResponseQueue.Enqueue(
                 new(statusCode)
                 {
@@ -226,6 +298,45 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
               "tools": [],
               "file_ids": [],
               "metadata": {}
+            }
+            """;
+
+        public const string CreateAgentFull =
+            """
+            {
+              "id": "asst_abc123",
+              "object": "assistant",
+              "created_at": 1698984975,
+              "name": "testname",
+              "description": "testdescription",
+              "model": "gpt-4-turbo",
+              "instructions": "testinstructions",
+              "tools": [],
+              "file_ids": [],
+              "metadata": {}
+            }
+            """;
+
+        public const string CreateAgentWithEverything =
+            """
+            {
+              "id": "asst_abc123",
+              "object": "assistant",
+              "created_at": 1698984975,
+              "name": null,
+              "description": null,
+              "model": "gpt-4-turbo",
+              "instructions": null,
+              "tools": [
+                {
+                  "type": "code_interpreter"
+                },
+                {
+                  "type": "retrieval"
+                }
+              ],
+              "file_ids": ["#1", "#2"],
+              "metadata": {"a": "1"}
             }
             """;
 

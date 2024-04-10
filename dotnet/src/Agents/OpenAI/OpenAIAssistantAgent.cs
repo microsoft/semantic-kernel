@@ -17,6 +17,18 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     private readonly OpenAIAssistantConfiguration _config;
 
     /// <summary>
+    /// A list of previously uploaded file IDs to attach to the assistant.
+    /// </summary>
+    public IReadOnlyList<string> FileIds => this._assistant.FileIds;
+
+    /// <summary>
+    /// A set of up to 16 key/value pairs that can be attached to an agent, used for
+    /// storing additional information about that object in a structured format.Keys
+    /// may be up to 64 characters in length and values may be up to 512 characters in length.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Metadata => this._assistant.Metadata;
+
+    /// <summary>
     /// Expose predefined tools.
     /// </summary>
     internal IReadOnlyList<ToolDefinition> Tools => this._assistant.Tools;
