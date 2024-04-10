@@ -30,7 +30,7 @@ public abstract class AgentChat
     private int _isActive;
 
     /// <summary>
-    /// Indicates if a chat operation is active.  This inclues:
+    /// Indicates if a chat operation is active.  This includes:
     /// - <see cref="AddChatMessage"/>
     /// - <see cref="AddChatMessages"/>
     /// - <see cref="GetChatMessagesAsync"/>

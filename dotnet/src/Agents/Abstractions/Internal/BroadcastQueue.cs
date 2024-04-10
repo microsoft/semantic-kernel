@@ -192,7 +192,7 @@ internal sealed class BroadcastQueue
         public ChannelQueue Queue { get; } = new ChannelQueue();
 
         /// <summary>
-        /// The task recieving and processing messsages from <see cref="Queue" />.
+        /// The task receiving and processing messages from <see cref="Queue" />.
         /// </summary>
         public Task? ReceiveTask { get; set; }
 
