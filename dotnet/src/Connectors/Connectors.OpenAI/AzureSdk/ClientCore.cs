@@ -442,16 +442,14 @@ internal abstract class ClientCore
                     chatOptions.Messages.Add(new ChatRequestToolMessage(result, toolCall.Id));
 
                     // Add the tool response message to the chat history.
-                    var message = new ChatMessageContent(role: AuthorRole.Tool, content: null);
+                    var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
 
                     if (toolCall is ChatCompletionsFunctionToolCall functionCall)
                     {
+                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
+                        // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
                         message.Items.Add(new FunctionCallResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
-                    }
-                    else
-                    {
-                        message.Items.Add(new FunctionCallResultContent(id: toolCall.Id, result: result));
                     }
 
                     chat.Add(message);
@@ -1078,28 +1076,30 @@ internal abstract class ClientCore
                 }
             }
 
-            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallRequestContent type.
-            var functionCallRequests = message.Items.OfType<FunctionCallRequestContent>().ToArray();
-            if (functionCallRequests.Length != 0)
-            {
-                var ftcs = new List<ChatCompletionsToolCall>(tools ?? Enumerable.Empty<ChatCompletionsToolCall>());
-
-                foreach (var fcRequest in functionCallRequests)
-                {
-                    if (!ftcs.Any(ftc => ftc.Id == fcRequest.Id))
-                    {
-                        var argument = JsonSerializer.Serialize(fcRequest.Arguments);
-
-                        ftcs.Add(new ChatCompletionsFunctionToolCall(fcRequest.Id, FunctionName.ToFullyQualifiedName(fcRequest.FunctionName, fcRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
-                    }
-                }
-
-                tools = ftcs;
-            }
-
             if (tools is not null)
             {
                 asstMessage.ToolCalls.AddRange(tools);
+            }
+
+            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallRequestContent type.
+            HashSet<string>? functionCallIds = null;
+            foreach (var item in message.Items)
+            {
+                if (item is not FunctionCallRequestContent callRequest)
+                {
+                    continue;
+                }
+
+                functionCallIds ??= new HashSet<string>(asstMessage.ToolCalls.Select(t => t.Id));
+
+                if (callRequest.Id is null || functionCallIds.Contains(callRequest.Id))
+                {
+                    continue;
+                }
+
+                var argument = JsonSerializer.Serialize(callRequest.Arguments);
+
+                asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
             return new[] { asstMessage };
