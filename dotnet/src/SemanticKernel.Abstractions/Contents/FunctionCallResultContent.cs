@@ -27,6 +27,7 @@ public sealed class FunctionCallResultContent : KernelContent
     /// <summary>
     /// The function name.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? FunctionName { get; }
 
     /// <summary>

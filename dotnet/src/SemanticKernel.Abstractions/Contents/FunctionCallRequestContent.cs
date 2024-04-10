@@ -19,11 +19,13 @@ public sealed class FunctionCallRequestContent : KernelContent
     /// <summary>
     /// The function call ID.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Id { get; }
 
     /// <summary>
     /// The plugin name.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PluginName { get; }
 
     /// <summary>
@@ -34,11 +36,13 @@ public sealed class FunctionCallRequestContent : KernelContent
     /// <summary>
     /// The kernel arguments.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public KernelArguments? Arguments { get; }
 
     /// <summary>
     /// The exception that occurred while mapping original LLM function call request to the model class.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
 
     /// <summary>

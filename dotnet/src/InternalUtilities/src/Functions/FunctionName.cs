@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a function name.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal sealed class FunctionName
 {
     /// <summary>
