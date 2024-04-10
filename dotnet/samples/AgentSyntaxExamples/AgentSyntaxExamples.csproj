@@ -46,14 +46,6 @@
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Resources\EmbeddedResource.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Resources\travelinfo.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="RepoUtils\EmbeddedResource.cs" />
+    <None Remove="Resources\*" />
   </ItemGroup>
 </Project>
