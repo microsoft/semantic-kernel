@@ -86,4 +86,19 @@ public class FunctionCallResultContentTests
         Assert.Equal(sut.FunctionName, deserializedSut.FunctionName);
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
     }
+
+    [Fact]
+    public void ItShouldCreateChatMessageContent()
+    {
+        // Arrange
+        var sut = new FunctionCallResultContent(this._callContent, "result");
+
+        // Act
+        var chatMessageContent = sut.ToChatMessage();
+
+        // Assert
+        Assert.NotNull(chatMessageContent);
+        Assert.Single(chatMessageContent.Items);
+        Assert.Same(sut, chatMessageContent.Items[0]);
+    }
 }

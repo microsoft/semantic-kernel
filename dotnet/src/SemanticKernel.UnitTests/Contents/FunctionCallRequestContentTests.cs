@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Contents;
@@ -72,5 +74,29 @@ public class FunctionCallRequestContentTests
         // Assert
         Assert.NotNull(resultContent);
         Assert.Equal("Error: Function call arguments were invalid JSON.", resultContent.Result);
+    }
+
+    [Fact]
+    public void ItShouldReturnListOfFunctionCallRequests()
+    {
+        // Arrange
+        var functionCallRequestContents = new ChatMessageContentItemCollection
+        {
+            new FunctionCallRequestContent("f1", "p1", "id1", this._arguments),
+            new FunctionCallRequestContent("f2", "p2", "id2", this._arguments),
+            new FunctionCallRequestContent("f3", "p3", "id3", this._arguments)
+        };
+
+        var chatMessage = new ChatMessageContent(AuthorRole.Tool, functionCallRequestContents);
+
+        // Act
+        var result = FunctionCallRequestContent.GetFunctionCalls(chatMessage).ToArray();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Length);
+        Assert.Equal("id1", result.ElementAt(0).Id);
+        Assert.Equal("id2", result.ElementAt(1).Id);
+        Assert.Equal("id3", result.ElementAt(2).Id);
     }
 }

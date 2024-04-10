@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -81,5 +82,15 @@ public sealed class FunctionCallRequestContent : KernelContent
         }
 
         throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{this.PluginName}', function name - '{this.FunctionName}'.");
+    }
+
+    /// <summary>
+    /// Returns list of function call requests provided via <see cref="ChatMessageContent.Items"/> collection.
+    /// </summary>
+    /// <param name="messageContent">The <see cref="ChatMessageContent"/>.</param>
+    /// <returns></returns>
+    public static IEnumerable<FunctionCallRequestContent> GetFunctionCalls(ChatMessageContent messageContent)
+    {
+        return messageContent.Items.OfType<FunctionCallRequestContent>();
     }
 }

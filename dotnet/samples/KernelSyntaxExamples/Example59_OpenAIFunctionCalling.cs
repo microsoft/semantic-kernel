@@ -82,7 +82,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                     Write(result.Content);
                 }
 
-                IEnumerable<FunctionCallRequestContent> functionCalls = result.Items.OfType<FunctionCallRequestContent>(); // Getting list of function calls.
+                IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(result);
                 if (!functionCalls.Any())
                 {
                     break;
@@ -94,17 +94,17 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 {
                     try
                     {
-                        FunctionCallResultContent functionResult = await functionCall.InvokeAsync(kernel); // Executing each function.
+                        FunctionCallResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
 
-                        chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { functionResult })); // Adding function result to chat history.
+                        chatHistory.Add(resultContent.ToChatMessage());
                     }
                     catch (Exception ex)
                     {
-                        chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(functionCall, ex) })); // Adding function result to chat history.
+                        chatHistory.Add(new FunctionCallResultContent(functionCall, ex).ToChatMessage()); // Adding function result to chat history.
                         // Adding exception to chat history.
                         // or
                         //string message = "Error details that LLM can reason about.";
-                        //chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionResultContent(functionCall, message) })); 
+                        //chatHistory.Add(new FunctionCallResultContent(functionCall, message).ToChatMessageContent()); // Adding function result to chat history.
                     }
                 }
 

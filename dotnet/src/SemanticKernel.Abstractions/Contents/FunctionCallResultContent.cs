@@ -2,6 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -72,5 +73,14 @@ public sealed class FunctionCallResultContent : KernelContent
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;
+    }
+
+    /// <summary>
+    /// Creates <see cref="ChatMessageContent"/> and adds the current instance of the class to the <see cref="ChatMessageContent.Items"/> collection.
+    /// </summary>
+    /// <returns>The <see cref="ChatMessageContent"/> instance.</returns>
+    public ChatMessageContent ToChatMessage()
+    {
+        return new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { this });
     }
 }
