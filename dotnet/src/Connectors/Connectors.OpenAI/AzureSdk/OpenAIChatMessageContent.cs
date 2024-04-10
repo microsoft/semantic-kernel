@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -26,7 +27,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     internal OpenAIChatMessageContent(ChatResponseMessage chatMessage, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, metadata)
+        : base(new AuthorRole(chatMessage.Role.ToString()), chatMessage.Content, modelId, chatMessage, System.Text.Encoding.UTF8, CreateMetadataDictionary(chatMessage.ToolCalls, metadata))
     {
         this.ToolCalls = chatMessage.ToolCalls;
     }
@@ -35,7 +36,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     internal OpenAIChatMessageContent(ChatRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, metadata)
+        : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
     }
@@ -44,7 +45,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatCompletionsToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(role, content, modelId, content, System.Text.Encoding.UTF8, metadata)
+        : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
     {
         this.ToolCalls = toolCalls;
     }
@@ -76,5 +77,42 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         }
 
         return Array.Empty<OpenAIFunctionToolCall>();
+    }
+
+    private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
+        IReadOnlyList<ChatCompletionsToolCall> toolCalls,
+        IReadOnlyDictionary<string, object?>? original)
+    {
+        // We only need to augment the metadata if there are any tool calls.
+        if (toolCalls.Count > 0)
+        {
+            Dictionary<string, object?> newDictionary;
+            if (original is null)
+            {
+                // There's no existing metadata to clone; just allocate a new dictionary.
+                newDictionary = new Dictionary<string, object?>(1);
+            }
+            else if (original is IDictionary<string, object?> origIDictionary)
+            {
+                // Efficiently clone the old dictionary to a new one.
+                newDictionary = new Dictionary<string, object?>(origIDictionary);
+            }
+            else
+            {
+                // There's metadata to clone but we have to do so one item at a time.
+                newDictionary = new Dictionary<string, object?>(original.Count + 1);
+                foreach (var kvp in original)
+                {
+                    newDictionary[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Add the additional entry.
+            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
+
+            return newDictionary;
+        }
+
+        return original;
     }
 }
