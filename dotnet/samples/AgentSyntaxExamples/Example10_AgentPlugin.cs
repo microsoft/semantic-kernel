@@ -66,6 +66,7 @@ public class Example10_AgentPlugin : BaseTest
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
+            // Use the "top" agent which does not have direct access to the menu.
             await foreach (var content in chat.InvokeAsync(agentTop))
             {
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");

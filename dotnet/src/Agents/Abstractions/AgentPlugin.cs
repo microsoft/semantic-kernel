@@ -24,7 +24,7 @@ internal sealed class AgentPlugin : KernelPlugin
     /// <inheritdoc/>
     public override int FunctionCount => 1;
 
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
 
     private KernelFunction Function => this._functionAsk ??= KernelFunctionFactory.CreateFromMethod(this.InvokeAsync, FunctionName, description: this.Description);
 
@@ -49,10 +49,15 @@ internal sealed class AgentPlugin : KernelPlugin
     }
 
     internal AgentPlugin(Agent agent)
-        : base(s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty), // Uniqueness ???
-               agent.Description)
+        : base(GeneratePluginName(agent), agent.Description)
     {
         this._agent = agent;
+    }
+
+    private static string GeneratePluginName(Agent agent)
+    {
+        string identifier = s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty);
+        return $"{agent.GetType().Name}_{identifier}";
     }
 
     /// <summary>
