@@ -442,14 +442,16 @@ internal abstract class ClientCore
                     chatOptions.Messages.Add(new ChatRequestToolMessage(result, toolCall.Id));
 
                     // Add the tool response message to the chat history.
-                    var message = new ChatMessageContent(role: AuthorRole.Tool, content: result, metadata: new Dictionary<string, object?> { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } });
+                    var message = new ChatMessageContent(role: AuthorRole.Tool, content: null);
 
                     if (toolCall is ChatCompletionsFunctionToolCall functionCall)
                     {
-                        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
-                        // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
                         message.Items.Add(new FunctionCallResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
+                    }
+                    else
+                    {
+                        message.Items.Add(new FunctionCallResultContent(id: toolCall.Id, result: result));
                     }
 
                     chat.Add(message);
@@ -997,8 +999,8 @@ internal abstract class ClientCore
                 return new[] { new ChatRequestToolMessage(message.Content, toolIdString) };
             }
 
-            // Handling function call results represented by the FunctionResultContent type.
-            // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
+            // Handling function call results represented by the FunctionCallResultContent type.
+            // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionCallResultContent(functionCall, result) })
             List<ChatRequestToolMessage>? toolMessages = null;
             foreach (var item in message.Items)
             {

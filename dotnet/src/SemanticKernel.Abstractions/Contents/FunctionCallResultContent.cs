@@ -26,7 +26,7 @@ public sealed class FunctionCallResultContent : KernelContent
     /// <summary>
     /// The function name.
     /// </summary>
-    public string FunctionName { get; }
+    public string? FunctionName { get; }
 
     /// <summary>
     /// The result of the function call, the function invocation exception or the custom error message.
@@ -42,7 +42,7 @@ public sealed class FunctionCallResultContent : KernelContent
     /// <param name="id">The function call ID.</param>
     /// <param name="result">The function result.</param>
     [JsonConstructor]
-    public FunctionCallResultContent(string functionName, string? pluginName = null, string? id = null, object? result = null)
+    public FunctionCallResultContent(string? functionName = null, string? pluginName = null, string? id = null, object? result = null)
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
