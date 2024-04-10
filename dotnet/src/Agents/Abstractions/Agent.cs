@@ -36,6 +36,11 @@ public abstract class Agent
     public string? Name { get; init; }
 
     /// <summary>
+    /// Expose agent as a <see cref="KernelPlugin"/>.
+    /// </summary>
+    public KernelPlugin AsPlugin() => new AgentPlugin(this);
+
+    /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
     /// <example>
     /// yield return typeof(YourAgentChannel).FullName;

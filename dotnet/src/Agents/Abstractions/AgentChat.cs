@@ -28,15 +28,14 @@ public abstract class AgentChat
     protected ChatHistory History { get; }
 
     /// <summary>
-    /// $$$
+    /// Initiate the agent conversation.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieve the message history, either the primary history or
-    /// an agent specific version.
+    /// Retrieve the chat history.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The message history</returns>
@@ -44,8 +43,8 @@ public abstract class AgentChat
         this.GetChatMessagesAsync(agent: null, cancellationToken);
 
     /// <summary>
-    /// Retrieve the message history, either the primary history or
-    /// an agent specific version.
+    /// Retrieve an agent specific history.  Visibility for chat is translated into each
+    /// modality the case where different agent when different agnet types are interacting.
     /// </summary>
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -14,27 +14,21 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Specialization of <see cref="KernelPlugin"/> for <see cref="Agent"/>.
 /// </summary>
-public sealed class AgentPlugin : KernelPlugin
+internal sealed class AgentPlugin : KernelPlugin
 {
     /// <summary>
-    /// $$$
+    /// The agent function name.
     /// </summary>
-    public const string FunctionName = "Ask"; // $$$
+    public const string FunctionName = "AskAgent";
 
     /// <inheritdoc/>
     public override int FunctionCount => 1;
 
-    /// <summary>
-    /// $$$
-    /// </summary>
-    public Agent Agent { get; }
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
 
     private KernelFunction Function => this._functionAsk ??= KernelFunctionFactory.CreateFromMethod(this.InvokeAsync, FunctionName, description: this.Description);
 
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z-]");
-
-    private readonly PluginChat _chat;
-
+    private readonly Agent _agent;
     private KernelFunction? _functionAsk;
 
     /// <inheritdoc/>
@@ -58,27 +52,35 @@ public sealed class AgentPlugin : KernelPlugin
         : base(s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty), // Uniqueness ???
                agent.Description)
     {
-        this.Agent = agent;
-        this._chat = new PluginChat(agent);
+        this._agent = agent;
     }
 
     /// <summary>
     /// Invoke plugin with optional input.
     /// </summary>
     /// <param name="input">Optional input</param>
+    /// <param name="arguments">Context arguments.</param>
+    /// <param name="logger">The logger, if provided.</param>
     /// <param name="cancellationToken">A cancel token</param>
     /// <returns>The agent response</returns>
-    private async Task<string?> InvokeAsync(string? input, CancellationToken cancellationToken = default) // $$$ TYPE / GENERIC (INPUT/OUTPUT) ???
+    private async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(
+        string? input,
+        KernelArguments arguments,
+        ILogger? logger = null,
+        CancellationToken cancellationToken = default)
     {
-        this._chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+        PluginChat chat = new(this._agent);
 
-        var message = await this._chat.InvokeAsync(cancellationToken).LastAsync(cancellationToken).ConfigureAwait(false); // $$$ HACK: LAST / BEHAVIOR
+        if (!string.IsNullOrEmpty(input))
+        {
+            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+        }
 
-        return message.Content;
+        return await chat.InvokeAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// A special nexus for managing the plug-in interaction.
+    /// A dedicated chat for managing the plug-in interaction.
     /// </summary>
     private sealed class PluginChat : AgentChat
     {
