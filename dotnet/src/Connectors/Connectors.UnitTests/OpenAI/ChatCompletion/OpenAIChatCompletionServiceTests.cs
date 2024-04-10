@@ -323,9 +323,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("image_url", contentItems[1].GetProperty("type").GetString());
     }
 
-    [Fact]
-    public async Task
-
     public void Dispose()
     {
         this._httpClient.Dispose();

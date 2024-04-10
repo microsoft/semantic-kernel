@@ -14,11 +14,11 @@ namespace System.Reflection
         internal NullabilityInfo(Type type, NullabilityState readState, NullabilityState writeState,
             NullabilityInfo? elementType, NullabilityInfo[] typeArguments)
         {
-            Type = type;
-            ReadState = readState;
-            WriteState = writeState;
-            ElementType = elementType;
-            GenericTypeArguments = typeArguments;
+            this.Type = type;
+            this.ReadState = readState;
+            this.WriteState = writeState;
+            this.ElementType = elementType;
+            this.GenericTypeArguments = typeArguments;
         }
 
         /// <summary>

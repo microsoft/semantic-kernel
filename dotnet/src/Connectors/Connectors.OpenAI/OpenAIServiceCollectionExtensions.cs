@@ -510,7 +510,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddOpenAIChatCompletion(this IServiceCollection services,
         string modelId,
-        OpenAIClient? openAIClient = null,
+        OpenAIClient? openAIClient,
         string? serviceId = null)
     {
         Verify.NotNull(services);

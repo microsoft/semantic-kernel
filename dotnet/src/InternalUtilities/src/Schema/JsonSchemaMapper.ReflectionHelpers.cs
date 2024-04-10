@@ -177,16 +177,16 @@ static partial class JsonSchemaMapper
     {
         public ParameterLookupKey(string name, Type type)
         {
-            Name = name;
-            Type = type;
+            this.Name = name;
+            this.Type = type;
         }
 
         public string Name { get; }
         public Type Type { get; }
 
-        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
-        public bool Equals(ParameterLookupKey other) => Type == other.Type && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
-        public override bool Equals(object? obj) => obj is ParameterLookupKey key && Equals(key);
+        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Name);
+        public bool Equals(ParameterLookupKey other) => this.Type == other.Type && string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        public override bool Equals(object? obj) => obj is ParameterLookupKey key && this.Equals(key);
     }
 
     // Resolves the deserialization constructor for a type using logic copied from

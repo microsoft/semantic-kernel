@@ -35,7 +35,7 @@ namespace System.Reflection
         {
             while (memberInfo != null)
             {
-                if (_context.TryGetValue(memberInfo, out NullabilityState state))
+                if (this._context.TryGetValue(memberInfo, out NullabilityState state))
                 {
                     return state;
                 }
@@ -47,7 +47,7 @@ namespace System.Reflection
                         attribute.ConstructorArguments.Count == 1)
                     {
                         state = TranslateByte(attribute.ConstructorArguments[0].Value);
-                        _context.Add(memberInfo, state);
+                        this._context.Add(memberInfo, state);
                         return state;
                     }
                 }
@@ -71,14 +71,14 @@ namespace System.Reflection
             EnsureIsSupported();
 
             IList<CustomAttributeData> attributes = parameterInfo.GetCustomAttributesData();
-            NullableAttributeStateParser parser = parameterInfo.Member is MethodBase method && IsPrivateOrInternalMethodAndAnnotationDisabled(method)
+            NullableAttributeStateParser parser = parameterInfo.Member is MethodBase method && this.IsPrivateOrInternalMethodAndAnnotationDisabled(method)
                 ? NullableAttributeStateParser.Unknown
                 : CreateParser(attributes);
-            NullabilityInfo nullability = GetNullabilityInfo(parameterInfo.Member, parameterInfo.ParameterType, parser);
+            NullabilityInfo nullability = this.GetNullabilityInfo(parameterInfo.Member, parameterInfo.ParameterType, parser);
 
             if (nullability.ReadState != NullabilityState.Unknown)
             {
-                CheckParameterMetadataType(parameterInfo, nullability);
+                this.CheckParameterMetadataType(parameterInfo, nullability);
             }
 
             CheckNullabilityAttributes(nullability, attributes);
@@ -110,7 +110,7 @@ namespace System.Reflection
 
             if (metaParameter != null)
             {
-                CheckGenericParameters(nullability, metaMember, metaParameter.ParameterType, parameter.Member.ReflectedType);
+                this.CheckGenericParameters(nullability, metaMember, metaParameter.ParameterType, parameter.Member.ReflectedType);
             }
         }
 
@@ -197,10 +197,10 @@ namespace System.Reflection
 
             MethodInfo? getter = propertyInfo.GetGetMethod(true);
             MethodInfo? setter = propertyInfo.GetSetMethod(true);
-            bool annotationsDisabled = (getter == null || IsPrivateOrInternalMethodAndAnnotationDisabled(getter))
-                && (setter == null || IsPrivateOrInternalMethodAndAnnotationDisabled(setter));
+            bool annotationsDisabled = (getter == null || this.IsPrivateOrInternalMethodAndAnnotationDisabled(getter))
+                && (setter == null || this.IsPrivateOrInternalMethodAndAnnotationDisabled(setter));
             NullableAttributeStateParser parser = annotationsDisabled ? NullableAttributeStateParser.Unknown : CreateParser(propertyInfo.GetCustomAttributesData());
-            NullabilityInfo nullability = GetNullabilityInfo(propertyInfo, propertyInfo.PropertyType, parser);
+            NullabilityInfo nullability = this.GetNullabilityInfo(propertyInfo, propertyInfo.PropertyType, parser);
 
             if (getter != null)
             {
@@ -226,7 +226,7 @@ namespace System.Reflection
         private bool IsPrivateOrInternalMethodAndAnnotationDisabled(MethodBase method)
         {
             if ((method.IsPrivate || method.IsFamilyAndAssembly || method.IsAssembly) &&
-               IsPublicOnly(method.IsPrivate, method.IsFamilyAndAssembly, method.IsAssembly, method.Module))
+               this.IsPublicOnly(method.IsPrivate, method.IsFamilyAndAssembly, method.IsAssembly, method.Module))
             {
                 return true;
             }
@@ -246,7 +246,7 @@ namespace System.Reflection
         {
             EnsureIsSupported();
 
-            return GetNullabilityInfo(eventInfo, eventInfo.EventHandlerType!, CreateParser(eventInfo.GetCustomAttributesData()));
+            return this.GetNullabilityInfo(eventInfo, eventInfo.EventHandlerType!, CreateParser(eventInfo.GetCustomAttributesData()));
         }
 
         /// <summary>
@@ -262,8 +262,8 @@ namespace System.Reflection
             EnsureIsSupported();
 
             IList<CustomAttributeData> attributes = fieldInfo.GetCustomAttributesData();
-            NullableAttributeStateParser parser = IsPrivateOrInternalFieldAndAnnotationDisabled(fieldInfo) ? NullableAttributeStateParser.Unknown : CreateParser(attributes);
-            NullabilityInfo nullability = GetNullabilityInfo(fieldInfo, fieldInfo.FieldType, parser);
+            NullableAttributeStateParser parser = this.IsPrivateOrInternalFieldAndAnnotationDisabled(fieldInfo) ? NullableAttributeStateParser.Unknown : CreateParser(attributes);
+            NullabilityInfo nullability = this.GetNullabilityInfo(fieldInfo, fieldInfo.FieldType, parser);
             CheckNullabilityAttributes(nullability, attributes);
             return nullability;
         }
@@ -279,7 +279,7 @@ namespace System.Reflection
         private bool IsPrivateOrInternalFieldAndAnnotationDisabled(FieldInfo fieldInfo)
         {
             if ((fieldInfo.IsPrivate || fieldInfo.IsFamilyAndAssembly || fieldInfo.IsAssembly) &&
-                IsPublicOnly(fieldInfo.IsPrivate, fieldInfo.IsFamilyAndAssembly, fieldInfo.IsAssembly, fieldInfo.Module))
+                this.IsPublicOnly(fieldInfo.IsPrivate, fieldInfo.IsFamilyAndAssembly, fieldInfo.IsAssembly, fieldInfo.Module))
             {
                 return true;
             }
@@ -289,10 +289,10 @@ namespace System.Reflection
 
         private bool IsPublicOnly(bool isPrivate, bool isFamilyAndAssembly, bool isAssembly, Module module)
         {
-            if (!_publicOnlyModules.TryGetValue(module, out NotAnnotatedStatus value))
+            if (!this._publicOnlyModules.TryGetValue(module, out NotAnnotatedStatus value))
             {
                 value = PopulateAnnotationInfo(module.GetCustomAttributesData());
-                _publicOnlyModules.Add(module, value);
+                this._publicOnlyModules.Add(module, value);
             }
 
             if (value == NotAnnotatedStatus.None)
@@ -334,11 +334,11 @@ namespace System.Reflection
         private NullabilityInfo GetNullabilityInfo(MemberInfo memberInfo, Type type, NullableAttributeStateParser parser)
         {
             int index = 0;
-            NullabilityInfo nullability = GetNullabilityInfo(memberInfo, type, parser, ref index);
+            NullabilityInfo nullability = this.GetNullabilityInfo(memberInfo, type, parser, ref index);
 
             if (nullability.ReadState != NullabilityState.Unknown)
             {
-                TryLoadGenericMetaTypeNullability(memberInfo, nullability);
+                this.TryLoadGenericMetaTypeNullability(memberInfo, nullability);
             }
 
             return nullability;
@@ -376,14 +376,14 @@ namespace System.Reflection
             else
             {
                 if (!parser.ParseNullableState(index++, ref state)
-                    && GetNullableContext(memberInfo) is { } contextState)
+                    && this.GetNullableContext(memberInfo) is { } contextState)
                 {
                     state = contextState;
                 }
 
                 if (underlyingType.IsArray)
                 {
-                    elementState = GetNullabilityInfo(memberInfo, underlyingType.GetElementType()!, parser, ref index);
+                    elementState = this.GetNullabilityInfo(memberInfo, underlyingType.GetElementType()!, parser, ref index);
                 }
             }
 
@@ -394,7 +394,7 @@ namespace System.Reflection
 
                 for (int i = 0; i < genericArguments.Length; i++)
                 {
-                    genericArgumentsState[i] = GetNullabilityInfo(memberInfo, genericArguments[i], parser, ref index);
+                    genericArgumentsState[i] = this.GetNullabilityInfo(memberInfo, genericArguments[i], parser, ref index);
                 }
             }
 
@@ -431,7 +431,7 @@ namespace System.Reflection
 
             if (metaType != null)
             {
-                CheckGenericParameters(nullability, metaMember!, metaType, memberInfo.ReflectedType);
+                this.CheckGenericParameters(nullability, metaMember!, metaType, memberInfo.ReflectedType);
             }
         }
 
@@ -462,7 +462,7 @@ namespace System.Reflection
             {
                 if (nullability.ReadState == NullabilityState.NotNull)
                 {
-                    TryUpdateGenericParameterNullability(nullability, metaType, reflectedType);
+                    this.TryUpdateGenericParameterNullability(nullability, metaType, reflectedType);
                 }
             }
             else if (metaType.ContainsGenericParameters)
@@ -473,19 +473,19 @@ namespace System.Reflection
 
                     for (int i = 0; i < genericArguments.Length; i++)
                     {
-                        CheckGenericParameters(nullability.GenericTypeArguments[i], metaMember, genericArguments[i], reflectedType);
+                        this.CheckGenericParameters(nullability.GenericTypeArguments[i], metaMember, genericArguments[i], reflectedType);
                     }
                 }
                 else if (nullability.ElementType is { } elementNullability && metaType.IsArray)
                 {
-                    CheckGenericParameters(elementNullability, metaMember, metaType.GetElementType()!, reflectedType);
+                    this.CheckGenericParameters(elementNullability, metaMember, metaType.GetElementType()!, reflectedType);
                 }
 
                 // We could also follow this branch for metaType.IsPointer, but since pointers must be unmanaged this
                 // will be a no-op regardless
                 else if (metaType.IsByRef)
                 {
-                    CheckGenericParameters(nullability, metaMember, metaType.GetElementType()!, reflectedType);
+                    this.CheckGenericParameters(nullability, metaMember, metaType.GetElementType()!, reflectedType);
                 }
             }
         }
@@ -496,7 +496,7 @@ namespace System.Reflection
 
             if (reflectedType is not null
                 && !genericParameter.IsGenericMethodParameter()
-                && TryUpdateGenericTypeParameterNullabilityFromReflectedType(nullability, genericParameter, reflectedType, reflectedType))
+                && this.TryUpdateGenericTypeParameterNullabilityFromReflectedType(nullability, genericParameter, reflectedType, reflectedType))
             {
                 return true;
             }
@@ -514,7 +514,7 @@ namespace System.Reflection
                 return true;
             }
 
-            if (GetNullableContext(genericParameter) is { } contextState)
+            if (this.GetNullableContext(genericParameter) is { } contextState)
             {
                 nullability.ReadState = contextState;
                 nullability.WriteState = contextState;
@@ -543,14 +543,14 @@ namespace System.Reflection
             if (!baseType.IsGenericType
                 || (baseType.IsGenericTypeDefinition ? baseType : baseType.GetGenericTypeDefinition()) != genericParameter.DeclaringType)
             {
-                return TryUpdateGenericTypeParameterNullabilityFromReflectedType(nullability, genericParameter, baseType, reflectedType);
+                return this.TryUpdateGenericTypeParameterNullabilityFromReflectedType(nullability, genericParameter, baseType, reflectedType);
             }
 
             Type[] genericArguments = baseType.GetGenericArguments();
             Type genericArgument = genericArguments[genericParameter.GenericParameterPosition];
             if (genericArgument.IsGenericParameter)
             {
-                return TryUpdateGenericParameterNullability(nullability, genericArgument, reflectedType);
+                return this.TryUpdateGenericParameterNullability(nullability, genericArgument, reflectedType);
             }
 
             NullableAttributeStateParser parser = CreateParser(contextTypeDefinition.GetCustomAttributesData());
