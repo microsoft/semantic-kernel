@@ -14,6 +14,8 @@ We regularly have Community Office Hours that are open to the **public** to join
 Add Semantic Kernel events to your calendar - we're running two community calls to cater different timezones: 
 * Americas timezone: download the [calendar.ics](https://aka.ms/sk-community-calendar) file.
 * Asia Pacific timezone: download the [calendar-APAC.ics](https://aka.ms/sk-community-calendar-apac) file.
+* Java Development Office Hours:
+* 
 
 If you have any questions or if you would like to showcase your project(s), please email what you'd like us to cover here: skofficehours[at]microsoft.com.
 
