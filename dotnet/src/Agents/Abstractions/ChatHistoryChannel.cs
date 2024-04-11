@@ -34,7 +34,7 @@ public class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal sealed override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 
