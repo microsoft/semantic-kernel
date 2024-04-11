@@ -34,8 +34,12 @@ public class AggregatorAgentTests
                     new()
                     {
                         SelectionStrategy = new SequentialSelectionStrategy(),
-                        MaximumIterations = 3,
-                        TerminationStrategy = (_, _, _) => Task.FromResult(false), // Continue to max iterations
+                        TerminationStrategy =
+                            new DefaultTerminationStrategy()
+                            {
+                                MaximumIterations = 3,
+                                DisableTermination = true // Continue to max iterations
+                            }
                     }
             };
 
