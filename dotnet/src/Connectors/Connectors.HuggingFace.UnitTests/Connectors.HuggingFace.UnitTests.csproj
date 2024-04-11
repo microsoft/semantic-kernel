@@ -3,21 +3,13 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.HuggingFace.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.HuggingFace.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>12</LangVersion>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0070,SKEXP0050</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Use newest available compiler to permit LangVersion 12. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

@@ -41,10 +41,10 @@ public sealed class GeminiPromptExecutionSettingsTests
             CandidateCount = 3,
             StopSequences = new[] { "foo", "bar" },
             MaxTokens = 128,
-            SafetySettings = new List<GeminiSafetySetting>()
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Harassment, GeminiSafetyThreshold.BlockOnlyHigh)
-            }
+            ]
         };
 
         // Act

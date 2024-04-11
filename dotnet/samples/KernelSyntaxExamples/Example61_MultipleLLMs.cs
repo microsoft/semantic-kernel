@@ -40,7 +40,7 @@ public class Example61_MultipleLLMs : BaseTest
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = new();
+        KernelArguments arguments = [];
         arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { serviceId, new PromptExecutionSettings() }
