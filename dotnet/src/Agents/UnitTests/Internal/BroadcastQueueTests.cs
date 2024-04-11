@@ -141,7 +141,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             this.ReceivedMessages.AddRange(history);
             this.ReceiveCount += 1;
@@ -164,7 +164,7 @@ public class BroadcastQueueTests
             throw new NotImplementedException();
         }
 
-        protected internal override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             await Task.Delay(this.ReceiveDuration, cancellationToken);
 
