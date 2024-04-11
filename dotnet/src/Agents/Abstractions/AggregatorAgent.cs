@@ -51,7 +51,7 @@ public sealed class AggregatorAgent : Agent
             return this._chat.InvokeAsync(cancellationToken);
         }
 
-        protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             this._chat.AddChatMessages(history.ToArray());
 
