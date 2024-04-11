@@ -11,40 +11,38 @@
     <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
     <name>Semantic Kernel PostgreSQL Memory Connector</name>
 
+    <properties>
+        <!-- Define versions here -->
+        <jackson.version>2.12.3</jackson.version>
+        <postgresql.version>42.2.18</postgresql.version>
+        <!-- ... -->
+    </properties>
+
     <dependencies>
+        <!-- Jackson dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-        </dependency>
 
+        <!-- Other dependencies -->
+        <!-- ... -->
+
+        <!-- PostgreSQL dependency -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
+        <!-- ... -->
     </dependencies>
 </project>
