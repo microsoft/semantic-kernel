@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Delegate definition for <see cref="ChatExecutionSettings.TerminationStrategy"/>.
 /// </summary>
-/// <param name="agent">The agent actively interacting with the nexus.</param>
+/// <param name="agent">The agent actively interacting with an <see cref="AgentGroupChat"/>.</param>
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>True to terminate chat loop.</returns>
@@ -18,14 +18,14 @@ public delegate Task<bool> TerminationCriteriaCallback(Agent agent, IReadOnlyLis
 /// <summary>
 /// Delegate definition for <see cref="ChatExecutionSettings.SelectionStrategy"/>.
 /// </summary>
-/// <param name="agents">The agents participating in chat.</param>
+/// <param name="agents">The agents participating in an <see cref="AgentGroupChat"/>.</param>
 /// <param name="history">The chat history.</param>
 /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
 /// <returns>The agent who shall take the next turn.</returns>
 public delegate Task<Agent?> SelectionCriteriaCallback(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 
 /// <summary>
-/// Settings that affect behavior of <see cref="AgentChat"/>.
+/// Settings that affect behavior of <see cref="AgentGroupChat"/>.
 /// </summary>
 /// <remarks>
 /// Default behavior result in no agent selection.
@@ -38,7 +38,7 @@ public class ChatExecutionSettings
     public const int DefaultMaximumIterations = 1;
 
     /// <summary>
-    /// The maximum number of agent interactions for a given nexus invocation.
+    /// The maximum number of agent interactions for a given chat invocation.
     /// </summary>
     public int MaximumIterations { get; set; } = DefaultMaximumIterations;
 

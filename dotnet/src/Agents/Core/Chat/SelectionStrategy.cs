@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Base strategy class for defining completion criteria for a <see cref="AgentChat"/>.
+/// Base strategy class for selecting the next agent for a <see cref="AgentGroupChat"/>.
 /// </summary>
 public abstract class SelectionStrategy
 {

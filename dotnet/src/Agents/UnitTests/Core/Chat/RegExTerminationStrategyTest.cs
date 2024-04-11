@@ -10,9 +10,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="ExpressionTerminationStrategy"/>.
+/// Unit testing of <see cref="RegExTerminationStrategy"/>.
 /// </summary>
-public class ExpressionTerminationStrategyTest
+public class RegExTerminationStrategyTest
 {
     /// <summary>
     /// Verify abililty of strategy to match expression.
@@ -20,7 +20,7 @@ public class ExpressionTerminationStrategyTest
     [Fact]
     public async Task VerifyExpressionTerminationStrategyAsync()
     {
-        ExpressionTerminationStrategy strategy = new("test");
+        RegExTerminationStrategy strategy = new("test");
 
         await VerifyResultAsync(
             expectedResult: false,
@@ -33,7 +33,7 @@ public class ExpressionTerminationStrategyTest
             content: "this is a test");
     }
 
-    private static async Task VerifyResultAsync(bool expectedResult, ExpressionTerminationStrategy strategyRoot, string content)
+    private static async Task VerifyResultAsync(bool expectedResult, RegExTerminationStrategy strategyRoot, string content)
     {
         ChatMessageContent message = new(AuthorRole.Assistant, content);
         Mock<Agent> agent = new();

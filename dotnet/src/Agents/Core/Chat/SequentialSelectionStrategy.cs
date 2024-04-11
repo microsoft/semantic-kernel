@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,18 +21,16 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             return Task.FromResult<Agent?>(null);
         }
 
-        if (this._index > agents.Count - 1)
+        var agent = agents[this._index % agents.Count];
+
+        try
         {
-            this._index = 0;
+            // If overflow occurs, a runtime exception will be raised (checked).
+            this._index = checked(this._index + 1);
         }
-
-        var agent = agents[this._index];
-
-        ++this._index;
-
-        if (this._index == agents.Count)
+        catch (Exception exception) when (!exception.IsCriticalException())
         {
-            this._index = 0;
+            this._index = (int.MaxValue % agents.Count) + 1;
         }
 
         return Task.FromResult<Agent?>(agent);

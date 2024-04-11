@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Signals termination when the most recent message matches against the defined regular expressions
-/// for the specified agent (if provided).
+/// Filters strategy evaluation according to a set of agents.
 /// </summary>
 public abstract class AgentBoundTerminationStrategy : TerminationStrategy
 {

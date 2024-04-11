@@ -43,7 +43,7 @@ public class Example03_Chat : BaseTest
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        // Create a nexus for agent interaction.
+        // Create a chat for agent interaction.
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
             {
