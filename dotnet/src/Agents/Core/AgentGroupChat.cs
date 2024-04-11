@@ -57,25 +57,28 @@ public sealed class AgentGroupChat : AgentChat
     {
         if (this.IsComplete)
         {
-            yield break;
+            // Throw exception if chat is completed and automatic-reset is not enabled.
+            if (!this.ExecutionSettings.TerminationStrategy.AutomaticReset)
+            {
+                throw new KernelException("Agent Failure - Chat has completed.");
+            }
+
+            this.IsComplete = false;
         }
 
         // Unable to assume selection in the absence of a strategy.  This is the default.
         // For explicit selection, AgentGroupChat.InvokeAsync(Agent, CancellationToken) is available.
         if (this.ExecutionSettings.SelectionStrategy == null)
         {
-            yield break;
+            throw new KernelException($"Agent Failure - No {nameof(ChatExecutionSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
         }
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            var agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
-            if (agent == null)
-            {
-                yield break;
-            }
+            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
 
+            // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
             {
                 yield return message;
@@ -114,7 +117,9 @@ public sealed class AgentGroupChat : AgentChat
         this.InvokeAsync(agent, isJoining: true, cancellationToken);
 
     /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/> irregardless of
+    /// the <see cref="SelectionStrategy"/> defined via <see cref="AgentGroupChat.ExecutionSettings"/>.  Likewise, this does
+    /// not regard <see cref="TerminationStrategy.MaximumIterations"/> as it only takes a single turn for the specified agent.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="isJoining">Optional flag to control if agent is joining the chat.</param>

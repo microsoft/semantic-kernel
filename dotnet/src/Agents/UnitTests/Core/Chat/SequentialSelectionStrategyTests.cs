@@ -55,8 +55,7 @@ public class SequentialSelectionStrategyTests
     public async Task VerifySequentialSelectionStrategyEmptyAsync()
     {
         SequentialSelectionStrategy strategy = new();
-        Agent? nextAgent = await strategy.NextAsync(Array.Empty<Agent>(), Array.Empty<ChatMessageContent>());
-        Assert.Null(nextAgent);
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync(Array.Empty<Agent>(), Array.Empty<ChatMessageContent>()));
     }
 
     /// <summary>

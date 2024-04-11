@@ -22,6 +22,12 @@ public abstract class TerminationStrategy
     public int MaximumIterations { get; set; } = DefaultMaximumIterations;
 
     /// <summary>
+    /// Set to have automatically clear <see cref="AgentGroupChat.IsComplete"/> if caller
+    /// proceeds with invocation subsequent to achieving termination criteria.
+    /// </summary>
+    public bool AutomaticReset { get; set; }
+
+    /// <summary>
     /// Set of agents for which this strategy is applicable.  If not set,
     /// any agent is evaluated.
     /// </summary>

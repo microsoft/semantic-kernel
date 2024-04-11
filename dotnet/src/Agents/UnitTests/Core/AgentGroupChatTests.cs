@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,9 @@ public class AgentGroupChatTests
         Assert.Empty(chat.Agents);
         Assert.NotNull(chat.ExecutionSettings);
         Assert.False(chat.IsComplete);
+
+        chat.IsComplete = true;
+        Assert.True(chat.IsComplete);
     }
 
     /// <summary>
@@ -83,11 +87,10 @@ public class AgentGroupChatTests
         ((DefaultTerminationStrategy)chat.ExecutionSettings.TerminationStrategy).DisableTermination = true;
 
         chat.IsComplete = true;
-        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
-        Assert.Empty(messages);
+        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
-        chat.IsComplete = false;
-        messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
+        chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
+        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
         Assert.Equal(9, messages.Length);
         Assert.False(chat.IsComplete);
 
@@ -112,21 +115,6 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyGroupAgentChatNullSettingsAsync()
-    {
-        AgentGroupChat chat = Create3AgentChat();
-
-        chat.ExecutionSettings = new();
-
-        var messages = await chat.InvokeAsync().ToArrayAsync();
-        Assert.Empty(messages);
-        Assert.False(chat.IsComplete);
-    }
-
-    /// <summary>
-    /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
-    /// </summary>
-    [Fact]
     public async Task VerifyGroupAgentChatNoStrategyAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
@@ -135,13 +123,11 @@ public class AgentGroupChatTests
         chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
         // No selection
-        var messages = await chat.InvokeAsync().ToArrayAsync();
-        Assert.Empty(messages);
-        Assert.False(chat.IsComplete);
+        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
 
         // Explicit selection
         Agent agent4 = CreateMockAgent().Object;
-        messages = await chat.InvokeAsync(agent4).ToArrayAsync();
+        var messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Single(messages);
         Assert.True(chat.IsComplete);
     }
@@ -150,7 +136,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyGroupAgentChatNullSelectionAsync()
+    public async Task VerifyGroupAgentChatFailedSelectionAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
@@ -158,7 +144,7 @@ public class AgentGroupChatTests
             new()
             {
                 // Strategy that will not select an agent.
-                SelectionStrategy = new NullSelectionStrategy(),
+                SelectionStrategy = new FailedSelectionStrategy(),
                 TerminationStrategy =
                 {
                     // Remove max-limit in order to isolate the target behavior.
@@ -169,8 +155,7 @@ public class AgentGroupChatTests
         // Remove max-limit in order to isolate the target behavior.
         chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
-        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
-        Assert.Empty(messages);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
     }
 
     /// <summary>
@@ -253,11 +238,11 @@ public class AgentGroupChatTests
         }
     }
 
-    private sealed class NullSelectionStrategy : SelectionStrategy
+    private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-        public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<Agent?>(null);
+            throw new InvalidOperationException();
         }
     }
 }
