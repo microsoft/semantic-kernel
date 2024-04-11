@@ -50,7 +50,7 @@ public class Example20_HuggingFace : BaseTest
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         // Generate embeddings for each chunk.
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(new[] { "John: Hello, how are you?\nRoger: Hey, I'm Roger!" });
+        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
         this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }

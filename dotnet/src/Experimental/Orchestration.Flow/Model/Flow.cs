@@ -26,7 +26,7 @@ public sealed class Flow : FlowStep
     public Flow(string name, string goal) : base(goal, null)
     {
         this.Name = name;
-        this._steps = new List<FlowStep>();
+        this._steps = [];
     }
 
     /// <summary>
