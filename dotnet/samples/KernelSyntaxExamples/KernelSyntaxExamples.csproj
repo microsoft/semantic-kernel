@@ -5,8 +5,7 @@
   <PropertyGroup>
     <AssemblyName>KernelSyntaxExamples</AssemblyName>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
@@ -69,11 +68,6 @@
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="RepoUtils\PlanExtensions.cs" />

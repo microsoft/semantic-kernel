@@ -2,8 +2,7 @@
   <PropertyGroup>
     <AssemblyName>IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.IntegrationTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070</NoWarn>
@@ -65,12 +64,6 @@
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   
   <ItemGroup>

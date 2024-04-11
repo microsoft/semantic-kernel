@@ -23,7 +23,7 @@ internal sealed class GeminiTool
     /// a [FunctionResponse][content.part.function_response] with the [content.role] "function" generation context for the next model turn.
     /// </remarks>
     [JsonPropertyName("functionDeclarations")]
-    public IList<FunctionDeclaration> Functions { get; set; } = new List<FunctionDeclaration>();
+    public IList<FunctionDeclaration> Functions { get; set; } = [];
 
     /// <summary>
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.

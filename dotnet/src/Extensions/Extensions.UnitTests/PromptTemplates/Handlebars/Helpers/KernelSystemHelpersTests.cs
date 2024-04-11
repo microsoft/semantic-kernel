@@ -24,7 +24,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithMessageHelperAsync()
     {
         // Arrange
-        var template = "{{#message role=\"title\"}}Hello World!{{/message}}";
+        var template = """{{#message role="title"}}Hello World!{{/message}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -63,7 +63,7 @@ public sealed class KernelSystemHelpersTests
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
+        Assert.Equal("""{"name":"Alice","age":25}""", result);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithArrayHelperAndVariableReferenceAsync()
     {
         // Arrange
-        var template = @"{{array ""hi"" "" "" name ""!"" ""Welcome to"" "" "" Address.City}}";
+        var template = """{{array "hi" " " name "!" "Welcome to" " " Address.City}}""";
         var arguments = new KernelArguments
         {
             { "name", "Alice" },
@@ -191,7 +191,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithConcatHelperAsync()
     {
         // Arrange
-        var template = "{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{concat "Hello" " " name "!"}}""";
         var arguments = new KernelArguments
             {
                 { "name", "Alice" }
@@ -208,7 +208,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithdSetAndConcatHelpersAsync()
     {
         // Arrange
-        var template = "{{set name=\"name\" value=\"Alice\"}}{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{set name="name" value="Alice"}}{{concat "Hello" " " name "!"}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);

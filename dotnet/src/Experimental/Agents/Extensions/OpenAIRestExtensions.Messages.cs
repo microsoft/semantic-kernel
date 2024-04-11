@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,7 +35,7 @@ internal static partial class OpenAIRestExtensions
             new
             {
                 role = AuthorRole.User.Label,
-                file_ids = fileIds?.ToArray() ?? Array.Empty<string>(),
+                file_ids = fileIds?.ToArray() ?? [],
                 content
             };
 
