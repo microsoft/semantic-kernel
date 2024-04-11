@@ -14,7 +14,7 @@ namespace Examples;
 /// <summary>
 /// Represents a class that demonstrates image-to-text functionality.
 /// </summary>
-public sealed class Example86_ImageToText : BaseTest
+public sealed class Example86_ImageToText(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ImageToTextModel = "Salesforce/blip-image-captioning-base";
     private const string ImageFilePath = "test_image.jpg";
@@ -47,6 +47,4 @@ public sealed class Example86_ImageToText : BaseTest
         // Output image description
         this.WriteLine(textContent.Text);
     }
-
-    public Example86_ImageToText(ITestOutputHelper output) : base(output) { }
 }

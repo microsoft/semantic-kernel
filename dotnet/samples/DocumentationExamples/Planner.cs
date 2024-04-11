@@ -16,7 +16,7 @@ namespace Examples;
 /// This example demonstrates how to create native functions for AI to call as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class Planner : BaseTest
+public class Planner(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -89,9 +89,5 @@ public class Planner : BaseTest
             // Get user input again
             Write("User > ");
         }
-    }
-
-    public Planner(ITestOutputHelper output) : base(output)
-    {
     }
 }

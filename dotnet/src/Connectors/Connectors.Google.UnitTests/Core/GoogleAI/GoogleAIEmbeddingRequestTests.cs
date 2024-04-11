@@ -11,7 +11,7 @@ public sealed class GoogleAIEmbeddingRequestTests
     public void FromDataReturnsValidRequestWithData()
     {
         // Arrange
-        var data = new[] { "text1", "text2" };
+        string[] data = ["text1", "text2"];
         var modelId = "modelId";
 
         // Act
@@ -27,7 +27,7 @@ public sealed class GoogleAIEmbeddingRequestTests
     public void FromDataReturnsValidRequestWithModelId()
     {
         // Arrange
-        var data = new[] { "text1", "text2" };
+        string[] data = ["text1", "text2"];
         var modelId = "modelId";
 
         // Act

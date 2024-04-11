@@ -13,7 +13,7 @@ namespace Examples;
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>
-public class Example72_AgentCollaboration : BaseTest
+public class Example72_AgentCollaboration(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -178,9 +178,5 @@ public class Example72_AgentCollaboration : BaseTest
         s_agents.Add(agent);
 
         return agent;
-    }
-
-    public Example72_AgentCollaboration(ITestOutputHelper output) : base(output)
-    {
     }
 }
