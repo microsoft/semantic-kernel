@@ -201,9 +201,12 @@ internal sealed class HuggingFaceClient
 
     private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
     {
-        this.Logger?.LogDebug(
-            "HuggingFace text generation usage: ModelId: {ModelId}",
-            executionSettings?.ModelId ?? this.ModelId);
+        if (this.Logger.IsEnabled(LogLevel.Debug))
+        {
+            this.Logger?.LogDebug(
+                "HuggingFace text generation usage: ModelId: {ModelId}",
+                executionSettings?.ModelId ?? this.ModelId);
+        }
     }
     private Uri GetTextGenerationEndpoint(string modelId)
         => new($"{this.Endpoint}{this.Separator}models/{modelId}");

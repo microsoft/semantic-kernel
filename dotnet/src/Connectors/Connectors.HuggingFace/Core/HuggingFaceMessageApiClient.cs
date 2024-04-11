@@ -121,13 +121,16 @@ internal sealed class HuggingFaceMessageApiClient
 
     private void LogChatCompletionUsage(PromptExecutionSettings? executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
-        this._clientCore.Logger.Log(
-        LogLevel.Debug,
-        "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
-        chatCompletionResponse.Model,
-        chatCompletionResponse.Usage!.PromptTokens,
-        chatCompletionResponse.Usage!.CompletionTokens,
-        chatCompletionResponse.Usage!.TotalTokens);
+        if (this._clientCore.Logger.IsEnabled(LogLevel.Debug))
+        {
+            this._clientCore.Logger.Log(
+            LogLevel.Debug,
+            "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
+            chatCompletionResponse.Model,
+            chatCompletionResponse.Usage!.PromptTokens,
+            chatCompletionResponse.Usage!.CompletionTokens,
+            chatCompletionResponse.Usage!.TotalTokens);
+        }
 
         s_promptTokensCounter.Add(chatCompletionResponse.Usage!.PromptTokens);
         s_completionTokensCounter.Add(chatCompletionResponse.Usage!.CompletionTokens);
