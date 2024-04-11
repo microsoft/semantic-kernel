@@ -291,18 +291,17 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         return chatHistory;
     }
 
-    private HuggingFaceOpenAIClient CreateChatCompletionClient(
+    private HuggingFaceMessageApiClient CreateChatCompletionClient(
         string modelId = "fake-model",
         string? apiKey = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null)
     {
-        return new HuggingFaceOpenAIClient(
-            new HuggingFaceClient(
+        return new HuggingFaceMessageApiClient(
                 modelId: modelId,
                 apiKey: apiKey,
                 endpoint: endpoint,
-                httpClient: httpClient ?? this._httpClient));
+                httpClient: httpClient ?? this._httpClient);
     }
 
     public void Dispose()

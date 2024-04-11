@@ -187,41 +187,6 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
 
         //Act
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent(
-                """
-                {
-                    "id": "",
-                    "object": "text_completion",
-                    "created": 1712235475,
-                    "model": "teknium/OpenHermes-2.5-Mistral-7B",
-                    "system_fingerprint": "1.4.4-sha-6c4496a",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "message": {
-                                "role": "assistant",
-                                "content": "Deep learning is a form of artificial intelligence that is modeled after the structure and function of the human brain. It uses algorithms, called artificial neural networks, to learn and make predictions based on large amounts of data. These networks are designed to recognize patterns and make predictions, and they improve their accuracy with more data and experience. Deep learning is used in a variety of applications, such as image and speech recognition, natural language processing, and drug discovery. It has proven to be highly effective in tasks that"
-                            },
-                            "logprobs": {
-                                "content": []
-                            },
-                            "finish_reason": "length"
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": 27,
-                        "completion_tokens": 100,
-                        "total_tokens": 127
-                    }
-                }
-                """,
-            Encoding.UTF8,
-            "application/json")
-        };
-
-        // Act
         var content = await sut.GetChatMessageContentAsync(chatHistory);
 
         // Assert

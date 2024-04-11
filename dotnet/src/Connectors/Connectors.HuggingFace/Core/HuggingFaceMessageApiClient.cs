@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -17,7 +18,11 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 
-internal sealed class HuggingFaceOpenAIClient
+/// <summary>
+/// This class is responsible for making HTTP requests to the HuggingFace Inference API - Chat Completion Message API
+/// <see href="https://huggingface.co/docs/text-generation-inference/main/en/messages_api" />
+/// </summary>
+internal sealed class HuggingFaceMessageApiClient
 {
     private readonly HuggingFaceClient _clientCore;
 
@@ -55,10 +60,19 @@ internal sealed class HuggingFaceOpenAIClient
             unit: "{token}",
             description: "Number of total tokens used");
 
-    internal HuggingFaceOpenAIClient(
-        HuggingFaceClient clientCore)
+    internal HuggingFaceMessageApiClient(
+        string modelId,
+        HttpClient httpClient,
+        Uri? endpoint = null,
+        string? apiKey = null,
+        ILogger? logger = null)
     {
-        this._clientCore = clientCore;
+        this._clientCore = new(
+            modelId,
+            httpClient,
+            endpoint,
+            apiKey,
+            logger);
     }
 
     internal async IAsyncEnumerable<StreamingChatMessageContent> StreamCompleteChatMessageAsync(

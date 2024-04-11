@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
@@ -22,7 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
 internal sealed class HuggingFaceClient
 {
     private readonly HttpClient _httpClient;
-    private readonly HuggingFaceOpenAIClient _openAIClient;
 
     internal string ModelId { get; }
     internal string? ApiKey { get; }
@@ -47,8 +45,6 @@ internal sealed class HuggingFaceClient
         this.ApiKey = apiKey;
         this._httpClient = httpClient;
         this.Logger = logger ?? NullLogger.Instance;
-
-        this._openAIClient = new HuggingFaceOpenAIClient(this);
     }
 
     #region ClientCore
@@ -301,16 +297,6 @@ internal sealed class HuggingFaceClient
 
     private Uri GetImageToTextGenerationEndpoint(string modelId)
         => new($"{this.Endpoint}{this.Separator}models/{modelId}");
-
-    #endregion
-
-    #region Chat Completion
-
-    internal Task<IReadOnlyList<ChatMessageContent>> GenerateChatAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
-        => this._openAIClient.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
-
-    internal IAsyncEnumerable<StreamingChatMessageContent> StreamGenerateChatAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, CancellationToken cancellationToken)
-        => this._openAIClient.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
     #endregion
 }

@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 public sealed class HuggingFaceChatCompletionService : IChatCompletionService
 {
     private Dictionary<string, object?> AttributesInternal { get; } = new();
-    private HuggingFaceClient Client { get; }
+    private HuggingFaceMessageApiClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
@@ -45,8 +45,8 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
         var clientEndpoint = endpoint ?? httpClient?.BaseAddress
             ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion services requires a valid endpoint provided explicitly or via a http client base address");
 
-        this.Client = new HuggingFaceClient(
-        modelId: model,
+        this.Client = new HuggingFaceMessageApiClient(
+            modelId: model,
             endpoint: clientEndpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
@@ -58,9 +58,9 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
 
     /// <inheritdoc />
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateChatAsync(chatHistory, executionSettings, cancellationToken);
+        => this.Client.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateChatAsync(chatHistory, executionSettings, cancellationToken);
+        => this.Client.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 }

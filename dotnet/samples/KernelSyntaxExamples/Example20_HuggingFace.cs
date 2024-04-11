@@ -119,7 +119,7 @@ public class Example20_HuggingFace : BaseTest
     /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
     /// </summary>
     [Fact(Skip = "Requires TGI (text generation inference) deployment")]
-    public async Task RunTextGenerationInferenceChatCompletionAsync()
+    public async Task RunTGI_ChatCompletionAsync()
     {
         WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
 
@@ -153,10 +153,10 @@ public class Example20_HuggingFace : BaseTest
     /// <summary>
     /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
     /// </summary>
-    [Fact]
-    public async Task RunTextGenerationInferenceStreamingChatCompletionAsync()
+    [Fact(Skip = "Requires TGI (text generation inference) deployment")]
+    public async Task RunTGI_StreamingChatCompletionAsync()
     {
-        WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
+        WriteLine("\n======== HuggingFace - TGI Chat Completion Streaming ========\n");
 
         // This example was run against one of the chat completion (Message API) supported models from HuggingFace, listed in here: <see href="https://huggingface.co/docs/text-generation-inference/main/en/supported_models"/>
         // Starting a Local Docker i.e:
