@@ -52,20 +52,21 @@ public class Example03_Chat : BaseTest
                 ExecutionSettings =
                     new()
                     {
-                        // an assistant message contains the term "approve".
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // an assistant message contains the term "approve".
-                        TerminationStrategy = new ApprovalTerminationStrategy(),
+                        TerminationStrategy =
+                            new ApprovalTerminationStrategy()
+                            {
+                                // It can be prudent to limit how many turns agents are able to take.
+                                // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
+                                // and the conversation may be resumed, if desired.
+                                MaximumIterations = 8,
+                            },
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
-                        // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
+                        // but a custom func could be utilized if desired.
                         SelectionStrategy = new SequentialSelectionStrategy(),
                     }
             };
-
-        // It can be prudent to limit how many turns agents are able to take.
-        // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
-        // and the conversation may be resumed, if desired.
-        chat.ExecutionSettings.TerminationStrategy.MaximumIterations = 8;
 
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";

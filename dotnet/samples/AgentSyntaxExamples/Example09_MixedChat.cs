@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -53,22 +55,19 @@ public class Example09_MixedChat : BaseTest
                 ExecutionSettings =
                     new()
                     {
-                        // In its simplest form, a strategy is simply a delegate or "func"",
-                        // but can also be assigned a ContinuationStrategy subclass.
-                        // Here, custom logic is expressed as a func that will terminate when
+                        // Here a TerminationStrategy subclass is used that will terminate when
                         // an assistant message contains the term "approve".
-                        TerminationStrategy = // ContinuationCriteriaCallback
-                                (agent, messages, cancellationToken) =>
-                                Task.FromResult(
-                                    agent.Id == agentReviewer.Id &&
-                                    (messages[messages.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false)),
+                        TerminationStrategy =
+                            new ApprovalTerminationStrategy()
+                            {
+                                // It can be prudent to limit how many turns agents are able to take.
+                                // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
+                                // and the conversation may be resumed, if desired.
+                                MaximumIterations = 8,
+                            },
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
-                        // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
+                        // but a custom func could be utilized if desired.
                         SelectionStrategy = new SequentialSelectionStrategy(),
-                        // It can be prudent to limit how many turns agents are able to take.
-                        // If the chat exits when it intends to continue, the IsComplete property will be false on AgentChat
-                        // and the conversation may be resumed, if desired.
-                        MaximumIterations = 8,
                     }
             };
 
@@ -87,5 +86,12 @@ public class Example09_MixedChat : BaseTest
         : base(output)
     {
         // Nothing to do...
+    }
+
+    private sealed class ApprovalTerminationStrategy : TerminationStrategy
+    {
+        // Terminate when the final message contains the term "approve"
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 }
