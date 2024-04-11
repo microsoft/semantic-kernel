@@ -11,15 +11,6 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public abstract class SelectionStrategy
 {
     /// <summary>
-    /// Implicitly convert a <see cref="SelectionStrategy"/> to a <see cref="SelectionCriteriaCallback"/>.
-    /// </summary>
-    /// <param name="strategy">A <see cref="TerminationStrategy"/> instance.</param>
-    public static implicit operator SelectionCriteriaCallback(SelectionStrategy strategy)
-    {
-        return strategy.NextAsync;
-    }
-
-    /// <summary>
     /// Determine which agent goes next.
     /// </summary>
     /// <param name="agents">The agents participating in chat.</param>

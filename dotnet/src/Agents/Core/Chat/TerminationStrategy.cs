@@ -12,19 +12,20 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public abstract class TerminationStrategy
 {
     /// <summary>
+    /// Restrict number of turns to one, by default.
+    /// </summary>
+    public const int DefaultMaximumIterations = 1;
+
+    /// <summary>
+    /// The maximum number of agent interactions for a given chat invocation.
+    /// </summary>
+    public int MaximumIterations { get; set; } = DefaultMaximumIterations;
+
+    /// <summary>
     /// Set of agents for which this strategy is applicable.  If not set,
     /// any agent is evaluated.
     /// </summary>
     public IReadOnlyList<Agent>? Agents { get; set; }
-
-    /// <summary>
-    /// Implicitly convert a <see cref="TerminationStrategy"/> to a <see cref="TerminationCriteriaCallback"/>.
-    /// </summary>
-    /// <param name="strategy">A <see cref="TerminationStrategy"/> instance.</param>
-    public static implicit operator TerminationCriteriaCallback(TerminationStrategy strategy)
-    {
-        return strategy.ShouldTerminateAsync;
-    }
 
     /// <summary>
     /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaluated.

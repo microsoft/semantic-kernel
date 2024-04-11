@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,10 +56,14 @@ public class ChatCompletionAgentTests
         var agent =
             new ChatCompletionAgent()
             {
-                Kernel = CreateKernel(mockService.Object)
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                ExecutionSettings = new(),
             };
 
         var result = await agent.InvokeAsync([]).ToArrayAsync();
+
+        Assert.Single(result);
 
         mockService.Verify(
             x =>

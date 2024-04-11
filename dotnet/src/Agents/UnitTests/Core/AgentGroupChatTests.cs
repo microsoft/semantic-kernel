@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,11 +22,11 @@ public class AgentGroupChatTests
     /// Verify the default state of <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public void VerifyAgentChatDefaultState()
+    public void VerifyGroupAgentChatDefaultState()
     {
         AgentGroupChat chat = new();
         Assert.Empty(chat.Agents);
-        Assert.Null(chat.ExecutionSettings);
+        Assert.NotNull(chat.ExecutionSettings);
         Assert.False(chat.IsComplete);
     }
 
@@ -33,7 +34,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatAgentMembershipAsync()
+    public async Task VerifyGroupAgentChatAgentMembershipAsync()
     {
         Agent agent1 = CreateMockAgent().Object;
         Agent agent2 = CreateMockAgent().Object;
@@ -57,7 +58,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatMultiTurnAsync()
+    public async Task VerifyGroupAgentChatMultiTurnAsync()
     {
         Agent agent1 = CreateMockAgent().Object;
         Agent agent2 = CreateMockAgent().Object;
@@ -70,9 +71,17 @@ public class AgentGroupChatTests
                     new()
                     {
                         SelectionStrategy = new SequentialSelectionStrategy(),
-                        MaximumIterations = 9,
+                        TerminationStrategy =
+                        {
+                            // This test is designed to take 9 turns.
+                            MaximumIterations = 9,
+                        }
                     }
             };
+
+        // Enable default strategy to process multiple turns,up to `MaximumIterations`
+        Assert.IsType<DefaultTerminationStrategy>(chat.ExecutionSettings.TerminationStrategy);
+        ((DefaultTerminationStrategy)chat.ExecutionSettings.TerminationStrategy).DisableTermination = true;
 
         chat.IsComplete = true;
         var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
@@ -104,11 +113,11 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatNullSettingsAsync()
+    public async Task VerifyGroupAgentChatNullSettingsAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
-        chat.ExecutionSettings = null;
+        chat.ExecutionSettings = new();
 
         var messages = await chat.InvokeAsync().ToArrayAsync();
         Assert.Empty(messages);
@@ -119,40 +128,47 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatNoStrategyAsync()
+    public async Task VerifyGroupAgentChatNoStrategyAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
-        chat.ExecutionSettings =
-            new()
-            {
-                MaximumIterations = int.MaxValue,
-            };
+        // Remove max-limit in order to isolate the target behavior.
+        chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
+        // No selection
         var messages = await chat.InvokeAsync().ToArrayAsync();
         Assert.Empty(messages);
         Assert.False(chat.IsComplete);
 
+        // Explicit selection
         Agent agent4 = CreateMockAgent().Object;
         messages = await chat.InvokeAsync(agent4).ToArrayAsync();
         Assert.Single(messages);
-        Assert.False(chat.IsComplete);
+        Assert.True(chat.IsComplete);
     }
 
     /// <summary>
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatNullSelectionAsync()
+    public async Task VerifyGroupAgentChatNullSelectionAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
             new()
             {
-                SelectionStrategy = (_, _, _) => Task.FromResult<Agent?>(null),
-                MaximumIterations = int.MaxValue,
+                // Strategy that will not select an agent.
+                SelectionStrategy = new NullSelectionStategy(),
+                TerminationStrategy =
+                {
+                    // Remove max-limit in order to isolate the target behavior.
+                    MaximumIterations = int.MaxValue
+                }
             };
+
+        // Remove max-limit in order to isolate the target behavior.
+        chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
         var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
         Assert.Empty(messages);
@@ -162,7 +178,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatMultiTurnTerminationAsync()
+    public async Task VerifyGroupAgentChatMultiTurnTerminationAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
@@ -170,8 +186,12 @@ public class AgentGroupChatTests
             new()
             {
                 SelectionStrategy = new SequentialSelectionStrategy(),
-                TerminationStrategy = (_, _, _) => Task.FromResult(true),
-                MaximumIterations = int.MaxValue,
+                TerminationStrategy =
+                    new TestTerminationStategy(shouldTerminate: true)
+                    {
+                        // Remove max-limit in order to isolate the target behavior.
+                        MaximumIterations = int.MaxValue
+                    }
             };
 
         var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
@@ -183,7 +203,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentChatDiscreteTerminationAsync()
+    public async Task VerifyGroupAgentChatDiscreteTerminationAsync()
     {
         Agent agent1 = CreateMockAgent().Object;
 
@@ -193,8 +213,12 @@ public class AgentGroupChatTests
                 ExecutionSettings =
                     new()
                     {
-                        TerminationStrategy = (_, _, _) => Task.FromResult(true),
-                        MaximumIterations = int.MaxValue,
+                        TerminationStrategy =
+                            new TestTerminationStategy(shouldTerminate: true)
+                            {
+                                // Remove max-limit in order to isolate the target behavior.
+                                MaximumIterations = int.MaxValue
+                            }
                     }
             };
 
@@ -220,5 +244,21 @@ public class AgentGroupChatTests
         agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
+    }
+
+    private sealed class TestTerminationStategy(bool shouldTerminate) : TerminationStrategy
+    {
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(shouldTerminate);
+        }
+    }
+
+    private sealed class NullSelectionStategy : SelectionStrategy
+    {
+        public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Agent?>(null);
+        }
     }
 }
