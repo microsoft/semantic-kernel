@@ -25,7 +25,7 @@ public enum AggregateTerminationCondition
 /// <summary>
 /// Aggregate a set of <see cref="TerminationStrategy"/> objects.
 /// </summary>
-public sealed class AggregatorTerminationStrategy : AgentBoundTerminationStrategy
+public sealed class AggregatorTerminationStrategy : TerminationStrategy
 {
     private readonly TerminationStrategy[] _strategies;
 

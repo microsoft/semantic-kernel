@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Signals termination when the most recent message matches against the defined regular expressions
 /// for the specified agent (if provided).
 /// </summary>
-public sealed class RegExTerminationStrategy : AgentBoundTerminationStrategy
+public sealed class RegExTerminationStrategy : TerminationStrategy
 {
     private readonly string[] _expressions;
 

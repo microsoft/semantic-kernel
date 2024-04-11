@@ -17,8 +17,8 @@ public class ChatExecutionSettingsTests
     public void VerifyChatExecutionSettingsDefault()
     {
         ChatExecutionSettings settings = new();
-        Assert.Null(settings.TerminationStrategy);
-        Assert.Equal(ChatExecutionSettings.DefaultMaximumIterations, settings.MaximumIterations);
+        Assert.IsType<DefaultTerminationStrategy>(settings.TerminationStrategy);
+        Assert.Equal(TerminationStrategy.DefaultMaximumIterations, settings.TerminationStrategy.MaximumIterations);
         Assert.Null(settings.SelectionStrategy);
     }
 
@@ -32,12 +32,10 @@ public class ChatExecutionSettingsTests
         ChatExecutionSettings settings =
             new()
             {
-                MaximumIterations = 3,
                 TerminationStrategy = strategyMock.Object
             };
 
-        Assert.Equal(3, settings.MaximumIterations);
-        Assert.NotNull(settings.TerminationStrategy);
+        Assert.Equal(strategyMock.Object, settings.TerminationStrategy);
     }
 
     /// <summary>
@@ -52,6 +50,8 @@ public class ChatExecutionSettingsTests
             {
                 SelectionStrategy = strategyMock.Object
             };
+
         Assert.NotNull(settings.SelectionStrategy);
+        Assert.Equal(strategyMock.Object, settings.SelectionStrategy);
     }
 }
