@@ -64,7 +64,7 @@ public sealed class AgentGroupChat : AgentChat
         // For explicit selection, AgentGroupChat.InvokeAsync(Agent, CancellationToken) is available.
         if (this.ExecutionSettings.SelectionStrategy == null)
         {
-            yield break;
+            throw new KernelException($"Agent Failure - No {nameof(ChatExecutionSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
         }
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
@@ -114,7 +114,9 @@ public sealed class AgentGroupChat : AgentChat
         this.InvokeAsync(agent, isJoining: true, cancellationToken);
 
     /// <summary>
-    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
+    /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/> irregardless of
+    /// the <see cref="SelectionStrategy"/> defined via <see cref="AgentGroupChat.ExecutionSettings"/>.  Likewise, this does
+    /// not regard <see cref="TerminationStrategy.MaximumIterations"/> as it only takes a single turn for the specified agent.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="isJoining">Optional flag to control if agent is joining the chat.</param>
