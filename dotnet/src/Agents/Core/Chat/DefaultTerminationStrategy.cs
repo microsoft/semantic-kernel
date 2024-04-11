@@ -6,23 +6,14 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// The termination strategy attached to the default state of <see cref="ChatExecutionSettings.TerminationStrategy"/>.
-/// Terminates immediate, by default.  Behavior can be overridden via <see cref="DefaultTerminationStrategy.DisableTermination"/>.
+/// The termination strategy attached to the default state of <see cref="ChatExecutionSettings.TerminationStrategy"/> will
+/// execute to <see cref="TerminationStrategy.MaximumIterations"/> without signaling termination.
 /// </summary>
 public sealed class DefaultTerminationStrategy : TerminationStrategy
 {
-    /// <summary>
-    /// Strategy terminates by default, but may be overridden by setting this property.
-    /// The <see cref="TerminationStrategy.MaximumIterations"/> property provides additional
-    /// control to this strategy.
-    /// </summary>
-    public bool DisableTermination { get; set; }
-
     /// <inheritdoc/>
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        bool shouldTerminate = !this.DisableTermination;
-
-        return Task.FromResult(!this.DisableTermination);
+        return Task.FromResult(false);
     }
 }

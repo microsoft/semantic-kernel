@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
+namespace SemanticKernel.UnitTests.Contents;
+
+#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="AnnotationContent"/>.
@@ -29,25 +30,18 @@ public class AnnotationContentTests
     [Fact]
     public void VerifyAnnotationContentUsage()
     {
-        TestTextAnnotation annotation = new("testquote", 33, 49);
+        AnnotationContent definition =
+            new()
+            {
+                Quote = "test quote",
+                StartIndex = 33,
+                EndIndex = 49,
+                FileId = "#id",
+            };
 
-        AnnotationContent definition = new(annotation);
-
-        Assert.Equal("testquote", definition.Quote);
+        Assert.Equal("test quote", definition.Quote);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
-        Assert.Null(definition.FileId);
-    }
-
-    /// <summary>
-    /// Need local type for testability.
-    /// </summary>
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-    private sealed class TestTextAnnotation : MessageTextAnnotation
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
-    {
-        public TestTextAnnotation(string text, int startIndex, int endIndex)
-            : base(text, startIndex, endIndex)
-        { }
+        Assert.Equal("#id", definition.FileId);
     }
 }

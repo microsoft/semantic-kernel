@@ -177,7 +177,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                                     foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
                                     {
-                                        messageContent.Items.Add(new AnnotationContent(annotation));
+                                        messageContent.Items.Add(CreateAnnotation(annotation));
                                     }
 
                                     yield return messageContent;
@@ -199,6 +199,28 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 }
             }
             while (RunStatus.Completed != run.Status);
+
+            AnnotationContent CreateAnnotation(MessageTextAnnotation annotation)
+            {
+                string? fileId = null;
+                if (annotation is MessageTextFileCitationAnnotation citationAnnotation)
+                {
+                    fileId = citationAnnotation.FileId;
+                }
+                else if (annotation is MessageTextFilePathAnnotation pathAnnotation)
+                {
+                    fileId = pathAnnotation.FileId;
+                }
+
+                return
+                    new()
+                    {
+                        Quote = annotation.Text,
+                        StartIndex = annotation.StartIndex,
+                        EndIndex = annotation.EndIndex,
+                        FileId = fileId,
+                    };
+            }
 
             async Task<PageableList<RunStep>> PollRunStatusAsync()
             {

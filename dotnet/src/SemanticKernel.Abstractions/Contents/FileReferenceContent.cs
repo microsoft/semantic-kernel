@@ -1,22 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Content type to support file references.
 /// </summary>
+[Experimental("SKEXP0110")]
 public class FileReferenceContent : KernelContent
 {
     /// <summary>
     /// The file identifier.
     /// </summary>
-    public string? FileId { get; }
+    public string FileId { get; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.
     /// </summary>
+    [JsonConstructor]
     public FileReferenceContent()
     { }
 
