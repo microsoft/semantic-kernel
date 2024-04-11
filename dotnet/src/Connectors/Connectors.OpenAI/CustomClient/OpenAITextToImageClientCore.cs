@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core;
+namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>Base type for OpenAI text to image clients.</summary>
 internal sealed class OpenAITextToImageClientCore
