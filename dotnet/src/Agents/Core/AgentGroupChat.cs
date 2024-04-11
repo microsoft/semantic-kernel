@@ -57,7 +57,13 @@ public sealed class AgentGroupChat : AgentChat
     {
         if (this.IsComplete)
         {
-            yield break;
+            // Throw exception if chat is completed and automatic-reset is not enabled.
+            if (!this.ExecutionSettings.TerminationStrategy.AutomaticReset)
+            {
+                throw new KernelException($"Agent Failure - Chat has completed.");
+            }
+
+            this.IsComplete = false;
         }
 
         // Unable to assume selection in the absence of a strategy.  This is the default.

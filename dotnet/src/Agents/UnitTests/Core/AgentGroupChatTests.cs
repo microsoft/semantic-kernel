@@ -28,6 +28,9 @@ public class AgentGroupChatTests
         Assert.Empty(chat.Agents);
         Assert.NotNull(chat.ExecutionSettings);
         Assert.False(chat.IsComplete);
+
+        chat.IsComplete = true;
+        Assert.True(chat.IsComplete);
     }
 
     /// <summary>
@@ -84,11 +87,10 @@ public class AgentGroupChatTests
         ((DefaultTerminationStrategy)chat.ExecutionSettings.TerminationStrategy).DisableTermination = true;
 
         chat.IsComplete = true;
-        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
-        Assert.Empty(messages);
+        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
-        chat.IsComplete = false;
-        messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
+        chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
+        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
         Assert.Equal(9, messages.Length);
         Assert.False(chat.IsComplete);
 
