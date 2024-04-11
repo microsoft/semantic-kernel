@@ -230,9 +230,9 @@ public abstract class AgentChat
     /// </summary>
     /// <remarks>
     /// Rather than allowing concurrent invocation to result in undefined behavior / failure,
-    /// it is prefered to fail-fast in order to avoid side-effects / state mutation.
+    /// it is preferred to fail-fast in order to avoid side-effects / state mutation.
     /// The activity signal is used to manage ability and visibility for taking actions based
-    /// on converstation history.
+    /// on conversation history.
     /// </remarks>
     private void ThrowIfActive()
     {
