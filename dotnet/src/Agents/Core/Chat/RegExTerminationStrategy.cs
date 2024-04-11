@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Signals termination when the most recent message matches against the defined regular expressions
 /// for the specified agent (if provided).
 /// </summary>
-public sealed class ExpressionTerminationStrategy : AgentBoundTerminationStrategy
+public sealed class RegExTerminationStrategy : AgentBoundTerminationStrategy
 {
     private readonly string[] _expressions;
 
@@ -33,10 +33,10 @@ public sealed class ExpressionTerminationStrategy : AgentBoundTerminationStrateg
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExpressionTerminationStrategy"/> class.
+    /// Initializes a new instance of the <see cref="RegExTerminationStrategy"/> class.
     /// </summary>
     /// <param name="expressions">A list of regular expressions, that if</param>
-    public ExpressionTerminationStrategy(params string[] expressions)
+    public RegExTerminationStrategy(params string[] expressions)
     {
         this._expressions = expressions;
     }
