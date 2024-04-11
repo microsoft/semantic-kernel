@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class ChatCompletionStreamResponse
 {
@@ -25,15 +25,15 @@ internal sealed class ChatCompletionStreamResponse
     public string? SystemFingerprint { get; set; }
 
     [JsonPropertyName("choices")]
-    public List<ChatCompletionStreamChoice>? Choices { get; set; }
+    public List<Choice>? Choices { get; set; }
 
-    internal sealed class ChatCompletionStreamChoice
+    internal sealed class Choice
     {
         [JsonPropertyName("delta")]
-        public ChatCompletionStreamChoiceDelta? Delta { get; set; }
+        public ChoiceDelta? Delta { get; set; }
 
         [JsonPropertyName("logprobs")]
-        public ChatCompletionStreamChoiceLogProbs? LogProbs { get; set; }
+        public ChoiceLogProbs? LogProbs { get; set; }
 
         [JsonPropertyName("finish_reason")]
         public string? FinishReason { get; set; }
@@ -42,22 +42,22 @@ internal sealed class ChatCompletionStreamResponse
         public int Index { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDelta
+    internal sealed class ChoiceDelta
     {
         [JsonPropertyName("content")]
         public string? Content { get; set; }
 
         [JsonPropertyName("tool_calls")]
-        public List<ChatCompletionStreamChoiceDeltaToolCall>? ToolCalls { get; set; }
+        public List<ChoiceDeltaToolCall>? ToolCalls { get; set; }
 
         [JsonPropertyName("function_call")]
-        public ChatCompletionStreamChoiceDeltaToolCallFunction? FunctionCall { get; set; }
+        public ChoiceDeltaToolCallFunction? FunctionCall { get; set; }
 
         [JsonPropertyName("role")]
         public string? Role { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDeltaToolCall
+    internal sealed class ChoiceDeltaToolCall
     {
         [JsonPropertyName("index")]
         public int Index { get; set; }
@@ -69,10 +69,10 @@ internal sealed class ChatCompletionStreamResponse
         public string? Type { get; set; }
 
         [JsonPropertyName("function")]
-        public ChatCompletionStreamChoiceDeltaToolCallFunction? Function { get; set; }
+        public ChoiceDeltaToolCallFunction? Function { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceDeltaToolCallFunction
+    internal sealed class ChoiceDeltaToolCallFunction
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }
@@ -81,13 +81,13 @@ internal sealed class ChatCompletionStreamResponse
         public string? Arguments { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceLogProbs
+    internal sealed class ChoiceLogProbs
     {
         [JsonPropertyName("content")]
-        public List<ChatCompletionStreamChoiceLogProbsContent>? Content { get; set; }
+        public List<ChoiceLogProbsContent>? Content { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceLogProbsContent
+    internal sealed class ChoiceLogProbsContent
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }
@@ -100,10 +100,10 @@ internal sealed class ChatCompletionStreamResponse
         public int[]? Bytes { get; set; }
 
         [JsonPropertyName("top_logprobs")]
-        public List<ChatCompletionStreamChoiceTopLogProb>? TopLogProbs { get; set; }
+        public List<ChoiceTopLogProb>? TopLogProbs { get; set; }
     }
 
-    internal sealed class ChatCompletionStreamChoiceTopLogProb
+    internal sealed class ChoiceTopLogProb
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }

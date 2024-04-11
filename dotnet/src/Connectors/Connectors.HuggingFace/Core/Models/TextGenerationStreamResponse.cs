@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class TextGenerationStreamResponse
 {

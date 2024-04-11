@@ -145,9 +145,9 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
             JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
-            Assert.IsType<ChatCompletionMetadata>(messageChunk.Metadata);
+            Assert.IsType<HuggingFaceChatCompletionMetadata>(messageChunk.Metadata);
 
-            var metadata = messageChunk.Metadata as ChatCompletionMetadata;
+            var metadata = messageChunk.Metadata as HuggingFaceChatCompletionMetadata;
 
             Assert.Equal(jsonRootChunk.GetProperty("id").GetString(), metadata!.Id);
             Assert.Equal(jsonRootChunk.GetProperty("created").GetInt64(), metadata.Created);

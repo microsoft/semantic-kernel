@@ -4,18 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// Represents the metadata of a Hugging Face chat completion.
 /// </summary>
-public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, object?>
+public sealed class HuggingFaceTextGenerationStreamMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal TextGenerationStreamMetadata() : base(new Dictionary<string, object?>()) { }
+    internal HuggingFaceTextGenerationStreamMetadata() : base(new Dictionary<string, object?>()) { }
 
-    internal TextGenerationStreamMetadata(TextGenerationStreamResponse streamResponse) : this()
+    internal HuggingFaceTextGenerationStreamMetadata(TextGenerationStreamResponse streamResponse) : this()
     {
         this.Index = streamResponse.Index;
         this.TokenId = streamResponse.Token?.Id ?? 0;
@@ -26,7 +25,7 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
         this.FinishReason = streamResponse.Details?.FinishReason;
     }
 
-    private TextGenerationStreamMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
+    private HuggingFaceTextGenerationStreamMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
     /// Index of the chunk
@@ -92,14 +91,14 @@ public sealed class TextGenerationStreamMetadata : ReadOnlyDictionary<string, ob
     }
 
     /// <summary>
-    /// Converts a dictionary to a <see cref="ChatCompletionMetadata"/> object.
+    /// Converts a dictionary to a <see cref="HuggingFaceChatCompletionMetadata"/> object.
     /// </summary>
-    public static TextGenerationStreamMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
+    public static HuggingFaceTextGenerationStreamMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
     {
         null => throw new ArgumentNullException(nameof(dictionary)),
-        TextGenerationStreamMetadata metadata => metadata,
-        IDictionary<string, object?> metadata => new TextGenerationStreamMetadata(metadata),
-        _ => new TextGenerationStreamMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
+        HuggingFaceTextGenerationStreamMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new HuggingFaceTextGenerationStreamMetadata(metadata),
+        _ => new HuggingFaceTextGenerationStreamMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
     private void SetValueInDictionary(object? value, string propertyName)

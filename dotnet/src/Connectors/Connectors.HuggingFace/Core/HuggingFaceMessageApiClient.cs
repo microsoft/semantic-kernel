@@ -12,11 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 /// <summary>
 /// This class is responsible for making HTTP requests to the HuggingFace Inference API - Chat Completion Message API
@@ -141,7 +140,7 @@ internal sealed class HuggingFaceMessageApiClient
 
         foreach (var choice in response.Choices!)
         {
-            var metadata = new ChatCompletionMetadata
+            var metadata = new HuggingFaceChatCompletionMetadata
             {
                 Id = response.Id,
                 Model = response.Model,
@@ -150,14 +149,14 @@ internal sealed class HuggingFaceMessageApiClient
                 Created = response.Created,
                 FinishReason = choice.FinishReason,
                 LogProbs = choice.LogProbs,
-                UsageCompletionTokens = response.Usage!.CompletionTokens,
-                UsagePromptTokens = response.Usage!.PromptTokens,
-                UsageTotalTokens = response.Usage!.TotalTokens,
+                UsageCompletionTokens = response.Usage?.CompletionTokens,
+                UsagePromptTokens = response.Usage?.PromptTokens,
+                UsageTotalTokens = response.Usage?.TotalTokens,
             };
 
             chatMessageContents.Add(new ChatMessageContent(
-                role: new AuthorRole(choice.Message!.Role!),
-                content: choice.Message.Content,
+                role: new AuthorRole(choice.Message?.Role ?? AuthorRole.Assistant.ToString()),
+                content: choice.Message?.Content,
                 modelId: response.Model,
                 innerContent: response,
                 encoding: Encoding.UTF8,
@@ -172,7 +171,7 @@ internal sealed class HuggingFaceMessageApiClient
         var choice = response.Choices.FirstOrDefault();
         if (choice is not null)
         {
-            var metadata = new ChatCompletionMetadata
+            var metadata = new HuggingFaceChatCompletionMetadata
             {
                 Id = response.Id,
                 Model = response.Model,
@@ -203,26 +202,9 @@ internal sealed class HuggingFaceMessageApiClient
 
     private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        IAsyncEnumerator<ChatCompletionStreamResponse>? responseEnumerator = null;
-
-        try
+        await foreach (var content in this.ParseChatResponseStreamAsync(stream, cancellationToken).ConfigureAwait(false))
         {
-            var responseEnumerable = this.ParseChatResponseStreamAsync(stream, cancellationToken);
-            responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
-
-            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
-            {
-                var content = responseEnumerator.Current!;
-
-                yield return GetStreamingChatMessageContentFromStreamResponse(content, modelId);
-            }
-        }
-        finally
-        {
-            if (responseEnumerator != null)
-            {
-                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
-            }
+            yield return GetStreamingChatMessageContentFromStreamResponse(content, modelId);
         }
     }
 

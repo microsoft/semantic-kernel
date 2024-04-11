@@ -109,9 +109,9 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             JsonElement jsonRootChunk = JsonSerializer.Deserialize<JsonElement>(match.Groups[1].Value);
 
             Assert.NotNull(messageChunk.Metadata);
-            Assert.IsType<TextGenerationStreamMetadata>(messageChunk.Metadata);
+            Assert.IsType<HuggingFaceTextGenerationStreamMetadata>(messageChunk.Metadata);
 
-            var metadata = messageChunk.Metadata as TextGenerationStreamMetadata;
+            var metadata = messageChunk.Metadata as HuggingFaceTextGenerationStreamMetadata;
 
             Assert.Equal(jsonRootChunk.GetProperty("index").GetInt32(), metadata!.Index);
             Assert.Equal(jsonRootChunk.GetProperty("generated_text").GetString(), metadata.GeneratedText);

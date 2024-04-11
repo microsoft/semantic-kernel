@@ -12,11 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class HuggingFaceClient
 {
@@ -212,7 +211,7 @@ internal sealed class HuggingFaceClient
     }
 
     private static List<TextContent> GetTextContentsFromResponse(TextGenerationResponse response, string modelId)
-        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8, new TextGenerationMetadata(response))).ToList();
+        => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8, new HuggingFaceTextGenerationMetadata(response))).ToList();
 
     private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();

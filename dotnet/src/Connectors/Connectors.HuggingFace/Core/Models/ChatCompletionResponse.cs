@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class ChatCompletionResponse
 {
@@ -25,15 +25,15 @@ internal sealed class ChatCompletionResponse
     public string? SystemFingerprint { get; set; }
 
     [JsonPropertyName("choices")]
-    public List<ChatCompletionChoice>? Choices { get; set; }
+    public List<Choice>? Choices { get; set; }
 
     [JsonPropertyName("usage")]
-    public ChatCompletionUsage? Usage { get; set; }
+    public CompletionUsage? Usage { get; set; }
 
-    internal sealed class ChatCompletionChoice
+    internal sealed class Choice
     {
         [JsonPropertyName("logprobs")]
-        public ChatCompletionChoiceLogProbs? LogProbs { get; set; }
+        public ChoiceLogProbs? LogProbs { get; set; }
 
         [JsonPropertyName("finish_reason")]
         public string? FinishReason { get; set; }
@@ -42,19 +42,19 @@ internal sealed class ChatCompletionResponse
         public int Index { get; set; }
 
         [JsonPropertyName("message")]
-        public ChatCompletionMessage? Message { get; set; }
+        public Message? Message { get; set; }
     }
 
-    internal sealed class ChatCompletionMessage
+    internal sealed class Message
     {
         [JsonPropertyName("content")]
         public string? Content { get; set; }
 
         [JsonPropertyName("tool_calls")]
-        public List<ChatCompletionChoiceToolCall>? ToolCalls { get; set; }
+        public List<ChoiceToolCall>? ToolCalls { get; set; }
 
         [JsonPropertyName("function_call")]
-        public ChatCompletionChoiceToolCallFunction? FunctionCall { get; set; }
+        public ChoiceToolCallFunction? FunctionCall { get; set; }
 
         [JsonPropertyName("role")]
         public string? Role { get; set; }
@@ -63,7 +63,7 @@ internal sealed class ChatCompletionResponse
         public string? Name { get; set; }
     }
 
-    internal sealed class ChatCompletionChoiceToolCall
+    internal sealed class ChoiceToolCall
     {
         [JsonPropertyName("index")]
         public int Index { get; set; }
@@ -75,10 +75,10 @@ internal sealed class ChatCompletionResponse
         public string? Type { get; set; }
 
         [JsonPropertyName("function")]
-        public ChatCompletionChoiceToolCallFunction? Function { get; set; }
+        public ChoiceToolCallFunction? Function { get; set; }
     }
 
-    internal sealed class ChatCompletionChoiceToolCallFunction
+    internal sealed class ChoiceToolCallFunction
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }
@@ -87,13 +87,13 @@ internal sealed class ChatCompletionResponse
         public string? Arguments { get; set; }
     }
 
-    internal sealed class ChatCompletionChoiceLogProbs
+    internal sealed class ChoiceLogProbs
     {
         [JsonPropertyName("content")]
-        public List<ChatCompletionChoiceLogProbsContent>? Content { get; set; }
+        public List<ChoiceLogProbsContent>? Content { get; set; }
     }
 
-    internal sealed class ChatCompletionChoiceLogProbsContent
+    internal sealed class ChoiceLogProbsContent
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }
@@ -106,10 +106,10 @@ internal sealed class ChatCompletionResponse
         public int[]? Bytes { get; set; }
 
         [JsonPropertyName("top_logprobs")]
-        public List<ChatCompletionChoiceTopLogProb>? TopLogProbs { get; set; }
+        public List<ChoiceTopLogProb>? TopLogProbs { get; set; }
     }
 
-    internal sealed class ChatCompletionChoiceTopLogProb
+    internal sealed class ChoiceTopLogProb
     {
         [JsonPropertyName("token")]
         public string? Token { get; set; }
@@ -122,7 +122,7 @@ internal sealed class ChatCompletionResponse
         public int[]? Bytes { get; set; }
     }
 
-    internal sealed class ChatCompletionUsage
+    internal sealed class CompletionUsage
     {
         [JsonPropertyName("prompt_tokens")]
         public int PromptTokens { get; set; }

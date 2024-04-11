@@ -10,11 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// <summary>
 /// Represents the metadata of a Hugging Face chat completion.
 /// </summary>
-public sealed class ChatCompletionMetadata : ReadOnlyDictionary<string, object?>
+public sealed class HuggingFaceChatCompletionMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal ChatCompletionMetadata() : base(new Dictionary<string, object?>()) { }
+    internal HuggingFaceChatCompletionMetadata() : base(new Dictionary<string, object?>()) { }
 
-    private ChatCompletionMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
+    private HuggingFaceChatCompletionMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
     /// Object identifier.
@@ -118,14 +118,14 @@ public sealed class ChatCompletionMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
-    /// Converts a dictionary to a <see cref="ChatCompletionMetadata"/> object.
+    /// Converts a dictionary to a <see cref="HuggingFaceChatCompletionMetadata"/> object.
     /// </summary>
-    public static ChatCompletionMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
+    public static HuggingFaceChatCompletionMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
     {
         null => throw new ArgumentNullException(nameof(dictionary)),
-        ChatCompletionMetadata metadata => metadata,
-        IDictionary<string, object?> metadata => new ChatCompletionMetadata(metadata),
-        _ => new ChatCompletionMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
+        HuggingFaceChatCompletionMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new HuggingFaceChatCompletionMetadata(metadata),
+        _ => new HuggingFaceChatCompletionMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
     private void SetValueInDictionary(object? value, string propertyName)

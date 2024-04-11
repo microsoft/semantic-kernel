@@ -4,18 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
 /// Represents the metadata of a Hugging Face chat completion.
 /// </summary>
-public sealed class TextGenerationMetadata : ReadOnlyDictionary<string, object?>
+public sealed class HuggingFaceTextGenerationMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal TextGenerationMetadata() : base(new Dictionary<string, object?>()) { }
+    internal HuggingFaceTextGenerationMetadata() : base(new Dictionary<string, object?>()) { }
 
-    internal TextGenerationMetadata(TextGenerationResponse response) : this()
+    internal HuggingFaceTextGenerationMetadata(TextGenerationResponse response) : this()
     {
         this.GeneratedTokens = response.FirstOrDefault()?.Details?.GeneratedTokens;
         this.FinishReason = response.FirstOrDefault()?.Details?.FinishReason;
@@ -23,7 +23,7 @@ public sealed class TextGenerationMetadata : ReadOnlyDictionary<string, object?>
         this.PrefillTokens = response.FirstOrDefault()?.Details?.Prefill;
     }
 
-    private TextGenerationMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
+    private HuggingFaceTextGenerationMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
     /// The list of tokens used on the generation.
@@ -62,14 +62,14 @@ public sealed class TextGenerationMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
-    /// Converts a dictionary to a <see cref="ChatCompletionMetadata"/> object.
+    /// Converts a dictionary to a <see cref="HuggingFaceChatCompletionMetadata"/> object.
     /// </summary>
-    public static TextGenerationMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
+    public static HuggingFaceTextGenerationMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
     {
         null => throw new ArgumentNullException(nameof(dictionary)),
-        TextGenerationMetadata metadata => metadata,
-        IDictionary<string, object?> metadata => new TextGenerationMetadata(metadata),
-        _ => new TextGenerationMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
+        HuggingFaceTextGenerationMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new HuggingFaceTextGenerationMetadata(metadata),
+        _ => new HuggingFaceTextGenerationMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
     private void SetValueInDictionary(object? value, string propertyName)

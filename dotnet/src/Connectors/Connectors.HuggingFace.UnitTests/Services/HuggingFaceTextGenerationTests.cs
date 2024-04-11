@@ -195,9 +195,9 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         Assert.NotNull(content);
 
         Assert.NotNull(content.Metadata);
-        Assert.IsType<TextGenerationMetadata>(content.Metadata);
+        Assert.IsType<HuggingFaceTextGenerationMetadata>(content.Metadata);
 
-        var metadata = content.Metadata as TextGenerationMetadata;
+        var metadata = content.Metadata as HuggingFaceTextGenerationMetadata;
 
         var prefillTokens = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(metadata!.PrefillTokens));
         var tokens = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(metadata.Tokens));
