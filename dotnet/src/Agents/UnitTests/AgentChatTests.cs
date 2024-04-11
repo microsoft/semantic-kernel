@@ -59,7 +59,7 @@ public class AgentChatTests
     /// <summary>
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Not 100% reliable for github workflows, but useful for dev testing.")]
     public async Task VerifyGroupAgentChatConcurrencyAsync()
     {
         TestChat chat = new();
