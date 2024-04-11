@@ -51,7 +51,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         private readonly Dictionary<string, string> _agentNames; // Cache agent names by their identifier for GetHistoryAsync()
 
         /// <inheritdoc/>
-        protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+        protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
         {
             foreach (var message in history)
             {

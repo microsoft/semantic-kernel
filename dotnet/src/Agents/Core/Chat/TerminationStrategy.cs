@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Base strategy class for defining termination criteria for a <see cref="AgentChat"/>.
+/// Base strategy class for defining termination criteria for a <see cref="AgentGroupChat"/>.
 /// </summary>
 public abstract class TerminationStrategy
 {
@@ -20,7 +20,7 @@ public abstract class TerminationStrategy
     }
 
     /// <summary>
-    /// Evaluate the input message and determine if the nexus has met its completion criteria.
+    /// Evaluate the input message and determine if the chat has met its completion criteria.
     /// </summary>
     /// <param name="agent">The agent actively interacting with the nexus.</param>
     /// <param name="history">The most recent message</param>

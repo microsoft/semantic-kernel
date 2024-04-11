@@ -14,7 +14,7 @@ internal static class RepoFiles
         const string Parent = "samples";
         const string Folder = "plugins";
 
-        bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
+        static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
             var currDir = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
             bool found;

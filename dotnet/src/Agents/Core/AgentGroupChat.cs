@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentGroupChat : AgentChat
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test
-    private readonly List<Agent> _agents; // Maintain order (fwiw)
+    private readonly List<Agent> _agents; // Maintain order
 
     /// <summary>
     /// Indicates if completion criteria has been met.  If set, no further
@@ -30,12 +30,12 @@ public sealed class AgentGroupChat : AgentChat
     public ChatExecutionSettings? ExecutionSettings { get; set; }
 
     /// <summary>
-    /// The agents participating in the nexus.
+    /// The agents participating in the chat.
     /// </summary>
     public IReadOnlyList<Agent> Agents => this._agents.AsReadOnly();
 
     /// <summary>
-    /// Add a <see cref="Agent"/> to the nexus.
+    /// Add a <see cref="Agent"/> to the chat.
     /// </summary>
     /// <param name="agent">The <see cref="KernelAgent"/> to add.</param>
     public void AddAgent(Agent agent)
@@ -103,11 +103,11 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     /// <remark>
-    /// Specified agent joins the nexus.
+    /// Specified agent joins the chat.
     /// </remark>>
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         Agent agent,
@@ -117,8 +117,8 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// Process a single interaction between a given <see cref="KernelAgent"/> an a <see cref="AgentGroupChat"/>.
     /// </summary>
-    /// <param name="agent">The agent actively interacting with the nexus.</param>
-    /// <param name="isJoining">Optional flag to control if agent is joining the nexus.</param>
+    /// <param name="agent">The agent actively interacting with the chat.</param>
+    /// <param name="isJoining">Optional flag to control if agent is joining the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
@@ -149,9 +149,9 @@ public sealed class AgentGroupChat : AgentChat
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentChat"/> class.
+    /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
-    /// <param name="agents">The agents initially participating in the nexus.</param>
+    /// <param name="agents">The agents initially participating in the chat.</param>
     public AgentGroupChat(params Agent[] agents)
     {
         this._agents = new(agents);
