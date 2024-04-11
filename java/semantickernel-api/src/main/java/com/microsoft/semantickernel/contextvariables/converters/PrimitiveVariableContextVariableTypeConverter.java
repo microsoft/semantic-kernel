@@ -34,7 +34,7 @@ public class PrimitiveVariableContextVariableTypeConverter<T> extends
         super(
             clazz,
             s -> convert(s, clazz),
-            toPromptString,
+            s -> escapeXmlString(toPromptString.apply(s)),
             fromPromptString);
         this.fromObject = fromObject;
     }

@@ -5,6 +5,7 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
+import javax.annotation.Nullable;
 
 /**
  * A converter for a context variable type. This class is used to convert objects to and from a
@@ -21,10 +22,18 @@ public class TextContentVariableContextVariableTypeConverter extends
         super(
             TextContent.class,
             s -> convert(s, TextContent.class),
-            TextContent::getContent,
+            TextContentVariableContextVariableTypeConverter::escapeXmlStringValue,
             x -> {
                 throw new UnsupportedOperationException(
                     "TextContentVariableContextVariableTypeConverter does not support fromPromptString");
             });
+    }
+
+    @Nullable
+    public static String escapeXmlStringValue(@Nullable TextContent value) {
+        if (value == null) {
+            return null;
+        }
+        return escapeXmlString(value.getContent());
     }
 }

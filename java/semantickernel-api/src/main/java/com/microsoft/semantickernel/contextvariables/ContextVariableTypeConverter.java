@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,7 @@ public class ContextVariableTypeConverter<T> {
         ContextVariableTypeConverter.class);
 
     public interface ToPromptStringFunction<T> {
+
         String toPromptString(ContextVariableTypes types, T t);
     }
 
@@ -388,5 +390,19 @@ public class ContextVariableTypeConverter<T> {
                 toPromptString,
                 fromPromptString);
         }
+    }
+
+    /**
+     * To be used when toPromptString is called
+     *
+     * @param value the value to escape
+     * @return the escaped value
+     */
+    @Nullable
+    public static String escapeXmlString(@Nullable String value) {
+        if (value == null) {
+            return null;
+        }
+        return StringEscapeUtils.escapeXml11(value);
     }
 }
