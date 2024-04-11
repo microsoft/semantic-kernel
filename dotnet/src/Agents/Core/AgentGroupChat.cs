@@ -60,7 +60,7 @@ public sealed class AgentGroupChat : AgentChat
             // Throw exception if chat is completed and automatic-reset is not enabled.
             if (!this.ExecutionSettings.TerminationStrategy.AutomaticReset)
             {
-                throw new KernelException($"Agent Failure - Chat has completed.");
+                throw new KernelException("Agent Failure - Chat has completed.");
             }
 
             this.IsComplete = false;

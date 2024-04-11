@@ -26,7 +26,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     {
         if (agents.Count == 0)
         {
-            throw new KernelException($"Agent Failure - No agents present to select.");
+            throw new KernelException("Agent Failure - No agents present to select.");
         }
 
         var agent = agents[this._index % agents.Count];
