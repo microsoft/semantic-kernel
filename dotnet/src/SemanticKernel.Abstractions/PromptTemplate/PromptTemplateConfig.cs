@@ -229,22 +229,6 @@ public sealed class PromptTemplateConfig
         this.ExecutionSettings[key] = settings;
     }
 
-    /*
-    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
-
-    private static string ReplaceMessageTag(Match match)
-    {
-        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;");
-    }
-
-    private static string Encode(string value)
-    {
-        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
-        result = result.Replace("</message>", "&lt;/message&gt;");
-        return result;
-    }
-    */
-
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
     /// </summary>

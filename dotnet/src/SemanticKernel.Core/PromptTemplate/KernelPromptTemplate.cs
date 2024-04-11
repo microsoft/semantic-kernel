@@ -42,7 +42,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._disableTagEncoding = promptConfig.AllowUnsafeContent;
+        this._allowUnsafeContent = promptConfig.AllowUnsafeContent;
         this._safeBlocks = promptConfig.InputVariables.Where(iv => iv.AllowUnsafeContent).Select(iv => iv.Name).ToList();
     }
 
@@ -57,7 +57,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
-    private readonly bool _disableTagEncoding;
+    private readonly bool _allowUnsafeContent;
     private readonly List<string> _safeBlocks;
 
     /// <summary>
@@ -117,7 +117,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
             if (blockResult is not null)
             {
-                if (ShouldEncodeTags(this._disableTagEncoding, this._safeBlocks, block!))
+                if (ShouldEncodeTags(this._allowUnsafeContent, this._safeBlocks, block!))
                 {
                     blockResult = HttpUtility.HtmlEncode(blockResult);
                 }
