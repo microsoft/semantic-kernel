@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+#pragma warning disable IDE0009 // Member access should be qualified.
 
 #if !NET6_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
