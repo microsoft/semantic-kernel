@@ -176,14 +176,9 @@ public abstract class GeminiToolCallBehavior
     /// <summary>
     /// Represents a <see cref="GeminiToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions : GeminiToolCallBehavior
+    internal sealed class EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : GeminiToolCallBehavior(autoInvoke)
     {
-        private readonly GeminiFunction[] _functions;
-
-        public EnabledFunctions(IEnumerable<GeminiFunction> functions, bool autoInvoke) : base(autoInvoke)
-        {
-            this._functions = functions.ToArray();
-        }
+        private readonly GeminiFunction[] _functions = functions.ToArray();
 
         public override string ToString() =>
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +

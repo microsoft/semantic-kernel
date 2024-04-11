@@ -227,7 +227,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
+        await this.RemoveBatchAsync(collectionName, [key], cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -286,8 +286,8 @@ public class AzureAISearchMemoryStore : IMemoryStore
 
         var newIndex = new SearchIndex(indexName)
         {
-            Fields = new List<SearchField>
-            {
+            Fields =
+            [
                 new SimpleField(AzureAISearchMemoryRecord.IdField, SearchFieldDataType.String) { IsKey = true },
                 new VectorSearchField(AzureAISearchMemoryRecord.EmbeddingField, embeddingSize, ProfileName),
                 new(AzureAISearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -295,7 +295,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
                 new SimpleField(AzureAISearchMemoryRecord.AdditionalMetadataField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureAISearchMemoryRecord.ExternalSourceNameField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureAISearchMemoryRecord.IsReferenceField, SearchFieldDataType.Boolean) { IsFilterable = true, IsFacetable = true },
-            },
+            ],
             VectorSearch = new VectorSearch
             {
                 Algorithms =
@@ -378,7 +378,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// <param name="indexName">Value to normalize</param>
     /// <param name="parameterName">The name of the argument used with <paramref name="indexName"/>.</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName, [CallerArgumentExpression("indexName")] string? parameterName = null)
+    private string NormalizeIndexName(string indexName, [CallerArgumentExpression(nameof(indexName))] string? parameterName = null)
     {
         if (indexName.Length > 128)
         {
@@ -466,7 +466,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
     {
         // Azure AI Search score formula. The min value is 0.333 for cosine similarity -1.
         score = Math.Max(score, 1.0 / 3);
-        return 2 - 1 / score;
+        return 2 - (1 / score);
     }
 
     private static double CosineSimilarityToScore(double similarity)

@@ -105,9 +105,11 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
     private static async Task GetSecretFromAzureKeyVaultWithRetryAsync(Kernel kernel, KernelPlugin plugin)
     {
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelArguments();
-        arguments["secret-name"] = SecretName;
-        arguments["api-version"] = "7.0";
+        var arguments = new KernelArguments
+        {
+            ["secret-name"] = SecretName,
+            ["api-version"] = "7.0"
+        };
 
         // Run
         var functionResult = await kernel.InvokeAsync(plugin["GetSecret"], arguments);
@@ -139,8 +141,8 @@ internal sealed class OpenAIAuthenticationProvider
     /// <param name="credentials">A dictionary containing credentials for each authentication scheme.</param>
     public OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
     {
-        this._oAuthValues = oAuthValues ?? new();
-        this._credentials = credentials ?? new();
+        this._oAuthValues = oAuthValues ?? [];
+        this._credentials = credentials ?? [];
     }
 
     /// <summary>

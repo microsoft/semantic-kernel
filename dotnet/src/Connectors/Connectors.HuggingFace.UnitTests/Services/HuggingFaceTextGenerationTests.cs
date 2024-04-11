@@ -233,7 +233,7 @@ public sealed class HuggingFaceTextGenerationTests : IDisposable
         await foreach (var textContent in sut.GetStreamingTextContentsAsync("Any prompt"))
         {
             lastTextContent = textContent;
-        };
+        }
 
         // Assert
         Assert.NotNull(lastTextContent!.ModelId);

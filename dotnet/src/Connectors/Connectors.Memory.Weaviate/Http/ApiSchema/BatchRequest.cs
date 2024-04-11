@@ -13,11 +13,11 @@ internal sealed class BatchRequest
     private BatchRequest(string @class)
     {
         this._class = @class;
-        this.Objects = new();
+        this.Objects = [];
     }
 
     // ReSharper disable once UnusedMember.Global
-    public string[] Fields { get; } = { "ALL" };
+    public string[] Fields { get; } = ["ALL"];
 
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once CollectionNeverQueried.Global
