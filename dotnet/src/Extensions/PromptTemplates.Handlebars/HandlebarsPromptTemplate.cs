@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;
 using Microsoft.Extensions.Logging;
@@ -117,7 +117,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
 
                     if (ShouldEncodeTags(this._promptModel, kvp.Key, kvp.Value))
                     {
-                        value = PromptTemplateConfig.EncodeTags(value.ToString());
+                        value = HttpUtility.HtmlEncode(value.ToString());
                     }
 
                     result[kvp.Key] = value;
@@ -139,11 +139,11 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.DisableTagEncoding;
+                return !inputVariable.AllowUnsafeContent;
             }
         }
 
-        return !promptTemplateConfig.DisableTagEncoding;
+        return !promptTemplateConfig.AllowUnsafeContent;
     }
 
     #endregion

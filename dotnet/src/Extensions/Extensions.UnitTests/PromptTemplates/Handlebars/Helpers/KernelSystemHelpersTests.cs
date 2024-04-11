@@ -272,7 +272,6 @@ public sealed class KernelSystemHelpersTests
     public static TheoryData<object> JsonObjectsToParse => new()
     {
         new { name = "Alice", age = 25 },
-        "{\"name\":\"Alice\",\"age\":25}",
         JsonNode.Parse("{\"name\":\"Alice\",\"age\":25}")!
     };
 

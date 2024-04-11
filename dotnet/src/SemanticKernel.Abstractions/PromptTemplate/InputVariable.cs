@@ -35,7 +35,7 @@ public sealed class InputVariable
         this.Default = inputVariable.Default;
         this.IsRequired = inputVariable.IsRequired;
         this.JsonSchema = inputVariable.JsonSchema;
-        this.DisableTagEncoding = inputVariable.DisableTagEncoding;
+        this.AllowUnsafeContent = inputVariable.AllowUnsafeContent;
     }
 
     /// <summary>
@@ -91,11 +91,11 @@ public sealed class InputVariable
     public string? JsonSchema { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to encode tags.
+    /// Gets or sets a value indicating whether to allow unsafe content.
     /// </summary>
     /// <remarks>
     /// The default is false.
     /// </remarks>
-    [JsonPropertyName("disable_tag_encoding")]
-    public bool DisableTagEncoding { get; set; } = false;
+    [JsonPropertyName("allow_unsafe_content")]
+    public bool AllowUnsafeContent { get; set; } = false;
 }

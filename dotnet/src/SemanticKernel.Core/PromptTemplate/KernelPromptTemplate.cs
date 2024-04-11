@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -41,8 +42,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._disableTagEncoding = promptConfig.DisableTagEncoding;
-        this._safeBlocks = promptConfig.InputVariables.Where(iv => iv.DisableTagEncoding).Select(iv => iv.Name).ToList();
+        this._disableTagEncoding = promptConfig.AllowUnsafeContent;
+        this._safeBlocks = promptConfig.InputVariables.Where(iv => iv.AllowUnsafeContent).Select(iv => iv.Name).ToList();
     }
 
     /// <inheritdoc/>
@@ -118,7 +119,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             {
                 if (ShouldEncodeTags(this._disableTagEncoding, this._safeBlocks, block!))
                 {
-                    blockResult = PromptTemplateConfig.EncodeTags(blockResult);
+                    blockResult = HttpUtility.HtmlEncode(blockResult);
                 }
                 result.Append(blockResult);
             }

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Compiler;
 
@@ -36,7 +36,7 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptModel.DisableTagEncoding, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptModel.AllowUnsafeContent, nameDelimiter, cancellationToken);
         }
     }
 
@@ -82,7 +82,7 @@ internal static class KernelFunctionHelpers
 
                 if (!disableTagEncoding && result is string resultAsString)
                 {
-                    result = Encode(resultAsString);
+                    result = HttpUtility.HtmlEncode(resultAsString);
                 }
 
                 return result;
@@ -240,20 +240,5 @@ internal static class KernelFunctionHelpers
 
         return resultAsObject;
     }
-
-    private const string MessagePattern = @"<message(\s+role=['""]\w+['""])?>(.*?)";
-
-    private static string ReplaceMessageTag(Match match)
-    {
-        return match.Value.Replace("<", "&lt;").Replace(">", "&gt;"); ;
-    }
-
-    private static string Encode(string value)
-    {
-        string result = Regex.Replace(value, MessagePattern, ReplaceMessageTag);
-        result = result.Replace("</message>", "&lt;/message&gt;");
-        return result;
-    }
-
     #endregion
 }

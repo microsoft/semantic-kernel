@@ -191,13 +191,13 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to encode tags.
+    /// Gets or sets a value indicating whether to allow unsafe content.
     /// </summary>
     /// <remarks>
     /// The default is false.
     /// </remarks>
-    [JsonPropertyName("disable_tag_encoding")]
-    public bool DisableTagEncoding { get; set; } = false;
+    [JsonPropertyName("allow_unsafe_content")]
+    public bool AllowUnsafeContent { get; set; } = false;
 
     /// <summary>
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
@@ -227,14 +227,6 @@ public sealed class PromptTemplateConfig
         }
 
         this.ExecutionSettings[key] = settings;
-    }
-
-    /// <summary>
-    /// Encode tag delimiters with their respective HTML entities.
-    /// </summary>
-    public static string EncodeTags(string value)
-    {
-        return value.Replace("<", "&lt;").Replace(">", "&gt;");
     }
 
     /*
