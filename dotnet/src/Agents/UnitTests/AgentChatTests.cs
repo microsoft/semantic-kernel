@@ -79,11 +79,17 @@ public class AgentChatTests
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
                 };
         }
 
         // Signal tasks to execute
         Interlocked.CompareExchange(ref isActive, 1, 0);
+
+        await Task.Yield();
 
         // Verify failure
         await Assert.ThrowsAsync<KernelException>(() => Task.WhenAll(tasks));
