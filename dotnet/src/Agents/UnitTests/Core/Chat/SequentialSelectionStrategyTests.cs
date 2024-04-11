@@ -60,7 +60,7 @@ public class SequentialSelectionStrategyTests
     }
 
     /// <summary>
-    /// Verify <see cref="SequentialSelectionStrategy"/> maintaines order consistency
+    /// Verify <see cref="SequentialSelectionStrategy"/> maintains order consistency
     /// for int.MaxValue + 1 number of turns.
     /// </summary>
     [Fact]

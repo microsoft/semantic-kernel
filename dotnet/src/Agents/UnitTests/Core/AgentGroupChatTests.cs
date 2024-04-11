@@ -159,7 +159,7 @@ public class AgentGroupChatTests
             new()
             {
                 // Strategy that will not select an agent.
-                SelectionStrategy = new NullSelectionStategy(),
+                SelectionStrategy = new NullSelectionStrategy(),
                 TerminationStrategy =
                 {
                     // Remove max-limit in order to isolate the target behavior.
@@ -187,7 +187,7 @@ public class AgentGroupChatTests
             {
                 SelectionStrategy = new SequentialSelectionStrategy(),
                 TerminationStrategy =
-                    new TestTerminationStategy(shouldTerminate: true)
+                    new TestTerminationStrategy(shouldTerminate: true)
                     {
                         // Remove max-limit in order to isolate the target behavior.
                         MaximumIterations = int.MaxValue
@@ -214,7 +214,7 @@ public class AgentGroupChatTests
                     new()
                     {
                         TerminationStrategy =
-                            new TestTerminationStategy(shouldTerminate: true)
+                            new TestTerminationStrategy(shouldTerminate: true)
                             {
                                 // Remove max-limit in order to isolate the target behavior.
                                 MaximumIterations = int.MaxValue
@@ -246,7 +246,7 @@ public class AgentGroupChatTests
         return agent;
     }
 
-    private sealed class TestTerminationStategy(bool shouldTerminate) : TerminationStrategy
+    private sealed class TestTerminationStrategy(bool shouldTerminate) : TerminationStrategy
     {
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
         {
@@ -254,7 +254,7 @@ public class AgentGroupChatTests
         }
     }
 
-    private sealed class NullSelectionStategy : SelectionStrategy
+    private sealed class NullSelectionStrategy : SelectionStrategy
     {
         public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {

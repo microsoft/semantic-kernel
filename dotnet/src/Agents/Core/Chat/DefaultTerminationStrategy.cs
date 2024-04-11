@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// The termination strategy attached to the default state of <see cref="ChatExecutionSettings.TerminationStrategy"/>.
-/// Terminates immediate, by default.  Behavior can be overriden via <see cref="DefaultTerminationStrategy.DisableTermination"/>.
+/// Terminates immediate, by default.  Behavior can be overridden via <see cref="DefaultTerminationStrategy.DisableTermination"/>.
 /// </summary>
 public sealed class DefaultTerminationStrategy : TerminationStrategy
 {

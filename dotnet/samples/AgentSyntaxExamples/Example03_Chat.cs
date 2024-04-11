@@ -55,7 +55,7 @@ public class Example03_Chat : BaseTest
                         // an assistant message contains the term "approve".
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // an assistant message contains the term "approve".
-                        TerminationStrategy = new ApprovalTerminationStategy(),
+                        TerminationStrategy = new ApprovalTerminationStrategy(),
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
                         // but a custom func could be utilized if desired. (SelectionCriteriaCallback).
                         SelectionStrategy = new SequentialSelectionStrategy(),
@@ -84,7 +84,7 @@ public class Example03_Chat : BaseTest
         // Nothing to do...
     }
 
-    private sealed class ApprovalTerminationStategy : TerminationStrategy
+    private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
