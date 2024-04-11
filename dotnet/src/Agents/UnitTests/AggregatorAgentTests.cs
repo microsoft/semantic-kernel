@@ -37,8 +37,7 @@ public class AggregatorAgentTests
                         TerminationStrategy =
                             new DefaultTerminationStrategy()
                             {
-                                MaximumIterations = 3,
-                                DisableTermination = true // Continue to max iterations
+                                MaximumIterations = 3
                             }
                     }
             };
