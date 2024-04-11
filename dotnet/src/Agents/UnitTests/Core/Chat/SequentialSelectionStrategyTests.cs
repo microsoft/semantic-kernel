@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -32,6 +33,9 @@ public class SequentialSelectionStrategyTests
         await VerifyNextAgent(agent2.Object);
         await VerifyNextAgent(agent1.Object);
 
+        strategy.Reset();
+        await VerifyNextAgent(agent1.Object);
+
         // Verify index does not exceed current bounds.
         agents = new[] { agent1.Object };
         await VerifyNextAgent(agent1.Object);
@@ -51,7 +55,29 @@ public class SequentialSelectionStrategyTests
     public async Task VerifySequentialSelectionStrategyEmptyAsync()
     {
         SequentialSelectionStrategy strategy = new();
-        Agent? nextAgent = await strategy.NextAsync(Array.Empty<Agent>(), Array.Empty<ChatMessageContent>());
-        Assert.Null(nextAgent);
+        await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync(Array.Empty<Agent>(), Array.Empty<ChatMessageContent>()));
+    }
+
+    /// <summary>
+    /// Verify <see cref="SequentialSelectionStrategy"/> maintains order consistency
+    /// for int.MaxValue + 1 number of turns.
+    /// </summary>
+    [Fact]
+    public async Task VerifySequentialSelectionStrategyOverflowAsync()
+    {
+        Mock<Agent> agent1 = new();
+        Mock<Agent> agent2 = new();
+        Mock<Agent> agent3 = new();
+
+        Agent[] agents = new[] { agent1.Object, agent2.Object, agent3.Object };
+        SequentialSelectionStrategy strategy = new();
+
+        typeof(SequentialSelectionStrategy)
+            .GetField("_index", BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.Instance)!
+            .SetValue(strategy, int.MaxValue);
+
+        var nextAgent = await strategy.NextAsync(agents, Array.Empty<ChatMessageContent>());
+        Assert.NotNull(nextAgent);
+        Assert.Equal(agent2.Object.Id, nextAgent.Id);
     }
 }
