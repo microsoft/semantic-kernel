@@ -15,11 +15,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 /// <remarks>
 /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
-/// will throw exception if concurrent activity is attempted for:
-/// - <see cref="AddChatMessage"/>
-/// - <see cref="AddChatMessages"/>
-/// - <see cref="GetChatMessagesAsync"/>
-/// - <see cref="InvokeAgentAsync"/>
+/// will throw exception if concurrent activity is attempted for any public method.
 /// </remarks>
 public abstract class AgentChat
 {
@@ -30,11 +26,8 @@ public abstract class AgentChat
     private int _isActive;
 
     /// <summary>
-    /// Indicates if a chat operation is active.  This includes:
-    /// - <see cref="AddChatMessage"/>
-    /// - <see cref="AddChatMessages"/>
-    /// - <see cref="GetChatMessagesAsync"/>
-    /// - <see cref="InvokeAgentAsync"/>
+    /// Indicates if a chat operation is active.  Activity is defined as
+    /// any the execution of any public method.
     /// </summary>
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
@@ -50,6 +43,10 @@ public abstract class AgentChat
     /// <param name="agent">An optional agent, if requesting an agent history.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The message history</returns>
+    /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
+    /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(
         Agent? agent = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -94,12 +91,16 @@ public abstract class AgentChat
     /// Append a message to the conversation.  Adding a message while an agent
     /// is active is not allowed.
     /// </summary>
-    /// <param name="message">A of non-system messages with which to append to the conversation.</param>
+    /// <param name="message">A non-system message with which to append to the conversation.</param>
     /// <remarks>
     /// Adding a message to the conversation requires any active <see cref="AgentChannel"/> remains
     /// synchronized, so the message is broadcast to all channels.
     /// </remarks>
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
+    /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
+    /// </remarks>
     public void AddChatMessage(ChatMessageContent message)
     {
         this.AddChatMessages(new[] { message });
@@ -117,6 +118,8 @@ public abstract class AgentChat
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
     /// <throws>KernelException chat has current activity.</throws>
     /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
     {
@@ -152,6 +155,10 @@ public abstract class AgentChat
     /// <param name="agent">The agent actively interacting with the chat.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
+    /// <remarks>
+    /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
+    /// will throw exception if concurrent activity is attempted.
+    /// </remarks>
     protected async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -209,10 +216,11 @@ public abstract class AgentChat
     }
 
     /// <summary>
-    /// Clear activity marker.
+    /// Clear activity signal to indicate that activity has ceased.
     /// </summary>
     private void ClearActivitySignal()
     {
+        // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         Interlocked.Exchange(ref this._isActive, 0);
     }
 
@@ -220,8 +228,15 @@ public abstract class AgentChat
     /// Test to ensure chat is not concurrently active and throw exception if it is.
     /// If not, activity is signaled.
     /// </summary>
+    /// <remarks>
+    /// Rather than allowing concurrent invocation to result in undefined behavior / failure,
+    /// it is prefered to fail-fast in order to avoid side-effects / state mutation.
+    /// The activity signal is used to manage ability and visibility for taking actions based
+    /// on converstation history.
+    /// </remarks>
     private void ThrowIfActive()
     {
+        // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
