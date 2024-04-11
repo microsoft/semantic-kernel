@@ -21,7 +21,6 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     public void Reset()
         => this._index = 0;
 
-
     /// <inheritdoc/>
     public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
