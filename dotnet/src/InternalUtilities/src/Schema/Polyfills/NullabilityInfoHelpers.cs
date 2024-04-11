@@ -3,40 +3,41 @@
 #if !NET6_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Reflection;
-
-/// <summary>
-/// Polyfills for System.Private.CoreLib internals.
-/// </summary>
-[ExcludeFromCodeCoverage]
-internal static class NullabilityInfoHelpers
+namespace System.Reflection
 {
-    public static MemberInfo GetMemberWithSameMetadataDefinitionAs(Type type, MemberInfo member)
+    /// <summary>
+    /// Polyfills for System.Private.CoreLib internals.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
+    internal static class NullabilityInfoHelpers
     {
-        const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-        foreach (var info in type.GetMembers(all))
+        public static MemberInfo GetMemberWithSameMetadataDefinitionAs(Type type, MemberInfo member)
         {
-            if (info.HasSameMetadataDefinitionAs(member))
+            const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+            foreach (var info in type.GetMembers(all))
             {
-                return info;
+                if (info.HasSameMetadataDefinitionAs(member))
+                {
+                    return info;
+                }
             }
+
+            throw new MissingMemberException(type.FullName, member.Name);
         }
 
-        throw new MissingMemberException(type.FullName, member.Name);
-    }
+        // https://github.com/dotnet/runtime/blob/main/src/coreclr/System.Private.CoreLib/src/System/Reflection/MemberInfo.Internal.cs
+        public static bool HasSameMetadataDefinitionAs(this MemberInfo target, MemberInfo other)
+        {
+            return target.MetadataToken == other.MetadataToken &&
+                   target.Module.Equals(other.Module);
+        }
 
-    // https://github.com/dotnet/runtime/blob/main/src/coreclr/System.Private.CoreLib/src/System/Reflection/MemberInfo.Internal.cs
-    public static bool HasSameMetadataDefinitionAs(this MemberInfo target, MemberInfo other)
-    {
-        return target.MetadataToken == other.MetadataToken &&
-                target.Module.Equals(other.Module);
-    }
-
-    // https://github.com/dotnet/runtime/issues/23493
-    public static bool IsGenericMethodParameter(this Type target)
-    {
-        return target.IsGenericParameter &&
-                target.DeclaringMethod != null;
+        // https://github.com/dotnet/runtime/issues/23493
+        public static bool IsGenericMethodParameter(this Type target)
+        {
+            return target.IsGenericParameter &&
+                   target.DeclaringMethod != null;
+        }
     }
 }
 #endif

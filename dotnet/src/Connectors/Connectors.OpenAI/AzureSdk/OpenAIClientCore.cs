@@ -2,12 +2,9 @@
 
 using System;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
 using Microsoft.SemanticKernel.Services;
@@ -68,12 +65,6 @@ internal sealed class OpenAIClientCore : ClientCore
             options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), Azure.Core.HttpPipelinePosition.PerRetry);
         }
         this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
-    }
-
-    private static TokenCredential CreateDelegatedToken(string token)
-    {
-        AccessToken accessToken = new(token, DateTimeOffset.Now.AddDays(180.0));
-        return DelegatedTokenCredential.Create((TokenRequestContext _, CancellationToken _) => accessToken);
     }
 
     /// <summary>

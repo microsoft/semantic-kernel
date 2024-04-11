@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-#pragma warning disable IDE0009 // Member access should be qualified.
 
 using System;
 using System.Collections.Generic;

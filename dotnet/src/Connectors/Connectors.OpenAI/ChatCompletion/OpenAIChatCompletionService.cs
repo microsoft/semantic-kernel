@@ -31,7 +31,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenAIChatCompletionService(
         string modelId,
-        string? apiKey = null,
+        string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null
