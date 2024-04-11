@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Embeddings;
 using xRetry;
 using Xunit;
@@ -71,7 +72,10 @@ public class Example20_HuggingFace : BaseTest
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
-        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:");
+        var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:", new HuggingFacePromptExecutionSettings
+        {
+            UseCache = false
+        });
 
         await foreach (string text in kernel.InvokeStreamingAsync<string>(questionAnswerFunction, new() { ["input"] = "What is New York?" }))
         {

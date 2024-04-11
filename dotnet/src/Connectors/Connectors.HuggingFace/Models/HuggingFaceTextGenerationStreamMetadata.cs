@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 

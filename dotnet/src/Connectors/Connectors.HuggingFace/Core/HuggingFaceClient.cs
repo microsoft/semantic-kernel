@@ -167,26 +167,9 @@ internal sealed class HuggingFaceClient
 
     private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        IAsyncEnumerator<TextGenerationStreamResponse>? responseEnumerator = null;
-
-        try
+        await foreach (var content in this.ParseTextResponseStreamAsync(stream, cancellationToken).ConfigureAwait(false))
         {
-            var responseEnumerable = this.ParseTextResponseStreamAsync(stream, cancellationToken);
-            responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
-
-            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
-            {
-                var textContent = responseEnumerator.Current!;
-
-                yield return GetStreamingTextContentFromStreamResponse(textContent, modelId);
-            }
-        }
-        finally
-        {
-            if (responseEnumerator != null)
-            {
-                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
-            }
+            yield return GetStreamingTextContentFromStreamResponse(content, modelId);
         }
     }
 
@@ -198,7 +181,7 @@ internal sealed class HuggingFaceClient
             text: response.Token?.Text,
             modelId: modelId,
             innerContent: response,
-            metadata: new TextGenerationStreamMetadata(response));
+            metadata: new HuggingFaceTextGenerationStreamMetadata(response));
 
     private TextGenerationRequest CreateTextRequest(
         string prompt,

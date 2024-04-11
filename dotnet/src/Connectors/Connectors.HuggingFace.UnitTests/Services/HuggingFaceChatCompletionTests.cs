@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client.Models;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Xunit;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;

@@ -1,0 +1,512 @@
+data:{"index":1,"token":{"id":413,"text":" E","logprob":-6.1757812,"special":false},"generated_text":null,"details":null}
+
+data:{"index":2,"token":{"id":25928,"text":"VERY","logprob":-0.25708008,"special":false},"generated_text":null,"details":null}
+
+data:{"index":3,"token":{"id":3151,"text":"TH","logprob":-0.09161377,"special":false},"generated_text":null,"details":null}
+
+data:{"index":4,"token":{"id":2043,"text":"ING","logprob":-0.0026950836,"special":false},"generated_text":null,"details":null}
+
+data:{"index":5,"token":{"id":349,"text":" is","logprob":-2.0136719,"special":false},"generated_text":null,"details":null}
+
+data:{"index":6,"token":{"id":1450,"text":" New","logprob":-0.05883789,"special":false},"generated_text":null,"details":null}
+
+data:{"index":7,"token":{"id":2726,"text":" York","logprob":-0.0007443428,"special":false},"generated_text":null,"details":null}
+
+data:{"index":8,"token":{"id":28723,"text":".","logprob":-0.61376953,"special":false},"generated_text":null,"details":null}
+
+data:{"index":9,"token":{"id":315,"text":" I","logprob":-5.3203125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":10,"token":{"id":5915,"text":" recently","logprob":-4.78125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":11,"token":{"id":4142,"text":" moved","logprob":-2.2753906,"special":false},"generated_text":null,"details":null}
+
+data:{"index":12,"token":{"id":298,"text":" to","logprob":-0.70751953,"special":false},"generated_text":null,"details":null}
+
+data:{"index":13,"token":{"id":26182,"text":" Richmond","logprob":-9.078125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":14,"token":{"id":28725,"text":",","logprob":-0.42260742,"special":false},"generated_text":null,"details":null}
+
+data:{"index":15,"token":{"id":26147,"text":" VA","logprob":-1.2470703,"special":false},"generated_text":null,"details":null}
+
+data:{"index":16,"token":{"id":1024,"text":" after","logprob":-3.0292969,"special":false},"generated_text":null,"details":null}
+
+data:{"index":17,"token":{"id":3687,"text":" living","logprob":-0.66259766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":18,"token":{"id":297,"text":" in","logprob":-0.08666992,"special":false},"generated_text":null,"details":null}
+
+data:{"index":19,"token":{"id":11800,"text":" NY","logprob":-0.6767578,"special":false},"generated_text":null,"details":null}
+
+data:{"index":20,"token":{"id":28743,"text":"C","logprob":-0.031311035,"special":false},"generated_text":null,"details":null}
+
+data:{"index":21,"token":{"id":354,"text":" for","logprob":-0.07373047,"special":false},"generated_text":null,"details":null}
+
+data:{"index":22,"token":{"id":5597,"text":" nearly","logprob":-2.9746094,"special":false},"generated_text":null,"details":null}
+
+data:{"index":23,"token":{"id":28705,"text":" ","logprob":-0.70458984,"special":false},"generated_text":null,"details":null}
+
+data:{"index":24,"token":{"id":28740,"text":"1","logprob":-1.1767578,"special":false},"generated_text":null,"details":null}
+
+data:{"index":25,"token":{"id":28734,"text":"0","logprob":-0.6875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":26,"token":{"id":1267,"text":" years","logprob":-0.010597229,"special":false},"generated_text":null,"details":null}
+
+data:{"index":27,"token":{"id":28725,"text":",","logprob":-2.1464844,"special":false},"generated_text":null,"details":null}
+
+data:{"index":28,"token":{"id":304,"text":" and","logprob":-0.27026367,"special":false},"generated_text":null,"details":null}
+
+data:{"index":29,"token":{"id":315,"text":" I","logprob":-1.1699219,"special":false},"generated_text":null,"details":null}
+
+data:{"index":30,"token":{"id":28809,"text":"’","logprob":-1.7431641,"special":false},"generated_text":null,"details":null}
+
+data:{"index":31,"token":{"id":333,"text":"ve","logprob":-1.0117188,"special":false},"generated_text":null,"details":null}
+
+data:{"index":32,"token":{"id":4496,"text":" decided","logprob":-5.015625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":33,"token":{"id":586,"text":" my","logprob":-5.1367188,"special":false},"generated_text":null,"details":null}
+
+data:{"index":34,"token":{"id":2016,"text":" love","logprob":-3.1796875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":35,"token":{"id":19179,"text":" affair","logprob":-1.1708984,"special":false},"generated_text":null,"details":null}
+
+data:{"index":36,"token":{"id":395,"text":" with","logprob":-0.055145264,"special":false},"generated_text":null,"details":null}
+
+data:{"index":37,"token":{"id":11800,"text":" NY","logprob":-1.5019531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":38,"token":{"id":349,"text":" is","logprob":-3.8261719,"special":false},"generated_text":null,"details":null}
+
+data:{"index":39,"token":{"id":2082,"text":" far","logprob":-0.69970703,"special":false},"generated_text":null,"details":null}
+
+data:{"index":40,"token":{"id":477,"text":" from","logprob":-0.030593872,"special":false},"generated_text":null,"details":null}
+
+data:{"index":41,"token":{"id":754,"text":" over","logprob":-0.020629883,"special":false},"generated_text":null,"details":null}
+
+data:{"index":42,"token":{"id":28723,"text":".","logprob":-0.21801758,"special":false},"generated_text":null,"details":null}
+
+data:{"index":43,"token":{"id":315,"text":" I","logprob":-1.46875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":44,"token":{"id":622,"text":" will","logprob":-3.4492188,"special":false},"generated_text":null,"details":null}
+
+data:{"index":45,"token":{"id":1743,"text":" always","logprob":-0.89746094,"special":false},"generated_text":null,"details":null}
+
+data:{"index":46,"token":{"id":347,"text":" be","logprob":-0.97314453,"special":false},"generated_text":null,"details":null}
+
+data:{"index":47,"token":{"id":264,"text":" a","logprob":-0.2998047,"special":false},"generated_text":null,"details":null}
+
+data:{"index":48,"token":{"id":1450,"text":" New","logprob":-0.31030273,"special":false},"generated_text":null,"details":null}
+
+data:{"index":49,"token":{"id":2726,"text":" York","logprob":-0.0020751953,"special":false},"generated_text":null,"details":null}
+
+data:{"index":50,"token":{"id":263,"text":"er","logprob":-0.060821533,"special":false},"generated_text":null,"details":null}
+
+data:{"index":51,"token":{"id":28725,"text":",","logprob":-1.3476562,"special":false},"generated_text":null,"details":null}
+
+data:{"index":52,"token":{"id":1096,"text":" because","logprob":-2.7636719,"special":false},"generated_text":null,"details":null}
+
+data:{"index":53,"token":{"id":2905,"text":" everything","logprob":-2.84375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":54,"token":{"id":315,"text":" I","logprob":-0.9433594,"special":false},"generated_text":null,"details":null}
+
+data:{"index":55,"token":{"id":927,"text":" need","logprob":-3.7089844,"special":false},"generated_text":null,"details":null}
+
+data:{"index":56,"token":{"id":659,"text":" has","logprob":-5.78125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":57,"token":{"id":1567,"text":" come","logprob":-3.8398438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":58,"token":{"id":575,"text":" out","logprob":-1.6884766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":59,"token":{"id":302,"text":" of","logprob":-0.0032596588,"special":false},"generated_text":null,"details":null}
+
+data:{"index":60,"token":{"id":369,"text":" that","logprob":-1.1542969,"special":false},"generated_text":null,"details":null}
+
+data:{"index":61,"token":{"id":13978,"text":" incredible","logprob":-4.2460938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":62,"token":{"id":3408,"text":" energy","logprob":-5.078125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":63,"token":{"id":363,"text":" v","logprob":-1.4863281,"special":false},"generated_text":null,"details":null}
+
+data:{"index":64,"token":{"id":419,"text":"ort","logprob":-0.0017671585,"special":false},"generated_text":null,"details":null}
+
+data:{"index":65,"token":{"id":720,"text":"ex","logprob":-0.000079512596,"special":false},"generated_text":null,"details":null}
+
+data:{"index":66,"token":{"id":28725,"text":",","logprob":-2.9550781,"special":false},"generated_text":null,"details":null}
+
+data:{"index":67,"token":{"id":438,"text":" at","logprob":-5.078125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":68,"token":{"id":741,"text":" some","logprob":-0.9584961,"special":false},"generated_text":null,"details":null}
+
+data:{"index":69,"token":{"id":1305,"text":" point","logprob":-0.019500732,"special":false},"generated_text":null,"details":null}
+
+data:{"index":70,"token":{"id":28723,"text":".","logprob":-0.8310547,"special":false},"generated_text":null,"details":null}
+
+data:{"index":71,"token":{"id":15403,"text":" Think","logprob":-7.9648438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":72,"token":{"id":302,"text":" of","logprob":-1.6064453,"special":false},"generated_text":null,"details":null}
+
+data:{"index":73,"token":{"id":544,"text":" all","logprob":-2.4707031,"special":false},"generated_text":null,"details":null}
+
+data:{"index":74,"token":{"id":272,"text":" the","logprob":-0.1850586,"special":false},"generated_text":null,"details":null}
+
+data:{"index":75,"token":{"id":1722,"text":" things","logprob":-1.5517578,"special":false},"generated_text":null,"details":null}
+
+data:{"index":76,"token":{"id":368,"text":" you","logprob":-1.4462891,"special":false},"generated_text":null,"details":null}
+
+data:{"index":77,"token":{"id":6183,"text":" credit","logprob":-9.2890625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":78,"token":{"id":390,"text":" as","logprob":-2.4785156,"special":false},"generated_text":null,"details":null}
+
+data:{"index":79,"token":{"id":480,"text":" sh","logprob":-2.453125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":80,"token":{"id":13887,"text":"aping","logprob":-0.0015850067,"special":false},"generated_text":null,"details":null}
+
+data:{"index":81,"token":{"id":368,"text":" you","logprob":-0.71484375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":82,"token":{"id":28725,"text":",","logprob":-2.5996094,"special":false},"generated_text":null,"details":null}
+
+data:{"index":83,"token":{"id":304,"text":" and","logprob":-1.6142578,"special":false},"generated_text":null,"details":null}
+
+data:{"index":84,"token":{"id":868,"text":" then","logprob":-2.4511719,"special":false},"generated_text":null,"details":null}
+
+data:{"index":85,"token":{"id":1460,"text":" ask","logprob":-2.5175781,"special":false},"generated_text":null,"details":null}
+
+data:{"index":86,"token":{"id":3936,"text":" yourself","logprob":-0.21435547,"special":false},"generated_text":null,"details":null}
+
+data:{"index":87,"token":{"id":28725,"text":",","logprob":-1.6445312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":88,"token":{"id":767,"text":" what","logprob":-3.0917969,"special":false},"generated_text":null,"details":null}
+
+data:{"index":89,"token":{"id":349,"text":" is","logprob":-0.5620117,"special":false},"generated_text":null,"details":null}
+
+data:{"index":90,"token":{"id":369,"text":" that","logprob":-3.6484375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":91,"token":{"id":1712,"text":" three","logprob":-12.0546875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":92,"token":{"id":5498,"text":" letter","logprob":-1.0292969,"special":false},"generated_text":null,"details":null}
+
+data:{"index":93,"token":{"id":1183,"text":" ac","logprob":-0.8208008,"special":false},"generated_text":null,"details":null}
+
+data:{"index":94,"token":{"id":1689,"text":"ron","logprob":-0.00084114075,"special":false},"generated_text":null,"details":null}
+
+data:{"index":95,"token":{"id":1082,"text":"ym","logprob":-0.0000975132,"special":false},"generated_text":null,"details":null}
+
+data:{"index":96,"token":{"id":354,"text":" for","logprob":-2.390625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":97,"token":{"id":28804,"text":"?","logprob":-0.26831055,"special":false},"generated_text":null,"details":null}
+
+data:{"index":98,"token":{"id":315,"text":" I","logprob":-2.4179688,"special":false},"generated_text":null,"details":null}
+
+data:{"index":99,"token":{"id":907,"text":" first","logprob":-5.5273438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":100,"token":{"id":1988,"text":" came","logprob":-2.1738281,"special":false},"generated_text":null,"details":null}
+
+data:{"index":101,"token":{"id":298,"text":" to","logprob":-0.103759766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":102,"token":{"id":11800,"text":" NY","logprob":-0.31201172,"special":false},"generated_text":null,"details":null}
+
+data:{"index":103,"token":{"id":390,"text":" as","logprob":-2.5019531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":104,"token":{"id":264,"text":" a","logprob":-0.16455078,"special":false},"generated_text":null,"details":null}
+
+data:{"index":105,"token":{"id":5921,"text":" console","logprob":-14.6015625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":106,"token":{"id":18112,"text":" engineer","logprob":-2.4433594,"special":false},"generated_text":null,"details":null}
+
+data:{"index":107,"token":{"id":304,"text":" and","logprob":-3.0546875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":108,"token":{"id":6750,"text":" mix","logprob":-1.8398438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":109,"token":{"id":263,"text":"er","logprob":-0.011260986,"special":false},"generated_text":null,"details":null}
+
+data:{"index":110,"token":{"id":28723,"text":".","logprob":-2.5410156,"special":false},"generated_text":null,"details":null}
+
+data:{"index":111,"token":{"id":315,"text":" I","logprob":-0.69140625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":112,"token":{"id":9364,"text":" recorded","logprob":-4.4335938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":113,"token":{"id":11794,"text":" Sin","logprob":-9.96875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":114,"token":{"id":28797,"text":"é","logprob":-0.47045898,"special":false},"generated_text":null,"details":null}
+
+data:{"index":115,"token":{"id":316,"text":"ad","logprob":-0.0001502037,"special":false},"generated_text":null,"details":null}
+
+data:{"index":116,"token":{"id":451,"text":" O","logprob":-0.003063202,"special":false},"generated_text":null,"details":null}
+
+data:{"index":117,"token":{"id":28809,"text":"’","logprob":-0.04309082,"special":false},"generated_text":null,"details":null}
+
+data:{"index":118,"token":{"id":14459,"text":"Conn","logprob":-0.007106781,"special":false},"generated_text":null,"details":null}
+
+data:{"index":119,"token":{"id":271,"text":"or","logprob":-0.000054836273,"special":false},"generated_text":null,"details":null}
+
+data:{"index":120,"token":{"id":28809,"text":"’","logprob":-0.3564453,"special":false},"generated_text":null,"details":null}
+
+data:{"index":121,"token":{"id":28713,"text":"s","logprob":-0.00022387505,"special":false},"generated_text":null,"details":null}
+
+data:{"index":122,"token":{"id":981,"text":" “","logprob":-1.2060547,"special":false},"generated_text":null,"details":null}
+
+data:{"index":123,"token":{"id":28737,"text":"I","logprob":-1.4521484,"special":false},"generated_text":null,"details":null}
+
+data:{"index":124,"token":{"id":2378,"text":" Do","logprob":-0.08337402,"special":false},"generated_text":null,"details":null}
+
+data:{"index":125,"token":{"id":2280,"text":" Not","logprob":-0.0014514923,"special":false},"generated_text":null,"details":null}
+
+data:{"index":126,"token":{"id":19218,"text":" Want","logprob":-0.00086450577,"special":false},"generated_text":null,"details":null}
+
+data:{"index":127,"token":{"id":1824,"text":" What","logprob":-0.00081539154,"special":false},"generated_text":null,"details":null}
+
+data:{"index":128,"token":{"id":315,"text":" I","logprob":-0.00016260147,"special":false},"generated_text":null,"details":null}
+
+data:{"index":129,"token":{"id":24077,"text":" Haven","logprob":-0.37670898,"special":false},"generated_text":null,"details":null}
+
+data:{"index":130,"token":{"id":28809,"text":"’","logprob":-0.0067329407,"special":false},"generated_text":null,"details":null}
+
+data:{"index":131,"token":{"id":28707,"text":"t","logprob":-0.00013828278,"special":false},"generated_text":null,"details":null}
+
+data:{"index":132,"token":{"id":14399,"text":" Got","logprob":-0.001127243,"special":false},"generated_text":null,"details":null}
+
+data:{"index":133,"token":{"id":28838,"text":"”","logprob":-0.36132812,"special":false},"generated_text":null,"details":null}
+
+data:{"index":134,"token":{"id":438,"text":" at","logprob":-1.0634766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":135,"token":{"id":9554,"text":" Right","logprob":-3.03125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":136,"token":{"id":13907,"text":" Track","logprob":-0.024108887,"special":false},"generated_text":null,"details":null}
+
+data:{"index":137,"token":{"id":1362,"text":" stud","logprob":-2.8066406,"special":false},"generated_text":null,"details":null}
+
+data:{"index":138,"token":{"id":2806,"text":"ios","logprob":-0.00015091896,"special":false},"generated_text":null,"details":null}
+
+data:{"index":139,"token":{"id":325,"text":" (","logprob":-2.9355469,"special":false},"generated_text":null,"details":null}
+
+data:{"index":140,"token":{"id":6974,"text":"which","logprob":-2.5585938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":141,"token":{"id":403,"text":" was","logprob":-2.0039062,"special":false},"generated_text":null,"details":null}
+
+data:{"index":142,"token":{"id":438,"text":" at","logprob":-3.6210938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":143,"token":{"id":272,"text":" the","logprob":-1.0419922,"special":false},"generated_text":null,"details":null}
+
+data:{"index":144,"token":{"id":727,"text":" time","logprob":-0.21289062,"special":false},"generated_text":null,"details":null}
+
+data:{"index":145,"token":{"id":8189,"text":" possibly","logprob":-10.109375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":146,"token":{"id":272,"text":" the","logprob":-0.11401367,"special":false},"generated_text":null,"details":null}
+
+data:{"index":147,"token":{"id":1489,"text":" best","logprob":-1.2216797,"special":false},"generated_text":null,"details":null}
+
+data:{"index":148,"token":{"id":9659,"text":" studio","logprob":-2.1367188,"special":false},"generated_text":null,"details":null}
+
+data:{"index":149,"token":{"id":297,"text":" in","logprob":-0.11199951,"special":false},"generated_text":null,"details":null}
+
+data:{"index":150,"token":{"id":11800,"text":" NY","logprob":-0.8833008,"special":false},"generated_text":null,"details":null}
+
+data:{"index":151,"token":{"id":28743,"text":"C","logprob":-0.6176758,"special":false},"generated_text":null,"details":null}
+
+data:{"index":152,"token":{"id":609,"text":").","logprob":-1.0839844,"special":false},"generated_text":null,"details":null}
+
+data:{"index":153,"token":{"id":26547,"text":" Beautiful","logprob":-9.375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":154,"token":{"id":2971,"text":" woman","logprob":-4.0898438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":155,"token":{"id":28725,"text":",","logprob":-0.26708984,"special":false},"generated_text":null,"details":null}
+
+data:{"index":156,"token":{"id":6955,"text":" thr","logprob":-8.5546875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":157,"token":{"id":8317,"text":"illing","logprob":-0.3095703,"special":false},"generated_text":null,"details":null}
+
+data:{"index":158,"token":{"id":15307,"text":" singer","logprob":-1.9960938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":159,"token":{"id":28725,"text":",","logprob":-0.28637695,"special":false},"generated_text":null,"details":null}
+
+data:{"index":160,"token":{"id":4630,"text":" complex","logprob":-6.0585938,"special":false},"generated_text":null,"details":null}
+
+data:{"index":161,"token":{"id":3233,"text":" character","logprob":-3.421875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":162,"token":{"id":28725,"text":",","logprob":-0.8383789,"special":false},"generated_text":null,"details":null}
+
+data:{"index":163,"token":{"id":304,"text":" and","logprob":-0.8730469,"special":false},"generated_text":null,"details":null}
+
+data:{"index":164,"token":{"id":579,"text":" so","logprob":-4.2734375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":165,"token":{"id":315,"text":" I","logprob":-4.0195312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":166,"token":{"id":1654,"text":" thought","logprob":-3.5449219,"special":false},"generated_text":null,"details":null}
+
+data:{"index":167,"token":{"id":390,"text":" as","logprob":-5.4101562,"special":false},"generated_text":null,"details":null}
+
+data:{"index":168,"token":{"id":264,"text":" a","logprob":-1.4492188,"special":false},"generated_text":null,"details":null}
+
+data:{"index":169,"token":{"id":712,"text":" ro","logprob":-4.5078125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":170,"token":{"id":493,"text":"ok","logprob":-0.0033740997,"special":false},"generated_text":null,"details":null}
+
+data:{"index":171,"token":{"id":412,"text":"ie","logprob":-0.0024929047,"special":false},"generated_text":null,"details":null}
+
+data:{"index":172,"token":{"id":18112,"text":" engineer","logprob":-0.99658203,"special":false},"generated_text":null,"details":null}
+
+data:{"index":173,"token":{"id":28725,"text":",","logprob":-0.8310547,"special":false},"generated_text":null,"details":null}
+
+data:{"index":174,"token":{"id":378,"text":" it","logprob":-3.7519531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":175,"token":{"id":403,"text":" was","logprob":-1.6074219,"special":false},"generated_text":null,"details":null}
+
+data:{"index":176,"token":{"id":1404,"text":" going","logprob":-2.59375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":177,"token":{"id":298,"text":" to","logprob":-0.009757996,"special":false},"generated_text":null,"details":null}
+
+data:{"index":178,"token":{"id":347,"text":" be","logprob":-0.042999268,"special":false},"generated_text":null,"details":null}
+
+data:{"index":179,"token":{"id":586,"text":" my","logprob":-3.7929688,"special":false},"generated_text":null,"details":null}
+
+data:{"index":180,"token":{"id":6375,"text":" Big","logprob":-7.6445312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":181,"token":{"id":15102,"text":" Break","logprob":-0.13134766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":182,"token":{"id":28808,"text":"!","logprob":-2.9570312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":183,"token":{"id":1015,"text":" And","logprob":-4.1054688,"special":false},"generated_text":null,"details":null}
+
+data:{"index":184,"token":{"id":2783,"text":" yet","logprob":-4.171875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":185,"token":{"id":28725,"text":",","logprob":-0.32543945,"special":false},"generated_text":null,"details":null}
+
+data:{"index":186,"token":{"id":852,"text":" back","logprob":-7.3515625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":187,"token":{"id":868,"text":" then","logprob":-0.19970703,"special":false},"generated_text":null,"details":null}
+
+data:{"index":188,"token":{"id":28725,"text":",","logprob":-0.44018555,"special":false},"generated_text":null,"details":null}
+
+data:{"index":189,"token":{"id":272,"text":" the","logprob":-2.4453125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":190,"token":{"id":7278,"text":" seat","logprob":-10.8828125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":191,"token":{"id":14267,"text":" relie","logprob":-15.6484375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":192,"token":{"id":2547,"text":"fs","logprob":-1.2695312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":193,"token":{"id":654,"text":" were","logprob":-1.7509766,"special":false},"generated_text":null,"details":null}
+
+data:{"index":194,"token":{"id":1309,"text":" still","logprob":-1.8945312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":195,"token":{"id":1221,"text":" form","logprob":-8.5546875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":196,"token":{"id":522,"text":"able","logprob":-2.4375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":197,"token":{"id":486,"text":" by","logprob":-3.5722656,"special":false},"generated_text":null,"details":null}
+
+data:{"index":198,"token":{"id":272,"text":" the","logprob":-0.7573242,"special":false},"generated_text":null,"details":null}
+
+data:{"index":199,"token":{"id":5843,"text":" shape","logprob":-3.6894531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":200,"token":{"id":302,"text":" of","logprob":-0.019866943,"special":false},"generated_text":null,"details":null}
+
+data:{"index":201,"token":{"id":26361,"text":" legendary","logprob":-5.90625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":202,"token":{"id":2460,"text":" custom","logprob":-10.6015625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":203,"token":{"id":6750,"text":" mix","logprob":-2.7753906,"special":false},"generated_text":null,"details":null}
+
+data:{"index":204,"token":{"id":1362,"text":" stud","logprob":-7.171875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":205,"token":{"id":6715,"text":" Jim","logprob":-11.515625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":206,"token":{"id":24396,"text":" Arnold","logprob":-8.859375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":207,"token":{"id":28809,"text":"’","logprob":-0.23828125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":208,"token":{"id":28713,"text":"s","logprob":-0.00023329258,"special":false},"generated_text":null,"details":null}
+
+data:{"index":209,"token":{"id":12110,"text":" rear","logprob":-2.828125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":210,"token":{"id":948,"text":" end","logprob":-0.27026367,"special":false},"generated_text":null,"details":null}
+
+data:{"index":211,"token":{"id":28725,"text":",","logprob":-1.2373047,"special":false},"generated_text":null,"details":null}
+
+data:{"index":212,"token":{"id":304,"text":" and","logprob":-0.8535156,"special":false},"generated_text":null,"details":null}
+
+data:{"index":213,"token":{"id":1019,"text":" even","logprob":-5.3632812,"special":false},"generated_text":null,"details":null}
+
+data:{"index":214,"token":{"id":680,"text":" more","logprob":-3.4433594,"special":false},"generated_text":null,"details":null}
+
+data:{"index":215,"token":{"id":579,"text":" so","logprob":-2.0546875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":216,"token":{"id":486,"text":" by","logprob":-0.7495117,"special":false},"generated_text":null,"details":null}
+
+data:{"index":217,"token":{"id":272,"text":" the","logprob":-0.69873047,"special":false},"generated_text":null,"details":null}
+
+data:{"index":218,"token":{"id":3909,"text":" late","logprob":-4.1445312,"special":false},"generated_text":null,"details":null}
+
+data:{"index":219,"token":{"id":24978,"text":" ’","logprob":-9.8046875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":220,"token":{"id":15503,"text":"Super","logprob":-9.0625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":221,"token":{"id":434,"text":"tr","logprob":-2.25,"special":false},"generated_text":null,"details":null}
+
+data:{"index":222,"token":{"id":491,"text":"ak","logprob":-2.4082031,"special":false},"generated_text":null,"details":null}
+
+data:{"index":223,"token":{"id":28809,"text":"’","logprob":-0.15112305,"special":false},"generated_text":null,"details":null}
+
+data:{"index":224,"token":{"id":5163,"text":" George","logprob":-5.1953125,"special":false},"generated_text":null,"details":null}
+
+data:{"index":225,"token":{"id":7576,"text":" Mass","logprob":-0.03842163,"special":false},"generated_text":null,"details":null}
+
+data:{"index":226,"token":{"id":22381,"text":"enburg","logprob":-0.03111267,"special":false},"generated_text":null,"details":null}
+
+data:{"index":227,"token":{"id":28725,"text":",","logprob":-1.9628906,"special":false},"generated_text":null,"details":null}
+
+data:{"index":228,"token":{"id":390,"text":" as","logprob":-3.7675781,"special":false},"generated_text":null,"details":null}
+
+data:{"index":229,"token":{"id":400,"text":" he","logprob":-1.1308594,"special":false},"generated_text":null,"details":null}
+
+data:{"index":230,"token":{"id":5223,"text":" spent","logprob":-3.7636719,"special":false},"generated_text":null,"details":null}
+
+data:{"index":231,"token":{"id":1080,"text":" most","logprob":-3.4394531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":232,"token":{"id":302,"text":" of","logprob":-0.14978027,"special":false},"generated_text":null,"details":null}
+
+data:{"index":233,"token":{"id":516,"text":" his","logprob":-0.33398438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":234,"token":{"id":727,"text":" time","logprob":-0.5805664,"special":false},"generated_text":null,"details":null}
+
+data:{"index":235,"token":{"id":297,"text":" in","logprob":-1.9150391,"special":false},"generated_text":null,"details":null}
+
+data:{"index":236,"token":{"id":736,"text":" there","logprob":-2.5332031,"special":false},"generated_text":null,"details":null}
+
+data:{"index":237,"token":{"id":28723,"text":".","logprob":-1.4257812,"special":false},"generated_text":null,"details":null}
+
+data:{"index":238,"token":{"id":415,"text":" The","logprob":-2.9023438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":239,"token":{"id":16002,"text":" rush","logprob":-7.6484375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":240,"token":{"id":302,"text":" of","logprob":-0.66552734,"special":false},"generated_text":null,"details":null}
+
+data:{"index":241,"token":{"id":369,"text":" that","logprob":-3.7128906,"special":false},"generated_text":null,"details":null}
+
+data:{"index":242,"token":{"id":5313,"text":" session","logprob":-1.7890625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":243,"token":{"id":7520,"text":" remains","logprob":-5.3398438,"special":false},"generated_text":null,"details":null}
+
+data:{"index":244,"token":{"id":15199,"text":" frozen","logprob":-8.1796875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":245,"token":{"id":297,"text":" in","logprob":-0.13586426,"special":false},"generated_text":null,"details":null}
+
+data:{"index":246,"token":{"id":586,"text":" my","logprob":-0.62109375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":247,"token":{"id":4733,"text":" memory","logprob":-1.3525391,"special":false},"generated_text":null,"details":null}
+
+data:{"index":248,"token":{"id":28725,"text":",","logprob":-0.81689453,"special":false},"generated_text":null,"details":null}
+
+data:{"index":249,"token":{"id":7577,"text":" despite","logprob":-4.765625,"special":false},"generated_text":null,"details":null}
+
+data:{"index":250,"token":{"id":369,"text":" that","logprob":-3.8554688,"special":false},"generated_text":null,"details":null}
+
+data:{"index":251,"token":{"id":272,"text":" the","logprob":-3.2519531,"special":false},"generated_text":null,"details":null}
+
+data:{"index":252,"token":{"id":2112,"text":" kind","logprob":-9.7734375,"special":false},"generated_text":null,"details":null}
+
+data:{"index":253,"token":{"id":302,"text":" of","logprob":-0.36450195,"special":false},"generated_text":null,"details":null}
+
+data:{"index":254,"token":{"id":7806,"text":" records","logprob":-4.8007812,"special":false},"generated_text":null,"details":null}
+
+data:{"index":255,"token":{"id":368,"text":" you","logprob":-2.921875,"special":false},"generated_text":null,"details":null}
+
+data:{"index":256,"token":{"id":460,"text":" are","logprob":-4.7070312,"special":false},"generated_text":"Question: What is New York?; Answer: EVERYTHING is New York. I recently moved to Richmond, VA after living in NYC for nearly 10 years, and I’ve decided my love affair with NY is far from over. I will always be a New Yorker, because everything I need has come out of that incredible energy vortex, at some point. Think of all the things you credit as shaping you, and then ask yourself, what is that three letter acronym for? I first came to NY as a console engineer and mixer. I recorded Sinéad O’Connor’s “I Do Not Want What I Haven’t Got” at Right Track studios (which was at the time possibly the best studio in NYC). Beautiful woman, thrilling singer, complex character, and so I thought as a rookie engineer, it was going to be my Big Break! And yet, back then, the seat reliefs were still formable by the shape of legendary custom mix stud Jim Arnold’s rear end, and even more so by the late ’Supertrak’ George Massenburg, as he spent most of his time in there. The rush of that session remains frozen in my memory, despite that the kind of records you are","details":{"finish_reason":"length","generated_tokens":256,"seed":14541711226878366040}}
+

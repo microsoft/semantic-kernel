@@ -26,12 +26,14 @@ internal sealed class TextGenerationRequest
     /// Parameters used by the model for generation.
     /// </summary>
     [JsonPropertyName("parameters")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public HuggingFaceTextParameters? Parameters { get; set; }
 
     /// <summary>
     /// Options used by the model for generation.
     /// </summary>
     [JsonPropertyName("options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public HuggingFaceTextOptions? Options { get; set; }
 
     /// <summary>
@@ -70,6 +72,7 @@ internal sealed class TextGenerationRequest
         /// (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
         /// </summary>
         [JsonPropertyName("top_k")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? TopK { get; set; }
 
         /// <summary>
@@ -78,6 +81,7 @@ internal sealed class TextGenerationRequest
         /// is greater than top_p.
         /// </summary>
         [JsonPropertyName("top_p")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? TopP { get; set; }
 
         /// <summary>
@@ -86,6 +90,7 @@ internal sealed class TextGenerationRequest
         /// 100.0 is getting closer to uniform probability.
         /// </summary>
         [JsonPropertyName("temperature")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? Temperature { get; set; } = 1;
 
         /// <summary>
@@ -93,6 +98,7 @@ internal sealed class TextGenerationRequest
         /// the more it is penalized to not be picked in successive generation passes.
         /// </summary>
         [JsonPropertyName("repetition_penalty")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? RepetitionPenalty { get; set; }
 
         /// <summary>
@@ -102,6 +108,7 @@ internal sealed class TextGenerationRequest
         /// and length of text generated.
         /// </summary>
         [JsonPropertyName("max_new_tokens")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? MaxNewTokens { get; set; }
 
         /// <summary>
@@ -110,6 +117,7 @@ internal sealed class TextGenerationRequest
         /// Use that in combination with max_new_tokens for best results.
         /// </summary>
         [JsonPropertyName("max_time")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? MaxTime { get; set; }
 
         /// <summary>
@@ -122,13 +130,15 @@ internal sealed class TextGenerationRequest
         /// (Default: 1). Integer. The number of proposition you want to be returned.
         /// </summary>
         [JsonPropertyName("num_return_sequences")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? NumReturnSequences { get; set; } = 1;
 
         /// <summary>
         /// (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.
         /// </summary>
         [JsonPropertyName("do_sample")]
-        public bool DoSample { get; set; } = true;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? DoSample { get; set; }
 
         /// <summary>
         /// (Optional: True) Bool. Whether or not to include the details of the generation.
@@ -136,6 +146,7 @@ internal sealed class TextGenerationRequest
         /// <remarks>
         /// Disabling this won't provide information about token usage.
         /// </remarks>
+        [JsonPropertyName("details")]
         public bool Details { get; set; } = true;
     }
 
