@@ -16,7 +16,7 @@ public sealed class WebSearchEnginePluginTests
     public async Task SearchAsyncSucceedsAsync()
     {
         // Arrange
-        IEnumerable<string> expected = new[] { Guid.NewGuid().ToString() };
+        IEnumerable<string> expected = [Guid.NewGuid().ToString()];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
         connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
@@ -37,7 +37,7 @@ public sealed class WebSearchEnginePluginTests
     public async Task GetSearchResultsSucceedsAsync()
     {
         // Arrange
-        IEnumerable<WebPage> expected = new List<WebPage>();
+        IEnumerable<WebPage> expected = [];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
         connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))

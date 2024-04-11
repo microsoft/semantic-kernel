@@ -132,7 +132,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -157,7 +157,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
