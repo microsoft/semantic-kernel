@@ -18,15 +18,26 @@ namespace Examples;
 /// 3. Search and Download both Phi2 and Llama2 models (preferably the ones that uses 8GB RAM or more)
 /// 4. Start the Message API Server on http://localhost:1234
 /// 5. Run the examples.
-/// 6. Start the Ollama Message API Server on http://localhost:11434 using docker
-/// 7. docker run -d --gpus=all -v "d:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
-/// 8. Set Llama2 as the current ollama model: docker exec -it ollama ollama run llama2
+///
+/// OR
+///
+/// 1. Start the Ollama Message API Server on http://localhost:11434 using docker
+/// 2. docker run -d --gpus=all -v "d:\temp\ollama:/root/.ollama" -p 11434:11434 --name ollama ollama/ollama <see href="https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image" />
+/// 3. Set Llama2 as the current ollama model: docker exec -it ollama ollama run llama2
+/// 4. Run the Ollama examples.
+///
+/// OR
+///
+/// 1. Start the LocalAI Message API Server on http://localhost:8080
+/// 2. docker run -ti -p 8080:8080 localai/localai:v2.12.3-ffmpeg-core phi-2 <see href="https://localai.io/docs/getting-started/run-other-models/" />
+/// 3. Run the LocalAI examples.
 /// </summary>
 public class Example88_CustomMessageAPIEndpoint : BaseTest
 {
-    [Theory]//(Skip = "Manual configuration needed")] //(Skip = "Manual configuration needed")]
+    [Theory(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
     [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_ExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
         WriteLine($"Example using local {messageAPIPlatform}");
@@ -54,9 +65,10 @@ public class Example88_CustomMessageAPIEndpoint : BaseTest
         this.WriteLine(response);
     }
 
-    [Theory]//(Skip = "Manual configuration needed")] //(Skip = "Manual configuration needed")]
+    [Theory(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
     [InlineData("Ollama", "http://localhost:11434", "llama2")] // Start the Ollama Message API Server on http://localhost:11434 using docker
+    [InlineData("LocalAI", "http://localhost:8080", "phi-2")]
     public async Task LocalModel_StreamingExampleAsync(string messageAPIPlatform, string url, string modelId)
     {
         WriteLine($"Example using local {messageAPIPlatform}");

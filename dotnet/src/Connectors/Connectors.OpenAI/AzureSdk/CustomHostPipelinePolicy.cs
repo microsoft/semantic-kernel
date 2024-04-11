@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Azure.Core.Pipeline;
 using Azure.Core;
+using Azure.Core.Pipeline;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
+
 internal class CustomHostPipelinePolicy : HttpPipelineSynchronousPolicy
 {
     private readonly Uri _endpoint;
