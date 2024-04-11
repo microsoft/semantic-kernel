@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -71,7 +72,7 @@ public static class PineconeUtils
     public static async IAsyncEnumerable<PineconeDocument> EnsureValidMetadataAsync(
         IAsyncEnumerable<PineconeDocument> documents)
     {
-        await foreach (PineconeDocument document in documents)
+        await foreach (PineconeDocument document in documents.ConfigureAwait(false))
         {
             if (document.Metadata == null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
             {
@@ -138,7 +139,7 @@ public static class PineconeUtils
         List<PineconeDocument> currentBatch = new(batchSize);
         int batchCounter = 0;
 
-        await foreach (PineconeDocument record in data)
+        await foreach (PineconeDocument record in data.ConfigureAwait(false))
         {
             currentBatch.Add(record);
 

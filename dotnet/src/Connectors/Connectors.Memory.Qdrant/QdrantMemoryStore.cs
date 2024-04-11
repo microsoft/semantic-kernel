@@ -226,7 +226,7 @@ public class QdrantMemoryStore : IMemoryStore
         var vectorDataList = this._qdrantClient
             .GetVectorsByIdAsync(collectionName, pointIds, withEmbeddings, cancellationToken);
 
-        await foreach (var vectorData in vectorDataList)
+        await foreach (var vectorData in vectorDataList.ConfigureAwait(false))
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),

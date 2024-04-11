@@ -341,7 +341,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken))
+        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return record;
         }
@@ -426,7 +426,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken))
+        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return result;
         }

@@ -46,7 +46,7 @@ while (true)
     // Stream the results
     string fullMessage = "";
     var first = true;
-    await foreach (var content in result)
+    await foreach (var content in result.ConfigureAwait(false))
     {
         if (content.Role.HasValue && first)
         {

@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
-#pragma warning disable CA1849, VSTHRD103 // Call async methods when in an async method
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
