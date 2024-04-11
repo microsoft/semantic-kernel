@@ -94,36 +94,45 @@ class FunctionCallContent : KernelContent
 - Connectors will need to determine whether the content represents a function call or a function result by analyzing the role of the parent `ChatMessageContent` in the chat history, as the type itself does not convey its purpose.  
   * This may not be a con at all because a protocol defining a specific role (AuthorRole.Tool?) for chat messages to pass function results to connectors will be required. Details are discussed below in this ADR.
 
-### Option 1.2 - FunctionCallContent to represent a function call and FunctionResultContent to represent the function result
-This option proposes having two model classes - `FunctionCallContent` for communicating function calls to connector callers:
+### Option 1.2 - FunctionCallRequestContent to represent a function call and FunctionCallResultContent to represent the function result
+This option proposes having two model classes - `FunctionCallRequestContent` for communicating function calls to connector callers:
 ```csharp
-class FunctionCallContent : KernelContent
+class FunctionCallRequestContent : KernelContent
 {
-    public string? Id {get; private set;}
-    public string? PluginName {get; private set;}
-    public string FunctionName {get; private set;}
-    public KernelArguments? Arguments {get; private set;}
+    public string? Id {get;}
+    public string? PluginName {get;}
+    public string FunctionName {get;}
+    public KernelArguments? Arguments {get;}
+    public Exception? Exception {get; init;}
 
-    public string GetFullyQualifiedName(string functionNameSeparator = "-") {...}
-
-    public Task<FunctionResult> InvokeAsync(Kernel kernel,CancellationToken cancellationToken = default)
+    public Task<FunctionCallResultContent> InvokeAsync(Kernel kernel,CancellationToken cancellationToken = default)
     {
         // 1. Search for the plugin/function in kernel.Plugins collection.
         // 2. Create KernelArguments by deserializing Arguments.
         // 3. Invoke the function.
     }
+
+    public static IEnumerable<FunctionCallRequestContent> GetFunctionCalls(ChatMessageContent messageContent)
+    {
+        // Returns list of function call requests provided via <see cref="ChatMessageContent.Items"/> collection.
+    }
 }
 ```
 
-and - `FunctionResultContent` for communicating function results back to connectors:
+and - `FunctionCallResultContent` for communicating function results back to connectors:
 ```csharp
-class FunctionResultContent : KernelContent
+class FunctionCallResultContent : KernelContent
 {
     public string? Id {get; private set;}
     public string? PluginName {get; private set;}
-    public string FunctionName {get; private set;}
+    public string? FunctionName {get; private set;}
 
     public object?/FunctionResult/string? Result {get; set;}
+
+    public ChatMessageContent ToChatMessage()
+    {
+        // Creates <see cref="ChatMessageContent"/> and adds the current instance of the class to the <see cref="ChatMessageContent.Items"/> collection.
+    }
 }
 ```
 
@@ -140,12 +149,13 @@ class FunctionResultContent : KernelContent
 ChatMessageContent messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 chatHistory.Add(messageContent); // Adding original chat message content containing function call(s) to the chat history
 
-IEnumerable<FunctionCallContent> functionCalls = messageContent.GetFunctionCalls(); // Getting list of function calls.
+IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent); // Getting list of function calls.
+// Alternatively: IEnumerable<FunctionCallRequestContent> functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>();
 
 // Iterating over the requested function calls and invoking them.
-foreach (FunctionCallContent functionCall in functionCalls)
+foreach (FunctionCallRequestContent functionCall in functionCalls)
 {
-    FunctionResultContent? result = null;
+    FunctionCallResultContent? result = null;
 
     try
     {
@@ -153,15 +163,16 @@ foreach (FunctionCallContent functionCall in functionCalls)
     }
     catch(Exception ex)
     {
-        chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, ex));
+        chatHistory.Add(new FunctionCallResultContent(functionCall, ex).ToChatMessage());
         // or
-        string message = $"The operation was canceled due to timeout. Try again.";
-        chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(functionCall, message));
+        //string message = "Error details that LLM can reason about.";
+        //chatHistory.Add(new FunctionCallResultContent(functionCall, message).ToChatMessageContent());
         
         continue;
     }
     
-    chatHistory.AddMessage(AuthorRole.Tool, result!); // Using the new AddMessage extension method of ChatHistory class
+    chatHistory.Add(result.ToChatMessage());
+    // or chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { result }));
 }
 
 // Sending chat history containing function calls and function results to the LLM to get the final response
@@ -173,19 +184,19 @@ The design does not require callers to create an instance of chat message for ea
 ChatMessageContent messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 chatHistory.Add(messageContent); // Adding original chat message content containing function call(s) to the chat history.
 
-IEnumerable<FunctionCallContent> functionCalls = messageContent.GetFunctionCalls(); // Getting list of function calls.
+IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent); // Getting list of function calls.
 
 ChatMessageContentItemCollection items = new ChatMessageContentItemCollection();
 
 // Iterating over the requested function calls and invoking them
-foreach (FunctionCallContent functionCall in functionCalls)
+foreach (FunctionCallRequestContent functionCall in functionCalls)
 {
-    FunctionResultContent result = await functionCall.InvokeAsync(kernel);
+    FunctionCallResultContent result = await functionCall.InvokeAsync(kernel);
 
     items.Add(result);
 }
 
-chatHistory.AddMessage(AuthorRole.Tool, items); // Adding all function as a single chat message.
+chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, items);
 
 // Sending chat history containing function calls and function results to the LLM to get the final response
 messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
@@ -202,20 +213,20 @@ The role of a function call message returned by a connector is not important to 
 ```csharp
 ChatMessageContent messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-IEnumerable<FunctionCallContent> functionCalls = messageContent.GetFunctionCalls(); // Will return list of function calls regardless of the role of the messageContent if the content contains the function calls.
+IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(); // Will return list of function calls regardless of the role of the messageContent if the content contains the function calls.
 ```
 
 However, having only one connector-agnostic role for messages to send the function result back to the connector is important for polymorphic usage of connectors. This would allow callers to write code like this:
 
  ```csharp
  ...
-IEnumerable<FunctionCallContent> functionCalls = messageContent.GetFunctionCalls();
+IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls();
 
-foreach (FunctionCallContent functionCall in functionCalls)
+foreach (FunctionCallRequestContent functionCall in functionCalls)
 {
-    FunctionResultContent result = await functionCall.InvokeAsync(kernel);
+    FunctionCallResultContent result = await functionCall.InvokeAsync(kernel);
 
-    chatHistory.AddMessage(AuthorRole.Tool, result);
+    chatHistory.Add(result.ToChatMessage());
 }
 ...
 ```
@@ -225,24 +236,24 @@ and avoid code like this:
 ```csharp
 IChatCompletionService chatCompletionService = new();
 ...
-IEnumerable<FunctionCallContent> functionCalls = messageContent.GetFunctionCalls();
+IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls();
 
-foreach (FunctionCallContent functionCall in functionCalls)
+foreach (FunctionCallRequestContent functionCall in functionCalls)
 {
-    FunctionResultContent result = await functionCall.InvokeAsync(kernel);
+    FunctionCallResultContent result = await functionCall.InvokeAsync(kernel);
 
     // Using connector-specific roles instead of a single connector-agnostic one to send results back to the connector would prevent the polymorphic usage of connectors and force callers to write if/else blocks.
     if(chatCompletionService is OpenAIChatCompletionService || chatCompletionService is AzureOpenAIChatCompletionService)
     {
-        chatHistory.AddMessage(AuthorRole.Tool, result);
+        chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { result });
     }
     else if(chatCompletionService is AnotherCompletionService)
     {
-        chatHistory.AddMessage(AuthorRole.Function, result);
+        chatHistory.Add(new ChatMessageContent(AuthorRole.Function, new ChatMessageContentItemCollection() { result });
     }
     else if(chatCompletionService is SomeOtherCompletionService)
     {
-        chatHistory.AddMessage(AuthorRole.ServiceSpecificRole, result);
+        chatHistory.Add(new ChatMessageContent(AuthorRole.ServiceSpecificRole, new ChatMessageContentItemCollection() { result });
     }
 }
 ...
@@ -251,8 +262,8 @@ foreach (FunctionCallContent functionCall in functionCalls)
 ### Decision Outcome
 It was decided to go with the `AuthorRole.Tool` role because it is well-known, and conceptually, it can represent function results as well as any other tools that SK will need to support in the future.
 
-## 3. Type of FunctionResultContent.Result property:
-There are a few data types that can be used for the `FunctionResultContent.Result` property. The data type in question should allow the following scenarios:  
+## 3. Type of FunctionCallResultContent.Result property:
+There are a few data types that can be used for the `FunctionCallResultContent.Result` property. The data type in question should allow the following scenarios:  
 - Be serializable/deserializable, so that it's possible to serialize chat history containing function result content and rehydrate it later when needed.  
 - It should be possible to communicate function execution failure either by sending the original exception or a string describing the problem to LLM.  
    
@@ -260,7 +271,7 @@ So far, three potential data types have been identified: object, string, and Fun
 
 ### Option 3.1 - object
 ```csharp
-class FunctionResultContent : KernelContent
+class FunctionCallResultContent : KernelContent
 {
     // Other members are omitted
     public object? Result {get; set;}
@@ -279,7 +290,7 @@ This option may require the use of JSON converters/resolvers for the {de}seriali
 
 ### Option 3.2 - string (current implementation)
 ```csharp
-class FunctionResultContent : KernelContent
+class FunctionCallResultContent : KernelContent
 {
     // Other members are omitted
     public string? Result {get; set;}
@@ -295,7 +306,7 @@ class FunctionResultContent : KernelContent
 
 ### Option 3.3 - FunctionResult
 ```csharp
-class FunctionResultContent : KernelContent
+class FunctionCallResultContent : KernelContent
 {
     // Other members are omitted
     public FunctionResult? Result {get;set;}
@@ -327,15 +338,15 @@ public class FunctionResult : KernelContent
     ....
 }
 ```
-So, instead of having a separate `FunctionResultContent` class to represent the function result content, the `FunctionResult` class will inherit from the `KernelContent` class, becoming the content itself. As a result, the function result returned by the `KernelFunction.InvokeAsync` method can be directly added to the `ChatMessageContent.Items` collection:
+So, instead of having a separate `FunctionCallResultContent` class to represent the function result content, the `FunctionResult` class will inherit from the `KernelContent` class, becoming the content itself. As a result, the function result returned by the `KernelFunction.InvokeAsync` method can be directly added to the `ChatMessageContent.Items` collection:
 ```csharp
-foreach (FunctionCallContent functionCall in functionCalls)
+foreach (FunctionCallRequestContent functionCall in functionCalls)
 {
     FunctionResult result = await functionCall.InvokeAsync(kernel);
 
     chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection { result }));
     // instead of
-    chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) }));
+    chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection { new FunctionCallResultContent(functionCall, result) }));
     
     // of cause, the syntax can be simplified by having additional instance/extension methods
     chatHistory.AddFunctionResultMessage(result); // Using the new AddFunctionResultMessage extension method of ChatHistory class
@@ -343,14 +354,14 @@ foreach (FunctionCallContent functionCall in functionCalls)
 ```
 
 Questions:
-- How to pass the original `FunctionCallContent` to connectors along with the function result. It's actually not clear atm whether it's needed or not. The current rationale is that some models might expect properties of the original function call, such as arguments, to be passed back to the LLM along with the function result. An argument can be made that the original function call can be found in the chat history by the connector if needed. However, a counterargument is that it may not always be possible because the chat history might be truncated to save tokens, reduce hallucination, etc.
+- How to pass the original `FunctionCallRequestContent` to connectors along with the function result. It's actually not clear atm whether it's needed or not. The current rationale is that some models might expect properties of the original function call, such as arguments, to be passed back to the LLM along with the function result. An argument can be made that the original function call can be found in the chat history by the connector if needed. However, a counterargument is that it may not always be possible because the chat history might be truncated to save tokens, reduce hallucination, etc.
 - How to pass function id to connector?
 - How to communicate exception to the connectors? It was proposed to add the `Exception` property the the `FunctionResult` class that will always be assigned by the `KernelFunction.InvokeAsync` method. However, this change will break C# function calling semantic, where the function should be executed if the contract is satisfied, or an exception should be thrown if the contract is not fulfilled.
 - If `FunctionResult` becomes a non-steaming content by inheriting `KernelContent` class, how the `FunctionResult` can represent streaming content capabilities represented by the `StreamingKernelContent` class when/if it needed later? C# does not support multiple inheritance.
 
 **Pros**
 - The `FunctionResult` class becomes a content(non-streaming one) itself and can be passed to all the places where content is expected.
-- No need for the extra `FunctionResultContent` class .
+- No need for the extra `FunctionCallResultContent` class .
   
 **Cons**
 - Unnecessarily coupling between the `FunctionResult` and `KernelContent` classes might be a limiting factor preventing each one from evolving independently as they otherwise could.
@@ -373,7 +384,7 @@ There are a few ways the simulated function can be modeled:
 ChatMessageContent messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
 // Simulated function call
-FunctionCallContent simulatedFunctionCall = new FunctionCallContent(name: "weather-alert", id: "call_123");
+FunctionCallRequestContent simulatedFunctionCall = new FunctionCallRequestContent(name: "weather-alert", id: "call_123");
 messageContent.Items.Add(simulatedFunctionCall); // Adding a simulated function call to the connector response message
 
 chatHistory.Add(messageContent);
@@ -382,7 +393,7 @@ chatHistory.Add(messageContent);
 KernelFunction simulatedFunction = KernelFunctionFactory.CreateFromMethod(() => "A Tornado Watch has been issued, with potential for severe ..... Stay informed and follow safety instructions from authorities.");
 FunctionResult simulatedFunctionResult = await simulatedFunction.InvokeAsync(kernel);
 
-chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult));
+chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult) }));
 
 messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
@@ -401,7 +412,7 @@ messageContent = await completionService.GetChatMessageContentAsync(chatHistory,
 ChatMessageContent messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
 // Simulated function
-FunctionCallContent simulatedFunctionCall = new FunctionCallContent(name: "weather-alert", id: "call_123");
+FunctionCallRequestContent simulatedFunctionCall = new FunctionCallRequestContent(name: "weather-alert", id: "call_123");
 messageContent.Items.Add(simulatedFunctionCall);
 
 chatHistory.Add(messageContent);
@@ -413,7 +424,7 @@ string simulatedFunctionResult = "A Tornado Watch has been issued, with potentia
 
 WeatherAlert simulatedFunctionResult = new WeatherAlert { Id = "34SD7RTYE4", Text = "A Tornado Watch has been issued, with potential for severe ..... Stay informed and follow safety instructions from authorities." };
 
-chatHistory.AddMessage(AuthorRole.Tool, new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult));
+chatHistory.Add(new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult) }));
 
 messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
