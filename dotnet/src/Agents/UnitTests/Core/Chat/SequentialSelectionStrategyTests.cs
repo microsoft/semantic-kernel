@@ -32,6 +32,9 @@ public class SequentialSelectionStrategyTests
         await VerifyNextAgent(agent2.Object);
         await VerifyNextAgent(agent1.Object);
 
+        strategy.Reset();
+        await VerifyNextAgent(agent1.Object);
+
         // Verify index does not exceed current bounds.
         agents = new[] { agent1.Object };
         await VerifyNextAgent(agent1.Object);
