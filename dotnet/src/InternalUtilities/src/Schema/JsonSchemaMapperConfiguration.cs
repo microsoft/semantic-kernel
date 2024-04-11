@@ -78,7 +78,7 @@ class JsonSchemaMapperConfiguration
     /// </remarks>
     public int MaxDepth
     {
-        get => this._maxDepth;
+        get => _maxDepth;
         init
         {
             if (value < 0)
@@ -87,7 +87,7 @@ class JsonSchemaMapperConfiguration
                 static void Throw() => throw new ArgumentOutOfRangeException(nameof(value));
             }
 
-            this._maxDepth = value;
+            _maxDepth = value;
         }
     }
 }

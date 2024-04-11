@@ -584,42 +584,42 @@ ConstructSchemaDocument:
 
         public GenerationState(JsonSchemaMapperConfiguration configuration)
         {
-            this._configuration = configuration;
-            this._nullabilityInfoContext = configuration.ReferenceTypeNullability is ReferenceTypeNullability.Annotated ? new() : null;
-            this._generatedTypePaths = configuration.AllowSchemaReferences ? new() : null;
-            this._currentPath = configuration.AllowSchemaReferences ? new() : null;
-            this._currentDepth = 0;
+            _configuration = configuration;
+            _nullabilityInfoContext = configuration.ReferenceTypeNullability is ReferenceTypeNullability.Annotated ? new() : null;
+            _generatedTypePaths = configuration.AllowSchemaReferences ? new() : null;
+            _currentPath = configuration.AllowSchemaReferences ? new() : null;
+            _currentDepth = 0;
         }
 
-        public readonly JsonSchemaMapperConfiguration Configuration => this._configuration;
-        public readonly NullabilityInfoContext? NullabilityInfoContext => this._nullabilityInfoContext;
-        public readonly int CurrentDepth => this._currentDepth;
+        public readonly JsonSchemaMapperConfiguration Configuration => _configuration;
+        public readonly NullabilityInfoContext? NullabilityInfoContext => _nullabilityInfoContext;
+        public readonly int CurrentDepth => _currentDepth;
 
         public void Push(string nodeId)
         {
-            if (this._currentDepth == this.Configuration.MaxDepth)
+            if (_currentDepth == Configuration.MaxDepth)
             {
                 ThrowHelpers.ThrowInvalidOperationException_MaxDepthReached();
             }
 
-            this._currentDepth++;
+            _currentDepth++;
 
-            if (this.Configuration.AllowSchemaReferences)
+            if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(this._currentPath != null);
-                this._currentPath!.Add(nodeId);
+                Debug.Assert(_currentPath != null);
+                _currentPath!.Add(nodeId);
             }
         }
 
         public void Pop()
         {
-            Debug.Assert(this._currentDepth > 0);
-            this._currentDepth--;
+            Debug.Assert(_currentDepth > 0);
+            _currentDepth--;
 
-            if (this.Configuration.AllowSchemaReferences)
+            if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(this._currentPath != null);
-                this._currentPath!.RemoveAt(this._currentPath.Count - 1);
+                Debug.Assert(_currentPath != null);
+                _currentPath!.RemoveAt(_currentPath.Count - 1);
             }
         }
 
@@ -628,13 +628,13 @@ ConstructSchemaDocument:
         /// </summary>
         public readonly void RegisterTypePath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling)
         {
-            if (this.Configuration.AllowSchemaReferences)
+            if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(this._currentPath != null);
-                Debug.Assert(this._generatedTypePaths != null);
+                Debug.Assert(_currentPath != null);
+                Debug.Assert(_generatedTypePaths != null);
 
-                string pointer = this._currentDepth == 0 ? "#" : "#/" + string.Join("/", this._currentPath);
-                this._generatedTypePaths!.Add((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), pointer);
+                string pointer = _currentDepth == 0 ? "#" : "#/" + string.Join("/", _currentPath);
+                _generatedTypePaths!.Add((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), pointer);
             }
         }
 
@@ -643,10 +643,10 @@ ConstructSchemaDocument:
         /// </summary>
         public readonly bool TryGetGeneratedSchemaPath(Type type, Type? parentNullableOfT, JsonConverter? customConverter, bool isNullableReferenceType, JsonNumberHandling? customNumberHandling, [NotNullWhen(true)] out string? value)
         {
-            if (this.Configuration.AllowSchemaReferences)
+            if (Configuration.AllowSchemaReferences)
             {
-                Debug.Assert(this._generatedTypePaths != null);
-                return this._generatedTypePaths!.TryGetValue((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), out value);
+                Debug.Assert(_generatedTypePaths != null);
+                return _generatedTypePaths!.TryGetValue((parentNullableOfT ?? type, customConverter, isNullableReferenceType, customNumberHandling), out value);
             }
 
             value = null;
@@ -816,9 +816,9 @@ ConstructSchemaDocument:
     {
         public SimpleTypeJsonSchema(JsonSchemaType schemaType, string? format = null, string? pattern = null)
         {
-            this.SchemaType = schemaType;
-            this.Format = format;
-            this.Pattern = pattern;
+            SchemaType = schemaType;
+            Format = format;
+            Pattern = pattern;
         }
 
         public JsonSchemaType SchemaType { get; }
