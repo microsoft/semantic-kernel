@@ -51,7 +51,7 @@ public abstract class AgentChat
         Agent? agent = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.ThrowIfActive();
+        this.ThrowIfActive(); // Disallow concurrent access to chat history
 
         try
         {
@@ -83,7 +83,7 @@ public abstract class AgentChat
         }
         finally
         {
-            this.ClearActivitySignal();
+            this.ClearActivitySignal(); // Signal activity hash completed
         }
     }
 
@@ -123,7 +123,7 @@ public abstract class AgentChat
     /// </remarks>
     public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
     {
-        this.ThrowIfActive();
+        this.ThrowIfActive(); // Disallow concurrent access to chat history
 
         for (int index = 0; index < messages.Count; ++index)
         {
@@ -145,7 +145,7 @@ public abstract class AgentChat
         }
         finally
         {
-            this.ClearActivitySignal();
+            this.ClearActivitySignal(); // Signal activity hash completed
         }
     }
 
@@ -163,7 +163,7 @@ public abstract class AgentChat
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.ThrowIfActive();
+        this.ThrowIfActive(); // Disallow concurrent access to chat history
 
         try
         {
@@ -193,7 +193,7 @@ public abstract class AgentChat
         }
         finally
         {
-            this.ClearActivitySignal();
+            this.ClearActivitySignal(); // Signal activity hash completed
         }
 
         async Task<AgentChannel> GetOrCreateChannelAsync()
