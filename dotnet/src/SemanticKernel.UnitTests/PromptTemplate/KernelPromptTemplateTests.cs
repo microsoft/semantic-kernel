@@ -35,7 +35,7 @@ public sealed class KernelPromptTemplateTests
     public void ItAddsMissingVariables()
     {
         // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal \"c\"' d = $d}} and {{p.baz ename=$e}}";
+        var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.foo c='literal "c"' d = $d}} and {{p.baz ename=$e}}""";
         var promptTemplateConfig = new PromptTemplateConfig(template);
 
         // Act
@@ -105,7 +105,7 @@ public sealed class KernelPromptTemplateTests
     public async Task ItRendersVariablesValuesAndFunctionsAsync()
     {
         // Arrange
-        var template = "This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal \"c\"' d = $d}}";
+        var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal "c"' d = $d}}""";
 
         this._kernel.ImportPluginFromFunctions("p", new[]
         {

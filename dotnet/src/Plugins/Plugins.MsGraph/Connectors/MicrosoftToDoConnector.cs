@@ -62,7 +62,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Todo.Lists
             .Request().GetAsync(cancellationToken).ConfigureAwait(false);
 
-        List<TodoTaskList> taskLists = lists.ToList();
+        List<TodoTaskList> taskLists = [.. lists];
 
         while (lists.Count != 0 && lists.NextPageRequest != null)
         {
@@ -90,7 +90,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
             .Todo.Lists[listId]
             .Tasks.Request().Filter(filterValue).GetAsync(cancellationToken).ConfigureAwait(false);
 
-        List<TodoTask> tasks = tasksPage.ToList();
+        List<TodoTask> tasks = [.. tasksPage];
 
         while (tasksPage.Count != 0 && tasksPage.NextPageRequest != null)
         {

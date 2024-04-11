@@ -95,7 +95,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// </summary>
     private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
     {
-        KernelArguments result = new();
+        KernelArguments result = [];
 
         foreach (var p in this._promptModel.InputVariables)
         {

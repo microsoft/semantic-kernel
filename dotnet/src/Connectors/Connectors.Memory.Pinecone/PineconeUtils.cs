@@ -183,7 +183,7 @@ public static class PineconeUtils
     /// </remarks>
     public static Dictionary<string, object> ConvertFilterToPineconeFilter(Dictionary<string, object> filter)
     {
-        Dictionary<string, object> pineconeFilter = new();
+        Dictionary<string, object> pineconeFilter = [];
 
         foreach (KeyValuePair<string, object> entry in filter)
         {
