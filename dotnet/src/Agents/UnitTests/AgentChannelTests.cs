@@ -57,7 +57,7 @@ public class AgentChannelTests
             throw new NotImplementedException();
         }
 
-        protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

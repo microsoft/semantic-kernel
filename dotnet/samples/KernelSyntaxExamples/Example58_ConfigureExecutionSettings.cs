@@ -57,19 +57,21 @@ public sealed class Example58_ConfigureExecutionSettings : BaseTest
         // Load prompt template configuration including the execution settings from a JSON payload
         // Create the prompt functions using the prompt template and the configuration (loaded in the previous step)
         // Invoke the prompt function using the implicitly set execution settings
-        string configPayload = @"{
-          ""schema"": 1,
-          ""name"": ""HelloAI"",
-          ""description"": ""Say hello to an AI"",
-          ""type"": ""completion"",
-          ""completion"": {
-            ""max_tokens"": 256,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-          }
-        }";
+        string configPayload = """
+            {
+                "schema": 1,
+                "name": "HelloAI",
+                "description": "Say hello to an AI",
+                "type": "completion",
+                "completion": {
+                "max_tokens": 256,
+                "temperature": 0.5,
+                "top_p": 0.0,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0
+                }
+            }
+            """;
         var promptConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload)!;
         promptConfig.Template = prompt;
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
