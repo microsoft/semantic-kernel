@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -17,6 +18,10 @@ namespace Microsoft.SemanticKernel;
 #pragma warning disable SKEXP0001
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 #pragma warning restore SKEXP0001
+#pragma warning disable SKEXP0110
+[JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
+[JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
+#pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
     /// <summary>

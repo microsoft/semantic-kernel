@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
+namespace SemanticKernel.UnitTests.Contents;
+
+#pragma warning disable SKEXP0110
 
 /// <summary>
 /// Unit testing of <see cref="FileReferenceContent"/>.
@@ -17,7 +19,7 @@ public class FileReferenceContentTests
     {
         FileReferenceContent definition = new();
 
-        Assert.Null(definition.FileId);
+        Assert.Empty(definition.FileId);
     }
     /// <summary>
     /// Verify usage.
