@@ -25,11 +25,11 @@ public class Example68_GPTVision : BaseTest
 
         var chatHistory = new ChatHistory("You are a friendly assistant.");
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection
-        {
+        chatHistory.AddUserMessage(
+        [
             new TextContent("What’s in this image?"),
             new ImageContent(new Uri(ImageUri))
-        });
+        ]);
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 

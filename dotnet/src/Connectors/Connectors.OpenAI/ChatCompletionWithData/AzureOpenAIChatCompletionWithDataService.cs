@@ -89,7 +89,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, object?> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = [];
     private void ValidateConfig(AzureOpenAIChatCompletionWithDataConfig config)
     {
         Verify.NotNull(config);
@@ -245,9 +245,10 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private List<ChatWithDataSource> GetDataSources()
     {
-        return new List<ChatWithDataSource>
-        {
-            new() {
+        return
+        [
+            new()
+            {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
@@ -255,7 +256,7 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
                     IndexName = this._config.DataSourceIndex
                 }
             }
-        };
+        ];
     }
 
     private List<ChatWithDataMessage> GetMessages(ChatHistory chat)

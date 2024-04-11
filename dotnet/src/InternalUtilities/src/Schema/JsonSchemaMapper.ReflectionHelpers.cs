@@ -106,7 +106,7 @@ static partial class JsonSchemaMapper
             {
                 var namingPolicy = (JsonNamingPolicy?)namingPolicyField!.GetValue(converter)!;
                 string[] names = Enum.GetNames(typeInfo.Type);
-                values = new JsonArray();
+                values = [];
                 foreach (string name in names)
                 {
                     string effectiveName = namingPolicy?.ConvertName(name) ?? name;

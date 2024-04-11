@@ -89,8 +89,8 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
     private async Task RunSampleAsync(Kernel kernel)
     {
         // Add a plugin with some helper functions we want to allow the model to utilize.
-        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
-        {
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
                 cityName switch
@@ -104,7 +104,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-        });
+        ]);
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
@@ -156,7 +156,7 @@ public sealed class Example98_GeminiFunctionCalling : BaseTest
                         // Add parameters to arguments
                         if (toolCall.Arguments is not null)
                         {
-                            arguments = new KernelArguments();
+                            arguments = [];
                             foreach (var parameter in toolCall.Arguments)
                             {
                                 arguments[parameter.Key] = parameter.Value?.ToString();

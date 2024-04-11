@@ -45,7 +45,7 @@ public class Planner : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Create chat history
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Start the conversation
         Write("User > ");
