@@ -67,27 +67,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("model-id", service.Attributes["ModelId"]);
     }
 
-    [Fact]
-    public void ConstructorWithApiKeyAndEndpointOnlyWorksWhenEndpointIsHttps()
-    {
-        // Arrange & Act
-        var service = new OpenAIChatCompletionService("model-id", new Uri("https://localhost:9090"), "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object);
-
-        // Assert
-        Assert.Throws<KernelException>(() => new OpenAIChatCompletionService("model-id", new Uri("http://localhost:8080"), "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object));
-
-        Assert.NotNull(service);
-        Assert.Equal("model-id", service.Attributes["ModelId"]);
-        Assert.Equal("https://localhost:9090/", service.Attributes["Endpoint"]);
-    }
-
     [Theory]
-    [InlineData("http://localhost:1234/v1", "http://localhost:1234/v1")] // Accepts version when provided
-    [InlineData("http://localhost:1234/v2", "http://localhost:1234/v2")] // Accepts version when provided
-    [InlineData("http://localhost:1234", "http://localhost:1234/v1")]
-    [InlineData("http://localhost:8080", "http://localhost:8080/v1")]
-    [InlineData("https://something:8080", "https://something:8080/v1")] // Accepts TLS Secured endpoints
-    public async Task ItUsesCustomEndpointsWhenProvidedAsync(string endpointProvided, string startedWithEndpointUsed)
+    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
+    [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
+    [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
+    public async Task ItUsesCustomEndpointsWhenProvidedAsync(string endpointProvided, string expectedEndpoint)
     {
         // Arrange
         var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpointProvided));
@@ -98,7 +84,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
 
         // Assert
-        Assert.StartsWith(startedWithEndpointUsed, this._messageHandlerStub.RequestUri!.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(expectedEndpoint, this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Theory]

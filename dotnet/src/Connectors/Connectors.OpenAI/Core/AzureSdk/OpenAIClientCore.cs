@@ -9,6 +9,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -18,9 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal sealed class OpenAIClientCore : ClientCore
 {
-    private const string PublicOpenAIApiVersion = "1";
-    private const string PublicOpenAIEndpoint = $"https://api.openai.com/v{PublicOpenAIApiVersion}";
-
     /// <summary>
     /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -60,52 +58,16 @@ internal sealed class OpenAIClientCore : ClientCore
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
-        var clientEndpoint = endpoint ?? httpClient?.BaseAddress;
-        if (clientEndpoint is null)
+        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
+        if (providedEndpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            clientEndpoint = new Uri(PublicOpenAIEndpoint);
         }
-        else if (clientEndpoint?.PathAndQuery == "/")
+        else
         {
-            // Adds missing /v1 if not provided.
-            clientEndpoint = new Uri($"{endpoint}v1");
+            options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), Azure.Core.HttpPipelinePosition.PerRetry);
         }
-
-        this.Client = new OpenAIClient(clientEndpoint, CreateDelegatedToken(apiKey ?? string.Empty), options);
-
-        this.UpdateOpenAIClientPrivateFields(clientEndpoint, options, apiKey);
-    }
-
-    private void UpdateOpenAIClientPrivateFields(Uri? endpoint, OpenAIClientOptions options, string? apiKey = null)
-    {
-        var type = typeof(OpenAIClient);
-        if (endpoint?.Scheme == "http")
-        {
-            if (apiKey is not null)
-            {
-                throw new KernelException("To use an APIKey you must provide a TLS protected (https) endpoint");
-            }
-
-            // When using Non-HTTPS APIs (local deployments like LM Studio), authentication is not supported by OpenAIClient Pipeline implementation.
-            // The current only way is removing the authentication policy thru reflection, to be able to use SDK Azure Client against custom APIs.
-            // Otherwise the error bellow will happen:
-            // System.InvalidOperationException : Bearer token authentication is not permitted for non TLS protected (https) endpoints.
-
-            var fieldInfo = type.GetField("_pipeline", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            // Change the value of the private field
-            fieldInfo?.SetValue(this.Client, HttpPipelineBuilder.Build(options,
-                Array.Empty<HttpPipelinePolicy>(),
-                Array.Empty<HttpPipelinePolicy>(),
-                new ResponseClassifier())
-            );
-        }
-
-        // Change the value of the private field so RequestUriBuilder method won't append Azure path and query to the base endpoint Uri.
-        // <see href="https://github.com/Azure/azure-sdk-for-net/blob/cc45f7e43aac5737f05d802a1fb2c4fa40bd2098/sdk/openai/Azure.AI.OpenAI/src/Custom/OpenAIClient.cs#L931"/>
-        var isConfiguredForAzureFieldInfo = type.GetField("_isConfiguredForAzureOpenAI", BindingFlags.NonPublic | BindingFlags.Instance);
-        isConfiguredForAzureFieldInfo?.SetValue(this.Client, false);
+        this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
     }
 
     private static TokenCredential CreateDelegatedToken(string token)
