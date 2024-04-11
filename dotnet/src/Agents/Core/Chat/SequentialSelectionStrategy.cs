@@ -22,11 +22,11 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
         => this._index = 0;
 
     /// <inheritdoc/>
-    public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         if (agents.Count == 0)
         {
-            return Task.FromResult<Agent?>(null);
+            throw new KernelException($"Agent Failure - No agents present to select.");
         }
 
         var agent = agents[this._index % agents.Count];
@@ -41,6 +41,6 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = (int.MaxValue % agents.Count) + 1; // Maintain proper next agent
         }
 
-        return Task.FromResult<Agent?>(agent);
+        return Task.FromResult(agent);
     }
 }

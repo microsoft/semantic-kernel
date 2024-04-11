@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -133,7 +134,7 @@ public class AgentGroupChatTests
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyGroupAgentChatNullSelectionAsync()
+    public async Task VerifyGroupAgentChatFailedSelectionAsync()
     {
         AgentGroupChat chat = Create3AgentChat();
 
@@ -141,7 +142,7 @@ public class AgentGroupChatTests
             new()
             {
                 // Strategy that will not select an agent.
-                SelectionStrategy = new NullSelectionStrategy(),
+                SelectionStrategy = new FailedSelectionStrategy(),
                 TerminationStrategy =
                 {
                     // Remove max-limit in order to isolate the target behavior.
@@ -152,8 +153,7 @@ public class AgentGroupChatTests
         // Remove max-limit in order to isolate the target behavior.
         chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
 
-        var messages = await chat.InvokeAsync(CancellationToken.None).ToArrayAsync();
-        Assert.Empty(messages);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
     }
 
     /// <summary>
@@ -236,11 +236,11 @@ public class AgentGroupChatTests
         }
     }
 
-    private sealed class NullSelectionStrategy : SelectionStrategy
+    private sealed class FailedSelectionStrategy : SelectionStrategy
     {
-        public override Task<Agent?> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<Agent?>(null);
+            throw new InvalidOperationException();
         }
     }
 }
