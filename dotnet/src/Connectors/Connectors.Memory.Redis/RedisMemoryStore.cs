@@ -156,12 +156,12 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
+        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), [
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
             new HashEntry("embedding", this.ConvertEmbeddingToBytes(record.Embedding)),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
-        }, flags: CommandFlags.None).ConfigureAwait(false);
+        ], flags: CommandFlags.None).ConfigureAwait(false);
 
         return record.Key;
     }
@@ -336,6 +336,8 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
     private async Task<MemoryRecord?> InternalGetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         HashEntry[] hashEntries = await this._database.HashGetAllAsync(GetRedisKey(collectionName, key), flags: CommandFlags.None).ConfigureAwait(false);
 
         if (hashEntries.Length == 0) { return null; }

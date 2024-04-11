@@ -91,6 +91,6 @@ public class OpenApiFunctionExecutionParameters
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
-        this.OperationsToExclude = operationsToExclude ?? new List<string>();
+        this.OperationsToExclude = operationsToExclude ?? [];
     }
 }
