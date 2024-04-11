@@ -61,7 +61,6 @@ internal sealed class OpenAIClientCore : ClientCore
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
         var clientEndpoint = endpoint ?? httpClient?.BaseAddress;
-
         if (clientEndpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
@@ -75,7 +74,7 @@ internal sealed class OpenAIClientCore : ClientCore
 
         this.Client = new OpenAIClient(clientEndpoint, CreateDelegatedToken(apiKey ?? string.Empty), options);
 
-        this.UpdateOpenAIClientPrivateFields(endpoint, options, apiKey);
+        this.UpdateOpenAIClientPrivateFields(clientEndpoint, options, apiKey);
     }
 
     private void UpdateOpenAIClientPrivateFields(Uri? endpoint, OpenAIClientOptions options, string? apiKey = null)

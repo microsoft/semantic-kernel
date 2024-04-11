@@ -68,29 +68,13 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
-    public void ConstructorWithoutApiKeyOnlyWorksWhenEndpointIsProvided()
-    {
-        // Arrange & Act
-        var service = new OpenAIChatCompletionService("model-id", null, "organization", endpoint: new Uri("http://localhost:9090"));
-
-        // Assert
-        Assert.Throws<ArgumentNullException>(() => new OpenAIChatCompletionService("model-id", null, "organization", loggerFactory: this._mockLoggerFactory.Object));
-        Assert.Throws<ArgumentException>(() => new OpenAIChatCompletionService("model-id", string.Empty, "organization", loggerFactory: this._mockLoggerFactory.Object));
-        Assert.Throws<ArgumentException>(() => new OpenAIChatCompletionService("model-id", " ", "organization", loggerFactory: this._mockLoggerFactory.Object));
-
-        Assert.NotNull(service);
-        Assert.Equal("model-id", service.Attributes["ModelId"]);
-        Assert.Equal("http://localhost:9090/", service.Attributes["Endpoint"]);
-    }
-
-    [Fact]
     public void ConstructorWithApiKeyAndEndpointOnlyWorksWhenEndpointIsHttps()
     {
         // Arrange & Act
-        var service = new OpenAIChatCompletionService("model-id", "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object, endpoint: new Uri("https://localhost:9090"));
+        var service = new OpenAIChatCompletionService("model-id", new Uri("https://localhost:9090"), "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object);
 
         // Assert
-        Assert.Throws<KernelException>(() => new OpenAIChatCompletionService("model-id", "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object, endpoint: new Uri("http://localhost:8080")));
+        Assert.Throws<KernelException>(() => new OpenAIChatCompletionService("model-id", new Uri("http://localhost:8080"), "Some-Key", "organization", loggerFactory: this._mockLoggerFactory.Object));
 
         Assert.NotNull(service);
         Assert.Equal("model-id", service.Attributes["ModelId"]);
