@@ -20,7 +20,7 @@ async def test_invoke_empty_plan(kernel: Kernel):
 async def test_invoke_plan_constructed_with_function(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
-    test_function = kernel.func("text", "uppercase")
+    test_function = kernel.get_function("text", "uppercase")
 
     plan = Plan(name="test", function=test_function)
     result = await plan.invoke(kernel, KernelArguments(input="hello world "))
@@ -31,7 +31,7 @@ async def test_invoke_plan_constructed_with_function(kernel: Kernel):
 async def test_invoke_empty_plan_with_added_function_step(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
-    test_function = kernel.func("text", "uppercase")
+    test_function = kernel.get_function("text", "uppercase")
 
     plan = Plan(name="test")
     plan.add_steps([test_function])
@@ -44,7 +44,7 @@ async def test_invoke_empty_plan_with_added_function_step(kernel: Kernel):
 async def test_invoke_empty_plan_with_added_plan_step(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
-    test_function = kernel.func("text", "uppercase")
+    test_function = kernel.get_function("text", "uppercase")
 
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
@@ -57,8 +57,8 @@ async def test_invoke_empty_plan_with_added_plan_step(kernel: Kernel):
 async def test_invoke_multi_step_plan(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(TextPlugin(), "text")
-    test_function = kernel.func("text", "uppercase")
-    test_function2 = kernel.func("text", "trim_end")
+    test_function = kernel.get_function("text", "uppercase")
+    test_function2 = kernel.get_function("text", "trim_end")
 
     plan = Plan(name="test")
     new_step = Plan(name="test", function=test_function)
@@ -72,8 +72,8 @@ async def test_invoke_multi_step_plan(kernel: Kernel):
 async def test_invoke_multi_step_plan_with_arguments(kernel: Kernel):
     # import test (text) plugin
     kernel.add_plugin(MathPlugin(), "math")
-    test_function = kernel.func("math", "Add")
-    test_function2 = kernel.func("math", "Subtract")
+    test_function = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="test")
 

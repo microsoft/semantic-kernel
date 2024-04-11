@@ -324,7 +324,7 @@ class StepwisePlanner:
             raise PlannerExecutionException(f"The function '{action_name}' was not found.")
 
         try:
-            function = self._kernel.func(target_function.plugin_name, target_function.name)
+            function = self._kernel.get_function(target_function.plugin_name, target_function.name)
             action_arguments = self.create_action_arguments(action_variables)
 
             result = await function.invoke(self._kernel, action_arguments)
@@ -360,7 +360,7 @@ class StepwisePlanner:
         excluded_functions = self.config.excluded_functions or []
         available_functions = [
             func
-            for func in self._kernel.plugins.get_list_of_function_metadata()
+            for func in self._kernel.get_list_of_function_metadata()
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
         available_functions = sorted(available_functions, key=lambda x: (x.plugin_name, x.name))
@@ -382,7 +382,7 @@ class StepwisePlanner:
         kernel.add_function(
             plugin_name=RESTRICTED_PLUGIN_NAME, function_name=function_name, prompt_template_config=config
         )
-        return kernel.func(RESTRICTED_PLUGIN_NAME, function_name)
+        return kernel.get_function(RESTRICTED_PLUGIN_NAME, function_name)
 
     def to_manual_string(self, function: KernelFunctionMetadata) -> str:
         inputs = [

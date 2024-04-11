@@ -8,8 +8,6 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 
-# from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
-
 __all__ = [
     "FunctionResult",
     "KernelArguments",
@@ -18,5 +16,4 @@ __all__ = [
     "KernelFunctionMetadata",
     "KernelParameterMetadata",
     "KernelPlugin",
-    # "KernelPluginCollection",
 ]

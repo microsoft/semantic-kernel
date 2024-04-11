@@ -90,7 +90,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                         arguments,
                         self.prompt_template_config.template_format,
                     )
-                    for function in plugin.functions.values()
+                    for function in plugin
                 }
             )
         try:

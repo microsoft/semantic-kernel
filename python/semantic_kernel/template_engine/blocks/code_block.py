@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
+from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -116,11 +117,12 @@ these will be ignored."
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
         function_block = self.tokens[0]
-        function = kernel.func(function_block.plugin_name, function_block.function_name)
-        if not function:
+        try:
+            function = kernel.get_function(function_block.plugin_name, function_block.function_name)
+        except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
             error_msg = f"Function `{function_block.content}` not found"
             logger.error(error_msg)
-            raise CodeBlockRenderException(error_msg)
+            raise CodeBlockRenderException(error_msg) from exc
 
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:

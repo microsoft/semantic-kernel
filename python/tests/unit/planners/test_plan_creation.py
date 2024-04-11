@@ -79,7 +79,7 @@ def test_create_plan_with_name_and_native_function(kernel: Kernel):
     plugin = MathPlugin()
     kernel.add_plugin(plugin, "math")
 
-    test_function = kernel.func("math", "Add")
+    test_function = kernel.get_function("math", "Add")
 
     plan = Plan(name="test", function=test_function)
     assert plan is not None
@@ -101,8 +101,8 @@ def test_create_multistep_plan_with_functions(kernel: Kernel):
     # import test (math) plugin
     kernel.add_plugin(MathPlugin(), "math")
 
-    test_function1 = kernel.func("math", "Add")
-    test_function2 = kernel.func("math", "Subtract")
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test")
     plan.add_steps([test_function1, test_function2])
@@ -125,8 +125,8 @@ def test_create_multistep_plan_with_functions(kernel: Kernel):
 def test_create_multistep_plan_with_plans(kernel: Kernel):
     kernel.add_plugin(MathPlugin(), "math")
 
-    test_function1 = kernel.func("math", "Add")
-    test_function2 = kernel.func("math", "Subtract")
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test")
     plan_step1 = Plan(name="step1", function=test_function1)
@@ -151,8 +151,8 @@ def test_create_multistep_plan_with_plans(kernel: Kernel):
 def test_add_step_to_plan(kernel: Kernel):
     kernel.add_plugin(MathPlugin(), "math")
 
-    test_function1 = kernel.func("math", "Add")
-    test_function2 = kernel.func("math", "Subtract")
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])

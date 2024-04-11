@@ -81,7 +81,7 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
                     function.fully_qualified_name: create_template_helper_from_function(
                         function, kernel, arguments, self.prompt_template_config.template_format
                     )
-                    for function in plugin.functions.values()
+                    for function in plugin
                 }
             )
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)

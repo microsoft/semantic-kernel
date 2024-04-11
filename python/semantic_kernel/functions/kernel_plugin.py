@@ -7,21 +7,17 @@ import json
 import logging
 import os
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from glob import glob
 from types import MethodType
-from typing import TYPE_CHECKING, Any, ItemsView, List
-
-import httpx
-
-from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from typing import TYPE_CHECKING, Any, ItemsView
 
 if sys.version_info >= (3, 9):
-    from typing import Annotated
+    from typing import Annotated  # type: ignore
 else:
-    from typing_extensions import Annotated
+    from typing_extensions import Annotated  # type: ignore
 
+import httpx
 import yaml
 from pydantic import Field, StringConstraints
 
@@ -33,6 +29,8 @@ from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError, Pl
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
+from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
@@ -52,23 +50,48 @@ class KernelPlugin(KernelBaseModel):
     """
     Represents a Kernel Plugin with functions.
 
+    This class behaves mostly like a dictionary, with functions as values and their names as keys.
+    When you add a function, through `.set` or `__setitem__`, the function is copied, the metadata is deep-copied
+    and the name of the plugin is set in the metadata and added to the dict of functions.
+    This is done in the same way as a normal dict, so a existing key will be overwritten.
+
     Attributes:
         name (str): The name of the plugin. The name can be upper/lower
             case letters and underscores.
         description (str): The description of the plugin.
         functions (Dict[str, KernelFunction]): The functions in the plugin,
-            indexed by their name, this can be supplied as:
-                - KernelFunction
-                - Callable
-                - list of KernelFunctions or Callables
-                - dict of names and KernelFunctions or Callables
-                - KernelPlugin
-                - list of KernelPlugins
-                - None
+            indexed by their name.
 
-    Raises:
-        ValueError: If the functions are not of the correct type.
-        PydanticError: If the name is not a valid plugin name.
+    Methods:
+        set, __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
+        get (key: str, default: KernelFunction | None = None): Get a function from the plugin.
+        __getitem__ (key: str): Get a function from the plugin.
+        __contains__ (key: str): Check if a function is in the plugin.
+        __iter__ (): Iterate over the functions in the plugin.
+        update(*args: Any, **kwargs: Any): Update the plugin with the functions from another.
+        setdefault(key: str, value: KernelFunction | None): Set a default value for a key.
+        get_functions_metadata(): Get the metadata for the functions in the plugin.
+
+    Class methods:
+        from_object(plugin_name: str, plugin_instance: Any | dict[str, Any], description: str | None = None):
+            Create a plugin from a existing object, like a custom class with annotated functions.
+        from_directory(plugin_name: str, parent_directory: str, description: str | None = None):
+            Create a plugin from a directory, parsing:
+            .py files, .yaml files and directories with skprompt.txt and config.json files.
+        from_openapi(
+                plugin_name: str,
+                openapi_document_path: str,
+                execution_settings: OpenAPIFunctionExecutionParameters | None = None,
+                description: str | None = None):
+            Create a plugin from an OpenAPI document.
+        from_openai(
+                plugin_name: str,
+                plugin_url: str | None = None,
+                plugin_str: str | None = None,
+                execution_parameters: OpenAIFunctionExecutionParameters | None = None,
+                description: str | None = None):
+            Create a plugin from the Open AI manifest.
+
     """
 
     name: Annotated[str, StringConstraints(pattern=PLUGIN_NAME_REGEX, min_length=1)]
@@ -93,15 +116,14 @@ class KernelPlugin(KernelBaseModel):
             name (str): The name of the plugin. The name can be upper/lower
                 case letters and underscores.
             description (str, optional): The description of the plugin.
-            functions (Dict[str, KernelFunction]): The functions in the plugin,
-                indexed by their name, this can be supplied as:
-                    - KernelFunction
-                    - Callable
-                    - list of KernelFunctions or Callables
-                    - dict of names and KernelFunctions or Callables
-                    - KernelPlugin
-                    - list of KernelPlugins
-                    - None
+            functions (
+                    KernelFunction |
+                    Callable |
+                    list[KernelFunction | Callable | KernelPlugin] |
+                    dict[str, KernelFunction | Callable] |
+                    KernelPlugin |
+                    None):
+                The functions in the plugin, will be rewritten to a dictionary of functions.
 
         Raises:
             ValueError: If the functions are not of the correct type.
@@ -113,7 +135,7 @@ class KernelPlugin(KernelBaseModel):
             functions=self._validate_functions(functions=functions, plugin_name=name),
         )
 
-    # region Dict like methods
+    # region Dict-like methods
 
     def __setitem__(self, key: str, value: KernelFunction) -> None:
         self.functions[key] = KernelPlugin._parse_or_copy(value, self.name)
@@ -134,13 +156,12 @@ class KernelPlugin(KernelBaseModel):
     def get(self, key: str, default: KernelFunction | None = None) -> KernelFunction | None:
         return self.functions.get(key, default)
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def update(self, *args: Any, **kwargs: KernelFunction) -> None:
         """Update the plugin with the functions from another.
 
         Args:
-            *args: The functions to update the plugin with.
-
-            **kwargs: The functions to update the plugin with.
+            *args: The functions to update the plugin with, can be a dict, list or KernelPlugin.
+            **kwargs: The kernel functions to update the plugin with.
 
         """
         if len(args) > 1:
@@ -163,8 +184,7 @@ class KernelPlugin(KernelBaseModel):
                             self[key] = item.functions[key]
         if kwargs:
             for key in kwargs:
-                if isinstance(kwargs[key], KernelFunction):
-                    self[key] = kwargs[key]
+                self[key] = kwargs[key]
 
     def setdefault(self, key: str, value: KernelFunction | None = None):
         if key not in self.functions:
@@ -173,8 +193,9 @@ class KernelPlugin(KernelBaseModel):
             self[key] = value
         return self[key]
 
-    def __iter__(self):
-        return iter(self.functions)
+    def __iter__(self) -> Iterable[KernelFunction]:
+        for function in self.functions.values():
+            yield function
 
     def __contains__(self, key: str) -> bool:
         return key in self.functions
@@ -182,14 +203,14 @@ class KernelPlugin(KernelBaseModel):
     # endregion
     # region Properties
 
-    def get_functions_metadata(self) -> List["KernelFunctionMetadata"]:
+    def get_functions_metadata(self) -> list["KernelFunctionMetadata"]:
         """
         Get the metadata for the functions in the plugin.
 
         Returns:
             A list of KernelFunctionMetadata instances.
         """
-        return [func.metadata for func in self.functions.values()]
+        return [func.metadata for func in self]
 
     # endregion
     # region Class Methods
@@ -272,42 +293,37 @@ class KernelPlugin(KernelBaseModel):
             PluginInitializationError: If the plugin directory does not exist.
             PluginInvalidNameError: If the plugin name is invalid.
         """
-        MODULE_NAME = "native_function"
+        plugin_directory = os.path.join(parent_directory, plugin_name)
+        plugin_directory = os.path.abspath(plugin_directory)
 
-        plugin_directory = cls._validate_plugin_directory(
-            parent_directory=parent_directory, plugin_directory_name=plugin_name
-        )
+        if not os.path.exists(plugin_directory):
+            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_name}")
 
         functions: list[KernelFunction] = []
-        plugin = None
 
-        # handle native python file at the root
-        plugin_directory = os.path.abspath(os.path.join(parent_directory, plugin_name))
-        native_py_file_path = os.path.join(plugin_directory, f"{MODULE_NAME}.py")
-        if os.path.exists(native_py_file_path):
-            spec = importlib.util.spec_from_file_location(MODULE_NAME, native_py_file_path)
-            if not spec:
-                raise PluginInitializationError(f"Failed to load plugin: {plugin_name}")
+        for py_file in glob(os.path.join(plugin_directory, "*.py")):
+            module_name = os.path.basename(py_file).replace(".py", "")
+            spec = importlib.util.spec_from_file_location(module_name, py_file)
             module = importlib.util.module_from_spec(spec)
             assert spec.loader
             spec.loader.exec_module(module)
 
-            class_name = next(
-                (name for name, cls in inspect.getmembers(module, inspect.isclass) if cls.__module__ == MODULE_NAME),
-                None,
-            )
-            if class_name:
-                plugin_obj = getattr(module, class_name)()
-                plugin = cls.from_object(plugin_name=plugin_name, plugin_instance=plugin_obj, description=description)
+            for name, cls_instance in inspect.getmembers(module, inspect.isclass):
+                if cls_instance.__module__ != module_name:
+                    continue
+                plugin = cls.from_object(
+                    plugin_name=plugin_name, plugin_instance=getattr(module, name)(), description=description
+                )
+                functions.extend(plugin)
 
         # Handle YAML files at the root
-        yaml_files = glob(os.path.join(plugin_directory, "*.yaml"))
-        for yaml_file in yaml_files:
+        for yaml_file in glob(os.path.join(plugin_directory, "*.yaml")):
             with open(yaml_file, "r") as file:
                 yaml_content = file.read()
 
                 if not yaml_content:
-                    raise PluginInitializationError("The input YAML string is empty")
+                    logger.warning(f"Empty YAML file: {yaml_file}")
+                    continue
 
                 try:
                     data = yaml.safe_load(yaml_content)
@@ -334,35 +350,33 @@ class KernelPlugin(KernelBaseModel):
         # Handle directories containing skprompt.txt and config.json
         for item in os.listdir(plugin_directory):
             item_path = os.path.join(plugin_directory, item)
-            if os.path.isdir(item_path):
-                prompt_path = os.path.join(item_path, "skprompt.txt")
-                config_path = os.path.join(item_path, "config.json")
+            if not os.path.isdir(item_path):
+                continue
+            prompt_path = os.path.join(item_path, "skprompt.txt")
+            config_path = os.path.join(item_path, "config.json")
 
-                if os.path.exists(prompt_path) and os.path.exists(config_path):
-                    with open(config_path, "r") as config_file:
-                        prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
-                    prompt_template_config.name = item
+            if os.path.exists(prompt_path) and os.path.exists(config_path):
+                with open(config_path, "r") as config_file:
+                    prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
+                prompt_template_config.name = item
 
-                    with open(prompt_path, "r") as prompt_file:
-                        prompt = prompt_file.read()
-                        prompt_template_config.template = prompt
+                with open(prompt_path, "r") as prompt_file:
+                    prompt = prompt_file.read()
+                    prompt_template_config.template = prompt
 
-                    prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore
-                        prompt_template_config=prompt_template_config
+                prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore
+                    prompt_template_config=prompt_template_config
+                )
+                functions.append(
+                    KernelFunctionFromPrompt(
+                        plugin_name=plugin_name,
+                        prompt_template=prompt_template,
+                        prompt_template_config=prompt_template_config,
+                        template_format=prompt_template_config.template_format,
+                        function_name=item,
+                        description=prompt_template_config.description,
                     )
-                    functions.append(
-                        KernelFunctionFromPrompt(
-                            plugin_name=plugin_name,
-                            prompt_template=prompt_template,
-                            prompt_template_config=prompt_template_config,
-                            template_format=prompt_template_config.template_format,
-                            function_name=item,
-                            description=prompt_template_config.description,
-                        )
-                    )
-        if plugin:
-            plugin.update(functions)
-            return plugin
+                )
         if not functions:
             raise PluginInitializationError(f"No functions found in folder: {parent_directory}/{plugin_name}")
         return cls(name=plugin_name, description=description, functions=functions)
@@ -461,7 +475,7 @@ class KernelPlugin(KernelBaseModel):
         )
 
     # endregion
-    # region Static Methods
+    # region Internal Static Methods
 
     @staticmethod
     def _validate_functions(
@@ -518,28 +532,5 @@ class KernelPlugin(KernelBaseModel):
         if isinstance(function, Callable):
             return KernelFunctionFromMethod(method=function, plugin_name=plugin_name)
         raise ValueError(f"Invalid type for function: {function} (type: {type(function)})")
-
-    @staticmethod
-    def _validate_plugin_directory(parent_directory: str, plugin_directory_name: str) -> str:
-        """Validate the plugin name and that the plugin directory exists.
-
-        Args:
-            parent_directory (str): The parent directory
-            plugin_directory_name (str): The plugin directory name
-
-        Returns:
-            str: The plugin directory.
-
-        Raises:
-            PluginInitializationError: If the plugin directory does not exist.
-            PluginInvalidNameError: If the plugin name is invalid.
-        """
-        plugin_directory = os.path.join(parent_directory, plugin_directory_name)
-        plugin_directory = os.path.abspath(plugin_directory)
-
-        if not os.path.exists(plugin_directory):
-            raise PluginInitializationError(f"Plugin directory does not exist: {plugin_directory_name}")
-
-        return plugin_directory
 
     # endregion
