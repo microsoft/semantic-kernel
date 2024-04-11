@@ -13,7 +13,7 @@ public abstract class TerminationStrategy
 {
     /// <summary>
     /// Set of agents for which this strategy is applicable.  If not set,
-    /// any agent is evaulated.
+    /// any agent is evaluated.
     /// </summary>
     public IReadOnlyList<Agent>? Agents { get; set; }
 
@@ -27,7 +27,7 @@ public abstract class TerminationStrategy
     }
 
     /// <summary>
-    /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaulated.
+    /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaluated.
     /// </summary>
     protected abstract Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
 

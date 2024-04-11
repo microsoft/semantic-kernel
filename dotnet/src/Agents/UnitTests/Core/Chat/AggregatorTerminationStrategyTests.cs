@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
