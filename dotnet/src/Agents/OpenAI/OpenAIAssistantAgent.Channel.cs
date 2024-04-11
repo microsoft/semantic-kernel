@@ -286,7 +286,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                     var result = await function.InvokeAsync(agent.Kernel, functionArguments, cancellationToken).ConfigureAwait(false);
 
-                    return result.GetValue<string>() ?? string.Empty;
+                    return result.GetValue<object>();
                 }
             }
         }
