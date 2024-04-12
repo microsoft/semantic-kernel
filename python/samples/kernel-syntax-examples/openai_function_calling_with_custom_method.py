@@ -10,7 +10,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     OpenAIChatCompletion,
@@ -18,23 +17,23 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import (
     azure_openai_settings_from_dot_env_as_dict,
     openai_settings_from_dot_env,
 )
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+
 
 class WeatherPlugin:
     """A sample plugin that provides weather information for cities."""
+
     @kernel_function(name="get_weather_for_city", description="Get the weather for a city")
-    def get_weather_for_city(
-        self,
-        city: Annotated[str, "The input city"]
-    ) -> Annotated[str, "The output is a string"]:
+    def get_weather_for_city(self, city: Annotated[str, "The input city"]) -> Annotated[str, "The output is a string"]:
         if city == "Boston":
             return "61 and rainy"
         elif city == "London":
@@ -52,6 +51,7 @@ class WeatherPlugin:
         else:
             return "31 and snowing"
 
+
 async def main():
     kernel = Kernel()
 
@@ -60,8 +60,7 @@ async def main():
     if use_azure_openai:
         # Please make sure your AzureOpenAI Deployment allows for function calling
         ai_service = AzureChatCompletion(
-            service_id=service_id,
-            **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+            service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
         )
     else:
         api_key, _ = openai_settings_from_dot_env()
@@ -77,21 +76,27 @@ async def main():
 
     # Example 1: Use automated function calling with a non-streaming prompt
     print("========== Example 1: Use automated function calling with a non-streaming prompt ==========")
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     settings.auto_invoke_kernel_functions = True
     settings.tool_choice = "auto"
     settings.tools = get_tool_call_object(kernel, filter={})
 
-    print(await kernel.invoke_prompt(
-        function_name="prompt_test",
-        plugin_name="weather_test",
-        prompt="Given the current time of day and weather, what is the likely color of the sky in Boston?",
-        settings=settings,
-    ))
+    print(
+        await kernel.invoke_prompt(
+            function_name="prompt_test",
+            plugin_name="weather_test",
+            prompt="Given the current time of day and weather, what is the likely color of the sky in Boston?",
+            settings=settings,
+        )
+    )
 
     # Example 2: Use automated function calling with a streaming prompt
     print("========== Example 2: Use automated function calling with a streaming prompt ==========")
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     settings.auto_invoke_kernel_functions = True
     settings.tool_choice = "auto"
     settings.tools = get_tool_call_object(kernel, filter={})
@@ -112,10 +117,14 @@ async def main():
 
     chat: OpenAIChatCompletion | AzureChatCompletion = kernel.get_service(service_id)
     chat_history = ChatHistory()
-    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
+    settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
+        service_id=service_id
+    )
     settings.auto_invoke_kernel_functions = False
     settings.tools = get_tool_call_object(kernel, filter={})
-    chat_history.add_user_message("Given the current time of day and weather, what is the likely color of the sky in Boston?")
+    chat_history.add_user_message(
+        "Given the current time of day and weather, what is the likely color of the sky in Boston?"
+    )
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
@@ -130,7 +139,10 @@ async def main():
 
         chat_history.add_message(result)
         await chat._process_tool_calls(
-            result=result, kernel=kernel, chat_history=chat_history, arguments=KernelArguments(),
+            result=result,
+            kernel=kernel,
+            chat_history=chat_history,
+            arguments=KernelArguments(),
         )
 
 

@@ -9,61 +9,75 @@ import logging
 import os
 from copy import copy
 from types import MethodType
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, ItemsView, Literal, Type, TypeVar, Union
+from typing import (TYPE_CHECKING, Any, AsyncIterable, Callable, ItemsView,
+                    Literal, Type, TypeVar, Union)
 
 import httpx
 import yaml
 from pydantic import Field, field_validator
 
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
+from semantic_kernel.connectors.ai.prompt_execution_settings import \
+    PromptExecutionSettings
+from semantic_kernel.connectors.openai_plugin.openai_authentication_config import \
+    OpenAIAuthenticationConfig
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import \
+    OpenAIFunctionExecutionParameters
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
-    OpenAPIFunctionExecutionParameters,
-)
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
+from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import \
+    OpenAPIFunctionExecutionParameters
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import \
+    OpenAPIPlugin
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
-from semantic_kernel.exceptions import (
-    FunctionInitializationError,
-    FunctionNameNotUniqueError,
-    KernelFunctionAlreadyExistsError,
-    KernelFunctionNotFoundError,
-    KernelInvokeException,
-    KernelPluginInvalidConfigurationError,
-    KernelPluginNotFoundError,
-    KernelServiceNotFoundError,
-    PluginInitializationError,
-    PluginInvalidNameError,
-    ServiceInvalidTypeError,
-    TemplateSyntaxError,
-)
+from semantic_kernel.contents.streaming_content_mixin import \
+    StreamingContentMixin
+from semantic_kernel.events import (FunctionInvokedEventArgs,
+                                    FunctionInvokingEventArgs)
+from semantic_kernel.exceptions import (FunctionInitializationError,
+                                        FunctionNameNotUniqueError,
+                                        KernelFunctionAlreadyExistsError,
+                                        KernelFunctionNotFoundError,
+                                        KernelInvokeException,
+                                        KernelPluginInvalidConfigurationError,
+                                        KernelPluginNotFoundError,
+                                        KernelServiceNotFoundError,
+                                        PluginInitializationError,
+                                        PluginInvalidNameError,
+                                        ServiceInvalidTypeError,
+                                        TemplateSyntaxError)
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.functions.kernel_function import (TEMPLATE_FORMAT_MAP,
+                                                       KernelFunction)
+from semantic_kernel.functions.kernel_function_from_method import \
+    KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_function_from_prompt import \
+    KernelFunctionFromPrompt
+from semantic_kernel.functions.kernel_function_metadata import \
+    KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
+from semantic_kernel.functions.kernel_plugin_collection import \
+    KernelPluginCollection
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
+from semantic_kernel.prompt_template.const import (KERNEL_TEMPLATE_FORMAT_NAME,
+                                                   TEMPLATE_FORMAT_TYPES)
+from semantic_kernel.prompt_template.prompt_template_base import \
+    PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import \
+    PromptTemplateConfig
+from semantic_kernel.reliability.pass_through_without_retry import \
+    PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.utils.validation import validate_plugin_name
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-    from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-    from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+    from semantic_kernel.connectors.ai.chat_completion_client_base import \
+        ChatCompletionClientBase
+    from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import \
+        EmbeddingGeneratorBase
+    from semantic_kernel.connectors.ai.text_completion_client_base import \
+        TextCompletionClientBase
 
 T = TypeVar("T")
 

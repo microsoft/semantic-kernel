@@ -1,23 +1,107 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
-from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List, Union
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import \
-    OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import \
-    OpenAIStreamingChatMessageContent
+from azure.identity import ClientSecretCredential
+from dotenv import dotenv_values
+from msgraph import GraphServiceClient
+from resources.bookings_plugin.native_plugin import BookingsPlugin
+
+from semantic_kernel.connectors.ai.chat_completion_client_base import \
+    ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import \
-    OpenAIPromptExecutionSettings
+    OpenAIChatPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import \
+    OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import (
+    booking_sample_settings_from_dot_env_as_dict, openai_settings_from_dot_env)
 
-if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_function import KernelFunction
+# To be able to run this sample, you must do the following:
+# 1. Create an Microsoft Entra App ID and Client Secret in Azure Portal
+# 2. Add the client ID, tenant ID, and client secret to a .env file in the root of the project
+#   using the following format: BOOKING_SAMPLE_CLIENT_ID="", BOOKING_SAMPLE_TENANT_ID="",
+#   BOOKING_SAMPLE_CLIENT_SECRET="".
+# 3. Create a booking business ID and service ID and give the app permissions based on your App Id and secret.
+# 4. TODO finish the setup directions.
 
+kernel = Kernel()
+
+service_id = "open_ai"
+api_key, _ = openai_settings_from_dot_env()
+ai_service = OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo-1106", api_key=api_key)
+kernel.add_service(ai_service)
+
+client_secret_credential = ClientSecretCredential(**booking_sample_settings_from_dot_env_as_dict())
+
+graph_client = GraphServiceClient(credentials=client_secret_credential, scopes=["https://graph.microsoft.com/.default"])
+
+config = dotenv_values(".env")
+booking_business_id = config.get("BOOKING_SAMPLE_BUSINESS_ID")
+assert booking_business_id, "BOOKING_SAMPLE_BUSINESS_ID is not set in .env file"
+booking_service_id = config.get("BOOKING_SAMPLE_SERVICE_ID")
+assert booking_service_id, "BOOKING_SAMPLE_SERVICE_ID is not set in .env file"
+
+bookings_plugin = BookingsPlugin(
+    graph_client=graph_client,
+    booking_business_id=booking_business_id,
+    booking_service_id=booking_service_id,
+)
+
+kernel.import_plugin_from_object(bookings_plugin, "BookingsPlugin")
+
+chat_function = kernel.create_function_from_prompt(
+    plugin_name="ChatBot",
+    function_name="Chat",
+    prompt="{{$chat_history}}{{$user_input}}",
+    template_format="semantic-kernel",
+)
+
+settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(service_id, ChatCompletionClientBase)
+settings.max_tokens = 2000
+settings.temperature = 0.1
+settings.top_p = 0.8
+settings.auto_invoke_kernel_functions = True
+settings.tool_choice = "auto"
+settings.tools = get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]})
+
+chat_history = ChatHistory(system_message="When responding to the user's request to book a table, include the reservation ID.")
+
+async def chat() -> bool:
+    try:
+        user_input = input("User:> ")
+    except KeyboardInterrupt:
+        print("\n\nExiting chat...")
+        return False
+    except EOFError:
+        print("\n\nExiting chat...")
+        return False
+
+    if user_input == "exit":
+        print("\n\nExiting chat...")
+        return False
+
+    answer = await kernel.invoke(chat_function, KernelArguments(settings=settings, user_input=user_input, chat_history=chat_history))
+    chat_history.add_user_message(user_input)
+    chat_history.add_assistant_message(str(answer))
+    print(f"Assistant:> {answer}")
+    return True
+
+
+async def main() -> None:
+    chatting = True
+    print(
+        "Welcome to your Restaurant Booking Assistant.\
+        \n  Type 'exit' to exit.\
+        \n  Please enter the following information to book a table: the restaurant, the date and time, the number of people, your name, phone, and email.\
+        \n  You may ask me for help booking a table, listing reservations, or cancelling a reservation. When cancelling please provide the reservation ID."
+    )
+    while chatting:
+        chatting = await chat()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
