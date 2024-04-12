@@ -332,7 +332,21 @@ class KernelPlugin(KernelBaseModel):
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> "KernelPlugin":
-        """Create a plugin from an OpenAPI document."""
+        """Create a plugin from an OpenAPI document.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            plugin_url (str | None): The URL of the plugin
+            plugin_str (str | None): The JSON string of the plugin
+            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+            description (str | None): The description of the plugin
+
+        Returns:
+            KernelPlugin: The created plugin
+
+        Raises:
+            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
+        """
 
         if not openapi_document_path:
             raise PluginInitializationError("OpenAPI document path is required.")
@@ -365,7 +379,7 @@ class KernelPlugin(KernelBaseModel):
             execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
 
         Returns:
-            KernelPlugin: The imported plugin
+            KernelPlugin: The created plugin
 
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided

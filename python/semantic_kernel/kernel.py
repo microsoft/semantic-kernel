@@ -603,6 +603,20 @@ class Kernel(KernelBaseModel):
         execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> KernelPlugin:
+        """Add a plugin from the Open AI manifest.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            plugin_url (str | None): The URL of the plugin
+            plugin_str (str | None): The JSON string of the plugin
+            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+
+        Returns:
+            KernelPlugin: The imported plugin
+
+        Raises:
+            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
+        """
         return self.add_plugin(
             KernelPlugin.from_openapi(
                 plugin_name=plugin_name,
@@ -620,6 +634,21 @@ class Kernel(KernelBaseModel):
         execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
         description: str | None = None,
     ) -> KernelPlugin:
+        """Add a plugin from an OpenAPI document.
+
+        Args:
+            plugin_name (str): The name of the plugin
+            plugin_url (str | None): The URL of the plugin
+            plugin_str (str | None): The JSON string of the plugin
+            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+            description (str | None): The description of the plugin
+
+        Returns:
+            KernelPlugin: The imported plugin
+
+        Raises:
+            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
+        """
         return self.add_plugin(
             await KernelPlugin.from_openai(
                 plugin_name=plugin_name,
