@@ -248,7 +248,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -260,12 +260,12 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 var result = await functionCall.InvokeAsync(kernel);
 
-                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { result });
+                chatHistory.Add(result.ToChatMessage());
             }
 
             // Sending the functions invocation results to the LLM to get the final response
             messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert
@@ -288,7 +288,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -301,12 +301,12 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
                 // Simulating an exception
                 var exception = new OperationCanceledException("The operation was canceled due to timeout.");
 
-                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(functionCall, exception) });
+                chatHistory.Add(new FunctionCallResultContent(functionCall, exception).ToChatMessage());
             }
 
             // Sending the functions execution results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert
@@ -332,7 +332,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length > 0)
         {
@@ -353,11 +353,11 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
             // Adding a simulated function result to chat history
             var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
-            chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult) });
+            chatHistory.Add(new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
 
             // Sending the functions invocation results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = messageContent.Items.OfType<FunctionCallRequestContent>().ToArray();
+            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert

@@ -112,8 +112,52 @@ public class Example59_OpenAIFunctionCalling : BaseTest
             }
         }
 
+        WriteLine("======== Example 4: Simulated function calling with a non-streaming prompt ========");
+        {
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+            var chatHistory = new ChatHistory();
+            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+            while (true)
+            {
+                ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+                if (result.Content is not null)
+                {
+                    Write(result.Content);
+                }
+
+                chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+
+                IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(result);
+                if (!functionCalls.Any())
+                {
+                    break;
+                }
+
+                foreach (var functionCall in functionCalls)
+                {
+                    FunctionCallResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
+
+                    chatHistory.Add(resultContent.ToChatMessage());
+                }
+
+                // Adding a simulated function call request to the connector response message
+                var simulatedFunctionCall = new FunctionCallRequestContent("weather-alert", id: "call_123");
+                result.Items.Add(simulatedFunctionCall);
+
+                // Adding a simulated function result to chat history
+                var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
+                chatHistory.Add(new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+
+                WriteLine();
+            }
+        }
+
         /* Uncomment this to try in a console chat loop.
-        Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
+        Console.WriteLine("======== Example 5: Use automated function calling with a streaming chat ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             var chat = kernel.GetRequiredService<IChatCompletionService>();
