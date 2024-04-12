@@ -292,7 +292,7 @@ public sealed class OpenAIFileService
     private class FileInfoList
     {
         [JsonPropertyName("data")]
-        public FileInfo[] Data { get; set; } = Array.Empty<FileInfo>();
+        public FileInfo[] Data { get; set; } = [];
 
         [JsonPropertyName("object")]
         public string Object { get; set; } = "list";

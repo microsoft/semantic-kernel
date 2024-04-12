@@ -58,9 +58,9 @@ internal sealed class UpsertVectorRequest
 
         internal BatchRequest()
         {
-            this.Ids = new List<string>();
-            this.Vectors = new List<ReadOnlyMemory<float>>();
-            this.Payloads = new List<Dictionary<string, object>>();
+            this.Ids = [];
+            this.Vectors = [];
+            this.Payloads = [];
         }
     }
 

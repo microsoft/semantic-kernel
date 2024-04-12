@@ -300,12 +300,12 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         [return: Description("List of customers.")]
         public string[] GetCustomers()
         {
-            return new[]
-            {
+            return
+            [
                 "John Kowalski",
                 "Anna Nowak",
                 "Steve Smith",
-            };
+            ];
         }
 
         [KernelFunction(nameof(GetCustomerAge))]

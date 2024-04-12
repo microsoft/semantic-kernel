@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public sealed class Kernel
 {
-    /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
+    /// <summary>Key used by <see cref="IKernelBuilder"/> to store type information into the service provider.</summary>
     internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
@@ -134,7 +134,7 @@ public sealed class Kernel
     /// </summary>
     public KernelPluginCollection Plugins =>
         this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref this._plugins, [], null) ??
         this._plugins;
 
     /// <summary>
@@ -143,7 +143,7 @@ public sealed class Kernel
     [Experimental("SKEXP0001")]
     public IList<IFunctionFilter> FunctionFilters =>
         this._functionFilters ??
-        Interlocked.CompareExchange(ref this._functionFilters, new NonNullCollection<IFunctionFilter>(), null) ??
+        Interlocked.CompareExchange(ref this._functionFilters, [], null) ??
         this._functionFilters;
 
     /// <summary>
@@ -152,7 +152,7 @@ public sealed class Kernel
     [Experimental("SKEXP0001")]
     public IList<IPromptFilter> PromptFilters =>
         this._promptFilters ??
-        Interlocked.CompareExchange(ref this._promptFilters, new NonNullCollection<IPromptFilter>(), null) ??
+        Interlocked.CompareExchange(ref this._promptFilters, [], null) ??
         this._promptFilters;
 
     /// <summary>
@@ -202,7 +202,7 @@ public sealed class Kernel
     /// </remarks>
     public IDictionary<string, object?> Data =>
         this._data ??
-        Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
+        Interlocked.CompareExchange(ref this._data, [], null) ??
         this._data;
 
     #region GetServices
@@ -270,7 +270,7 @@ public sealed class Kernel
                     return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
                 }
 
-                return Enumerable.Empty<T>();
+                return [];
             }
         }
 
