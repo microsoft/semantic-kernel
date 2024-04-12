@@ -75,7 +75,7 @@ public abstract class AgentChat
 
             if (messages != null)
             {
-                await foreach (ChatMessageContent message in messages)
+                await foreach (ChatMessageContent message in messages.ConfigureAwait(false))
                 {
                     yield return message;
                 }
