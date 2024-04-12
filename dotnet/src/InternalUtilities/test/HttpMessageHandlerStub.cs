@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -25,15 +24,12 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpResponseMessage ResponseToReturn { get; set; }
 
-    public Queue<HttpResponseMessage> ResponseQueue { get; } = new();
-
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn =
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json),
-            };
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -44,11 +40,6 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
         this.ContentHeaders = request.Content?.Headers;
 
-        HttpResponseMessage response =
-            this.ResponseQueue.Count == 0 ?
-                this.ResponseToReturn :
-                this.ResponseToReturn = this.ResponseQueue.Dequeue();
-
-        return await Task.FromResult(response);
+        return await Task.FromResult(this.ResponseToReturn);
     }
 }

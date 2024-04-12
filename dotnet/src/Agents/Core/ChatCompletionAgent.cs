@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -41,7 +42,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        foreach (var message in messages)
+        foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;

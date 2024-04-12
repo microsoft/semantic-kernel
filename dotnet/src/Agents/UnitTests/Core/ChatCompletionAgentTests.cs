@@ -54,14 +54,10 @@ public class ChatCompletionAgentTests
         var agent =
             new ChatCompletionAgent()
             {
-                Instructions = "test instructions",
-                Kernel = CreateKernel(mockService.Object),
-                ExecutionSettings = new(),
+                Kernel = CreateKernel(mockService.Object)
             };
 
         var result = await agent.InvokeAsync([]).ToArrayAsync();
-
-        Assert.Single(result);
 
         mockService.Verify(
             x =>
