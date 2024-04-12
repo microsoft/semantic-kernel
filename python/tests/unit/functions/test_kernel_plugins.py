@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import httpx
 import pytest
+from pytest import raises
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -35,7 +36,7 @@ def mock_function() -> Callable[..., Any]:
 
 
 def test_init_fail_no_name():
-    with pytest.raises(TypeError):
+    with raises(TypeError):
         KernelPlugin(description="A unit test plugin")
 
 
@@ -78,6 +79,16 @@ def test_init_with_kernel_functions_list(mock_function):
     assert len(plugin.functions) == 1
     assert plugin["mock_function"].plugin_name == expected_plugin_name
     assert native_function.plugin_name == function_plugin_name
+
+
+def test_init_with_list_other_fail():
+    with raises(ValueError):
+        KernelPlugin(name="test_plugin", description="A unit test plugin", functions=["str"])
+
+
+def test_init_with_other_fail():
+    with raises(ValueError):
+        KernelPlugin(name="test_plugin", description="A unit test plugin", functions="str")
 
 
 def test_init_with_kernel_functions_dict(mock_function):
@@ -334,7 +345,7 @@ def test_set_default(mock_function):
 
     assert len(plugin.functions) == 1
 
-    with pytest.raises(ValueError):
+    with raises(ValueError):
         plugin.setdefault("mock_function2", None)
 
 
@@ -363,10 +374,10 @@ def test_update(mock_function):
     plugin2.update([plugin])
     assert len(plugin2.functions) == 1
 
-    with pytest.raises(TypeError):
+    with raises(TypeError):
         plugin.update(1)
 
-    with pytest.raises(TypeError):
+    with raises(TypeError):
         plugin.update(1, 2)
 
 
@@ -406,91 +417,56 @@ def test_get_functions_metadata(mock_function):
 
 def test_from_directory():
     plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
-    # path to plugins directory
-    plugin = KernelPlugin.from_directory("TestPlugin", plugins_directory)
-
-    assert plugin is not None
-    assert len(plugin.functions) == 2
-    func = plugin.functions["TestFunction"]
-    assert func is not None
-    func_handlebars = plugin.functions["TestFunctionHandlebars"]
-    assert func_handlebars is not None
-
-
-def test_from_directory_fail():
-    # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins_fail")
-    # path to plugins directory
-    with pytest.raises(PluginInitializationError):
-        KernelPlugin.from_directory("TestPlugin", plugins_directory)
-
-
-def test_from_directory_native_function():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
-    # path to plugins directory
-    plugin = KernelPlugin.from_directory("TestNativePlugin", plugins_directory)
-
-    assert plugin is not None
-    assert len(plugin.functions) == 1
-    func = plugin.functions["echoAsync"]
-    assert func is not None
-    assert func.name == "echoAsync"
-    assert func.description == "Echo for input text"
-
-
-def test_from_directory_yaml_function():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
-    # path to plugins directory
-    plugin = KernelPlugin.from_directory("TestFunctionYaml", plugins_directory)
-
-    assert plugin is not None
-    assert len(plugin.functions) == 1
-    func = plugin.functions["TestFunction"]
-    assert func is not None
-    assert func.name == "TestFunction"
-    assert func.description == "A test function from a yaml file."
-
-
-def test_from_directory_function_dir():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
-    # path to plugins directory
-    plugin = KernelPlugin.from_directory("TestPlugin", plugins_directory)
-
-    assert plugin is not None
-    assert len(plugin.functions) == 2
-    func = plugin.functions["TestFunction"]
-    assert func is not None
-    assert func.name == "TestFunction"
-    assert func.description == "Test Description"
-
-
-def test_from_directory_mixed():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
     plugin = KernelPlugin.from_directory("TestMixedPlugin", plugins_directory)
     assert plugin is not None
     assert len(plugin.functions) == 3
     assert plugin.name == "TestMixedPlugin"
+    assert plugin.get("TestFunctionYaml") is not None
+    assert plugin.get("echoAsync") is not None
+    assert plugin.get("TestFunction") is not None
 
 
-def test_from_directory_directory_not_found():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins_fail")
+def test_from_directory_parent_directory_does_not_exist():
+    # import plugins
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins_fail")
     # path to plugins directory
-    with pytest.raises(PluginInitializationError):
-        KernelPlugin.from_directory("TestNativePlugin", plugins_directory)
+    with raises(PluginInitializationError, match="Plugin directory does not exist"):
+        KernelPlugin.from_directory("TestPlugin", plugins_directory)
 
 
-def test_from_directory_no_class():
+def test_from_python_fail():
+    with raises(PluginInitializationError, match="No class found in file"):
+        KernelPlugin.from_python_file(
+            "TestNativePluginNoClass",
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../assets",
+                "test_native_plugins",
+                "TestNativePluginNoClass",
+                "native_function.py",
+            ),
+        )
+
+
+def test_from_python_in_directory_fail():
     plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
     # path to plugins directory
-    with pytest.raises(PluginInitializationError):
+    with raises(PluginInitializationError, match="No functions found in folder"):
         KernelPlugin.from_directory("TestNativePluginNoClass", plugins_directory)
 
 
-def test_from_directory_no_spec():
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
+def test_from_yaml_in_directory_fail():
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
     # path to plugins directory
-    with pytest.raises(PluginInitializationError):
-        KernelPlugin.from_directory("TestNativePluginNoSpec", plugins_directory)
+    with raises(PluginInitializationError, match="No functions found in folder"):
+        KernelPlugin.from_directory("TestFunctionBadYaml", plugins_directory)
+
+
+def test_from_directory_other():
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
+    # path to plugins directory
+    with raises(PluginInitializationError, match="No functions found in folder"):
+        KernelPlugin.from_directory("TestNoFunction", plugins_directory)
 
 
 def test_from_object_function(decorated_native_function):
@@ -538,7 +514,7 @@ async def test_from_openai_from_file(mock_parse_openai_manifest):
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_get):
+async def test_from_openai_plugin_from_url(mock_parse_openai_manifest, mock_get):
     openai_spec_file_path = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAIPlugin", "akv-openai.json"
     )
@@ -573,7 +549,19 @@ async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_ge
     mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": "Semantic-Kernel"})
 
 
-def test_import_plugin_from_openapi():
+@pytest.mark.asyncio
+async def test_from_openai_fail():
+    with raises(PluginInitializationError):
+        await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin")
+
+
+@pytest.mark.asyncio
+async def test_from_openai_fail_json_parsing():
+    with raises(PluginInitializationError):
+        await KernelPlugin.from_openai(plugin_name="TestOpenAIPlugin", plugin_str="test")
+
+
+def test_from_openapi():
     openapi_spec_file = os.path.join(
         os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
     )
@@ -588,9 +576,15 @@ def test_import_plugin_from_openapi():
     assert plugin.functions.get("SetSecret") is not None
 
 
-def test_import_plugin_from_openapi_missing_document_throws():
-    with pytest.raises(PluginInitializationError):
+def test_from_openapi_missing_document_throws():
+    with raises(PluginInitializationError):
         KernelPlugin.from_openapi(
             plugin_name="TestOpenAPIPlugin",
             openapi_document_path=None,
         )
+
+
+# region Static Methods
+def test_parse_or_copy_fail():
+    with raises(ValueError):
+        KernelPlugin._parse_or_copy(None, "test")

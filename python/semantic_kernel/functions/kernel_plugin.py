@@ -12,32 +12,32 @@ from glob import glob
 from types import MethodType
 from typing import TYPE_CHECKING, Any, ItemsView
 
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import create_functions_from_openapi
+from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
+
 if sys.version_info >= (3, 9):
-    from typing import Annotated  # type: ignore
+    from typing import Annotated  # pragma: no cover
 else:
-    from typing_extensions import Annotated  # type: ignore
+    from typing_extensions import Annotated  # pragma: no cover
 
 import httpx
-import yaml
 from pydantic import Field, StringConstraints
 
 from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
+from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
+    OpenAIFunctionExecutionParameters,
+)
 from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenAPIPlugin
 from semantic_kernel.connectors.utils.document_loader import DocumentLoader
-from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError, PluginInitializationError
-from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
+from semantic_kernel.exceptions import PluginInitializationError
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-        OpenAIFunctionExecutionParameters,
-    )
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -293,90 +293,33 @@ class KernelPlugin(KernelBaseModel):
             PluginInitializationError: If the plugin directory does not exist.
             PluginInvalidNameError: If the plugin name is invalid.
         """
-        plugin_directory = os.path.join(parent_directory, plugin_name)
-        plugin_directory = os.path.abspath(plugin_directory)
-
+        plugin_directory = os.path.abspath(os.path.join(parent_directory, plugin_name))
         if not os.path.exists(plugin_directory):
             raise PluginInitializationError(f"Plugin directory does not exist: {plugin_name}")
 
         functions: list[KernelFunction] = []
-
-        for py_file in glob(os.path.join(plugin_directory, "*.py")):
-            module_name = os.path.basename(py_file).replace(".py", "")
-            spec = importlib.util.spec_from_file_location(module_name, py_file)
-            module = importlib.util.module_from_spec(spec)
-            assert spec.loader
-            spec.loader.exec_module(module)
-
-            for name, cls_instance in inspect.getmembers(module, inspect.isclass):
-                if cls_instance.__module__ != module_name:
-                    continue
-                plugin = cls.from_object(
-                    plugin_name=plugin_name, plugin_instance=getattr(module, name)(), description=description
-                )
-                functions.extend(plugin)
-
-        # Handle YAML files at the root
-        for yaml_file in glob(os.path.join(plugin_directory, "*.yaml")):
-            with open(yaml_file, "r") as file:
-                yaml_content = file.read()
-
-                if not yaml_content:
-                    logger.warning(f"Empty YAML file: {yaml_file}")
-                    continue
-
+        for object in glob(os.path.join(plugin_directory, "*")):
+            logger.debug(f"Found object: {object}")
+            if os.path.isdir(object):
                 try:
-                    data = yaml.safe_load(yaml_content)
-                except yaml.YAMLError as exc:
-                    raise PluginInitializationError(f"Error loading YAML: {exc}") from exc
-
-                if not isinstance(data, dict):
-                    raise PluginInitializationError("The YAML content must represent a dictionary")
-
+                    functions.append(KernelFunctionFromPrompt.from_directory(path=object))
+                except FunctionInitializationError:
+                    logger.warning(f"Failed to create function from directory: {object}")
+            elif object.endswith(".yaml") or object.endswith(".yml"):
+                with open(object, "r") as file:
+                    try:
+                        functions.append(KernelFunctionFromPrompt.from_yaml(file.read()))
+                    except FunctionInitializationError:
+                        logger.warning(f"Failed to create function from YAML file: {object}")
+            elif object.endswith(".py"):
                 try:
-                    prompt_template_config = PromptTemplateConfig(**data)
-                except TypeError as exc:
-                    raise PluginInitializationError(f"Error initializing PromptTemplateConfig: {exc}") from exc
-                functions.append(
-                    KernelFunctionFromPrompt(
-                        function_name=prompt_template_config.name,
-                        plugin_name=plugin_name,
-                        description=prompt_template_config.description,
-                        prompt_template_config=prompt_template_config,
-                        template_format=prompt_template_config.template_format,
+                    functions.extend(
+                        cls.from_python_file(plugin_name=plugin_name, py_file=object, description=description)
                     )
-                )
-
-        # Handle directories containing skprompt.txt and config.json
-        for item in os.listdir(plugin_directory):
-            item_path = os.path.join(plugin_directory, item)
-            if not os.path.isdir(item_path):
-                continue
-            prompt_path = os.path.join(item_path, "skprompt.txt")
-            config_path = os.path.join(item_path, "config.json")
-
-            if os.path.exists(prompt_path) and os.path.exists(config_path):
-                with open(config_path, "r") as config_file:
-                    prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
-                prompt_template_config.name = item
-
-                with open(prompt_path, "r") as prompt_file:
-                    prompt = prompt_file.read()
-                    prompt_template_config.template = prompt
-
-                prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore
-                    prompt_template_config=prompt_template_config
-                )
-                functions.append(
-                    KernelFunctionFromPrompt(
-                        plugin_name=plugin_name,
-                        prompt_template=prompt_template,
-                        prompt_template_config=prompt_template_config,
-                        template_format=prompt_template_config.template_format,
-                        function_name=item,
-                        description=prompt_template_config.description,
-                    )
-                )
+                except PluginInitializationError:
+                    logger.warning(f"Failed to create function from Python file: {object}")
+            else:
+                logger.warning(f"Unknown file found: {object}")
         if not functions:
             raise PluginInitializationError(f"No functions found in folder: {parent_directory}/{plugin_name}")
         return cls(name=plugin_name, description=description, functions=functions)
@@ -397,7 +340,7 @@ class KernelPlugin(KernelBaseModel):
         return cls(
             name=plugin_name,
             description=description,
-            functions=OpenAPIPlugin.create(
+            functions=create_functions_from_openapi(
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
                 execution_settings=execution_settings,
@@ -445,9 +388,10 @@ class KernelPlugin(KernelBaseModel):
 
         try:
             plugin_json = json.loads(openai_manifest)
-            openai_auth_config = OpenAIAuthenticationConfig(**plugin_json["auth"])
         except json.JSONDecodeError as ex:
-            raise KernelPluginInvalidConfigurationError("Parsing of Open AI manifest for auth config failed.") from ex
+            raise PluginInitializationError("Parsing of Open AI manifest for auth config failed.") from ex
+        openai_auth_config = OpenAIAuthenticationConfig(**plugin_json["auth"])
+        openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json=plugin_json)
 
         # Modify the auth callback in execution parameters if it's provided
         if execution_parameters and execution_parameters.auth_callback:
@@ -458,21 +402,31 @@ class KernelPlugin(KernelBaseModel):
 
             execution_parameters.auth_callback = custom_auth_callback
 
-        try:
-            openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json=plugin_json)
-        except PluginInitializationError as ex:
-            raise KernelPluginInvalidConfigurationError(
-                "Parsing of Open AI manifest for OpenAPI spec URL failed."
-            ) from ex
         return cls(
             name=plugin_name,
             description=description,
-            functions=OpenAPIPlugin.create(
+            functions=create_functions_from_openapi(
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_spec_url,
                 execution_settings=execution_parameters,
             ),
         )
+
+    @classmethod
+    def from_python_file(cls, plugin_name: str, py_file: str, description: str | None = None) -> "KernelPlugin":
+        module_name = os.path.basename(py_file).replace(".py", "")
+        spec = importlib.util.spec_from_file_location(module_name, py_file)
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader
+        spec.loader.exec_module(module)
+
+        for name, cls_instance in inspect.getmembers(module, inspect.isclass):
+            if cls_instance.__module__ != module_name:
+                continue
+            return cls.from_object(
+                plugin_name=plugin_name, description=description, plugin_instance=getattr(module, name)()
+            )
+        raise PluginInitializationError(f"No class found in file: {py_file}")
 
     # endregion
     # region Internal Static Methods

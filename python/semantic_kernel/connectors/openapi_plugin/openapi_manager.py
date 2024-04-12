@@ -7,6 +7,8 @@ import logging
 import sys
 from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping
 
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -301,69 +303,61 @@ class OpenApiRunner:
                 return await response.text()
 
 
-class OpenAPIPlugin:
-    @staticmethod
-    def create(
-        plugin_name: str,
-        openapi_document_path: str,
-        execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
-    ) -> dict[str, Callable[..., Any]]:
-        """Creates the functions from OpenAPI document.
+def create_functions_from_openapi(
+    plugin_name: str,
+    openapi_document_path: str,
+    execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+) -> list[KernelFunctionFromMethod]:
+    """Creates the functions from OpenAPI document.
 
-        Args:
-            plugin_name: The name of the plugin
-            openapi_document_path: The OpenAPI document path, it must be a file path to the spec.
-            execution_settings: The execution settings
+    Args:
+        plugin_name: The name of the plugin
+        openapi_document_path: The OpenAPI document path, it must be a file path to the spec.
+        execution_settings: The execution settings
 
-        Returns:
-            dict[str, Callable[..., Any]: the operations as functions
-        """
-        parser = OpenApiParser()
-        parsed_doc = parser.parse(openapi_document_path)
-        operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
+    Returns:
+        list[KernelFunctionFromMethod]: the operations as functions
+    """
+    parser = OpenApiParser()
+    parsed_doc = parser.parse(openapi_document_path)
+    operations = parser.create_rest_api_operations(parsed_doc, execution_settings=execution_settings)
 
-        auth_callback = None
-        if execution_settings and execution_settings.auth_callback:
-            auth_callback = execution_settings.auth_callback
-        openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc, auth_callback=auth_callback)
+    auth_callback = None
+    if execution_settings and execution_settings.auth_callback:
+        auth_callback = execution_settings.auth_callback
+    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc, auth_callback=auth_callback)
 
-        plugin: dict[str, Callable[..., Any]] = {}
+    return [
+        _create_function_from_operation(openapi_runner, operation, plugin_name) for operation in operations.values()
+    ]
 
-        def create_run_operation_function(runner: OpenApiRunner, operation: RestApiOperation):
-            @kernel_function(
-                description=operation.summary if operation.summary else operation.description,
-                name=operation.id,
-            )
-            async def run_openapi_operation(
-                path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
-                query_params: Annotated[dict | str | None, "A dictionary of query parameters"] = None,
-                headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
-                request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
-            ) -> str:
-                response = await runner.run_operation(
-                    operation,
-                    path_params=(
-                        json.loads(path_params)
-                        if isinstance(path_params, str)
-                        else path_params if path_params else None
-                    ),
-                    query_params=(
-                        json.loads(query_params)
-                        if isinstance(query_params, str)
-                        else query_params if query_params else None
-                    ),
-                    headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
-                    request_body=(
-                        json.loads(request_body)
-                        if isinstance(request_body, str)
-                        else request_body if request_body else None
-                    ),
-                )
-                return response
 
-            return run_openapi_operation
+def _create_function_from_operation(runner: OpenApiRunner, operation: RestApiOperation, plugin_name: str | None = None):
+    logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation.id}")
 
-        for operation_id, operation in operations.items():
-            logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation_id}")
-            plugin[operation_id] = create_run_operation_function(openapi_runner, operation)
-        return plugin
+    @kernel_function(
+        description=operation.summary if operation.summary else operation.description,
+        name=operation.id,
+    )
+    async def run_openapi_operation(
+        path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
+        query_params: Annotated[dict | str | None, "A dictionary of query parameters"] = None,
+        headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
+        request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
+    ) -> str:
+        response = await runner.run_operation(
+            operation,
+            path_params=(
+                json.loads(path_params) if isinstance(path_params, str) else path_params if path_params else None
+            ),
+            query_params=(
+                json.loads(query_params) if isinstance(query_params, str) else query_params if query_params else None
+            ),
+            headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
+            request_body=(
+                json.loads(request_body) if isinstance(request_body, str) else request_body if request_body else None
+            ),
+        )
+        return response
+
+    return KernelFunctionFromMethod(run_openapi_operation, plugin_name=plugin_name)
