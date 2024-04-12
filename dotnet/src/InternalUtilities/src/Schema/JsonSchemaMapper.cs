@@ -122,10 +122,10 @@ static partial class JsonSchemaMapper
 
             state.Pop();
 
-            (paramSchemas ??= new()).Add(parameter.Name, paramSchema);
+            (paramSchemas ??= []).Add(parameter.Name, paramSchema);
             if (isRequired)
             {
-                (requiredParams ??= new()).Add((JsonNode)parameter.Name);
+                (requiredParams ??= []).Add((JsonNode)parameter.Name);
             }
         }
 
@@ -190,7 +190,7 @@ static partial class JsonSchemaMapper
 
         if (!IsBuiltInConverter(effectiveConverter))
         {
-            return new JsonObject(); // We can't make any schema determinations if a custom converter is used
+            return []; // We can't make any schema determinations if a custom converter is used
         }
 
         if (isCacheable && state.TryGetGeneratedSchemaPath(type, parentNullableOfT, customConverter, isNullableReferenceType, customNumberHandling, out string? typePath))
@@ -257,7 +257,7 @@ static partial class JsonSchemaMapper
             }
 
             state.Push(AnyOfPropertyName);
-            anyOfTypes = new JsonArray();
+            anyOfTypes = [];
 
             int i = 0;
             foreach (JsonDerivedType derivedType in derivedTypes)
@@ -304,14 +304,14 @@ static partial class JsonSchemaMapper
                         }
                         else if (numberHandling is JsonNumberHandling.AllowNamedFloatingPointLiterals)
                         {
-                            anyOfTypes = new JsonArray
-                            {
+                            anyOfTypes =
+                            [
                                 (JsonNode)new JsonObject { [TypePropertyName] = MapSchemaType(schemaType) },
                                 (JsonNode)new JsonObject
                                 {
                                     [EnumPropertyName] = new JsonArray { (JsonNode)"NaN", (JsonNode)"Infinity", (JsonNode)"-Infinity" },
                                 },
-                            };
+                            ];
 
                             schemaType = JsonSchemaType.Any; // reset the parent setting
                         }
@@ -358,8 +358,8 @@ static partial class JsonSchemaMapper
                 if (emitsTypeDiscriminator)
                 {
                     Debug.Assert(derivedTypeDiscriminator?.Value is not null);
-                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
                 }
 
                 Func<JsonPropertyInfo, ParameterInfo?> parameterInfoMapper = ResolveJsonConstructorParameterMapper(typeInfo);
@@ -429,11 +429,11 @@ static partial class JsonSchemaMapper
 
                     state.Pop();
 
-                    (properties ??= new()).Add(property.Name, propertySchema);
+                    (properties ??= []).Add(property.Name, propertySchema);
 
                     if (isRequired)
                     {
-                        (requiredProperties ??= new()).Add((JsonNode)property.Name);
+                        (requiredProperties ??= []).Add((JsonNode)property.Name);
                     }
                 }
 
@@ -454,8 +454,8 @@ static partial class JsonSchemaMapper
                     // { "properties" : { "$type" : { "const" : "discriminator" }, "$values" : { "type" : "array", "items" : { ... } } } }
 
                     schemaType = JsonSchemaType.Object;
-                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
 
                     state.Push(PropertiesPropertyName);
                     state.Push(StjValuesMetadataProperty);
@@ -492,8 +492,8 @@ static partial class JsonSchemaMapper
                 if (emitsTypeDiscriminator)
                 {
                     Debug.Assert(derivedTypeDiscriminator?.Value is not null);
-                    (properties ??= new()).Add(derivedTypeDiscriminator!.Value);
-                    (requiredProperties ??= new()).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
+                    (properties ??= []).Add(derivedTypeDiscriminator!.Value);
+                    (requiredProperties ??= []).Add((JsonNode)derivedTypeDiscriminator.Value.Key);
                 }
 
                 state.Push(AdditionalPropertiesPropertyName);
@@ -753,8 +753,8 @@ ConstructSchemaDocument:
         Object = 64,
     }
 
-    private static readonly JsonSchemaType[] s_schemaValues = new[]
-    {
+    private static readonly JsonSchemaType[] s_schemaValues =
+    [
         // NB the order of these values influences order of types in the rendered schema
         JsonSchemaType.String,
         JsonSchemaType.Integer,
@@ -763,7 +763,7 @@ ConstructSchemaDocument:
         JsonSchemaType.Array,
         JsonSchemaType.Object,
         JsonSchemaType.Null,
-    };
+    ];
 
     private static JsonNode? MapSchemaType(JsonSchemaType schemaType)
     {

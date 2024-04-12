@@ -57,13 +57,13 @@ internal sealed class TemplateTokenizer
         // Render NULL to ""
         if (string.IsNullOrEmpty(text))
         {
-            return new List<Block> { new TextBlock(string.Empty, this._loggerFactory) };
+            return [new TextBlock(string.Empty, this._loggerFactory)];
         }
 
         // If the template is "empty" return the content as a text block
         if (text!.Length < MinCodeBlockLength)
         {
-            return new List<Block> { new TextBlock(text, this._loggerFactory) };
+            return [new TextBlock(text, this._loggerFactory)];
         }
 
         var blocks = new List<Block>();

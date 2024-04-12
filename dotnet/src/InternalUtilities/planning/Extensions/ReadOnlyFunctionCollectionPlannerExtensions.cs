@@ -133,7 +133,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         }
         else
         {
-            result = new List<KernelFunctionMetadata>();
+            result = [];
 
             // Remember functions in memory so that they can be searched.
             await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);

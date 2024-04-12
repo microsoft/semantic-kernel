@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Models;
@@ -125,7 +124,7 @@ internal sealed class ThreadRunStepModel
         /// Details of tool calls.
         /// </summary>
         [JsonPropertyName("tool_calls")]
-        public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
+        public ToolCallsDetailsModel[] ToolCalls { get; set; } = [];
     }
 
     /// <summary>

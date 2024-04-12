@@ -18,7 +18,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     /// If this is a complex type, this will contain the properties of the complex type.
     /// </summary>
     [JsonPropertyName("properties")]
-    public List<KernelParameterMetadata> Properties { get; set; } = new();
+    public List<KernelParameterMetadata> Properties { get; set; } = [];
 
     // Override the Equals method to compare the property values
     public override bool Equals(object obj)

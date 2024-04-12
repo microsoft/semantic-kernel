@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -63,7 +62,7 @@ internal sealed class Database
 
     private static string EncodeFloatArrayToString(float[]? data)
     {
-        var dataArrayString = $"[{string.Join(", ", (data ?? Array.Empty<float>()).Select(n => n.ToString("F10", CultureInfo.InvariantCulture)))}]";
+        var dataArrayString = $"[{string.Join(", ", (data ?? []).Select(n => n.ToString("F10", CultureInfo.InvariantCulture)))}]";
         return dataArrayString;
     }
 
@@ -72,7 +71,7 @@ internal sealed class Database
         string collectionName, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
         await this.DeleteAsync(conn, collectionName, key, cancellationToken).ConfigureAwait(true);
-        var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
+        var embeddingArrayString = EncodeFloatArrayToString(embedding ?? []);
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"INSERT INTO {TableName} VALUES(${nameof(collectionName)}, ${nameof(key)}, ${nameof(metadata)}, {embeddingArrayString}, ${nameof(timestamp)})";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
@@ -136,7 +135,7 @@ internal sealed class Database
             }
 
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
             float score = dataReader.GetFieldValue<float>("score");
 
@@ -168,7 +167,7 @@ internal sealed class Database
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
 
             return new DatabaseEntry
