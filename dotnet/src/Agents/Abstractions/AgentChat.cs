@@ -51,7 +51,7 @@ public abstract class AgentChat
         Agent? agent = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.ThrowIfActive(); // Disallow concurrent access to chat history
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         try
         {
@@ -123,7 +123,7 @@ public abstract class AgentChat
     /// </remarks>
     public void AddChatMessages(IReadOnlyList<ChatMessageContent> messages)
     {
-        this.ThrowIfActive(); // Disallow concurrent access to chat history
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         for (int index = 0; index < messages.Count; ++index)
         {
@@ -163,7 +163,7 @@ public abstract class AgentChat
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.ThrowIfActive(); // Disallow concurrent access to chat history
+        this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         try
         {
@@ -234,7 +234,7 @@ public abstract class AgentChat
     /// The activity signal is used to manage ability and visibility for taking actions based
     /// on conversation history.
     /// </remarks>
-    private void ThrowIfActive()
+    private void SetActivityOrThrow()
     {
         // Note: Interlocked is the absolute lightest synchronization mechanism available in dotnet.
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
