@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,8 +15,8 @@ internal static class ChatHistorySerializer
             return null;
         }
 
-        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? Array.Empty<SerializableChatMessage>();
-        ChatHistory history = new();
+        var messages = JsonSerializer.Deserialize<SerializableChatMessage[]>(input) ?? [];
+        ChatHistory history = [];
         foreach (var message in messages)
         {
             history.AddMessage(new AuthorRole(message.Role!), message.Content!);

@@ -14,12 +14,13 @@ public class Example80_FunctionCallingPlannerWithRAG : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        string[] questions = {
+        string[] questions =
+        [
             "When should I use the name Bob?",
             "When should I use the name Tom?",
             "When should I use the name Alice?",
             "When should I use the name Harry?",
-        };
+        ];
 
         var kernel = InitializeKernel();
 

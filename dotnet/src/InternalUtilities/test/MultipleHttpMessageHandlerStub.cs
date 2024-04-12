@@ -15,17 +15,17 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
     private int _callIteration = 0;
 
-    public List<HttpRequestHeaders?> RequestHeaders { get; private set; } = new();
+    public List<HttpRequestHeaders?> RequestHeaders { get; private set; } = [];
 
-    public List<HttpContentHeaders?> ContentHeaders { get; private set; } = new();
+    public List<HttpContentHeaders?> ContentHeaders { get; private set; } = [];
 
-    public List<byte[]?> RequestContents { get; private set; } = new();
+    public List<byte[]?> RequestContents { get; private set; } = [];
 
-    public List<Uri?> RequestUris { get; private set; } = new();
+    public List<Uri?> RequestUris { get; private set; } = [];
 
-    public List<HttpMethod?> Methods { get; private set; } = new();
+    public List<HttpMethod?> Methods { get; private set; } = [];
 
-    public List<HttpResponseMessage> ResponsesToReturn { get; set; } = new();
+    public List<HttpResponseMessage> ResponsesToReturn { get; set; } = [];
 
     internal HttpClient CreateHttpClient() => new(this, false);
 

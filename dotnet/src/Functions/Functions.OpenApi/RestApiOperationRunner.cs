@@ -387,11 +387,7 @@ internal sealed class RestApiOperationRunner
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
-        var urlBuilder = new UriBuilder(url);
-
-        urlBuilder.Query = operation.BuildQueryString(arguments);
-
-        return urlBuilder.Uri;
+        return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
 
     #endregion

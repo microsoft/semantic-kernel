@@ -177,7 +177,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetNearestMatchAsync()
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"default\" } }";
+        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 1, "numCandidates" : 10, "index" : "default" } }""";
 
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var memoryRecord = CreateRecord("id");
@@ -198,7 +198,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetNearestMatchesAsync()
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 100, \"numCandidates\" : 1000, \"index\" : \"default\" } }";
+        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 100, "numCandidates" : 1000, "index" : "default" } }""";
 
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var (memoryRecords, keys) = CreateRecords(10);
@@ -325,16 +325,11 @@ public class MongoDBMemoryStoreTests
 
     #region private ================================================================================
 
-    private sealed class AsyncCursorMock<T> : IAsyncCursor<T>
+    private sealed class AsyncCursorMock<T>(params T[] items) : IAsyncCursor<T>
     {
-        private T[] _items;
+        private T[] _items = items ?? [];
 
         public IEnumerable<T>? Current { get; private set; }
-
-        public AsyncCursorMock(params T[] items)
-        {
-            this._items = items ?? Array.Empty<T>();
-        }
 
         public void Dispose()
         {
@@ -343,7 +338,7 @@ public class MongoDBMemoryStoreTests
         public bool MoveNext(CancellationToken cancellationToken = default)
         {
             this.Current = this._items;
-            this._items = Array.Empty<T>();
+            this._items = [];
 
             return this.Current.Any();
         }

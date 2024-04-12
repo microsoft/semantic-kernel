@@ -25,7 +25,7 @@ public class ChatHistoryChannel : AgentChannel
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
 
-        await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken))
+        await foreach (var message in historyHandler.InvokeAsync(this._history, cancellationToken).ConfigureAwait(false))
         {
             this._history.Add(message);
 
@@ -34,7 +34,7 @@ public class ChatHistoryChannel : AgentChannel
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
+    protected internal sealed override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
     {
         this._history.AddRange(history);
 

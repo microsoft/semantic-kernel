@@ -42,7 +42,7 @@ public static class TextChunker
 
         public List<string> ToStringList() => this.Values.Select(v => v.Value).ToList();
 
-        private List<(string Value, int TokenCount)> Values { get; } = new();
+        private List<(string Value, int TokenCount)> Values { get; } = [];
 
         public string ValueAt(int i) => this.Values[i].Value;
 
@@ -56,9 +56,9 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
-    private static readonly char[] s_spaceChar = new[] { ' ' };
-    private static readonly string?[] s_plaintextSplitOptions = new[] { "\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null };
-    private static readonly string?[] s_markdownSplitOptions = new[] { ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", "\n\r", null };
+    private static readonly char[] s_spaceChar = [' '];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".。．", "?!", ";", ":", ",，、", ")]}", " ", "-", null];
+    private static readonly string?[] s_markdownSplitOptions = [".\u3002\uFF0E", "?!", ";", ":", ",\uFF0C\u3001", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
     /// Split plain text into lines.
@@ -119,7 +119,7 @@ public static class TextChunker
         // Optimize empty inputs if we can efficiently determine the're empty
         if (lines is ICollection<string> c && c.Count == 0)
         {
-            return new List<string>();
+            return [];
         }
 
         var chunkHeaderTokens = chunkHeader is { Length: > 0 } ? GetTokenCount(chunkHeader, tokenCounter) : 0;
@@ -137,7 +137,7 @@ public static class TextChunker
     private static List<string> BuildParagraph(IEnumerable<string> truncatedLines, int maxTokensPerParagraph, TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
-        List<string> paragraphs = new();
+        List<string> paragraphs = [];
 
         foreach (string line in truncatedLines)
         {
