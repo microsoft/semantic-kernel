@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -79,7 +80,7 @@ public sealed class AgentGroupChat : AgentChat
             Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
 
             // Invoke agent and process messages along with termination
-            await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
+            await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 yield return message;
 
@@ -135,7 +136,7 @@ public sealed class AgentGroupChat : AgentChat
             this.AddAgent(agent);
         }
 
-        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
+        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {
             yield return message;
 
