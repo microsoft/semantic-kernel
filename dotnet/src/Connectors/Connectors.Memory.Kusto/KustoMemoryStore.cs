@@ -133,8 +133,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             var metadata = reader.GetString(1);
             DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var recordEmbedding = withEmbeddings ? reader.GetString(3) : default;
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
 
-            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
             yield return kustoRecord.ToMemoryRecord();
         }
     }
@@ -216,8 +218,9 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
-
-            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
     }

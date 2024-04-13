@@ -195,8 +195,8 @@ public class KustoMemoryStoreTests
                 It.Is<string>(s => s.Contains(CollectionName) && s.Contains(expectedMemoryRecord.Key)),
                 It.IsAny<ClientRequestProperties>(),
                 CancellationToken.None))
-            .ReturnsAsync(CollectionToDataReader(new dynamic[][] {
-                new dynamic[] {
+            .ReturnsAsync(CollectionToDataReader(new object[][] {
+                new object[] {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
                     expectedMemoryRecord.Timestamp?.LocalDateTime!,
@@ -376,7 +376,7 @@ public class KustoMemoryStoreTests
         return table.CreateDataReader();
     }
 
-    private static DataTableReader CollectionToDataReader(dynamic[][] data)
+    private static DataTableReader CollectionToDataReader(object[][] data)
     {
         using var table = new DataTable();
 
