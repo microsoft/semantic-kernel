@@ -162,27 +162,20 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-        FunctionResult? functionResult = null;
+        FunctionResult functionResult = new(this, culture: kernel.Culture);
         try
         {
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
-            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, async (context) =>
+            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
             {
-                // Invoke the function.
-                functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
-
-                // Update context with result.
-                context.Result = functionResult;
+                // Invoking the function and updating context with result.
+                context.Result = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
-            // Apply any changes from the function filters to final result.
-            functionResult = new FunctionResult(
-                this,
-                invocationContext.Result?.Value ?? functionResult?.Value,
-                functionResult?.Culture,
-                functionResult?.Metadata);
+            // Apply any changes from the function filters context to final result.
+            functionResult = new FunctionResult(invocationContext.Result);
 
             logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult);
@@ -277,19 +270,21 @@ public abstract class KernelFunction
                 // Quick check for cancellation after logging about function start but before doing any real work.
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, (context) =>
+                FunctionResult functionResult = new(this, culture: kernel.Culture);
+
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, (context) =>
                 {
                     // Invoke the function and get its streaming enumerable.
                     var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
                     // Update context with enumerable as result value.
-                    context.Result = new FunctionResult(this, enumerable);
+                    context.Result = new FunctionResult(this, enumerable, kernel.Culture);
 
                     return Task.CompletedTask;
                 }).ConfigureAwait(false);
 
                 // Apply changes from the function filters to final result.
-                var enumerable = invocationContext.Result?.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
+                var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
                 enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block

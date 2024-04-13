@@ -49,7 +49,7 @@ public class KernelFilterTests
 
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
-            Assert.Null(context.Result);
+            Assert.Null(context.Result.Value);
 
             await next(context);
 
@@ -147,7 +147,7 @@ public class KernelFilterTests
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
             await next(context);
-            context.Result = new FunctionResult(context.Function, NewResult);
+            context.Result = new FunctionResult(context.Result, NewResult);
         });
 
         // Act
@@ -183,8 +183,8 @@ public class KernelFilterTests
                 }
             }
 
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<int>>();
-            context.Result = new FunctionResult(context.Function, GetModifiedData(enumerable!));
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<int>>();
+            context.Result = new FunctionResult(context.Result, GetModifiedData(enumerable!));
         });
 
         // Act
@@ -633,7 +633,7 @@ public class KernelFilterTests
                 }
                 catch (NotImplementedException)
                 {
-                    context.Result = new FunctionResult(context.Function, "Result ignoring exception.");
+                    context.Result = new FunctionResult(context.Result, "Result ignoring exception.");
                 }
             });
 
@@ -692,8 +692,8 @@ public class KernelFilterTests
                     }
                 }
 
-                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
             });
 
         // Act
@@ -779,8 +779,8 @@ public class KernelFilterTests
                     }
                 }
 
-                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
             });
 
         // Act
@@ -850,7 +850,7 @@ public class KernelFilterTests
             catch (KernelException exception)
             {
                 Assert.Equal("Exception from functionFilter2", exception.Message);
-                context.Result = new FunctionResult(context.Function, "Result from functionFilter1");
+                context.Result = new FunctionResult(context.Result, "Result from functionFilter1");
             }
         });
 
@@ -938,8 +938,8 @@ public class KernelFilterTests
                 }
             }
 
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-            context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+            context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
         }
 
         var functionFilter1 = new FakeFunctionFilter(

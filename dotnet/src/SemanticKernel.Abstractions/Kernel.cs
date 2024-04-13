@@ -282,9 +282,10 @@ public sealed class Kernel
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
+        FunctionResult functionResult,
         Func<FunctionInvocationContext, Task> functionCallback)
     {
-        FunctionInvocationContext context = new(function, arguments);
+        FunctionInvocationContext context = new(function, arguments, functionResult);
 
         if (this._functionFilters is { Count: > 0 })
         {
