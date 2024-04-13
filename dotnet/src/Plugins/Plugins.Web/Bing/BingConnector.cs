@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,14 +21,17 @@ public sealed class BingConnector : IWebSearchEngineConnector
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
+    private readonly Uri? _uri = null;
+    private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search?q";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
+    /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public BingConnector(string apiKey, ILoggerFactory? loggerFactory = null) :
-        this(apiKey, HttpClientProvider.GetHttpClient(), loggerFactory)
+    public BingConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
+        this(apiKey, HttpClientProvider.GetHttpClient(), uri, loggerFactory)
     {
     }
 
@@ -39,8 +40,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
+    /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public BingConnector(string apiKey, HttpClient httpClient, ILoggerFactory? loggerFactory = null)
+    public BingConnector(string apiKey, HttpClient httpClient, Uri? uri = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
@@ -49,22 +51,18 @@ public sealed class BingConnector : IWebSearchEngineConnector
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BingConnector)));
+        this._uri = uri ?? new Uri(DefaultUri);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> SearchAsync<T>(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
         if (count is <= 0 or >= 50)
         {
             throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
         }
 
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
-
-        Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
+        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {Uri}", uri);
 
@@ -77,11 +75,33 @@ public sealed class BingConnector : IWebSearchEngineConnector
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
+        WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
-        WebPage[]? results = data?.WebPages?.Value;
+        List<T>? returnValues = new();
+        if (data?.WebPages?.Value != null)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                WebPage[]? results = data?.WebPages?.Value;
+                returnValues = results?.Select(x => x.Snippet).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(WebPage))
+            {
+                List<WebPage>? webPages = new();
 
-        return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
+                foreach (var webPage in data.WebPages.Value)
+
+                {
+                    webPages.Add(webPage);
+                }
+                returnValues = webPages.Take(count).ToList() as List<T>;
+            }
+            else
+            {
+                throw new NotSupportedException($"Type {typeof(T)} is not supported.");
+            }
+        }
+        return returnValues != null && returnValues.Count == 0 ? returnValues : returnValues.Take(count);
     }
 
     /// <summary>
@@ -100,35 +120,5 @@ public sealed class BingConnector : IWebSearchEngineConnector
         }
 
         return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-    }
-
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class BingSearchResponse
-    {
-        [JsonPropertyName("webPages")]
-        public WebPages? WebPages { get; set; }
-    }
-
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class WebPages
-    {
-        [JsonPropertyName("value")]
-        public WebPage[]? Value { get; set; }
-    }
-
-    [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-        Justification = "Class is instantiated through deserialization.")]
-    private sealed class WebPage
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = string.Empty;
-
-        [JsonPropertyName("snippet")]
-        public string Snippet { get; set; } = string.Empty;
     }
 }

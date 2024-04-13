@@ -35,60 +35,60 @@ class MiscClass:
     def func_with_name(self, input):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_docstring_as_description(self, input):
         """description"""
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_annotated(self, input: Annotated[str, "input description"]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_optional(self, input: Optional[str] = "test"):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type(self, input: str) -> str:
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type_optional(self, input: str) -> Optional[str]:
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type_annotated(self, input: str) -> Annotated[str, "test return"]:
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type_streaming(self, input: str) -> Annotated[AsyncIterable[str], "test return"]:
         yield input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object(self, input: InputObject):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_optional(self, input: Optional[InputObject] = None):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_annotated(self, input: Annotated[InputObject, "input description"]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_annotated_optional(self, input: Annotated[Optional[InputObject], "input description"] = None):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_union(self, input: Union[InputObject, str]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_no_typing(self, input):
         return input
 

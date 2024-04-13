@@ -21,14 +21,11 @@ public sealed class ChatHistoryTests : IDisposable
 {
     private readonly IKernelBuilder _kernelBuilder;
     private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
     public ChatHistoryTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
@@ -156,7 +153,6 @@ public sealed class ChatHistoryTests : IDisposable
         if (disposing)
         {
             this._logger.Dispose();
-            this._testOutputHelper.Dispose();
         }
     }
 }

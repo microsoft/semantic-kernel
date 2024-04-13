@@ -22,6 +22,10 @@ class KernelPluginNotFoundError(KernelException):
     pass
 
 
+class KernelPluginInvalidConfigurationError(KernelException):
+    pass
+
+
 class KernelFunctionNotFoundError(KernelException):
     pass
 
@@ -41,4 +45,5 @@ __all__ = [
     "KernelInvokeException",
     "KernelPluginNotFoundError",
     "KernelServiceNotFoundError",
+    "KernelPluginInvalidConfigurationError",
 ]

@@ -221,7 +221,7 @@ public abstract class KernelFunction
             }
 
             logger.LogFunctionInvokedSuccess(this.Name);
-            logger.LogFunctionResultValue(functionResult.Value);
+            logger.LogFunctionResultValue(functionResult);
 
             return functionResult;
         }

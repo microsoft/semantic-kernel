@@ -6,10 +6,16 @@ import re
 from enum import Enum
 from typing import Callable, Dict
 
-from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE
+from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE, ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def _messages(this, options, *args, **kwargs):
+    if not isinstance(this.context["chat_history"], ChatHistory):
+        return ""
+    return str(this.context["chat_history"])
 
 
 def _message_to_prompt(this, *args, **kwargs):
@@ -163,4 +169,5 @@ HANDLEBAR_SYSTEM_HELPERS: Dict[str, Callable] = {
     "message": _message,
     "message_to_prompt": _message_to_prompt,
     "messageToPrompt": _message_to_prompt,
+    "messages": _messages,
 }

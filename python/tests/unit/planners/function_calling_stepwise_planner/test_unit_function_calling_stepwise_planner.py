@@ -63,19 +63,20 @@ async def test_generate_plan():
 
     kernel_mock = AsyncMock(Kernel)
     kernel_mock.get_service.return_value = AsyncMock()
+    plugins_mock = MagicMock()
+    kernel_mock.plugins = MagicMock(plugins=plugins_mock)
 
     with patch(
         "semantic_kernel.planners.function_calling_stepwise_planner.FunctionCallingStepwisePlanner._create_config_from_yaml",
         return_value=AsyncMock(spec=KernelFunction),
     ) as mock_create_yaml_config, patch(
-        "semantic_kernel.planners.planner_extensions.PlannerKernelExtension.get_functions_manual",
-        new=AsyncMock(),
-    ) as mock_get_functions_manual:
+        "semantic_kernel.connectors.ai.open_ai.utils.get_function_calling_object",
+        return_value=AsyncMock(return_value=MagicMock()),
+    ):
         question = "Why is the sky blue?"
         result = await planner._generate_plan(question, kernel_mock)
 
         mock_create_yaml_config.assert_called_once_with(kernel_mock)
-        mock_get_functions_manual.assert_awaited_once()
         assert result is not None
 
 

@@ -18,9 +18,12 @@ public class ChatHistoryTests
     {
         // Arrange
         var options = new JsonSerializerOptions();
-        var chatHistory = new ChatHistory();
-        chatHistory.AddMessage(AuthorRole.User, "Hello");
-        chatHistory.AddMessage(AuthorRole.Assistant, "Hi");
+        var chatHistory = new ChatHistory()
+        {
+            new ChatMessageContent(AuthorRole.System, "You are a polite bot.") { AuthorName = "ChatBot" },
+            new ChatMessageContent(AuthorRole.User, "Hello") { AuthorName = "ChatBot" },
+            new ChatMessageContent(AuthorRole.Assistant, "Hi") { AuthorName = "ChatBot" },
+        };
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
 
         // Act
@@ -33,6 +36,7 @@ public class ChatHistoryTests
         {
             Assert.Equal(chatHistory[i].Role.Label, chatHistoryDeserialized[i].Role.Label);
             Assert.Equal(chatHistory[i].Content, chatHistoryDeserialized[i].Content);
+            Assert.Equal(chatHistory[i].AuthorName, chatHistoryDeserialized[i].AuthorName);
             Assert.Equal(chatHistory[i].Items.Count, chatHistoryDeserialized[i].Items.Count);
             Assert.Equal(
                 chatHistory[i].Items.OfType<TextContent>().Single().Text,
