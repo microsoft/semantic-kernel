@@ -179,7 +179,7 @@ internal sealed class HuggingFaceClient
 
     private async IAsyncEnumerable<TextGenerationStreamResponse> ParseTextResponseStreamAsync(Stream responseStream, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken))
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             yield return DeserializeResponse<TextGenerationStreamResponse>(json);
         }

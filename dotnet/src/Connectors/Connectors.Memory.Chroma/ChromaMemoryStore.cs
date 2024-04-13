@@ -90,7 +90,7 @@ public class ChromaMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        return await this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken)
+        return await this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
@@ -166,7 +166,7 @@ public class ChromaMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        await this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken).ConfigureAwait(false);
+        await this.RemoveBatchAsync(collectionName, [key], cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -184,7 +184,7 @@ public class ChromaMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        var key = await this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken)
+        var key = await this.UpsertBatchAsync(collectionName, [record], cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -228,7 +228,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
-    private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
+    private readonly List<string> _defaultEmbeddingIncludeTypes = [IncludeMetadatas];
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
@@ -265,7 +265,7 @@ public class ChromaMemoryStore : IMemoryStore
             includeList.Add(IncludeDistances);
         }
 
-        return includeList.ToArray();
+        return [.. includeList];
     }
 
     private MemoryRecord GetMemoryRecordFromEmbeddingsModel(ChromaEmbeddingsModel embeddingsModel, int recordIndex)

@@ -92,7 +92,7 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndReturnParameterType()
     {
-        string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
@@ -118,7 +118,7 @@ public sealed class OpenAIFunctionTests
     [Fact]
     public void ItCanConvertToFunctionDefinitionsWithParameterTypesAndNoReturnParameterType()
     {
-        string expectedParameterSchema = "{   \"type\": \"object\",   \"required\": [\"param1\", \"param2\"],   \"properties\": {     \"param1\": { \"type\": \"string\", \"description\": \"String param 1\" },     \"param2\": { \"type\": \"integer\", \"description\": \"Int param 2\" }   } } ";
+        string expectedParameterSchema = """{   "type": "object",   "required": ["param1", "param2"],   "properties": {     "param1": { "type": "string", "description": "String param 1" },     "param2": { "type": "integer", "description": "Int param 2" }   } } """;
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromFunctions("Tests", new[]
         {
@@ -154,7 +154,7 @@ public sealed class OpenAIFunctionTests
         Assert.NotNull(pd.properties);
         Assert.Single(pd.properties);
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\" }")),
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string" }""")),
             JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
     }
 
@@ -174,7 +174,7 @@ public sealed class OpenAIFunctionTests
         Assert.NotNull(pd.properties);
         Assert.Single(pd.properties);
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("{ \"type\":\"string\", \"description\":\"something neat\" }")),
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{ "type":"string", "description":"something neat" }""")),
             JsonSerializer.Serialize(pd.properties.First().Value.RootElement));
     }
 
