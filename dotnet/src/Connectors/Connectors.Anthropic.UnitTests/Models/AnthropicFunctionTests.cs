@@ -6,9 +6,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models.Claude;
+namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models;
 
-public sealed class ClaudeFunctionTests
+public sealed class AnthropicFunctionTests
 {
     [Theory]
     [InlineData(null, null, "", "")]
@@ -46,7 +46,7 @@ public sealed class ClaudeFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNoPluginName()
     {
         // Arrange
-        ClaudeFunction sut = KernelFunctionFactory.CreateFromMethod(
+        AnthropicFunction sut = KernelFunctionFactory.CreateFromMethod(
             () => { }, "myfunc", "This is a description of the function.").Metadata.ToClaudeFunction();
 
         // Act
@@ -61,7 +61,7 @@ public sealed class ClaudeFunctionTests
     public void ItCanConvertToFunctionDefinitionWithNullParameters()
     {
         // Arrange
-        ClaudeFunction sut = new("plugin", "function", "description", null, null);
+        AnthropicFunction sut = new("plugin", "function", "description", null, null);
 
         // Act
         var result = sut.ToFunctionDeclaration();
@@ -74,7 +74,7 @@ public sealed class ClaudeFunctionTests
     public void ItCanConvertToFunctionDefinitionWithPluginName()
     {
         // Arrange
-        ClaudeFunction sut = KernelPluginFactory.CreateFromFunctions("myplugin", new[]
+        AnthropicFunction sut = KernelPluginFactory.CreateFromFunctions("myplugin", new[]
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "myfunc", "This is a description of the function.")
         }).GetFunctionsMetadata()[0].ToClaudeFunction();
@@ -83,7 +83,7 @@ public sealed class ClaudeFunctionTests
         var result = sut.ToFunctionDeclaration();
 
         // Assert
-        Assert.Equal($"myplugin{ClaudeFunction.NameSeparator}myfunc", result.Name);
+        Assert.Equal($"myplugin{AnthropicFunction.NameSeparator}myfunc", result.Name);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -107,12 +107,12 @@ public sealed class ClaudeFunctionTests
                 "My test function")
         });
 
-        ClaudeFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
+        AnthropicFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
 
         var functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal($"Tests{ClaudeFunction.NameSeparator}TestFunction", functionDefinition.Name);
+        Assert.Equal($"Tests{AnthropicFunction.NameSeparator}TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
             JsonSerializer.Serialize(functionDefinition.Parameters));
@@ -138,12 +138,12 @@ public sealed class ClaudeFunctionTests
                 "My test function")
         });
 
-        ClaudeFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
+        AnthropicFunction sut = plugin.GetFunctionsMetadata()[0].ToClaudeFunction();
 
         var functionDefinition = sut.ToFunctionDeclaration();
 
         Assert.NotNull(functionDefinition);
-        Assert.Equal($"Tests{ClaudeFunction.NameSeparator}TestFunction", functionDefinition.Name);
+        Assert.Equal($"Tests{AnthropicFunction.NameSeparator}TestFunction", functionDefinition.Name);
         Assert.Equal("My test function", functionDefinition.Description);
         Assert.Equal(JsonSerializer.Serialize(KernelJsonSchema.Parse(expectedParameterSchema)),
             JsonSerializer.Serialize(functionDefinition.Parameters));
@@ -153,7 +153,7 @@ public sealed class ClaudeFunctionTests
     public void ItCanConvertToFunctionDefinitionsWithNoParameterTypes()
     {
         // Arrange
-        ClaudeFunction f = KernelFunctionFactory.CreateFromMethod(
+        AnthropicFunction f = KernelFunctionFactory.CreateFromMethod(
             () => { },
             parameters: new[] { new KernelParameterMetadata("param1") }).Metadata.ToClaudeFunction();
 
@@ -170,7 +170,7 @@ public sealed class ClaudeFunctionTests
     public void ItCanConvertToFunctionDefinitionsWithNoParameterTypesButWithDescriptions()
     {
         // Arrange
-        ClaudeFunction f = KernelFunctionFactory.CreateFromMethod(
+        AnthropicFunction f = KernelFunctionFactory.CreateFromMethod(
             () => { },
             parameters: new[] { new KernelParameterMetadata("param1") { Description = "something neat" } }).Metadata.ToClaudeFunction();
 

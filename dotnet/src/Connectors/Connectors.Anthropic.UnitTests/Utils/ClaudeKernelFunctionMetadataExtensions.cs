@@ -12,11 +12,11 @@ namespace SemanticKernel.Connectors.Anthropic.UnitTests;
 public static class ClaudeKernelFunctionMetadataExtensions
 {
     /// <summary>
-    /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="ClaudeFunction"/>.
+    /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="AnthropicFunction"/>.
     /// </summary>
     /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
-    /// <returns>An <see cref="ClaudeFunction"/> object.</returns>
-    public static ClaudeFunction ToClaudeFunction(this KernelFunctionMetadata metadata)
+    /// <returns>An <see cref="AnthropicFunction"/> object.</returns>
+    public static AnthropicFunction ToClaudeFunction(this KernelFunctionMetadata metadata)
     {
         IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
 
@@ -33,7 +33,7 @@ public static class ClaudeKernelFunctionMetadataExtensions
                 param.Schema);
         }
 
-        return new ClaudeFunction(
+        return new AnthropicFunction(
             metadata.PluginName,
             metadata.Name,
             metadata.Description,

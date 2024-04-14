@@ -9,14 +9,14 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Anthropic.UnitTests;
 
-public sealed class ClaudePromptExecutionSettingsTests
+public sealed class AnthropicPromptExecutionSettingsTests
 {
     [Fact]
     public void ItCreatesExecutionSettingsWithCorrectDefaults()
     {
         // Arrange
         // Act
-        ClaudePromptExecutionSettings executionSettings = ClaudePromptExecutionSettings.FromExecutionSettings(null);
+        AnthropicPromptExecutionSettings executionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(null);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -24,14 +24,14 @@ public sealed class ClaudePromptExecutionSettingsTests
         Assert.Null(executionSettings.TopP);
         Assert.Null(executionSettings.TopK);
         Assert.Null(executionSettings.StopSequences);
-        Assert.Equal(ClaudePromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
+        Assert.Equal(AnthropicPromptExecutionSettings.DefaultTextMaxTokens, executionSettings.MaxTokens);
     }
 
     [Fact]
     public void ItUsesExistingExecutionSettings()
     {
         // Arrange
-        ClaudePromptExecutionSettings actualSettings = new()
+        AnthropicPromptExecutionSettings actualSettings = new()
         {
             Temperature = 0.7,
             TopP = 0.7f,
@@ -41,7 +41,7 @@ public sealed class ClaudePromptExecutionSettingsTests
         };
 
         // Act
-        ClaudePromptExecutionSettings executionSettings = ClaudePromptExecutionSettings.FromExecutionSettings(actualSettings);
+        AnthropicPromptExecutionSettings executionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -62,7 +62,7 @@ public sealed class ClaudePromptExecutionSettingsTests
         };
 
         // Act
-        ClaudePromptExecutionSettings executionSettings = ClaudePromptExecutionSettings.FromExecutionSettings(actualSettings);
+        AnthropicPromptExecutionSettings executionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -86,7 +86,7 @@ public sealed class ClaudePromptExecutionSettingsTests
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
-        ClaudePromptExecutionSettings executionSettings = ClaudePromptExecutionSettings.FromExecutionSettings(actualSettings);
+        AnthropicPromptExecutionSettings executionSettings = AnthropicPromptExecutionSettings.FromExecutionSettings(actualSettings);
 
         // Assert
         Assert.NotNull(executionSettings);
@@ -111,10 +111,10 @@ public sealed class ClaudePromptExecutionSettingsTests
                         "max_tokens": 128
                       }
                       """;
-        var executionSettings = JsonSerializer.Deserialize<ClaudePromptExecutionSettings>(json);
+        var executionSettings = JsonSerializer.Deserialize<AnthropicPromptExecutionSettings>(json);
 
         // Act
-        var clone = executionSettings!.Clone() as ClaudePromptExecutionSettings;
+        var clone = executionSettings!.Clone() as AnthropicPromptExecutionSettings;
 
         // Assert
         Assert.NotNull(clone);
@@ -138,7 +138,7 @@ public sealed class ClaudePromptExecutionSettingsTests
                         "max_tokens": 128
                       }
                       """;
-        var executionSettings = JsonSerializer.Deserialize<ClaudePromptExecutionSettings>(json);
+        var executionSettings = JsonSerializer.Deserialize<AnthropicPromptExecutionSettings>(json);
 
         // Act
         executionSettings!.Freeze();

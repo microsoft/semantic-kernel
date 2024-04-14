@@ -10,22 +10,22 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 /// Represents a Claude Finish Reason.
 /// </summary>
 [JsonConverter(typeof(ClaudeFinishReasonConverter))]
-public readonly struct ClaudeFinishReason : IEquatable<ClaudeFinishReason>
+public readonly struct AnthropicFinishReason : IEquatable<AnthropicFinishReason>
 {
     /// <summary>
     /// Natural stop point of the model or provided stop sequence.
     /// </summary>
-    public static ClaudeFinishReason Stop { get; } = new("end_turn");
+    public static AnthropicFinishReason Stop { get; } = new("end_turn");
 
     /// <summary>
     /// The maximum number of tokens as specified in the request was reached.
     /// </summary>
-    public static ClaudeFinishReason MaxTokens { get; } = new("max_tokens");
+    public static AnthropicFinishReason MaxTokens { get; } = new("max_tokens");
 
     /// <summary>
     /// One of your provided custom stop sequences was generated.
     /// </summary>
-    public static ClaudeFinishReason StopSequence { get; } = new("stop_sequence");
+    public static AnthropicFinishReason StopSequence { get; } = new("stop_sequence");
 
     /// <summary>
     /// Gets the label of the property.
@@ -37,37 +37,37 @@ public readonly struct ClaudeFinishReason : IEquatable<ClaudeFinishReason>
     /// Represents a Claude Finish Reason.
     /// </summary>
     [JsonConstructor]
-    public ClaudeFinishReason(string label)
+    public AnthropicFinishReason(string label)
     {
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         this.Label = label;
     }
 
     /// <summary>
-    /// Represents the equality operator for comparing two instances of <see cref="ClaudeFinishReason"/>.
+    /// Represents the equality operator for comparing two instances of <see cref="AnthropicFinishReason"/>.
     /// </summary>
-    /// <param name="left">The left <see cref="ClaudeFinishReason"/> instance to compare.</param>
-    /// <param name="right">The right <see cref="ClaudeFinishReason"/> instance to compare.</param>
+    /// <param name="left">The left <see cref="AnthropicFinishReason"/> instance to compare.</param>
+    /// <param name="right">The right <see cref="AnthropicFinishReason"/> instance to compare.</param>
     /// <returns><c>true</c> if the two instances are equal; otherwise, <c>false</c>.</returns>
-    public static bool operator ==(ClaudeFinishReason left, ClaudeFinishReason right)
+    public static bool operator ==(AnthropicFinishReason left, AnthropicFinishReason right)
         => left.Equals(right);
 
     /// <summary>
-    /// Represents the inequality operator for comparing two instances of <see cref="ClaudeFinishReason"/>.
+    /// Represents the inequality operator for comparing two instances of <see cref="AnthropicFinishReason"/>.
     /// </summary>
-    /// <param name="left">The left <see cref="ClaudeFinishReason"/> instance to compare.</param>
-    /// <param name="right">The right <see cref="ClaudeFinishReason"/> instance to compare.</param>
+    /// <param name="left">The left <see cref="AnthropicFinishReason"/> instance to compare.</param>
+    /// <param name="right">The right <see cref="AnthropicFinishReason"/> instance to compare.</param>
     /// <returns><c>true</c> if the two instances are not equal; otherwise, <c>false</c>.</returns>
-    public static bool operator !=(ClaudeFinishReason left, ClaudeFinishReason right)
+    public static bool operator !=(AnthropicFinishReason left, AnthropicFinishReason right)
         => !(left == right);
 
     /// <inheritdoc />
-    public bool Equals(ClaudeFinishReason other)
+    public bool Equals(AnthropicFinishReason other)
         => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is ClaudeFinishReason other && this == other;
+        => obj is AnthropicFinishReason other && this == other;
 
     /// <inheritdoc />
     public override int GetHashCode()
@@ -77,11 +77,11 @@ public readonly struct ClaudeFinishReason : IEquatable<ClaudeFinishReason>
     public override string ToString() => this.Label ?? string.Empty;
 }
 
-internal sealed class ClaudeFinishReasonConverter : JsonConverter<ClaudeFinishReason>
+internal sealed class ClaudeFinishReasonConverter : JsonConverter<AnthropicFinishReason>
 {
-    public override ClaudeFinishReason Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override AnthropicFinishReason Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         => new(reader.GetString()!);
 
-    public override void Write(Utf8JsonWriter writer, ClaudeFinishReason value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, AnthropicFinishReason value, JsonSerializerOptions options)
         => writer.WriteStringValue(value.Label);
 }

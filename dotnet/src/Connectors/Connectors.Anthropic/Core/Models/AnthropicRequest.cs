@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class ClaudeRequest
+internal sealed class AnthropicRequest
 {
     /// <summary>
     /// Input messages.<br/>
@@ -26,7 +26,7 @@ internal sealed class ClaudeRequest
 
     [JsonPropertyName("tools")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<ClaudeToolFunctionDeclaration>? Tools { get; set; }
+    public IList<AnthropicToolFunctionDeclaration>? Tools { get; set; }
 
     [JsonPropertyName("model")]
     public string ModelId { get; set; } = null!;
@@ -80,9 +80,9 @@ internal sealed class ClaudeRequest
     [JsonPropertyName("top_k")]
     public int? TopK { get; set; }
 
-    public void AddFunction(ClaudeFunction function)
+    public void AddFunction(AnthropicFunction function)
     {
-        this.Tools ??= new List<ClaudeToolFunctionDeclaration>();
+        this.Tools ??= new List<AnthropicToolFunctionDeclaration>();
         this.Tools.Add(function.ToFunctionDeclaration());
     }
 
@@ -95,23 +95,23 @@ internal sealed class ClaudeRequest
     }
 
     /// <summary>
-    /// Creates a <see cref="ClaudeRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="ClaudePromptExecutionSettings"/>.
+    /// Creates a <see cref="AnthropicRequest"/> object from the given <see cref="ChatHistory"/> and <see cref="AnthropicPromptExecutionSettings"/>.
     /// </summary>
-    /// <param name="chatHistory">The chat history to be assigned to the <see cref="ClaudeRequest"/>.</param>
-    /// <param name="executionSettings">The execution settings to be applied to the <see cref="ClaudeRequest"/>.</param>
+    /// <param name="chatHistory">The chat history to be assigned to the <see cref="AnthropicRequest"/>.</param>
+    /// <param name="executionSettings">The execution settings to be applied to the <see cref="AnthropicRequest"/>.</param>
     /// <param name="streamingMode">Enables SSE streaming. (optional)</param>
-    /// <returns>A new instance of <see cref="ClaudeRequest"/>.</returns>
-    internal static ClaudeRequest FromChatHistoryAndExecutionSettings(
+    /// <returns>A new instance of <see cref="AnthropicRequest"/>.</returns>
+    internal static AnthropicRequest FromChatHistoryAndExecutionSettings(
         ChatHistory chatHistory,
-        ClaudePromptExecutionSettings executionSettings,
+        AnthropicPromptExecutionSettings executionSettings,
         bool streamingMode = false)
     {
-        ClaudeRequest request = CreateRequest(chatHistory, executionSettings, streamingMode);
+        AnthropicRequest request = CreateRequest(chatHistory, executionSettings, streamingMode);
         AddMessages(chatHistory, request);
         return request;
     }
 
-    private static void AddMessages(ChatHistory chatHistory, ClaudeRequest request)
+    private static void AddMessages(ChatHistory chatHistory, AnthropicRequest request)
         => request.Messages = chatHistory.Select(CreateClaudeMessageFromChatMessage).ToList();
 
     private static Message CreateClaudeMessageFromChatMessage(ChatMessageContent message)
@@ -123,9 +123,9 @@ internal sealed class ClaudeRequest
         };
     }
 
-    private static ClaudeRequest CreateRequest(ChatHistory chatHistory, ClaudePromptExecutionSettings executionSettings, bool streamingMode)
+    private static AnthropicRequest CreateRequest(ChatHistory chatHistory, AnthropicPromptExecutionSettings executionSettings, bool streamingMode)
     {
-        ClaudeRequest request = new()
+        AnthropicRequest request = new()
         {
             ModelId = executionSettings.ModelId ?? throw new InvalidOperationException("Model ID must be provided."),
             MaxTokens = executionSettings.MaxTokens ?? throw new InvalidOperationException("Max tokens must be provided."),
@@ -139,21 +139,21 @@ internal sealed class ClaudeRequest
         return request;
     }
 
-    private static List<ClaudeMessageContent> CreateClaudeMessages(ChatMessageContent content)
+    private static List<AnthropicMessageContent> CreateClaudeMessages(ChatMessageContent content)
     {
-        List<ClaudeMessageContent> messages = new();
+        List<AnthropicMessageContent> messages = new();
         switch (content)
         {
-            case ClaudeChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
-                messages.Add(new ClaudeToolResultContent
+            case AnthropicChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
+                messages.Add(new AnthropicToolResultContent
                 {
                     ToolId = contentWithCalledTool.CalledToolResult.ToolUseId ?? throw new InvalidOperationException("Tool ID must be provided."),
-                    Content = new ClaudeTextContent(contentWithCalledTool.CalledToolResult.FunctionResult.ToString())
+                    Content = new AnthropicTextContent(contentWithCalledTool.CalledToolResult.FunctionResult.ToString())
                 });
                 break;
-            case ClaudeChatMessageContent { ToolCalls: not null } contentWithToolCalls:
+            case AnthropicChatMessageContent { ToolCalls: not null } contentWithToolCalls:
                 messages.AddRange(contentWithToolCalls.ToolCalls.Select(toolCall =>
-                    new ClaudeToolCallContent
+                    new AnthropicToolCallContent
                     {
                         ToolId = toolCall.ToolUseId,
                         FunctionName = toolCall.FullyQualifiedName,
@@ -167,16 +167,16 @@ internal sealed class ClaudeRequest
 
         if (messages.Count == 0)
         {
-            messages.Add(new ClaudeTextContent(content.Content ?? string.Empty));
+            messages.Add(new AnthropicTextContent(content.Content ?? string.Empty));
         }
 
         return messages;
     }
 
-    private static ClaudeMessageContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
+    private static AnthropicMessageContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
     {
-        TextContent textContent => new ClaudeTextContent(textContent.Text ?? string.Empty),
-        ImageContent imageContent => new ClaudeImageContent(
+        TextContent textContent => new AnthropicTextContent(textContent.Text ?? string.Empty),
+        ImageContent imageContent => new AnthropicImageContent(
             type: "base64",
             mediaType: imageContent.MimeType ?? throw new InvalidOperationException("Image content must have a MIME type."),
             data: imageContent.Data.HasValue
@@ -193,6 +193,6 @@ internal sealed class ClaudeRequest
         public AuthorRole Role { get; set; }
 
         [JsonPropertyName("content")]
-        public IList<ClaudeMessageContent> Contents { get; set; } = null!;
+        public IList<AnthropicMessageContent> Contents { get; set; } = null!;
     }
 }

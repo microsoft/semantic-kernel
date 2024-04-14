@@ -11,18 +11,18 @@ using Xunit;
 namespace SemanticKernel.Connectors.Anthropic.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="ClaudeToolCallBehavior"/>
+/// Unit tests for <see cref="AnthropicToolCallBehavior"/>
 /// </summary>
-public sealed class ClaudeToolCallBehaviorTests
+public sealed class AnthropicToolCallBehaviorTests
 {
     [Fact]
     public void EnableKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
-        var behavior = ClaudeToolCallBehavior.EnableKernelFunctions;
+        var behavior = AnthropicToolCallBehavior.EnableKernelFunctions;
 
         // Assert
-        Assert.IsType<ClaudeToolCallBehavior.KernelFunctions>(behavior);
+        Assert.IsType<AnthropicToolCallBehavior.KernelFunctions>(behavior);
         Assert.Equal(0, behavior.MaximumAutoInvokeAttempts);
     }
 
@@ -30,10 +30,10 @@ public sealed class ClaudeToolCallBehaviorTests
     public void AutoInvokeKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
-        var behavior = ClaudeToolCallBehavior.AutoInvokeKernelFunctions;
+        var behavior = AnthropicToolCallBehavior.AutoInvokeKernelFunctions;
 
         // Assert
-        Assert.IsType<ClaudeToolCallBehavior.KernelFunctions>(behavior);
+        Assert.IsType<AnthropicToolCallBehavior.KernelFunctions>(behavior);
         Assert.Equal(5, behavior.MaximumAutoInvokeAttempts);
     }
 
@@ -41,20 +41,20 @@ public sealed class ClaudeToolCallBehaviorTests
     public void EnableFunctionsReturnsEnabledFunctionsInstance()
     {
         // Arrange & Act
-        List<ClaudeFunction> functions =
-            [new ClaudeFunction("Plugin", "Function", "description", [], null)];
-        var behavior = ClaudeToolCallBehavior.EnableFunctions(functions);
+        List<AnthropicFunction> functions =
+            [new AnthropicFunction("Plugin", "Function", "description", [], null)];
+        var behavior = AnthropicToolCallBehavior.EnableFunctions(functions);
 
         // Assert
-        Assert.IsType<ClaudeToolCallBehavior.EnabledFunctions>(behavior);
+        Assert.IsType<AnthropicToolCallBehavior.EnabledFunctions>(behavior);
     }
 
     [Fact]
     public void KernelFunctionsConfigureClaudeRequestWithNullKernelDoesNotAddTools()
     {
         // Arrange
-        var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var claudeRequest = new ClaudeRequest();
+        var kernelFunctions = new AnthropicToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var claudeRequest = new AnthropicRequest();
 
         // Act
         kernelFunctions.ConfigureClaudeRequest(null, claudeRequest);
@@ -67,8 +67,8 @@ public sealed class ClaudeToolCallBehaviorTests
     public void KernelFunctionsConfigureClaudeRequestWithoutFunctionsDoesNotAddTools()
     {
         // Arrange
-        var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var claudeRequest = new ClaudeRequest();
+        var kernelFunctions = new AnthropicToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var claudeRequest = new AnthropicRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act
@@ -82,8 +82,8 @@ public sealed class ClaudeToolCallBehaviorTests
     public void KernelFunctionsConfigureClaudeRequestWithFunctionsAddsTools()
     {
         // Arrange
-        var kernelFunctions = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: false);
-        var claudeRequest = new ClaudeRequest();
+        var kernelFunctions = new AnthropicToolCallBehavior.KernelFunctions(autoInvoke: false);
+        var claudeRequest = new AnthropicRequest();
         var kernel = Kernel.CreateBuilder().Build();
         var plugin = GetTestPlugin();
         kernel.Plugins.Add(plugin);
@@ -99,8 +99,8 @@ public sealed class ClaudeToolCallBehaviorTests
     public void EnabledFunctionsConfigureClaudeRequestWithoutFunctionsDoesNotAddTools()
     {
         // Arrange
-        var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions([], autoInvoke: false);
-        var claudeRequest = new ClaudeRequest();
+        var enabledFunctions = new AnthropicToolCallBehavior.EnabledFunctions([], autoInvoke: false);
+        var claudeRequest = new AnthropicRequest();
 
         // Act
         enabledFunctions.ConfigureClaudeRequest(null, claudeRequest);
@@ -114,13 +114,13 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => ClaudeKernelFunctionMetadataExtensions.ToClaudeFunction(function));
-        var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
-        var claudeRequest = new ClaudeRequest();
+        var enabledFunctions = new AnthropicToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var claudeRequest = new AnthropicRequest();
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(null, claudeRequest));
         Assert.Equal(
-            $"Auto-invocation with {nameof(ClaudeToolCallBehavior.EnabledFunctions)} is not supported when no kernel is provided.",
+            $"Auto-invocation with {nameof(AnthropicToolCallBehavior.EnabledFunctions)} is not supported when no kernel is provided.",
             exception.Message);
     }
 
@@ -129,14 +129,14 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
-        var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
-        var claudeRequest = new ClaudeRequest();
+        var enabledFunctions = new AnthropicToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var claudeRequest = new AnthropicRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
         var exception = Assert.Throws<KernelException>(() => enabledFunctions.ConfigureClaudeRequest(kernel, claudeRequest));
         Assert.Equal(
-            $"The specified {nameof(ClaudeToolCallBehavior.EnabledFunctions)} function MyPlugin{ClaudeFunction.NameSeparator}MyFunction is not available in the kernel.",
+            $"The specified {nameof(AnthropicToolCallBehavior.EnabledFunctions)} function MyPlugin{AnthropicFunction.NameSeparator}MyFunction is not available in the kernel.",
             exception.Message);
     }
 
@@ -148,8 +148,8 @@ public sealed class ClaudeToolCallBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
         var functions = plugin.GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
-        var enabledFunctions = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke);
-        var claudeRequest = new ClaudeRequest();
+        var enabledFunctions = new AnthropicToolCallBehavior.EnabledFunctions(functions, autoInvoke);
+        var claudeRequest = new AnthropicRequest();
         var kernel = Kernel.CreateBuilder().Build();
 
         kernel.Plugins.Add(plugin);
@@ -166,13 +166,13 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
-        var toolcallbehavior = new ClaudeToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
+        var toolcallbehavior = new AnthropicToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
 
         // Act
         var clone = toolcallbehavior.Clone();
 
         // Assert
-        Assert.IsType<ClaudeToolCallBehavior.EnabledFunctions>(clone);
+        Assert.IsType<AnthropicToolCallBehavior.EnabledFunctions>(clone);
         Assert.NotSame(toolcallbehavior, clone);
         Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
@@ -182,13 +182,13 @@ public sealed class ClaudeToolCallBehaviorTests
     {
         // Arrange
         var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToClaudeFunction());
-        var toolcallbehavior = new ClaudeToolCallBehavior.KernelFunctions(autoInvoke: true);
+        var toolcallbehavior = new AnthropicToolCallBehavior.KernelFunctions(autoInvoke: true);
 
         // Act
         var clone = toolcallbehavior.Clone();
 
         // Assert
-        Assert.IsType<ClaudeToolCallBehavior.KernelFunctions>(clone);
+        Assert.IsType<AnthropicToolCallBehavior.KernelFunctions>(clone);
         Assert.NotSame(toolcallbehavior, clone);
         Assert.Equivalent(toolcallbehavior, clone, strict: true);
     }
@@ -205,7 +205,7 @@ public sealed class ClaudeToolCallBehaviorTests
         return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
     }
 
-    private static void AssertFunctions(ClaudeRequest request)
+    private static void AssertFunctions(AnthropicRequest request)
     {
         Assert.NotNull(request.Tools);
         Assert.Single(request.Tools);
@@ -214,7 +214,7 @@ public sealed class ClaudeToolCallBehaviorTests
 
         Assert.NotNull(function);
 
-        Assert.Equal($"MyPlugin{ClaudeFunction.NameSeparator}MyFunction", function.Name);
+        Assert.Equal($"MyPlugin{AnthropicFunction.NameSeparator}MyFunction", function.Name);
         Assert.Equal("Test Function", function.Description);
         Assert.Equal("""{"type":"object","required":[],"properties":{"parameter1":{"type":"string"},"parameter2":{"type":"string"}}}""",
             JsonSerializer.Serialize(function.Parameters));

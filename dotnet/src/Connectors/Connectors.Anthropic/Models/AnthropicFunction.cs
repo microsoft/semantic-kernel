@@ -76,15 +76,15 @@ public sealed class ClaudeFunctionReturnParameter
 /// <summary>
 /// Represents a function that can be passed to the Gemini API
 /// </summary>
-public sealed class ClaudeFunction
+public sealed class AnthropicFunction
 {
     /// <summary>
     /// Cached schema for a description less string.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("{\"type\":\"string\"}");
 
-    /// <summary>Initializes the <see cref="ClaudeFunction"/>.</summary>
-    internal ClaudeFunction(
+    /// <summary>Initializes the <see cref="AnthropicFunction"/>.</summary>
+    internal AnthropicFunction(
         string? pluginName,
         string functionName,
         string? description,
@@ -129,11 +129,11 @@ public sealed class ClaudeFunction
     public ClaudeFunctionReturnParameter? ReturnParameter { get; }
 
     /// <summary>
-    /// Converts the <see cref="ClaudeFunction"/> representation to the Gemini API's
-    /// <see cref="ClaudeToolFunctionDeclaration"/> representation.
+    /// Converts the <see cref="AnthropicFunction"/> representation to the Gemini API's
+    /// <see cref="AnthropicToolFunctionDeclaration"/> representation.
     /// </summary>
-    /// <returns>A <see cref="ClaudeToolFunctionDeclaration"/> containing all the function information.</returns>
-    internal ClaudeToolFunctionDeclaration ToFunctionDeclaration()
+    /// <returns>A <see cref="AnthropicToolFunctionDeclaration"/> containing all the function information.</returns>
+    internal AnthropicToolFunctionDeclaration ToFunctionDeclaration()
     {
         Dictionary<string, object?>? resultParameters = null;
 
@@ -159,7 +159,7 @@ public sealed class ClaudeFunction
             };
         }
 
-        return new ClaudeToolFunctionDeclaration
+        return new AnthropicToolFunctionDeclaration
         {
             Name = this.FullyQualifiedName,
             Description = this.Description ?? throw new InvalidOperationException(

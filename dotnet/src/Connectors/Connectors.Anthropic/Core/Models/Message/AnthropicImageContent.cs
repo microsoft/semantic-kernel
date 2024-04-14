@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class ClaudeImageContent : ClaudeMessageContent
+internal sealed class AnthropicImageContent : AnthropicMessageContent
 {
     [JsonConstructor]
-    public ClaudeImageContent(string type, string mediaType, string data)
+    public AnthropicImageContent(string type, string mediaType, string data)
     {
         this.Source = new SourceEntity(type, mediaType, data);
     }

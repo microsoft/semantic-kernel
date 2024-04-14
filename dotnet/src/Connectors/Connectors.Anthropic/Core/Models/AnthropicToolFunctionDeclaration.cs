@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 /// Included in this declaration are the function name and parameters.
 /// This FunctionDeclaration is a representation of a block of code that can be used as a Tool by the model and executed by the client.
 /// </summary>
-internal sealed class ClaudeToolFunctionDeclaration
+internal sealed class AnthropicToolFunctionDeclaration
 {
     /// <summary>
     /// Required. Name of function.

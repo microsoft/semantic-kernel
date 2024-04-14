@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>Represents a behavior for Claude tool calls.</summary>
-public abstract class ClaudeToolCallBehavior
+public abstract class AnthropicToolCallBehavior
 {
     // NOTE: Right now, the only tools that are available are for function calling. In the future,
     // this class can be extended to support additional kinds of tools, including composite ones:
@@ -41,7 +41,7 @@ public abstract class ClaudeToolCallBehavior
     /// <remarks>
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ClaudeToolCallBehavior EnableKernelFunctions => new KernelFunctions(autoInvoke: false);
+    public static AnthropicToolCallBehavior EnableKernelFunctions => new KernelFunctions(autoInvoke: false);
 
     /// <summary>
     /// Gets an instance that will both provide all of the <see cref="Kernel"/>'s plugins' function information
@@ -52,23 +52,23 @@ public abstract class ClaudeToolCallBehavior
     /// handling invoking any requested functions and supplying the results back to the model.
     /// If no <see cref="Kernel"/> is available, no function information will be provided to the model.
     /// </remarks>
-    public static ClaudeToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
+    public static AnthropicToolCallBehavior AutoInvokeKernelFunctions => new KernelFunctions(autoInvoke: true);
 
     /// <summary>Gets an instance that will provide the specified list of functions to the model.</summary>
     /// <param name="functions">The functions that should be made available to the model.</param>
     /// <param name="autoInvoke">true to attempt to automatically handle function call requests; otherwise, false.</param>
     /// <returns>
-    /// The <see cref="ClaudeToolCallBehavior"/> that may be set into <see cref="ClaudeToolCallBehavior"/>
+    /// The <see cref="AnthropicToolCallBehavior"/> that may be set into <see cref="AnthropicToolCallBehavior"/>
     /// to indicate that the specified functions should be made available to the model.
     /// </returns>
-    public static ClaudeToolCallBehavior EnableFunctions(IEnumerable<ClaudeFunction> functions, bool autoInvoke = false)
+    public static AnthropicToolCallBehavior EnableFunctions(IEnumerable<AnthropicFunction> functions, bool autoInvoke = false)
     {
         Verify.NotNull(functions);
         return new EnabledFunctions(functions, autoInvoke);
     }
 
     /// <summary>Initializes the instance; prevents external instantiation.</summary>
-    private ClaudeToolCallBehavior(bool autoInvoke)
+    private AnthropicToolCallBehavior(bool autoInvoke)
     {
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
@@ -95,28 +95,28 @@ public abstract class ClaudeToolCallBehavior
     /// false if a request needs to be validated against an allow list.</value>
     internal virtual bool AllowAnyRequestedKernelFunction => false;
 
-    /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="ClaudeToolCallBehavior"/> provides.</summary>
+    /// <summary>Configures the <paramref name="request"/> with any tools this <see cref="AnthropicToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation.
     /// This can be queried to determine what tools to provide into the <paramref name="request"/>.</param>
-    /// <param name="request">The destination <see cref="ClaudeRequest"/> to configure.</param>
-    internal abstract void ConfigureClaudeRequest(Kernel? kernel, ClaudeRequest request);
+    /// <param name="request">The destination <see cref="AnthropicRequest"/> to configure.</param>
+    internal abstract void ConfigureClaudeRequest(Kernel? kernel, AnthropicRequest request);
 
-    internal ClaudeToolCallBehavior Clone()
+    internal AnthropicToolCallBehavior Clone()
     {
-        return (ClaudeToolCallBehavior)this.MemberwiseClone();
+        return (AnthropicToolCallBehavior)this.MemberwiseClone();
     }
 
     /// <summary>
-    /// Represents a <see cref="ClaudeToolCallBehavior"/> that will provide to the model all available functions from a
+    /// Represents a <see cref="AnthropicToolCallBehavior"/> that will provide to the model all available functions from a
     /// <see cref="Kernel"/> provided by the client.
     /// </summary>
-    internal sealed class KernelFunctions : ClaudeToolCallBehavior
+    internal sealed class KernelFunctions : AnthropicToolCallBehavior
     {
         internal KernelFunctions(bool autoInvoke) : base(autoInvoke) { }
 
         public override string ToString() => $"{nameof(KernelFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0})";
 
-        internal override void ConfigureClaudeRequest(Kernel? kernel, ClaudeRequest request)
+        internal override void ConfigureClaudeRequest(Kernel? kernel, AnthropicRequest request)
         {
             // If no kernel is provided, we don't have any tools to provide.
             if (kernel is null)
@@ -134,11 +134,11 @@ public abstract class ClaudeToolCallBehavior
         internal override bool AllowAnyRequestedKernelFunction => true;
 
         /// <summary>
-        /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="ClaudeFunction"/>.
+        /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="AnthropicFunction"/>.
         /// </summary>
         /// <param name="metadata">The <see cref="KernelFunctionMetadata"/> object to convert.</param>
-        /// <returns>An <see cref="ClaudeFunction"/> object.</returns>
-        private static ClaudeFunction FunctionMetadataAsClaudeFunction(KernelFunctionMetadata metadata)
+        /// <returns>An <see cref="AnthropicFunction"/> object.</returns>
+        private static AnthropicFunction FunctionMetadataAsClaudeFunction(KernelFunctionMetadata metadata)
         {
             IReadOnlyList<KernelParameterMetadata> metadataParams = metadata.Parameters;
 
@@ -155,7 +155,7 @@ public abstract class ClaudeToolCallBehavior
                     param.Schema);
             }
 
-            return new ClaudeFunction(
+            return new AnthropicFunction(
                 metadata.PluginName,
                 metadata.Name,
                 metadata.Description,
@@ -174,13 +174,13 @@ public abstract class ClaudeToolCallBehavior
     }
 
     /// <summary>
-    /// Represents a <see cref="ClaudeToolCallBehavior"/> that provides a specified list of functions to the model.
+    /// Represents a <see cref="AnthropicToolCallBehavior"/> that provides a specified list of functions to the model.
     /// </summary>
-    internal sealed class EnabledFunctions : ClaudeToolCallBehavior
+    internal sealed class EnabledFunctions : AnthropicToolCallBehavior
     {
-        private readonly ClaudeFunction[] _functions;
+        private readonly AnthropicFunction[] _functions;
 
-        public EnabledFunctions(IEnumerable<ClaudeFunction> functions, bool autoInvoke) : base(autoInvoke)
+        public EnabledFunctions(IEnumerable<AnthropicFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
             this._functions = functions.ToArray();
         }
@@ -189,7 +189,7 @@ public abstract class ClaudeToolCallBehavior
             $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): " +
             $"{string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
-        internal override void ConfigureClaudeRequest(Kernel? kernel, ClaudeRequest request)
+        internal override void ConfigureClaudeRequest(Kernel? kernel, AnthropicRequest request)
         {
             if (this._functions.Length == 0)
             {

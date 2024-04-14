@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class ClaudeTextContent : ClaudeMessageContent
+internal sealed class AnthropicTextContent : AnthropicMessageContent
 {
     [JsonConstructor]
-    public ClaudeTextContent(string text)
+    public AnthropicTextContent(string text)
     {
         this.Text = text;
     }

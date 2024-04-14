@@ -11,12 +11,12 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 /// <summary>
 /// Represents an Gemini function tool call with deserialized function name and arguments.
 /// </summary>
-public sealed class ClaudeFunctionToolCall
+public sealed class AnthropicFunctionToolCall
 {
     private string? _fullyQualifiedFunctionName;
 
-    /// <summary>Initialize the <see cref="ClaudeFunctionToolCall"/> from a <see cref="ClaudeToolCallContent"/>.</summary>
-    internal ClaudeFunctionToolCall(ClaudeToolCallContent functionToolCall)
+    /// <summary>Initialize the <see cref="AnthropicFunctionToolCall"/> from a <see cref="AnthropicToolCallContent"/>.</summary>
+    internal AnthropicFunctionToolCall(AnthropicToolCallContent functionToolCall)
     {
         Verify.NotNull(functionToolCall);
         Verify.NotNull(functionToolCall.FunctionName);
@@ -25,11 +25,11 @@ public sealed class ClaudeFunctionToolCall
         string functionName = fullyQualifiedFunctionName;
         string? pluginName = null;
 
-        int separatorPos = fullyQualifiedFunctionName.IndexOf(ClaudeFunction.NameSeparator, StringComparison.Ordinal);
+        int separatorPos = fullyQualifiedFunctionName.IndexOf(AnthropicFunction.NameSeparator, StringComparison.Ordinal);
         if (separatorPos >= 0)
         {
             pluginName = fullyQualifiedFunctionName.AsSpan(0, separatorPos).Trim().ToString();
-            functionName = fullyQualifiedFunctionName.AsSpan(separatorPos + ClaudeFunction.NameSeparator.Length).Trim().ToString();
+            functionName = fullyQualifiedFunctionName.AsSpan(separatorPos + AnthropicFunction.NameSeparator.Length).Trim().ToString();
         }
 
         this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
@@ -59,12 +59,12 @@ public sealed class ClaudeFunctionToolCall
     /// <summary>Gets the fully-qualified name of the function.</summary>
     /// <remarks>
     /// This is the concatenation of the <see cref="PluginName"/> and the <see cref="FunctionName"/>,
-    /// separated by <see cref="ClaudeFunction.NameSeparator"/>. If there is no <see cref="PluginName"/>,
+    /// separated by <see cref="AnthropicFunction.NameSeparator"/>. If there is no <see cref="PluginName"/>,
     /// this is the same as <see cref="FunctionName"/>.
     /// </remarks>
     public string FullyQualifiedName
         => this._fullyQualifiedFunctionName
-            ??= string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{ClaudeFunction.NameSeparator}{this.FunctionName}";
+            ??= string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{AnthropicFunction.NameSeparator}{this.FunctionName}";
 
     /// <inheritdoc/>
     public override string ToString()

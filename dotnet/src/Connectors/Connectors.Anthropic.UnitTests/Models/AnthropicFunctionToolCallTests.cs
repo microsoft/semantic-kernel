@@ -7,12 +7,12 @@ using Microsoft.SemanticKernel.Connectors.Anthropic;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models.Claude;
+namespace SemanticKernel.Connectors.Anthropic.UnitTests.Models;
 
 /// <summary>
-/// Unit tests for <see cref="ClaudeFunctionToolCall"/> class.
+/// Unit tests for <see cref="AnthropicFunctionToolCall"/> class.
 /// </summary>
-public sealed class ClaudeFunctionToolCallTests
+public sealed class AnthropicFunctionToolCallTests
 {
     [Theory]
     [InlineData("MyFunction")]
@@ -20,8 +20,8 @@ public sealed class ClaudeFunctionToolCallTests
     public void FullyQualifiedNameReturnsValidName(string toolCallName)
     {
         // Arrange
-        var toolCallPart = new ClaudeToolCallContent { FunctionName = toolCallName };
-        var functionToolCall = new ClaudeFunctionToolCall(toolCallPart);
+        var toolCallPart = new AnthropicToolCallContent { FunctionName = toolCallName };
+        var functionToolCall = new AnthropicFunctionToolCall(toolCallPart);
 
         // Act & Assert
         Assert.Equal(toolCallName, functionToolCall.FullyQualifiedName);
@@ -31,7 +31,7 @@ public sealed class ClaudeFunctionToolCallTests
     public void ArgumentsReturnsCorrectValue()
     {
         // Arrange
-        var toolCallPart = new ClaudeToolCallContent
+        var toolCallPart = new AnthropicToolCallContent
         {
             FunctionName = "MyPlugin_MyFunction",
             Arguments = new JsonObject
@@ -40,7 +40,7 @@ public sealed class ClaudeFunctionToolCallTests
                 { "max_price", 300 }
             }
         };
-        var functionToolCall = new ClaudeFunctionToolCall(toolCallPart);
+        var functionToolCall = new AnthropicFunctionToolCall(toolCallPart);
 
         // Act & Assert
         Assert.NotNull(functionToolCall.Arguments);
@@ -54,7 +54,7 @@ public sealed class ClaudeFunctionToolCallTests
     public void ToStringReturnsCorrectValue()
     {
         // Arrange
-        var toolCallPart = new ClaudeToolCallContent
+        var toolCallPart = new AnthropicToolCallContent
         {
             FunctionName = "MyPlugin_MyFunction",
             Arguments = new JsonObject
@@ -63,7 +63,7 @@ public sealed class ClaudeFunctionToolCallTests
                 { "max_price", 300 }
             }
         };
-        var functionToolCall = new ClaudeFunctionToolCall(toolCallPart);
+        var functionToolCall = new AnthropicFunctionToolCall(toolCallPart);
 
         // Act & Assert
         Assert.Equal("MyPlugin_MyFunction(location:San Diego, max_price:300)", functionToolCall.ToString());

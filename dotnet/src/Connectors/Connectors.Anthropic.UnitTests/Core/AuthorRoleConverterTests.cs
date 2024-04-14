@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 using Xunit;
 
-namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core.Claude;
+namespace SemanticKernel.Connectors.Anthropic.UnitTests.Core;
 
 public sealed class AuthorRoleConverterTests
 {

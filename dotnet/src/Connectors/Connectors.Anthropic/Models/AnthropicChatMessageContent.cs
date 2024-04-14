@@ -11,13 +11,13 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 /// <summary>
 /// Claude specialized chat message content
 /// </summary>
-public sealed class ClaudeChatMessageContent : ChatMessageContent
+public sealed class AnthropicChatMessageContent : ChatMessageContent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClaudeChatMessageContent"/> class.
+    /// Initializes a new instance of the <see cref="AnthropicChatMessageContent"/> class.
     /// </summary>
     /// <param name="calledToolResult">The result of tool called by the kernel.</param>
-    public ClaudeChatMessageContent(ClaudeFunctionToolResult calledToolResult)
+    public AnthropicChatMessageContent(AnthropicFunctionToolResult calledToolResult)
         : base(
             role: AuthorRole.Assistant,
             content: null,
@@ -32,19 +32,19 @@ public sealed class ClaudeChatMessageContent : ChatMessageContent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClaudeChatMessageContent"/> class.
+    /// Initializes a new instance of the <see cref="AnthropicChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="calledToolResult">The result of tool called by the kernel.</param>
     /// <param name="metadata">Additional metadata</param>
-    internal ClaudeChatMessageContent(
+    internal AnthropicChatMessageContent(
         AuthorRole role,
         string? content,
         string modelId,
-        ClaudeFunctionToolResult? calledToolResult = null,
-        ClaudeMetadata? metadata = null)
+        AnthropicFunctionToolResult? calledToolResult = null,
+        AnthropicMetadata? metadata = null)
         : base(
             role: role,
             content: content,
@@ -57,19 +57,19 @@ public sealed class ClaudeChatMessageContent : ChatMessageContent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClaudeChatMessageContent"/> class.
+    /// Initializes a new instance of the <see cref="AnthropicChatMessageContent"/> class.
     /// </summary>
     /// <param name="role">Role of the author of the message</param>
     /// <param name="content">Content of the message</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="functionsToolCalls">Tool calls parts returned by model</param>
     /// <param name="metadata">Additional metadata</param>
-    internal ClaudeChatMessageContent(
+    internal AnthropicChatMessageContent(
         AuthorRole role,
         string? content,
         string modelId,
-        IEnumerable<ClaudeToolCallContent>? functionsToolCalls,
-        ClaudeMetadata? metadata = null)
+        IEnumerable<AnthropicToolCallContent>? functionsToolCalls,
+        AnthropicMetadata? metadata = null)
         : base(
             role: role,
             content: content,
@@ -78,21 +78,21 @@ public sealed class ClaudeChatMessageContent : ChatMessageContent
             encoding: Encoding.UTF8,
             metadata: metadata)
     {
-        this.ToolCalls = functionsToolCalls?.Select(tool => new ClaudeFunctionToolCall(tool)).ToList();
+        this.ToolCalls = functionsToolCalls?.Select(tool => new AnthropicFunctionToolCall(tool)).ToList();
     }
 
     /// <summary>
     /// A list of the tools returned by the model with arguments.
     /// </summary>
-    public IReadOnlyList<ClaudeFunctionToolCall>? ToolCalls { get; }
+    public IReadOnlyList<AnthropicFunctionToolCall>? ToolCalls { get; }
 
     /// <summary>
     /// The result of tool called by the kernel.
     /// </summary>
-    public ClaudeFunctionToolResult? CalledToolResult { get; }
+    public AnthropicFunctionToolResult? CalledToolResult { get; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    public new ClaudeMetadata? Metadata => (ClaudeMetadata?)base.Metadata;
+    public new AnthropicMetadata? Metadata => (AnthropicMetadata?)base.Metadata;
 }
