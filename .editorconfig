@@ -401,38 +401,6 @@ resharper_bad_semicolon_spaces_highlighting = none # Disable Resharper's "Bad se
 resharper_bad_square_brackets_spaces_highlighting = none # Disable Resharper's "Bad square brackets spaces" highlighting
 resharper_bad_parens_spaces_highlighting = none # Disable Resharper's "Bad parens spaces" highlighting
 
-## Below are the rules that was shown as warnings
-resharper_redundant_base_constructor_call_highlighting = none # Disable Resharper's "Redundant base constructor call" highlighting
-resharper_redundant_base_qualifier_highlighting = none # Disable Resharper's "Redundant base qualifier" highlighting
-resharper_redundant_extends_list_entry_highlighting = none # Disable Resharper's "Redundant extends list entry" highlighting
-resharper_redundant_assignment_highlighting = none # Disable Resharper's "Redundant assignment" highlighting
-resharper_not_accessed_variable_highlighting = none # Disable Resharper's "Not accessed variable" highlighting
-resharper_redundant_default_member_initializer_highlighting = none # Disable Resharper's "Redundant default member initializer" highlighting
-resharper_redundant_suppress_nullable_warning_expression_highlighting = none # Disable Resharper's "Redundant suppress nullable warning expression" highlighting
-resharper_not_accessed_field_local_highlighting = none # Disable Resharper's "Not accessed field local" highlighting
-resharper_unused_parameter_highlighting = none # Disable Resharper's "Unused parameter" highlighting
-resharper_unused_parameter_local_highlighting = none # Disable Resharper's "Unused parameter local" highlighting
-resharper_private_field_can_be_converted_to_local_variable_highlighting = none # Disable Resharper's "Private field can be converted to local variable" highlighting
-resharper_unused_variable_highlighting = none # Disable Resharper's "Unused variable" highlighting
-resharper_redundant_to_string_call_highlighting = none # Disable Resharper's "Redundant 'ToString' call" highlighting
-resharper_constant_null_coalescing_condition_highlighting = none # Disable Resharper's "Constant null-coalescing condition" highlighting
-resharper_redundant_argument_default_value_highlighting = none # Disable Resharper's "Redundant argument default value" highlighting
-resharper_redundant_lambda_parameter_type_highlighting = none # Disable Resharper's "Redundant lambda parameter type" highlighting
-resharper_return_type_can_be_not_nullable_highlighting = none # Disable Resharper's "Return type can be not nullable" highlighting
-resharper_redundant_jump_statement_highlighting = none # Disable Resharper's "Redundant jump statement" highlighting
-resharper_redundant_explicit_array_creation_highlighting = none # Disable Resharper's "Redundant explicit array creation" highlighting
-resharper_heuristic_unreachable_code_highlighting = none # Disable Resharper's "Heuristic unreachable code" highlighting
-resharper_heuristically_unreachable_code_highlighting = none # Disable Resharper's "Heuristically unreachable code" highlighting
-resharper_redundant_type_arguments_of_method_highlighting = none # Disable Resharper's "Redundant type arguments of method" highlighting
-resharper_c_sharp_warnings_cs0162_highlighting = none # Disable Resharper's "CS0162: Unreachable code detected" highlighting
-resharper_redundant_cast_highlighting = none # Disable Resharper's "Redundant cast" highlighting
-resharper_possible_multiple_enumeration_highlighting = none # Disable Resharper's "Possible multiple enumeration" highlighting
-resharper_gc_suppress_finalize_for_type_without_destructor_highlighting = none # Disable Resharper's "GC.SuppressFinalize for type without destructor" highlighting
-resharper_collection_never_queried_local_highlighting = none # Disable Resharper's "Collection never queried local" highlighting
-resharper_member_initializer_value_ignored_highlighting = none # Disable Resharper's "Member initializer value ignored" highlighting
-resharper_unused_auto_property_accessor_global_highlighting = none # Disable Resharper's "Unused auto property accessor global" highlighting
-resharper_unused_auto_property_accessor_local_highlighting = none # Disable Resharper's "Unused auto property accessor local" highlighting
-
 # Resharper enabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
 resharper_comment_typo_highlighting = suggestion # Resharper's "Comment typo" highlighting
 
