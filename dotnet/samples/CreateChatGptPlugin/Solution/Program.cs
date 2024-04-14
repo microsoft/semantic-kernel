@@ -19,7 +19,7 @@ var kernel = builder.Build();
 await kernel.ImportPluginFromOpenApiAsync("MathPlugin", new Uri("http://localhost:7071/swagger.json")).ConfigureAwait(false);
 
 // Create chat history
-ChatHistory history = new();
+ChatHistory history = [];
 
 // Get chat completion service
 var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
@@ -46,7 +46,7 @@ while (true)
     // Stream the results
     string fullMessage = "";
     var first = true;
-    await foreach (var content in result)
+    await foreach (var content in result.ConfigureAwait(false))
     {
         if (content.Role.HasValue && first)
         {

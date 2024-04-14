@@ -75,7 +75,7 @@ internal static class Program
         builder.Services.AddKeyedTransient<Kernel>("HomeAutomationKernel", (sp, key) =>
         {
             // Create a collection of plugins that the kernel will use
-            KernelPluginCollection pluginCollection = new();
+            KernelPluginCollection pluginCollection = [];
             pluginCollection.AddFromObject(sp.GetRequiredService<MyTimePlugin>());
             pluginCollection.AddFromObject(sp.GetRequiredService<MyAlarmPlugin>());
             pluginCollection.AddFromObject(sp.GetRequiredKeyedService<MyLightPlugin>("OfficeLight"), "OfficeLight");

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Json.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
@@ -134,7 +133,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         }
         else
         {
-            result = new List<KernelFunctionMetadata>();
+            result = [];
 
             // Remember functions in memory so that they can be searched.
             await RememberFunctionsAsync(semanticMemoryConfig.Memory, availableFunctions, cancellationToken).ConfigureAwait(false);
@@ -170,7 +169,7 @@ internal static class ReadOnlyPluginCollectionPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         var relevantFunctions = new List<KernelFunctionMetadata>();
-        await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
+        await foreach (var memoryEntry in memories.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)

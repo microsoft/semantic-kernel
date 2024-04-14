@@ -16,6 +16,13 @@ namespace Microsoft.SemanticKernel;
 public class ChatMessageContent : KernelContent
 {
     /// <summary>
+    /// Name of the author of the message
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AuthorName { get; set; }
+
+    /// <summary>
     /// Role of the author of the message
     /// </summary>
     public AuthorRole Role { get; set; }
@@ -64,7 +71,7 @@ public class ChatMessageContent : KernelContent
     /// </summary>
     public ChatMessageContentItemCollection Items
     {
-        get => this._items ??= new ChatMessageContentItemCollection();
+        get => this._items ??= [];
         set => this._items = value;
     }
 

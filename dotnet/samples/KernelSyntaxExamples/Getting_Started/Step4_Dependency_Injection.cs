@@ -56,14 +56,9 @@ public sealed class Step4_Dependency_Injection : BaseTest
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class TimeInformation
+    public class TimeInformation(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
-
-        public TimeInformation(ILoggerFactory loggerFactory)
-        {
-            this._logger = loggerFactory.CreateLogger(typeof(TimeInformation));
-        }
+        private readonly ILogger _logger = loggerFactory.CreateLogger(typeof(TimeInformation));
 
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
