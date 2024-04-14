@@ -145,7 +145,6 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -163,36 +162,20 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-        FunctionResult? functionResult = null;
+        FunctionResult functionResult = new(this, culture: kernel.Culture);
         try
         {
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Invoke pre-invocation filter. If it requests cancellation, throw.
-            var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
-
-            if (invokingContext?.Cancel is true)
+            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
             {
-                throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
-            }
+                // Invoking the function and updating context with result.
+                context.Result = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
 
-            // Invoke the function.
-            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-            // Invoke the post-invocation filter. If it requests cancellation, throw.
-            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
-
-            if (invokedContext is not null)
-            {
-                // Apply any changes from the function filters to final result.
-                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
-            }
-
-            if (invokedContext?.Cancel is true)
-            {
-                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
-            }
+            // Apply any changes from the function filters context to final result.
+            functionResult = new FunctionResult(invocationContext.Result);
 
             logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult);
@@ -222,7 +205,6 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
     public async Task<TResult?> InvokeAsync<TResult>(
         Kernel kernel,
@@ -279,6 +261,7 @@ public abstract class KernelFunction
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -287,16 +270,22 @@ public abstract class KernelFunction
                 // Quick check for cancellation after logging about function start but before doing any real work.
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Invoke pre-invocation filter. If it requests cancellation, throw.
-                var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
+                FunctionResult functionResult = new(this, culture: kernel.Culture);
 
-                if (invokingContext?.Cancel is true)
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, (context) =>
                 {
-                    throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
-                }
+                    // Invoke the function and get its streaming enumerable.
+                    var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
 
-                // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                    // Update context with enumerable as result value.
+                    context.Result = new FunctionResult(this, enumerable, kernel.Culture);
+
+                    return Task.CompletedTask;
+                }).ConfigureAwait(false);
+
+                // Apply changes from the function filters to final result.
+                var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
+                enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -331,8 +320,6 @@ public abstract class KernelFunction
                     yield return enumerator.Current;
                 }
             }
-
-            // The FunctionInvoked hook and filter are not used when streaming.
         }
         finally
         {

@@ -411,9 +411,10 @@ public class CodeBlockTests
             Assert.Equal(FooValue, context.Arguments[parameterName]);
         });
 
-        var functionFilter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var functionFilter = new FakeFunctionFilter(async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments[parameterName]);
+            await next(context);
         });
 
         kernel.PromptFilters.Add(promptFilter);
@@ -461,10 +462,11 @@ public class CodeBlockTests
             Assert.Equal(FooValue, context.Arguments["x11"]);
         });
 
-        var functionFilter = new FakeFunctionFilter(onFunctionInvoking: (context) =>
+        var functionFilter = new FakeFunctionFilter(async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments["foo"]);
             Assert.Equal(FooValue, context.Arguments["x11"]);
+            await next(context);
         });
 
         kernel.PromptFilters.Add(promptFilter);
@@ -513,17 +515,12 @@ public class CodeBlockTests
     #region private
 
     private sealed class FakeFunctionFilter(
-        Action<FunctionInvokingContext>? onFunctionInvoking = null,
-        Action<FunctionInvokedContext>? onFunctionInvoked = null) : IFunctionFilter
+        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionFilter
     {
-        private readonly Action<FunctionInvokingContext>? _onFunctionInvoking = onFunctionInvoking;
-        private readonly Action<FunctionInvokedContext>? _onFunctionInvoked = onFunctionInvoked;
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
 
-        public void OnFunctionInvoked(FunctionInvokedContext context) =>
-            this._onFunctionInvoked?.Invoke(context);
-
-        public void OnFunctionInvoking(FunctionInvokingContext context) =>
-            this._onFunctionInvoking?.Invoke(context);
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     private sealed class FakePromptFilter(

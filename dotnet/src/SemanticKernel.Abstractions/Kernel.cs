@@ -279,39 +279,41 @@ public sealed class Kernel
     #region Internal Filtering
 
     [Experimental("SKEXP0001")]
-    internal FunctionInvokingContext? OnFunctionInvokingFilter(KernelFunction function, KernelArguments arguments)
+    internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        FunctionResult functionResult,
+        Func<FunctionInvocationContext, Task> functionCallback)
     {
-        FunctionInvokingContext? context = null;
+        FunctionInvocationContext context = new(function, arguments, functionResult);
 
-        if (this._functionFilters is { Count: > 0 })
-        {
-            context = new(function, arguments);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
-            {
-                this._functionFilters[i].OnFunctionInvoking(context);
-            }
-        }
+        await InvokeFilterOrFunctionAsync(this._functionFilters, functionCallback, context).ConfigureAwait(false);
 
         return context;
     }
 
-    [Experimental("SKEXP0001")]
-    internal FunctionInvokedContext? OnFunctionInvokedFilter(KernelArguments arguments, FunctionResult result)
+    /// <summary>
+    /// This method will execute filters and kernel function recursively.
+    /// If there are no registered filters, just kernel function will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or kernel function if there are no remaining filters to execute.
+    /// Kernel function will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrFunctionAsync(
+        NonNullCollection<IFunctionFilter>? functionFilters,
+        Func<FunctionInvocationContext, Task> functionCallback,
+        FunctionInvocationContext context,
+        int index = 0)
     {
-        FunctionInvokedContext? context = null;
-
-        if (this._functionFilters is { Count: > 0 })
+        if (functionFilters is { Count: > 0 } && index < functionFilters.Count)
         {
-            context = new(arguments, result);
-
-            for (int i = 0; i < this._functionFilters.Count; i++)
-            {
-                this._functionFilters[i].OnFunctionInvoked(context);
-            }
+            await functionFilters[index].OnFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).ConfigureAwait(false);
         }
-
-        return context;
+        else
+        {
+            await functionCallback(context).ConfigureAwait(false);
+        }
     }
 
     [Experimental("SKEXP0001")]
