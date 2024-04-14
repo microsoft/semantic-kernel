@@ -14,22 +14,22 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 
 /// <summary>
-/// Represents a chat completion service using Anthropic Claude API.
+/// Represents a chat completion service using Anthropic API.
 /// </summary>
-public sealed class ClaudeChatCompletionService : IChatCompletionService
+public sealed class AnthropicChatCompletionService : IChatCompletionService
 {
     private readonly Dictionary<string, object?> _attributesInternal = new();
-    private readonly ClaudeClient _client;
+    private readonly AnthropicClient _client;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClaudeChatCompletionService"/> class.
+    /// Initializes a new instance of the <see cref="AnthropicChatCompletionService"/> class.
     /// </summary>
-    /// <param name="modelId">The Claude model for the chat completion service.</param>
+    /// <param name="modelId">The model for the chat completion service.</param>
     /// <param name="apiKey">The API key for authentication.</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public ClaudeChatCompletionService(
+    public AnthropicChatCompletionService(
         string modelId,
         string apiKey,
         AnthropicClientOptions? options = null,
@@ -39,27 +39,27 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        this._client = new ClaudeClient(
+        this._client = new AnthropicClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
             modelId: modelId,
             apiKey: apiKey,
             options: options,
-            logger: loggerFactory?.CreateLogger(typeof(ClaudeChatCompletionService)));
+            logger: loggerFactory?.CreateLogger(typeof(AnthropicChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClaudeChatCompletionService"/> class.
+    /// Initializes a new instance of the <see cref="AnthropicChatCompletionService"/> class.
     /// </summary>
-    /// <param name="modelId">The Claude model for the chat completion service.</param>
+    /// <param name="modelId">The model for the chat completion service.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the Claude API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public ClaudeChatCompletionService(
+    public AnthropicChatCompletionService(
         string modelId,
         Uri endpoint,
         Func<HttpRequestMessage, Task>? requestHandler,
@@ -70,7 +70,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(endpoint);
 
-        this._client = new ClaudeClient(
+        this._client = new AnthropicClient(
 #pragma warning disable CA2000
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
 #pragma warning restore CA2000
@@ -78,7 +78,7 @@ public sealed class ClaudeChatCompletionService : IChatCompletionService
             endpoint: endpoint,
             requestHandler: requestHandler,
             options: options,
-            logger: loggerFactory?.CreateLogger(typeof(ClaudeChatCompletionService)));
+            logger: loggerFactory?.CreateLogger(typeof(AnthropicChatCompletionService)));
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 

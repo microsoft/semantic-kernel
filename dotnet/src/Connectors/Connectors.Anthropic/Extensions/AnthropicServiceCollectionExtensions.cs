@@ -12,20 +12,20 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extensions for adding GoogleAI generation services to the application.
+/// Extensions for adding Anthropic generation services to the application.
 /// </summary>
-public static class ClaudeServiceCollectionExtensions
+public static class AnthropicServiceCollectionExtensions
 {
     /// <summary>
-    /// Add Anthropic Claude Chat Completion and Text Generation services to the specified service collection.
+    /// Add Anthropic Chat Completion and Text Generation services to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Claude Text Generation service to.</param>
-    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="modelId">The model for chat completion.</param>
     /// <param name="apiKey">The API key for authentication Claude API.</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddClaudeChatCompletion(
+    public static IServiceCollection AddAnthropicChatCompletion(
         this IServiceCollection services,
         string modelId,
         string apiKey,
@@ -37,7 +37,7 @@ public static class ClaudeServiceCollectionExtensions
         Verify.NotNull(apiKey);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new ClaudeChatCompletionService(
+            new AnthropicChatCompletionService(
                 modelId: modelId,
                 apiKey: apiKey,
                 options: options,
@@ -47,16 +47,16 @@ public static class ClaudeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Anthropic Claude Chat Completion and Text Generation services to the specified service collection.
+    /// Add Anthropic Chat Completion and Text Generation services to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Claude Text Generation service to.</param>
-    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="modelId">The model for chat completion.</param>
     /// <param name="endpoint">Endpoint for the chat completion model</param>
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Optional options for the anthropic client</param>
     /// <param name="serviceId">Optional service ID.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddClaudeChatCompletion(
+    public static IServiceCollection AddAnthropicChatCompletion(
         this IServiceCollection services,
         string modelId,
         Uri endpoint,
@@ -69,7 +69,7 @@ public static class ClaudeServiceCollectionExtensions
         Verify.NotNull(endpoint);
 
         services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new ClaudeChatCompletionService(
+            new AnthropicChatCompletionService(
                 modelId: modelId,
                 endpoint: endpoint,
                 requestHandler: requestHandler,

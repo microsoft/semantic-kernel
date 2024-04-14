@@ -15,9 +15,9 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 /// <summary>
-/// Represents a client for interacting with the chat completion Claude models.
+/// Represents a client for interacting with the Anthropic chat completion models.
 /// </summary>
-internal sealed class ClaudeClient
+internal sealed class AnthropicClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
@@ -28,14 +28,14 @@ internal sealed class ClaudeClient
     private readonly AnthropicClientOptions _options;
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion Claude model.
+    /// Represents a client for interacting with the Anthropic chat completion models.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="apiKey">Api key</param>
     /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
-    public ClaudeClient(
+    public AnthropicClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
@@ -55,7 +55,7 @@ internal sealed class ClaudeClient
     }
 
     /// <summary>
-    /// Represents a client for interacting with the chat completion Claude model.
+    /// Represents a client for interacting with the Anthropic chat completion models.
     /// </summary>
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
@@ -63,7 +63,7 @@ internal sealed class ClaudeClient
     /// <param name="requestHandler">A custom request handler to be used for sending HTTP requests</param>
     /// <param name="options">Options for the client</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
-    public ClaudeClient(
+    public AnthropicClient(
         HttpClient httpClient,
         string modelId,
         Uri endpoint,
@@ -169,7 +169,7 @@ internal sealed class ClaudeClient
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         httpRequestMessage.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
-            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClaudeClient)));
+            HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AnthropicClient)));
 
         if (this._customRequestHandler != null)
         {

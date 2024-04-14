@@ -10,9 +10,9 @@ using Xunit;
 namespace SemanticKernel.Connectors.Anthropic.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests for <see cref="ClaudeServiceCollectionExtensions"/> and <see cref="ClaudeKernelBuilderExtensions"/> classes.
+/// Unit tests for <see cref="AnthropicServiceCollectionExtensions"/> and <see cref="AnthropicKernelBuilderExtensions"/> classes.
 /// </summary>
-public sealed class ClaudeServiceCollectionExtensionsTests
+public sealed class AnthropicServiceCollectionExtensionsTests
 {
     [Fact]
     public void ClaudeChatCompletionServiceShouldBeRegisteredInKernelServices()
@@ -21,13 +21,13 @@ public sealed class ClaudeServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddClaudeChatCompletion("modelId", "apiKey");
+        kernelBuilder.AddAnthropicChatCompletion("modelId", "apiKey");
         var kernel = kernelBuilder.Build();
 
         // Assert
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<ClaudeChatCompletionService>(chatCompletionService);
+        Assert.IsType<AnthropicChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
@@ -37,13 +37,13 @@ public sealed class ClaudeServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddClaudeChatCompletion("modelId", "apiKey");
+        services.AddAnthropicChatCompletion("modelId", "apiKey");
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<ClaudeChatCompletionService>(chatCompletionService);
+        Assert.IsType<AnthropicChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
@@ -53,13 +53,13 @@ public sealed class ClaudeServiceCollectionExtensionsTests
         var kernelBuilder = Kernel.CreateBuilder();
 
         // Act
-        kernelBuilder.AddClaudeChatCompletion("modelId", new Uri("https://example.com"), null);
+        kernelBuilder.AddAnthropicChatCompletion("modelId", new Uri("https://example.com"), null);
         var kernel = kernelBuilder.Build();
 
         // Assert
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<ClaudeChatCompletionService>(chatCompletionService);
+        Assert.IsType<AnthropicChatCompletionService>(chatCompletionService);
     }
 
     [Fact]
@@ -69,12 +69,12 @@ public sealed class ClaudeServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddClaudeChatCompletion("modelId", new Uri("https://example.com"), null);
+        services.AddAnthropicChatCompletion("modelId", new Uri("https://example.com"), null);
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var chatCompletionService = serviceProvider.GetRequiredService<IChatCompletionService>();
         Assert.NotNull(chatCompletionService);
-        Assert.IsType<ClaudeChatCompletionService>(chatCompletionService);
+        Assert.IsType<AnthropicChatCompletionService>(chatCompletionService);
     }
 }
