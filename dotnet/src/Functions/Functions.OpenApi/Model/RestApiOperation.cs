@@ -172,7 +172,7 @@ public sealed class RestApiOperation
                     throw new KernelException($"No argument or value is provided for the '{parameter.Name}' required parameter of the operation - '{this.Id}'.");
                 }
 
-                // Skipping not required parameter if no argument provided for it.
+                // Skipping not required parameter if no argument provided for it unless it has a default value.
                 continue;
             }
 
