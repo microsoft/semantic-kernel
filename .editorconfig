@@ -373,8 +373,6 @@ csharp_style_expression_bodied_local_functions = false:silent
 ###############################
 
 # Resharper disabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
-
-## Below are the rules that was shown as errors
 resharper_redundant_linebreak_highlighting = none # Disable Resharper's "Redundant line break" highlighting
 resharper_missing_linebreak_highlighting = none # Disable Resharper's "Missing line break" highlighting
 resharper_bad_empty_braces_line_breaks_highlighting = none # Disable Resharper's "Bad empty braces line breaks" highlighting
