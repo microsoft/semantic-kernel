@@ -134,7 +134,7 @@ In the above screenshot, you can see the extension in action:
 - Syntax highlighting for semantic functions
 - Code completion for semantic functions
 - LLM model picker
-- Run button to test the semantic function with your input data
+- Run the button to test the semantic function with your input data
 
 ## Check out our other repos!
 
