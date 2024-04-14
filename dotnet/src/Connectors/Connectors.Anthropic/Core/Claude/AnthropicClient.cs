@@ -116,8 +116,8 @@ internal sealed class AnthropicClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await Task.Yield();
+        yield return new StreamingChatMessageContent(null, null);
         throw new NotImplementedException("Implement this method in next PR.");
-        yield break;
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
