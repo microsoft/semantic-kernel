@@ -552,4 +552,128 @@ public class RestApiOperationTests
         Assert.NotNull(provider.GetService<KernelPluginCollection>());
         Assert.NotNull(provider.GetService<Kernel>());
     }
+
+    [Fact]
+    public void ItShouldBuildQueryStringFromArguments()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "param1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
+                defaultValue: "dv1"),
+            new(
+                name: "param2",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
+                defaultValue: "dv2")
+        };
+
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "{fake-path}/", HttpMethod.Get, "fake_description", parameters);
+        var arguments = new Dictionary<string, object?> { { "param1", "p1" }, { "param2", "p2" } };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("param1=p1&param2=p2", queryString);
+    }
+
+    [Fact]
+    public void ItShouldBuildQueryStringFromArgumentsAndDefaultValue()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+        new(
+            name: "param1",
+            type: "string",
+            isRequired: false,
+            expand: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form,
+            defaultValue: "dv1"),
+        new(
+            name: "param2",
+            type: "string",
+            isRequired: false,
+            expand: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form,
+            defaultValue: "dv2")
+        };
+
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "{fake-path}/", HttpMethod.Get, "fake_description", parameters);
+        var arguments = new Dictionary<string, object?> { { "param1", "p1" } };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("param1=p1&param2=dv2", queryString);
+    }
+
+    [Fact]
+    public void ItShouldBuildQueryStringFromDefaultValueWhenArgumentsAreAbsent()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "param1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
+                defaultValue: "dv1"),
+            new(
+                name: "param2",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
+                defaultValue: "dv2")
+        };
+
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "{fake-path}/", HttpMethod.Get, "fake_description", parameters);
+        var arguments = new Dictionary<string, object?> { };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("param1=dv1&param2=dv2", queryString);
+    }
+
+    [Fact]
+    public void ItShouldBuildQueryStringFromDefaultValueWhenArgumentsHaveNullEntry()
+    {
+        // Arrange
+        var parameters = new List<RestApiOperationParameter> {
+            new(
+                name: "param1",
+                type: "string",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
+                defaultValue: "p0")
+        };
+
+        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "{fake-path}/", HttpMethod.Get, "fake_description", parameters);
+        var arguments = new Dictionary<string, object?> { { "param1", null } };
+
+        // Act
+        var queryString = sut.BuildQueryString(arguments);
+
+        // Assert
+        Assert.Equal("param1=p0", queryString);
+    }
 }

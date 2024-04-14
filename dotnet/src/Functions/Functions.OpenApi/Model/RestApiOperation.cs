@@ -164,7 +164,7 @@ public sealed class RestApiOperation
 
         foreach (var parameter in parameters)
         {
-            if (!arguments.TryGetValue(parameter.Name, out object? argument) || argument is null)
+            if (!arguments.TryGetValue(parameter.Name, out object? argument) && parameter.DefaultValue == null)
             {
                 // Throw an exception if the parameter is a required one but no value is provided.
                 if (parameter.IsRequired)
@@ -174,6 +174,11 @@ public sealed class RestApiOperation
 
                 // Skipping not required parameter if no argument provided for it unless it has a default value.
                 continue;
+            }
+
+            if (argument == null)
+            {
+                argument = parameter.DefaultValue;
             }
 
             var parameterStyle = parameter.Style ?? RestApiOperationParameterStyle.Form;
