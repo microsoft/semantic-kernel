@@ -389,10 +389,6 @@ resharper_redundant_blank_lines_highlighting = none # Disable Resharper's "Redun
 resharper_multiple_statements_on_one_line_highlighting = none # Disable Resharper's "Multiple statements on one line" highlighting
 resharper_bad_braces_spaces_highlighting = none # Disable Resharper's "Bad braces spaces" highlighting
 resharper_outdent_is_off_prev_level_highlighting = none # Disable Resharper's "Outdent is off previous level" highlighting
-resharper_redundant_using_directive_highlighting = none # Disable Resharper's "Redundant using directive" highlighting
-resharper_inconsistent_naming_highlighting = none # Disable Resharper's "Inconsistent naming" highlighting
-resharper_redundant_this_qualifier_highlighting = none # Disable Resharper's "Redundant 'this' qualifier" highlighting
-resharper_arrange_this_qualifier_highlighting = none # Disable Resharper's "Arrange 'this' qualifier" highlighting
 resharper_bad_symbol_spaces_highlighting = none # Disable Resharper's "Bad symbol spaces" highlighting
 resharper_bad_colon_spaces_highlighting = none # Disable Resharper's "Bad colon spaces" highlighting
 resharper_bad_semicolon_spaces_highlighting = none # Disable Resharper's "Bad semicolon spaces" highlighting
@@ -401,6 +397,10 @@ resharper_bad_parens_spaces_highlighting = none # Disable Resharper's "Bad paren
 
 # Resharper enabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
 resharper_comment_typo_highlighting = suggestion # Resharper's "Comment typo" highlighting
+resharper_redundant_using_directive_highlighting = warning # Resharper's "Redundant using directive" highlighting
+resharper_inconsistent_naming_highlighting = warning # Resharper's "Inconsistent naming" highlighting
+resharper_redundant_this_qualifier_highlighting = warning # Resharper's "Redundant 'this' qualifier" highlighting
+resharper_arrange_this_qualifier_highlighting = warning # Resharper's "Arrange 'this' qualifier" highlighting
 
 ###############################
 # Java Coding Conventions     #
