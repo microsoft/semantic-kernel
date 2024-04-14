@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example76_Filters : BaseTest
+public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
@@ -59,8 +60,11 @@ public class Example76_Filters : BaseTest
         var result = await kernel.InvokeAsync(function);
 
         WriteLine(result);
+        WriteLine($"Metadata: {string.Join(",", result.Metadata!.Select(kv => $"{kv.Key}: {kv.Value}"))}");
 
-        // Output: Result from filter.
+        // Output:
+        // Result from filter.
+        // Metadata: metadata_key: metadata_value
     }
 
     [Fact]
@@ -137,10 +141,6 @@ public class Example76_Filters : BaseTest
         // Output: first chunk, chunk instead of exception.
     }
 
-    public Example76_Filters(ITestOutputHelper output) : base(output)
-    {
-    }
-
     #region Filters
 
     private sealed class FirstFunctionFilter : IFunctionFilter
@@ -215,8 +215,14 @@ public class Example76_Filters : BaseTest
             // Example: get token usage from metadata
             var usage = context.Result.Metadata?["Usage"];
 
-            // Example: override function result value
-            context.Result = new FunctionResult(context.Result, "Result from filter");
+            // Example: override function result value and metadata
+            Dictionary<string, object?> metadata = context.Result.Metadata is not null ? new(context.Result.Metadata) : [];
+            metadata["metadata_key"] = "metadata_value";
+
+            context.Result = new FunctionResult(context.Result, "Result from filter")
+            {
+                Metadata = metadata
+            };
         }
     }
 

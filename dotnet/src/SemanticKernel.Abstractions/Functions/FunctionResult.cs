@@ -46,12 +46,17 @@ public sealed class FunctionResult
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
     /// </summary>
-    public KernelFunction Function { get; }
+    public KernelFunction Function { get; init; }
 
     /// <summary>
     /// Gets any metadata associated with the function's execution.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Metadata { get; }
+    public IReadOnlyDictionary<string, object?>? Metadata { get; init; }
+
+    /// <summary>
+    /// The culture configured on the Kernel that executed the function.
+    /// </summary>
+    public CultureInfo Culture { get; init; }
 
     /// <summary>
     /// Gets the <see cref="Type"/> of the function's result.
@@ -103,9 +108,4 @@ public sealed class FunctionResult
     /// Function result object.
     /// </summary>
     internal object? Value { get; }
-
-    /// <summary>
-    /// The culture configured on the Kernel that executed the function.
-    /// </summary>
-    internal CultureInfo Culture { get; }
 }
