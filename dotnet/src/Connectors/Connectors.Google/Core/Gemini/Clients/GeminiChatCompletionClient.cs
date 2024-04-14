@@ -93,7 +93,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         HttpClient httpClient,
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion,
+        GoogleAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -125,7 +125,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion,
+        VertexAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,

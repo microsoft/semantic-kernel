@@ -110,11 +110,19 @@ internal abstract class ClientBase
         }
     }
 
-    protected static string GetApiVersionSubLink(GoogleApiVersion apiVersion)
+    protected static string GetApiVersionSubLink(GoogleAIVersion apiVersion)
         => apiVersion switch
         {
-            GoogleApiVersion.V1 => "v1",
-            GoogleApiVersion.V1_Beta => "v1beta",
+            GoogleAIVersion.V1 => "v1",
+            GoogleAIVersion.V1_Beta => "v1beta",
+            _ => throw new NotSupportedException($"Google API version {apiVersion} is not supported.")
+        };
+
+    protected static string GetApiVersionSubLink(VertexAIVersion apiVersion)
+        => apiVersion switch
+        {
+            VertexAIVersion.V1 => "v1",
+            VertexAIVersion.V1_Beta => "v1beta",
             _ => throw new NotSupportedException($"Google API version {apiVersion} is not supported.")
         };
 }

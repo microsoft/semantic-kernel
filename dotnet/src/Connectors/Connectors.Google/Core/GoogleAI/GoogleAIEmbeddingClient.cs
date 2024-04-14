@@ -30,7 +30,7 @@ internal sealed class GoogleAIEmbeddingClient : ClientBase
         HttpClient httpClient,
         string modelId,
         string apiKey,
-        GoogleApiVersion apiVersion,
+        GoogleAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,

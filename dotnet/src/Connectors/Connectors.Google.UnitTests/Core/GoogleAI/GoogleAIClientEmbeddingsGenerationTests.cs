@@ -148,7 +148,7 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             modelId: modelId,
-            apiVersion: GoogleApiVersion.V1,
+            apiVersion: GoogleAIVersion.V1,
             apiKey: "fake-key");
         return client;
     }

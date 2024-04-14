@@ -34,7 +34,7 @@ internal sealed class VertexAIEmbeddingClient : ClientBase
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
-        GoogleApiVersion apiVersion,
+        VertexAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
