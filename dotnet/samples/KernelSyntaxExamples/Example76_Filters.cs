@@ -35,7 +35,7 @@ public class Example76_Filters : BaseTest
         kernel.PromptFilters.Add(new FirstPromptFilter(this.Output));
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: new[] { function }));
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));
         var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
         WriteLine(result);
