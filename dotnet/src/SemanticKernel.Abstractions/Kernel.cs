@@ -287,28 +287,33 @@ public sealed class Kernel
     {
         FunctionInvocationContext context = new(function, arguments, functionResult);
 
-        if (this._functionFilters is { Count: > 0 })
-        {
-            async Task InvokeFilterOrFunctionAsync(FunctionInvocationContext context, int index = 0)
-            {
-                if (index < this._functionFilters.Count)
-                {
-                    await this._functionFilters[index].OnFunctionInvocationAsync(context, (context) => InvokeFilterOrFunctionAsync(context, index + 1)).ConfigureAwait(false);
-                }
-                else
-                {
-                    await functionCallback(context).ConfigureAwait(false);
-                }
-            }
+        await InvokeFilterOrFunctionAsync(this._functionFilters, functionCallback, context).ConfigureAwait(false);
 
-            await InvokeFilterOrFunctionAsync(context).ConfigureAwait(false);
+        return context;
+    }
+
+    /// <summary>
+    /// This method will execute filters and kernel function recursively.
+    /// If there are no registered filters, just kernel function will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or kernel function if there are no remaining filters to execute.
+    /// Kernel function will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrFunctionAsync(
+        NonNullCollection<IFunctionFilter>? functionFilters,
+        Func<FunctionInvocationContext, Task> functionCallback,
+        FunctionInvocationContext context,
+        int index = 0)
+    {
+        if (functionFilters is { Count: > 0 } && index < functionFilters.Count)
+        {
+            await functionFilters[index].OnFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {
             await functionCallback(context).ConfigureAwait(false);
         }
-
-        return context;
     }
 
     [Experimental("SKEXP0001")]
