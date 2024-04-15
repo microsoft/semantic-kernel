@@ -46,12 +46,10 @@ async def setup_chat_with_memory(
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt,
-        execution_settings={
-            service_id: kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
-        },
+        execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
     )
 
-    chat_func = kernel.create_function_from_prompt(
+    chat_func = kernel.add_function(
         function_name="chat_with_memory",
         plugin_name="TextMemoryPlugin",
         prompt_template_config=prompt_template_config,
@@ -94,7 +92,7 @@ async def main() -> None:
     kernel.add_service(embedding_gen)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(memory)

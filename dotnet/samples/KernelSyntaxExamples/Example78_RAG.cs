@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example78_RAG : BaseTest
+public class Example78_RAG(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RAGWithCustomPluginAsync()
@@ -83,10 +83,6 @@ public class Example78_RAG : BaseTest
         var result = await kernel.InvokeAsync(function, arguments);
 
         WriteLine(result);
-    }
-
-    public Example78_RAG(ITestOutputHelper output) : base(output)
-    {
     }
 
     #region Custom Plugin

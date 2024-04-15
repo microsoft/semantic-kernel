@@ -117,7 +117,7 @@ public static class ApiManifestKernelExtensions
                     continue;
                 }
 
-                requestUrls.Add(UriTemplate, new List<string>() { Method });
+                requestUrls.Add(UriTemplate, [Method]);
             }
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);

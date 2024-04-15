@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// <summary>
 /// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel"/>.
-/// (<see cref="AgentChannel.ReceiveAsync(IEnumerable{ChatMessageContent}, System.Threading.CancellationToken)"/>.)
+/// (<see cref="AgentChannel.ReceiveAsync"/>.)
 /// </summary>
 /// <remarks>
 /// Maintains a set of channel specific queues, each with individual locks, in addition to a global state lock.
@@ -20,9 +20,9 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// </remarks>
 internal sealed class BroadcastQueue
 {
-    private readonly Dictionary<string, QueueReference> _queues = new();
-    private readonly Dictionary<string, Task> _tasks = new();
-    private readonly Dictionary<string, Exception> _failures = new();
+    private readonly Dictionary<string, QueueReference> _queues = [];
+    private readonly Dictionary<string, Task> _tasks = [];
+    private readonly Dictionary<string, Exception> _failures = [];
     private readonly object _stateLock = new(); // Synchronize access to object state.
 
     /// <summary>

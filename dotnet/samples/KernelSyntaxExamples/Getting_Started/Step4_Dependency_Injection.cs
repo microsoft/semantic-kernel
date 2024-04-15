@@ -16,7 +16,7 @@ namespace GettingStarted;
 /// <summary>
 /// This example shows how to using Dependency Injection with the Semantic Kernel
 /// </summary>
-public sealed class Step4_Dependency_Injection : BaseTest
+public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
@@ -56,14 +56,9 @@ public sealed class Step4_Dependency_Injection : BaseTest
     /// <summary>
     /// A plugin that returns the current time.
     /// </summary>
-    public class TimeInformation
+    public class TimeInformation(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
-
-        public TimeInformation(ILoggerFactory loggerFactory)
-        {
-            this._logger = loggerFactory.CreateLogger(typeof(TimeInformation));
-        }
+        private readonly ILogger _logger = loggerFactory.CreateLogger(typeof(TimeInformation));
 
         [KernelFunction]
         [Description("Retrieves the current time in UTC.")]
@@ -73,9 +68,5 @@ public sealed class Step4_Dependency_Injection : BaseTest
             this._logger.LogInformation("Returning current time {0}", utcNow);
             return utcNow;
         }
-    }
-
-    public Step4_Dependency_Injection(ITestOutputHelper output) : base(output)
-    {
     }
 }

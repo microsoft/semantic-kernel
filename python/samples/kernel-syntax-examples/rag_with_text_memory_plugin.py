@@ -24,7 +24,7 @@ async def main():
     kernel.add_service(embedding_gen)
 
     memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "memory")
+    kernel.add_plugin(TextMemoryPlugin(memory), "memory")
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
 

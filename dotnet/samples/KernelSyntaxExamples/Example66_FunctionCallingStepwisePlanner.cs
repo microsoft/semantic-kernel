@@ -9,16 +9,17 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example66_FunctionCallingStepwisePlanner : BaseTest
+public class Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        string[] questions = {
+        string[] questions =
+        [
             "What is the current hour number, plus 5?",
             "What is 387 minus 22? Email the solution to John and Mary.",
             "Write a limerick, translate it to Spanish, and send it to Jane",
-        };
+        ];
 
         var kernel = InitializeKernel();
 
@@ -56,9 +57,5 @@ public class Example66_FunctionCallingStepwisePlanner : BaseTest
         kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
-    }
-
-    public Example66_FunctionCallingStepwisePlanner(ITestOutputHelper output) : base(output)
-    {
     }
 }

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 
@@ -13,7 +14,7 @@ class OpenAIUtils:
     """Utility functions for OpenAI plugins."""
 
     @staticmethod
-    def parse_openai_manifest_for_openapi_spec_url(plugin_json):
+    def parse_openai_manifest_for_openapi_spec_url(plugin_json: dict[str, Any]) -> str:
         """Extract the OpenAPI Spec URL from the plugin JSON."""
 
         try:

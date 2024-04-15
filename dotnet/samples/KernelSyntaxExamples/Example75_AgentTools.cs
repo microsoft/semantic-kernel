@@ -17,7 +17,7 @@ namespace Examples;
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public sealed class Example75_AgentTools : BaseTest
+public sealed class Example75_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -36,7 +36,7 @@ public sealed class Example75_AgentTools : BaseTest
     private const bool ForceOpenAI = true;
 
     // Track agents for clean-up
-    private readonly List<IAgent> _agents = new();
+    private readonly List<IAgent> _agents = [];
 
     /// <summary>
     /// Show how to utilize code_interpreter tool.
@@ -133,7 +133,7 @@ public sealed class Example75_AgentTools : BaseTest
         string[]? fileIds = null;
         if (fileId != null)
         {
-            fileIds = new string[] { fileId };
+            fileIds = [fileId];
         }
 
         foreach (var question in questions)
@@ -193,6 +193,4 @@ public sealed class Example75_AgentTools : BaseTest
 
         return agent;
     }
-
-    public Example75_AgentTools(ITestOutputHelper output) : base(output) { }
 }

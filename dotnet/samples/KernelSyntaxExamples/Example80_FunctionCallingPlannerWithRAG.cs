@@ -9,17 +9,18 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example80_FunctionCallingPlannerWithRAG : BaseTest
+public class Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        string[] questions = {
+        string[] questions =
+        [
             "When should I use the name Bob?",
             "When should I use the name Tom?",
             "When should I use the name Alice?",
             "When should I use the name Harry?",
-        };
+        ];
 
         var kernel = InitializeKernel();
 
@@ -55,10 +56,6 @@ public class Example80_FunctionCallingPlannerWithRAG : BaseTest
         kernel.ImportPluginFromType<RetrievePlugin>();
 
         return kernel;
-    }
-
-    public Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : base(output)
-    {
     }
 
     internal sealed class RetrievePlugin

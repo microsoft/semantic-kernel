@@ -15,10 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    get_function_calling_object,
-    get_tool_call_object,
-)
+from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object, get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -138,7 +135,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         cloned_kernel = copy(kernel)
-        cloned_kernel.import_plugin_from_object(UserInteraction(), "UserInteraction")
+        cloned_kernel.add_plugin(UserInteraction(), "UserInteraction")
 
         # Create and invoke a kernel function to generate the initial plan
         initial_plan = await self._generate_plan(question=question, kernel=cloned_kernel, arguments=arguments)
@@ -224,7 +221,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         if "default" in prompt_template_config.execution_settings:
             settings = prompt_template_config.execution_settings.pop("default")
             prompt_template_config.execution_settings[self.service_id] = settings
-        return kernel.create_function_from_prompt(
+        return kernel.add_function(
             function_name="create_plan",
             plugin_name="sequential_planner",
             description="Create a plan for the given goal",
