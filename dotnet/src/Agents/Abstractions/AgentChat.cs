@@ -183,6 +183,6 @@ public abstract class AgentChat
         this._agentChannels = [];
         this._broadcastQueue = new();
         this._channelMap = [];
-        this._history = [];
+        this.History = [];
     }
 }
