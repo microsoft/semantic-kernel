@@ -43,10 +43,10 @@ public class ChatMessageContentTests
     public void ContentPropertySetterShouldAddTextContentToItemsCollection()
     {
         // Arrange
-        var sut = new ChatMessageContent(AuthorRole.User, content: null);
-
-        // Act
-        sut.Content = "fake-content";
+        var sut = new ChatMessageContent(AuthorRole.User, content: null)
+        {
+            Content = "fake-content"
+        };
 
         // Assert
         Assert.Single(sut.Items);
@@ -58,15 +58,17 @@ public class ChatMessageContentTests
     public void ContentPropertySetterShouldUpdateContentOfFirstTextContentItem()
     {
         // Arrange
-        var items = new ChatMessageContentItemCollection();
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
-        items.Add(new TextContent("fake-content-1"));
-        items.Add(new TextContent("fake-content-2"));
+        var items = new ChatMessageContentItemCollection
+        {
+            new ImageContent(new Uri("https://fake-random-test-host:123")),
+            new TextContent("fake-content-1"),
+            new TextContent("fake-content-2")
+        };
 
-        var sut = new ChatMessageContent(AuthorRole.User, items: items);
-
-        // Act
-        sut.Content = "fake-content-1-update";
+        var sut = new ChatMessageContent(AuthorRole.User, items: items)
+        {
+            Content = "fake-content-1-update"
+        };
 
         Assert.Equal("fake-content-1-update", ((TextContent)sut.Items[1]).Text);
     }
@@ -97,10 +99,12 @@ public class ChatMessageContentTests
     public void ContentPropertyGetterShouldReturnContentOfTheFirstTextContentItem()
     {
         // Arrange
-        var items = new ChatMessageContentItemCollection();
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123")));
-        items.Add(new TextContent("fake-content-1"));
-        items.Add(new TextContent("fake-content-2"));
+        var items = new ChatMessageContentItemCollection
+        {
+            new ImageContent(new Uri("https://fake-random-test-host:123")),
+            new TextContent("fake-content-1"),
+            new TextContent("fake-content-2")
+        };
 
         var sut = new ChatMessageContent(AuthorRole.User, items: items);
 
@@ -112,10 +116,10 @@ public class ChatMessageContentTests
     public void ItShouldBePossibleToSetAndGetEncodingEvenIfThereAreNoItems()
     {
         // Arrange
-        var sut = new ChatMessageContent(AuthorRole.User, content: null);
-
-        // Act
-        sut.Encoding = Encoding.UTF32;
+        var sut = new ChatMessageContent(AuthorRole.User, content: null)
+        {
+            Encoding = Encoding.UTF32
+        };
 
         // Assert
         Assert.Empty(sut.Items);
@@ -126,10 +130,10 @@ public class ChatMessageContentTests
     public void EncodingPropertySetterShouldUpdateEncodingTextContentItem()
     {
         // Arrange
-        var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content");
-
-        // Act
-        sut.Encoding = Encoding.UTF32;
+        var sut = new ChatMessageContent(AuthorRole.User, content: "fake-content")
+        {
+            Encoding = Encoding.UTF32
+        };
 
         // Assert
         Assert.Single(sut.Items);
@@ -153,48 +157,44 @@ public class ChatMessageContentTests
     public void ItCanBeSerializeAndDeserialized()
     {
         // Arrange
-        var items = new ChatMessageContentItemCollection();
-        items.Add(new TextContent("content-1", "model-1", metadata: new Dictionary<string, object?>()
+        var items = new ChatMessageContentItemCollection
         {
-            ["metadata-key-1"] = "metadata-value-1"
-        })
-        { MimeType = "mime-type-1" });
-        items.Add(new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", metadata: new Dictionary<string, object?>()
-        {
-            ["metadata-key-2"] = "metadata-value-2"
-        })
-        { MimeType = "mime-type-2" });
-        items.Add(new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
-        {
-            ["metadata-key-3"] = "metadata-value-3"
-        })
-        { MimeType = "mime-type-3" });
-        items.Add(new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
-        {
-            ["metadata-key-4"] = "metadata-value-4"
-        })
-        { MimeType = "mime-type-4" });
-        items.Add(new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
-        {
-            ["metadata-key-5"] = "metadata-value-5"
-        })
-        { MimeType = "mime-type-5" });
-        items.Add(new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
-        {
-            ["metadata-key-6"] = "metadata-value-6"
-        })
-        { MimeType = "mime-type-6" });
-
-        var sut = new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
-        {
-            ["message-metadata-key-1"] = "message-metadata-value-1"
-        });
-        sut.Content = "content-1-override"; // Override the content of the first text content item that has the "content-1" content  
-        sut.Source = "Won't make it";
-        sut.AuthorName = "Fred";
+            new TextContent("content-1", "model-1", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-1"] = "metadata-value-1"
+            }) { MimeType = "mime-type-1" },
+            new ImageContent(new Uri("https://fake-random-test-host:123"), "model-2", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-2"] = "metadata-value-2"
+            }) { MimeType = "mime-type-2" },
+            new BinaryContent(new BinaryData(new[] { 1, 2, 3 }), "model-3", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-3"] = "metadata-value-3"
+            }) { MimeType = "mime-type-3" },
+            new AudioContent(new BinaryData(new[] { 3, 2, 1 }), "model-4", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-4"] = "metadata-value-4"
+            }) { MimeType = "mime-type-4" },
+            new ImageContent(new BinaryData(new[] { 2, 1, 3 }), "model-5", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-5"] = "metadata-value-5"
+            }) { MimeType = "mime-type-5" },
+            new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
+            {
+                ["metadata-key-6"] = "metadata-value-6"
+            }) { MimeType = "mime-type-6" }
+        };
 
         // Act
-        var chatMessageJson = JsonSerializer.Serialize(sut);
+        var chatMessageJson = JsonSerializer.Serialize(new ChatMessageContent(AuthorRole.User, items: items, "message-model", metadata: new Dictionary<string, object?>()
+        {
+            ["message-metadata-key-1"] = "message-metadata-value-1"
+        })
+        {
+            Content = "content-1-override", // Override the content of the first text content item that has the "content-1" content  
+            Source = "Won't make it",
+            AuthorName = "Fred"
+        });
 
         var deserializedMessage = JsonSerializer.Deserialize<ChatMessageContent>(chatMessageJson)!;
 

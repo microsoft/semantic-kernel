@@ -50,7 +50,7 @@ prompt_template_config = sk.PromptTemplateConfig(
     execution_settings=req_settings,
 )
 
-chat_func = kernel.create_function_from_prompt(
+chat_func = kernel.add_function(
     plugin_name="PiratePlugin", function_name="Chat", prompt_template_config=prompt_template_config
 )
 

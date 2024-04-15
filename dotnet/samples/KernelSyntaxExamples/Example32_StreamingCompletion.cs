@@ -18,7 +18,7 @@ namespace Examples;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public class Example32_StreamingCompletion : BaseTest
+public class Example32_StreamingCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public Task AzureOpenAITextGenerationStreamAsync()
@@ -64,9 +64,5 @@ public class Example32_StreamingCompletion : BaseTest
         }
 
         WriteLine();
-    }
-
-    public Example32_StreamingCompletion(ITestOutputHelper output) : base(output)
-    {
     }
 }

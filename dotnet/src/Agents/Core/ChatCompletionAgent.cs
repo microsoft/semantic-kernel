@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
+
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -28,7 +28,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
-        ChatHistory chat = new();
+        ChatHistory chat = [];
         if (!string.IsNullOrWhiteSpace(this.Instructions))
         {
             chat.Add(new ChatMessageContent(AuthorRole.System, this.Instructions) { AuthorName = this.Name });
@@ -42,7 +42,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        foreach (var message in messages ?? Array.Empty<ChatMessageContent>())
+        foreach (var message in messages ?? [])
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;

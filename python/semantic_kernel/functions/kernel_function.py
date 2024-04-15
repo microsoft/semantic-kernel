@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
 
 from semantic_kernel.functions.function_result import FunctionResult
@@ -227,3 +229,18 @@ class KernelFunction(KernelBaseModel):
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})
+
+    def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
+        """Copy the function, can also override the plugin_name.
+
+        Args:
+            plugin_name (str): The new plugin name.
+
+        Returns:
+            KernelFunction: The copied function.
+        """
+        cop: KernelFunction = copy(self)
+        cop.metadata = deepcopy(self.metadata)
+        if plugin_name:
+            cop.metadata.plugin_name = plugin_name
+        return cop
