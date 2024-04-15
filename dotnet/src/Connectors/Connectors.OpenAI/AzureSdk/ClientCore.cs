@@ -1152,6 +1152,13 @@ internal abstract class ClientCore
                 try
                 {
                     arguments = JsonSerializer.Deserialize<KernelArguments>(functionToolCall.Arguments);
+                    if (arguments is not null)
+                    {
+                        foreach (var argument in arguments)
+                        {
+                            arguments[argument.Key] = argument.Value?.ToString();
+                        }
+                    }
                 }
                 catch (JsonException ex)
                 {

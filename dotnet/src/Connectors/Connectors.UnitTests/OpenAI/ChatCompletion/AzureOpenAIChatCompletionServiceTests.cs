@@ -721,7 +721,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(4, result.Items.Count);
+        Assert.Equal(5, result.Items.Count);
 
         var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallRequestContent;
         Assert.NotNull(getCurrentWeatherFunctionCall);
@@ -753,6 +753,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(invalidArgumentsFunctionCall.Exception);
         Assert.Equal("Error: Function call arguments were invalid JSON.", invalidArgumentsFunctionCall.Exception.Message);
         Assert.NotNull(invalidArgumentsFunctionCall.Exception.InnerException);
+
+        var intArgumentsFunctionCall = result.Items[4] as FunctionCallRequestContent;
+        Assert.NotNull(intArgumentsFunctionCall);
+        Assert.Equal("IntArguments", intArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin", intArgumentsFunctionCall.PluginName);
+        Assert.Equal("5", intArgumentsFunctionCall.Id);
+        Assert.Equal("36", intArgumentsFunctionCall.Arguments?["age"]?.ToString());
     }
 
     [Fact]
