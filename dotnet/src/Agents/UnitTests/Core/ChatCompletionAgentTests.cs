@@ -49,7 +49,7 @@ public class ChatCompletionAgentTests
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(new ChatMessageContent[] { new(AuthorRole.Assistant, "what?") });
+                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
 
         var agent =
             new ChatCompletionAgent()

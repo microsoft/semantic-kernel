@@ -22,7 +22,7 @@ public class CustomAIServiceSelectorTests
         var serviceSelector = new CustomAIServiceSelector();
 
         // Act
-        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, new KernelArguments());
+        (var aiService, var defaultExecutionSettings) = serviceSelector.SelectAIService<IAIService>(kernel, function, []);
 
         // Assert
         Assert.NotNull(aiService);
@@ -55,8 +55,10 @@ public class CustomAIServiceSelectorTests
 
         public AIService()
         {
-            this._attributes = new Dictionary<string, object?>();
-            this._attributes.Add("Key1", "Value1");
+            this._attributes = new Dictionary<string, object?>
+            {
+                { "Key1", "Value1" }
+            };
         }
 
         private readonly Dictionary<string, object?> _attributes;

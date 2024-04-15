@@ -15,7 +15,7 @@ namespace GettingStarted;
 /// <summary>
 /// This example shows how to load a <see cref="KernelPlugin"/> instances.
 /// </summary>
-public sealed class Step2_Add_Plugins : BaseTest
+public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows different ways to load a <see cref="KernelPlugin"/> instances.
@@ -103,9 +103,5 @@ public sealed class Step2_Add_Plugins : BaseTest
         public string SerialNumber { get; init; }
         public WidgetType Type { get; init; }
         public WidgetColor Color { get; init; }
-    }
-
-    public Step2_Add_Plugins(ITestOutputHelper output) : base(output)
-    {
     }
 }
