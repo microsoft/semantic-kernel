@@ -3,7 +3,7 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_messa
     OpenAIStreamingChatMessageContent,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIPromptExecutionSettings,
+    OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -52,10 +52,10 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
-kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
+kernel.add_plugin(MathPlugin(), plugin_name="math")
+kernel.add_plugin(TimePlugin(), plugin_name="time")
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
     function_name="Chat",
@@ -89,10 +89,10 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
+def print_tool_calls(message: OpenAIChatMessageContent) -> None:
     # A helper method to pretty print the tool calls from the message.
     # This is only triggered if auto invoke tool calls is disabled.
-    if isinstance(message, (OpenAIChatMessageContent, OpenAIStreamingChatMessageContent)):
+    if isinstance(message, OpenAIChatMessageContent):
         tool_calls = message.tool_calls
         formatted_tool_calls = []
         for i, tool_call in enumerate(tool_calls, start=1):
@@ -113,7 +113,7 @@ async def handle_streaming(
     chat_function: "KernelFunction",
     user_input: str,
     history: ChatHistory,
-    execution_settings: OpenAIPromptExecutionSettings,
+    execution_settings: OpenAIChatPromptExecutionSettings,
 ) -> None:
     response = kernel.invoke_stream(
         chat_function,
