@@ -188,7 +188,7 @@ class BasicPlanner:
         )
 
         # Create the prompt function for the planner with the given prompt
-        planner = kernel.create_function_from_prompt(
+        planner = kernel.add_function(
             plugin_name="PlannerPlugin",
             function_name="CreatePlan",
             prompt_template_config=prompt_template_config,

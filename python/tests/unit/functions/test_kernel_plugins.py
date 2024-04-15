@@ -469,6 +469,18 @@ def test_from_directory_other():
         KernelPlugin.from_directory("TestNoFunction", plugins_directory)
 
 
+def test_from_directory_with_args():
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
+    # path to plugins directory
+    plugin = KernelPlugin.from_directory(
+        "TestNativePluginArgs",
+        plugins_directory,
+        class_init_arguments={"TestNativeEchoBotPlugin": {"static_input": "prefix "}},
+    )
+    result = plugin["echo"].method(text="test")
+    assert result == "prefix test"
+
+
 def test_from_object_function(decorated_native_function):
     plugin = KernelPlugin.from_object("TestPlugin", {"getLightStatusFunc": decorated_native_function})
     assert plugin is not None

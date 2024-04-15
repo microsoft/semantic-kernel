@@ -35,7 +35,7 @@ req_settings.top_p = 0.8
 req_settings.auto_invoke_kernel_functions = False
 
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     prompt="""{{system_message}}{% for item in chat_history %}{{ message(item) }}{% endfor %}""",
     function_name="chat",
     plugin_name="chat",

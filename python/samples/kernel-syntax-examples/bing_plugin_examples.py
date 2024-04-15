@@ -63,7 +63,7 @@ async def example2(kernel: sk.Kernel, service_id: str):
     question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?"
     print(question)
 
-    oracle = kernel.create_function_from_prompt(
+    oracle = kernel.add_function(
         function_name="oracle",
         plugin_name="OraclePlugin",
         template=prompt,

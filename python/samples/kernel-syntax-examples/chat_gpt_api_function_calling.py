@@ -55,7 +55,7 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 kernel.add_plugin(MathPlugin(), plugin_name="math")
 kernel.add_plugin(TimePlugin(), plugin_name="time")
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
     function_name="Chat",

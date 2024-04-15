@@ -6,9 +6,7 @@ from openai import AsyncOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    get_tool_call_object,
-)
+from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -38,7 +36,7 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(
+    tldr_function = kernel.add_function(
         function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config
     )
 
@@ -83,7 +81,7 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
     )
 
     # Create the prompt function
-    tldr_function = kernel.create_function_from_prompt(
+    tldr_function = kernel.add_function(
         function_name="math_fun", plugin_name="math_int_test", prompt_template_config=prompt_template_config
     )
 
@@ -128,7 +126,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
     )
 
     # Create the prompt function
-    tldr_function = kernel.create_function_from_prompt(
+    tldr_function = kernel.add_function(
         function_name="math_fun", plugin_name="math_int_test", prompt_template_config=prompt_template_config
     )
 
@@ -175,7 +173,7 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
     )
 
     # Create the semantic function
-    tldr_function = kernel.create_function_from_prompt(
+    tldr_function = kernel.add_function(
         function_name="story",
         plugin_name="story_plugin",
         prompt_template_config=prompt_template_config,
@@ -220,7 +218,7 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
     )
 
     # Create the prompt function
-    tldr_function = kernel.create_function_from_prompt(
+    tldr_function = kernel.add_function(
         function_name="story",
         plugin_name="story_plugin",
         prompt_template_config=prompt_template_config,

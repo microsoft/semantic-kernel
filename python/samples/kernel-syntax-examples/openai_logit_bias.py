@@ -90,7 +90,7 @@ async def chat_request_example(kernel, api_key, org_id):
     chat.add_user_message("Hi there, who are you?")
     chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
-    chat_function = kernel.create_function_from_prompt(
+    chat_function = kernel.add_function(
         plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
@@ -178,7 +178,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
 
     chat.add_user_message("The best pie flavor to have in autumn is")
 
-    text_function = kernel.create_function_from_prompt(
+    text_function = kernel.add_function(
         plugin_name="TextBot", function_name="TextCompletion", prompt_template_config=prompt_template_config
     )
 

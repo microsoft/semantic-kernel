@@ -252,6 +252,7 @@ class KernelPlugin(KernelBaseModel):
         plugin_name: str,
         parent_directory: str,
         description: str | None = None,
+        class_init_arguments: dict[str, dict[str, Any]] | None = None,
     ) -> "KernelPlugin":
         """Create a plugin from a specified directory.
 
@@ -314,7 +315,12 @@ class KernelPlugin(KernelBaseModel):
             elif object.endswith(".py"):
                 try:
                     functions.extend(
-                        cls.from_python_file(plugin_name=plugin_name, py_file=object, description=description)
+                        cls.from_python_file(
+                            plugin_name=plugin_name,
+                            py_file=object,
+                            description=description,
+                            class_init_arguments=class_init_arguments,
+                        )
                     )
                 except PluginInitializationError:
                     logger.warning(f"Failed to create function from Python file: {object}")
@@ -427,7 +433,13 @@ class KernelPlugin(KernelBaseModel):
         )
 
     @classmethod
-    def from_python_file(cls, plugin_name: str, py_file: str, description: str | None = None) -> "KernelPlugin":
+    def from_python_file(
+        cls,
+        plugin_name: str,
+        py_file: str,
+        description: str | None = None,
+        class_init_arguments: dict[str, dict[str, Any]] | None = None,
+    ) -> "KernelPlugin":
         module_name = os.path.basename(py_file).replace(".py", "")
         spec = importlib.util.spec_from_file_location(module_name, py_file)
         module = importlib.util.module_from_spec(spec)
@@ -437,9 +449,8 @@ class KernelPlugin(KernelBaseModel):
         for name, cls_instance in inspect.getmembers(module, inspect.isclass):
             if cls_instance.__module__ != module_name:
                 continue
-            return cls.from_object(
-                plugin_name=plugin_name, description=description, plugin_instance=getattr(module, name)()
-            )
+            instance = getattr(module, name)(**class_init_arguments.get(name, {}) if class_init_arguments else {})
+            return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
 
     # endregion
