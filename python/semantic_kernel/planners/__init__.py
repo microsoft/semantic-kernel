@@ -15,12 +15,14 @@ from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.planner_options import PlannerOptions
 from semantic_kernel.planners.sequential_planner import SequentialPlanner
 from semantic_kernel.planners.stepwise_planner import StepwisePlanner
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import StepwisePlannerConfig
 
 __all__ = [
     "BasicPlanner",
     "Plan",
     "SequentialPlanner",
     "StepwisePlanner",
+    "StepwisePlannerConfig",
     "ActionPlanner",
     "PlannerOptions",
     "FunctionCallingStepwisePlannerOptions",

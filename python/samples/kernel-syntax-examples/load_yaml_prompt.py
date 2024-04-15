@@ -3,9 +3,9 @@
 import asyncio
 import os
 
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 

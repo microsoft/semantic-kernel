@@ -2,23 +2,23 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.core_plugins import TimePlugin
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     useAzureOpenAI = False
     model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
     kernel.add_plugin(TimePlugin(), "time")
@@ -41,7 +41,7 @@ async def main():
     kind_of_day = kernel.add_function(
         plugin_name="TimePlugin",
         template=function_definition,
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
+        execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=100),
         function_name="kind_of_day",
     )
 
