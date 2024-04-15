@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example61_MultipleLLMs : BaseTest
+public class Example61_MultipleLLMs(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
@@ -81,9 +81,5 @@ public class Example61_MultipleLLMs : BaseTest
 
         var result = await kernel.InvokeAsync(function);
         WriteLine(result.GetValue<string>());
-    }
-
-    public Example61_MultipleLLMs(ITestOutputHelper output) : base(output)
-    {
     }
 }

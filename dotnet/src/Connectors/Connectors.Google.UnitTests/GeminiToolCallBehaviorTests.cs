@@ -113,7 +113,7 @@ public sealed class GeminiToolCallBehaviorTests
     public void EnabledFunctionsConfigureGeminiRequestWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => GeminiKernelFunctionMetadataExtensions.ToGeminiFunction(function));
+        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => function.ToGeminiFunction());
         var enabledFunctions = new GeminiToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var geminiRequest = new GeminiRequest();
 

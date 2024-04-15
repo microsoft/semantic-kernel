@@ -74,13 +74,13 @@ class ActionPlanner:
             extension_data={"max_tokens": self.config.max_tokens, "stop_sequences": self._stop_sequence},
         )
 
-        self._planner_function = kernel.create_function_from_prompt(
-            function_name="ActionPlanner",
+        kernel.add_plugin(self, self.RESTRICTED_PLUGIN_NAME)
+        self._planner_function = kernel.add_function(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
+            function_name="ActionPlanner",
             prompt=self._prompt_template,
             prompt_execution_settings=execute_settings,
         )
-        kernel.import_plugin_from_object(self, self.RESTRICTED_PLUGIN_NAME)
 
         self._kernel = kernel
         self._arguments = KernelArguments()
@@ -213,7 +213,7 @@ class ActionPlanner:
     def list_of_functions(self, goal: Annotated[str, "The current goal processed by the planner"]) -> str:
         available_functions = [
             self._create_function_string(func)
-            for func in self._kernel.plugins.get_list_of_function_metadata()
+            for func in self._kernel.get_list_of_function_metadata()
             if (
                 func.plugin_name != self.RESTRICTED_PLUGIN_NAME
                 and func.plugin_name not in self.config.excluded_plugins

@@ -37,24 +37,23 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
 
 
 class MyPlugin:
-    @kernel_function()
+    @kernel_function
     def check123(self, input: str) -> str:
         return "123 ok" if input == "123" else f"{input} != 123"
 
-    @kernel_function()
+    @kernel_function
     def asis(self, input: Optional[str] = None) -> str:
         return input or ""
 
 
 class TestPromptTemplateEngine:
     @mark.asyncio
-    async def test_it_supports_variables(self):
+    async def test_it_supports_variables(self, kernel: Kernel):
         # Arrange
         input = "template tests"
         winner = "SK"
         template = "And the winner\n of {{$input}} \nis: {{  $winner }}!"
 
-        kernel = Kernel()
         arguments = KernelArguments(input=input, winner=winner)
         # Act
         result = await KernelPromptTemplate(
@@ -65,12 +64,11 @@ class TestPromptTemplateEngine:
         assert expected == result
 
     @mark.asyncio
-    async def test_it_supports_values(self):
+    async def test_it_supports_values(self, kernel: Kernel):
         # Arrange
         template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!"
         expected = "And the winner\n of template\ntests \nis: SK!"
 
-        kernel = Kernel()
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
@@ -80,11 +78,10 @@ class TestPromptTemplateEngine:
         assert expected == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_variables_to_functions(self):
+    async def test_it_allows_to_pass_variables_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my.check123 $call}} =="
-        kernel = Kernel()
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         arguments = KernelArguments(call="123")
         # Act
@@ -96,11 +93,10 @@ class TestPromptTemplateEngine:
         assert "== 123 ok ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_values_to_functions(self):
+    async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my.check123 '234'}} =="
-        kernel = Kernel()
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await KernelPromptTemplate(
@@ -111,11 +107,10 @@ class TestPromptTemplateEngine:
         assert "== 234 != 123 ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_escaped_values1_to_functions(self):
+    async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my.check123 'a\\'b'}} =="
-        kernel = Kernel()
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
@@ -125,11 +120,10 @@ class TestPromptTemplateEngine:
         assert "== a'b != 123 ==" == result
 
     @mark.asyncio
-    async def test_it_allows_to_pass_escaped_values2_to_functions(self):
+    async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
         # Arrange
         template = '== {{my.check123 "a\\"b"}} =='
-        kernel = Kernel()
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await KernelPromptTemplate(
@@ -141,10 +135,9 @@ class TestPromptTemplateEngine:
 
     @mark.asyncio
     @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests()])
-    async def test_it_handle_edge_cases(self, template: str, expected_result: str):
+    async def test_it_handle_edge_cases(self, kernel: Kernel, template: str, expected_result: str):
         # Arrange
-        kernel = Kernel()
-        kernel.import_plugin_from_object(MyPlugin(), "my_plugin")
+        kernel.add_plugin(MyPlugin(), "my_plugin")
 
         # Act
         if expected_result.startswith("ERROR"):
