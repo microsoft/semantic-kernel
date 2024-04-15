@@ -50,7 +50,7 @@ async def test_it_supports_variables(kernel: Kernel):
 async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
     # Arrange
     template = "== {{ my_check123() }} =="
-    kernel.import_plugin_from_object(MyPlugin(), "my")
+    kernel.add_plugin(MyPlugin(), "my")
 
     arguments = KernelArguments(input="123")
     # Act
@@ -64,7 +64,7 @@ async def test_it_allows_to_pass_variables_to_functions(kernel: Kernel):
 async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
     # Arrange
     template = "== {{ my_check123(input=234) }} =="
-    kernel.import_plugin_from_object(MyPlugin(), "my")
+    kernel.add_plugin(MyPlugin(), "my")
 
     # Act
     result = await create_jinja2_prompt_template(template).render(kernel, None)
@@ -77,7 +77,7 @@ async def test_it_allows_to_pass_values_to_functions(kernel: Kernel):
 async def test_it_allows_to_pass_escaped_values1_to_functions(kernel: Kernel):
     # Arrange
     template = """== {{ my_check123(input="a'b") }} =="""
-    kernel.import_plugin_from_object(MyPlugin(), "my")
+    kernel.add_plugin(MyPlugin(), "my")
     # Act
     result = await create_jinja2_prompt_template(template).render(kernel, None)
 
@@ -89,7 +89,7 @@ async def test_it_allows_to_pass_escaped_values1_to_functions(kernel: Kernel):
 async def test_it_allows_to_pass_escaped_values2_to_functions(kernel: Kernel):
     # Arrange
     template = '== {{my_check123(input="a\\"b")}} =='
-    kernel.import_plugin_from_object(MyPlugin(), "my")
+    kernel.add_plugin(MyPlugin(), "my")
 
     # Act
     result = await create_jinja2_prompt_template(template).render(kernel, None)

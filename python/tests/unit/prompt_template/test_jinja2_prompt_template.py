@@ -104,7 +104,7 @@ async def test_it_renders_list(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus(arg1='test') }}"
     target = create_jinja2_prompt_template(template)
 
@@ -114,7 +114,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus() }}"
     target = create_jinja2_prompt_template(template)
 

@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Union
 
+import yaml
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -30,6 +33,8 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+PROMPT_FILE_NAME = "skprompt.txt"
+CONFIG_FILE_NAME = "config.json"
 PROMPT_RETURN_PARAM = KernelParameterMetadata(
     name="return",
     description="The completion result",
@@ -48,7 +53,7 @@ class KernelFunctionFromPrompt(KernelFunction):
     def __init__(
         self,
         function_name: str,
-        plugin_name: str,
+        plugin_name: Optional[str] = None,
         description: Optional[str] = None,
         prompt: Optional[str] = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
@@ -319,3 +324,80 @@ through prompt_template_config or in the prompt_template."
             if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
                 arguments[parameter.name] = parameter.default
         return arguments
+
+    @classmethod
+    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+        """Creates a new instance of the KernelFunctionFromPrompt class from a YAML string."""
+        try:
+            data = yaml.safe_load(yaml_str)
+        except yaml.YAMLError as exc:  # pragma: no cover
+            raise FunctionInitializationError(f"Invalid YAML content: {yaml_str}, error: {exc}") from exc
+
+        if not isinstance(data, dict):
+            raise FunctionInitializationError(f"The YAML content must represent a dictionary, got {yaml_str}")
+
+        try:
+            prompt_template_config = PromptTemplateConfig(**data)
+        except ValidationError as exc:
+            raise FunctionInitializationError(
+                f"Error initializing PromptTemplateConfig: {exc} from yaml data: {data}"
+            ) from exc
+        return cls(
+            function_name=prompt_template_config.name,
+            plugin_name=plugin_name,
+            description=prompt_template_config.description,
+            prompt_template_config=prompt_template_config,
+            template_format=prompt_template_config.template_format,
+        )
+
+    @classmethod
+    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+        """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
+
+        The directory needs to contain:
+        - A prompt file named `skprompt.txt`
+        - A config file named `config.json`
+
+        Returns:
+            KernelFunctionFromPrompt: The kernel function from prompt
+        """
+        prompt_path = os.path.join(path, PROMPT_FILE_NAME)
+        config_path = os.path.join(path, CONFIG_FILE_NAME)
+        prompt_exists = os.path.exists(prompt_path)
+        config_exists = os.path.exists(config_path)
+        if not config_exists and not prompt_exists:
+            raise FunctionInitializationError(
+                f"{PROMPT_FILE_NAME} and {CONFIG_FILE_NAME} files are required to create a "
+                f"function from a directory, path: {str(path)}."
+            )
+        elif not config_exists:
+            raise FunctionInitializationError(
+                f"{CONFIG_FILE_NAME} files are required to create a function from a directory, "
+                f"path: {str(path)}, prompt file is there."
+            )
+        elif not prompt_exists:
+            raise FunctionInitializationError(
+                f"{PROMPT_FILE_NAME} files are required to create a function from a directory, "
+                f"path: {str(path)}, config file is there."
+            )
+
+        function_name = os.path.basename(path)
+
+        with open(config_path, "r") as config_file:
+            prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
+        prompt_template_config.name = function_name
+
+        with open(prompt_path, "r") as prompt_file:
+            prompt_template_config.template = prompt_file.read()
+
+        prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore
+            prompt_template_config=prompt_template_config
+        )
+        return cls(
+            function_name=function_name,
+            plugin_name=plugin_name,
+            prompt_template=prompt_template,
+            prompt_template_config=prompt_template_config,
+            template_format=prompt_template_config.template_format,
+            description=prompt_template_config.description,
+        )

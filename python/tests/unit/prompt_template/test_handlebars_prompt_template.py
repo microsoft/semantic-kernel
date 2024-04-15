@@ -113,7 +113,7 @@ async def test_it_renders_list(kernel: Kernel):
 
 @mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus arg1='test'}}"
     target = create_handlebars_prompt_template(template)
 
@@ -123,7 +123,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 @mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{plug-getLightStatus}}"
     target = create_handlebars_prompt_template(template)
 

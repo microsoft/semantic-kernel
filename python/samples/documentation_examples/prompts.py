@@ -21,9 +21,7 @@ async def main():
     prompt = f"What is the intent of this request? {request}"
     print("0.0 Initial prompt")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_zero", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_zero", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -33,9 +31,7 @@ async def main():
         You can choose between SendEmail, SendMessage, CompleteTask, CreateDocument."""
     print("1.0 Make the prompt more specific")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_one", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_one", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -47,9 +43,7 @@ async def main():
         Intent: """
     print("2.0 Add structure to the output with formatting")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_two", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_two", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -80,9 +74,7 @@ async def main():
         ## Intent"""
     print("2.1 Add structure to the output with formatting (using Markdown and JSON)")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_two_one", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_two_one", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -101,9 +93,7 @@ async def main():
         Intent: """
     print("3.0 Provide examples with few-shot prompting")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_three", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_three", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -123,9 +113,7 @@ async def main():
         Intent: """
     print("4.0 Tell the AI what to do to avoid doing something wrong")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_four", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_four", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request)
     print(result)
     print("-------------------------")
@@ -150,9 +138,7 @@ async def main():
         Intent: """
     print("5.0 Provide context to the AI")
     print("-------------------------")
-    prompt_function = kernel.create_function_from_prompt(
-        function_name="sample_five", plugin_name="sample_plugin", prompt=prompt
-    )
+    prompt_function = kernel.add_function(function_name="sample_five", plugin_name="sample_plugin", prompt=prompt)
     result = await kernel.invoke(prompt_function, request=request, history=history)
     print(result)
     print("-------------------------")

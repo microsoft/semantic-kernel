@@ -29,10 +29,8 @@ async def main():
     )
 
     cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-    kernel.import_native_plugin_from_directory(cur_dir, "email_plugin")
-
-    kernel.import_plugin_from_object(MathPlugin(), "MathPlugin")
-    kernel.import_plugin_from_object(TimePlugin(), "TimePlugin")
+    kernel.add_plugin(parent_directory=cur_dir, plugin_name="email_plugin")
+    kernel.add_plugins({"MathPlugin": MathPlugin(), "TimePlugin": TimePlugin()})
 
     questions = [
         "What is the current hour number, plus 5?",
@@ -52,7 +50,7 @@ async def main():
         print(f"Q: {question}\nA: {result.final_answer}\n")
 
         # Uncomment the following line to view the planner's process for completing the request
-        # print(f"Chat history: {result.chat_history}\n")
+        # print(f"\nChat history: {result.chat_history}\n")
 
 
 if __name__ == "__main__":

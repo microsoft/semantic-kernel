@@ -26,7 +26,7 @@ async def main():
         ),
     )
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
-    web_plugin = kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.add_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
     print("---------------- Question 1 -----------------\n")
 
@@ -46,7 +46,7 @@ async def main():
     Answer:
     """
 
-    req_settings = kernel.get_service("chat-gpt").get_prompt_execution_settings_class()(service_id=service_id)
+    req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     req_settings.temperature = 0.2
 
     prompt_template_config = sk.PromptTemplateConfig(
@@ -57,7 +57,7 @@ async def main():
     )
 
     question = "What is Semantic Kernel?"
-    qna = kernel.create_function_from_prompt(
+    qna = kernel.add_function(
         function_name="qna",
         plugin_name="WebSearch",
         prompt_template_config=prompt_template_config,

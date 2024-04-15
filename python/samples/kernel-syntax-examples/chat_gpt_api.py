@@ -30,7 +30,7 @@ settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
     prompt="{{$chat_history}}{{$user_input}}",

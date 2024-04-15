@@ -8,6 +8,7 @@ import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -31,7 +32,7 @@ def _prepare_input_chat(chat: ChatHistory):
     return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
 
 
-async def chat_request_example(kernel, api_key, org_id):
+async def chat_request_example(kernel: Kernel, api_key, org_id):
     service_id = "chat_service"
     openai_chat_completion = sk_oai.OpenAIChatCompletion(
         service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
@@ -70,7 +71,7 @@ async def chat_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     settings = _config_ban_tokens(settings, keys)
 
     prompt_template_config = PromptTemplateConfig(
@@ -90,7 +91,7 @@ async def chat_request_example(kernel, api_key, org_id):
     chat.add_user_message("Hi there, who are you?")
     chat.add_assistant_message("I am an AI assistant here to answer your questions.")
 
-    chat_function = kernel.create_function_from_prompt(
+    chat_function = kernel.add_function(
         plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
     )
 
@@ -111,7 +112,7 @@ async def chat_request_example(kernel, api_key, org_id):
     return chat, banned_words
 
 
-async def text_complete_request_example(kernel, api_key, org_id):
+async def text_complete_request_example(kernel: Kernel, api_key, org_id):
     service_id = "text_service"
     openai_text_completion = sk_oai.OpenAITextCompletion(
         service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
@@ -159,7 +160,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
     ]
 
     # Model will try its best to avoid using any of the above words
-    settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+    settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     settings = _config_ban_tokens(settings, keys)
 
     prompt_template_config = PromptTemplateConfig(
@@ -178,7 +179,7 @@ async def text_complete_request_example(kernel, api_key, org_id):
 
     chat.add_user_message("The best pie flavor to have in autumn is")
 
-    text_function = kernel.create_function_from_prompt(
+    text_function = kernel.add_function(
         plugin_name="TextBot", function_name="TextCompletion", prompt_template_config=prompt_template_config
     )
 
@@ -209,7 +210,7 @@ def _format_output(chat, banned_words) -> None:
 
 
 async def main() -> None:
-    kernel = sk.Kernel()
+    kernel = Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
 
     print("Chat completion example:")
