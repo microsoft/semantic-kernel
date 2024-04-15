@@ -47,7 +47,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        bool disableTagEncoding,
+        bool allowUnsafeContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -80,7 +80,7 @@ internal static class KernelFunctionHelpers
                 // Invoke the function and write the result to the template
                 var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
 
-                if (!disableTagEncoding && result is string resultAsString)
+                if (!allowUnsafeContent && result is string resultAsString)
                 {
                     result = HttpUtility.HtmlEncode(resultAsString);
                 }

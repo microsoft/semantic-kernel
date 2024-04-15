@@ -143,7 +143,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
             }
         }
 
-        return !promptTemplateConfig.AllowUnsafeContent;
+        return true;
     }
 
     #endregion
