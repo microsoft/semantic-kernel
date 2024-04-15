@@ -49,7 +49,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_variables_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=call}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         arguments = KernelArguments(call="123")
         # Act
@@ -62,7 +62,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_values_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input=234}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)
@@ -74,7 +74,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values1_to_functions(self, kernel: Kernel):
         # Arrange
         template = "== {{my-check123 input='a\\'b'}} =="
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)
 
@@ -85,7 +85,7 @@ class TestHandlebarsPromptTemplateEngine:
     async def test_it_allows_to_pass_escaped_values2_to_functions(self, kernel: Kernel):
         # Arrange
         template = '== {{my-check123 input="a\\"b"}} =='
-        kernel.import_plugin_from_object(MyPlugin(), "my")
+        kernel.add_plugin(MyPlugin(), "my")
 
         # Act
         result = await create_handlebars_prompt_template(template).render(kernel, None)

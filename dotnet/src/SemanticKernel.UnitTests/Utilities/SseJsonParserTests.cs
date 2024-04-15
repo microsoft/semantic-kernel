@@ -150,7 +150,7 @@ public sealed class SseJsonParserTests
             .ToListAsync();
 
         // Assert
-        Assert.True(result.Count == 8);
+        Assert.Equal(8, result.Count);
     }
 
     [Fact]

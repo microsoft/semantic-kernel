@@ -48,7 +48,7 @@ req_settings.auto_invoke_kernel_functions = True
 ## The third method is the most specific as the returned request settings class is the one that is registered for the service and has some fields already filled in, like the service_id and ai_model_id. # noqa: E501 E266
 
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     prompt=system_message + """{{$chat_history}}{{$user_input}}""",
     function_name="chat",
     plugin_name="chat",

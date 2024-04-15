@@ -14,20 +14,21 @@ namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
-    private const string PlanString =
-    @"```handlebars
-{{!-- Step 1: Call Summarize function --}}  
-{{set ""summary"" (SummarizePlugin-Summarize)}}  
+    private const string PlanString = """
+        ```handlebars
+        {{!-- Step 1: Call Summarize function --}}  
+        {{set "summary" (SummarizePlugin-Summarize)}}  
 
-{{!-- Step 2: Call Translate function with the language set to French --}}  
-{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
+        {{!-- Step 2: Call Translate function with the language set to French --}}  
+        {{set "translatedSummary" (WriterPlugin-Translate language="French" input=(get "summary"))}}  
 
-{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
-{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+        {{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+        {{set "emailAddress" (email-GetEmailAddress input="John Doe")}}  
 
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```";
+        {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+        {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+        ```
+        """;
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -197,29 +198,30 @@ public sealed class HandlebarsPlannerTests
     public async Task ItThrowsIfStrictlyOnePlanCantBeIdentifiedAsync()
     {
         // Arrange
-        var ResponseWithMultipleHbTemplates =
-    @"```handlebars
-{{!-- Step 1: Call Summarize function --}}  
-{{set ""summary"" (SummarizePlugin-Summarize)}}  
-```
+        var ResponseWithMultipleHbTemplates = """
+            ```handlebars
+            {{!-- Step 1: Call Summarize function --}}  
+            {{set "summary" (SummarizePlugin-Summarize)}}  
+            ```
 
-```handlebars
-{{!-- Step 2: Call Translate function with the language set to French --}}  
-{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
-```
+            ```handlebars
+            {{!-- Step 2: Call Translate function with the language set to French --}}  
+            {{set "translatedSummary" (WriterPlugin-Translate language="French" input=(get "summary"))}}  
+            ```
 
-```handlebars
-{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
-{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+            ```handlebars
+            {{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+            {{set "emailAddress" (email-GetEmailAddress input="John Doe")}}  
 
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```
+            {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+            {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+            ```
 
-```handlebars
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```";
+            ```handlebars
+            {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+            {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+            ```
+            """;
         var kernel = this.CreateKernelWithMockCompletionResult(ResponseWithMultipleHbTemplates);
         var planner = new HandlebarsPlanner();
 

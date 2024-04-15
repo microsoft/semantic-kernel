@@ -4,24 +4,15 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// <summary>
 /// Tracks channel along with its hashed key.
 /// </summary>
-internal readonly struct ChannelReference
+internal readonly struct ChannelReference(AgentChannel channel, string hash)
 {
     /// <summary>
     /// The referenced channel.
     /// </summary>
-    public AgentChannel Channel { get; }
+    public AgentChannel Channel { get; } = channel;
 
     /// <summary>
     /// The channel hash.
     /// </summary>
-    public string Hash { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChannelReference"/> class.
-    /// </summary>
-    public ChannelReference(AgentChannel channel, string hash)
-    {
-        this.Channel = channel;
-        this.Hash = hash;
-    }
+    public string Hash { get; } = hash;
 }

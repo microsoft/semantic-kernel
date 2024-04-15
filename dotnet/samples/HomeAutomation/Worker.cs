@@ -11,17 +11,12 @@ namespace HomeAutomation;
 /// <summary>
 /// Actual code to run.
 /// </summary>
-internal sealed class Worker : BackgroundService
+internal sealed class Worker(
+    IHostApplicationLifetime hostApplicationLifetime,
+    [FromKeyedServices("HomeAutomationKernel")] Kernel kernel) : BackgroundService
 {
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
-    private readonly Kernel _kernel;
-
-    public Worker(IHostApplicationLifetime hostApplicationLifetime,
-        [FromKeyedServices("HomeAutomationKernel")] Kernel kernel)
-    {
-        _hostApplicationLifetime = hostApplicationLifetime;
-        _kernel = kernel;
-    }
+    private readonly IHostApplicationLifetime _hostApplicationLifetime = hostApplicationLifetime;
+    private readonly Kernel _kernel = kernel;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

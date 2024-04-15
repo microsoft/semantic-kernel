@@ -9,24 +9,17 @@ using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIAudioToTextTests
+public sealed class OpenAIAudioToTextTests()
 {
-    private readonly IConfigurationRoot _configuration;
-
-    public OpenAIAudioToTextTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAIAudioToTextTests>()
-            .Build();
-    }
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<OpenAIAudioToTextTests>()
+        .Build();
 
     [Fact(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     public async Task OpenAIAudioToTextTestAsync()

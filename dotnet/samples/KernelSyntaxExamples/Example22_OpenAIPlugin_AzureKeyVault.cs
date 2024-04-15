@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
+public class Example22_OpenAIPlugin_AzureKeyVault(ITestOutputHelper output) : BaseTest(output)
 {
     private const string SecretName = "Foo";
     private const string SecretValue = "Bar";
@@ -118,10 +118,6 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 
         Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
-
-    public Example22_OpenAIPlugin_AzureKeyVault(ITestOutputHelper output) : base(output)
-    {
-    }
 }
 
 #region Utility Classes
@@ -129,21 +125,12 @@ public class Example22_OpenAIPlugin_AzureKeyVault : BaseTest
 /// <summary>
 /// Provides authentication for HTTP requests to OpenAI using OAuth or verification tokens.
 /// </summary>
-internal sealed class OpenAIAuthenticationProvider
+internal sealed class OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
 {
-    private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues;
-    private readonly Dictionary<string, string> _credentials;
-
-    /// <summary>
-    /// Creates an instance of the <see cref="OpenAIAuthenticationProvider"/> class.
-    /// </summary>
-    /// <param name="oAuthValues">A dictionary containing OAuth values for each authentication scheme.</param>
-    /// <param name="credentials">A dictionary containing credentials for each authentication scheme.</param>
-    public OpenAIAuthenticationProvider(Dictionary<string, Dictionary<string, string>>? oAuthValues = null, Dictionary<string, string>? credentials = null)
-    {
-        this._oAuthValues = oAuthValues ?? [];
-        this._credentials = credentials ?? [];
-    }
+    private readonly Dictionary<string, Dictionary<string, string>> _oAuthValues = oAuthValues ?? [];
+#pragma warning disable CA1823 // TODO: Use credentials
+    private readonly Dictionary<string, string> _credentials = credentials ?? [];
+#pragma warning restore CA1823
 
     /// <summary>
     /// Applies the authentication content to the provided HTTP request message.

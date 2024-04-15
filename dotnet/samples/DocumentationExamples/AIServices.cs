@@ -11,7 +11,7 @@ namespace Examples;
 /// This example demonstrates how to add AI services to a kernel as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/kernel/adding-services
 /// </summary>
-public class AIServices : BaseTest
+public class AIServices(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -68,9 +68,5 @@ public class AIServices : BaseTest
                        .AddOpenAITextGeneration(openAItextModelId, openAIapiKey)
                        .Build();
         // </OpenAITextCompletionKernelCreation>
-    }
-
-    public AIServices(ITestOutputHelper output) : base(output)
-    {
     }
 }
