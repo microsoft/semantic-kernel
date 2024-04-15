@@ -6,7 +6,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_se
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import AzureCosmosDBMemoryStore
 from semantic_kernel.connectors.memory.chroma.chroma_memory_store import ChromaMemoryStore
-from semantic_kernel.connectors.memory.milvus.milvus_memory_store import MilvusMemoryStore
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
 from semantic_kernel.connectors.memory.pinecone.pinecone_memory_store import PineconeMemoryStore
 from semantic_kernel.connectors.memory.postgres.postgres_memory_store import PostgresMemoryStore
@@ -20,7 +19,6 @@ __all__ = [
     "AzureCognitiveSearchMemoryStore",
     "AzureCosmosDBMemoryStore",
     "ChromaMemoryStore",
-    "MilvusMemoryStore",
     "MongoDBAtlasMemoryStore",
     "PineconeMemoryStore",
     "PostgresMemoryStore",
