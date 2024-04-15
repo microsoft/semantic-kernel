@@ -45,7 +45,7 @@ public static class HuggingFaceServiceCollectionExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public static class HuggingFaceServiceCollectionExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
     }
 
@@ -106,7 +106,7 @@ public static class HuggingFaceServiceCollectionExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
     }
 
@@ -137,6 +137,6 @@ public static class HuggingFaceServiceCollectionExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 }

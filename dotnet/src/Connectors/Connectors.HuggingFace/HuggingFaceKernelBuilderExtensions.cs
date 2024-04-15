@@ -45,7 +45,7 @@ public static class HuggingFaceKernelBuilderExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
 
         return builder;
@@ -78,7 +78,7 @@ public static class HuggingFaceKernelBuilderExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
 
         return builder;
@@ -111,7 +111,7 @@ public static class HuggingFaceKernelBuilderExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
 
         return builder;
@@ -144,7 +144,7 @@ public static class HuggingFaceKernelBuilderExtensions
                 endpoint,
                 apiKey,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetRequiredService<ILoggerFactory>()
+                serviceProvider.GetService<ILoggerFactory>()
             ));
 
         return builder;
