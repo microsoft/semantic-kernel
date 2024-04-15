@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
+public class Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
@@ -44,8 +44,10 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
             modelId: modelId);
         Kernel kernel = builder.Build();
 
-        var arguments = new KernelArguments();
-        arguments["word2"] = " Potter";
+        var arguments = new KernelArguments
+        {
+            ["word2"] = " Potter"
+        };
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
@@ -82,9 +84,5 @@ A boy with a scar,
 Wizarding world he explores,
 Harry Potter's tale.
          */
-    }
-
-    public Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : base(output)
-    {
     }
 }

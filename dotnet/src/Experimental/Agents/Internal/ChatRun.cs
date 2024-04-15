@@ -176,12 +176,8 @@ internal sealed class ChatRun
             }
 
             var result = await function.InvokeAsync(this._kernel, functionArguments, cancellationToken).ConfigureAwait(false);
-            if (result.ValueType == typeof(AgentResponse))
-            {
-                return result.GetValue<AgentResponse>()!;
-            }
 
-            return result.GetValue<string>() ?? string.Empty;
+            return result.GetValue<object>() ?? string.Empty;
         }
     }
 }

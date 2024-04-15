@@ -9,44 +9,27 @@ using Xunit;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
 namespace SemanticKernel.UnitTests.Text;
+
 public sealed class TextChunkerInternationalTests
 {
-    public class StatefulTokenCounter
+    public sealed class StatefulTokenCounter
     {
-        private int _callCount = 0;
-        private readonly Dictionary<string, int> _callStats;
+        private readonly Dictionary<string, int> _callStats = [];
+        private readonly Tokenizer _tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
 
-        private readonly Tokenizer _tokenizer;
-
-        public StatefulTokenCounter()
-        {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-            this._tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-            this._callStats = [];
-        }
         public int Count(string input)
         {
-            this._callCount++;
-            if (this._callStats.TryGetValue(input, out int value))
-            {
-                this._callStats[input] = ++value;
-            }
-            else
-            {
-                this._callStats[input] = 1;
-            }
+            this.CallCount++;
+            this._callStats[input] = this._callStats.TryGetValue(input, out int value) ? value + 1 : 1;
             return this._tokenizer.CountTokens(input);
         }
 
-        public int CallCount => this._callCount;
+        public int CallCount { get; private set; } = 0;
     }
 
     private static TokenCounter StatelessTokenCounter => (string input) =>
     {
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        var tokenizer = Tiktoken.CreateByModelNameAsync("gpt-4").Result;
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+        var tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4");
         return tokenizer.CountTokens(input);
     };
 

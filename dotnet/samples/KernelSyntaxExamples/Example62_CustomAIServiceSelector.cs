@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example62_CustomAIServiceSelector : BaseTest
+public class Example62_CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to use a custom AI service selector to select a specific model
@@ -49,14 +49,9 @@ public class Example62_CustomAIServiceSelector : BaseTest
     /// a completion model whose name starts with "gpt". But this logic could
     /// be as elaborate as needed to apply your own selection criteria.
     /// </summary>
-    private sealed class GptAIServiceSelector : IAIServiceSelector
+    private sealed class GptAIServiceSelector(ITestOutputHelper output) : IAIServiceSelector
     {
-        private readonly ITestOutputHelper _output;
-
-        public GptAIServiceSelector(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public bool TrySelectAIService<T>(
             Kernel kernel, KernelFunction function, KernelArguments arguments,
@@ -80,9 +75,5 @@ public class Example62_CustomAIServiceSelector : BaseTest
             serviceSettings = null;
             return false;
         }
-    }
-
-    public Example62_CustomAIServiceSelector(ITestOutputHelper output) : base(output)
-    {
     }
 }

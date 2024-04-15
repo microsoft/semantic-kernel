@@ -7,9 +7,8 @@
 // This was copied from https://github.com/dotnet/runtime/blob/39b9607807f29e48cae4652cd74735182b31182e/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 // and updated to have the scope of the attributes be internal.
 
-namespace System.Diagnostics.CodeAnalysis;
-
 #if !NETCOREAPP
+namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
@@ -116,7 +115,7 @@ internal sealed class MemberNotNullAttribute : Attribute
     /// The field or property member that is promised to be not-null.
     /// </param>
     [SuppressMessage("Design", "CA1019:Define accessors for attribute arguments")]
-    public MemberNotNullAttribute(string member) => this.Members = new[] { member };
+    public MemberNotNullAttribute(string member) => this.Members = [member];
 
     /// <summary>Initializes the attribute with the list of field and property members.</summary>
     /// <param name="members">
@@ -144,7 +143,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
     public MemberNotNullWhenAttribute(bool returnValue, string member)
     {
         this.ReturnValue = returnValue;
-        this.Members = new[] { member };
+        this.Members = [member];
     }
 
     /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>
