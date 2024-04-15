@@ -452,7 +452,7 @@ class Kernel(KernelBaseModel):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin]) -> None:
+    def add_plugins(self, plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object]) -> None:
         """
         Adds a list of plugins to the kernel's collection of plugins.
 
@@ -460,8 +460,11 @@ class Kernel(KernelBaseModel):
             plugins (list[KernelPlugin] | dict[str, KernelPlugin]): The plugins to add to the kernel
         """
         if isinstance(plugins, list):
-            plugins = {plugin.name: plugin for plugin in plugins}
-        self.plugins.update(plugins)
+            for plugin in plugins:
+                self.add_plugin(plugin)
+            return
+        for name, plugin in plugins.items():
+            self.add_plugin(plugin, plugin_name=name)
 
     def add_function(
         self,

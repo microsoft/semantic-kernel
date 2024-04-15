@@ -135,7 +135,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         cloned_kernel = copy(kernel)
-        cloned_kernel.import_plugin_from_object(UserInteraction(), "UserInteraction")
+        cloned_kernel.add_plugin(UserInteraction(), "UserInteraction")
 
         # Create and invoke a kernel function to generate the initial plan
         initial_plan = await self._generate_plan(question=question, kernel=cloned_kernel, arguments=arguments)

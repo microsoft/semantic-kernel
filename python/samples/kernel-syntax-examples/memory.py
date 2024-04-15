@@ -46,9 +46,7 @@ async def setup_chat_with_memory(
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt,
-        execution_settings={
-            service_id: kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
-        },
+        execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
     )
 
     chat_func = kernel.add_function(

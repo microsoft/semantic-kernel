@@ -308,6 +308,8 @@ class KernelPlugin(KernelBaseModel):
         for object in glob(os.path.join(plugin_directory, "*")):
             logger.debug(f"Found object: {object}")
             if os.path.isdir(object):
+                if os.path.basename(object).startswith("__"):
+                    continue
                 try:
                     functions.append(KernelFunctionFromPrompt.from_directory(path=object))
                 except FunctionInitializationError:
