@@ -50,8 +50,4 @@ public class Example01_Agent(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
-
-    public Example01_Agent(ITestOutputHelper output)
-        : base(output)
-    { }
 }

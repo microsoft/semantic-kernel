@@ -57,8 +57,4 @@ public class Example02_Plugins(ITestOutputHelper output) : BaseTest(output)
             }
         }
     }
-
-    public Example02_Plugins(ITestOutputHelper output)
-        : base(output)
-    { }
 }
