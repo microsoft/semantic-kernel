@@ -23,7 +23,7 @@ internal sealed class HuggingFaceClient
 
     internal string ModelId { get; }
     internal string? ApiKey { get; }
-    internal Uri? Endpoint { get; }
+    internal Uri Endpoint { get; }
     internal string Separator { get; }
     internal ILogger Logger { get; }
 

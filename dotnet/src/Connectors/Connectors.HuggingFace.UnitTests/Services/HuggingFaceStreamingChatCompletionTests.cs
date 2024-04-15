@@ -23,24 +23,6 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly HttpMessageHandlerStub _messageHandlerStub;
 
-    private sealed class DoubleConverter : JsonConverter<double>
-    {
-        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return reader.GetSingle();
-        }
-
-        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
-        {
-            var numberString = value.ToString("0.############################", CultureInfo.InvariantCulture);
-
-            // Trim unnecessary trailing zeros and possible trailing decimal point
-            numberString = numberString.TrimEnd('0').TrimEnd('.');
-
-            writer.WriteRawValue(numberString);
-        }
-    }
-
     public HuggingFaceStreamingChatCompletionTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
@@ -307,5 +289,23 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
     {
         this._httpClient.Dispose();
         this._messageHandlerStub.Dispose();
+    }
+
+    private sealed class DoubleConverter : JsonConverter<double>
+    {
+        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return reader.GetSingle();
+        }
+
+        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+        {
+            var numberString = value.ToString("0.############################", CultureInfo.InvariantCulture);
+
+            // Trim unnecessary trailing zeros and possible trailing decimal point
+            numberString = numberString.TrimEnd('0').TrimEnd('.');
+
+            writer.WriteRawValue(numberString);
+        }
     }
 }

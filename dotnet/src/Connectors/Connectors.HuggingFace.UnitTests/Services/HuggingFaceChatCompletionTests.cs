@@ -202,6 +202,7 @@ public sealed class HuggingFaceChatCompletionTests : IDisposable
         chatHistory.AddUserMessage("How are you?");
         return chatHistory;
     }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

@@ -25,7 +25,7 @@ internal sealed class HuggingFaceMessageApiClient
 {
     private readonly HuggingFaceClient _clientCore;
 
-    private static readonly string s_namespace = typeof(HuggingFaceClient).Namespace!;
+    private static readonly string s_namespace = typeof(HuggingFaceMessageApiClient).Namespace!;
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.

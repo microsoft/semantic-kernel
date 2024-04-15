@@ -3,6 +3,7 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Embeddings;
@@ -39,7 +40,12 @@ public static class HuggingFaceServiceCollectionExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new HuggingFaceTextGenerationService(
+                model,
+                endpoint,
+                apiKey,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetRequiredService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -64,7 +70,13 @@ public static class HuggingFaceServiceCollectionExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceChatCompletionService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new HuggingFaceChatCompletionService(
+                model,
+                endpoint,
+                apiKey,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetRequiredService<ILoggerFactory>()
+            ));
     }
 
     /// <summary>
@@ -89,7 +101,13 @@ public static class HuggingFaceServiceCollectionExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceTextEmbeddingGenerationService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new HuggingFaceTextEmbeddingGenerationService(
+                model,
+                endpoint,
+                apiKey,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetRequiredService<ILoggerFactory>()
+            ));
     }
 
     /// <summary>
@@ -114,6 +132,11 @@ public static class HuggingFaceServiceCollectionExtensions
         Verify.NotNull(model);
 
         return services.AddKeyedSingleton<IImageToTextService>(serviceId, (serviceProvider, _) =>
-            new HuggingFaceImageToTextService(model, endpoint, apiKey, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
+            new HuggingFaceImageToTextService(
+                model,
+                endpoint,
+                apiKey,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetRequiredService<ILoggerFactory>()));
     }
 }

@@ -26,9 +26,9 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The HuggingFace model for the text generation service.</param>
+    /// <param name="model">The HuggingFace model for the chat completion service.</param>
     /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
@@ -43,7 +43,7 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
         Verify.NotNullOrWhiteSpace(model);
 
         var clientEndpoint = endpoint ?? httpClient?.BaseAddress
-            ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion services requires a valid endpoint provided explicitly or via a http client base address");
+            ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion service requires a valid endpoint provided explicitly or via HTTP client base address");
 
         this.Client = new HuggingFaceMessageApiClient(
             modelId: model,

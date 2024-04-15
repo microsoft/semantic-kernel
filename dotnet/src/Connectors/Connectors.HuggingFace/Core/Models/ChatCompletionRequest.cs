@@ -1,5 +1,4 @@
-﻿
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +13,15 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 internal sealed class ChatCompletionRequest
 {
     /// <summary>
+    /// This is the default name when using TGI and will be ignored as the TGI will only target the current activated model.
+    /// </summary>
+    private const string TextGenerationInferenceDefaultModel = "tgi";
+    /// <summary>
     /// Model name to use for generation.
     /// </summary>
+    /// <remarks>
+    /// When using TGI this parameter will be ignored.
+    /// </remarks>
     [JsonPropertyName("model")]
     public string? Model { get; set; }
 
@@ -112,7 +118,7 @@ internal sealed class ChatCompletionRequest
             Temperature = executionSettings.Temperature,
             Stop = executionSettings.Stop,
             MaxTokens = executionSettings.MaxTokens,
-            Model = executionSettings.ModelId ?? "tgi", // Text Generation Inference
+            Model = executionSettings.ModelId ?? TextGenerationInferenceDefaultModel,
             TopP = executionSettings.TopP,
             TopLogProbs = executionSettings.TopLogProbs
         };

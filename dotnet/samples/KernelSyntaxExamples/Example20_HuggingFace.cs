@@ -72,12 +72,14 @@ public class Example20_HuggingFace : BaseTest
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
+        var settings = new HuggingFacePromptExecutionSettings { UseCache = false };
+
         var questionAnswerFunction = kernel.CreateFunctionFromPrompt("Question: {{$input}}; Answer:", new HuggingFacePromptExecutionSettings
         {
             UseCache = false
         });
 
-        await foreach (string text in kernel.InvokeStreamingAsync<string>(questionAnswerFunction, new() { ["input"] = "What is New York?" }))
+        await foreach (string text in kernel.InvokePromptStreamingAsync<string>("Question: {{$input}}; Answer:", new(settings) { ["input"] = "What is New York?" }))
         {
             this.Write(text);
         }

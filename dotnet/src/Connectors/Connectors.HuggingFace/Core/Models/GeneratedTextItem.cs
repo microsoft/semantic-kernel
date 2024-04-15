@@ -9,9 +9,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class GeneratedTextItem
 {
-    /// <summary>
-    /// The continuated string
-    /// </summary>
     [JsonPropertyName("generated_text")]
     public string? GeneratedText { get; set; }
 
@@ -35,6 +32,7 @@ internal sealed class GeneratedTextItem
         [JsonPropertyName("tokens")]
         public List<TextGenerationToken>? Tokens { get; set; }
     }
+
     internal class TextGenerationPrefillToken
     {
         [JsonPropertyName("id")]
