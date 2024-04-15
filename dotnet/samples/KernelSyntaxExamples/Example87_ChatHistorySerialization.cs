@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example87_ChatHistorySerialization : BaseTest
+public class Example87_ChatHistorySerialization(ITestOutputHelper output) : BaseTest(output)
 {
     private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
 
@@ -23,18 +23,20 @@ public class Example87_ChatHistorySerialization : BaseTest
     [Fact]
     public void SerializeChatHistoryWithSKContentTypes()
     {
-        var data = new[] { 1, 2, 3 };
+        int[] data = [1, 2, 3];
 
-        var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.");
-        message.Items =
-        [
-            new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
-            new ImageContent(new Uri("https://fake-random-test-host:123")),
-            new BinaryContent(new BinaryData(data)),
+        var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.")
+        {
+            Items =
+            [
+                new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
+                new ImageContent(new Uri("https://fake-random-test-host:123")),
+                new BinaryContent(new BinaryData(data)),
 #pragma warning disable SKEXP0001
-            new AudioContent(new BinaryData(data))
+                new AudioContent(new BinaryData(data))
 #pragma warning restore SKEXP0001
-        ];
+            ]
+        };
 
         var chatHistory = new ChatHistory([message]);
 
@@ -64,12 +66,14 @@ public class Example87_ChatHistorySerialization : BaseTest
     [Fact]
     public void SerializeChatWithHistoryWithCustomContentType()
     {
-        var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.");
-        message.Items =
-        [
-            new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
-            new CustomContent("Some custom content"),
-        ];
+        var message = new ChatMessageContent(AuthorRole.User, "Describe the factors contributing to climate change.")
+        {
+            Items =
+            [
+                new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
+                new CustomContent("Some custom content"),
+            ]
+        };
 
         var chatHistory = new ChatHistory([message]);
 
@@ -95,18 +99,9 @@ public class Example87_ChatHistorySerialization : BaseTest
         WriteLine($"JSON:\n{chatHistoryJson}");
     }
 
-    public Example87_ChatHistorySerialization(ITestOutputHelper output) : base(output)
+    private sealed class CustomContent(string content) : KernelContent(content)
     {
-    }
-
-    private sealed class CustomContent : KernelContent
-    {
-        public CustomContent(string content) : base(content)
-        {
-            Content = content;
-        }
-
-        public string Content { get; }
+        public string Content { get; } = content;
     }
 
     /// <summary>

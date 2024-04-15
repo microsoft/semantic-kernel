@@ -45,7 +45,7 @@ public class SerializingPrompts : BaseTest
         var prompts = kernel.CreatePluginFromPromptDirectory("./../../../Plugins/Prompts");
 
         // Load prompt from YAML
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources." + "getIntent.prompt.yaml")!);
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources.getIntent.prompt.yaml")!);
         KernelFunction getIntent = kernel.CreateFunctionFromPromptYaml(
             await reader.ReadToEndAsync(),
             promptTemplateFactory: new HandlebarsPromptTemplateFactory()

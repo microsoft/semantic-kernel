@@ -54,14 +54,16 @@ public sealed class OpenAITextToImageServiceTests : IDisposable
         var service = new OpenAITextToImageService("api-key", "organization", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""created"": 1702575371,
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "created": 1702575371,
+                                            "data": [
                                                 {
-                                                    ""url"": ""https://image-url""
+                                                    "url": "https://image-url"
                                                 }
                                             ]
-                                        }", Encoding.UTF8, "application/json")
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert

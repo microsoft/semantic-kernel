@@ -40,12 +40,14 @@ public sealed class OpenAITextToAudioExecutionSettingsTests
     public void ItCreatesOpenAIAudioToTextExecutionSettingsFromJson()
     {
         // Arrange
-        var json = @"{
-            ""model_id"": ""model_id"",
-            ""voice"": ""voice"",
-            ""response_format"": ""mp3"",
-            ""speed"": 1.2
-        }";
+        var json = """
+        {
+            "model_id": "model_id",
+            "voice": "voice",
+            "response_format": "mp3",
+            "speed": 1.2
+        }
+        """;
 
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 

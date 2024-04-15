@@ -11,23 +11,11 @@ using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
-    public HandlebarsPlannerTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<HandlebarsPlannerTests>()
-            .Build();
-    }
-
     [Theory]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
@@ -69,18 +57,20 @@ public sealed class HandlebarsPlannerTests
     }
 
     [Theory]
-    [InlineData(true, "List each property of the default Qux object.", "## Complex types", @"### Qux:
-{
-  ""type"": ""Object"",
-  ""properties"": {
-    ""Bar"": {
-      ""type"": ""String"",
-    },
-    ""Baz"": {
-      ""type"": ""Int32"",
-    },
-  }
-}", "GetDefaultQux", "Foo")]
+    [InlineData(true, "List each property of the default Qux object.", "## Complex types", """
+        ### Qux:
+        {
+          "type": "Object",
+          "properties": {
+            "Bar": {
+              "type": "String",
+            },
+            "Baz": {
+              "type": "Int32",
+            },
+          }
+        }
+        """, "GetDefaultQux", "Foo")]
     public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
     {
         // Arrange
@@ -152,7 +142,12 @@ public sealed class HandlebarsPlannerTests
         return builder.Build();
     }
 
-    private readonly IConfigurationRoot _configuration;
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<HandlebarsPlannerTests>()
+        .Build();
 
     private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
     {
@@ -165,16 +160,10 @@ public sealed class HandlebarsPlannerTests
 
     private sealed class Foo
     {
-        public sealed class Qux
+        public sealed class Qux(string bar, int baz)
         {
-            public string Bar { get; set; } = string.Empty;
-            public int Baz { get; set; }
-
-            public Qux(string bar, int baz)
-            {
-                this.Bar = bar;
-                this.Baz = baz;
-            }
+            public string Bar { get; set; } = bar;
+            public int Baz { get; set; } = baz;
         }
 
         [KernelFunction, Description("Returns default Qux object.")]

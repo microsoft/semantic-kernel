@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
-public sealed class GeminiChatCompletionTests : TestsBase
+public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
 {
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
@@ -370,6 +370,4 @@ public sealed class GeminiChatCompletionTests : TestsBase
         this.Output.WriteLine($"ResponseSafetyRatings: {JsonSerializer.Serialize(geminiMetadata.ResponseSafetyRatings)}");
         Assert.NotNull(geminiMetadata.ResponseSafetyRatings);
     }
-
-    public GeminiChatCompletionTests(ITestOutputHelper output) : base(output) { }
 }

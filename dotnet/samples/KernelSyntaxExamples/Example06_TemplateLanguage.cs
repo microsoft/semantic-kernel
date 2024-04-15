@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example06_TemplateLanguage : BaseTest
+public class Example06_TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C#
@@ -84,9 +84,5 @@ Is it weekend time (weekend/not weekend)?
                 "weekend": "weekend"
             }
          */
-    }
-
-    public Example06_TemplateLanguage(ITestOutputHelper output) : base(output)
-    {
     }
 }

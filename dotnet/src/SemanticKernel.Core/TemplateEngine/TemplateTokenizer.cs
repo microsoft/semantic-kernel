@@ -30,18 +30,8 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
-internal sealed class TemplateTokenizer
+internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
 {
-    /// <summary>
-    /// Create a new instance of SK tokenizer
-    /// </summary>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public TemplateTokenizer(ILoggerFactory? loggerFactory = null)
-    {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._codeTokenizer = new CodeTokenizer(loggerFactory);
-    }
-
     /// <summary>
     /// Extract blocks from the given text
     /// </summary>
@@ -202,8 +192,8 @@ internal sealed class TemplateTokenizer
 
     #region private ================================================================================
 
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly CodeTokenizer _codeTokenizer;
+    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+    private readonly CodeTokenizer _codeTokenizer = new(loggerFactory);
 
     private static string SubStr(string text, int startIndex, int stopIndex)
     {

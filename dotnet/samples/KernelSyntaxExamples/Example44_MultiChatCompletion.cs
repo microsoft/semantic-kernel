@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
-public class Example44_MultiChatCompletion : BaseTest
+public class Example44_MultiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public Task AzureOpenAIMultiChatCompletionAsync()
@@ -74,9 +74,5 @@ public class Example44_MultiChatCompletion : BaseTest
         WriteLine("------------------------");
 
         return Task.CompletedTask;
-    }
-
-    public Example44_MultiChatCompletion(ITestOutputHelper output) : base(output)
-    {
     }
 }
