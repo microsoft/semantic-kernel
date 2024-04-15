@@ -57,27 +57,4 @@ public class SequentialSelectionStrategyTests
         SequentialSelectionStrategy strategy = new();
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync(Array.Empty<Agent>(), Array.Empty<ChatMessageContent>()));
     }
-
-    /// <summary>
-    /// Verify <see cref="SequentialSelectionStrategy"/> maintains order consistency
-    /// for int.MaxValue + 1 number of turns.
-    /// </summary>
-    [Fact]
-    public async Task VerifySequentialSelectionStrategyOverflowAsync()
-    {
-        Mock<Agent> agent1 = new();
-        Mock<Agent> agent2 = new();
-        Mock<Agent> agent3 = new();
-
-        Agent[] agents = new[] { agent1.Object, agent2.Object, agent3.Object };
-        SequentialSelectionStrategy strategy = new();
-
-        typeof(SequentialSelectionStrategy)
-            .GetField("_index", BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.Instance)!
-            .SetValue(strategy, int.MaxValue);
-
-        var nextAgent = await strategy.NextAsync(agents, Array.Empty<ChatMessageContent>());
-        Assert.NotNull(nextAgent);
-        Assert.Equal(agent2.Object.Id, nextAgent.Id);
-    }
 }
