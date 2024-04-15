@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;
+
 public class FunctionNameTests
 {
     [Fact]
