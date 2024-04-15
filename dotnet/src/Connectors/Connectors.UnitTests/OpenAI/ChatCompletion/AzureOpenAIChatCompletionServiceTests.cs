@@ -701,7 +701,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
+    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallRequestContentAsync()
     {
         // Arrange
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
