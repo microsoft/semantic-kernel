@@ -324,28 +324,33 @@ public sealed class Kernel
     {
         PromptRenderingContext context = new(function, arguments);
 
-        if (this._promptFilters is { Count: > 0 })
-        {
-            async Task InvokeFilterOrRenderingAsync(PromptRenderingContext context, int index = 0)
-            {
-                if (index < this._promptFilters.Count)
-                {
-                    await this._promptFilters[index].OnPromptRenderingAsync(context, (context) => InvokeFilterOrRenderingAsync(context, index + 1)).ConfigureAwait(false);
-                }
-                else
-                {
-                    await renderingCallback(context).ConfigureAwait(false);
-                }
-            }
+        await InvokeFilterOrPromptRenderingAsync(this._promptFilters, renderingCallback, context).ConfigureAwait(false);
 
-            await InvokeFilterOrRenderingAsync(context).ConfigureAwait(false);
+        return context;
+    }
+
+    /// <summary>
+    /// This method will execute prompt filters and prompt rendering recursively.
+    /// If there are no registered filters, just prompt rendering will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or prompt rendering if there are no remaining filters to execute.
+    /// Prompt rendering will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrPromptRenderingAsync(
+        NonNullCollection<IPromptFilter>? promptFilters,
+        Func<PromptRenderingContext, Task> renderingCallback,
+        PromptRenderingContext context,
+        int index = 0)
+    {
+        if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
+        {
+            await promptFilters[index].OnPromptRenderingAsync(context,
+                (context) => InvokeFilterOrPromptRenderingAsync(promptFilters, renderingCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {
             await renderingCallback(context).ConfigureAwait(false);
         }
-
-        return context;
     }
 
     #endregion
