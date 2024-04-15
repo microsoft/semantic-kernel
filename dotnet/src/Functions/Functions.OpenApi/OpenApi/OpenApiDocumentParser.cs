@@ -22,17 +22,8 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Parser for OpenAPI documents.
 /// </summary>
-internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
+internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null) : IOpenApiDocumentParser
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
-    /// </summary>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
-    {
-        this._logger = loggerFactory?.CreateLogger(typeof(OpenApiDocumentParser)) ?? NullLogger.Instance;
-    }
-
     /// <inheritdoc/>
     public async Task<IList<RestApiOperation>> ParseAsync(
         Stream stream,
@@ -78,7 +69,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     ];
 
     private readonly OpenApiStreamReader _openApiReader = new();
-    private readonly ILogger _logger;
+    private readonly ILogger _logger = loggerFactory?.CreateLogger(typeof(OpenApiDocumentParser)) ?? NullLogger.Instance;
 
     /// <summary>
     /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
@@ -254,7 +245,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
             return null;
         }
 
-        var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt)) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
+        var mediaType = s_supportedMediaTypes.FirstOrDefault(requestBody.Content.ContainsKey) ?? throw new KernelException($"Neither of the media types of {operationId} is supported.");
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
         var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
@@ -266,7 +257,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         foreach (var response in responses)
         {
-            var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => response.Value.Content.ContainsKey(smt));
+            var mediaType = s_supportedMediaTypes.FirstOrDefault(response.Value.Content.ContainsKey);
             if (mediaType is not null)
             {
                 var matchingSchema = response.Value.Content[mediaType].Schema;

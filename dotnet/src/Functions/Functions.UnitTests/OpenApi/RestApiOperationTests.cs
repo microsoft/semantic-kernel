@@ -542,7 +542,7 @@ public class RestApiOperationTests
 
         IKernelBuilder builder = sc.AddKernel();
         Assert.NotNull(builder);
-        Assert.Throws<InvalidOperationException>(() => builder.Build());
+        Assert.Throws<InvalidOperationException>(builder.Build);
 
         builder.Services.AddSingleton<Dictionary<string, string>>([]);
 

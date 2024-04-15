@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example56_TemplateMethodFunctionsWithMultipleArguments : BaseTest
+public class Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to invoke a Method Function written in C# with multiple arguments
@@ -84,9 +84,5 @@ A boy with a scar,
 Wizarding world he explores,
 Harry Potter's tale.
          */
-    }
-
-    public Example56_TemplateMethodFunctionsWithMultipleArguments(ITestOutputHelper output) : base(output)
-    {
     }
 }

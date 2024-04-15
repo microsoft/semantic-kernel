@@ -18,7 +18,7 @@ public class KernelExtensionsTests
         var testFunction = KernelFunctionFactory.CreateFromMethod(() => expectedValue, functionName: "Test");
 
         var kernel = new Kernel();
-        kernel.Plugins.AddFromFunctions("Fake", "Fake functions", new[] { testFunction });
+        kernel.Plugins.AddFromFunctions("Fake", "Fake functions", [testFunction]);
 
         var resultValueInvokeSignature2 = await kernel.InvokeAsync<object>(testFunction);
         var resultValueInvokeSignature3 = await kernel.InvokeAsync<object>("Fake", "Test");

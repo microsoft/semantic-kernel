@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class Example96_GeminiChatCompletion : BaseTest
+public sealed class Example96_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GoogleAIAsync()
@@ -177,6 +177,4 @@ public sealed class Example96_GeminiChatCompletion : BaseTest
         this.WriteLine("------------------------");
         return new ChatMessageContent(AuthorRole.Assistant, messageBuilder.ToString());
     }
-
-    public Example96_GeminiChatCompletion(ITestOutputHelper output) : base(output) { }
 }

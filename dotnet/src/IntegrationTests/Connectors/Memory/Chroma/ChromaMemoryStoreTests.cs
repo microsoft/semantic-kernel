@@ -256,7 +256,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
         var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -287,7 +287,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var expectedRecord2 = this.GetRandomMemoryRecord(embedding: new[] { 5f, 5f, 5f });
         var expectedRecord3 = this.GetRandomMemoryRecord(embedding: new[] { 1f, 1f, 1f });
 
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         var batch = new List<MemoryRecord> { expectedRecord1, expectedRecord2, expectedRecord3 };
         var keys = batch.Select(l => l.Key);
@@ -320,7 +320,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
-        var searchEmbedding = new[] { 2f, 2f, 2f };
+        float[] searchEmbedding = [2f, 2f, 2f];
 
         await this._chromaMemoryStore.CreateCollectionAsync(collectionName);
 

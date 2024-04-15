@@ -253,16 +253,16 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         List<FieldData> fieldData =
         [
-            FieldData.Create(IdFieldName, new[] { metadata.Id }),
+            FieldData.Create(IdFieldName, [metadata.Id]),
             FieldData.CreateFloatVector(EmbeddingFieldName, [record.Embedding]),
 
-            FieldData.Create(IsReferenceFieldName, new[] { metadata.IsReference }, isDynamic: true),
-            FieldData.Create(ExternalSourceNameFieldName, new[] { metadata.ExternalSourceName }, isDynamic: true),
-            FieldData.Create(DescriptionFieldName, new[] { metadata.Description }, isDynamic: true),
-            FieldData.Create(TextFieldName, new[] { metadata.Text }, isDynamic: true),
-            FieldData.Create(AdditionalMetadataFieldName, new[] { metadata.AdditionalMetadata }, isDynamic: true),
-            FieldData.Create(KeyFieldName, new[] { record.Key }, isDynamic: true),
-            FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }, isDynamic: true)
+            FieldData.Create(IsReferenceFieldName, [metadata.IsReference], isDynamic: true),
+            FieldData.Create(ExternalSourceNameFieldName, [metadata.ExternalSourceName], isDynamic: true),
+            FieldData.Create(DescriptionFieldName, [metadata.Description], isDynamic: true),
+            FieldData.Create(TextFieldName, [metadata.Text], isDynamic: true),
+            FieldData.Create(AdditionalMetadataFieldName, [metadata.AdditionalMetadata], isDynamic: true),
+            FieldData.Create(KeyFieldName, [record.Key], isDynamic: true),
+            FieldData.Create(TimestampFieldName, [record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty], isDynamic: true)
         ];
 
         MutationResult result = await collection.UpsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -446,7 +446,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         SearchResults results = await collection
-            .SearchAsync(EmbeddingFieldName, new[] { embedding }, SimilarityMetricType.Ip, limit, this._searchParameters, cancellationToken)
+            .SearchAsync(EmbeddingFieldName, [embedding], SimilarityMetricType.Ip, limit, this._searchParameters, cancellationToken)
             .ConfigureAwait(false);
 
         IReadOnlyList<string> ids = results.Ids.StringIds!;
