@@ -162,7 +162,7 @@ internal class FlowExecutor : IFlowExecutor
 
         // populate persisted state arguments
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
-        List<string> outputs = new();
+        List<string> outputs = [];
 
         while (executionState.CurrentStepIndex < sortedSteps.Count)
         {
@@ -187,7 +187,7 @@ internal class FlowExecutor : IFlowExecutor
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
             var continueLoop = false;
-            var completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
+            var completed = step.Provides.All(executionState.Variables.ContainsKey);
             if (!completed)
             {
                 // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the step
@@ -508,7 +508,7 @@ internal class FlowExecutor : IFlowExecutor
         }
         else
         {
-            chatHistory = new ChatHistory();
+            chatHistory = [];
         }
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
@@ -654,7 +654,7 @@ internal class FlowExecutor : IFlowExecutor
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory is null)
                 {
-                    chatHistory = new ChatHistory();
+                    chatHistory = [];
                 }
                 else
                 {
@@ -768,16 +768,10 @@ internal class FlowExecutor : IFlowExecutor
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private class RepeatOrStartStepResult
+    private sealed class RepeatOrStartStepResult(bool? execute, string? prompt = null)
     {
-        public RepeatOrStartStepResult(bool? execute, string? prompt = null)
-        {
-            this.Prompt = prompt;
-            this.Execute = execute;
-        }
+        public bool? Execute { get; } = execute;
 
-        public bool? Execute { get; }
-
-        public string? Prompt { get; }
+        public string? Prompt { get; } = prompt;
     }
 }

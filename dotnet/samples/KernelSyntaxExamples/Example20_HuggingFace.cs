@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public class Example20_HuggingFace : BaseTest
+public class Example20_HuggingFace(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
@@ -50,7 +50,7 @@ public class Example20_HuggingFace : BaseTest
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         // Generate embeddings for each chunk.
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(new[] { "John: Hello, how are you?\nRoger: Hey, I'm Roger!" });
+        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
         this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }
@@ -111,9 +111,5 @@ public class Example20_HuggingFace : BaseTest
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         WriteLine(result.GetValue<string>());
-    }
-
-    public Example20_HuggingFace(ITestOutputHelper output) : base(output)
-    {
     }
 }

@@ -11,7 +11,7 @@ public sealed class VertexAIEmbeddingRequestTests
     public void FromDataReturnsValidRequestWithData()
     {
         // Arrange
-        var data = new[] { "text1", "text2" };
+        string[] data = ["text1", "text2"];
 
         // Act
         var request = VertexAIEmbeddingRequest.FromData(data);

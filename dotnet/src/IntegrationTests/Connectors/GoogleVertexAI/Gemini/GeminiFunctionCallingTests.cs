@@ -13,10 +13,8 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
-public sealed class GeminiFunctionCallingTests : TestsBase
+public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : TestsBase(output)
 {
-    public GeminiFunctionCallingTests(ITestOutputHelper output) : base(output) { }
-
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
@@ -300,12 +298,12 @@ public sealed class GeminiFunctionCallingTests : TestsBase
         [return: Description("List of customers.")]
         public string[] GetCustomers()
         {
-            return new[]
-            {
+            return
+            [
                 "John Kowalski",
                 "Anna Nowak",
                 "Steve Smith",
-            };
+            ];
         }
 
         [KernelFunction(nameof(GetCustomerAge))]
