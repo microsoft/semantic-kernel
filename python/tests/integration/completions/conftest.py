@@ -100,7 +100,7 @@ def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 
     # Create the semantic function
-    text2text_function = kernel.create_function_from_prompt(
+    text2text_function = kernel.add_function(
         function_name="hello", plugin_name="plugin", prompt_template_config=prompt_template_config
     )
 

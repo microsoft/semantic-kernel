@@ -40,7 +40,7 @@ async def main():
     )
 
     # Run the prompt
-    chat_function = kernel.create_function_from_prompt(
+    chat_function = kernel.add_function(
         prompt=prompt,
         plugin_name="Summarize_Conversation",
         function_name="Chat",

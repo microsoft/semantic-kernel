@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use gRPC plugins.
-public class Example35_GrpcPlugins : BaseTest
+public class Example35_GrpcPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact(Skip = "Setup crendentials")]
     public async Task RunAsync()
@@ -32,9 +32,5 @@ public class Example35_GrpcPlugins : BaseTest
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
         WriteLine($"Plugin response: {result.GetValue<string>()}");
-    }
-
-    public Example35_GrpcPlugins(ITestOutputHelper output) : base(output)
-    {
     }
 }

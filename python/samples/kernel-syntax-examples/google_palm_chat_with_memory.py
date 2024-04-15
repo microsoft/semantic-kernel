@@ -51,7 +51,7 @@ async def setup_chat_with_memory(
         },
     )
 
-    chat_func = kernel.create_function_from_prompt(
+    chat_func = kernel.add_function(
         function_name="chat_with_memory",
         plugin_name="TextMemoryPlugin",
         prompt_template_config=prompt_template_config,
@@ -91,7 +91,7 @@ async def main() -> None:
     kernel.add_service(palm_chat_completion)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=palm_text_embed)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(memory)

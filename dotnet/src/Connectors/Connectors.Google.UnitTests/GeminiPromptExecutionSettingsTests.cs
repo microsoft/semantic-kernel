@@ -39,7 +39,7 @@ public sealed class GeminiPromptExecutionSettingsTests
             TopP = 0.7,
             TopK = 20,
             CandidateCount = 3,
-            StopSequences = new[] { "foo", "bar" },
+            StopSequences = ["foo", "bar"],
             MaxTokens = 128,
             SafetySettings =
             [
@@ -110,7 +110,7 @@ public sealed class GeminiPromptExecutionSettingsTests
         Assert.Equal(0.7, executionSettings.TopP);
         Assert.Equal(25, executionSettings.TopK);
         Assert.Equal(2, executionSettings.CandidateCount);
-        Assert.Equal(new[] { "foo", "bar" }, executionSettings.StopSequences);
+        Assert.Equal(["foo", "bar"], executionSettings.StopSequences);
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Single(executionSettings.SafetySettings!, settings =>
             settings.Category.Equals(category) &&

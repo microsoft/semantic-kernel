@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public sealed class Step7_Observability : BaseTest
+public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows how to observe the execution of a <see cref="KernelPlugin"/> instance with filters.
@@ -111,14 +111,9 @@ public sealed class Step7_Observability : BaseTest
     /// <summary>
     /// Function filter for observability.
     /// </summary>
-    private sealed class MyFunctionFilter : IFunctionFilter
+    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public MyFunctionFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnFunctionInvoked(FunctionInvokedContext context)
         {
@@ -139,14 +134,9 @@ public sealed class Step7_Observability : BaseTest
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
-    private sealed class MyPromptFilter : IPromptFilter
+    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public MyPromptFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnPromptRendered(PromptRenderedContext context)
         {
@@ -157,9 +147,5 @@ public sealed class Step7_Observability : BaseTest
         {
             this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
         }
-    }
-
-    public Step7_Observability(ITestOutputHelper output) : base(output)
-    {
     }
 }

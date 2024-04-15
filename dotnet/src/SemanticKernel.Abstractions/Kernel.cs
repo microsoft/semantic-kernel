@@ -267,7 +267,7 @@ public sealed class Kernel
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
                 {
-                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
+                    return keys.SelectMany(this.Services.GetKeyedServices<T>);
                 }
 
                 return [];

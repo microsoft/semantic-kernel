@@ -6,8 +6,10 @@ from dotenv import load_dotenv
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.search_engine import GoogleConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 load_dotenv()
 
@@ -36,15 +38,15 @@ async def main():
     )
 
     # Import the WebSearchEnginePlugin and pass the Google Connector to it.
-    web_plugin = kernel.import_plugin_from_object(WebSearchEnginePlugin(connector), "WebSearch")
+    web_plugin = kernel.add_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
     # The search query
-    prompt = "Who is Leonardo DiCaprio's current girlfriend?"
     search = web_plugin["searchAsync"]
+    prompt = "Who is Leonardo DiCaprio's current girlfriend?"
 
     # By default, only one search result is provided
-    result = await search.invoke(prompt)
-    print(result)
+    result = await search.invoke(kernel, query=prompt)
+    print(str(result))
 
     """
     Output:
@@ -61,19 +63,22 @@ async def main():
     Answer:
     """
 
-    qna = kernel.create_semantic_function(prompt, temperature=0.2)
-    context = kernel.create_new_context()
+    qna = kernel.add_function(
+        plugin_name="qa",
+        function_name="qna",
+        prompt=prompt,
+        prompt_execution_settings=PromptExecutionSettings(temperature=0.2),
+    )
 
     """
     Two context parameters can be passed to the search engine plugin.
     - num_results controls the number of results returned by the web search.
     - offset controls the number of results to omit.
     """
-    context["num_results"] = "10"
-    context["offset"] = "0"
+    arguments = KernelArguments(num_results="10", offset="0")
 
-    result = await qna.invoke(context=context)
-    print(result)
+    result = await qna.invoke(kernel, arguments)
+    print(str(result))
 
     """
     Output:
