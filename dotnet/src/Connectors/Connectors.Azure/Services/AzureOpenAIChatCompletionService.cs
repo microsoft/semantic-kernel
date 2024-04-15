@@ -10,14 +10,13 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.Azure;
 
 /// <summary>
 /// Azure chat completion service.
 /// </summary>
-public sealed class AzureChatCompletionService : IChatCompletionService, ITextGenerationService
+public sealed class AzureChatCompletionService : IChatCompletionService
 {
     /// <summary>Core implementation shared by Azure clients.</summary>
     private readonly AzureClientCore _core;
@@ -33,7 +32,7 @@ public sealed class AzureChatCompletionService : IChatCompletionService, ITextGe
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureChatCompletionService(
         string deploymentName,
-        Uri? endpoint,
+        Uri endpoint,
         string apiKey,
         string? modelId = null,
         HttpClient? httpClient = null,
@@ -55,7 +54,7 @@ public sealed class AzureChatCompletionService : IChatCompletionService, ITextGe
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureChatCompletionService(
         string deploymentName,
-        string endpoint,
+        Uri endpoint,
         TokenCredential credentials,
         string? modelId = null,
         HttpClient? httpClient = null,
@@ -92,12 +91,4 @@ public sealed class AzureChatCompletionService : IChatCompletionService, ITextGe
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         => this._core.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextContentsAsync(prompt, executionSettings, kernel, cancellationToken);
-
-    /// <inheritdoc/>
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._core.GetChatAsTextStreamingContentsAsync(prompt, executionSettings, kernel, cancellationToken);
 }

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Azure;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -39,7 +38,7 @@ public static class AzureKernelBuilderExtensions
     public static IKernelBuilder AddAzureChatCompletion(
         this IKernelBuilder builder,
         string deploymentName,
-        string endpoint,
+        Uri endpoint,
         string apiKey,
         string? serviceId = null,
         string? modelId = null,
@@ -47,7 +46,7 @@ public static class AzureKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         Func<IServiceProvider, object?, AzureChatCompletionService> factory = (serviceProvider, _) =>
@@ -61,7 +60,6 @@ public static class AzureKernelBuilderExtensions
         };
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
-        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
 
         return builder;
     }
@@ -80,7 +78,7 @@ public static class AzureKernelBuilderExtensions
     public static IKernelBuilder AddAzureChatCompletion(
         this IKernelBuilder builder,
         string deploymentName,
-        string endpoint,
+        Uri endpoint,
         TokenCredential credentials,
         string? serviceId = null,
         string? modelId = null,
@@ -133,9 +131,9 @@ public static class AzureKernelBuilderExtensions
 
     #endregion
 
-    private static OpenAIClient CreateAzureClient(string endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
+    private static OpenAIClient CreateAzureClient(Uri endpoint, AzureKeyCredential credentials, HttpClient? httpClient) =>
+        new(endpoint, credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 
-    private static OpenAIClient CreateAzureClient(string endpoint, TokenCredential credentials, HttpClient? httpClient) =>
-        new(new Uri(endpoint), credentials, ClientCore.GetOpenAIClientOptions(httpClient));
+    private static OpenAIClient CreateAzureClient(Uri endpoint, TokenCredential credentials, HttpClient? httpClient) =>
+        new(endpoint, credentials, ClientCore.GetOpenAIClientOptions(httpClient));
 }

@@ -35,20 +35,20 @@ internal sealed class AzureClientCore : ClientCore
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal AzureClientCore(
         string deploymentName,
-        string endpoint,
+        Uri endpoint,
         string apiKey,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure endpoint must start with 'https://'");
+        Verify.NotNull(endpoint);
+        Verify.StartsWith(endpoint.Scheme, "https", "The Azure endpoint must start be TLS secured (HTTPS)'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        this.Client = new OpenAIClient(endpoint, new AzureKeyCredential(apiKey), options);
     }
 
     /// <summary>
@@ -61,19 +61,19 @@ internal sealed class AzureClientCore : ClientCore
     /// <param name="logger">The <see cref="ILogger"/> to use for logging. If null, no logging will be performed.</param>
     internal AzureClientCore(
         string deploymentName,
-        string endpoint,
+        Uri endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
-        Verify.StartsWith(endpoint, "https://", "The Azure endpoint must start with 'https://'");
+        Verify.NotNull(endpoint);
+        Verify.StartsWith(endpoint.Scheme, "https", "The Azure endpoint must start be TLS secured (HTTPS)'");
 
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        this.Client = new OpenAIClient(endpoint, credential, options);
     }
 
     /// <summary>

@@ -5,10 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Azure;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+namespace SemanticKernel.Connectors.UnitTests.Azure;
 public class ChatHistoryExtensionsTests
 {
     [Fact]
@@ -19,7 +19,7 @@ public class ChatHistoryExtensionsTests
             { "message", "something" },
         };
 
-        var chatHistoryStreamingContents = new List<OpenAIStreamingChatMessageContent>
+        var chatHistoryStreamingContents = new List<AzureStreamingChatMessageContent>
         {
             new(AuthorRole.User, "Hello ", metadata: metadata),
             new(null, ", ", metadata: metadata),

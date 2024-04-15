@@ -10,7 +10,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
 /// <summary>
 /// Unit tests for <see cref="OpenAIChatMessageContent"/> class.
 /// </summary>
-public sealed class OpenAIChatMessageContentTests
+public sealed class AzureChatMessageContentTests
 {
     [Fact]
     public void ConstructorsWorkCorrectly()
