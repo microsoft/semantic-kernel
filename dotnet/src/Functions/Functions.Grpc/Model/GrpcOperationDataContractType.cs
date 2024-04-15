@@ -26,5 +26,5 @@ internal sealed class GrpcOperationDataContractType
     /// <summary>
     /// List of fields
     /// </summary>
-    public IList<GrpcOperationDataContractTypeFiled> Fields { get; } = new List<GrpcOperationDataContractTypeFiled>();
+    public IList<GrpcOperationDataContractTypeFiled> Fields { get; } = [];
 }
