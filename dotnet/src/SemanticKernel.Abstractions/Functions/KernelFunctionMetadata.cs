@@ -91,4 +91,9 @@ public sealed class KernelFunctionMetadata
             this._returnParameter = value;
         }
     }
+
+    /// <summary>
+    /// The function properties/metadata.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?>? Properties { get; init; }
 }

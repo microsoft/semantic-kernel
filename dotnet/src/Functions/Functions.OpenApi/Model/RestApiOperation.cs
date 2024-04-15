@@ -64,6 +64,11 @@ public sealed class RestApiOperation
     public RestApiOperationPayload? Payload { get; }
 
     /// <summary>
+    /// The operation extensions.
+    /// </summary>
+    public IReadOnlyList<object?> Extensions { get; init; }
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
     /// <param name="id">The operation identifier.</param>

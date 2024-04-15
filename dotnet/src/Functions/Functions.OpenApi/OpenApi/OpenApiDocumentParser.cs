@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -13,8 +14,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.Writers;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -183,12 +186,50 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
-            );
+            )
+            {
+                Extensions = CreateRestApiOperationExtensions(operationItem.Extensions)
+            };
 
             operations.Add(operation);
         }
 
         return operations;
+    }
+
+    private static List<object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions)
+    {
+        var result = new List<object?>();
+
+        foreach (var extension in extensions)
+        {
+            // This code needs to be refactored and tested properly to make sure it supports all derevitives of IOpenApiExtension - https://github.com/microsoft/OpenAPI.NET/blob/vnext/src/Microsoft.OpenApi/Interfaces/IOpenApiExtension.cs
+            var schemaBuilder = new StringBuilder();
+            var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
+            extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
+
+            var extensionValue = new JsonObject();
+            extensionValue.Add("name", extension.Key);
+
+            if (extension.Value is IOpenApiPrimitive primitive)
+            {
+                extensionValue.Add("type", primitive.PrimitiveType.ToString().ToLowerInvariant()); // integer, double, string, date, etc.
+            }
+            else if (extension.Value is IOpenApiAny any)
+            {
+                extensionValue.Add("type", any.AnyType.ToString().ToLowerInvariant()); //primitive, null, array, object
+            }
+            else
+            {
+                extensionValue.Add("type", "object");
+            }
+
+            extensionValue.Add("value", schemaBuilder.ToString());
+
+            result.Add(extensionValue.ToJsonString());
+        }
+
+        return result;
     }
 
     /// <summary>

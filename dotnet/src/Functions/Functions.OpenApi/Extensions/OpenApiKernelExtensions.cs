@@ -333,13 +333,24 @@ public static class OpenApiKernelExtensions
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
+        // Consts should be used instead of strings
+        var properties = new Dictionary<string, object?>();
+        properties.Add("id", operation.Id);
+        properties.Add("path", operation.Path);
+        properties.Add("method", operation.Method.ToString());
+        if (operation.Extensions.Any())
+        {
+            properties.Add("operation-extensions", operation.Extensions);
+        }
+
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
             parameters: parameters,
             returnParameter: returnParameter,
             description: operation.Description,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            loggerFactory: loggerFactory);
+            loggerFactory: loggerFactory,
+            properties: properties);
     }
 
     /// <summary>
