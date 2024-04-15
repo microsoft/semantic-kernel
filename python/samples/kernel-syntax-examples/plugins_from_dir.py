@@ -31,7 +31,7 @@ async def main():
 
     # note: using plugins from the samples folder
     plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
-    plugin = kernel.import_plugin_from_prompt_directory(service_id, plugins_directory, "FunPlugin")
+    plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")
 
     arguments = KernelArguments(input="time travel to dinosaur age", style="super silly")
 

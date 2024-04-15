@@ -146,7 +146,7 @@ async def main():
 
     http_client = httpx.AsyncClient()
 
-    plugin = await kernel.import_plugin_from_openai(
+    plugin = await kernel.add_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",
         plugin_str=openai_spec,
         execution_parameters=OpenAIFunctionExecutionParameters(

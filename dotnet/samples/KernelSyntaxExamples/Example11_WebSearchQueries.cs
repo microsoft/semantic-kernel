@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example11_WebSearchQueries : BaseTest
+public class Example11_WebSearchQueries(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -34,9 +34,5 @@ public class Example11_WebSearchQueries : BaseTest
         * https://www.bing.com/search?q=What%27s%20the%20tallest%20building%20in%20Europe%3F
         * == DONE ==
         */
-    }
-
-    public Example11_WebSearchQueries(ITestOutputHelper output) : base(output)
-    {
     }
 }

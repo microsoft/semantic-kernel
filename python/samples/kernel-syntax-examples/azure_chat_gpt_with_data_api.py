@@ -69,7 +69,7 @@ prompt_template_config = PromptTemplateConfig(
     ],
     execution_settings={"default": req_settings},
 )
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
 )
 

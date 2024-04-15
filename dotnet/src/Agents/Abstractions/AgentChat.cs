@@ -61,7 +61,7 @@ public abstract class AgentChat
     /// <throws>KernelException if a system message is present, without taking any other action</throws>
     public void AddChatMessage(ChatMessageContent message)
     {
-        this.AddChatMessages(new[] { message });
+        this.AddChatMessages([message]);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public abstract class AgentChat
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
             // Invoke agent & process response
-            List<ChatMessageContent> messages = new();
+            List<ChatMessageContent> messages = [];
             await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 // Add to primary history
@@ -180,9 +180,9 @@ public abstract class AgentChat
     /// </summary>
     protected AgentChat()
     {
-        this._agentChannels = new();
+        this._agentChannels = [];
         this._broadcastQueue = new();
-        this._channelMap = new();
-        this.History = new();
+        this._channelMap = [];
+        this._history = [];
     }
 }

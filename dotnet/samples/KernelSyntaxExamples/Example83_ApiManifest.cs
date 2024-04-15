@@ -18,12 +18,8 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use the ApiManifest based plugins
-public class Example83_ApiManifest : BaseTest
+public class Example83_ApiManifest(ITestOutputHelper output) : BaseTest(output)
 {
-    public Example83_ApiManifest(ITestOutputHelper output) : base(output)
-    {
-    }
-
     public static readonly IEnumerable<object[]> s_parameters =
     [
         // function names are sanitized operationIds from the OpenAPI document
@@ -133,18 +129,9 @@ public class Example83_ApiManifest : BaseTest
 /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
 /// "bearer" authentication scheme.
 /// </summary>
-public class BearerAuthenticationProviderWithCancellationToken
+public class BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
 {
-    private readonly Func<Task<string>> _bearerToken;
-
-    /// <summary>
-    /// Creates an instance of the <see cref="BearerAuthenticationProviderWithCancellationToken"/> class.
-    /// </summary>
-    /// <param name="bearerToken">Delegate to retrieve the bearer token.</param>
-    public BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
-    {
-        this._bearerToken = bearerToken;
-    }
+    private readonly Func<Task<string>> _bearerToken = bearerToken;
 
     /// <summary>
     /// Applies the token to the provided HTTP request message.

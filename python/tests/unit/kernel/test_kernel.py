@@ -5,9 +5,7 @@ import sys
 from typing import Union
 from unittest.mock import AsyncMock, patch
 
-import httpx
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -18,23 +16,16 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
-    FunctionInitializationError,
     KernelFunctionAlreadyExistsError,
     KernelServiceNotFoundError,
     ServiceInvalidTypeError,
-)
-from semantic_kernel.exceptions.function_exceptions import (
-    FunctionNameNotUniqueError,
-    PluginInitializationError,
-    PluginInvalidNameError,
 )
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
@@ -76,7 +67,7 @@ def test_kernel_init_with_services_list(service: AIServiceClientBase):
 
 
 def test_kernel_init_with_plugins():
-    plugins = KernelPluginCollection()
+    plugins = {"plugin": KernelPlugin(name="plugin")}
     kernel = Kernel(plugins=plugins)
     assert kernel.plugins is not None
 
@@ -88,7 +79,6 @@ def test_kernel_init_with_plugins():
 @pytest.mark.asyncio
 async def test_invoke_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
 
     await kernel.invoke(mock_function, KernelArguments())
 
@@ -98,7 +88,7 @@ async def test_invoke_function(kernel: Kernel, create_mock_function):
 @pytest.mark.asyncio
 async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
 
     await kernel.invoke(function_name="test_function", plugin_name="test", arguments=KernelArguments())
 
@@ -111,7 +101,7 @@ async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
 @pytest.mark.asyncio
 async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
 
     with pytest.raises(KernelFunctionNotFoundError):
         await kernel.invoke(arguments=KernelArguments())
@@ -124,7 +114,7 @@ async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
 @pytest.mark.asyncio
 async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
 
     async for part in kernel.invoke_stream(mock_function, input="test"):
         assert part[0].text == "test"
@@ -135,7 +125,7 @@ async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
 @pytest.mark.asyncio
 async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
     functions = [mock_function]
 
     function_result_with_exception = FunctionResult(
@@ -198,7 +188,7 @@ def test_invoke_handles_remove(kernel_with_handlers: Kernel):
 @pytest.mark.asyncio
 async def test_invoke_handles_pre_invocation(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.plugins.add(KernelPlugin(name="test", functions=[mock_function]))
+    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
 
     invoked = 0
 
@@ -312,12 +302,11 @@ async def test_invoke_change_variable_invoked_handler(kernel: Kernel, create_moc
 # region Plugins
 
 
-def test_prompt_plugin_can_be_imported(kernel: Kernel):
+def test_add_plugin_from_directory(kernel: Kernel):
     # import plugins
     plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins")
     # path to plugins directory
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
-
+    plugin = kernel.add_plugin(plugin_name="TestPlugin", parent_directory=plugins_directory)
     assert plugin is not None
     assert len(plugin.functions) == 2
     func = plugin.functions["TestFunction"]
@@ -326,75 +315,25 @@ def test_prompt_plugin_can_be_imported(kernel: Kernel):
     assert func_handlebars is not None
 
 
-def test_prompt_plugin_not_found(kernel: Kernel):
-    # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_plugins_fail")
-    # path to plugins directory
-    with pytest.raises(PluginInitializationError):
-        kernel.import_plugin_from_prompt_directory(plugins_directory, "TestPlugin")
+def test_plugin_no_plugin(kernel: Kernel):
+    with pytest.raises(ValueError):
+        kernel.add_plugin(plugin_name="test")
 
 
 def test_plugin_name_error(kernel: Kernel):
-    with pytest.raises(PluginInvalidNameError):
-        kernel.import_plugin_from_object(None, " ")
+    with pytest.raises(ValueError):
+        kernel.add_plugin(" ", None)
 
 
-def test_native_plugin_can_be_imported(kernel: Kernel):
-    # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
-    # path to plugins directory
-    plugin = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
+def test_plugins_add_plugins(kernel: Kernel):
+    plugin1 = KernelPlugin(name="TestPlugin")
+    plugin2 = KernelPlugin(name="TestPlugin2")
 
-    assert plugin is not None
-    assert len(plugin.functions) == 1
-    assert plugin.functions.get("echoAsync") is not None
-    plugin_config = plugin.functions["echoAsync"]
-    assert plugin_config.name == "echoAsync"
-    assert plugin_config.description == "Echo for input text"
+    kernel.add_plugins([plugin1, plugin2])
+    assert len(kernel.plugins) == 2
 
 
-def test_native_plugin_cannot_be_imported(kernel: Kernel):
-    # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins")
-    # path to plugins directory
-    plugin = kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePluginNoClass")
-
-    assert not plugin
-
-
-def test_native_plugin_not_found(kernel: Kernel):
-    # import plugins
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets", "test_native_plugins_fail")
-    # path to plugins directory
-    with pytest.raises(PluginInitializationError):
-        kernel.import_native_plugin_from_directory(plugins_directory, "TestNativePlugin")
-
-
-def test_plugin_from_object_dict(kernel: Kernel, decorated_native_function):
-    plugin_obj = {"getLightStatusFunc": decorated_native_function}
-    plugin = kernel.import_plugin_from_object(plugin_obj, "TestPlugin")
-
-    assert plugin is not None
-    assert len(plugin.functions) == 1
-    assert plugin.functions.get("getLightStatus") is not None
-
-
-def test_plugin_from_object_custom_class(kernel: Kernel, custom_plugin_class):
-    plugin = kernel.import_plugin_from_object(custom_plugin_class(), "TestPlugin")
-
-    assert plugin is not None
-    assert len(plugin.functions) == 1
-    assert plugin.functions.get("getLightStatus") is not None
-
-
-def test_plugin_from_object_custom_class_name_not_unique(kernel: Kernel, custom_plugin_class):
-    plugin_obj = custom_plugin_class()
-    plugin_obj.decorated_native_function_2 = plugin_obj.decorated_native_function
-    with pytest.raises(FunctionNameNotUniqueError):
-        kernel.import_plugin_from_object(plugin_obj, "TestPlugin")
-
-
-def test_create_function_from_prompt_succeeds(kernel: Kernel):
+def test_add_function_from_prompt(kernel: Kernel):
     prompt = """
     Write a short story about two Corgis on an adventure.
     The story must be:
@@ -406,7 +345,7 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
     - The two names of the corgis are {{GenerateNames.generate_names}}
     """
 
-    func = kernel.create_function_from_prompt(
+    kernel.add_function(
         prompt=prompt,
         function_name="TestFunction",
         plugin_name="TestPlugin",
@@ -415,57 +354,58 @@ def test_create_function_from_prompt_succeeds(kernel: Kernel):
             extension_data={"max_tokens": 500, "temperature": 0.5, "top_p": 0.5}
         ),
     )
+    func = kernel.get_function("TestPlugin", "TestFunction")
     assert func.name == "TestFunction"
     assert func.description == "Write a short story."
     assert len(func.parameters) == 2
 
 
-def test_create_function_from_yaml_empty_string(kernel: Kernel):
-    with pytest.raises(PluginInitializationError):
-        kernel.create_function_from_yaml("", "plugin_name")
+def test_add_function_not_provided(kernel: Kernel):
+    with pytest.raises(ValueError):
+        kernel.add_function(function_name="TestFunction", plugin_name="TestPlugin")
 
 
-def test_create_function_from_yaml_malformed_string(kernel: Kernel):
-    with pytest.raises(PluginInitializationError):
-        kernel.create_function_from_yaml("not yaml dict", "plugin_name")
+def test_add_functions(kernel: Kernel):
+    @kernel_function(name="func1")
+    def func1(arg1: str) -> str:
+        return "test"
+
+    @kernel_function(name="func2")
+    def func2(arg1: str) -> str:
+        return "test"
+
+    plugin = kernel.add_functions(plugin_name="test", functions=[func1, func2])
+    assert len(plugin.functions) == 2
 
 
-def test_create_function_from_valid_yaml(kernel: Kernel):
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+def test_add_functions_to_existing(kernel: Kernel):
+    kernel.add_plugin(KernelPlugin(name="test"))
 
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYaml")
-    assert plugin is not None
+    @kernel_function(name="func1")
+    def func1(arg1: str) -> str:
+        return "test"
 
+    @kernel_function(name="func2")
+    def func2(arg1: str) -> str:
+        return "test"
 
-def test_create_function_from_valid_yaml_handlebars(kernel: Kernel):
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
-
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
-    assert plugin is not None
-    assert plugin["TestFunctionHandlebars"] is not None
-
-
-def test_create_function_from_valid_yaml_jinja2(kernel: Kernel):
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
-
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
-    assert plugin is not None
-    assert plugin["TestFunctionJinja2"] is not None
+    plugin = kernel.add_functions(plugin_name="test", functions=[func1, func2])
+    assert len(plugin.functions) == 2
 
 
 @pytest.mark.asyncio
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_import_openai_plugin_from_file(mock_parse_openai_manifest, kernel: Kernel):
-    openai_spec_file = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
-    with open(os.path.join(openai_spec_file, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
+async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel):
+    base_folder = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
+    with open(os.path.join(base_folder, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
         openai_spec = file.read()
 
     openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+        os.path.dirname(__file__), base_folder, "TestOpenAPIPlugin", "akv-openapi.yaml"
     )
     mock_parse_openai_manifest.return_value = openapi_spec_file_path
 
-    plugin = await kernel.import_plugin_from_openai(
+    await kernel.add_plugin_from_openai(
         plugin_name="TestOpenAIPlugin",
         plugin_str=openai_spec,
         execution_parameters=OpenAIFunctionExecutionParameters(
@@ -475,114 +415,67 @@ async def test_import_openai_plugin_from_file(mock_parse_openai_manifest, kernel
             enable_dynamic_payload=True,
         ),
     )
+    plugin = kernel.plugins["TestOpenAIPlugin"]
     assert plugin is not None
     assert plugin.name == "TestOpenAIPlugin"
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
-
-
-@pytest.mark.asyncio
-@patch("httpx.AsyncClient.get")
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_import_openai_plugin_from_url(mock_parse_openai_manifest, mock_get, kernel: Kernel):
-    openai_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAIPlugin", "akv-openai.json"
-    )
-    with open(openai_spec_file_path, "r") as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    request = httpx.Request(method="GET", url="http://fake-url.com/akv-openai.json")
-
-    response = httpx.Response(200, text=openai_spec, request=request)
-    mock_get.return_value = response
-
-    fake_plugin_url = "http://fake-url.com/akv-openai.json"
-    plugin = await kernel.import_plugin_from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_url=fake_plugin_url,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
-
-    mock_get.assert_awaited_once_with(fake_plugin_url, headers={"User-Agent": "Semantic-Kernel"})
 
 
 def test_import_plugin_from_openapi(kernel: Kernel):
     openapi_spec_file = os.path.join(
-        os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin", "TestOpenAPIPlugin", "akv-openapi.yaml"
+        os.path.dirname(__file__), "../../assets/test_plugins", "TestOpenAPIPlugin", "akv-openapi.yaml"
     )
 
-    plugin = kernel.import_plugin_from_openapi(
+    kernel.add_plugin_from_openapi(
         plugin_name="TestOpenAPIPlugin",
         openapi_document_path=openapi_spec_file,
     )
-
+    plugin = kernel.plugins["TestOpenAPIPlugin"]
     assert plugin is not None
     assert plugin.name == "TestOpenAPIPlugin"
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
 
 
-def test_import_plugin_from_openapi_missing_document_throws(kernel: Kernel):
-    with pytest.raises(PluginInitializationError):
-        kernel.import_plugin_from_openapi(
-            plugin_name="TestOpenAPIPlugin",
-            openapi_document_path=None,
-        )
+def test_get_plugin(kernel: Kernel):
+    kernel.add_plugin(KernelPlugin(name="TestPlugin"))
+    plugin = kernel.get_plugin("TestPlugin")
+    assert plugin is not None
 
 
-# endregion
-# region Functions
+def test_get_plugin_not_found(kernel: Kernel):
+    with pytest.raises(KernelPluginNotFoundError):
+        kernel.get_plugin("TestPlugin2")
 
 
-def test_func(kernel: Kernel, custom_plugin_class):
-    kernel.import_plugin_from_object(custom_plugin_class(), "TestPlugin")
-    func = kernel.func("TestPlugin", "getLightStatus")
+def test_get_function(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function("TestPlugin", "getLightStatus")
     assert func
 
 
 def test_func_plugin_not_found(kernel: Kernel):
     with pytest.raises(KernelPluginNotFoundError):
-        kernel.func("TestPlugin", "TestFunction")
+        kernel.get_function("TestPlugin", "TestFunction")
 
 
 def test_func_function_not_found(kernel: Kernel, custom_plugin_class):
-    kernel.import_plugin_from_object(custom_plugin_class(), "TestPlugin")
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
     with pytest.raises(KernelFunctionNotFoundError):
-        kernel.func("TestPlugin", "TestFunction")
+        kernel.get_function("TestPlugin", "TestFunction")
 
 
-@pytest.mark.asyncio
-async def test_register_valid_native_function(kernel: Kernel, decorated_native_function):
-    registered_func = kernel.register_function_from_method("TestPlugin", decorated_native_function)
-
-    assert isinstance(registered_func, KernelFunction)
-    assert kernel.plugins["TestPlugin"]["getLightStatus"] == registered_func
-    func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
-    assert str(func_result) == "test"
+def test_get_function_from_fqn(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function_from_fully_qualified_function_name("TestPlugin-getLightStatus")
+    assert func
 
 
-def test_register_undecorated_native_function(kernel: Kernel, not_decorated_native_function):
-    with pytest.raises(FunctionInitializationError):
-        kernel.register_function_from_method("TestPlugin", not_decorated_native_function)
-
-
-def test_register_with_none_plugin_name(kernel: Kernel, decorated_native_function):
-    with pytest.raises(ValidationError):
-        kernel.register_function_from_method(method=decorated_native_function, plugin_name=None)
+def test_get_function_from_fqn_wo_plugin(kernel: Kernel, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class(), "TestPlugin")
+    func = kernel.get_function_from_fully_qualified_function_name("getLightStatus")
+    assert func
 
 
 # endregion

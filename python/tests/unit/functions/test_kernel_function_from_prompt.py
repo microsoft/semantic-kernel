@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 
 import pytest
@@ -287,3 +288,36 @@ def test_create_with_multiple_settings():
     assert (
         function.prompt_template.prompt_template_config.execution_settings["test2"].extension_data["temperature"] == 1.0
     )
+
+
+def test_from_yaml_fail():
+    with pytest.raises(FunctionInitializationError):
+        KernelFunctionFromPrompt.from_yaml("template_format: something_else")
+
+
+def test_from_directory_prompt_only():
+    with pytest.raises(FunctionInitializationError):
+        KernelFunctionFromPrompt.from_directory(
+            path=os.path.join(
+                os.path.dirname(__file__),
+                "../../assets",
+                "test_plugins",
+                "TestPlugin",
+                "TestFunctionPromptOnly",
+            ),
+            plugin_name="test",
+        )
+
+
+def test_from_directory_config_only():
+    with pytest.raises(FunctionInitializationError):
+        KernelFunctionFromPrompt.from_directory(
+            path=os.path.join(
+                os.path.dirname(__file__),
+                "../../assets",
+                "test_plugins",
+                "TestPlugin",
+                "TestFunctionConfigOnly",
+            ),
+            plugin_name="test",
+        )

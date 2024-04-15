@@ -46,7 +46,7 @@ async def main():
         ),
     )
 
-    chat = kernel.create_function_from_prompt(
+    chat = kernel.add_function(
         function_name="chat",
         plugin_name="ChatBot",
         prompt_template_config=prompt_template_config,

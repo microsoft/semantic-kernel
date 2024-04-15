@@ -144,11 +144,10 @@ public class ChromaMemoryStore : IMemoryStore
 
         var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        var queryEmbeddings = new[] { embedding };
-        var nResults = limit;
+        ReadOnlyMemory<float>[] queryEmbeddings = [embedding];
         var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings, withDistances: true);
 
-        var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, nResults, include, cancellationToken).ConfigureAwait(false);
+        var queryResultModel = await this._chromaClient.QueryEmbeddingsAsync(collection.Id, queryEmbeddings, limit, include, cancellationToken).ConfigureAwait(false);
 
         var recordCount = queryResultModel.Ids?.FirstOrDefault()?.Count ?? 0;
 
