@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example09_FunctionTypes : BaseTest
+public class Example09_FunctionTypes(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -66,22 +66,13 @@ public class Example09_FunctionTypes : BaseTest
         // You can also use the kernel.Plugins collection to invoke a function
         await kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(LocalExamplePlugin.NoInputWithVoidResult)]);
     }
-
-    public Example09_FunctionTypes(ITestOutputHelper output) : base(output)
-    {
-    }
 }
 // Task functions when are imported as plugins loose the "Async" suffix if present.
 #pragma warning disable IDE1006 // Naming Styles
 
-public class LocalExamplePlugin
+public class LocalExamplePlugin(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public LocalExamplePlugin(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Example of using a void function with no input

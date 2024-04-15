@@ -22,7 +22,7 @@ namespace Examples;
 ///     of <see cref="IMemoryStore"/> has a single collection, and thus does not need to be named.
 ///     It also assumes that the JSON formatted data can be deserialized into <see cref="MemoryRecord"/> objects.
 /// </summary>
-public class Example25_ReadOnlyMemoryStore : BaseTest
+public class Example25_ReadOnlyMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -174,75 +174,73 @@ public class Example25_ReadOnlyMemoryStore : BaseTest
         }
     }
 
-    private static string s_jsonVectorEntries = @"[
+    private static string s_jsonVectorEntries = """
+    [
         {
-            ""embedding"": [0, 0, 0],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id1"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"" : ""value:""
+            "embedding": [0, 0, 0],
+            "metadata": {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id1",
+                "description": "description",
+                "text": "text",
+                "additional_metadata" : "value:"
             },
-            ""key"": ""key1"",
-            ""timestamp"": null
+            "key": "key1",
+            "timestamp": null
          },
          {
-            ""embedding"": [0, 0, 10],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id2"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"" : ""value:""
+            "embedding": [0, 0, 10],
+            "metadata": {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id2",
+                "description": "description",
+                "text": "text",
+                "additional_metadata" : "value:"
             },
-            ""key"": ""key2"",
-            ""timestamp"": null
+            "key": "key2",
+            "timestamp": null
          },
          {
-            ""embedding"": [1, 2, 3],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id3"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"" : ""value:""
+            "embedding": [1, 2, 3],
+            "metadata": {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id3",
+                "description": "description",
+                "text": "text",
+                "additional_metadata" : "value:"
             },
-            ""key"": ""key3"",
-            ""timestamp"": null
+            "key": "key3",
+            "timestamp": null
          },
          {
-            ""embedding"": [-1, -2, -3],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id4"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"" : ""value:""
+            "embedding": [-1, -2, -3],
+            "metadata": {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id4",
+                "description": "description",
+                "text": "text",
+                "additional_metadata" : "value:"
             },
-            ""key"": ""key4"",
-            ""timestamp"": null
+            "key": "key4",
+            "timestamp": null
          },
          {
-            ""embedding"": [12, 8, 4],
-            ""metadata"": {
-                ""is_reference"": false,
-                ""external_source_name"": ""externalSourceName"",
-                ""id"": ""Id5"",
-                ""description"": ""description"",
-                ""text"": ""text"",
-                ""additional_metadata"" : ""value:""
+            "embedding": [12, 8, 4],
+            "metadata": {
+                "is_reference": false,
+                "external_source_name": "externalSourceName",
+                "id": "Id5",
+                "description": "description",
+                "text": "text",
+                "additional_metadata" : "value:"
             },
-            ""key"": ""key5"",
-            ""timestamp"": null
+            "key": "key5",
+            "timestamp": null
         }
-    ]";
-
-    public Example25_ReadOnlyMemoryStore(ITestOutputHelper output) : base(output)
-    {
-    }
+    ]
+    """;
 }

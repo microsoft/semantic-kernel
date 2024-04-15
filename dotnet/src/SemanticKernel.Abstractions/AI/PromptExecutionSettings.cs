@@ -64,10 +64,7 @@ public class PromptExecutionSettings
     /// <summary>
     /// Gets a value that indicates whether the <see cref="PromptExecutionSettings"/> are currently modifiable.
     /// </summary>
-    public bool IsFrozen
-    {
-        get => this._isFrozen;
-    }
+    public bool IsFrozen { get; private set; }
 
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
@@ -79,7 +76,7 @@ public class PromptExecutionSettings
             return;
         }
 
-        this._isFrozen = true;
+        this.IsFrozen = true;
 
         if (this._extensionData is not null)
         {
@@ -105,7 +102,7 @@ public class PromptExecutionSettings
     /// <exception cref="InvalidOperationException"></exception>
     protected void ThrowIfFrozen()
     {
-        if (this._isFrozen)
+        if (this.IsFrozen)
         {
             throw new InvalidOperationException("PromptExecutionSettings are frozen and cannot be modified.");
         }
@@ -115,7 +112,6 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
-    private bool _isFrozen;
 
     #endregion
 }
