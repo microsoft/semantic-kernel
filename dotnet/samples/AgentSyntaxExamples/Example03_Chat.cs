@@ -91,6 +91,8 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
         {
             this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
+
+        this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
