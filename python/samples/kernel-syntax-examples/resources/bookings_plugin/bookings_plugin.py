@@ -10,8 +10,7 @@ else:
 
 from msgraph import GraphServiceClient
 from msgraph.generated.models.booking_appointment import BookingAppointment
-from msgraph.generated.models.booking_customer_information import \
-    BookingCustomerInformation
+from msgraph.generated.models.booking_customer_information import BookingCustomerInformation
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.location import Location
 

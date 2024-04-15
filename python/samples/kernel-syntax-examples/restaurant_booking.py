@@ -5,7 +5,7 @@ import asyncio
 from azure.identity import ClientSecretCredential
 from dotenv import dotenv_values
 from msgraph import GraphServiceClient
-from resources.bookings_plugin.native_plugin import BookingsPlugin
+from resources.bookings_plugin.bookings_plugin import BookingsPlugin
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import \
     ChatCompletionClientBase
@@ -26,7 +26,6 @@ from semantic_kernel.utils.settings import (
 #   using the following format: BOOKING_SAMPLE_CLIENT_ID="", BOOKING_SAMPLE_TENANT_ID="",
 #   BOOKING_SAMPLE_CLIENT_SECRET="".
 # 3. Create a booking business ID and service ID and give the app permissions based on your App Id and secret.
-# 4. TODO finish the setup directions.
 
 kernel = Kernel()
 
@@ -51,9 +50,9 @@ bookings_plugin = BookingsPlugin(
     booking_service_id=booking_service_id,
 )
 
-kernel.import_plugin_from_object(bookings_plugin, "BookingsPlugin")
+kernel.add_plugin(bookings_plugin, "BookingsPlugin")
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
     prompt="{{$chat_history}}{{$user_input}}",
@@ -84,6 +83,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
+    # Note the reservation returned contains an ID. That ID can be used to cancel the reservation, when the bookings API supports it.
     answer = await kernel.invoke(chat_function, KernelArguments(settings=settings, user_input=user_input, chat_history=chat_history))
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))
