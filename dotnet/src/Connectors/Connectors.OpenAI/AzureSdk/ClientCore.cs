@@ -1007,7 +1007,7 @@ internal abstract class ClientCore
                     continue;
                 }
 
-                toolMessages ??= new();
+                toolMessages ??= [];
 
                 if (resultContent.Result is Exception ex)
                 {
