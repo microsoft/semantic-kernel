@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Contents;
+
 public class FunctionCallResultContentTests
 {
     private readonly FunctionCallRequestContent _callContent;
