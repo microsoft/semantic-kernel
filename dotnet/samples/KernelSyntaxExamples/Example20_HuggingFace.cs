@@ -10,6 +10,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 
 namespace Examples;
@@ -68,7 +69,6 @@ public class Example20_HuggingFace : BaseTest
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
                 model: Model,
-                //endpoint: Endpoint,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
