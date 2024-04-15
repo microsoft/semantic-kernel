@@ -404,10 +404,12 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         parent_directory: str | None = None,
         description: str | None = None,
+        class_init_arguments: dict[str, dict[str, Any]] | None = None,
     ) -> "KernelPlugin":
         """
         Adds a plugin to the kernel's collection of plugins. If a plugin is provided,
         it uses that instance instead of creating a new KernelPlugin.
+        See KernelPlugin.from_directory for more details on how the directory is parsed.
 
         Args:
             plugin (KernelPlugin | Any | dict[str, Any]): The plugin to add.
@@ -421,6 +423,7 @@ class Kernel(KernelBaseModel):
                 see `KernelPlugin.from_directory` for details.
             parent_directory (str | None): The parent directory path where the plugin directory resides
             description (str | None): The description of the plugin, used if the plugin is not a KernelPlugin.
+            class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
 
         Returns:
             KernelPlugin: The plugin that was added.
@@ -441,7 +444,10 @@ class Kernel(KernelBaseModel):
             return self.plugins[plugin_name]
         if plugin is None and parent_directory is not None:
             self.plugins[plugin_name] = KernelPlugin.from_directory(
-                plugin_name=plugin_name, parent_directory=parent_directory, description=description
+                plugin_name=plugin_name,
+                parent_directory=parent_directory,
+                description=description,
+                class_init_arguments=class_init_arguments,
             )
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
@@ -547,54 +553,6 @@ class Kernel(KernelBaseModel):
             self.plugins[plugin_name].update(functions)
             return self.plugins[plugin_name]
         return self.add_plugin(KernelPlugin(name=plugin_name, functions=functions))  # type: ignore
-
-    def add_plugin_from_directory(
-        self, plugin_name: str, parent_directory: str, description: str | None = None
-    ) -> "KernelPlugin":
-        """Create a plugin from a specified directory and add it to the kernel.
-
-        This method does not recurse into subdirectories beyond one level deep from the specified plugin directory.
-        For YAML files, function names are extracted from the content of the YAML files themselves (the name property).
-        For directories, the function name is assumed to be the name of the directory. Each KernelFunction object is
-        initialized with data parsed from the associated files and added to a list of functions that are then assigned
-        to the created KernelPlugin object.
-        A native_function.py file is parsed and imported as a plugin,
-        other functions found are then added to this plugin.
-
-        Example:
-            Assuming a plugin directory structure as follows:
-        MyPlugins/
-            |--- pluginA.yaml
-            |--- pluginB.yaml
-            |--- native_function.py
-            |--- Directory1/
-                |--- skprompt.txt
-                |--- config.json
-            |--- Directory2/
-                |--- skprompt.txt
-                |--- config.json
-
-            Calling `add_plugin_from_directory("MyPlugins", "/path/to")` will create a KernelPlugin object named
-                "MyPlugins", containing KernelFunction objects for `pluginA.yaml`, `pluginB.yaml`,
-                `Directory1`, and `Directory2`, each initialized with their respective configurations.
-                And functions for anything within native_function.py.
-
-        Args:
-            plugin_name (str): The name of the plugin, this is the name of the directory within the parent directory
-            parent_directory (str): The parent directory path where the plugin directory resides
-            description (str | None): The description of the plugin
-
-        Returns:
-            KernelPlugin: The plugin that was added.
-
-        Raises:
-            PluginInitializationError: If the plugin directory does not exist.
-            PluginInvalidNameError: If the plugin name is invalid.
-        """
-        plugin = KernelPlugin.from_directory(
-            plugin_name=plugin_name, parent_directory=parent_directory, description=description
-        )
-        return self.add_plugin(plugin)
 
     def add_plugin_from_openapi(
         self,

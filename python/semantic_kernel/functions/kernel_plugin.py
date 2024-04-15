@@ -261,8 +261,12 @@ class KernelPlugin(KernelBaseModel):
         For directories, the function name is assumed to be the name of the directory. Each KernelFunction object is
         initialized with data parsed from the associated files and added to a list of functions that are then assigned
         to the created KernelPlugin object.
-        A native_function.py file is parsed and imported as a plugin,
-        other functions found are then added to this plugin.
+        A .py file is parsed and a plugin created,
+        the functions within as then combined with any other functions found.
+        The python file needs to contain a class with one or more kernel_function decorated methods.
+        If this class has a `__init__` method, it will be called with the arguments provided in the
+        `class_init_arguments` dictionary, the key needs to be the same as the name of the class,
+        with the value being a dictionary of arguments to pass to the class (using kwargs).
 
         Example:
             Assuming a plugin directory structure as follows:
@@ -286,6 +290,7 @@ class KernelPlugin(KernelBaseModel):
             plugin_name (str): The name of the plugin, this is the name of the directory within the parent directory
             parent_directory (str): The parent directory path where the plugin directory resides
             description (str | None): The description of the plugin
+            class_init_arguments (dict[str, dict[str, Any]] | None): The class initialization arguments
 
         Returns:
             KernelPlugin: The created plugin of type KernelPlugin.
