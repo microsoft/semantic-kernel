@@ -33,11 +33,11 @@ public sealed class WebPage
 /// <summary>
 /// A sealed class containing the deserialized response from the respective Web Search API.
 /// </summary>
-/// <returns>A WebPages? object containing the WebPages array from a Search API response data or null.</returns>
+/// <returns>A WebAnswer? object containing the WebAnswer array from a Search API response data or null.</returns>
 public sealed class WebSearchResponse
 {
     /// <summary>
-    /// A nullable WebPages object containing the Web Search API response data.
+    /// A nullable WebAnswer object containing the Web Search API response data.
     /// </summary>
     [JsonPropertyName("webPages")]
     public WebPages? WebPages { get; set; }
@@ -46,7 +46,7 @@ public sealed class WebSearchResponse
 /// <summary>
 /// A sealed class containing the deserialized response from the Web respective Search API.
 /// </summary>
-/// <returns>A WebPages array object containing the Web Search API response data.</returns>
+/// <returns>A WebAnswer array object containing the Web Search API response data.</returns>
 [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Required by the Web Search API")]
 public sealed class WebPages
 {

@@ -136,6 +136,7 @@ public sealed class TestConfiguration
 
     public class BingConfig
     {
+        public string Endpoint { get; set; } = "https://api.bing.microsoft.com/v7.0/search";
         public string ApiKey { get; set; }
     }
 

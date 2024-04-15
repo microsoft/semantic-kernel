@@ -87,7 +87,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     private readonly IReadOnlyDictionary<string, object?> _attributes;
 
     /// <summary>
-    /// Return the search results and associated metadata.
+    /// Return the search results.
     /// </summary>
     /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
     /// can be retrieved as documents from the index.</typeparam>
@@ -106,6 +106,12 @@ public sealed class AzureAITextSearchService : ITextSearchService
         }
     }
 
+    /// <summary>
+    /// Return the results metadata.
+    /// </summary>
+    /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
+    /// can be retrieved as documents from the index.</typeparam>
+    /// <param name="searchResults">Response containing the documents matching the query.</param>
     static private Dictionary<string, object?>? GetResultsMetadata<T>(SearchResults<T>? searchResults) where T : class
     {
         return new Dictionary<string, object?>()
