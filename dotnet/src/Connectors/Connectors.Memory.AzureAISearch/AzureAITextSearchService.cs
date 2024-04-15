@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// An Azure Search service that creates and recalls memories associated with text.
 /// </summary>
-public class AzureAITextSearchService : ITextSearchService
+public sealed class AzureAITextSearchService : ITextSearchService
 {
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
@@ -100,7 +100,7 @@ public class AzureAITextSearchService : ITextSearchService
             yield break;
         }
 
-        await foreach (SearchResult<T> searchResult in searchResults.GetResultsAsync())
+        await foreach (SearchResult<T> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
         {
             yield return new AzureAIKernelSearchResult<T>(searchResult);
         }
