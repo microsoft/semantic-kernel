@@ -44,7 +44,7 @@ public sealed class KernelFunctionFromMethodTests2
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        KernelFunction[] functions = KernelPluginFactory.CreateFromObject(pluginInstance).ToArray();
+        KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -87,8 +87,10 @@ public sealed class KernelFunctionFromMethodTests2
     public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var arguments = new KernelArguments();
-        arguments["done"] = "NO";
+        var arguments = new KernelArguments
+        {
+            ["done"] = "NO"
+        };
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
@@ -122,7 +124,7 @@ public sealed class KernelFunctionFromMethodTests2
         builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
         Kernel kernel = builder.Build();
         kernel.Culture = new CultureInfo("fr-FR");
-        KernelArguments args = new();
+        KernelArguments args = [];
         using CancellationTokenSource cts = new();
 
         bool invoked = false;

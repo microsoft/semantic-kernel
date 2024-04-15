@@ -23,7 +23,7 @@ public static class ChatHistoryExtensions
     [Experimental("SKEXP0010")]
     public static async IAsyncEnumerable<StreamingChatMessageContent> AddStreamingMessageAsync(this ChatHistory chatHistory, IAsyncEnumerable<OpenAIStreamingChatMessageContent> streamingMessageContents)
     {
-        List<StreamingChatMessageContent> messageContents = new();
+        List<StreamingChatMessageContent> messageContents = [];
 
         // Stream the response.
         StringBuilder? contentBuilder = null;
