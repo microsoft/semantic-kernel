@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example76_Filters : BaseTest
+public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
@@ -59,8 +60,11 @@ public class Example76_Filters : BaseTest
         var result = await kernel.InvokeAsync(function);
 
         WriteLine(result);
+        WriteLine($"Metadata: {string.Join(",", result.Metadata!.Select(kv => $"{kv.Key}: {kv.Value}"))}");
 
-        // Output: Result from filter.
+        // Output:
+        // Result from filter.
+        // Metadata: metadata_key: metadata_value
     }
 
     [Fact]
@@ -135,10 +139,6 @@ public class Example76_Filters : BaseTest
         }
 
         // Output: first chunk, chunk instead of exception.
-    }
-
-    public Example76_Filters(ITestOutputHelper output) : base(output)
-    {
     }
 
     #region Filters
@@ -216,8 +216,14 @@ public class Example76_Filters : BaseTest
             // Example: get token usage from metadata
             var usage = context.Result.Metadata?["Usage"];
 
-            // Example: override function result value
-            context.Result = new FunctionResult(context.Function, "Result from filter");
+            // Example: override function result value and metadata
+            Dictionary<string, object?> metadata = context.Result.Metadata is not null ? new(context.Result.Metadata) : [];
+            metadata["metadata_key"] = "metadata_value";
+
+            context.Result = new FunctionResult(context.Result, "Result from filter")
+            {
+                Metadata = metadata
+            };
         }
     }
 
@@ -230,8 +236,8 @@ public class Example76_Filters : BaseTest
 
             // In streaming scenario, async enumerable is available in context result object.
             // To override data: get async enumerable from function result, override data and set new async enumerable in context result:
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<int>>();
-            context.Result = new FunctionResult(context.Function, OverrideStreamingDataAsync(enumerable!));
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<int>>();
+            context.Result = new FunctionResult(context.Result, OverrideStreamingDataAsync(enumerable!));
         }
 
         private async IAsyncEnumerable<int> OverrideStreamingDataAsync(IAsyncEnumerable<int> data)
@@ -245,14 +251,9 @@ public class Example76_Filters : BaseTest
     }
 
     /// <summary>Shows syntax for exception handling in function filter in non-streaming scenario.</summary>
-    private sealed class ExceptionHandlingFilterExample : IFunctionFilter
+    private sealed class ExceptionHandlingFilterExample(ILogger logger) : IFunctionFilter
     {
-        private readonly ILogger _logger;
-
-        public ExceptionHandlingFilterExample(ILogger logger)
-        {
-            this._logger = logger;
-        }
+        private readonly ILogger _logger = logger;
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -265,7 +266,7 @@ public class Example76_Filters : BaseTest
                 this._logger.LogError(exception, "Something went wrong during function invocation");
 
                 // Example: override function result value
-                context.Result = new FunctionResult(context.Function, "Friendly message instead of exception");
+                context.Result = new FunctionResult(context.Result, "Friendly message instead of exception");
 
                 // Example: Rethrow another type of exception if needed
                 // throw new InvalidOperationException("New exception");
@@ -274,21 +275,16 @@ public class Example76_Filters : BaseTest
     }
 
     /// <summary>Shows syntax for exception handling in function filter in streaming scenario.</summary>
-    private sealed class StreamingExceptionHandlingFilterExample : IFunctionFilter
+    private sealed class StreamingExceptionHandlingFilterExample(ILogger logger) : IFunctionFilter
     {
-        private readonly ILogger _logger;
-
-        public StreamingExceptionHandlingFilterExample(ILogger logger)
-        {
-            this._logger = logger;
-        }
+        private readonly ILogger _logger = logger;
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
             await next(context);
 
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-            context.Result = new FunctionResult(context.Function, StreamingWithExceptionHandlingAsync(enumerable!));
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+            context.Result = new FunctionResult(context.Result, StreamingWithExceptionHandlingAsync(enumerable!));
         }
 
         private async IAsyncEnumerable<string> StreamingWithExceptionHandlingAsync(IAsyncEnumerable<string> data)

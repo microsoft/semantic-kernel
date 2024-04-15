@@ -15,13 +15,15 @@ public class FunctionInvocationContext
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
-    internal FunctionInvocationContext(KernelFunction function, KernelArguments arguments)
+    /// <param name="result">The result of the function's invocation.</param>
+    internal FunctionInvocationContext(KernelFunction function, KernelArguments arguments, FunctionResult result)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
         this.Function = function;
         this.Arguments = arguments;
+        this.Result = result;
     }
 
     /// <summary>
@@ -37,5 +39,5 @@ public class FunctionInvocationContext
     /// <summary>
     /// Gets or sets the result of the function's invocation.
     /// </summary>
-    public FunctionResult? Result { get; set; }
+    public FunctionResult Result { get; set; }
 }

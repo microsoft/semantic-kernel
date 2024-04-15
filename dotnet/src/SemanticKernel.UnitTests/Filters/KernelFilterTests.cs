@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +50,7 @@ public class KernelFilterTests
 
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
-            Assert.Null(context.Result);
+            Assert.Null(context.Result.Value);
 
             await next(context);
 
@@ -133,72 +134,6 @@ public class KernelFilterTests
         // Assert
         Assert.Equal(1, filterInvocations);
         Assert.Equal(0, functionInvocations);
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterReturnsModifiedResultAsync()
-    {
-        // Arrange
-        const int OriginalResult = 42;
-        const int NewResult = 84;
-
-        var function = KernelFunctionFactory.CreateFromMethod(() => OriginalResult);
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
-        {
-            await next(context);
-            context.Result = new FunctionResult(context.Function, NewResult);
-        });
-
-        // Act
-        var result = await kernel.InvokeAsync(function);
-
-        // Assert
-        Assert.Equal(NewResult, result.GetValue<int>());
-    }
-
-    [Fact]
-    public async Task PostInvocationFunctionFilterReturnsModifiedResultOnStreamingAsync()
-    {
-        // Arrange
-        static async IAsyncEnumerable<int> GetData()
-        {
-            await Task.Delay(0);
-            yield return 1;
-            yield return 2;
-            yield return 3;
-        }
-
-        var function = KernelFunctionFactory.CreateFromMethod(GetData);
-
-        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
-        {
-            await next(context);
-
-            async static IAsyncEnumerable<int> GetModifiedData(IAsyncEnumerable<int> enumerable)
-            {
-                await foreach (var item in enumerable)
-                {
-                    yield return item * 2;
-                }
-            }
-
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<int>>();
-            context.Result = new FunctionResult(context.Function, GetModifiedData(enumerable!));
-        });
-
-        // Act
-        var resultArray = new List<int>();
-
-        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
-        {
-            resultArray.Add(item);
-        }
-
-        // Assert
-        Assert.Equal(2, resultArray[0]);
-        Assert.Equal(4, resultArray[1]);
-        Assert.Equal(6, resultArray[2]);
     }
 
     [Fact]
@@ -635,7 +570,7 @@ public class KernelFilterTests
                 }
                 catch (NotImplementedException)
                 {
-                    context.Result = new FunctionResult(context.Function, "Result ignoring exception.");
+                    context.Result = new FunctionResult(context.Result, "Result ignoring exception.");
                 }
             });
 
@@ -694,8 +629,8 @@ public class KernelFilterTests
                     }
                 }
 
-                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
             });
 
         // Act
@@ -781,8 +716,8 @@ public class KernelFilterTests
                     }
                 }
 
-                var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-                context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+                context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
             });
 
         // Act
@@ -852,7 +787,7 @@ public class KernelFilterTests
             catch (KernelException exception)
             {
                 Assert.Equal("Exception from functionFilter2", exception.Message);
-                context.Result = new FunctionResult(context.Function, "Result from functionFilter1");
+                context.Result = new FunctionResult(context.Result, "Result from functionFilter1");
             }
         });
 
@@ -940,8 +875,8 @@ public class KernelFilterTests
                 }
             }
 
-            var enumerable = context.Result?.GetValue<IAsyncEnumerable<string>>();
-            context.Result = new FunctionResult(context.Function, ProcessData(enumerable!));
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<string>>();
+            context.Result = new FunctionResult(context.Result, ProcessData(enumerable!));
         }
 
         var functionFilter1 = new FakeFunctionFilter(
@@ -974,6 +909,182 @@ public class KernelFilterTests
         Assert.Equal(3, filterInvocations);
     }
 
+    [Fact]
+    public async Task FunctionFiltersForMethodCanOverrideResultAsync()
+    {
+        // Arrange
+        const int OriginalResult = 42;
+        const int NewResult = 84;
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => OriginalResult);
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            await next(context);
+            context.Result = new FunctionResult(context.Result, NewResult);
+        });
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal(NewResult, result.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task FunctionFiltersForMethodCanOverrideResultAsyncOnStreamingAsync()
+    {
+        // Arrange
+        static async IAsyncEnumerable<int> GetData()
+        {
+            await Task.Delay(0);
+            yield return 1;
+            yield return 2;
+            yield return 3;
+        }
+
+        var function = KernelFunctionFactory.CreateFromMethod(GetData);
+
+        var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
+        {
+            await next(context);
+
+            async static IAsyncEnumerable<int> GetModifiedData(IAsyncEnumerable<int> enumerable)
+            {
+                await foreach (var item in enumerable)
+                {
+                    yield return item * 2;
+                }
+            }
+
+            var enumerable = context.Result.GetValue<IAsyncEnumerable<int>>();
+            context.Result = new FunctionResult(context.Result, GetModifiedData(enumerable!));
+        });
+
+        // Act
+        var resultArray = new List<int>();
+
+        await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
+        {
+            resultArray.Add(item);
+        }
+
+        // Assert
+        Assert.Equal(2, resultArray[0]);
+        Assert.Equal(4, resultArray[1]);
+        Assert.Equal(6, resultArray[2]);
+    }
+
+    [Fact]
+    public async Task FunctionFiltersForPromptCanOverrideResultAsync()
+    {
+        // Arrange
+        var mockMetadata = new Dictionary<string, object?>
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        var mockTextGeneration = this.GetMockTextGeneration("Result from prompt function", mockMetadata);
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onFunctionInvocation: async (context, next) =>
+            {
+                await next(context);
+
+                Assert.NotNull(context.Result.Metadata);
+
+                var metadata = new Dictionary<string, object?>(context.Result.Metadata)
+                {
+                    ["key3"] = "value3"
+                };
+
+                metadata["key2"] = "updated_value2";
+
+                context.Result = new FunctionResult(context.Function, "Result from filter")
+                {
+                    Culture = CultureInfo.CurrentCulture,
+                    Metadata = metadata
+                };
+            });
+
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.Equal("Result from filter", result.GetValue<string>());
+        Assert.NotNull(result.Metadata);
+        Assert.Equal("value1", result.Metadata["key1"]);
+        Assert.Equal("updated_value2", result.Metadata["key2"]);
+        Assert.Equal("value3", result.Metadata["key3"]);
+        Assert.Equal(CultureInfo.CurrentCulture, result.Culture);
+
+        mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task FunctionFiltersForPromptCanOverrideResultOnStreamingAsync()
+    {
+        // Arrange
+        var mockMetadata = new Dictionary<string, object?>
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        var mockTextGeneration = this.GetMockTextGeneration("result chunk from prompt function", mockMetadata);
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onFunctionInvocation: async (context, next) =>
+            {
+                await next(context);
+
+                async static IAsyncEnumerable<StreamingTextContent> OverrideResult(IAsyncEnumerable<StreamingTextContent> enumerable)
+                {
+                    await foreach (var item in enumerable)
+                    {
+                        Assert.NotNull(item.Metadata);
+                        var metadata = new Dictionary<string, object?>(item.Metadata)
+                        {
+                            ["key3"] = "value3"
+                        };
+
+                        metadata["key2"] = "updated_value2";
+
+                        yield return new StreamingTextContent("result chunk from filter", metadata: metadata);
+                    }
+                }
+
+                var enumerable = context.Result.GetValue<IAsyncEnumerable<StreamingTextContent>>();
+                Assert.NotNull(enumerable);
+
+                context.Result = new FunctionResult(context.Result, OverrideResult(enumerable));
+            });
+
+        var function = KernelFunctionFactory.CreateFromPrompt("Write a simple phrase about UnitTests");
+
+        // Act
+        var result = new List<StreamingTextContent>();
+        await foreach (var item in kernel.InvokeStreamingAsync<StreamingTextContent>(function))
+        {
+            result.Add(item);
+        }
+
+        var resultChunk = result[0];
+
+        // Assert
+        Assert.NotNull(resultChunk);
+        Assert.Equal("result chunk from filter", resultChunk.Text);
+        Assert.NotNull(resultChunk.Metadata);
+        Assert.Equal("value1", resultChunk.Metadata["key1"]);
+        Assert.Equal("updated_value2", resultChunk.Metadata["key2"]);
+        Assert.Equal("value3", resultChunk.Metadata["key3"]);
+
+        mockTextGeneration.Verify(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     private Kernel GetKernelWithFilters(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null,
         Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null,
@@ -995,25 +1106,25 @@ public class KernelFilterTests
 
         var kernel = builder.Build();
 
-        // Add prompt filter after kernel construction
         if (onPromptRendering is not null)
         {
+            // Add prompt filter after kernel construction
             kernel.PromptFilters.Add(new FakePromptFilter(onPromptRendering));
         }
 
         return kernel;
     }
 
-    private Mock<ITextGenerationService> GetMockTextGeneration()
+    private Mock<ITextGenerationService> GetMockTextGeneration(string? textResult = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         var mockTextGeneration = new Mock<ITextGenerationService>();
         mockTextGeneration
             .Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TextContent> { new("result text") });
+            .ReturnsAsync(new List<TextContent> { new(textResult ?? "result text", metadata: metadata) });
 
         mockTextGeneration
             .Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .Returns(new List<StreamingTextContent>() { new("result chunk") }.ToAsyncEnumerable());
+            .Returns(new List<StreamingTextContent>() { new(textResult ?? "result chunk", metadata: metadata) }.ToAsyncEnumerable());
 
         return mockTextGeneration;
     }
