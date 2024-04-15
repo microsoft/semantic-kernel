@@ -7,6 +7,9 @@ from openai import AsyncAzureOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    AzureChatPromptExecutionSettings,
+)
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -112,9 +115,7 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
 
 
 @pytest.mark.asyncio
-async def test_azure_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_models, get_aoai_config):
-    kernel, _, _ = setup_tldr_function_for_oai_models
-
+async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_config):
     _, api_key, endpoint = get_aoai_config
 
     if "Python_Integration_Tests" in os.environ:
@@ -145,7 +146,7 @@ async def test_azure_oai_chat_service_with_tool_call(setup_tldr_function_for_oai
 
     kernel.add_plugin(MathPlugin(), plugin_name="math")
 
-    execution_settings = sk_oai.AzureChatPromptExecutionSettings(
+    execution_settings = AzureChatPromptExecutionSettings(
         service_id="chat_completion",
         max_tokens=2000,
         temperature=0.7,
@@ -165,7 +166,9 @@ async def test_azure_oai_chat_service_with_tool_call(setup_tldr_function_for_oai
         function_name="math_fun", plugin_name="math_int_test", prompt_template_config=prompt_template_config
     )
 
-    summary = await retry(lambda: kernel.invoke(function_name="tldr", plugin_name="plugin", input="what is 1+1?"))
+    summary = await retry(
+        lambda: kernel.invoke(function_name="math_fun", plugin_name="math_int_test", input="what is 1+1?")
+    )
     output = str(summary).strip()
     print(f"Math output: '{output}'")
     assert "2" in output

@@ -258,9 +258,9 @@ async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_mod
         overwrite=True,  # Overwrite the service if it already exists since add service says it does
     )
 
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
 
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlJinja2")
+    plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="TestFunctionYamlJinja2")
     assert plugin is not None
     assert plugin["TestFunctionJinja2"] is not None
 
@@ -297,9 +297,9 @@ async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai
         overwrite=True,  # Overwrite the service if it already exists since add service says it does
     )
 
-    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestPlugin")
+    plugins_directory = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
 
-    plugin = kernel.import_plugin_from_prompt_directory(plugins_directory, "TestFunctionYamlHandlebars")
+    plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="TestFunctionYamlHandlebars")
     assert plugin is not None
     assert plugin["TestFunctionHandlebars"] is not None
 
