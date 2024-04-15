@@ -675,9 +675,13 @@ class Kernel(KernelBaseModel):
             KernelFunctionNotFoundError: If the function is not found
 
         """
-        plugin_name, function_name = fully_qualified_function_name.split("-")
-        if not function_name:
-            plugin_name, function_name = None, plugin_name  # type: ignore
+        names = fully_qualified_function_name.split("-", maxsplit=1)
+        if len(names) == 1:
+            plugin_name = None
+            function_name = names[0]
+        else:
+            plugin_name = names[0]
+            function_name = names[1]
         return self.get_function(plugin_name, function_name)
 
     def get_list_of_function_metadata(

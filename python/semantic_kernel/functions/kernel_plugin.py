@@ -177,7 +177,8 @@ class KernelPlugin(KernelBaseModel):
                     self[key] = other[key]
             else:
                 for item in other:
-                    if isinstance(item, KernelFunction):
+                    if isinstance(item, (KernelFunction, Callable)):
+                        item = KernelPlugin._parse_or_copy(item, self.name)
                         self[item.name] = item
                     elif isinstance(item, KernelPlugin):
                         for key in item.functions:
@@ -423,7 +424,7 @@ class KernelPlugin(KernelBaseModel):
             initial_auth_callback = execution_parameters.auth_callback
 
             async def custom_auth_callback(**kwargs: Any):
-                return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)
+                return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)  # pragma: no cover
 
             execution_parameters.auth_callback = custom_auth_callback
 
