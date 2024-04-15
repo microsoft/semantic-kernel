@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Azure;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
@@ -16,12 +15,8 @@ public sealed class OpenAIChatMessageContentTests
     [Fact]
     public void ConstructorsWorkCorrectly()
     {
-        // Arrange
-        List<ChatCompletionsToolCall> toolCalls = [new FakeChatCompletionsToolCall("id")];
-
         // Act
-        var content1 = new OpenAIChatMessageContent(new ChatRole("user"), "content1", "model-id1", toolCalls) { AuthorName = "Fred" };
-        var content2 = new OpenAIChatMessageContent(AuthorRole.User, "content2", "model-id2", toolCalls);
+        var content2 = new AzureChatMessageContent(AuthorRole.User, "content2", "model-id2");
 
         // Assert
         this.AssertChatMessageContent(AuthorRole.User, "content1", "model-id1", toolCalls, content1, "Fred");
@@ -90,15 +85,13 @@ public sealed class OpenAIChatMessageContentTests
         AuthorRole expectedRole,
         string expectedContent,
         string expectedModelId,
-        IReadOnlyList<ChatCompletionsToolCall> expectedToolCalls,
-        OpenAIChatMessageContent actualContent,
+        AzureChatMessageContent actualContent,
         string? expectedName = null)
     {
         Assert.Equal(expectedRole, actualContent.Role);
         Assert.Equal(expectedContent, actualContent.Content);
         Assert.Equal(expectedName, actualContent.AuthorName);
         Assert.Equal(expectedModelId, actualContent.ModelId);
-        Assert.Same(expectedToolCalls, actualContent.ToolCalls);
     }
 
     private sealed class FakeChatCompletionsToolCall(string id) : ChatCompletionsToolCall(id)
