@@ -18,7 +18,7 @@ async def main():
     kernel = add_service(kernel=kernel, use_chat=True)
 
     # Import the TimePlugin
-    time = kernel.import_plugin_from_object(TimePlugin(), "TimePlugin")
+    time = kernel.add_plugin(TimePlugin(), "TimePlugin")
 
     # Import the WriterPlugin from the plugins directory.
     script_directory = os.path.dirname(__file__)

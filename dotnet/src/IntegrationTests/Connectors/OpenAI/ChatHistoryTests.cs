@@ -17,26 +17,17 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class ChatHistoryTests : IDisposable
+public sealed class ChatHistoryTests(ITestOutputHelper output) : IDisposable
 {
-    private readonly IKernelBuilder _kernelBuilder;
-    private readonly XunitLogger<Kernel> _logger;
-    private readonly IConfigurationRoot _configuration;
-    private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
-    public ChatHistoryTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
+    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
+    private readonly XunitLogger<Kernel> _logger = new(output);
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
-
-        this._kernelBuilder = Kernel.CreateBuilder();
-    }
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
 
     [Fact]
     public async Task ItSerializesAndDeserializesChatHistoryAsync()

@@ -5,9 +5,7 @@ import logging
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import (
-    AzureChatMessageContent,
-)
+from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
@@ -57,11 +55,12 @@ azure_ai_search_settings["query_type"] = "vector"
 # Create the data source settings
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
-req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
+service_id = "chat-gpt"
+req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
-    service_id="chat-gpt",
+    service_id=service_id,
     **aoai_settings,
 )
 kernel.add_service(chat_service)
@@ -74,7 +73,7 @@ prompt_template_config = PromptTemplateConfig(
         InputVariable(name="chat_history", description="The history of the conversation", is_required=True, default=""),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
-    execution_settings={"default": req_settings},
+    execution_settings=req_settings,
 )
 
 chat_history = ChatHistory()
@@ -82,7 +81,7 @@ chat_history = ChatHistory()
 chat_history.add_user_message("Hi there, who are you?")
 chat_history.add_assistant_message("I am an AI assistant here to answer your questions.")
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     plugin_name="ChatBot", function_name="Chat", prompt_template_config=prompt_template_config
 )
 

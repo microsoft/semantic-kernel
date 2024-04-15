@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI;
 
-public abstract class TestsBase
+public abstract class TestsBase(ITestOutputHelper output)
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -18,12 +18,7 @@ public abstract class TestsBase
         .AddEnvironmentVariables()
         .Build();
 
-    protected ITestOutputHelper Output { get; }
-
-    protected TestsBase(ITestOutputHelper output)
-    {
-        this.Output = output;
-    }
+    protected ITestOutputHelper Output { get; } = output;
 
     protected IChatCompletionService GetChatService(ServiceType serviceType) => serviceType switch
     {

@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
-public class Example41_HttpClientUsage : BaseTest
+public class Example41_HttpClientUsage(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Demonstrates the usage of the default HttpClient provided by the SK SDK.
@@ -93,9 +93,5 @@ public class Example41_HttpClientUsage : BaseTest
                     httpClient: factory.CreateClient("test-client"))
                 .Build();
         });
-    }
-
-    public Example41_HttpClientUsage(ITestOutputHelper output) : base(output)
-    {
     }
 }

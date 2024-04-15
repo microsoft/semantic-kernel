@@ -45,7 +45,7 @@ class ConversationSummaryPlugin:
         :param return_key: The key to use for the return value.
         """
         self.return_key = return_key
-        self._summarizeConversationFunction = kernel.create_function_from_prompt(
+        self._summarizeConversationFunction = kernel.add_function(
             prompt=ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
@@ -73,9 +73,7 @@ class ConversationSummaryPlugin:
         :return: KernelArguments with the summarized conversation result in key self.return_key.
         """
         from semantic_kernel.text import text_chunker
-        from semantic_kernel.text.function_extension import (
-            aggregate_chunked_results,
-        )
+        from semantic_kernel.text.function_extension import aggregate_chunked_results
 
         lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
         paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
