@@ -55,11 +55,12 @@ azure_ai_search_settings["query_type"] = "vector"
 # Create the data source settings
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
-req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
+service_id = "chat-gpt"
+req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
 chat_service = sk_oai.AzureChatCompletion(
-    service_id="chat-gpt",
+    service_id=service_id,
     **aoai_settings,
 )
 kernel.add_service(chat_service)
@@ -72,7 +73,7 @@ prompt_template_config = PromptTemplateConfig(
         InputVariable(name="chat_history", description="The history of the conversation", is_required=True, default=""),
         InputVariable(name="request", description="The user input", is_required=True),
     ],
-    execution_settings={"default": req_settings},
+    execution_settings=req_settings,
 )
 
 chat_history = ChatHistory()
