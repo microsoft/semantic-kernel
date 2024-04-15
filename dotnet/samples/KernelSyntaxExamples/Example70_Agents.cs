@@ -68,6 +68,7 @@ public class Example70_Agent : BaseTest
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
+            "Do you have enough soup for 5 orders?",
             "Thank you!");
     }
 
