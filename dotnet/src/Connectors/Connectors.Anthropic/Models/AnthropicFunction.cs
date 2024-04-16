@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Json.Schema;
-using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic;
@@ -174,12 +172,7 @@ public sealed class AnthropicFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(parameter.Description))
         {
-            return KernelJsonSchema.Parse(
-                JsonSerializer.Serialize(
-                    new JsonSchemaBuilder()
-                        .FromType(parameter.ParameterType ?? typeof(string))
-                        .Description(parameter.Description)
-                        .Build()));
+            return KernelJsonSchemaBuilder.Build(null, parameter.ParameterType ?? typeof(string), parameter.Description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
