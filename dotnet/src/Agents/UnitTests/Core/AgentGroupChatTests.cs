@@ -73,16 +73,15 @@ public class AgentGroupChatTests
                 ExecutionSettings =
                     new()
                     {
-                        SelectionStrategy = new SequentialSelectionStrategy(),
                         TerminationStrategy =
                         {
                             // This test is designed to take 9 turns.
                             MaximumIterations = 9,
                         }
-                    }
+                    },
+                IsComplete = true
             };
 
-        chat.IsComplete = true;
         await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
         chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
@@ -105,27 +104,6 @@ public class AgentGroupChatTests
                     break;
             }
         }
-    }
-
-    /// <summary>
-    /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyGroupAgentChatNoStrategyAsync()
-    {
-        AgentGroupChat chat = Create3AgentChat();
-
-        // Remove max-limit in order to isolate the target behavior.
-        chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
-
-        // No selection
-        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
-
-        // Explicit selection
-        Agent agent4 = CreateMockAgent().Object;
-        var messages = await chat.InvokeAsync(agent4).ToArrayAsync();
-        Assert.Single(messages);
-        Assert.False(chat.IsComplete);
     }
 
     /// <summary>
@@ -165,7 +143,6 @@ public class AgentGroupChatTests
         chat.ExecutionSettings =
             new()
             {
-                SelectionStrategy = new SequentialSelectionStrategy(),
                 TerminationStrategy =
                     new TestTerminationStrategy(shouldTerminate: true)
                     {
@@ -220,7 +197,7 @@ public class AgentGroupChatTests
     {
         Mock<ChatHistoryKernelAgent> agent = new();
 
-        ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
+        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
         agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;

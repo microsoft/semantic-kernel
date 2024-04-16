@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -16,7 +16,9 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.function_result import FunctionResult
@@ -39,7 +41,7 @@ PROMPT_RETURN_PARAM = KernelParameterMetadata(
     name="return",
     description="The completion result",
     default_value=None,
-    type="FunctionResult",
+    type="FunctionResult",  # type: ignore
     is_required=True,
 )
 
@@ -48,20 +50,20 @@ class KernelFunctionFromPrompt(KernelFunction):
     """Semantic Kernel Function from a prompt."""
 
     prompt_template: PromptTemplateBase
-    prompt_execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
+    prompt_execution_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     def __init__(
         self,
         function_name: str,
-        plugin_name: Optional[str] = None,
-        description: Optional[str] = None,
-        prompt: Optional[str] = None,
+        plugin_name: str | None = None,
+        description: str | None = None,
+        prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: Optional[PromptTemplateBase] = None,
-        prompt_template_config: Optional[PromptTemplateConfig] = None,
-        prompt_execution_settings: Optional[
-            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
-        ] = None,
+        prompt_template: PromptTemplateBase | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_execution_settings: None | (
+            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]
+        ) = None,
     ) -> None:
         """
         Initializes a new instance of the KernelFunctionFromPrompt class
@@ -95,7 +97,7 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
-            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)
+            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)  # type: ignore
 
         try:
             metadata = KernelFunctionMetadata(
@@ -110,15 +112,17 @@ through prompt_template_config or in the prompt_template."
         except ValidationError as exc:
             raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
         super().__init__(
-            metadata=metadata, prompt_template=prompt_template, prompt_execution_settings=prompt_execution_settings
+            metadata=metadata,
+            prompt_template=prompt_template,
+            prompt_execution_settings=prompt_execution_settings,
         )
 
     @model_validator(mode="before")
     @classmethod
     def rewrite_execution_settings(
         cls,
-        data: Dict[str, Any],
-    ) -> Dict[str, PromptExecutionSettings]:
+        data: dict[str, Any],
+    ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary.
 
         If the prompt_execution_settings is not a dictionary, it is converted to a dictionary.
@@ -142,9 +146,9 @@ through prompt_template_config or in the prompt_template."
 
     async def _invoke_internal(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         arguments: KernelArguments,
-    ) -> "FunctionResult":
+    ) -> FunctionResult:
         """Invokes the function with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
@@ -171,7 +175,7 @@ through prompt_template_config or in the prompt_template."
 
     async def _handle_complete_chat(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
@@ -181,10 +185,8 @@ through prompt_template_config or in the prompt_template."
         chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
 
         # pass the kernel in for auto function calling
-        kwargs = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
-            service, ChatCompletionClientBase
-        ):
+        kwargs: dict[str, Any] = {}
+        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
@@ -197,7 +199,7 @@ through prompt_template_config or in the prompt_template."
             if not completions:
                 raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
 
-            return self._create_function_result(completions, chat_history, arguments)
+            return self._create_function_result(completions=completions, chat_history=chat_history, arguments=arguments)
         except Exception as exc:
             raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
@@ -211,19 +213,19 @@ through prompt_template_config or in the prompt_template."
         """Handles the text service call."""
         try:
             completions = await service.complete(prompt, execution_settings)
-            return self._create_function_result(completions, None, arguments, prompt=prompt)
+            return self._create_function_result(completions=completions, arguments=arguments, prompt=prompt)
         except Exception as exc:
             raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
     def _create_function_result(
         self,
-        completions: Union[List[ChatMessageContent], List[TextContent]],
-        chat_history: ChatHistory,
+        completions: list[ChatMessageContent] | list[TextContent],
         arguments: KernelArguments,
-        prompt: str = None,
+        chat_history: ChatHistory | None = None,
+        prompt: str | None = None,
     ) -> FunctionResult:
         """Creates a function result with the given completions."""
-        metadata = {
+        metadata: dict[str, Any] = {
             "arguments": arguments,
             "metadata": [completion.metadata for completion in completions],
         }
@@ -239,9 +241,9 @@ through prompt_template_config or in the prompt_template."
 
     async def _invoke_internal_stream(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin], Any]:
         """Invokes the function stream with the given arguments."""
         arguments = self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
@@ -255,41 +257,37 @@ through prompt_template_config or in the prompt_template."
                 prompt=prompt,
                 arguments=arguments,
             ):
-                yield content
+                yield content  # type: ignore
             return
 
         if isinstance(service, TextCompletionClientBase):
-            async for content in self._handle_complete_text_stream(
+            async for content in self._handle_complete_text_stream(  # type: ignore
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
             ):
-                yield content
+                yield content  # type: ignore
             return
 
         raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
 
     async def _handle_complete_chat_stream(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         service: ChatCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncGenerator[FunctionResult | list[StreamingChatMessageContent], Any]:
         """Handles the chat service call."""
 
         # pass the kernel in for auto function calling
-        kwargs = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings) and isinstance(
-            service, ChatCompletionClientBase
-        ):
+        kwargs: dict[str, Any] = {}
+        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
-        chat_history = ChatHistory.from_rendered_prompt(
-            prompt,
-        )
+        chat_history = ChatHistory.from_rendered_prompt(prompt)
         try:
             async for partial_content in service.complete_chat_stream(
                 chat_history=chat_history,
@@ -308,7 +306,7 @@ through prompt_template_config or in the prompt_template."
         service: TextCompletionClientBase,
         execution_settings: PromptExecutionSettings,
         prompt: str,
-    ) -> AsyncIterable[Union[FunctionResult, List[StreamingContentMixin]]]:
+    ) -> AsyncGenerator[FunctionResult | list[StreamingTextContent], Any]:
         """Handles the text service call."""
         try:
             async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):
@@ -318,7 +316,7 @@ through prompt_template_config or in the prompt_template."
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
-    def add_default_values(self, arguments: "KernelArguments") -> KernelArguments:
+    def add_default_values(self, arguments: KernelArguments) -> KernelArguments:
         """Gathers the function parameters from the arguments."""
         for parameter in self.prompt_template.prompt_template_config.input_variables:
             if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
@@ -326,7 +324,7 @@ through prompt_template_config or in the prompt_template."
         return arguments
 
     @classmethod
-    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
         """Creates a new instance of the KernelFunctionFromPrompt class from a YAML string."""
         try:
             data = yaml.safe_load(yaml_str)
@@ -351,7 +349,7 @@ through prompt_template_config or in the prompt_template."
         )
 
     @classmethod
-    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
+    def from_directory(cls, path: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
         """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
 
         The directory needs to contain:
@@ -383,11 +381,11 @@ through prompt_template_config or in the prompt_template."
 
         function_name = os.path.basename(path)
 
-        with open(config_path, "r") as config_file:
+        with open(config_path) as config_file:
             prompt_template_config = PromptTemplateConfig.from_json(config_file.read())
         prompt_template_config.name = function_name
 
-        with open(prompt_path, "r") as prompt_file:
+        with open(prompt_path) as prompt_file:
             prompt_template_config.template = prompt_file.read()
 
         prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](  # type: ignore

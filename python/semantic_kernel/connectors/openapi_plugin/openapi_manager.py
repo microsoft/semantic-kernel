@@ -332,7 +332,9 @@ def create_functions_from_openapi(
     ]
 
 
-def _create_function_from_operation(runner: OpenApiRunner, operation: RestApiOperation, plugin_name: str | None = None):
+def _create_function_from_operation(
+    runner: OpenApiRunner, operation: RestApiOperation, plugin_name: str | None = None
+) -> KernelFunctionFromMethod:
     logger.info(f"Registering OpenAPI operation: {plugin_name}.{operation.id}")
 
     @kernel_function(
@@ -360,4 +362,4 @@ def _create_function_from_operation(runner: OpenApiRunner, operation: RestApiOpe
         )
         return response
 
-    return KernelFunctionFromMethod(run_openapi_operation, plugin_name=plugin_name)
+    return KernelFunctionFromMethod(method=run_openapi_operation, plugin_name=plugin_name)
