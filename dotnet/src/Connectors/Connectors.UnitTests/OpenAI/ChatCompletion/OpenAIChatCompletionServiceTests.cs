@@ -68,6 +68,26 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData("http://localhost:1234/chat/completions", "http://localhost:1234/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234/v2/chat/completions", "http://localhost:1234/v2/chat/completions")] // Uses full path when provided
+    [InlineData("http://localhost:1234", "http://localhost:1234/v1/chat/completions")]
+    [InlineData("http://localhost:8080", "http://localhost:8080/v1/chat/completions")]
+    [InlineData("https://something:8080", "https://something:8080/v1/chat/completions")] // Accepts TLS Secured endpoints
+    public async Task ItUsesCustomEndpointsWhenProvidedAsync(string endpointProvided, string expectedEndpoint)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "any", apiKey: null, httpClient: this._httpClient, endpoint: new Uri(endpointProvided));
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(new ChatHistory(), this._executionSettings);
+
+        // Assert
+        Assert.Equal(expectedEndpoint, this._messageHandlerStub.RequestUri!.ToString());
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ConstructorWithOpenAIClientWorksCorrectly(bool includeLoggerFactory)

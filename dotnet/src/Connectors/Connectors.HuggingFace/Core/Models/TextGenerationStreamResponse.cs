@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 
-namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+namespace Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 
 internal sealed class TextGenerationStreamResponse
 {
@@ -18,7 +18,7 @@ internal sealed class TextGenerationStreamResponse
     public string? GeneratedText { get; set; }
 
     [JsonPropertyName("details")]
-    public string? Details { get; set; }
+    public TextGenerationDetails? Details { get; set; }
 
     internal sealed class TextGenerationToken
     {
@@ -33,5 +33,17 @@ internal sealed class TextGenerationStreamResponse
 
         [JsonPropertyName("special")]
         public bool Special { get; set; }
+    }
+
+    internal sealed class TextGenerationDetails
+    {
+        [JsonPropertyName("finish_reason")]
+        public string? FinishReason { get; set; }
+
+        [JsonPropertyName("generated_tokens")]
+        public int GeneratedTokens { get; set; }
+
+        [JsonPropertyName("seed")]
+        public long? Seed { get; set; }
     }
 }

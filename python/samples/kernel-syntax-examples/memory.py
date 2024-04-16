@@ -2,11 +2,13 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
+from semantic_kernel.core_plugins import TextMemoryPlugin
+from semantic_kernel.functions import KernelFunction
+from semantic_kernel.memory import SemanticTextMemory, VolatileMemoryStore
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 collection_id = "generic"
 
@@ -28,9 +30,9 @@ async def search_memory_examples(memory: SemanticTextMemory) -> None:
 
 
 async def setup_chat_with_memory(
-    kernel: sk.Kernel,
+    kernel: Kernel,
     service_id: str,
-) -> sk.KernelFunction:
+) -> KernelFunction:
     prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -58,7 +60,7 @@ async def setup_chat_with_memory(
     return chat_func
 
 
-async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunction) -> bool:
+async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:
     try:
         user_input = input("User:> ")
     except KeyboardInterrupt:
@@ -79,19 +81,19 @@ async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunction) -> bool:
 
 
 async def main() -> None:
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
     service_id = "chat-gpt"
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )
-    embedding_gen = sk_oai.OpenAITextEmbedding(
+    embedding_gen = OpenAITextEmbedding(
         service_id="ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
     )
     kernel.add_service(embedding_gen)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
+    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embedding_gen)
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
