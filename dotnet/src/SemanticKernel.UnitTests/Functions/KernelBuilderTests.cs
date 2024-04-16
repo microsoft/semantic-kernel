@@ -214,7 +214,7 @@ public class KernelBuilderTests
         KernelPlugin plugin3 = KernelPluginFactory.CreateFromFunctions("plugin3");
 
         IKernelBuilder builder = Kernel.CreateBuilder();
-        builder.Services.AddTransient<KernelPluginCollection>(_ => new(new[] { plugin1, plugin2, plugin3 }));
+        builder.Services.AddTransient<KernelPluginCollection>(_ => new([plugin1, plugin2, plugin3]));
 
         Kernel kernel1 = builder.Build();
         Assert.Equal(3, kernel1.Plugins.Count);
@@ -232,7 +232,7 @@ public class KernelBuilderTests
 
         IKernelBuilder builder = sc.AddKernel();
         Assert.NotNull(builder);
-        Assert.Throws<InvalidOperationException>(() => builder.Build());
+        Assert.Throws<InvalidOperationException>(builder.Build);
 
         builder.Services.AddSingleton<Dictionary<string, string>>([]);
 

@@ -130,10 +130,8 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
         )
 
         # Create the semantic function
-        chat_function = kernel.create_function_from_prompt(
-            function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config
-        )
-
+        kernel.add_function(function_name="story", plugin_name="plugin", prompt_template_config=prompt_template_config)
+        chat_function = kernel.get_function("plugin", "story")
         return chat_function, kernel, collection, memory_store
     except:
         await memory_store.delete_collection(collection)

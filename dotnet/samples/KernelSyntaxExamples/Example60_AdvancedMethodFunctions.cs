@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows different ways how to define and execute method functions using custom and primitive types.
-public class Example60_AdvancedMethodFunctions : BaseTest
+public class Example60_AdvancedMethodFunctions(ITestOutputHelper output) : BaseTest(output)
 {
     #region Method Functions Chaining
 
@@ -115,8 +115,4 @@ public class Example60_AdvancedMethodFunctions : BaseTest
     }
 
     #endregion
-
-    public Example60_AdvancedMethodFunctions(ITestOutputHelper output) : base(output)
-    {
-    }
 }

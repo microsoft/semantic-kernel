@@ -5,9 +5,7 @@ import typing_extensions as te
 from pydantic import Field, Json
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.conversation_summary_plugin import (
-    ConversationSummaryPlugin,
-)
+from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -20,9 +18,6 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.functions.kernel_plugin_collection import (
-    KernelPluginCollection,
-)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
@@ -70,11 +65,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     def create_chat_history() -> ChatHistory:
         return ChatHistory()
 
-    def create_plugin_collection() -> KernelPluginCollection:
-        """Return a plugin collection."""
-        # TODO: Add a few plugins to this collection.
-        return KernelPluginCollection()
-
     cls_obj_map = {
         Block: Block(content="foo"),
         CodeBlock: CodeBlock(content="foo"),
@@ -100,7 +90,6 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             is_asynchronous=False,
         ),
         ChatHistory: create_chat_history(),
-        KernelPluginCollection: create_plugin_collection(),
         NullMemory: NullMemory(),
         KernelFunction: create_kernel_function(),
     }
@@ -145,7 +134,6 @@ PYDANTIC_MODELS = [
     NamedArgBlock,
     KernelParameterMetadata,
     KernelFunctionMetadata,
-    KernelPluginCollection,
     ChatHistory,
     pytest.param(
         KernelFunction,

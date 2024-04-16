@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
-public class Example59_OpenAIFunctionCalling : BaseTest
+public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -136,9 +136,5 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 Console.WriteLine();
             }
         }*/
-    }
-
-    public Example59_OpenAIFunctionCalling(ITestOutputHelper output) : base(output)
-    {
     }
 }

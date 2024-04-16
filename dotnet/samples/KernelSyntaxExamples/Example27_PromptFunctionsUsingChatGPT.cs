@@ -10,7 +10,7 @@ namespace Examples;
 /// <summary>
 /// This example shows how to use GPT3.5 Chat model for prompts and prompt functions.
 /// </summary>
-public class Example27_PromptFunctionsUsingChatGPT : BaseTest
+public class Example27_PromptFunctionsUsingChatGPT(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -36,9 +36,5 @@ public class Example27_PromptFunctionsUsingChatGPT : BaseTest
            - Saturn
            - Uranus
         */
-    }
-
-    public Example27_PromptFunctionsUsingChatGPT(ITestOutputHelper output) : base(output)
-    {
     }
 }

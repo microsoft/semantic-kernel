@@ -63,7 +63,7 @@ async def example2(kernel: sk.Kernel, service_id: str):
     question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?"
     print(question)
 
-    oracle = kernel.create_function_from_prompt(
+    oracle = kernel.add_function(
         function_name="oracle",
         plugin_name="OraclePlugin",
         template=prompt,
@@ -111,7 +111,7 @@ async def main():
 
     bing_connector = BingConnector(api_key=bing_api_key)
     bing = WebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin_from_object(bing, "bing")
+    kernel.add_plugin(bing, "bing")
 
     await example1(kernel, "bing")
     await example2(kernel, service_id)

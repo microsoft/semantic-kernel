@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Plugins.Grpc;
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
-internal sealed class GrpcOperationRunner
+internal sealed class GrpcOperationRunner(HttpClient httpClient)
 {
     /// <summary>Serialization options that use a camel casing naming policy.</summary>
     private static readonly JsonSerializerOptions s_camelCaseOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -31,16 +31,7 @@ internal sealed class GrpcOperationRunner
     /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
-    private readonly HttpClient _httpClient;
-
-    /// <summary>
-    /// Creates an instance of a <see cref="GrpcOperationRunner"/> class.
-    /// </summary>
-    /// <param name="httpClient">An instance of the HttpClient class.</param>
-    public GrpcOperationRunner(HttpClient httpClient)
-    {
-        this._httpClient = httpClient;
-    }
+    private readonly HttpClient _httpClient = httpClient;
 
     /// <summary>
     /// Runs a gRPC operation.
@@ -167,7 +158,7 @@ internal sealed class GrpcOperationRunner
             return (T)Serializer.NonGeneric.Deserialize(contractType, memoryStream);
         }
 
-        return Marshallers.Create((instance) => Serialize(instance), (bytes) => Deserialize(bytes));
+        return Marshallers.Create(Serialize, Deserialize);
     }
 
     /// <summary>

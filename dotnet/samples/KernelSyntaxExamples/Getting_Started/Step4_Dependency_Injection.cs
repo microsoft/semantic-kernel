@@ -16,7 +16,7 @@ namespace GettingStarted;
 /// <summary>
 /// This example shows how to using Dependency Injection with the Semantic Kernel
 /// </summary>
-public sealed class Step4_Dependency_Injection : BaseTest
+public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
@@ -68,9 +68,5 @@ public sealed class Step4_Dependency_Injection : BaseTest
             this._logger.LogInformation("Returning current time {0}", utcNow);
             return utcNow;
         }
-    }
-
-    public Step4_Dependency_Injection(ITestOutputHelper output) : base(output)
-    {
     }
 }

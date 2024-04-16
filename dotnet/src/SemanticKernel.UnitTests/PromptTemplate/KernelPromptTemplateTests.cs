@@ -107,11 +107,11 @@ public sealed class KernelPromptTemplateTests
         // Arrange
         var template = """This {{$x11}} {{$a}}{{$missing}} test template {{p.bar $b}} and {{p.food c='literal "c"' d = $d}}""";
 
-        this._kernel.ImportPluginFromFunctions("p", new[]
-        {
+        this._kernel.ImportPluginFromFunctions("p",
+        [
             KernelFunctionFactory.CreateFromMethod((string input) => "with function that accepts " + input, "bar"),
             KernelFunctionFactory.CreateFromMethod((string c, string d) => "another one with " + c + d, "food"),
-        });
+        ]);
 
         var target = (KernelPromptTemplate)this._factory.Create(new PromptTemplateConfig(template));
 
@@ -187,7 +187,7 @@ public sealed class KernelPromptTemplateTests
             canary = input;
         }
 
-        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") });
+        this._kernel.ImportPluginFromFunctions("p", [KernelFunctionFactory.CreateFromMethod(Foo, "bar")]);
 
         var template = "This is a test template that references variable that does not have argument. {{p.bar $foo}}.";
 
@@ -211,7 +211,7 @@ public sealed class KernelPromptTemplateTests
             canary = input;
         }
 
-        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") });
+        this._kernel.ImportPluginFromFunctions("p", [KernelFunctionFactory.CreateFromMethod(Foo, "bar")]);
 
         var template = "This is a test template that references variable that have null argument{{p.bar $foo}}.";
 
@@ -237,7 +237,7 @@ public sealed class KernelPromptTemplateTests
             canary = input;
         }
 
-        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") });
+        this._kernel.ImportPluginFromFunctions("p", [KernelFunctionFactory.CreateFromMethod(Foo, "bar")]);
 
         var template = "This is a test template that {{$zoo}}references variables that have null arguments{{p.bar $foo}}.";
 
@@ -266,7 +266,7 @@ public sealed class KernelPromptTemplateTests
             canary = input;
         }
 
-        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod(Foo, "bar") });
+        this._kernel.ImportPluginFromFunctions("p", [KernelFunctionFactory.CreateFromMethod(Foo, "bar")]);
 
         var template = "This is a test template that {{$zoo}}references variables that do not have arguments{{p.bar $foo}}.";
 
@@ -293,7 +293,7 @@ public sealed class KernelPromptTemplateTests
 
         var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { func });
+        this._kernel.ImportPluginFromFunctions("plugin", [func]);
 
         this._arguments[InputParameterName] = "INPUT-BAR";
 
@@ -319,7 +319,7 @@ public sealed class KernelPromptTemplateTests
 
         var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { func });
+        this._kernel.ImportPluginFromFunctions("plugin", [func]);
 
         this._arguments["myVar"] = "BAR";
         var template = "foo-{{plugin.function $myVar}}-baz";
@@ -349,7 +349,7 @@ public sealed class KernelPromptTemplateTests
 
         var func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { func });
+        this._kernel.ImportPluginFromFunctions("plugin", [func]);
 
         this._arguments[InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
@@ -396,7 +396,7 @@ public sealed class KernelPromptTemplateTests
 
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { func });
+        this._kernel.ImportPluginFromFunctions("plugin", [func]);
 
         this._arguments[InputParameterName] = "Mario";
         this._arguments["someDate"] = "2023-08-25T00:00:00";
@@ -462,7 +462,7 @@ public sealed class KernelPromptTemplateTests
 
         KernelFunction func = KernelFunctionFactory.CreateFromMethod(MyFunctionAsync, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { func });
+        this._kernel.ImportPluginFromFunctions("plugin", [func]);
 
         this._arguments["myVar"] = "BAR";
 
@@ -498,7 +498,7 @@ public sealed class KernelPromptTemplateTests
         "f");
 
         this._kernel.Culture = new CultureInfo("fr-FR"); //In French culture, a comma is used as a decimal separator, and a slash is used as a date separator. See the Assert below.
-        this._kernel.ImportPluginFromFunctions("p", new[] { func });
+        this._kernel.ImportPluginFromFunctions("p", [func]);
 
         var template = "int:{{$i}}, double:{{$d}}, {{p.f $s g=$g}}, DateTime:{{$dt}}, enum:{{$e}}";
 
