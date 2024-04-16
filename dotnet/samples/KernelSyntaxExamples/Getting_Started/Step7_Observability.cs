@@ -82,14 +82,13 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     {
         private readonly ITestOutputHelper _output = output;
 
-        public void OnPromptRendered(PromptRenderedContext context)
-        {
-            this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
-        }
-
-        public void OnPromptRendering(PromptRenderingContext context)
+        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
         {
             this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
+
+            await next(context);
+
+            this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
         }
     }
 }
