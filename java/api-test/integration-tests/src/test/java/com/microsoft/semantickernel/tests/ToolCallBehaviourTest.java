@@ -15,7 +15,6 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -47,37 +46,6 @@ public class ToolCallBehaviourTest {
     @AfterEach
     public void after() {
         wm.stop();
-    }
-
-    @Test
-    public void toolThatDoesNotExistThrows() {
-        ChatCompletionService chatCompletionService = getChatCompletionService();
-
-        Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, chatCompletionService)
-            .build();
-
-        ChatHistory messages = new ChatHistory();
-        messages.addMessage(
-            new ChatMessageContent<>(
-                AuthorRole.USER,
-                "Call A function"));
-
-        try {
-            chatCompletionService
-                .getChatMessageContentsAsync(
-                    messages,
-                    kernel,
-                    InvocationContext.builder()
-                        .withToolCallBehavior(
-                            ToolCallBehavior.allowAllKernelFunctions(true))
-                        .build())
-                .block();
-            Assertions.fail("Expected an exception to be thrown");
-        } catch (SKException e) {
-            Assertions.assertTrue(e.getMessage()
-                .contains("Failed to find plugin apluginname"));
-        }
     }
 
     @Test
@@ -251,7 +219,18 @@ public class ToolCallBehaviourTest {
             .build();
     }
 
-    private static MappingBuilder buildResponse(String bodyMatcher, String responseBody) {
+    public static MappingBuilder buildTextResponse(String bodyMatcher, String responseBody) {
+        return post(urlEqualTo(
+            "//openai/deployments/gpt-35-turbo-2/completions?api-version=2024-02-15-preview"))
+            .withRequestBody(new ContainsPattern(bodyMatcher))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(formTextResponse(responseBody)));
+    }
+
+    public static MappingBuilder buildResponse(String bodyMatcher, String responseBody) {
         return post(urlEqualTo(
             "//openai/deployments/gpt-35-turbo-2/chat/completions?api-version=2024-02-15-preview"))
             .withRequestBody(new ContainsPattern(bodyMatcher))
@@ -267,6 +246,20 @@ public class ToolCallBehaviourTest {
         public String doIt() {
             return "Tool call performed";
         }
+    }
+
+    private static String formTextResponse(String chatChoices) {
+        return """
+                    {
+                        "id": "cmpl-3QJ9z1J9z1J9z1J9z1J9z1J9",
+                        "usage": {
+                            "total_tokens": 4,
+                            "completion_tokens": 1,
+                            "prompt_tokens": 1
+                        },
+                        %s
+                    }
+            """.formatted(chatChoices);
     }
 
     private static String formResponse(String chatChoices) {

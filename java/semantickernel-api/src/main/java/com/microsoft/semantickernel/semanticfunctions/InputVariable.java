@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -20,6 +22,8 @@ public class InputVariable {
     private final String defaultValue;
     private final boolean isRequired;
     private final String type;
+    @Nullable
+    private final List<?> enumValues;
 
     /**
      * Creates a new instance of {@link InputVariable}.
@@ -29,6 +33,7 @@ public class InputVariable {
      * @param description  the description of the input variable
      * @param defaultValue the default value of the input variable
      * @param isRequired   whether the input variable is required
+     * @param enumValues   the enum values of the input variable
      */
     @JsonCreator
     public InputVariable(
@@ -36,7 +41,8 @@ public class InputVariable {
         @JsonProperty("type") String type,
         @JsonProperty("description") @Nullable String description,
         @JsonProperty("default") @Nullable String defaultValue,
-        @JsonAlias({ "required", "is_required" }) @JsonProperty("is_required") boolean isRequired) {
+        @JsonAlias({ "required", "is_required" }) @JsonProperty("is_required") boolean isRequired,
+        @JsonProperty("enum") @Nullable List<?> enumValues) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
@@ -45,6 +51,11 @@ public class InputVariable {
             type = "java.lang.String";
         }
         this.type = type;
+        if (enumValues != null) {
+            this.enumValues = Collections.unmodifiableList(enumValues);
+        } else {
+            this.enumValues = null;
+        }
     }
 
     /**
@@ -58,6 +69,7 @@ public class InputVariable {
         this.description = null;
         this.defaultValue = null;
         this.isRequired = true;
+        this.enumValues = null;
     }
 
     /**
@@ -75,8 +87,10 @@ public class InputVariable {
         Class<?> type,
         @Nullable String description,
         @Nullable String defaultValue,
+        @Nullable List<?> enumValues,
         boolean required) {
-        return new InputVariable(name, type.getName(), description, defaultValue, required);
+        return new InputVariable(name, type.getName(), description, defaultValue, required,
+            enumValues);
     }
 
     /**
@@ -166,4 +180,13 @@ public class InputVariable {
         return isRequired == other.isRequired;
     }
 
+    /**
+     * Gets the possible enum values of the input variable.
+     *
+     * @return the possible enum values of the input variable
+     */
+    @Nullable
+    public List<?> getEnumValues() {
+        return enumValues;
+    }
 }

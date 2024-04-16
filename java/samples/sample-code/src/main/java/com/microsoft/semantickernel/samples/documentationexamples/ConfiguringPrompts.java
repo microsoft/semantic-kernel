@@ -74,11 +74,13 @@ public class ConfiguringPrompts {
                     String.class,
                     "The history of the conversation.",
                     null,
+                    null,
                     false))
                 .addInputVariable(InputVariable.build(
                     "request",
                     String.class,
                     "The user's request.",
+                    null,
                     null,
                     true))
                 .withExecutionSettings(new HashMap<String, PromptExecutionSettings>() {

@@ -55,13 +55,15 @@ public class KernelFunctionYamlTest {
                     "java.lang.String",
                     "The topic of the story.",
                     null,
-                    true),
+                    true,
+                    null),
                 new InputVariable(
                     "length",
                     "java.lang.String",
                     "The number of sentences in the story.",
                     null,
-                    true)))
+                    true,
+                    null)))
             .withOutputVariable("The generated story.", "java.lang.String")
             .withExecutionSettings(new HashMap() {
                 {

@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PostChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
+import com.microsoft.semantickernel.hooks.KernelHook.PreToolCallHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
 import java.util.Collections;
@@ -100,6 +101,17 @@ public class KernelHooks {
     public String addPreChatCompletionHook(
         Function<PreChatCompletionEvent, PreChatCompletionEvent> function) {
         return addHook((PreChatCompletionHook) function::apply);
+    }
+
+    /**
+     * Add a {@link PreToolCallHook} to the collection of hooks.
+     *
+     * @param function the function to add
+     * @return the key of the hook in the collection
+     */
+    public String addPreToolCallHook(
+        Function<PreToolCallEvent, PreToolCallEvent> function) {
+        return addHook((PreToolCallHook) function::apply);
     }
 
     /**
