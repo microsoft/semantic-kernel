@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.OpenAI.Core.AzureSdk;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -29,18 +31,19 @@ internal sealed class OpenAIClientCore : ClientCore
     /// </summary>
     /// <param name="modelId">Model name.</param>
     /// <param name="apiKey">OpenAI API Key.</param>
+    /// <param name="endpoint">OpenAI compatible API endpoint.</param>
     /// <param name="organization">OpenAI Organization Id (usually optional).</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     internal OpenAIClientCore(
         string modelId,
-        string apiKey,
+        string? apiKey = null,
+        Uri? endpoint = null,
         string? organization = null,
         HttpClient? httpClient = null,
         ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        Verify.NotNullOrWhiteSpace(apiKey);
 
         this.DeploymentOrModelName = modelId;
 
@@ -51,7 +54,17 @@ internal sealed class OpenAIClientCore : ClientCore
             options.AddPolicy(new AddHeaderRequestPolicy("OpenAI-Organization", organization!), HttpPipelinePosition.PerCall);
         }
 
-        this.Client = new OpenAIClient(apiKey, options);
+        // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
+        var providedEndpoint = endpoint ?? httpClient?.BaseAddress;
+        if (providedEndpoint is null)
+        {
+            Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+        }
+        else
+        {
+            options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), Azure.Core.HttpPipelinePosition.PerRetry);
+        }
+        this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
     }
 
     /// <summary>
