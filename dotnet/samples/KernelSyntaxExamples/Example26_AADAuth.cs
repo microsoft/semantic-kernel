@@ -21,7 +21,7 @@ namespace Examples;
 /// -Shared tokens
 /// -etc.
 /// </summary>
-public class Example26_AADAuth : BaseTest
+public class Example26_AADAuth(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()
@@ -62,9 +62,5 @@ public class Example26_AADAuth : BaseTest
         WriteLine(reply);
 
         /* Output: Why did the hourglass go to the doctor? Because it was feeling a little run down! */
-    }
-
-    public Example26_AADAuth(ITestOutputHelper output) : base(output)
-    {
     }
 }

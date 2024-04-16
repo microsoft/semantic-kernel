@@ -30,7 +30,7 @@ async def test_azure_text_embedding_service(kernel: Kernel, get_aoai_config):
     kernel.add_service(embeddings_gen)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
     await memory.save_reference(
@@ -66,7 +66,7 @@ async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel,
 
     kernel.add_service(embeddings_gen)
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
     await memory.save_reference(

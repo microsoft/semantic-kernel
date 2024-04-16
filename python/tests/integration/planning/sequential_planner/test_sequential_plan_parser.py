@@ -24,9 +24,9 @@ async def test_can_call_to_plan_from_xml(get_aoai_config):
             api_key=api_key,
         ),
     )
-    kernel.import_plugin_from_object(EmailPluginFake(), "email")
-    kernel.import_plugin_from_object(SummarizePluginFake(), "SummarizePlugin")
-    kernel.import_plugin_from_object(WriterPluginFake(), "WriterPlugin")
+    kernel.add_plugin(EmailPluginFake(), "email")
+    kernel.add_plugin(SummarizePluginFake(), "SummarizePlugin")
+    kernel.add_plugin(WriterPluginFake(), "WriterPlugin")
 
     plan_string = """
 <plan>

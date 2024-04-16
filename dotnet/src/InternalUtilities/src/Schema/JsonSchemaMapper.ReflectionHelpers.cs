@@ -124,18 +124,11 @@ static partial class JsonSchemaMapper
 #if NETCOREAPP
     [RequiresUnreferencedCode("Resolves unreferenced member metadata.")]
 #endif
-    private static FieldInfo GetPrivateFieldWithPotentiallyTrimmedMetadata(this Type type, string fieldName)
-    {
-        FieldInfo? field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-        if (field is null)
-        {
+    private static FieldInfo GetPrivateFieldWithPotentiallyTrimmedMetadata(this Type type, string fieldName) =>
+        type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic) ??
             throw new InvalidOperationException(
                 $"Could not resolve metadata for field '{fieldName}' in type '{type}'. " +
                 "If running Native AOT ensure that the 'IlcTrimMetadata' property has been disabled.");
-        }
-
-        return field;
-    }
 
     // Resolves the parameters of the deserialization constructor for a type, if they exist.
 #if NETCOREAPP

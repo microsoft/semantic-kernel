@@ -72,7 +72,7 @@ class SequentialPlanParser:
                             raise PlannerInvalidPlanError(f"Failed to find function '{plugin_function_name}'.") from exc
                 else:
                     try:
-                        func = kernel.func_from_fully_qualified_function_name(plugin_function_name)
+                        func = kernel.get_function_from_fully_qualified_function_name(plugin_function_name)
                     except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
                         if allow_missing_functions:
                             plan.add_steps([Plan.from_goal(plugin_function_name)])

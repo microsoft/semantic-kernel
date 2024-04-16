@@ -20,9 +20,9 @@ namespace Microsoft.SemanticKernel.Agents.Internal;
 /// </remarks>
 internal sealed class BroadcastQueue
 {
-    private readonly Dictionary<string, QueueReference> _queues = new();
-    private readonly Dictionary<string, Task> _tasks = new();
-    private readonly Dictionary<string, Exception> _failures = new();
+    private readonly Dictionary<string, QueueReference> _queues = [];
+    private readonly Dictionary<string, Task> _tasks = [];
+    private readonly Dictionary<string, Exception> _failures = [];
     private readonly object _stateLock = new(); // Synchronize access to object state.
 
     /// <summary>

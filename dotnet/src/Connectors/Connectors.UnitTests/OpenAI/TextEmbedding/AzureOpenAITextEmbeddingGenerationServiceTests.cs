@@ -97,11 +97,13 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
         var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [],
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act & Assert
@@ -116,20 +118,22 @@ public sealed class AzureOpenAITextEmbeddingGenerationServiceTests : IDisposable
         var service = new AzureOpenAITextEmbeddingGenerationService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent(@"{
-                                            ""object"": ""list"",
-                                            ""data"": [
+            Content = new StringContent("""
+                                        {
+                                            "object": "list",
+                                            "data": [
                                                 {
-                                                    ""object"": ""embedding"",
-                                                    ""embedding"": [
+                                                    "object": "embedding",
+                                                    "embedding": [
                                                         0.018990106880664825,
                                                         -0.0073809814639389515
                                                     ],
-                                                    ""index"": 0
+                                                    "index": 0
                                                 }
                                             ],
-                                            ""model"": ""model-id""
-                                        }", Encoding.UTF8, "application/json")
+                                            "model": "model-id"
+                                        }
+                                        """, Encoding.UTF8, "application/json")
         };
 
         // Act

@@ -24,7 +24,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example15_TextMemoryPlugin : BaseTest
+public class Example15_TextMemoryPlugin(ITestOutputHelper output) : BaseTest(output)
 {
     private const string MemoryCollectionName = "aboutMe";
 
@@ -33,18 +33,16 @@ public class Example15_TextMemoryPlugin : BaseTest
     [InlineData("AzureAISearch")]
     public async Task RunAsync(string provider)
     {
-        IMemoryStore store;
-
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // INSTRUCTIONS: uncomment one of the following lines to select the memory store to use. //
-        ///////////////////////////////////////////////////////////////////////////////////////////
-
         // Volatile Memory Store - an in-memory store that is not persisted
-        switch (provider)
+        IMemoryStore store = provider switch
         {
-            case "AzureAISearch": store = CreateSampleAzureAISearchMemoryStore(); break;
-            default: store = new VolatileMemoryStore(); break;
-        }
+            "AzureAISearch" => CreateSampleAzureAISearchMemoryStore(),
+            _ => new VolatileMemoryStore(),
+        };
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        // INSTRUCTIONS: uncomment one of the following lines to select a different memory store to use. //
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Sqlite Memory Store - a file-based store that persists data in a Sqlite database
         // store = await CreateSampleSqliteMemoryStoreAsync();
@@ -338,9 +336,5 @@ Answer:
         {
             WriteLine(collection);
         }
-    }
-
-    public Example15_TextMemoryPlugin(ITestOutputHelper output) : base(output)
-    {
     }
 }

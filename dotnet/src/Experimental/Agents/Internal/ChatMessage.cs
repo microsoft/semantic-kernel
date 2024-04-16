@@ -54,30 +54,21 @@ internal sealed class ChatMessage : IChatMessage
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }
 
-    private class Annotation : IAnnotation
+    private sealed class Annotation(string label, int startIndex, int endIndex, string fileId, string? quote) : IAnnotation
     {
-        public Annotation(string label, int startIndex, int endIndex, string fileId, string? quote)
-        {
-            this.FileId = fileId;
-            this.Label = label;
-            this.Quote = quote;
-            this.StartIndex = startIndex;
-            this.EndIndex = endIndex;
-        }
+        /// <inheritdoc/>
+        public string FileId { get; } = fileId;
 
         /// <inheritdoc/>
-        public string FileId { get; }
+        public string Label { get; } = label;
 
         /// <inheritdoc/>
-        public string Label { get; }
+        public string? Quote { get; } = quote;
 
         /// <inheritdoc/>
-        public string? Quote { get; }
+        public int StartIndex { get; } = startIndex;
 
         /// <inheritdoc/>
-        public int StartIndex { get; }
-
-        /// <inheritdoc/>
-        public int EndIndex { get; }
+        public int EndIndex { get; } = endIndex;
     }
 }
