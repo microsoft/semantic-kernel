@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from semantic_kernel.hooks import PostPromptRenderContext
+    from semantic_kernel.hooks.prompt import PostPromptRenderContext
 
 
 @runtime_checkable

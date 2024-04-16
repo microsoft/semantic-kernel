@@ -4,8 +4,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Final
 
-from semantic_kernel.hooks.function.post_function_invoke_protocol import PostFunctionInvokeProtocol
-from semantic_kernel.hooks.function.pre_function_invoke_protocol import PreFunctionInvokeProtocol
+# from semantic_kernel.hooks.function.post_function_invoke_protocol import PostFunctionInvokeProtocol
+# from semantic_kernel.hooks.function.pre_function_invoke_protocol import PreFunctionInvokeProtocol
 from semantic_kernel.hooks.prompt.post_prompt_render_protocol import PostPromptRenderProtocol
 from semantic_kernel.hooks.prompt.pre_prompt_render_protocol import PrePromptRenderProtocol
 
@@ -23,8 +23,8 @@ class HookEnum(str, Enum):
 
 
 HOOK_PROTOCOLS = {
-    PRE_FUNCTION_INVOKE_NAME: PreFunctionInvokeProtocol,
-    POST_FUNCTION_INVOKE_NAME: PostFunctionInvokeProtocol,
+    # PRE_FUNCTION_INVOKE_NAME: PreFunctionInvokeProtocol,
+    # POST_FUNCTION_INVOKE_NAME: PostFunctionInvokeProtocol,
     PRE_PROMPT_RENDER_NAME: PrePromptRenderProtocol,
     POST_PROMPT_RENDER_NAME: PostPromptRenderProtocol,
 }

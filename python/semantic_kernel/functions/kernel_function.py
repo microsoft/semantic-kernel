@@ -1,16 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
+import functools
 import logging
 from abc import abstractmethod
 from collections.abc import AsyncGenerator
 from copy import copy, deepcopy
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Coroutine
 
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.hooks.function.function_hook_context_base import FunctionContext
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
@@ -189,39 +191,33 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        while True:
-            pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
-            if pre_hook_context:
-                metadata.update(pre_hook_context.metadata)
-                if pre_hook_context.updated_arguments:
-                    arguments = pre_hook_context.arguments
-            exception = None
-            try:
-                function_result = await self._invoke_internal(kernel, arguments)
-                function_result.metadata.update(metadata)
-            except Exception as exc:
-                exception = exc
-                logger.error(f"Error occurred while invoking function {self.name}: {exception}")
-                metadata["exception"] = exception
-                metadata["arguments"] = arguments
-                function_result = FunctionResult(function=self.metadata, value=None, metadata=metadata)
+        KernelFunction._rebuild_context()
+        function_context = FunctionContext(function=self, kernel=kernel, arguments=arguments, metadata=metadata)
 
-            # this allows a hook to alter the results before returning.
-            post_hook_context = await kernel._post_function_invoke(
-                function=self,
-                arguments=arguments,
-                function_result=function_result,
-                exception=exception,
-                metadata=metadata,
-            )
-            if not post_hook_context:
-                return function_result
-            metadata.update(post_hook_context.metadata)
-            if post_hook_context.updated_arguments:
-                arguments = post_hook_context.arguments
-            if post_hook_context.is_repeat_requested:
-                continue
-            return post_hook_context.function_result
+        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, FunctionContext]]] = [self._wrap()]
+        index = 0
+        for id, hook in kernel.hooks:
+            hook_func = functools.partial(hook.function_filter, next=stack[0])
+            stack.append(hook_func)
+            index += 1
+        result = await stack[-1](function_context)
+        return result.result
+
+    def _wrap(self) -> Callable[["FunctionContext"], Coroutine[Any, Any, "FunctionContext"]]:
+        async def inner_func(function_context: "FunctionContext") -> "FunctionContext":
+            result = await self._invoke_internal(function_context.kernel, function_context.arguments)
+            function_context.result = result
+            return function_context
+
+        return inner_func
+
+    @staticmethod
+    def _rebuild_context() -> None:
+        from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
+        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+        FunctionContext.model_rebuild()
 
     @abstractmethod
     def _invoke_internal_stream(
