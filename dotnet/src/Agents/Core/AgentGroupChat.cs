@@ -75,18 +75,13 @@ public sealed class AgentGroupChat : AgentChat
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                yield return message;
-
                 if (message.Role == AuthorRole.Assistant)
                 {
                     var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
                     this.IsComplete = await task.ConfigureAwait(false);
                 }
 
-                if (this.IsComplete)
-                {
-                    break;
-                }
+                yield return message;
             }
 
             if (this.IsComplete)
@@ -131,18 +126,13 @@ public sealed class AgentGroupChat : AgentChat
 
         await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {
-            yield return message;
-
             if (message.Role == AuthorRole.Assistant)
             {
                 var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
                 this.IsComplete = await task.ConfigureAwait(false);
             }
 
-            if (this.IsComplete)
-            {
-                break;
-            }
+            yield return message;
         }
     }
 
