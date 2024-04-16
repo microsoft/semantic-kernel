@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Kusto.Data.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -22,9 +21,10 @@ public sealed class FunctionCallFilterTests : IDisposable
 
     public FunctionCallFilterTests()
     {
-        this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+        this._messageHandlerStub = new MultipleHttpMessageHandlerStub
+        {
+            ResponsesToReturn = GetFunctionCallingResponses()
+        };
 
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
@@ -47,6 +47,8 @@ public sealed class FunctionCallFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
+            Assert.Equal(2, context.FunctionCallCount);
+
             actualRequestIterations.Add(context.RequestIteration);
             actualFunctionCallIterations.Add(context.FunctionCallIteration);
 

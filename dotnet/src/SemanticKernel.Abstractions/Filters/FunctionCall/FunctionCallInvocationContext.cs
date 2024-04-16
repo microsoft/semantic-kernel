@@ -44,6 +44,11 @@ public class FunctionCallInvocationContext
     public int FunctionCallIteration { get; init; }
 
     /// <summary>
+    /// Total number of function calls to perform within single iteration request.
+    /// </summary>
+    public int FunctionCallCount { get; init; }
+
+    /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
     public KernelFunction Function { get; }

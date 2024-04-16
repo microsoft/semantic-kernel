@@ -410,7 +410,8 @@ internal abstract class ClientCore
                 {
                     Arguments = functionArgs,
                     RequestIteration = requestIteration - 1,
-                    FunctionCallIteration = toolCallIteration
+                    FunctionCallIteration = toolCallIteration,
+                    FunctionCallCount = result.ToolCalls.Count
                 };
 
                 s_inflightAutoInvokes.Value++;
