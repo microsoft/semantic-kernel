@@ -35,7 +35,7 @@ namespace Examples;
 ///       Out of scope and not in the example: if needed, one could go further and use a semantic
 ///       function (with extra cost) asking AI to generate the text to send to the Chat model.
 /// </summary>
-public class Example30_ChatWithPrompts : BaseTest
+public class Example30_ChatWithPrompts(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -125,9 +125,5 @@ public class Example30_ChatWithPrompts : BaseTest
         - Nubian Desert
 
         */
-    }
-
-    public Example30_ChatWithPrompts(ITestOutputHelper output) : base(output)
-    {
     }
 }

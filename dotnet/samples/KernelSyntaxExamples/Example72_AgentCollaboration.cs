@@ -13,7 +13,7 @@ namespace Examples;
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.
 /// </summary>
-public class Example72_AgentCollaboration : BaseTest
+public class Example72_AgentCollaboration(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -27,7 +27,7 @@ public class Example72_AgentCollaboration : BaseTest
     private const bool UseOpenAI = false;
 
     // Track agents for clean-up
-    private static readonly List<IAgent> s_agents = new();
+    private static readonly List<IAgent> s_agents = [];
 
     /// <summary>
     /// Show how two agents are able to collaborate as agents on a single thread.
@@ -131,7 +131,7 @@ public class Example72_AgentCollaboration : BaseTest
                     .BuildAsync());
     }
 
-    private async static Task<IAgent> CreateArtDirectorAsync()
+    private static async Task<IAgent> CreateArtDirectorAsync()
     {
         return
             Track(
@@ -178,9 +178,5 @@ public class Example72_AgentCollaboration : BaseTest
         s_agents.Add(agent);
 
         return agent;
-    }
-
-    public Example72_AgentCollaboration(ITestOutputHelper output) : base(output)
-    {
     }
 }

@@ -1,5 +1,5 @@
 import sys
-from typing import TYPE_CHECKING, AsyncIterable, Optional, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Optional, Union
 
 import pytest
 
@@ -35,60 +35,60 @@ class MiscClass:
     def func_with_name(self, input):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_docstring_as_description(self, input):
         """description"""
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_annotated(self, input: Annotated[str, "input description"]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_optional(self, input: Optional[str] = "test"):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type(self, input: str) -> str:
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type_optional(self, input: str) -> Optional[str]:
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_return_type_annotated(self, input: str) -> Annotated[str, "test return"]:
         return input
 
-    @kernel_function()
-    def func_return_type_streaming(self, input: str) -> Annotated[AsyncIterable[str], "test return"]:
+    @kernel_function
+    def func_return_type_streaming(self, input: str) -> Annotated[AsyncGenerator[str, Any], "test return"]:
         yield input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object(self, input: InputObject):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_optional(self, input: Optional[InputObject] = None):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_annotated(self, input: Annotated[InputObject, "input description"]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_annotated_optional(self, input: Annotated[Optional[InputObject], "input description"] = None):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_input_object_union(self, input: Union[InputObject, str]):
         return input
 
-    @kernel_function()
+    @kernel_function
     def func_no_typing(self, input):
         return input
 
@@ -178,10 +178,11 @@ def test_kernel_function_return_type_annotated():
     assert not my_func.__kernel_function_streaming__
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_kernel_function_return_type_streaming():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_return_type_streaming")
-    assert my_func.__kernel_function_return_type__ == "str"
+    assert my_func.__kernel_function_return_type__ == "str, Any"
     assert my_func.__kernel_function_return_description__ == "test return"
     assert my_func.__kernel_function_return_required__
     assert my_func.__kernel_function_streaming__
@@ -252,12 +253,13 @@ def test_kernel_function_no_typing():
     [
         (Annotated[str, "test"], "test", "str", True),
         (Annotated[Optional[str], "test"], "test", "str", False),
-        (Annotated[AsyncIterable[str], "test"], "test", "str", True),
+        (Annotated[AsyncGenerator[str, Any], "test"], "test", "str, Any", True),
         (Annotated[Optional[Union[str, int]], "test"], "test", "str, int", False),
         (str, None, "str", True),
         (Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
     ],
 )
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_annotation_parsing(annotation, description, type_, is_required):
     annotations = _parse_annotation(annotation)
 

@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use multiple prompt template formats.
-public class Example67_KernelStreaming : BaseTest
+public class Example67_KernelStreaming(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.
@@ -64,9 +64,5 @@ public class Example67_KernelStreaming : BaseTest
 
         WriteLine("\n------  Streamed Content ------\n");
         WriteLine(fullContent);
-    }
-
-    public Example67_KernelStreaming(ITestOutputHelper output) : base(output)
-    {
     }
 }

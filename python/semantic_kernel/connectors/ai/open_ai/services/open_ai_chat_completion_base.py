@@ -2,7 +2,7 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -92,7 +92,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OpenAIPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncIterable[List[OpenAIStreamingChatMessageContent]]:
+    ) -> AsyncGenerator[List[OpenAIStreamingChatMessageContent], Any]:
         """Executes a streaming chat completion request and returns the result.
 
         Arguments:
@@ -181,7 +181,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         tool_call_behavior: ToolCallBehavior,
         kernel: Optional["Kernel"] = None,
         arguments: Optional["KernelArguments"] = None,
-    ) -> AsyncIterable[Tuple[List[OpenAIStreamingChatMessageContent], Optional[FinishReason]]]:
+    ) -> AsyncGenerator[Tuple[List[OpenAIStreamingChatMessageContent], Optional[FinishReason]], Any]:
         """Process the chat stream response and handle tool calls if applicable."""
         full_content = None
         async for chunk in response:
@@ -232,7 +232,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
-    ):
+    ) -> OpenAIStreamingChatMessageContent:
         """Create a streaming chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
         metadata.update(chunk_metadata)
