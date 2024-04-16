@@ -178,7 +178,7 @@ def test_kernel_function_return_type_annotated():
     assert not my_func.__kernel_function_streaming__
 
 
-@pytest.mark.skipif(sys.version_info > (3, 10))
+@pytest.mark.skipif(sys.version_info < (3, 9), "Typing in Python before 3.10 is very different.")
 def test_kernel_function_return_type_streaming():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_return_type_streaming")
@@ -248,7 +248,7 @@ def test_kernel_function_no_typing():
     assert my_func.__kernel_function_parameters__[0]["name"] == "input"
 
 
-@pytest.mark.skipif(sys.version_info > (3, 10))
+@pytest.mark.skipif(sys.version_info < (3, 9), "Typing in Python before 3.10 is very different.")
 @pytest.mark.parametrize(
     ("annotation", "description", "type_", "is_required"),
     [
