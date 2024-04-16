@@ -2,17 +2,13 @@
 
 import logging
 from threading import Thread
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Literal, Optional
 
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
 
-from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import (
-    HuggingFacePromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.hugging_face.hf_prompt_execution_settings import HuggingFacePromptExecutionSettings
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError, ServiceResponseException
@@ -111,7 +107,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.
