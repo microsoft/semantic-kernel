@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <typeparam name="TResult">The target type of the <see cref="FunctionResult"/>.</typeparam>
 public sealed class JsonResultParser<TResult>() : FunctionResultProcessor<TResult>()
 {
-    private const string LiteralDelimeter = "```";
+    private const string LiteralDelimiter = "```";
     private const string JsonPrefix = "json";
 
     /// <inheritdoc/>
@@ -36,21 +36,21 @@ public sealed class JsonResultParser<TResult>() : FunctionResultProcessor<TResul
     private static string ExtractJson(string result)
     {
         // Search for initial literal delimiter: ```
-        int startIndex = result.IndexOf(LiteralDelimeter, System.StringComparison.Ordinal);
+        int startIndex = result.IndexOf(LiteralDelimiter, System.StringComparison.Ordinal);
         if (startIndex < 0)
         {
             // No initial delimiter, return entire expression.
             return result;
         }
 
-        // Accomodate "json" prefix, if present.
+        // Accommodate "json" prefix, if present.
         if (JsonPrefix.Equals(result.Substring(startIndex, JsonPrefix.Length), System.StringComparison.OrdinalIgnoreCase))
         {
             startIndex += JsonPrefix.Length;
         }
 
         // Locate final literal delimiter
-        int endIndex = result.IndexOf(LiteralDelimeter, startIndex, System.StringComparison.OrdinalIgnoreCase);
+        int endIndex = result.IndexOf(LiteralDelimiter, startIndex, System.StringComparison.OrdinalIgnoreCase);
         if (endIndex < 0)
         {
             endIndex = result.Length - 1;
