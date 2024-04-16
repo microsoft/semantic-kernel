@@ -5,13 +5,8 @@ import asyncio
 from dotenv import dotenv_values
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
-    AzureTextEmbedding,
-)
-from semantic_kernel.connectors.memory.azure_cognitive_search import (
-    AzureCognitiveSearchMemoryStore,
-)
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
+from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
@@ -69,7 +64,7 @@ async def main() -> None:
     )
 
     memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(memory)
@@ -96,11 +91,11 @@ Remember, just answer Grounded or Ungrounded or Unclear: """.strip()
 
     user_input = "Do I live in Seattle?"
     print(f"Question: {user_input}")
-    req_settings = kernel.get_service("dv").get_prompt_execution_settings_class()(service_id="dv")
-    chat_func = kernel.create_function_from_prompt(
+    req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id="dv")
+    chat_func = kernel.add_function(
         function_name="rag", plugin_name="RagPlugin", prompt=sk_prompt_rag, prompt_execution_settings=req_settings
     )
-    self_critique_func = kernel.create_function_from_prompt(
+    self_critique_func = kernel.add_function(
         function_name="self_critique_rag",
         plugin_name="RagPlugin",
         prompt=sk_prompt_rag_sc,

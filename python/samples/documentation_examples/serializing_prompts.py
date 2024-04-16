@@ -45,7 +45,7 @@ async def main():
     )
 
     # Import the ConversationSummaryPlugin
-    kernel.import_plugin_from_object(
+    kernel.add_plugin(
         ConversationSummaryPlugin(kernel=kernel, prompt_template_config=prompt_template_config),
         plugin_name="ConversationSummaryPlugin",
     )

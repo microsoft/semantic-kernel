@@ -52,7 +52,7 @@ async def main():
     # use_chat: True to use chat completion, False to use text completion
     kernel = add_service(kernel=kernel, use_chat=True)
 
-    light_plugin = kernel.import_plugin_from_object(
+    light_plugin = kernel.add_plugin(
         LightPlugin(),
         plugin_name="LightPlugin",
     )

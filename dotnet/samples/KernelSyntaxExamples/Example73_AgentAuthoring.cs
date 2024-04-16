@@ -12,7 +12,7 @@ namespace Examples;
 /// <summary>
 /// Showcase hiearchical Open AI Agent interactions using semantic kernel.
 /// </summary>
-public class Example73_AgentAuthoring : BaseTest
+public class Example73_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -117,9 +117,5 @@ public class Example73_AgentAuthoring : BaseTest
         s_agents.Add(agent);
 
         return agent;
-    }
-
-    public Example73_AgentAuthoring(ITestOutputHelper output) : base(output)
-    {
     }
 }

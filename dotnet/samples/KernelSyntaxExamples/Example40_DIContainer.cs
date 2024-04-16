@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following examples show how to use SK SDK in applications using DI/IoC containers.
-public class Example40_DIContainer : BaseTest
+public class Example40_DIContainer(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -54,9 +54,5 @@ public class Example40_DIContainer : BaseTest
 
             this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
-    }
-
-    public Example40_DIContainer(ITestOutputHelper output) : base(output)
-    {
     }
 }
