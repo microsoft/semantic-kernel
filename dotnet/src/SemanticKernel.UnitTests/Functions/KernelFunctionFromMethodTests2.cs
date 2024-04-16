@@ -48,7 +48,7 @@ public sealed class KernelFunctionFromMethodTests2
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
     }
 
     [Fact]
@@ -201,13 +201,9 @@ public sealed class KernelFunctionFromMethodTests2
         await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
     }
 
-    private interface IExampleService
-    {
-    }
+    private interface IExampleService;
 
-    private sealed class ExampleService : IExampleService
-    {
-    }
+    private sealed class ExampleService : IExampleService;
 
     private sealed class LocalExamplePlugin
     {

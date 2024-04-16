@@ -28,7 +28,7 @@ namespace Examples;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public class Example16_CustomLLM : BaseTest
+public class Example16_CustomLLM(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task CustomTextGenerationWithKernelFunctionAsync()
@@ -116,9 +116,5 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
                 new(LLMResultText)
             ]);
         }
-    }
-
-    public Example16_CustomLLM(ITestOutputHelper output) : base(output)
-    {
     }
 }

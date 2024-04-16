@@ -1117,7 +1117,7 @@ public class KernelFilterTests
         var mockTextGeneration = new Mock<ITextGenerationService>();
         mockTextGeneration
             .Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TextContent> { new(textResult ?? "result text", metadata: metadata) });
+            .ReturnsAsync([new(textResult ?? "result text", metadata: metadata)]);
 
         mockTextGeneration
             .Setup(s => s.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))

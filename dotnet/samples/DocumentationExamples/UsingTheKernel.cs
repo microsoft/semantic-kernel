@@ -16,7 +16,7 @@ namespace Examples;
 /// This example demonstrates how to interact with the kernel as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/kernel
 /// </summary>
-public class UsingTheKernel : BaseTest
+public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -58,9 +58,5 @@ public class UsingTheKernel : BaseTest
         });
         WriteLine(poemResult);
         // </InvokeShortPoem>
-    }
-
-    public UsingTheKernel(ITestOutputHelper output) : base(output)
-    {
     }
 }

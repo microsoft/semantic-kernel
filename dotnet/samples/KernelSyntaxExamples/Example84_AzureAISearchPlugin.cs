@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example84_AzureAISearchPlugin : BaseTest
+public class Example84_AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows how to register Azure AI Search service as a plugin and work with custom index schema.
@@ -72,10 +72,6 @@ public class Example84_AzureAISearchPlugin : BaseTest
         WriteLine(result2);
     }
 
-    public Example84_AzureAISearchPlugin(ITestOutputHelper output) : base(output)
-    {
-    }
-
     #region Index Schema
 
     /// <summary>
@@ -118,16 +114,11 @@ public class Example84_AzureAISearchPlugin : BaseTest
     /// <summary>
     /// Implementation of Azure AI Search service.
     /// </summary>
-    private sealed class AzureAISearchService : IAzureAISearchService
+    private sealed class AzureAISearchService(SearchIndexClient indexClient) : IAzureAISearchService
     {
         private readonly List<string> _defaultVectorFields = ["vector"];
 
-        private readonly SearchIndexClient _indexClient;
-
-        public AzureAISearchService(SearchIndexClient indexClient)
-        {
-            this._indexClient = indexClient;
-        }
+        private readonly SearchIndexClient _indexClient = indexClient;
 
         public async Task<string?> SearchAsync(
             string collectionName,
@@ -143,7 +134,7 @@ public class Example84_AzureAISearchPlugin : BaseTest
 
             // Configure request parameters
             VectorizedQuery vectorQuery = new(vector);
-            fields.ForEach(field => vectorQuery.Fields.Add(field));
+            fields.ForEach(vectorQuery.Fields.Add);
 
             SearchOptions searchOptions = new() { VectorSearch = new() { Queries = { vectorQuery } } };
 
@@ -175,18 +166,12 @@ public class Example84_AzureAISearchPlugin : BaseTest
     /// It uses <see cref="ITextEmbeddingGenerationService"/> to convert string query to vector.
     /// It uses <see cref="IAzureAISearchService"/> to perform a request to Azure AI Search.
     /// </summary>
-    private sealed class AzureAISearchPlugin
+    private sealed class AzureAISearchPlugin(
+        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        Example84_AzureAISearchPlugin.IAzureAISearchService searchService)
     {
-        private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService;
-        private readonly IAzureAISearchService _searchService;
-
-        public AzureAISearchPlugin(
-            ITextEmbeddingGenerationService textEmbeddingGenerationService,
-            IAzureAISearchService searchService)
-        {
-            this._textEmbeddingGenerationService = textEmbeddingGenerationService;
-            this._searchService = searchService;
-        }
+        private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService = textEmbeddingGenerationService;
+        private readonly IAzureAISearchService _searchService = searchService;
 
         [KernelFunction("Search")]
         public async Task<string> SearchAsync(

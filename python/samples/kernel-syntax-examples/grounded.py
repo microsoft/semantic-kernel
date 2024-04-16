@@ -3,10 +3,9 @@ import logging
 
 import semantic_kernel as sk
 from samples.utils import Colors
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 
 
 def get_grounding_text():
@@ -48,17 +47,17 @@ interment of his friend he conducted her to Geneva and placed her under the prot
 after this event Caroline became his wife."""
 
 
-def setup(use_azure: bool = False):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    kernel = sk.Kernel(log=logger)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
-    useAzureOpenAI = use_azure
+
+def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
+    kernel = Kernel()
 
     # Configure AI service used by the kernel
-    if useAzureOpenAI:
+    if use_azure:
         deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-        service_id = ("chat_completion",)
+        service_id = "chat_completion"
         kernel.add_service(
             AzureChatCompletion(
                 service_id=service_id,
@@ -66,7 +65,6 @@ def setup(use_azure: bool = False):
                 endpoint=endpoint,
                 api_key=api_key,
                 api_version="2023-12-01-preview",
-                log=logger,
             ),
         )
     else:
@@ -79,11 +77,9 @@ def setup(use_azure: bool = False):
     # note: using plugins from the samples folder
     plugins_directory = "../samples/plugins/"
 
-    grounding_semantic_functions = kernel.import_plugin_from_prompt_directory(
-        service_id, plugins_directory, "GroundingPlugin"
-    )
+    kernel.add_plugin(parent_directory=plugins_directory, plugin_name=plugin_name)
 
-    return kernel, grounding_semantic_functions
+    return kernel
 
 
 def get_summary_text():
@@ -93,37 +89,47 @@ def get_summary_text():
     return summary_text
 
 
-async def run_entity_extraction(kernel, semantic_functions, summary_text):
-    context = kernel.create_new_context()
-    context["topic"] = "people and places"
-    context["example_entities"] = "John, Jane, mother, brother, Paris, Rome"
+async def run_entity_extraction(kernel: Kernel, plugin_name: str, summary_text: str):
+    arguments = KernelArguments(
+        topic="people and places", example_entities="John, Jane, mother, brother, Paris, Rome", input=summary_text
+    )
 
-    extraction_result = semantic_functions["ExtractEntities"](summary_text, context=context)
+    extraction_result = await kernel.invoke(
+        plugin_name=plugin_name, function_name="ExtractEntities", arguments=arguments
+    )
 
-    return extraction_result, context
-
-
-async def run_reference_check(semantic_functions, extraction_result, context):
-    context["reference_context"] = get_grounding_text()
-
-    grounding_result = semantic_functions["ReferenceCheckEntities"](extraction_result.result, context=context)
-    context["ungrounded_entities"] = grounding_result.result
-    return grounding_result, context
+    return extraction_result
 
 
-async def run_entity_excision(semantic_functions, summary_text, context):
-    excision_result = semantic_functions["ExciseEntities"](summary_text, context=context)
-    return excision_result, context
+async def run_reference_check(kernel: Kernel, plugin_name: str, extraction_result):
+    grounding_result = await kernel.invoke(
+        plugin_name=plugin_name,
+        function_name="ReferenceCheckEntities",
+        input=str(extraction_result),
+        reference_context=get_grounding_text(),
+    )
+    return grounding_result
+
+
+async def run_entity_excision(kernel: Kernel, plugin_name: str, summary_text, grounding_result):
+    excision_result = await kernel.invoke(
+        plugin_name=plugin_name,
+        function_name="ExciseEntities",
+        input=summary_text,
+        ungrounded_entities=grounding_result,
+    )
+    return excision_result
 
 
 async def run_grounding(use_azure: bool = False):
-    kernel, semantic_functions = setup(use_azure)
-    print(f"\n{Colors.CBOLD}Groundingsness Checking Plugins\n{Colors.CEND}")
+    plugin_name = "GroundingPlugin"
+    kernel = setup(use_azure, plugin_name=plugin_name)
+    print(f"\n{Colors.CBOLD.value}Groundingsness Checking Plugins\n{Colors.CEND.value}")
     print(f"\n{ '-'*80 }\n")
     print(
-        f"""{Colors.CGREEN}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).  # noqa: E501
+        f"""{Colors.CGREEN.value}A well-known problem with large language models (LLMs) is that they make things up. These are sometimes called 'hallucinations' but a safer (and less anthropomorphic) term is 'ungrounded addition' - something in the text which cannot be firmly established. When attempting to establish whether or not something in an LLM response is 'true' we can either check for it in the supplied prompt (this is called 'narrow grounding') or use our general knowledge ('broad grounding'). Note that narrow grounding can lead to things being classified as 'true, but ungrounded.' For example "I live in Switzerland" is **not** _narrowly_ grounded in "I live in Geneva" even though it must be true (it **is** _broadly_ grounded).
 
-In this sample we run a simple grounding pipeline, to see if a summary text has any ungrounded additions as compared to the original, and use this information to improve the summary text. This can be done in three stages:  # noqa: E501
+In this sample we run a simple grounding pipeline, to see if a summary text has any ungrounded additions as compared to the original, and use this information to improve the summary text. This can be done in three stages:
 
 1. Make a list of the entities in the summary text
 1. Check to see if these entities appear in the original (grounding) text
@@ -132,14 +138,14 @@ In this sample we run a simple grounding pipeline, to see if a summary text has 
 What is an 'entity' in this context? In its simplest form, it's a named object such as a person or place (so 'Dean' or 'Seattle'). However, the idea could be a _claim_ which relates concepts (such as 'Dean lives near Seattle'). In this sample, we will keep to the simpler case of named objects."""  # noqa: E501
     )
 
-    print(f"\nThe grounding text: \n{Colors.CGREY}{get_grounding_text()}{Colors.CEND}")
+    print(f"\nThe grounding text: \n{Colors.CGREY.value}{get_grounding_text()}{Colors.CEND.value}")
 
     print(f"\n{ '-'*80 }\n")
     summary_text = get_summary_text()
-    print(f"Summary text: \n{Colors.CBLUE}{summary_text}{Colors.CEND}")
+    print(f"Summary text: \n{Colors.CBLUE.value}{summary_text}{Colors.CEND.value}")
     print(f"\n{ '-'*80 }\n")
     print(
-        f"""{Colors.CGREEN}Some things to note:
+        f"""{Colors.CGREEN.value}Some things to note:
 
 - The implied residence of Geneva has been changed to Milan
 - Lucerne has been changed to Zurich
@@ -153,28 +159,28 @@ The grounding plugin has three stages:
 2. Perform a reference check against the grounding text
 3. Excise any entities which failed the reference check from the summary
 
-Now, let us start calling individual semantic functions.{Colors.CEND}"""
+Now, let us start calling individual semantic functions.{Colors.CEND.value}"""
     )
     print(f"\n{ '-'*80 }\n")
     print(
-        f"{Colors.CGREEN}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND}"  # noqa: E501
+        f"{Colors.CGREEN.value}First we run the extraction function on the summary, this results in all the extracted entities.{Colors.CEND.value}"  # noqa: E501
     )
-    extraction_result, context = await run_entity_extraction(kernel, semantic_functions, summary_text)
-    print(f"Extraction result: \n{Colors.CBLUE}{extraction_result.result}{Colors.CEND}")
+    extraction_result = await run_entity_extraction(kernel, plugin_name, summary_text)
+    print(f"Extraction result: \n{Colors.CBLUE.value}{str(extraction_result)}{Colors.CEND.value}")
     print(f"\n{ '-'*80 }\n")
     print(
-        f"{Colors.CGREEN}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND}"  # noqa: E501
+        f"{Colors.CGREEN.value}Next we run the reference check function on the summary, this loads the grounding text as part of it in order to know the 'truth'. This returns a list of ungrounded entities.{Colors.CEND.value}"  # noqa: E501
     )
-    grounding_result, context = await run_reference_check(semantic_functions, extraction_result, context)
-    print(f"Grounding result: \n{Colors.CBLUE}{grounding_result.result}{Colors.CEND}")
+    grounding_result = await run_reference_check(kernel, plugin_name, extraction_result)
+    print(f"Grounding result: \n{Colors.CBLUE.value}{str(grounding_result)}{Colors.CEND.value}")
     print(f"\n{ '-'*80 }\n")
     print(
-        f"{Colors.CGREEN}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND}"  # noqa: E501
+        f"{Colors.CGREEN.value}Finally we run the excision function on the summary, this removes the ungrounded entities from the summary.{Colors.CEND.value}"  # noqa: E501
     )
-    excision_result, context = await run_entity_excision(semantic_functions, summary_text, context)
-    print(f"The final summary text: \n{Colors.CBLUE}{excision_result.result}{Colors.CEND}")
+    excision_result = await run_entity_excision(kernel, plugin_name, summary_text, grounding_result)
+    print(f"The final summary text: \n{Colors.CBLUE.value}{str(excision_result)}{Colors.CEND.value}")
     print(f"\n{ '-'*80 }\n")
-    print(f"{Colors.CBOLD}Finished!{Colors.CEND}")
+    print(f"{Colors.CBOLD.value}Finished!{Colors.CEND.value}")
 
 
 if __name__ == "__main__":

@@ -29,26 +29,26 @@ public class XmlPromptParserTests
     public void ItReturnsPromptNodesWhenPromptHasXmlFormat()
     {
         // Arrange
-        const string Prompt = @"
-<message role=""system"">
-Test with role in double quotes and content in new line.
-</message>
+        const string Prompt = """
+            <message role="system">
+            Test with role in double quotes and content in new line.
+            </message>
 
-<message role='user'>Test with role in single quotes and content in the same line.</message>
+            <message role='user'>Test with role in single quotes and content in the same line.</message>
 
-<message role=""assistant"">
-Test with multiline content.
-Second line.
-</message>
+            <message role="assistant">
+            Test with multiline content.
+            Second line.
+            </message>
 
-<message role='system'>
-    Test line with tab.
-</message>
+            <message role='system'>
+                Test line with tab.
+            </message>
 
-<message role='user'>
-    <audio src='https://fake-link-to-audio' />
-</message>
-";
+            <message role='user'>
+                <audio src='https://fake-link-to-audio' />
+            </message>
+            """;
 
         var expectedNodes = new List<PromptNode>
         {

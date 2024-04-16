@@ -143,14 +143,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 
     #region Filters
 
-    private sealed class FirstFunctionFilter : IFunctionFilter
+    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public FirstFunctionFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -160,14 +155,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private sealed class SecondFunctionFilter : IFunctionFilter
+    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public SecondFunctionFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -177,14 +167,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private sealed class FirstPromptFilter : IPromptFilter
+    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public FirstPromptFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnPromptRendering(PromptRenderingContext context) =>
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.PluginName}.{context.Function.Name}");

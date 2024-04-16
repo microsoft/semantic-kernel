@@ -82,7 +82,7 @@ async def main() -> None:
     )
 
     memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(kernel)

@@ -48,7 +48,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         this._executionSettings = new()
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions(new[] { this._timepluginDate, this._timepluginNow })
+            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timepluginDate, this._timepluginNow])
         };
     }
 
