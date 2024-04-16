@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{831DDCA2-7D2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA3720F1-C99A-49B2-9577-A940257098BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\KernelSyntaxExamples\KernelSyntaxExamples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntax", "samples\KernelSyntaxExamples\KernelSyntax.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "src\IntegrationTests\IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
 EndProject
@@ -139,7 +139,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Core", "src\Plugins\Plugins.Core\Plugins.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelemetryExample", "samples\TelemetryExample\TelemetryExample.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UsingTelemetry", "samples\UseCases\UsingTelemetry\UsingTelemetry.csproj", "{C754950A-E16C-4F96-9CC7-9328E361B5AF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
 EndProject
@@ -207,9 +207,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Orchestration.Flow.UnitTests", "src\Experimental\Orchestration.Flow.UnitTests\Experimental.Orchestration.Flow.UnitTests.csproj", "{731CC542-8BE9-42D4-967D-99206EC2B310}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentationExamples", "samples\DocumentationExamples\DocumentationExamples.csproj", "{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Documentation", "samples\Documentation\Documentation.csproj", "{A8E0D3B2-49D7-4DF6-BF91-B234C1C5E25D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{87AB5AF5-5783-4372-9789-664895E0A2FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\UseCases\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{87AB5AF5-5783-4372-9789-664895E0A2FF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi.Extensions", "src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj", "{95CAA25F-A0DE-4A5B-92BA-7D56C0E822A8}"
 EndProject
@@ -236,9 +236,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google", "src\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Google.UnitTests", "src\Connectors\Connectors.Google.UnitTests\Connectors.Google.UnitTests.csproj", "{648CF4FE-4AFC-4EB0-87DB-9C2FE935CA24}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\UseCases\HomeAutomation\HomeAutomation.csproj", "{13429BD6-4C4E-45EC-81AD-30BAC380AA60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuggingFaceImageTextExample", "samples\HuggingFaceImageTextExample\HuggingFaceImageTextExample.csproj", "{8EE10EB0-A947-49CC-BCC1-18D93415B9E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuggingFaceImageToText", "samples\Modalities\HuggingFaceImageToText\HuggingFaceImageToText.csproj", "{8EE10EB0-A947-49CC-BCC1-18D93415B9E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Onnx.UnitTests", "src\Connectors\Connectors.Onnx.UnitTests\Connectors.Onnx.UnitTests.csproj", "{D06465FA-0308-494C-920B-D502DA5690CB}"
 EndProject
@@ -248,7 +248,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.Abstractions", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.UnitTests", "src\Agents\UnitTests\Agents.UnitTests.csproj", "{F238CE75-C17C-471A-AC9A-6C94D3D946FD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentSyntaxExamples", "samples\AgentSyntaxExamples\AgentSyntaxExamples.csproj", "{9753B382-8E17-4B03-B0D3-790F3466CB7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentSyntax", "samples\AgentSyntax\AgentSyntax.csproj", "{9753B382-8E17-4B03-B0D3-790F3466CB7D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.Core", "src\Agents\Core\Agents.Core.csproj", "{91B8BEAF-4ADC-4014-AC6B-C563F41A8DD1}"
 EndProject
