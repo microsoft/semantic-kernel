@@ -13,17 +13,29 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="ChatExecutionSettings"/>
+/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
 public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
-    private const string ReviewerInstructions = "You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print.  If so, state that it is approved.  If not, provide insight on how to refine suggested copy without example.";
+    private const string ReviewerInstructions =
+        """
+        You are an art director who has opinions about copywriting born of a love for David Ogilvy.
+        The goal is to determine is the given copy is acceptable to print.
+        If so, state that it is approved.
+        If not, provide insight on how to refine suggested copy without example.
+        """;
 
     private const string CopyWriterName = "Writer";
-    private const string CopyWriterInstructions = "You are a copywriter with ten years of experience and are known for brevity and a dry humor. You're laser focused on the goal at hand. Don't waste time with chit chat. The goal is to refine and decide on the single best copy as an expert in the field.  Consider suggestions when refining an idea.";
+    private const string CopyWriterInstructions =
+        """
+        You are a copywriter with ten years of experience and are known for brevity and a dry humor.
+        You're laser focused on the goal at hand. Don't waste time with chit chat.
+        The goal is to refine and decide on the single best copy as an expert in the field.
+        Consider suggestions when refining an idea.
+        """;
 
     [Fact]
     public async Task RunAsync()
@@ -57,16 +69,9 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
                         TerminationStrategy =
                             new ApprovalTerminationStrategy()
                             {
-                                // It can be prudent to limit how many turns agents are able to take.
-                                // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
-                                // and the conversation may be resumed, if desired.
-                                MaximumIterations = 8,
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
-                            },
-                        // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
-                        // but a custom func could be utilized if desired.
-                        SelectionStrategy = new SequentialSelectionStrategy(),
+                            }
                     }
             };
 
@@ -79,6 +84,8 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
         {
             this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
+
+        this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
