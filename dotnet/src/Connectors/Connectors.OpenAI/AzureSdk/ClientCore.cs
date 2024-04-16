@@ -452,7 +452,7 @@ internal abstract class ClientCore
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, toolCall.Id, this.Logger);
 
-                // If filter requested to stop function call iteration, breaking function calling loop
+                // If filter requested to stop function call iteration, breaking function calling loop.
                 if (invocationContext.Action.HasFlag(FunctionCallAction.StopFunctionCallIteration))
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -553,7 +553,9 @@ internal abstract class ClientCore
         Dictionary<int, string>? toolCallIdsByIndex = null;
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
-        for (int iteration = 1; ; iteration++)
+        FunctionCallInvocationContext? invocationContext = null;
+
+        for (int requestIteration = 1; ; requestIteration++)
         {
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -623,8 +625,10 @@ internal abstract class ClientCore
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
-            foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
+            for (int toolCallIteration = 0; toolCallIteration < toolCalls.Length; toolCallIteration++)
             {
+                ChatCompletionsFunctionToolCall toolCall = toolCalls[toolCallIteration];
+
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (string.IsNullOrEmpty(toolCall.Name))
                 {
@@ -662,14 +666,32 @@ internal abstract class ClientCore
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
+                FunctionResult functionResult = new(function) { Culture = kernel.Culture };
+                invocationContext = new(function, functionResult)
+                {
+                    Arguments = functionArgs,
+                    RequestIteration = requestIteration - 1,
+                    FunctionCallIteration = toolCallIteration,
+                    FunctionCallCount = toolCalls.Length
+                };
+
                 s_inflightAutoInvokes.Value++;
-                object? functionResult;
                 try
                 {
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+                    invocationContext = await OnFunctionCallInvocationAsync(kernel, invocationContext, async (context) =>
+                    {
+                        // Check if filter didn't ask to stop request or function call iteration.
+                        var stopAction = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+                        if ((context.Action & stopAction) != 0)
+                        {
+                            return;
+                        }
+
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -683,9 +705,24 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+                // Apply any changes from the function call filters context to final result.
+                functionResult = new FunctionResult(invocationContext.Result);
+
+                object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
+                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
+
+                // If filter requested to stop function call iteration, breaking function calling loop.
+                if (invocationContext.Action.HasFlag(FunctionCallAction.StopFunctionCallIteration))
+                {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug("Filter requested to stop function calling iteration.");
+                    }
+
+                    break;
+                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
@@ -711,7 +748,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -735,13 +772,24 @@ internal abstract class ClientCore
             }
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
                 }
+            }
+
+            // If filter requested to stop request iteration, breaking request iteration loop.
+            if (invocationContext is not null && invocationContext.Action.HasFlag(FunctionCallAction.StopRequestIteration))
+            {
+                if (this.Logger.IsEnabled(LogLevel.Debug))
+                {
+                    this.Logger.LogDebug("Filter requested to stop request iteration.");
+                }
+
+                yield break;
             }
         }
     }
