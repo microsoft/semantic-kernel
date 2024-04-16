@@ -38,6 +38,7 @@ public class BookingAgent {
     // Must match the redirect URL in the Azure AD app registration
     private static final String REDIRECT_URL = System.getenv("REDIRECT_URL");
     private static GraphServiceClient userClient;
+
     public static void initializeGraph() {
         InteractiveBrowserCredential interactiveBrowserCredential = new InteractiveBrowserCredentialBuilder()
                 .clientId(CLIENT_ID)

@@ -17,10 +17,10 @@ import java.util.List;
 
 public class BookingPlugin {
     public static final int BOOKING_HOURS = 2;
-    private GraphServiceClient graphServiceClient;
-    private String bookingBusinessId;
-    private String serviceId;
-    private String userTimeZone;
+    private final GraphServiceClient graphServiceClient;
+    private final String bookingBusinessId;
+    private final String serviceId;
+    private final String userTimeZone;
 
     public BookingPlugin(GraphServiceClient graphServiceClient,
                          String bookingBusinessId,
@@ -69,7 +69,7 @@ public class BookingPlugin {
         bookingAppointment.setPostBuffer(postBuffer);
         PeriodAndDuration preBuffer = PeriodAndDuration.ofDuration(Duration.parse("PT5M"));
         bookingAppointment.setPreBuffer(preBuffer);
-        bookingAppointment.setServiceId("b56c0ac1-f4c9-4b43-a7e9-32824224fa5f");
+        bookingAppointment.setServiceId(serviceId);
         Location serviceLocation = new Location();
         serviceLocation.setOdataType("#microsoft.graph.location");
         serviceLocation.setDisplayName(restaurant);
