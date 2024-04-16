@@ -15,7 +15,7 @@ namespace SemanticKernel.Connectors.Anthropic.UnitTests.Extensions;
 public sealed class AnthropicServiceCollectionExtensionsTests
 {
     [Fact]
-    public void ClaudeChatCompletionServiceShouldBeRegisteredInKernelServices()
+    public void AnthropicChatCompletionServiceShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
@@ -31,7 +31,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void ClaudeChatCompletionServiceShouldBeRegisteredInServiceCollection()
+    public void AnthropicChatCompletionServiceShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -47,7 +47,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void ClaudeChatCompletionServiceCustomEndpointShouldBeRegisteredInKernelServices()
+    public void AnthropicChatCompletionServiceCustomEndpointShouldBeRegisteredInKernelServices()
     {
         // Arrange
         var kernelBuilder = Kernel.CreateBuilder();
@@ -63,7 +63,7 @@ public sealed class AnthropicServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void ClaudeChatCompletionServiceCustomEndpointShouldBeRegisteredInServiceCollection()
+    public void AnthropicChatCompletionServiceCustomEndpointShouldBeRegisteredInServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
