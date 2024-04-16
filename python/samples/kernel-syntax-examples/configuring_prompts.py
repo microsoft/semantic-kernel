@@ -2,24 +2,24 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     useAzureOpenAI = False
     model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
     template = """
@@ -41,9 +41,7 @@ async def main():
             InputVariable(name="chat_history", description="The conversation history", is_required=False, default=""),
             InputVariable(name="request", description="The user's request", is_required=True),
         ],
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(
-            service_id=service_id, max_tokens=4000, temperature=0.2
-        ),
+        execution_settings=OpenAIChatPromptExecutionSettings(service_id=service_id, max_tokens=4000, temperature=0.2),
     )
 
     chat = kernel.add_function(

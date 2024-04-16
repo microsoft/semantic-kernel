@@ -3,13 +3,14 @@
 import asyncio
 import os
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, OpenAITextCompletion
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     useAzureOpenAI = False
     model = "gpt-35-turbo-instruct" if useAzureOpenAI else "gpt-3.5-turbo-instruct"
@@ -17,16 +18,14 @@ async def main():
 
     # Configure AI service used by the kernel
     if useAzureOpenAI:
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
         kernel.add_service(
-            sk_oai.AzureTextCompletion(
-                service_id=service_id, deployment_name=model, api_key=api_key, endpoint=endpoint
-            ),
+            AzureTextCompletion(service_id=service_id, deployment_name=model, api_key=api_key, endpoint=endpoint),
         )
     else:
-        api_key, org_id = sk.openai_settings_from_dot_env()
+        api_key, org_id = openai_settings_from_dot_env()
         kernel.add_service(
-            sk_oai.OpenAITextCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+            OpenAITextCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
         )
 
     # note: using plugins from the samples folder

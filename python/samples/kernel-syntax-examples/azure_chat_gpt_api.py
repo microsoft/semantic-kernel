@@ -3,9 +3,9 @@
 import asyncio
 import logging
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
 logging.basicConfig(level=logging.WARNING)
@@ -19,10 +19,10 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 service_id = "chat-gpt"
-chat_service = sk_oai.AzureChatCompletion(
+chat_service = AzureChatCompletion(
     service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
 kernel.add_service(chat_service)
