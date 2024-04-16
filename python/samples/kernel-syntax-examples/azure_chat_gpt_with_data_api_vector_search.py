@@ -3,27 +3,25 @@
 import asyncio
 import logging
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.azure_chat_message_content import AzureChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
+    AzureChatCompletion,
+    AzureChatMessageContent,
     AzureChatPromptExecutionSettings,
     ExtraBody,
+    FunctionCall,
+    ToolCall,
 )
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.contents import ChatHistory, ChatRole
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 from semantic_kernel.utils.settings import (
     azure_aisearch_settings_from_dot_env_as_dict,
     azure_openai_settings_from_dot_env_as_dict,
 )
 
-kernel = sk.Kernel()
+kernel = Kernel()
 logging.basicConfig(level=logging.DEBUG)
 
 # Load Azure OpenAI Settings
@@ -59,8 +57,8 @@ service_id = "chat-gpt"
 req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
-chat_service = sk_oai.AzureChatCompletion(
-    service_id=service_id,
+chat_service = AzureChatCompletion(
+    service_id="chat-gpt",
     **aoai_settings,
 )
 kernel.add_service(chat_service)

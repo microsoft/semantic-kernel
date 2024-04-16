@@ -7,11 +7,11 @@ from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.exceptions import ServiceInitializationError
 
 

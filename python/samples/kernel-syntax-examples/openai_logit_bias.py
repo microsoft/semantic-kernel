@@ -3,14 +3,13 @@
 import asyncio
 from typing import Any, Dict
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai import PromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -34,7 +33,7 @@ def _prepare_input_chat(chat: ChatHistory):
 
 async def chat_request_example(kernel: Kernel, api_key, org_id):
     service_id = "chat_service"
-    openai_chat_completion = sk_oai.OpenAIChatCompletion(
+    openai_chat_completion = OpenAIChatCompletion(
         service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
     )
     kernel.add_service(openai_chat_completion)
@@ -114,7 +113,7 @@ async def chat_request_example(kernel: Kernel, api_key, org_id):
 
 async def text_complete_request_example(kernel: Kernel, api_key, org_id):
     service_id = "text_service"
-    openai_text_completion = sk_oai.OpenAITextCompletion(
+    openai_text_completion = OpenAITextCompletion(
         service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
     )
     kernel.add_service(openai_text_completion)
@@ -211,7 +210,7 @@ def _format_output(chat, banned_words) -> None:
 
 async def main() -> None:
     kernel = Kernel()
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
 
     print("Chat completion example:")
     print("------------------------")
