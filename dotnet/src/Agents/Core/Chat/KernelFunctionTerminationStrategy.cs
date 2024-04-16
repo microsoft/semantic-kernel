@@ -57,7 +57,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { ArgumentKeyAgent, agent.Name ?? agent.Id },
-                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // %%% NEEDED ??? / HISTORY DCR ???
+                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);

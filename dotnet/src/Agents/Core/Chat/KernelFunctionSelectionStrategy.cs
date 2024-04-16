@@ -57,7 +57,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
                 { ArgumentKeyAgents, string.Join(",", agents.Select(a => a.Name)) },
-                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // %%% NEEDED ??? / HISTORY DCR ???
+                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);

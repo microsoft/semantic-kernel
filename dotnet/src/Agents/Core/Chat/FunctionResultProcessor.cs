@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -38,8 +37,6 @@ public abstract class FunctionResultProcessor<TResult>
         return this.ProcessTextResult(rawContent);
     }
 
-    // %%% TRIM PADDING HELPER ???
-
     /// <summary>
     /// Convert the provided text to the processor type.
     /// </summary>
@@ -56,9 +53,9 @@ public abstract class FunctionResultProcessor<TResult>
         else
         {
             TypeConverter? converter = TypeConverterFactory.GetTypeConverter(typeof(TResult));
-            if (null != converter)
+            if (converter != null)
             {
-                parsedResult = (TResult?)converter.ConvertFrom(result);
+                parsedResult = (TResult?)converter.ConvertFrom(result); // %%% EXCEPTION ???
             }
             else
             {
@@ -79,6 +76,6 @@ public abstract class FunctionResultProcessor<TResult>
     {
         /// <inheritdoc/>
         protected override TResult? ProcessTextResult(string result)
-            => this.ConvertResult(result) ?? defaultValue; // %%% EXCEPTION ???
+            => this.ConvertResult(result) ?? defaultValue;
     }
 }
