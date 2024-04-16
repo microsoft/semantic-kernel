@@ -1,8 +1,8 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: markwallace
-date: 2024-03-28
+date: 2024-04-16
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk
 consulted: raulr
 informed: matthewbolanos
@@ -89,7 +89,7 @@ This ADR details the options for developers to control message tag injection.
 
 - By default input variables and function return values should be treated as being unsafe and must be encoded.
 - Developers must be able to provide custom encoding strategies for input variables and function return values.
-- Developers must be able to "opt in" in they trust the content in input variables and function return values.
+- Developers must be able to "opt in" if they trust the content in input variables and function return values.
 - Developers must be able to "opt in" for specific input variables.
 - Developers must be able to integrate with tools that defend against prompt injection attacks e.g. Prompt Shield.
 
@@ -101,8 +101,7 @@ This ADR details the options for developers to control message tag injection.
 
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+Chosen option: "HTML encode all inserted content by default.", because it meets k.o. criterion decision driver and is a well understood pattern.
 
 ## Pros and Cons of the Options
 
@@ -411,15 +410,4 @@ await kernel.InvokeAsync(function, kernelArguments);
         }
     ]
 }
-```
-
-#### 
-
-```csharp
-```
-
-```text
-```
-
-```json
 ```

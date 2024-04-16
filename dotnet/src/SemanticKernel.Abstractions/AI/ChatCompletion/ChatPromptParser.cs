@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text.Json;
 using System.Web;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -36,7 +35,6 @@ internal static class ChatPromptParser
             XmlPromptParser.TryParse(prompt, out var nodes) &&
             TryParse(nodes, out chatHistory))
         {
-            var json = JsonSerializer.Serialize(chatHistory);
             return true;
         }
 

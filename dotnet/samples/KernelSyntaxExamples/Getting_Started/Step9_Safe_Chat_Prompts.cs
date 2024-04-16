@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public sealed class Step9_Safe_Chat_Prompts : BaseTest
+public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to construct a chat prompt safely and invoke it.
@@ -198,18 +198,9 @@ public sealed class Step9_Safe_Chat_Prompts : BaseTest
         return promptTemplate.RenderAsync(kernel, arguments);
     }
 
-    public Step9_Safe_Chat_Prompts(ITestOutputHelper output) : base(output)
+    public class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
-    }
-
-    public class LoggingHandler : DelegatingHandler
-    {
-        private readonly ITestOutputHelper _output;
-
-        public LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : base(innerHandler)
-        {
-            _output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -218,7 +209,6 @@ public sealed class Step9_Safe_Chat_Prompts : BaseTest
             if (request.Content is not null)
             {
                 var content = await request.Content.ReadAsStringAsync(cancellationToken);
-                //this._output.WriteLine(content);
                 this._output.WriteLine(Regex.Unescape(content));
             }
 
@@ -226,7 +216,6 @@ public sealed class Step9_Safe_Chat_Prompts : BaseTest
             var response = await base.SendAsync(request, cancellationToken);
 
             // Log the response details
-            //this._output.WriteLine($"Received HTTP response: {response.StatusCode} {response.Content}");
             this._output.WriteLine("");
 
             return response;

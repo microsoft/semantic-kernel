@@ -188,12 +188,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             return !safeBlocks.Contains(varBlock.Name);
         }
 
-        if (!disableTagEncoding && block is not TextBlock)
-        {
-            return true;
-        }
-
-        return false;
+        return !disableTagEncoding && block is not TextBlock;
     }
 
     #endregion
