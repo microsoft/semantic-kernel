@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Azure;
@@ -163,6 +165,24 @@ public sealed class AzurePromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
+    /// Gets or sets the response format to use for the completion.
+    /// </summary>
+    /// <remarks>
+    /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
+    /// </remarks>
+    [JsonPropertyName("response_format")]
+    public object? ResponseFormat
+    {
+        get => this._responseFormat;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseFormat = value;
+        }
+    }
+
+    /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
@@ -265,6 +285,7 @@ public sealed class AzurePromptExecutionSettings : PromptExecutionSettings
     private IList<string>? _stopSequences;
     private int _resultsPerPrompt = 1;
     private long? _seed;
+    private object? _responseFormat;
     private IDictionary<int, int>? _tokenSelectionBiases;
     private string? _chatSystemPrompt;
 

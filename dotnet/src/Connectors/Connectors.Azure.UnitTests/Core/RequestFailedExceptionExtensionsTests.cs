@@ -7,10 +7,10 @@ using System.Net;
 using Azure;
 using Azure.Core;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.Azure;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
+namespace SemanticKernel.Connectors.Azure.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="RequestFailedExceptionExtensions"/> class.

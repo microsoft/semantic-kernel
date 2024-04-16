@@ -27,12 +27,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Core\Models\" />
-  </ItemGroup>
 </Project>

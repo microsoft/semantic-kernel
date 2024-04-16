@@ -2,12 +2,12 @@
 
 using System.IO;
 
-namespace SemanticKernel.Connectors.UnitTests.OpenAI;
+namespace SemanticKernel.Connectors.Azure.UnitTests;
 
 /// <summary>
 /// Helper for OpenAI test purposes.
 /// </summary>
-internal static class OpenAITestHelper
+internal static class TestHelper
 {
     /// <summary>
     /// Reads test response from file for mocking purposes.

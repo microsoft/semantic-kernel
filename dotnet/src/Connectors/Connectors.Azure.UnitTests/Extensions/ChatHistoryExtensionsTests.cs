@@ -8,7 +8,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Azure;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Azure;
+namespace SemanticKernel.Connectors.Azure.UnitTests;
+
 public class ChatHistoryExtensionsTests
 {
     [Fact]

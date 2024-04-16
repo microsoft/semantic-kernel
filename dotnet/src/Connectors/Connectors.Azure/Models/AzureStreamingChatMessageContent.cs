@@ -49,7 +49,6 @@ public sealed class AzureStreamingChatMessageContent : StreamingChatMessageConte
     /// </summary>
     /// <param name="authorRole">Author role of the message</param>
     /// <param name="content">Content of the message</param>
-    /// <param name="tootToolCallUpdate">Tool call update</param>
     /// <param name="completionsFinishReason">Completion finish reason</param>
     /// <param name="choiceIndex">Index of the choice</param>
     /// <param name="modelId">The model ID used to generate the content</param>
@@ -57,7 +56,6 @@ public sealed class AzureStreamingChatMessageContent : StreamingChatMessageConte
     internal AzureStreamingChatMessageContent(
         AuthorRole? authorRole,
         string? content,
-        StreamingToolCallUpdate? tootToolCallUpdate = null,
         CompletionsFinishReason? completionsFinishReason = null,
         int choiceIndex = 0,
         string? modelId = null,

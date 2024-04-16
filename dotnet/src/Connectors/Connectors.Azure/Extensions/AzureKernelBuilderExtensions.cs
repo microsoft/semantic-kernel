@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Azure;
 using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.TextGeneration;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable IDE0039 // Use local function
@@ -86,7 +85,7 @@ public static class AzureKernelBuilderExtensions
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(deploymentName);
-        Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNull(endpoint);
         Verify.NotNull(credentials);
 
         Func<IServiceProvider, object?, AzureChatCompletionService> factory = (serviceProvider, _) =>

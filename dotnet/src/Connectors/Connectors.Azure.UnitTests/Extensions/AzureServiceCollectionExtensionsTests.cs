@@ -6,16 +6,11 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Azure;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.TextToAudio;
-using Microsoft.SemanticKernel.TextToImage;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Azure;
+namespace SemanticKernel.Connectors.Azure.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="AzureServiceCollectionExtensions"/> class.
@@ -36,25 +31,22 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.AzureClientInline)]
     [InlineData(InitializationType.AzureClientInServiceProvider)]
-    [InlineData(InitializationType.ChatCompletionWithData)]
     public void KernelBuilderAddAzureAzureChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
         var client = new OpenAIClient("key");
-        var config = this.GetCompletionWithDataConfig();
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<OpenAIClient>(client);
+        builder.Services.AddSingleton(client);
 
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureAzureChatCompletion("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.AddAzureAzureChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.AzureClientInline => builder.AddAzureAzureChatCompletion("deployment-name", client),
-            InitializationType.AzureClientInServiceProvider => builder.AddAzureAzureChatCompletion("deployment-name"),
-            InitializationType.ChatCompletionWithData => builder.AddAzureAzureChatCompletion(config),
+            InitializationType.ApiKey => builder.AddAzureChatCompletion("deployment-name", new Uri("https://endpoint"), "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureChatCompletion("deployment-name", new Uri("https://endpoint"), credentials),
+            InitializationType.AzureClientInline => builder.AddAzureChatCompletion("deployment-name", client),
+            InitializationType.AzureClientInServiceProvider => builder.AddAzureChatCompletion("deployment-name"),
             _ => builder
         };
 
@@ -62,15 +54,7 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
         var service = builder.Build().GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
-
-        if (type == InitializationType.ChatCompletionWithData)
-        {
-            Assert.True(service is AzureAzureChatCompletionWithDataService);
-        }
-        else
-        {
-            Assert.True(service is AzureAzureChatCompletionService);
-        }
+        Assert.True(service is AzureChatCompletionService);
     }
 
     [Theory]
@@ -78,13 +62,11 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.TokenCredential)]
     [InlineData(InitializationType.AzureClientInline)]
     [InlineData(InitializationType.AzureClientInServiceProvider)]
-    [InlineData(InitializationType.ChatCompletionWithData)]
     public void ServiceCollectionAddAzureAzureChatCompletionAddsValidService(InitializationType type)
     {
         // Arrange
         var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
-        var client = new OpenAI ("key");
-        var config = this.GetCompletionWithDataConfig();
+        var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton<OpenAIClient>(client);
@@ -92,11 +74,10 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureAzureChatCompletion("deployment-name", "https://endpoint", "api-key"),
-            InitializationType.TokenCredential => builder.Services.AddAzureAzureChatCompletion("deployment-name", "https://endpoint", credentials),
-            InitializationType.AzureClientInline => builder.Services.AddAzureAzureChatCompletion("deployment-name", client),
-            InitializationType.AzureClientInServiceProvider => builder.Services.AddAzureAzureChatCompletion("deployment-name"),
-            InitializationType.ChatCompletionWithData => builder.Services.AddAzureAzureChatCompletion(config),
+            InitializationType.ApiKey => builder.Services.AddAzureChatCompletion("deployment-name", new Uri("https://endpoint"), "api-key"),
+            InitializationType.TokenCredential => builder.Services.AddAzureChatCompletion("deployment-name", new Uri("https://endpoint"), credentials),
+            InitializationType.AzureClientInline => builder.Services.AddAzureChatCompletion("deployment-name", client),
+            InitializationType.AzureClientInServiceProvider => builder.Services.AddAzureChatCompletion("deployment-name"),
             _ => builder.Services
         };
 
@@ -104,15 +85,7 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
         var service = builder.Build().GetRequiredService<IChatCompletionService>();
 
         Assert.NotNull(service);
-
-        if (type == InitializationType.ChatCompletionWithData)
-        {
-            Assert.True(service is AzureAzureChatCompletionWithDataService);
-        }
-        else
-        {
-            Assert.True(service is AzureAzureChatCompletionService);
-        }
+        Assert.True(service is AzureChatCompletionService);
     }
 
     [Theory]
@@ -125,12 +98,12 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<OpenAIClient>(client);
+        builder.Services.AddSingleton(client);
 
         // Act
         builder = type switch
         {
-            InitializationType.ApiKey => builder.AddAzureChatCompletion("model-id", "api-key"),
+            InitializationType.ApiKey => builder.AddAzureChatCompletion("model-id", new Uri("https://endpoint"), "api-key"),
             InitializationType.AzureClientInline => builder.AddAzureChatCompletion("model-id", client),
             InitializationType.AzureClientInServiceProvider => builder.AddAzureChatCompletion("model-id"),
             _ => builder
@@ -153,12 +126,12 @@ public sealed class AzureServiceCollectionExtensionsTests : IDisposable
         var client = new OpenAIClient("key");
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<OpenAIClient>(client);
+        builder.Services.AddSingleton(client);
 
         // Act
         IServiceCollection collection = type switch
         {
-            InitializationType.ApiKey => builder.Services.AddAzureChatCompletion("model-id", "api-key"),
+            InitializationType.ApiKey => builder.Services.AddAzureChatCompletion("model-id", new Uri("https://endpoint"), "api-key"),
             InitializationType.AzureClientInline => builder.Services.AddAzureChatCompletion("model-id", client),
             InitializationType.AzureClientInServiceProvider => builder.Services.AddAzureChatCompletion("model-id"),
             _ => builder.Services

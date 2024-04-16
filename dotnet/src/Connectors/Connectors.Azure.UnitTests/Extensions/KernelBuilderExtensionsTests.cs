@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Azure;
+namespace SemanticKernel.Connectors.Azure.UnitTests;
 
 /// <summary>
 /// Unit tests of <see cref="AzureKernelBuilderExtensions"/>.
@@ -18,7 +18,7 @@ public class AzureKernelBuilderExtensionsTests
         // Arrange
         // Act - Assert no exception occurs
         Kernel targetKernel = Kernel.CreateBuilder()
-           .AddAzureChatCompletion("depl", "https://url", "key", "azure")
+           .AddAzureChatCompletion("depl", new Uri("https://url"), "key", "azure")
            .Build();
 
         Assert.NotNull(targetKernel.GetRequiredService<IChatCompletionService>("azure"));
