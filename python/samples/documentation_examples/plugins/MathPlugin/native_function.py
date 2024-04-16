@@ -14,7 +14,7 @@ class Math:
     Description: MathPlugin provides a set of functions to make Math calculations.
 
     Usage:
-        kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
+        kernel.add_plugin(MathPlugin(), plugin_name="math")
 
     Examples:
         {{math.Add}} => Returns the sum of input and amount (provided in the KernelArguments)
