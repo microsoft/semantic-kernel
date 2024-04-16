@@ -2,7 +2,9 @@
 import json
 import logging
 import sys
-from typing import Any, Dict, Final, Optional
+from typing import Any, Dict, Final
+
+from pydantic import Field
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -24,9 +26,9 @@ DEFAULT_LIMIT: Final[int] = 1
 
 class TextMemoryPlugin(KernelBaseModel):
     memory: SemanticTextMemoryBase
-    embeddings_kwargs: Optional[Dict[str, Any]] = None
+    embeddings_kwargs: Dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: Dict[str, Any] = {}) -> None:
         """
         Initialize a new instance of the TextMemoryPlugin
 
