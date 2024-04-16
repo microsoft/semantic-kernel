@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use multiple prompt template formats.
-public class Example64_MultiplePromptTemplates : BaseTest
+public class Example64_MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to combine multiple prompt template factories.
@@ -59,9 +59,5 @@ public class Example64_MultiplePromptTemplates : BaseTest
 
         var result = await kernel.InvokeAsync(function, arguments);
         WriteLine(result.GetValue<string>());
-    }
-
-    public Example64_MultiplePromptTemplates(ITestOutputHelper output) : base(output)
-    {
     }
 }

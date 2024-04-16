@@ -2,11 +2,13 @@
 
 import asyncio
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel import Kernel
+from semantic_kernel.core_plugins import TextMemoryPlugin
+from semantic_kernel.functions import KernelFunction
+from semantic_kernel.memory import SemanticTextMemory, VolatileMemoryStore
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
 
 collection_id = "generic"
 
@@ -28,9 +30,9 @@ async def search_memory_examples(memory: SemanticTextMemory) -> None:
 
 
 async def setup_chat_with_memory(
-    kernel: sk.Kernel,
+    kernel: Kernel,
     service_id: str,
-) -> sk.KernelFunction:
+) -> KernelFunction:
     prompt = """
     ChatBot can have a conversation with you about any topic.
     It can give explicit instructions or say 'I don't know' if
@@ -46,12 +48,10 @@ async def setup_chat_with_memory(
 
     prompt_template_config = PromptTemplateConfig(
         template=prompt,
-        execution_settings={
-            service_id: kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
-        },
+        execution_settings={service_id: kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)},
     )
 
-    chat_func = kernel.create_function_from_prompt(
+    chat_func = kernel.add_function(
         function_name="chat_with_memory",
         plugin_name="TextMemoryPlugin",
         prompt_template_config=prompt_template_config,
@@ -60,7 +60,7 @@ async def setup_chat_with_memory(
     return chat_func
 
 
-async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunction) -> bool:
+async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:
     try:
         user_input = input("User:> ")
     except KeyboardInterrupt:
@@ -81,8 +81,8 @@ async def chat(kernel: sk.Kernel, chat_func: sk.KernelFunction) -> bool:
 
 
 async def main() -> None:
-    kernel = sk.Kernel()
-    apikey = sk.google_palm_settings_from_dot_env()
+    kernel = Kernel()
+    apikey = google_palm_settings_from_dot_env()
     model_id = "models/embedding-gecko-001"
     palm_text_embed = sk_gp.GooglePalmTextEmbedding(model_id, apikey)
     kernel.add_service(palm_text_embed)
@@ -90,8 +90,8 @@ async def main() -> None:
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(chat_service_id, apikey)
     kernel.add_service(palm_chat_completion)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=palm_text_embed)
-    kernel.import_plugin_from_object(TextMemoryPlugin(memory), "TextMemoryPlugin")
+    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=palm_text_embed)
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
     await populate_memory(memory)

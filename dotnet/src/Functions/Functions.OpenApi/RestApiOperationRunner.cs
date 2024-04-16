@@ -226,7 +226,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The HttpContent representing the payload.</returns>
     private HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
     {
-        if (operation?.Method != HttpMethod.Put && operation?.Method != HttpMethod.Post)
+        if (operation.Payload is null && !arguments.ContainsKey(RestApiOperation.PayloadArgumentName))
         {
             return null;
         }
@@ -387,11 +387,7 @@ internal sealed class RestApiOperationRunner
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
-        var urlBuilder = new UriBuilder(url);
-
-        urlBuilder.Query = operation.BuildQueryString(arguments);
-
-        return urlBuilder.Uri;
+        return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
 
     #endregion

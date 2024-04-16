@@ -134,12 +134,12 @@ internal sealed class DeleteRequest
 
     private DeleteRequest(IEnumerable<string>? ids)
     {
-        this.Ids = ids ?? new List<string>();
+        this.Ids = ids ?? [];
     }
 
     private DeleteRequest(bool clear)
     {
-        this.Ids = new List<string>();
+        this.Ids = [];
         this.DeleteAll = clear;
     }
 
