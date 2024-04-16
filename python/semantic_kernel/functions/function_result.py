@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, Mapping, Optional
+from typing import Any, Optional
 
 from pydantic import Field
 
@@ -31,7 +31,7 @@ class FunctionResult(KernelBaseModel):
 
     function: KernelFunctionMetadata
     value: Any
-    metadata: Mapping[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     def __str__(self) -> str:
         """Get the string representation of the result."""
