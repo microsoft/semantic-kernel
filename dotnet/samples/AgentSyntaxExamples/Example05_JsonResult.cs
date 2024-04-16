@@ -6,14 +6,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
 
 /// <summary>
-/// %%%
+/// Demonstrate parsing JSON response using <see cref="JsonResultTranslator"/>.
 /// </summary>
 public class Example05_JsonResult(ITestOutputHelper output) : BaseTest(output)
 {
@@ -52,14 +51,15 @@ public class Example05_JsonResult(ITestOutputHelper output) : BaseTest(output)
                 ExecutionSettings =
                     new()
                     {
-                        // %%%
+                        // Here a TerminationStrategy subclass is used that will terminate when
+                        // the response includes a score that is greater than or equal to 70.
                         TerminationStrategy = new ThresholdTerminationStrategy()
                     }
             };
 
         // Respond to user input
-        //await InvokeAgentAsync("The sunset is very colorful.");
-        //await InvokeAgentAsync("The sunset is setting over the mountains.");
+        await InvokeAgentAsync("The sunset is very colorful.");
+        await InvokeAgentAsync("The sunset is setting over the mountains.");
         await InvokeAgentAsync("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
 
         // Local function to invoke agent and display the conversation messages.

@@ -24,11 +24,11 @@ public static class JsonResultTranslator
     private const string JsonPrefix = "json";
 
     /// <summary>
-    /// %%%
+    /// Utility method for extracting a JSON result from an agent response.
     /// </summary>
-    /// <param name="result"></param>
+    /// <param name="result">A text result</param>
     /// <typeparam name="TResult">The target type of the <see cref="FunctionResult"/>.</typeparam>
-    /// <returns></returns>
+    /// <returns>The JSON translated to the requested type.</returns>
     public static TResult? Translate<TResult>(string result)
     {
         string rawJson = ExtractJson(result);
@@ -46,6 +46,8 @@ public static class JsonResultTranslator
             return result;
         }
 
+        startIndex += LiteralDelimiter.Length;
+
         // Accommodate "json" prefix, if present.
         if (JsonPrefix.Equals(result.Substring(startIndex, JsonPrefix.Length), System.StringComparison.OrdinalIgnoreCase))
         {
@@ -56,7 +58,7 @@ public static class JsonResultTranslator
         int endIndex = result.IndexOf(LiteralDelimiter, startIndex, System.StringComparison.OrdinalIgnoreCase);
         if (endIndex < 0)
         {
-            endIndex = result.Length - 1;
+            endIndex = result.Length;
         }
 
         // Extract JSON
