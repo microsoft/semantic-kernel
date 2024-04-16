@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// </example>
 /// </summary>
 /// <typeparam name="TResult">The target type of the <see cref="FunctionResult"/>.</typeparam>
-public sealed class JsonResultParser<TResult>() : FunctionResultProcessor<TResult>()
+public sealed class JsonResultProcessor<TResult>() : FunctionResultProcessor<TResult>()
 {
     private const string LiteralDelimiter = "```";
     private const string JsonPrefix = "json";
