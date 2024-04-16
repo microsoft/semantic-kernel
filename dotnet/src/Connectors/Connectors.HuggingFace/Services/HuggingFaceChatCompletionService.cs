@@ -7,33 +7,33 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 
 /// <summary>
-/// HuggingFace text generation service.
+/// HuggingFace chat completion service.
 /// </summary>
-public sealed class HuggingFaceTextGenerationService : ITextGenerationService
+public sealed class HuggingFaceChatCompletionService : IChatCompletionService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = [];
-    private HuggingFaceClient Client { get; }
+    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private HuggingFaceMessageApiClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HuggingFaceTextGenerationService"/> class.
+    /// Initializes a new instance of the <see cref="HuggingFaceChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The HuggingFace model for the text generation service.</param>
+    /// <param name="model">The HuggingFace model for the chat completion service.</param>
     /// <param name="endpoint">The uri endpoint including the port where HuggingFace server is hosted</param>
     /// <param name="apiKey">Optional API key for accessing the HuggingFace service.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the HuggingFace API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public HuggingFaceTextGenerationService(
+    public HuggingFaceChatCompletionService(
         string model,
         Uri? endpoint = null,
         string? apiKey = null,
@@ -42,9 +42,12 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new HuggingFaceClient(
-        modelId: model,
-            endpoint: endpoint ?? httpClient?.BaseAddress,
+        var clientEndpoint = endpoint ?? httpClient?.BaseAddress
+            ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion service requires a valid endpoint provided explicitly or via HTTP client base address");
+
+        this.Client = new HuggingFaceMessageApiClient(
+            modelId: model,
+            endpoint: clientEndpoint,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
@@ -54,10 +57,10 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.CompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        => this.Client.StreamCompleteChatMessageAsync(chatHistory, executionSettings, cancellationToken);
 }
