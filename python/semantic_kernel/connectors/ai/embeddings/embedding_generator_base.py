@@ -11,5 +11,5 @@ if TYPE_CHECKING:
 
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     @abstractmethod
-    async def generate_embeddings(self, texts: List[str]) -> "ndarray":
+    async def generate_embeddings(self, texts: List[str], **kwargs) -> "ndarray":
         pass
