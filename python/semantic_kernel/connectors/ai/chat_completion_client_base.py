@@ -3,13 +3,13 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional
 
-from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-    from semantic_kernel.contents import StreamingChatMessageContent
     from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
@@ -80,7 +80,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         """
         return [self._chat_message_content_to_dict(message) for message in chat_history.messages]
 
-    def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
+    def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> Dict[str, Optional[str]]:
         """can be overridden to customize the serialization of the chat message content"""
         msg = message.model_dump(include=["role", "content"])
         return msg
