@@ -12,4 +12,4 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 [JsonDerivedType(typeof(AnthropicImageContent), typeDiscriminator: "image")]
 [JsonDerivedType(typeof(AnthropicToolCallContent), typeDiscriminator: "tool_use")]
 [JsonDerivedType(typeof(AnthropicToolResultContent), typeDiscriminator: "tool_result")]
-internal abstract class AnthropicMessageContent { }
+internal abstract class AnthropicContent { }

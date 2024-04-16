@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class AnthropicToolResultContent : AnthropicMessageContent
+internal sealed class AnthropicToolResultContent : AnthropicContent
 {
     [JsonPropertyName("tool_use_id")]
     [JsonRequired]
@@ -12,7 +12,7 @@ internal sealed class AnthropicToolResultContent : AnthropicMessageContent
 
     [JsonPropertyName("content")]
     [JsonRequired]
-    public AnthropicMessageContent Content { get; set; } = null!;
+    public AnthropicContent Content { get; set; } = null!;
 
     [JsonPropertyName("is_error")]
     public bool IsError { get; set; }

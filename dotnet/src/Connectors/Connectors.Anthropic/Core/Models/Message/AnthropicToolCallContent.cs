@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class AnthropicToolCallContent : AnthropicMessageContent
+internal sealed class AnthropicToolCallContent : AnthropicContent
 {
     [JsonPropertyName("id")]
     [JsonRequired]

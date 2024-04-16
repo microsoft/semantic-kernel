@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-internal sealed class AnthropicImageContent : AnthropicMessageContent
+internal sealed class AnthropicImageContent : AnthropicContent
 {
     [JsonConstructor]
     public AnthropicImageContent(string type, string mediaType, string data)

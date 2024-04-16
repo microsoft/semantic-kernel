@@ -9,7 +9,7 @@ namespace SemanticKernel.Connectors.Anthropic.UnitTests;
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the Claude connector.
 /// </summary>
-public static class ClaudeKernelFunctionMetadataExtensions
+public static class AnthropicKernelFunctionMetadataExtensions
 {
     /// <summary>
     /// Convert a <see cref="KernelFunctionMetadata"/> to an <see cref="AnthropicFunction"/>.

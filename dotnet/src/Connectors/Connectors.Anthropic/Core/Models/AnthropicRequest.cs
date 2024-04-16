@@ -139,9 +139,9 @@ internal sealed class AnthropicRequest
         return request;
     }
 
-    private static List<AnthropicMessageContent> CreateClaudeMessages(ChatMessageContent content)
+    private static List<AnthropicContent> CreateClaudeMessages(ChatMessageContent content)
     {
-        List<AnthropicMessageContent> messages = new();
+        List<AnthropicContent> messages = new();
         switch (content)
         {
             case AnthropicChatMessageContent { CalledToolResult: not null } contentWithCalledTool:
@@ -173,7 +173,7 @@ internal sealed class AnthropicRequest
         return messages;
     }
 
-    private static AnthropicMessageContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
+    private static AnthropicContent GetClaudeMessageFromKernelContent(KernelContent content) => content switch
     {
         TextContent textContent => new AnthropicTextContent(textContent.Text ?? string.Empty),
         ImageContent imageContent => new AnthropicImageContent(
@@ -193,6 +193,6 @@ internal sealed class AnthropicRequest
         public AuthorRole Role { get; set; }
 
         [JsonPropertyName("content")]
-        public IList<AnthropicMessageContent> Contents { get; set; } = null!;
+        public IList<AnthropicContent> Contents { get; set; } = null!;
     }
 }

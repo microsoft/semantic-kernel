@@ -113,7 +113,7 @@ public sealed class AnthropicToolCallBehaviorTests
     public void EnabledFunctionsConfigureClaudeRequestWithAutoInvokeAndNullKernelThrowsException()
     {
         // Arrange
-        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => ClaudeKernelFunctionMetadataExtensions.ToClaudeFunction(function));
+        var functions = GetTestPlugin().GetFunctionsMetadata().Select(function => AnthropicKernelFunctionMetadataExtensions.ToClaudeFunction(function));
         var enabledFunctions = new AnthropicToolCallBehavior.EnabledFunctions(functions, autoInvoke: true);
         var claudeRequest = new AnthropicRequest();
 
