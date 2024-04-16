@@ -95,7 +95,9 @@ public sealed class InputVariable
     /// </summary>
     /// <remarks>
     /// The default is false.
+    /// When set to true the value of the input variable is treated as safe content and will not be HTML encoded.
     /// </remarks>
+    [Experimental("SKEXP0001")]
     [JsonPropertyName("allow_unsafe_content")]
     public bool AllowUnsafeContent { get; set; } = false;
 }
