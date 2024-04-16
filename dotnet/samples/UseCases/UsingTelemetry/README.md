@@ -136,5 +136,5 @@ You can create an Azure Dashboard to visualize the custom telemetry items. You c
 
 ## More information
 
-- [Telemetry docs](../../docs/TELEMETRY.md)
-- [Planner telemetry improvement ADR](../../../docs/decisions/0025-planner-telemetry-enhancement.md)
+- [Telemetry docs](../../../docs/TELEMETRY.md)
+- [Planner telemetry improvement ADR](../../../../docs/decisions/0025-planner-telemetry-enhancement.md)
