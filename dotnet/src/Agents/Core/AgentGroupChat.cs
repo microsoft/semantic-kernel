@@ -77,7 +77,7 @@ public sealed class AgentGroupChat : AgentChat
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false); // %%% EXCEPTION ???
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -86,7 +86,7 @@ public sealed class AgentGroupChat : AgentChat
 
                 if (message.Role == AuthorRole.Assistant)
                 {
-                    var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
+                    var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken); // %%% EXCEPTION ???
                     this.IsComplete = await task.ConfigureAwait(false);
                 }
 
@@ -142,7 +142,7 @@ public sealed class AgentGroupChat : AgentChat
 
             if (message.Role == AuthorRole.Assistant)
             {
-                var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
+                var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken); // %%% EXCEPTION ???
                 this.IsComplete = await task.ConfigureAwait(false);
             }
 

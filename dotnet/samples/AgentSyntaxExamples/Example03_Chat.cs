@@ -17,7 +17,7 @@ namespace Examples;
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
-public class Example03_Chat : BaseTest
+public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions = "You are an art director who has opinions about copywriting born of a love for David Ogilvy. The goal is to determine is the given copy is acceptable to print.  If so, state that it is approved.  If not, provide insight on how to refine suggested copy without example.";
@@ -61,6 +61,8 @@ public class Example03_Chat : BaseTest
                                 // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
                                 // and the conversation may be resumed, if desired.
                                 MaximumIterations = 8,
+                                // Only the art-director may approve.
+                                Agents = [agentReviewer],
                             },
                         // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
                         // but a custom func could be utilized if desired.
@@ -77,12 +79,6 @@ public class Example03_Chat : BaseTest
         {
             this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
-    }
-
-    public Example03_Chat(ITestOutputHelper output)
-        : base(output)
-    {
-        // Nothing to do...
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
