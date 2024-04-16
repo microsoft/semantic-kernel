@@ -2,16 +2,16 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
+from semantic_kernel.utils.settings import bing_search_settings_from_dot_env, openai_settings_from_dot_env
 
 
-async def example1(kernel: sk.Kernel, search_plugin_name: str):
+async def example1(kernel: Kernel, search_plugin_name: str):
     print("======== Bing and Google Search Plugins ========")
 
     question = "What's the largest building in the world?"
@@ -23,7 +23,7 @@ async def example1(kernel: sk.Kernel, search_plugin_name: str):
     print(result)
 
 
-async def example2(kernel: sk.Kernel, service_id: str):
+async def example2(kernel: Kernel, service_id: str):
     print("======== Use the Search Plugin to Answer User Questions ========")
 
     prompt = """
@@ -67,7 +67,7 @@ async def example2(kernel: sk.Kernel, service_id: str):
         function_name="oracle",
         plugin_name="OraclePlugin",
         template=prompt,
-        execution_settings=sk_oai.OpenAIChatPromptExecutionSettings(
+        execution_settings=OpenAIChatPromptExecutionSettings(
             service_id=service_id, max_tokens=150, temperature=0, top_p=1
         ),
     )
@@ -80,7 +80,7 @@ async def example2(kernel: sk.Kernel, service_id: str):
     result = str(answer)
 
     if "bing.search" in result:
-        prompt_template = KernelPromptTemplate(PromptTemplateConfig(template=result))
+        prompt_template = KernelPromptTemplate(prompt_template_config=PromptTemplateConfig(template=result))
 
         print("--- Fetching information from Bing... ---")
         information = await prompt_template.render(kernel, KernelArguments())
@@ -96,17 +96,17 @@ async def example2(kernel: sk.Kernel, service_id: str):
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     model = "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
     )
 
-    bing_api_key = sk.bing_search_settings_from_dot_env()
+    bing_api_key = bing_search_settings_from_dot_env()
     assert bing_api_key is not None
 
     bing_connector = BingConnector(api_key=bing_api_key)
