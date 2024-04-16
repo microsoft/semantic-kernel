@@ -17,7 +17,7 @@ namespace Examples;
 /// <summary>
 /// Showcase usage of code_interpreter and retrieval tools.
 /// </summary>
-public sealed class Example75_AgentTools : BaseTest
+public sealed class Example75_AgentTools(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and parallel function calling.
@@ -193,6 +193,4 @@ public sealed class Example75_AgentTools : BaseTest
 
         return agent;
     }
-
-    public Example75_AgentTools(ITestOutputHelper output) : base(output) { }
 }

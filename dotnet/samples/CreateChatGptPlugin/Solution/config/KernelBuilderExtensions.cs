@@ -18,7 +18,7 @@ internal static class KernelBuilderExtensions
                 {
                     kernelBuilder.Services.AddAzureOpenAITextGeneration(
                         deploymentName: Env.Var("AzureOpenAI:TextCompletionDeploymentName")!,
-                        modelId: Env.Var("AzureOpenAI:TextCompletionModelId")!,
+                        modelId: Env.Var("AzureOpenAI:TextCompletionModelId"),
                         endpoint: Env.Var("AzureOpenAI:Endpoint")!,
                         apiKey: Env.Var("AzureOpenAI:ApiKey")!
                     );
@@ -27,7 +27,7 @@ internal static class KernelBuilderExtensions
                 {
                     kernelBuilder.Services.AddAzureOpenAIChatCompletion(
                         deploymentName: Env.Var("AzureOpenAI:ChatCompletionDeploymentName")!,
-                        modelId: Env.Var("AzureOpenAI:ChatCompletionModelId")!,
+                        modelId: Env.Var("AzureOpenAI:ChatCompletionModelId"),
                         endpoint: Env.Var("AzureOpenAI:Endpoint")!,
                         apiKey: Env.Var("AzureOpenAI:ApiKey")!
                     );

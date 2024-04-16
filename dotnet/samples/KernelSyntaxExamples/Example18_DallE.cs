@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
-public class Example18_DallE : BaseTest
+public class Example18_DallE(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task OpenAIDallEAsync()
@@ -165,9 +165,5 @@ public class Example18_DallE : BaseTest
         Img description: [An image of a map zooming in on the pin location, revealing a small island with a palm tree on it]
 
         */
-    }
-
-    public Example18_DallE(ITestOutputHelper output) : base(output)
-    {
     }
 }

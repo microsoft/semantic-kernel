@@ -1,11 +1,8 @@
-from unittest.mock import Mock
-
 import pytest
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_plugin_collection import KernelPluginCollection
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
@@ -18,11 +15,6 @@ def create_kernel_prompt_template(template: str) -> KernelPromptTemplate:
     return KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     )
-
-
-@pytest.fixture
-def plugins():
-    return Mock(spec=KernelPluginCollection)
 
 
 def test_init():
@@ -63,8 +55,7 @@ def test_extract_from_empty():
     assert len(blocks) == 0
 
 
-def test_it_renders_variables(plugins):
-    kernel = Kernel(plugins=plugins)
+def test_it_renders_variables(kernel: Kernel):
     arguments = KernelArguments()
 
     template = (
@@ -150,8 +141,7 @@ def test_it_renders_variables(plugins):
 
 
 @pytest.mark.asyncio
-async def test_it_renders_code():
-    kernel = Kernel()
+async def test_it_renders_code(kernel: Kernel):
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -160,7 +150,7 @@ async def test_it_renders_code():
 
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
-    kernel.plugins.add_plugin_from_functions("test", [func])
+    kernel.add_function("test", func)
 
     arguments["_a"] = "foo"
     arguments["arg"] = "bar"
@@ -176,8 +166,7 @@ async def test_it_renders_code():
 
 
 @pytest.mark.asyncio
-async def test_it_renders_code_using_input():
-    kernel = Kernel()
+async def test_it_renders_code_using_input(kernel: Kernel):
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -186,7 +175,7 @@ async def test_it_renders_code_using_input():
 
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
-    kernel.plugins.add_plugin_from_functions("test", [func])
+    kernel.add_function("test", func)
 
     arguments["input"] = "INPUT-BAR"
     template = "foo-{{test.function}}-baz"
@@ -197,8 +186,7 @@ async def test_it_renders_code_using_input():
 
 
 @pytest.mark.asyncio
-async def test_it_renders_code_using_variables():
-    kernel = Kernel()
+async def test_it_renders_code_using_variables(kernel: Kernel):
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -207,7 +195,7 @@ async def test_it_renders_code_using_variables():
 
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
-    kernel.plugins.add_plugin_from_functions("test", [func])
+    kernel.add_function("test", func)
 
     arguments["myVar"] = "BAR"
     template = "foo-{{test.function $myVar}}-baz"
@@ -218,8 +206,7 @@ async def test_it_renders_code_using_variables():
 
 
 @pytest.mark.asyncio
-async def test_it_renders_code_using_variables_async():
-    kernel = Kernel()
+async def test_it_renders_code_using_variables_async(kernel: Kernel):
     arguments = KernelArguments()
 
     @kernel_function(name="function")
@@ -228,7 +215,7 @@ async def test_it_renders_code_using_variables_async():
 
     func = KernelFunction.from_method(my_function, "test")
     assert func is not None
-    kernel.plugins.add_plugin_from_functions("test", [func])
+    kernel.add_function("test", func)
 
     arguments["myVar"] = "BAR"
 

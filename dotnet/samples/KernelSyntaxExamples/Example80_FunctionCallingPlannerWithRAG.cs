@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example80_FunctionCallingPlannerWithRAG : BaseTest
+public class Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -56,10 +56,6 @@ public class Example80_FunctionCallingPlannerWithRAG : BaseTest
         kernel.ImportPluginFromType<RetrievePlugin>();
 
         return kernel;
-    }
-
-    public Example80_FunctionCallingPlannerWithRAG(ITestOutputHelper output) : base(output)
-    {
     }
 
     internal sealed class RetrievePlugin

@@ -18,8 +18,10 @@ public class FlowExtensionsTests
         // Arrange
         var flow1 = CreateFlowWithReferenceStep("flow2");
 
-        var flow2 = new Microsoft.SemanticKernel.Experimental.Orchestration.Flow("flow2", "test flow goal 2");
-        flow2.CompletionType = CompletionType.Optional;
+        var flow2 = new Microsoft.SemanticKernel.Experimental.Orchestration.Flow("flow2", "test flow goal 2")
+        {
+            CompletionType = CompletionType.Optional
+        };
         var step5 = new FlowStep("step1");
         step5.AddRequires("a");
         step5.AddProvides("b");

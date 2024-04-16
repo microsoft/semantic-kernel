@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace GettingStarted;
 
-public sealed class Step8_Pipelining : BaseTest
+public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Provides an example of combining multiple functions into a single function that invokes
@@ -42,7 +42,7 @@ public sealed class Step8_Pipelining : BaseTest
                 Template = "Spell out this number in English: {{$number}}",
                 InputVariables = [new() { Name = "number" }],
             });
-            KernelFunction pipeline = KernelFunctionCombinators.Pipe(new[] { parseInt32, multiplyByN, truncate, humanize }, "pipeline");
+            KernelFunction pipeline = KernelFunctionCombinators.Pipe([parseInt32, multiplyByN, truncate, humanize], "pipeline");
 
             KernelArguments args = new()
             {
@@ -73,10 +73,6 @@ public sealed class Step8_Pipelining : BaseTest
 
             WriteLine(await graph.InvokeAsync(kernel));
         }
-    }
-
-    public Step8_Pipelining(ITestOutputHelper output) : base(output)
-    {
     }
 }
 
