@@ -31,7 +31,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; set; } = Kernel.CreateBuilder().Build();
+    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
 
     /// <summary>
     /// The <see cref="KernelFunction"/> invoked as termination criteria.

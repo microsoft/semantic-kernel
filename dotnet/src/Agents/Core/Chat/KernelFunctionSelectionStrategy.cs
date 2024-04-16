@@ -31,7 +31,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; set; } = Kernel.CreateBuilder().Build();
+    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
 
     /// <summary>
     /// The <see cref="KernelFunction"/> invoked as selection criteria.
