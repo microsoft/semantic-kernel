@@ -26,7 +26,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// Settings for defining chat behavior.
     /// </summary>
-    public ChatExecutionSettings ExecutionSettings { get; set; } = new ChatExecutionSettings();
+    public AgentGroupChatSettings ExecutionSettings { get; set; } = new AgentGroupChatSettings();
 
     /// <summary>
     /// The agents participating in the chat.
@@ -49,7 +49,7 @@ public sealed class AgentGroupChat : AgentChat
     /// Process a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
     /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
     /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
-    /// In the absence of an <see cref="ChatExecutionSettings.SelectionStrategy"/>, this method will not invoke any agents.
+    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
     /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, bool, CancellationToken)"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -71,7 +71,7 @@ public sealed class AgentGroupChat : AgentChat
         // For explicit selection, AgentGroupChat.InvokeAsync(Agent, CancellationToken) is available.
         if (this.ExecutionSettings.SelectionStrategy == null)
         {
-            throw new KernelException($"Agent Failure - No {nameof(ChatExecutionSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
+            throw new KernelException($"Agent Failure - No {nameof(AgentGroupChatSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
         }
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)

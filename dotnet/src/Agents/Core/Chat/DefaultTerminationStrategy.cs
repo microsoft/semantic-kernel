@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// The termination strategy attached to the default state of <see cref="ChatExecutionSettings.TerminationStrategy"/> will
+/// The termination strategy attached to the default state of <see cref="AgentGroupChatSettings.TerminationStrategy"/> will
 /// execute to <see cref="TerminationStrategy.MaximumIterations"/> without signaling termination.
 /// </summary>
 public sealed class DefaultTerminationStrategy : TerminationStrategy

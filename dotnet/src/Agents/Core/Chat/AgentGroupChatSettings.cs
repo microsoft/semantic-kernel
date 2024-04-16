@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <remarks>
 /// Default behavior result in no agent selection.
 /// </remarks>
-public class ChatExecutionSettings
+public class AgentGroupChatSettings
 {
     /// <summary>
     /// Optional strategy for evaluating whether to terminate multiturn chat.

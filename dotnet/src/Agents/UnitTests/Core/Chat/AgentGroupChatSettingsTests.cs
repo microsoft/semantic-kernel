@@ -6,9 +6,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="ChatExecutionSettings"/>.
+/// Unit testing of <see cref="AgentGroupChatSettings"/>.
 /// </summary>
-public class ChatExecutionSettingsTests
+public class AgentGroupChatSettingsTests
 {
     /// <summary>
     /// Verify default state.
@@ -16,20 +16,20 @@ public class ChatExecutionSettingsTests
     [Fact]
     public void VerifyChatExecutionSettingsDefault()
     {
-        ChatExecutionSettings settings = new();
+        AgentGroupChatSettings settings = new();
         Assert.IsType<DefaultTerminationStrategy>(settings.TerminationStrategy);
         Assert.Equal(TerminationStrategy.DefaultMaximumIterations, settings.TerminationStrategy.MaximumIterations);
         Assert.Null(settings.SelectionStrategy);
     }
 
     /// <summary>
-    /// Verify accepts <see cref="TerminationStrategy"/> for <see cref="ChatExecutionSettings.TerminationStrategy"/>.
+    /// Verify accepts <see cref="TerminationStrategy"/> for <see cref="AgentGroupChatSettings.TerminationStrategy"/>.
     /// </summary>
     [Fact]
     public void VerifyChatExecutionContinuationStrategyDefault()
     {
         Mock<TerminationStrategy> strategyMock = new();
-        ChatExecutionSettings settings =
+        AgentGroupChatSettings settings =
             new()
             {
                 TerminationStrategy = strategyMock.Object
@@ -39,13 +39,13 @@ public class ChatExecutionSettingsTests
     }
 
     /// <summary>
-    /// Verify accepts <see cref="SelectionStrategy"/> for <see cref="ChatExecutionSettings.SelectionStrategy"/>.
+    /// Verify accepts <see cref="SelectionStrategy"/> for <see cref="AgentGroupChatSettings.SelectionStrategy"/>.
     /// </summary>
     [Fact]
     public void VerifyChatExecutionSelectionStrategyDefault()
     {
         Mock<SelectionStrategy> strategyMock = new();
-        ChatExecutionSettings settings =
+        AgentGroupChatSettings settings =
             new()
             {
                 SelectionStrategy = strategyMock.Object
