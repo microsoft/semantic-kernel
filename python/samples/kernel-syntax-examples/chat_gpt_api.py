@@ -2,11 +2,11 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -17,15 +17,15 @@ effectively, but you tend to answer with long
 flowery prose.
 """
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 service_id = "chat-gpt"
 kernel.add_service(
-    sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+    OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
 )
 
-settings = kernel.get_prompt_execution_settings_from_service_id(service_id, ChatCompletionClientBase)
+settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 settings.max_tokens = 2000
 settings.temperature = 0.7
 settings.top_p = 0.8
