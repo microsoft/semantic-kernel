@@ -178,7 +178,7 @@ def test_kernel_function_return_type_annotated():
     assert not my_func.__kernel_function_streaming__
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="Typing in Python before 3.10 is very different.")
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_kernel_function_return_type_streaming():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_return_type_streaming")
@@ -259,7 +259,7 @@ def test_kernel_function_no_typing():
         (Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
     ],
 )
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="Typing in Python before 3.10 is very different.")
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_annotation_parsing(annotation, description, type_, is_required):
     annotations = _parse_annotation(annotation)
 
