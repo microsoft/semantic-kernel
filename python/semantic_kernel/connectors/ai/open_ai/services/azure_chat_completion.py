@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 import logging
 from typing import Any, Dict, Mapping, Optional, Union, overload
 
@@ -130,7 +131,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         ad_token: Optional[str] = None,
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
-        use_extensions: bool = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -154,9 +154,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         default_headers: The default headers mapping of string keys to
             string values for HTTP requests. (Optional)
         log: The logger instance to use. (Optional)
-        use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
-            When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
-            The default value is False.
         """
 
     def __init__(
@@ -171,7 +168,6 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncAzureOpenAI] = None,
-        use_extensions: bool = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -201,14 +197,11 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-            use_extensions: Whether to use extensions, for example when chatting with data. (Optional)
-                When True, base_url is overwritten to '{endpoint}/openai/deployments/{deployment_name}/extensions'.
-                The default value is False.
         """
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
-        if use_extensions and endpoint and deployment_name:
-            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}/extensions")
+        if endpoint and deployment_name:
+            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
         super().__init__(
             deployment_name=deployment_name,
             endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
@@ -295,10 +288,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         else:
             content = choice.delta
         if content.model_extra is not None and "context" in content.model_extra:
-            if "messages" in content.model_extra["context"]:
-                for message in content.model_extra["context"]["messages"]:
-                    if "tool" in message["role"]:
-                        return message["content"]
+            return json.dumps(content.model_extra["context"])
+
         return None
 
     def get_chat_message_content_type(self) -> str:

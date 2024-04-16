@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use gRPC plugins.
-public class Example35_GrpcPlugins : BaseTest
+public class Example35_GrpcPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact(Skip = "Setup crendentials")]
     public async Task RunAsync()
@@ -22,17 +22,15 @@ public class Example35_GrpcPlugins : BaseTest
         var plugin = kernel.ImportPluginFromGrpcFile("<path-to-.proto-file>", "<plugin-name>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelArguments();
-        arguments["address"] = "<gRPC-server-address>";
-        arguments["payload"] = "<gRPC-request-message-as-json>";
+        var arguments = new KernelArguments
+        {
+            ["address"] = "<gRPC-server-address>",
+            ["payload"] = "<gRPC-request-message-as-json>"
+        };
 
         // Run
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
         WriteLine($"Plugin response: {result.GetValue<string>()}");
-    }
-
-    public Example35_GrpcPlugins(ITestOutputHelper output) : base(output)
-    {
     }
 }

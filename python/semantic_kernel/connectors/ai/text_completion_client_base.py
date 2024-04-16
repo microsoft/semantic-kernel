@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, AsyncIterable, List
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -18,8 +18,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     async def complete(
         self,
         prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> List["TextContent"]:
+        settings: PromptExecutionSettings,
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -28,15 +28,15 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             settings {PromptExecutionSettings} -- Settings for the request.
 
             Returns:
-                Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+            list[TextContent] -- A string or list of strings representing the response(s) from the LLM.
         """
 
     @abstractmethod
-    async def complete_stream(
+    def complete_stream(
         self,
         prompt: str,
-        settings: "PromptExecutionSettings",
-    ) -> AsyncIterable[List["StreamingTextContent"]]:
+        settings: PromptExecutionSettings,
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
@@ -45,5 +45,6 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
             settings {PromptExecutionSettings} -- Settings for the request.
 
         Yields:
-            A stream representing the response(s) from the LLM.
+            list[StreamingTextContent] -- A stream representing the response(s) from the LLM.
         """
+        ...

@@ -34,7 +34,7 @@ public class CodeBlockTests
         static void method() => throw new FormatException("error");
         var function = KernelFunctionFactory.CreateFromMethod(method, "function", "description");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         var target = new CodeBlock("plugin.function");
 
@@ -68,8 +68,8 @@ public class CodeBlockTests
         var invalidBlock = new VarBlock("");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { validBlock1, validBlock2 }, "");
-        var codeBlock2 = new CodeBlock(new List<Block> { validBlock1, invalidBlock }, "");
+        var codeBlock1 = new CodeBlock([validBlock1, validBlock2], "");
+        var codeBlock2 = new CodeBlock([validBlock1, invalidBlock], "");
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -86,13 +86,13 @@ public class CodeBlockTests
         var namedArgBlock = new NamedArgBlock("varName='foo'");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "");
-        var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "");
-        var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "");
-        var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "");
-        var codeBlock5 = new CodeBlock(new List<Block> { funcId, varBlock, namedArgBlock }, "");
-        var codeBlock6 = new CodeBlock(new List<Block> { varBlock, valBlock }, "");
-        var codeBlock7 = new CodeBlock(new List<Block> { namedArgBlock }, "");
+        var codeBlock1 = new CodeBlock([funcId, valBlock], "");
+        var codeBlock2 = new CodeBlock([funcId, varBlock], "");
+        var codeBlock3 = new CodeBlock([funcId, funcId], "");
+        var codeBlock4 = new CodeBlock([funcId, varBlock, varBlock], "");
+        var codeBlock5 = new CodeBlock([funcId, varBlock, namedArgBlock], "");
+        var codeBlock6 = new CodeBlock([varBlock, valBlock], "");
+        var codeBlock7 = new CodeBlock([namedArgBlock], "");
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -141,7 +141,7 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$varName");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { varBlock }, "");
+        var codeBlock = new CodeBlock([varBlock], "");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -168,7 +168,7 @@ public class CodeBlockTests
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { valBlock }, "");
+        var codeBlock = new CodeBlock([valBlock], "");
         var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
@@ -194,10 +194,10 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "");
+        var codeBlock = new CodeBlock([funcId, varBlock], "");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -222,10 +222,10 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcBlock, valBlock }, "");
+        var codeBlock = new CodeBlock([funcBlock, valBlock], "");
         var result = await codeBlock.RenderCodeAsync(this._kernel);
 
         // Assert
@@ -241,9 +241,11 @@ public class CodeBlockTests
         const string FooValue = "bar";
         const string BobValue = "bob's value";
 
-        var arguments = new KernelArguments();
-        arguments["bob"] = BobValue;
-        arguments["input"] = Value;
+        var arguments = new KernelArguments
+        {
+            ["bob"] = BobValue,
+            ["input"] = Value
+        };
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
@@ -259,10 +261,10 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");
         var result = await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -282,15 +284,15 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
         var namedArgBlock = new NamedArgBlock("p1=$a1");
 
-        this._kernel.ImportPluginFromFunctions("p", new[] { KernelFunctionFactory.CreateFromMethod((object p1) =>
+        this._kernel.ImportPluginFromFunctions("p", [KernelFunctionFactory.CreateFromMethod((object p1) =>
         {
             canary = p1;
-        }, "f") });
+        }, "f")]);
 
         // Act
-        var functionWithPositionedArgument = new CodeBlock(new List<Block> { funcId, varBlock }, "");
-        var functionWithNamedArgument = new CodeBlock(new List<Block> { funcId, namedArgBlock }, "");
-        var variable = new CodeBlock(new List<Block> { varBlock }, "");
+        var functionWithPositionedArgument = new CodeBlock([funcId, varBlock], "");
+        var functionWithNamedArgument = new CodeBlock([funcId, namedArgBlock], "");
+        var variable = new CodeBlock([varBlock], "");
 
         // Assert function positional argument passed to the the function with no changes
         await functionWithPositionedArgument.RenderCodeAsync(this._kernel, new() { ["p1"] = expectedValue, ["var"] = expectedValue });
@@ -313,9 +315,11 @@ public class CodeBlockTests
         const string FooValue = "bar";
         const string BobValue = "bob's value";
 
-        var arguments = new KernelArguments();
-        arguments["bob"] = BobValue;
-        arguments["input"] = Value;
+        var arguments = new KernelArguments
+        {
+            ["bob"] = BobValue,
+            ["input"] = Value
+        };
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
@@ -323,10 +327,10 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod((string foo, string baz) => { }, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");
         await codeBlock.RenderCodeAsync(this._kernel, arguments);
 
         // Assert
@@ -343,9 +347,11 @@ public class CodeBlockTests
         const string FooValue = "foo's value";
         const string BobValue = "bob's value";
 
-        var arguments = new KernelArguments();
-        arguments["bob"] = BobValue;
-        arguments["input"] = Value;
+        var arguments = new KernelArguments
+        {
+            ["bob"] = BobValue,
+            ["input"] = Value
+        };
 
         var blockList = new List<Block>
         {
@@ -363,7 +369,7 @@ public class CodeBlockTests
 
         var function = KernelFunctionFactory.CreateFromMethod(() => { }, "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
         var codeBlock = new CodeBlock(blockList, "");
@@ -380,7 +386,7 @@ public class CodeBlockTests
         const string FooValue = "foo's value";
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
@@ -392,12 +398,12 @@ public class CodeBlockTests
             new ValBlock($"'{FooValue}'")
         };
 
-        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
-                {
+        kernel.ImportPluginFromFunctions("Plugin1", functions:
+                [
                     kernel.CreateFunctionFromPrompt(
                         promptTemplate: $"\"This {{{{${parameterName}}}}}",
                         functionName: "Function1")
-                }
+                ]
             );
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -422,14 +428,16 @@ public class CodeBlockTests
         const string FooValue = "foo's value";
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<ITextGenerationService>(mockTextCompletion.Object);
         var kernel = builder.Build();
 
-        var arguments = new KernelArguments();
-        arguments["foo"] = FooValue;
+        var arguments = new KernelArguments
+        {
+            ["foo"] = FooValue
+        };
 
         var blockList = new List<Block>
         {
@@ -438,12 +446,12 @@ public class CodeBlockTests
             new NamedArgBlock("x12='new'") // Extra parameters are ignored
         };
 
-        kernel.ImportPluginFromFunctions("Plugin1", functions: new[]
-                {
+        kernel.ImportPluginFromFunctions("Plugin1", functions:
+                [
                     kernel.CreateFunctionFromPrompt(
                         promptTemplate: "\"This {{$x11}}",
                         functionName: "Function1")
-                }
+                ]
             );
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -472,9 +480,11 @@ public class CodeBlockTests
         const string FooValue = "foo's value";
         const string BobValue = "bob's value";
 
-        var arguments = new KernelArguments();
-        arguments["bob"] = BobValue;
-        arguments["input"] = Value;
+        var arguments = new KernelArguments
+        {
+            ["bob"] = BobValue,
+            ["input"] = Value
+        };
 
         var funcId = new FunctionIdBlock("plugin.function");
         var namedArgBlock1 = new ValBlock($"'{FooValue}'");
@@ -490,10 +500,10 @@ public class CodeBlockTests
         },
         "function");
 
-        this._kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        this._kernel.ImportPluginFromFunctions("plugin", [function]);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "");
+        var codeBlock = new CodeBlock([funcId, namedArgBlock1, namedArgBlock2], "");
         var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await codeBlock.RenderCodeAsync(this._kernel, arguments));
         Assert.Contains(FooValue, exception.Message, StringComparison.OrdinalIgnoreCase);
     }

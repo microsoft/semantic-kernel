@@ -13,13 +13,13 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// </summary>
 public class FlowStep
 {
-    private readonly List<string> _requires = new();
+    private readonly List<string> _requires = [];
 
-    private readonly List<string> _provides = new();
+    private readonly List<string> _provides = [];
 
-    private readonly List<string> _passthrough = new();
+    private readonly List<string> _passthrough = [];
 
-    private Dictionary<string, Type?> _pluginTypes = new();
+    private Dictionary<string, Type?> _pluginTypes = [];
 
     private Func<Kernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 
@@ -100,7 +100,7 @@ public class FlowStep
             {
                 try
                 {
-                    return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { kernel }, null);
+                    return Activator.CreateInstance(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, [kernel], null);
                 }
                 catch (MissingMethodException)
                 {
@@ -120,7 +120,7 @@ public class FlowStep
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
     {
-        Dictionary<string, Type?> plugins = new();
+        Dictionary<string, Type?> plugins = [];
 
         if (value is not null)
         {
@@ -209,7 +209,7 @@ public class FlowStep
             return this._pluginsFactory(kernel, globalPlugins);
         }
 
-        return Enumerable.Empty<object>();
+        return [];
     }
 
     /// <summary>

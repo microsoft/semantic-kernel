@@ -33,7 +33,7 @@ internal sealed class OpenAITextToImageClientCore
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = new();
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Run the HTTP request to generate a list of images
@@ -63,7 +63,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value!);
+            this.Attributes.Add(key, value);
         }
     }
 

@@ -17,8 +17,14 @@ extend-exclude = [
 ]
 
 [default.extend-words]
-ACI = "ACI" # Azure Container Instance
-exercize = "exercize" #test typos
+ACI = "ACI"               # Azure Container Instance
+exercize = "exercize"     # test typos
+gramatical = "gramatical" # test typos
+Guid = "Guid"             # Globally Unique Identifier
+HD = "HD"                 # Test header value
+EOF = "EOF"               # End of File
+ans = "ans"               # Short for answers
+arange = "arange"         # Method in Python numpy package
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service

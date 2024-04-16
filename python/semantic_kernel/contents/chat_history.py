@@ -6,6 +6,7 @@ from typing import Any, Iterator, List
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
+from pydantic import field_validator
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
@@ -34,7 +35,7 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: list["ChatMessageContent"]
+    messages: list[ChatMessageContent]
     message_type: TYPES_CHAT_MESSAGE_CONTENT = CHAT_MESSAGE_CONTENT
 
     def __init__(self, **data: Any):
@@ -74,6 +75,19 @@ class ChatHistory(KernelBaseModel):
         if "messages" not in data:
             data["messages"] = []
         super().__init__(**data)
+
+    @field_validator("messages", mode="before")
+    @classmethod
+    def _validate_messages(cls, messages: List[ChatMessageContent]) -> List[ChatMessageContent]:
+        if not messages:
+            return messages
+        out_msgs: List[ChatMessageContent] = []
+        for message in messages:
+            if isinstance(message, dict):
+                out_msgs.append(ChatMessageContentBase.from_dict(message))
+            else:
+                out_msgs.append(message)
+        return out_msgs
 
     def add_system_message(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""

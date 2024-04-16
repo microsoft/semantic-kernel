@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example10_DescribeAllPluginsAndFunctions : BaseTest
+public class Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
@@ -79,10 +79,6 @@ public class Example10_DescribeAllPluginsAndFunctions : BaseTest
         }
 
         WriteLine();
-    }
-
-    public Example10_DescribeAllPluginsAndFunctions(ITestOutputHelper output) : base(output)
-    {
     }
 }
 
