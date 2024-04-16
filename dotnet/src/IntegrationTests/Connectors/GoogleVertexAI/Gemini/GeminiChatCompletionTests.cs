@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
 
-public sealed class GeminiChatCompletionTests : TestsBase
+public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
 {
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
@@ -72,11 +72,11 @@ public sealed class GeminiChatCompletionTests : TestsBase
         // Arrange
         Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
-        var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
-        {
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
             new ImageContent(image) { MimeType = "image/jpeg" }
-        });
+        ]);
         chatHistory.Add(messageContent);
 
         var sut = this.GetChatServiceWithVision(serviceType);
@@ -98,11 +98,11 @@ public sealed class GeminiChatCompletionTests : TestsBase
         // Arrange
         Memory<byte> image = await File.ReadAllBytesAsync("./TestData/test_image_001.jpg");
         var chatHistory = new ChatHistory();
-        var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
-        {
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
             new ImageContent(image) { MimeType = "image/jpeg" }
-        });
+        ]);
         chatHistory.Add(messageContent);
 
         var sut = this.GetChatServiceWithVision(serviceType);
@@ -126,11 +126,11 @@ public sealed class GeminiChatCompletionTests : TestsBase
         // Arrange
         Uri imageUri = new("gs://generativeai-downloads/images/scones.jpg"); // needs setup
         var chatHistory = new ChatHistory();
-        var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
-        {
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
             new ImageContent(imageUri) { MimeType = "image/jpeg" }
-        });
+        ]);
         chatHistory.Add(messageContent);
 
         var sut = this.GetChatServiceWithVision(serviceType);
@@ -152,11 +152,11 @@ public sealed class GeminiChatCompletionTests : TestsBase
         // Arrange
         Uri imageUri = new("gs://generativeai-downloads/images/scones.jpg"); // needs setup
         var chatHistory = new ChatHistory();
-        var messageContent = new ChatMessageContent(AuthorRole.User, items: new ChatMessageContentItemCollection()
-        {
+        var messageContent = new ChatMessageContent(AuthorRole.User, items:
+        [
             new TextContent("This is an image with a car. Which color is it? You can chose from red, blue, green, and yellow"),
             new ImageContent(imageUri) { MimeType = "image/jpeg" }
-        });
+        ]);
         chatHistory.Add(messageContent);
 
         var sut = this.GetChatServiceWithVision(serviceType);
@@ -370,6 +370,4 @@ public sealed class GeminiChatCompletionTests : TestsBase
         this.Output.WriteLine($"ResponseSafetyRatings: {JsonSerializer.Serialize(geminiMetadata.ResponseSafetyRatings)}");
         Assert.NotNull(geminiMetadata.ResponseSafetyRatings);
     }
-
-    public GeminiChatCompletionTests(ITestOutputHelper output) : base(output) { }
 }

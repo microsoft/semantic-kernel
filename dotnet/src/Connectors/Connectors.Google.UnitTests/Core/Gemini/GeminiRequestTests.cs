@@ -43,10 +43,10 @@ public sealed class GeminiRequestTests
         var prompt = "prompt-example";
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -107,10 +107,10 @@ public sealed class GeminiRequestTests
         chatHistory.AddUserMessage("user-message2");
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            SafetySettings = new List<GeminiSafetySetting>
-            {
+            SafetySettings =
+            [
                 new(GeminiSafetyCategory.Derogatory, GeminiSafetyThreshold.BlockNone)
-            }
+            ]
         };
 
         // Act
@@ -325,9 +325,6 @@ public sealed class GeminiRequestTests
             c => Equals(message.Role, c.Role));
     }
 
-    private sealed class DummyContent : KernelContent
-    {
-        public DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
-            : base(innerContent, modelId, metadata) { }
-    }
+    private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
+        KernelContent(innerContent, modelId, metadata);
 }

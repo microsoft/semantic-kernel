@@ -18,27 +18,23 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use the ApiManifest based plugins
-public class Example83_ApiManifest : BaseTest
+public class Example83_ApiManifest(ITestOutputHelper output) : BaseTest(output)
 {
-    public Example83_ApiManifest(ITestOutputHelper output) : base(output)
-    {
-    }
-
-    public static readonly IEnumerable<object[]> s_parameters = new List<object[]>
-    {
+    public static readonly IEnumerable<object[]> s_parameters =
+    [
         // function names are sanitized operationIds from the OpenAPI document
-        new object[] { "MessagesPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin" },
-        new object[] { "DriveItemPlugin", "driverootGetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin" },
-        new object[] { "ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin" },
-        new object[] { "CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"},
+        ["MessagesPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin"],
+        ["DriveItemPlugin", "driverootGetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
+        ["ContactsPlugin", "meListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
+        ["CalendarPlugin", "mecalendarListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
-#region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
+        #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
-        new object[] { "AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin" },
+        ["AstronomyPlugin", "meListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
-        new object[] { "AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin" },
-#endregion
-    };
+        ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
+        #endregion
+    ];
 
     [Theory, MemberData(nameof(s_parameters))]
     public async Task RunSampleWithPlannerAsync(string pluginToTest, string functionToTest, KernelArguments? arguments, params string[] pluginsToLoad)
@@ -133,18 +129,9 @@ public class Example83_ApiManifest : BaseTest
 /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
 /// "bearer" authentication scheme.
 /// </summary>
-public class BearerAuthenticationProviderWithCancellationToken
+public class BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
 {
-    private readonly Func<Task<string>> _bearerToken;
-
-    /// <summary>
-    /// Creates an instance of the <see cref="BearerAuthenticationProviderWithCancellationToken"/> class.
-    /// </summary>
-    /// <param name="bearerToken">Delegate to retrieve the bearer token.</param>
-    public BearerAuthenticationProviderWithCancellationToken(Func<Task<string>> bearerToken)
-    {
-        this._bearerToken = bearerToken;
-    }
+    private readonly Func<Task<string>> _bearerToken = bearerToken;
 
     /// <summary>
     /// Applies the token to the provided HTTP request message.

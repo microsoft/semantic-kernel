@@ -160,7 +160,7 @@ internal sealed class SearchVectorsRequest
 
         internal Filter()
         {
-            this.Conditions = new();
+            this.Conditions = [];
         }
 
         internal Filter ValueMustMatch(string key, object value)

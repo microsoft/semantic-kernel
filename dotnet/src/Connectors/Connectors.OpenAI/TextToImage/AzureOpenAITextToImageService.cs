@@ -26,7 +26,7 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
     private readonly OpenAIClient _client;
     private readonly ILogger _logger;
     private readonly string _deploymentName;
-    private readonly Dictionary<string, object?> _attributes = new();
+    private readonly Dictionary<string, object?> _attributes = [];
 
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
@@ -68,11 +68,8 @@ public sealed class AzureOpenAITextToImageService : ITextToImageService
 
         this._logger = loggerFactory?.CreateLogger(typeof(AzureOpenAITextToImageService)) ?? NullLogger.Instance;
 
-        var connectorEndpoint = !string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri;
-        if (connectorEndpoint is null)
-        {
+        var connectorEndpoint = (!string.IsNullOrWhiteSpace(endpoint) ? endpoint! : httpClient?.BaseAddress?.AbsoluteUri) ??
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
-        }
 
         this._client = new(new Uri(connectorEndpoint),
             new AzureKeyCredential(apiKey),

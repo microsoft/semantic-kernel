@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example21_OpenAIPlugins : BaseTest
+public class Example21_OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Generic template on how to call OpenAI plugins
@@ -44,21 +44,19 @@ public class Example21_OpenAIPlugins : BaseTest
 
         var plugin = await kernel.ImportPluginFromOpenAIAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
 
-        var arguments = new KernelArguments();
-        arguments["q"] = "Laptop";      // Category or product that needs to be searched for.
-        arguments["size"] = "3";        // Number of products to return
-        arguments["budget"] = "200";    // Maximum price of the matching product in local currency
-        arguments["countryCode"] = "US";// ISO 3166 country code with 2 characters based on the user location.
-                                        // Currently, only US, GB, DE, SE and DK are supported.
+        var arguments = new KernelArguments
+        {
+            ["q"] = "Laptop",      // Category or product that needs to be searched for.
+            ["size"] = "3",        // Number of products to return
+            ["budget"] = "200",    // Maximum price of the matching product in local currency
+            ["countryCode"] = "US" // ISO 3166 country code with 2 characters based on the user location.
+        };
+        // Currently, only US, GB, DE, SE and DK are supported.
 
         var functionResult = await kernel.InvokeAsync(plugin["productsUsingGET"], arguments);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 
         WriteLine($"Function execution result: {result?.Content}");
-    }
-
-    public Example21_OpenAIPlugins(ITestOutputHelper output) : base(output)
-    {
     }
 }

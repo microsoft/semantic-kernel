@@ -204,7 +204,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
                 .ConfigureAwait(false);
 
-            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken))
+            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
             {
                 yield return messageContent;
             }
@@ -489,7 +489,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct))
+        await foreach (var response in this.ParseResponseStreamAsync(responseStream, ct: ct).ConfigureAwait(false))
         {
             foreach (var messageContent in this.ProcessChatResponse(response))
             {
@@ -502,7 +502,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Stream responseStream,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: ct))
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: ct).ConfigureAwait(false))
         {
             yield return DeserializeResponse<GeminiResponse>(json);
         }
@@ -531,7 +531,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
     }
 
-    private void LogUsage(IReadOnlyList<GeminiChatMessageContent> chatMessageContents)
+    private void LogUsage(List<GeminiChatMessageContent> chatMessageContents)
         => this.LogUsageMetadata(chatMessageContents[0].Metadata!);
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
@@ -540,7 +540,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
         GeminiPart? part = candidate.Content?.Parts?[0];
-        GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? new[] { function } : null;
+        GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? [function] : null;
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
             content: part?.Text ?? string.Empty,
