@@ -37,6 +37,8 @@ public sealed class Kernel
     private NonNullCollection<IFunctionFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IPromptFilter>? _promptFilters;
+    /// <summary>The collection of function call filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IFunctionCallFilter>? _functionCallFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -63,32 +65,18 @@ public sealed class Kernel
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
+            IEnumerable<KernelPlugin> registeredPlugins = this.Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
-            if (e is not ICollection<KernelPlugin> c || c.Count != 0)
+            if (registeredPlugins.IsNotEmpty())
             {
-                this._plugins = new(e);
+                this._plugins = new(registeredPlugins);
             }
         }
 
-        // Enumerate any function filters that may have been registered.
-        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
-
-        if (functionFilters is not ICollection<IFunctionFilter> functionFilterCollection || functionFilterCollection.Count != 0)
-        {
-            this._functionFilters = new(functionFilters);
-        }
-
-        // Enumerate any prompt filters that may have been registered.
-        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
-
-        if (promptFilters is not ICollection<IPromptFilter> promptFilterCollection || promptFilterCollection.Count != 0)
-        {
-            this._promptFilters = new(promptFilters);
-        }
+        this.AddFilters();
     }
 
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
@@ -151,6 +139,15 @@ public sealed class Kernel
         this._promptFilters ??
         Interlocked.CompareExchange(ref this._promptFilters, [], null) ??
         this._promptFilters;
+
+    /// <summary>
+    /// Gets the collection of function call filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IFunctionCallFilter> FunctionCallFilters =>
+        this._functionCallFilters ??
+        Interlocked.CompareExchange(ref this._functionCallFilters, [], null) ??
+        this._functionCallFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -276,7 +273,34 @@ public sealed class Kernel
 
     #endregion
 
-    #region Internal Filtering
+    #region Filters
+
+    private void AddFilters()
+    {
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+
+        if (functionFilters.IsNotEmpty())
+        {
+            this._functionFilters = new(functionFilters);
+        }
+
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+
+        if (promptFilters.IsNotEmpty())
+        {
+            this._promptFilters = new(promptFilters);
+        }
+
+        // Enumerate any function call filters that may have been registered.
+        IEnumerable<IFunctionCallFilter> functionCallFilters = this.Services.GetServices<IFunctionCallFilter>();
+
+        if (functionCallFilters.IsNotEmpty())
+        {
+            this._functionCallFilters = new(functionCallFilters);
+        }
+    }
 
     [Experimental("SKEXP0001")]
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
