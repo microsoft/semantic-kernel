@@ -238,9 +238,10 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
             projectionDefinition = projectionDefinition.Include(e => e.Embedding);
         }
 
+        var vectorSearchOptions = new VectorSearchOptions<MongoDBMemoryEntry>() { IndexName = this._indexName };
         var aggregationPipeline = this.GetCollection(collectionName)
             .Aggregate()
-            .VectorSearch(e => e.Embedding, embedding, limit)
+            .VectorSearch(e => e.Embedding, embedding, limit, vectorSearchOptions)
             .Project<MongoDBMemoryEntry>(projectionDefinition);
 
         if (minRelevanceScore > 0)

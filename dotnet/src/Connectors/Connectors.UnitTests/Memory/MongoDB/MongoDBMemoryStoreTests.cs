@@ -173,13 +173,16 @@ public class MongoDBMemoryStoreTests
         Assert.True(collections.SequenceEqual(actualCollections));
     }
 
-    [Fact]
-    public async Task ItCanGetNearestMatchAsync()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("myIndexName")]
+    public async Task ItCanGetNearestMatchAsync(string? indexName)
     {
         // Arrange
-        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 1, "numCandidates" : 10, "index" : "default" } }""";
+        var actualIndexName = indexName ?? "default";
+        string expectedStage = $"{{ \"$vectorSearch\" : {{ \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"{actualIndexName}\" }} }}";
 
-        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
+        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName, indexName);
         var memoryRecord = CreateRecord("id");
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(new MongoDBMemoryEntry(memoryRecord));
 
@@ -191,16 +194,19 @@ public class MongoDBMemoryStoreTests
 
         // Assert
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
-        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, expectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
-    [Fact]
-    public async Task ItCanGetNearestMatchesAsync()
+    [Theory]
+    [InlineData(null, 50)]
+    [InlineData("myIndexName", 100)]
+    public async Task ItCanGetNearestMatchesAsync(string? indexName, int limit)
     {
         // Arrange
-        const string ExpectedStage = """{ "$vectorSearch" : { "queryVector" : [1.0], "path" : "embedding", "limit" : 100, "numCandidates" : 1000, "index" : "default" } }""";
+        var actualIndexName = indexName ?? "default";
+        string expectedStage = $"{{ \"$vectorSearch\" : {{ \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : {limit}, \"numCandidates\" : {limit * 10}, \"index\" : \"{actualIndexName}\" }} }}";
 
-        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
+        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName, indexName);
         var (memoryRecords, keys) = CreateRecords(10);
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(memoryRecords.Select(r => new MongoDBMemoryEntry(r)).ToArray());
 
@@ -208,7 +214,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock
             .Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default))
             .ReturnsAsync(cursorMock);
-        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new[] { 1f }, 100).ToListAsync();
+        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new(new[] { 1f }), limit).ToListAsync();
 
         // Assert
         Assert.Equal(memoryRecords.Length, matches.Count);
@@ -218,7 +224,7 @@ public class MongoDBMemoryStoreTests
             AssertMemoryRecordEqual(memoryRecords[i], matches[i].Item1);
         }
 
-        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, expectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
     [Fact]
