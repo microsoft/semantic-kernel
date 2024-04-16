@@ -171,11 +171,12 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     {
         private readonly ITestOutputHelper _output = output;
 
-        public void OnPromptRendering(PromptRenderingContext context) =>
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.PluginName}.{context.Function.Name}");
-
-        public void OnPromptRendered(PromptRenderedContext context) =>
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendered)} - {context.Function.PluginName}.{context.Function.Name}");
+        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        {
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendering - {context.Function.PluginName}.{context.Function.Name}");
+            await next(context);
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendered - {context.Function.PluginName}.{context.Function.Name}");
+        }
     }
 
     #endregion
@@ -306,16 +307,15 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     /// <summary>Shows syntax for prompt filter.</summary>
     private sealed class PromptFilterExample : IPromptFilter
     {
-        public void OnPromptRendered(PromptRenderedContext context)
-        {
-            // Example: override rendered prompt before sending it to AI
-            context.RenderedPrompt = "Safe prompt";
-        }
-
-        public void OnPromptRendering(PromptRenderingContext context)
+        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
         {
             // Example: get function information
             var functionName = context.Function.Name;
+
+            await next(context);
+
+            // Example: override rendered prompt before sending it to AI
+            context.RenderedPrompt = "Safe prompt";
         }
     }
 

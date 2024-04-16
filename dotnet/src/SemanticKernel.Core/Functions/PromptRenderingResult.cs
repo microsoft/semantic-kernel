@@ -15,8 +15,6 @@ internal sealed class PromptRenderingResult
 
     public PromptExecutionSettings? ExecutionSettings { get; set; }
 
-    public PromptRenderedContext? RenderedContext { get; set; }
-
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {
         this.AIService = aiService;

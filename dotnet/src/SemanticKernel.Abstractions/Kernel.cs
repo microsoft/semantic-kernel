@@ -341,39 +341,40 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal PromptRenderingContext? OnPromptRenderingFilter(KernelFunction function, KernelArguments arguments)
+    internal async Task<PromptRenderingContext> OnPromptRenderingAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        Func<PromptRenderingContext, Task> renderingCallback)
     {
-        PromptRenderingContext? context = null;
+        PromptRenderingContext context = new(function, arguments);
 
-        if (this._promptFilters is { Count: > 0 })
-        {
-            context = new(function, arguments);
-
-            for (int i = 0; i < this._promptFilters.Count; i++)
-            {
-                this._promptFilters[i].OnPromptRendering(context);
-            }
-        }
+        await InvokeFilterOrPromptRenderingAsync(this._promptFilters, renderingCallback, context).ConfigureAwait(false);
 
         return context;
     }
 
-    [Experimental("SKEXP0001")]
-    internal PromptRenderedContext? OnPromptRenderedFilter(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    /// <summary>
+    /// This method will execute prompt filters and prompt rendering recursively.
+    /// If there are no registered filters, just prompt rendering will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or prompt rendering if there are no remaining filters to execute.
+    /// Prompt rendering will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrPromptRenderingAsync(
+        NonNullCollection<IPromptFilter>? promptFilters,
+        Func<PromptRenderingContext, Task> renderingCallback,
+        PromptRenderingContext context,
+        int index = 0)
     {
-        PromptRenderedContext? context = null;
-
-        if (this._promptFilters is { Count: > 0 })
+        if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
         {
-            context = new(function, arguments, renderedPrompt);
-
-            for (int i = 0; i < this._promptFilters.Count; i++)
-            {
-                this._promptFilters[i].OnPromptRendered(context);
-            }
+            await promptFilters[index].OnPromptRenderingAsync(context,
+                (context) => InvokeFilterOrPromptRenderingAsync(promptFilters, renderingCallback, context, index + 1)).ConfigureAwait(false);
         }
-
-        return context;
+        else
+        {
+            await renderingCallback(context).ConfigureAwait(false);
+        }
     }
 
     #endregion
