@@ -17,8 +17,8 @@ public class AgentGroupChatSettingsTests
     public void VerifyChatExecutionSettingsDefault()
     {
         AgentGroupChatSettings settings = new();
-        Assert.IsType<DefaultTerminationStrategy>(settings.TerminationStrategy);
-        Assert.Equal(TerminationStrategy.DefaultMaximumIterations, settings.TerminationStrategy.MaximumIterations);
+        Assert.IsType<AgentGroupChatSettings.DefaultTerminationStrategy>(settings.TerminationStrategy);
+        Assert.Equal(1, settings.TerminationStrategy.MaximumIterations);
         Assert.IsType<SequentialSelectionStrategy>(settings.SelectionStrategy);
     }
 

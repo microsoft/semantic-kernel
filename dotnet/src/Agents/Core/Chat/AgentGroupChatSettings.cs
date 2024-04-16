@@ -1,4 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
@@ -10,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public class AgentGroupChatSettings
 {
     /// <summary>
-    /// Optional strategy for evaluating whether to terminate multiturn chat.
+    /// Strategy for selecting the next agent.  Dfeault strategy limited to a single iteration and no termination criteria.
     /// </summary>
     /// <remarks>
     /// See <see cref="TerminationStrategy"/>.
@@ -18,10 +22,28 @@ public class AgentGroupChatSettings
     public TerminationStrategy TerminationStrategy { get; init; } = new DefaultTerminationStrategy();
 
     /// <summary>
-    /// An optional strategy for selecting the next agent.
+    /// Strategy for selecting the next agent.  Defaults to <see cref="SequentialSelectionStrategy"/>.
     /// </summary>
     /// <remarks>
     /// See <see cref="SelectionStrategy"/>.
     /// </remarks>
     public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy();
+
+    /// <summary>
+    /// The termination strategy attached to the default state of <see cref="AgentGroupChatSettings.TerminationStrategy"/> will
+    /// execute to <see cref="TerminationStrategy.MaximumIterations"/> without signaling termination.
+    /// </summary>
+    internal sealed class DefaultTerminationStrategy : TerminationStrategy
+    {
+        /// <inheritdoc/>
+        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(false);
+        }
+
+        public DefaultTerminationStrategy()
+        {
+            this.MaximumIterations = 1;
+        }
+    }
 }

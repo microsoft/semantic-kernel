@@ -25,14 +25,15 @@ public enum AggregateTerminationCondition
 /// <summary>
 /// Aggregate a set of <see cref="TerminationStrategy"/> objects.
 /// </summary>
-public sealed class AggregatorTerminationStrategy : TerminationStrategy
+/// <param name="strategies">Set of strategies upon which to aggregate.</param>
+public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] strategies) : TerminationStrategy
 {
-    private readonly TerminationStrategy[] _strategies;
+    private readonly TerminationStrategy[] _strategies = strategies;
 
     /// <summary>
     /// Logical operation for aggregation: All or Any (and/or). Default: All.
     /// </summary>
-    public AggregateTerminationCondition Condition { get; init; } = AggregateTerminationCondition.All;
+    public AggregateTerminationCondition Condition { get; set; } = AggregateTerminationCondition.All;
 
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -46,14 +47,5 @@ public sealed class AggregatorTerminationStrategy : TerminationStrategy
                 results.Any(r => r);
 
         return shouldTerminate;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AggregatorTerminationStrategy"/> class.
-    /// </summary>
-    /// <param name="strategies">Set of strategies upon which to aggregate.</param>
-    public AggregatorTerminationStrategy(params TerminationStrategy[] strategies)
-    {
-        this._strategies = strategies;
     }
 }

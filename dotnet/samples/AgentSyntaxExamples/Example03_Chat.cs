@@ -69,10 +69,6 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
                         TerminationStrategy =
                             new ApprovalTerminationStrategy()
                             {
-                                // It can be prudent to limit how many turns agents are able to take.
-                                // If the chat exits when it intends to continue, the IsComplete property will be false on AgentGroupChat
-                                // and the conversation may be resumed, if desired.
-                                MaximumIterations = 8,
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
                             }

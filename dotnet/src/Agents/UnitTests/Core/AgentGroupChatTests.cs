@@ -78,10 +78,10 @@ public class AgentGroupChatTests
                             // This test is designed to take 9 turns.
                             MaximumIterations = 9,
                         }
-                    }
+                    },
+                IsComplete = true
             };
 
-        chat.IsComplete = true;
         await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync(CancellationToken.None).ToArrayAsync().AsTask());
 
         chat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
@@ -197,7 +197,7 @@ public class AgentGroupChatTests
     {
         Mock<ChatHistoryKernelAgent> agent = new();
 
-        ChatMessageContent[] messages = new[] { new ChatMessageContent(AuthorRole.Assistant, "test") };
+        ChatMessageContent[] messages = [new ChatMessageContent(AuthorRole.Assistant, "test")];
         agent.Setup(a => a.InvokeAsync(It.IsAny<IReadOnlyList<ChatMessageContent>>(), It.IsAny<CancellationToken>())).Returns(() => messages.ToAsyncEnumerable());
 
         return agent;
