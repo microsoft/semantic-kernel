@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Union
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
@@ -76,7 +76,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> AsyncIterable[List["StreamingTextContent"]]:
+    ) -> AsyncGenerator[List["StreamingTextContent"], Any]:
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.

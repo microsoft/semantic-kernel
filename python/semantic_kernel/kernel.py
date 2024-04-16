@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Literal, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 
@@ -150,7 +150,7 @@ class Kernel(KernelBaseModel):
         plugin_name: str | None = None,
         return_function_results: bool | None = False,
         **kwargs: Any,
-    ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
+    ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
         """Execute one or more stream functions.
 
         This will execute the functions in the order they are provided, if a list of functions is provided.
