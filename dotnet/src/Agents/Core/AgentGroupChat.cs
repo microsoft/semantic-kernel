@@ -67,13 +67,6 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
-        // Unable to assume selection in the absence of a strategy.  This is the default.
-        // For explicit selection, AgentGroupChat.InvokeAsync(Agent, CancellationToken) is available.
-        if (this.ExecutionSettings.SelectionStrategy == null)
-        {
-            throw new KernelException($"Agent Failure - No {nameof(AgentGroupChatSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
-        }
-
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy

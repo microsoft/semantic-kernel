@@ -15,7 +15,7 @@ public class AgentGroupChatSettings
     /// <remarks>
     /// See <see cref="TerminationStrategy"/>.
     /// </remarks>
-    public TerminationStrategy TerminationStrategy { get; set; } = new DefaultTerminationStrategy();
+    public TerminationStrategy TerminationStrategy { get; init; } = new DefaultTerminationStrategy();
 
     /// <summary>
     /// An optional strategy for selecting the next agent.
@@ -23,5 +23,5 @@ public class AgentGroupChatSettings
     /// <remarks>
     /// See <see cref="SelectionStrategy"/>.
     /// </remarks>
-    public SelectionStrategy? SelectionStrategy { get; set; }
+    public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy();
 }

@@ -73,7 +73,6 @@ public class AgentGroupChatTests
                 ExecutionSettings =
                     new()
                     {
-                        SelectionStrategy = new SequentialSelectionStrategy(),
                         TerminationStrategy =
                         {
                             // This test is designed to take 9 turns.
@@ -105,27 +104,6 @@ public class AgentGroupChatTests
                     break;
             }
         }
-    }
-
-    /// <summary>
-    /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyGroupAgentChatNoStrategyAsync()
-    {
-        AgentGroupChat chat = Create3AgentChat();
-
-        // Remove max-limit in order to isolate the target behavior.
-        chat.ExecutionSettings.TerminationStrategy.MaximumIterations = int.MaxValue;
-
-        // No selection
-        await Assert.ThrowsAsync<KernelException>(() => chat.InvokeAsync().ToArrayAsync().AsTask());
-
-        // Explicit selection
-        Agent agent4 = CreateMockAgent().Object;
-        var messages = await chat.InvokeAsync(agent4).ToArrayAsync();
-        Assert.Single(messages);
-        Assert.False(chat.IsComplete);
     }
 
     /// <summary>
@@ -165,7 +143,6 @@ public class AgentGroupChatTests
         chat.ExecutionSettings =
             new()
             {
-                SelectionStrategy = new SequentialSelectionStrategy(),
                 TerminationStrategy =
                     new TestTerminationStrategy(shouldTerminate: true)
                     {

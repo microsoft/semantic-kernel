@@ -75,10 +75,7 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
                                 MaximumIterations = 8,
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
-                            },
-                        // Here a SelectionStrategy subclass is used that selects agents via round-robin ordering,
-                        // but a custom func could be utilized if desired.
-                        SelectionStrategy = new SequentialSelectionStrategy(),
+                            }
                     }
             };
 
