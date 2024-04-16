@@ -5,7 +5,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="FunctionResultProcessor"/>.
+/// Unit testing of <see cref="FunctionResultProcessor{TestResult}"/>.
 /// </summary>
 public class FunctionResultProcessorTests
 {
