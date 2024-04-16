@@ -5,9 +5,8 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Azure</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>$(NoWarn);SKEXP0070</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -16,8 +15,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Azure Connectors</Title>
-    <Description>Semantic Kernel connectors for Azure. Contains clients for modalities like text generation, chat completion, embedding and many more.</Description>
+    <Title>Semantic Kernel - Azure AI Inference Connectors</Title>
+    <Description>Semantic Kernel connectors for Azure AI Inference. Contains clients for modalities like text generation, chat completion, embedding and many more.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -251,6 +252,47 @@ internal abstract class ClientCore
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
         };
+
+        switch (executionSettings.ResponseFormat)
+        {
+            case ChatCompletionsResponseFormat formatObject:
+                // If the response format is an Azure SDK ChatCompletionsResponseFormat, just pass it along.
+                options.ResponseFormat = formatObject;
+                break;
+
+            case string formatString:
+                // If the response format is a string, map the ones we know about, and ignore the rest.
+                switch (formatString)
+                {
+                    case "json_object":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                        break;
+
+                    case "text":
+                        options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                        break;
+                }
+                break;
+
+            case JsonElement formatElement:
+                // This is a workaround for a type mismatch when deserializing a JSON into an object? type property.
+                // Handling only string formatElement.
+                if (formatElement.ValueKind == JsonValueKind.String)
+                {
+                    string formatString = formatElement.GetString() ?? "";
+                    switch (formatString)
+                    {
+                        case "json_object":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.JsonObject;
+                            break;
+
+                        case "text":
+                            options.ResponseFormat = ChatCompletionsResponseFormat.Text;
+                            break;
+                    }
+                }
+                break;
+        }
 
         if (executionSettings.TokenSelectionBiases is not null)
         {

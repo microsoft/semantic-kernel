@@ -15,6 +15,6 @@ internal static class TestHelper
     /// <param name="fileName">Name of the file with test response.</param>
     internal static string GetTestResponse(string fileName)
     {
-        return File.ReadAllText($"./OpenAI/TestData/{fileName}");
+        return File.ReadAllText($"./TestData/{fileName}");
     }
 }
