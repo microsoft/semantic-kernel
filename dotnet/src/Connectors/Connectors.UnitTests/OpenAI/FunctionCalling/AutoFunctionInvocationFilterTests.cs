@@ -32,10 +32,10 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Arrange
         int filterInvocations = 0;
         int functionInvocations = 0;
-        int[] expectedRequestIterations = [0, 0, 1, 1];
-        int[] expectedFunctionCallIterations = [0, 1, 0, 1];
-        List<int> actualRequestIterations = [];
-        List<int> actualFunctionCallIterations = [];
+        int[] expectedRequestSequenceNumbers = [0, 0, 1, 1];
+        int[] expectedFunctionSequenceNumbers = [0, 1, 0, 1];
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
         Kernel? contextKernel = null;
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
@@ -46,10 +46,14 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
             contextKernel = context.Kernel;
-            Assert.Equal(2, context.FunctionCallCount);
 
-            actualRequestIterations.Add(context.RequestIteration);
-            actualFunctionCallIterations.Add(context.FunctionCallIteration);
+            if (context.ChatHistory.Last() is OpenAIChatMessageContent content)
+            {
+                Assert.Equal(2, content.ToolCalls.Count);
+            }
+
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
 
             await next(context);
 
@@ -67,8 +71,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Assert
         Assert.Equal(4, filterInvocations);
         Assert.Equal(4, functionInvocations);
-        Assert.Equal(expectedRequestIterations, actualRequestIterations);
-        Assert.Equal(expectedFunctionCallIterations, actualFunctionCallIterations);
+        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
         Assert.Same(kernel, contextKernel);
         Assert.Equal("Test chat response", result.ToString());
     }
@@ -120,10 +124,10 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Arrange
         int filterInvocations = 0;
         int functionInvocations = 0;
-        int[] expectedRequestIterations = [0, 0, 1, 1];
-        int[] expectedFunctionCallIterations = [0, 1, 0, 1];
-        List<int> actualRequestIterations = [];
-        List<int> actualFunctionCallIterations = [];
+        int[] expectedRequestSequenceNumbers = [0, 0, 1, 1];
+        int[] expectedFunctionSequenceNumbers = [0, 1, 0, 1];
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
@@ -132,10 +136,13 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            Assert.Equal(2, context.FunctionCallCount);
+            if (context.ChatHistory.Last() is OpenAIChatMessageContent content)
+            {
+                Assert.Equal(2, content.ToolCalls.Count);
+            }
 
-            actualRequestIterations.Add(context.RequestIteration);
-            actualFunctionCallIterations.Add(context.FunctionCallIteration);
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
 
             await next(context);
 
@@ -153,8 +160,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Assert
         Assert.Equal(4, filterInvocations);
         Assert.Equal(4, functionInvocations);
-        Assert.Equal(expectedRequestIterations, actualRequestIterations);
-        Assert.Equal(expectedFunctionCallIterations, actualFunctionCallIterations);
+        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
     }
 
     [Theory]
@@ -164,14 +171,14 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
     public async Task PostExecutionWithStopActionStopsFunctionCallingLoopAsync(
         AutoFunctionInvocationAction action,
-        int[] expectedRequestIterations,
-        int[] expectedFunctionCallIterations,
+        int[] expectedRequestSequenceNumbers,
+        int[] expectedFunctionSequenceNumbers,
         int expectedFunctionInvocations)
     {
         // Arrange
         int functionInvocations = 0;
-        List<int> requestIterations = [];
-        List<int> functionCallIterations = [];
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
@@ -180,8 +187,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            requestIterations.Add(context.RequestIteration);
-            functionCallIterations.Add(context.FunctionCallIteration);
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
 
             await next(context);
 
@@ -198,8 +205,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal(expectedRequestIterations, requestIterations);
-        Assert.Equal(expectedFunctionCallIterations, functionCallIterations);
+        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
         Assert.Equal(expectedFunctionInvocations, functionInvocations);
     }
 
@@ -210,14 +217,14 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
     public async Task PostExecutionWithStopActionStopsFunctionCallingLoopOnStreamingAsync(
         AutoFunctionInvocationAction action,
-        int[] expectedRequestIterations,
-        int[] expectedFunctionCallIterations,
+        int[] expectedRequestSequenceNumbers,
+        int[] expectedFunctionSequenceNumbers,
         int expectedFunctionInvocations)
     {
         // Arrange
         int functionInvocations = 0;
-        List<int> requestIterations = [];
-        List<int> functionCallIterations = [];
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
@@ -226,8 +233,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            requestIterations.Add(context.RequestIteration);
-            functionCallIterations.Add(context.FunctionCallIteration);
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
 
             await next(context);
 
@@ -244,8 +251,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         { }
 
         // Assert
-        Assert.Equal(expectedRequestIterations, requestIterations);
-        Assert.Equal(expectedFunctionCallIterations, functionCallIterations);
+        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
+        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
         Assert.Equal(expectedFunctionInvocations, functionInvocations);
     }
 

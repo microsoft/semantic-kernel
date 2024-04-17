@@ -229,11 +229,11 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: get function information
             var functionName = context.Function.Name;
 
-            // Example: get function call iteration information
-            this._output.WriteLine($"Function call iteration: {context.FunctionCallIteration + 1} out of {context.FunctionCallCount}");
+            // Example: get request sequence number
+            this._output.WriteLine($"Request sequence number: {context.RequestSequenceNumber}");
 
-            // Example: get request iteration
-            this._output.WriteLine($"Request iteration: {context.RequestIteration + 1}");
+            // Example: get function sequence number
+            this._output.WriteLine($"Function sequence number: {context.FunctionSequenceNumber}");
 
             // Calling next filter in pipeline or function itself.
             // By skipping this call, next filters and function won't be invoked, and function call loop will proceed to the next function.

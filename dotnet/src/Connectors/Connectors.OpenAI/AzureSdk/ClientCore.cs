@@ -406,12 +406,11 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(kernel, function, functionResult)
+                invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestIteration = requestIteration - 1,
-                    FunctionCallIteration = toolCallIteration,
-                    FunctionCallCount = result.ToolCalls.Count
+                    RequestSequenceNumber = requestIteration - 1,
+                    FunctionSequenceNumber = toolCallIteration
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -667,12 +666,11 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(kernel, function, functionResult)
+                invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestIteration = requestIteration - 1,
-                    FunctionCallIteration = toolCallIteration,
-                    FunctionCallCount = toolCalls.Length
+                    RequestSequenceNumber = requestIteration - 1,
+                    FunctionSequenceNumber = toolCallIteration
                 };
 
                 s_inflightAutoInvokes.Value++;

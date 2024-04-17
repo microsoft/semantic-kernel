@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Class with data related to function calling invocation.
+/// Class with data related to automatic function invocation.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class AutoFunctionInvocationContext
@@ -16,18 +17,22 @@ public class AutoFunctionInvocationContext
     /// <param name="kernel">The <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="result">The result of the function's invocation.</param>
+    /// <param name="chatHistory">The chat history associated with automatic function invocation.</param>
     public AutoFunctionInvocationContext(
         Kernel kernel,
         KernelFunction function,
-        FunctionResult result)
+        FunctionResult result,
+        ChatHistory chatHistory)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(function);
         Verify.NotNull(result);
+        Verify.NotNull(chatHistory);
 
         this.Kernel = kernel;
         this.Function = function;
         this.Result = result;
+        this.ChatHistory = chatHistory;
     }
 
     /// <summary>
@@ -36,21 +41,19 @@ public class AutoFunctionInvocationContext
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// Request iteration number of function calling loop. Starts from 0.
+    /// Request sequence number of automatic function invocation process. Starts from 0.
     /// </summary>
-    public int RequestIteration { get; init; }
+    public int RequestSequenceNumber { get; init; }
 
     /// <summary>
-    /// Function call iteration number. Starts from 0.
-    /// This property indicates iteration of function call as part of the same request.
-    /// It's useful when single request returns multiple function calls.
+    /// Function sequence number. Starts from 0.
     /// </summary>
-    public int FunctionCallIteration { get; init; }
+    public int FunctionSequenceNumber { get; init; }
 
     /// <summary>
-    /// Total number of function calls to perform within single iteration request.
+    /// The chat history associated with automatic function invocation.
     /// </summary>
-    public int FunctionCallCount { get; init; }
+    public ChatHistory ChatHistory { get; }
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
