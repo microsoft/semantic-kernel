@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Web;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -76,7 +75,7 @@ internal static class ChatPromptParser
             }
             else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
             {
-                items.Add(new TextContent(HttpUtility.HtmlDecode(childNode.Content)));
+                items.Add(new TextContent(childNode.Content));
             }
         }
 
