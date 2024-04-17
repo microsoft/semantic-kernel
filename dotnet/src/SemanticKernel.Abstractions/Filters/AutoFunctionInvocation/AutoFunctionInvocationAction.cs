@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// Contains set of actions to perform during function calling.
 /// </summary>
 [Flags]
-public enum FunctionCallAction
+public enum AutoFunctionInvocationAction
 {
     /// <summary>
     /// Default value, no actions will be performed.

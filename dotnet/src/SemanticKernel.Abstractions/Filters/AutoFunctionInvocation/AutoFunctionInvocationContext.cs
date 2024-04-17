@@ -8,14 +8,14 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to function calling invocation.
 /// </summary>
 [Experimental("SKEXP0001")]
-public class FunctionCallInvocationContext
+public class AutoFunctionInvocationContext
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionCallInvocationContext"/> class.
+    /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="result">The result of the function's invocation.</param>
-    public FunctionCallInvocationContext(
+    public AutoFunctionInvocationContext(
         KernelFunction function,
         FunctionResult result)
     {
@@ -61,5 +61,5 @@ public class FunctionCallInvocationContext
     /// <summary>
     /// Gets or sets function call iteration action.
     /// </summary>
-    public FunctionCallAction Action { get; set; }
+    public AutoFunctionInvocationAction Action { get; set; }
 }

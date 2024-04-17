@@ -143,14 +143,14 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     [Fact]
-    public async Task FunctionCallFilterAsync()
+    public async Task AutoFunctionInvocationFilterAsync()
     {
         var builder = Kernel.CreateBuilder();
 
         builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
         // This filter handles an exception and returns overridden result.
-        builder.Services.AddSingleton<IFunctionCallFilter>(new FunctionCallFilter(this.Output));
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
 
         var kernel = builder.Build();
 
@@ -170,7 +170,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         // Output:
         // Function call iteration: 1 out of 1
         // Request iteration: 1
-        // Result from function call filter
+        // Result from auto function invocation filter
     }
 
     #region Filter capabilities
@@ -219,12 +219,12 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    /// <summary>Shows syntax for function call filter.</summary>
-    private sealed class FunctionCallFilter(ITestOutputHelper output) : IFunctionCallFilter
+    /// <summary>Shows syntax for auto function invocation filter.</summary>
+    private sealed class AutoFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
-        public async Task OnFunctionCallInvocationAsync(FunctionCallInvocationContext context, Func<FunctionCallInvocationContext, Task> next)
+        public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
         {
             // Example: get function information
             var functionName = context.Function.Name;
@@ -243,16 +243,16 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             var result = context.Result;
 
             // Example: override function result value
-            context.Result = new FunctionResult(context.Result, "Result from function call filter");
+            context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
 
             // Example: stop further function calling. but proceed with request iteration
-            context.Action = FunctionCallAction.StopFunctionCallIteration;
+            context.Action = AutoFunctionInvocationAction.StopFunctionCallIteration;
 
             // Example: call remaining functions, but stop request iteration
-            context.Action = FunctionCallAction.StopRequestIteration;
+            context.Action = AutoFunctionInvocationAction.StopRequestIteration;
 
             // Example: stop function calling and request iterations, return immediately
-            context.Action = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+            context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
         }
     }
 

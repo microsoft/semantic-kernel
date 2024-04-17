@@ -313,7 +313,7 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        FunctionCallInvocationContext? invocationContext = null;
+        AutoFunctionInvocationContext? invocationContext = null;
 
         for (int requestIteration = 1; ; requestIteration++)
         {
@@ -417,10 +417,10 @@ internal abstract class ClientCore
                 s_inflightAutoInvokes.Value++;
                 try
                 {
-                    invocationContext = await OnFunctionCallInvocationAsync(kernel, invocationContext, async (context) =>
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
                         // Check if filter didn't ask to stop request or function call iteration.
-                        var stopAction = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+                        var stopAction = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
                         if ((context.Action & stopAction) != 0)
                         {
                             return;
@@ -444,7 +444,7 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                // Apply any changes from the function call filters context to final result.
+                // Apply any changes from the auto function invocation filters context to final result.
                 functionResult = new FunctionResult(invocationContext.Result);
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
@@ -453,7 +453,7 @@ internal abstract class ClientCore
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, toolCall.Id, this.Logger);
 
                 // If filter requested to stop function call iteration, breaking function calling loop.
-                if (invocationContext.Action.HasFlag(FunctionCallAction.StopFunctionCallIteration))
+                if (invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopFunctionCallIteration))
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
@@ -520,7 +520,7 @@ internal abstract class ClientCore
             }
 
             // If filter requested to stop request iteration, returning latest result from LLM.
-            if (invocationContext is not null && invocationContext.Action.HasFlag(FunctionCallAction.StopRequestIteration))
+            if (invocationContext is not null && invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopRequestIteration))
             {
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -553,7 +553,7 @@ internal abstract class ClientCore
         Dictionary<int, string>? toolCallIdsByIndex = null;
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
-        FunctionCallInvocationContext? invocationContext = null;
+        AutoFunctionInvocationContext? invocationContext = null;
 
         for (int requestIteration = 1; ; requestIteration++)
         {
@@ -678,10 +678,10 @@ internal abstract class ClientCore
                 s_inflightAutoInvokes.Value++;
                 try
                 {
-                    invocationContext = await OnFunctionCallInvocationAsync(kernel, invocationContext, async (context) =>
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
                         // Check if filter didn't ask to stop request or function call iteration.
-                        var stopAction = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+                        var stopAction = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
                         if ((context.Action & stopAction) != 0)
                         {
                             return;
@@ -705,7 +705,7 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                // Apply any changes from the function call filters context to final result.
+                // Apply any changes from the auto function invocation filters context to final result.
                 functionResult = new FunctionResult(invocationContext.Result);
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
@@ -714,7 +714,7 @@ internal abstract class ClientCore
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
                 // If filter requested to stop function call iteration, breaking function calling loop.
-                if (invocationContext.Action.HasFlag(FunctionCallAction.StopFunctionCallIteration))
+                if (invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopFunctionCallIteration))
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
@@ -782,7 +782,7 @@ internal abstract class ClientCore
             }
 
             // If filter requested to stop request iteration, breaking request iteration loop.
-            if (invocationContext is not null && invocationContext.Action.HasFlag(FunctionCallAction.StopRequestIteration))
+            if (invocationContext is not null && invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopRequestIteration))
             {
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
@@ -1251,36 +1251,36 @@ internal abstract class ClientCore
     }
 
     /// <summary>
-    /// Executes function call filters and/or function calling.
-    /// This method can be moved to <see cref="Kernel"/> when function calling logic will be extracted to common place.
+    /// Executes auto function invocation filters and/or function itself.
+    /// This method can be moved to <see cref="Kernel"/> when auto function invocation logic will be extracted to common place.
     /// </summary>
-    private static async Task<FunctionCallInvocationContext> OnFunctionCallInvocationAsync(
+    private static async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
         Kernel kernel,
-        FunctionCallInvocationContext context,
-        Func<FunctionCallInvocationContext, Task> functionCallCallback)
+        AutoFunctionInvocationContext context,
+        Func<AutoFunctionInvocationContext, Task> functionCallCallback)
     {
-        await InvokeFilterOrFunctionCallAsync(kernel.FunctionCallFilters, functionCallCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
 
         return context;
     }
 
     /// <summary>
-    /// This method will execute function call filters and function calling recursively.
-    /// If there are no registered filters, just function calling will be executed.
+    /// This method will execute auto function invocation filters and function recursively.
+    /// If there are no registered filters, just function will be executed.
     /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
-    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function calling if there are no remaining filters to execute.
-    /// Function calling will be always executed as last step after all filters.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function if there are no remaining filters to execute.
+    /// Function will be always executed as last step after all filters.
     /// </summary>
-    private static async Task InvokeFilterOrFunctionCallAsync(
-        IList<IFunctionCallFilter>? functionCallFilters,
-        Func<FunctionCallInvocationContext, Task> functionCallCallback,
-        FunctionCallInvocationContext context,
+    private static async Task InvokeFilterOrFunctionAsync(
+        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
+        Func<AutoFunctionInvocationContext, Task> functionCallCallback,
+        AutoFunctionInvocationContext context,
         int index = 0)
     {
-        if (functionCallFilters is { Count: > 0 } && index < functionCallFilters.Count)
+        if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
         {
-            await functionCallFilters[index].OnFunctionCallInvocationAsync(context,
-                (context) => InvokeFilterOrFunctionCallAsync(functionCallFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
+            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {

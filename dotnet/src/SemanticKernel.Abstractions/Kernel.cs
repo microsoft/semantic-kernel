@@ -37,8 +37,8 @@ public sealed class Kernel
     private NonNullCollection<IFunctionFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IPromptFilter>? _promptFilters;
-    /// <summary>The collection of function call filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private NonNullCollection<IFunctionCallFilter>? _functionCallFilters;
+    /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -141,13 +141,13 @@ public sealed class Kernel
         this._promptFilters;
 
     /// <summary>
-    /// Gets the collection of function call filters available through the kernel.
+    /// Gets the collection of auto function invocation filters available through the kernel.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public IList<IFunctionCallFilter> FunctionCallFilters =>
-        this._functionCallFilters ??
-        Interlocked.CompareExchange(ref this._functionCallFilters, [], null) ??
-        this._functionCallFilters;
+    public IList<IAutoFunctionInvocationFilter> AutoFunctionInvocationFilters =>
+        this._autoFunctionInvocationFilters ??
+        Interlocked.CompareExchange(ref this._autoFunctionInvocationFilters, [], null) ??
+        this._autoFunctionInvocationFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -293,12 +293,12 @@ public sealed class Kernel
             this._promptFilters = new(promptFilters);
         }
 
-        // Enumerate any function call filters that may have been registered.
-        IEnumerable<IFunctionCallFilter> functionCallFilters = this.Services.GetServices<IFunctionCallFilter>();
+        // Enumerate any automatic function invocation filters that may have been registered.
+        IEnumerable<IAutoFunctionInvocationFilter> autoFunctionInvocationFilters = this.Services.GetServices<IAutoFunctionInvocationFilter>();
 
-        if (functionCallFilters.IsNotEmpty())
+        if (autoFunctionInvocationFilters.IsNotEmpty())
         {
-            this._functionCallFilters = new(functionCallFilters);
+            this._autoFunctionInvocationFilters = new(autoFunctionInvocationFilters);
         }
     }
 

@@ -14,12 +14,12 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
 
-public sealed class FunctionCallFilterTests : IDisposable
+public sealed class AutoFunctionInvocationFilterTests : IDisposable
 {
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public FunctionCallFilterTests()
+    public AutoFunctionInvocationFilterTests()
     {
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
 
@@ -27,18 +27,18 @@ public sealed class FunctionCallFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task FunctionCallFiltersAreExecutedCorrectlyAsync()
+    public async Task FiltersAreExecutedCorrectlyAsync()
     {
         // Arrange
         int filterInvocations = 0;
-        int functionCallCount = 0;
+        int functionInvocations = 0;
         int[] expectedRequestIterations = [0, 0, 1, 1];
         int[] expectedFunctionCallIterations = [0, 1, 0, 1];
         List<int> actualRequestIterations = [];
         List<int> actualFunctionCallIterations = [];
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -64,22 +64,22 @@ public sealed class FunctionCallFilterTests : IDisposable
 
         // Assert
         Assert.Equal(4, filterInvocations);
-        Assert.Equal(4, functionCallCount);
+        Assert.Equal(4, functionInvocations);
         Assert.Equal(expectedRequestIterations, actualRequestIterations);
         Assert.Equal(expectedFunctionCallIterations, actualFunctionCallIterations);
         Assert.Equal("Test chat response", result.ToString());
     }
 
     [Fact]
-    public async Task FunctionCallFiltersCanSkipFunctionExecutionAsync()
+    public async Task FiltersCanSkipFunctionExecutionAsync()
     {
         // Arrange
         int filterInvocations = 0;
-        int firstFunctionCallCount = 0;
-        int secondFunctionCallCount = 0;
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -107,23 +107,23 @@ public sealed class FunctionCallFilterTests : IDisposable
 
         // Assert
         Assert.Equal(2, filterInvocations);
-        Assert.Equal(0, firstFunctionCallCount);
-        Assert.Equal(1, secondFunctionCallCount);
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(1, secondFunctionInvocations);
     }
 
     [Fact]
-    public async Task FunctionCallFiltersAreExecutedCorrectlyOnStreamingAsync()
+    public async Task FiltersAreExecutedCorrectlyOnStreamingAsync()
     {
         // Arrange
         int filterInvocations = 0;
-        int functionCallCount = 0;
+        int functionInvocations = 0;
         int[] expectedRequestIterations = [0, 0, 1, 1];
         int[] expectedFunctionCallIterations = [0, 1, 0, 1];
         List<int> actualRequestIterations = [];
         List<int> actualFunctionCallIterations = [];
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -149,29 +149,29 @@ public sealed class FunctionCallFilterTests : IDisposable
 
         // Assert
         Assert.Equal(4, filterInvocations);
-        Assert.Equal(4, functionCallCount);
+        Assert.Equal(4, functionInvocations);
         Assert.Equal(expectedRequestIterations, actualRequestIterations);
         Assert.Equal(expectedFunctionCallIterations, actualFunctionCallIterations);
     }
 
     [Theory]
-    [InlineData(FunctionCallAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
-    [InlineData(FunctionCallAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
-    [InlineData(FunctionCallAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
-    [InlineData(FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
+    [InlineData(AutoFunctionInvocationAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
+    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
     public async Task PostExecutionWithStopActionStopsFunctionCallingLoopAsync(
-        FunctionCallAction action,
+        AutoFunctionInvocationAction action,
         int[] expectedRequestIterations,
         int[] expectedFunctionCallIterations,
-        int expectedFunctionCallCount)
+        int expectedFunctionInvocations)
     {
         // Arrange
-        int functionCallCount = 0;
+        int functionInvocations = 0;
         List<int> requestIterations = [];
         List<int> functionCallIterations = [];
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -197,27 +197,27 @@ public sealed class FunctionCallFilterTests : IDisposable
         // Assert
         Assert.Equal(expectedRequestIterations, requestIterations);
         Assert.Equal(expectedFunctionCallIterations, functionCallIterations);
-        Assert.Equal(expectedFunctionCallCount, functionCallCount);
+        Assert.Equal(expectedFunctionInvocations, functionInvocations);
     }
 
     [Theory]
-    [InlineData(FunctionCallAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
-    [InlineData(FunctionCallAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
-    [InlineData(FunctionCallAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
-    [InlineData(FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
+    [InlineData(AutoFunctionInvocationAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
+    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
     public async Task PostExecutionWithStopActionStopsFunctionCallingLoopOnStreamingAsync(
-        FunctionCallAction action,
+        AutoFunctionInvocationAction action,
         int[] expectedRequestIterations,
         int[] expectedFunctionCallIterations,
-        int expectedFunctionCallCount)
+        int expectedFunctionInvocations)
     {
         // Arrange
-        int functionCallCount = 0;
+        int functionInvocations = 0;
         List<int> requestIterations = [];
         List<int> functionCallIterations = [];
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -243,20 +243,20 @@ public sealed class FunctionCallFilterTests : IDisposable
         // Assert
         Assert.Equal(expectedRequestIterations, requestIterations);
         Assert.Equal(expectedFunctionCallIterations, functionCallIterations);
-        Assert.Equal(expectedFunctionCallCount, functionCallCount);
+        Assert.Equal(expectedFunctionInvocations, functionInvocations);
     }
 
     [Theory]
-    [InlineData(FunctionCallAction.StopRequestIteration)]
-    [InlineData(FunctionCallAction.StopFunctionCallIteration)]
-    [InlineData(FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration)]
-    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionAsync(FunctionCallAction action)
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration)]
+    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration)]
+    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionAsync(AutoFunctionInvocationAction action)
     {
         // Arrange
-        int functionCallCount = 0;
+        int functionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -277,20 +277,20 @@ public sealed class FunctionCallFilterTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal(0, functionCallCount);
+        Assert.Equal(0, functionInvocations);
     }
 
     [Theory]
-    [InlineData(FunctionCallAction.StopRequestIteration)]
-    [InlineData(FunctionCallAction.StopFunctionCallIteration)]
-    [InlineData(FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration)]
-    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionOnStreamingAsync(FunctionCallAction action)
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration)]
+    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration)]
+    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration)]
+    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionOnStreamingAsync(AutoFunctionInvocationAction action)
     {
         // Arrange
-        int functionCallCount = 0;
+        int functionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionCallCount++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
@@ -311,7 +311,7 @@ public sealed class FunctionCallFilterTests : IDisposable
         { }
 
         // Assert
-        Assert.Equal(0, functionCallCount);
+        Assert.Equal(0, functionInvocations);
     }
 
     [Fact]
@@ -331,7 +331,7 @@ public sealed class FunctionCallFilterTests : IDisposable
             catch (KernelException)
             {
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Action = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+                context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
             }
         });
 
@@ -367,7 +367,7 @@ public sealed class FunctionCallFilterTests : IDisposable
             catch (KernelException)
             {
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Action = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
+                context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
             }
         });
 
@@ -417,13 +417,13 @@ public sealed class FunctionCallFilterTests : IDisposable
 
     private Kernel GetKernelWithFilter(
         KernelPlugin plugin,
-        Func<FunctionCallInvocationContext, Func<FunctionCallInvocationContext, Task>, Task>? onFunctionCallInvocation)
+        Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation)
     {
         var builder = Kernel.CreateBuilder();
-        var functionCallFilter = new FakeFunctionCallFilter(onFunctionCallInvocation);
+        var filter = new AutoFunctionInvocationFilter(onAutoFunctionInvocation);
 
         builder.Plugins.Add(plugin);
-        builder.Services.AddSingleton<IFunctionCallFilter>(functionCallFilter);
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
 
         builder.AddOpenAIChatCompletion(
             modelId: "test-model-id",
@@ -433,13 +433,13 @@ public sealed class FunctionCallFilterTests : IDisposable
         return builder.Build();
     }
 
-    private sealed class FakeFunctionCallFilter(
-        Func<FunctionCallInvocationContext, Func<FunctionCallInvocationContext, Task>, Task>? onFunctionCallInvocation) : IFunctionCallFilter
+    private sealed class AutoFunctionInvocationFilter(
+        Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation) : IAutoFunctionInvocationFilter
     {
-        private readonly Func<FunctionCallInvocationContext, Func<FunctionCallInvocationContext, Task>, Task>? _onFunctionCallInvocation = onFunctionCallInvocation;
+        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? _onAutoFunctionInvocation = onAutoFunctionInvocation;
 
-        public Task OnFunctionCallInvocationAsync(FunctionCallInvocationContext context, Func<FunctionCallInvocationContext, Task> next) =>
-            this._onFunctionCallInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+        public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
+            this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     #endregion
