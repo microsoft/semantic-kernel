@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
 using System;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Xunit;
-using System.Linq;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
+using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
