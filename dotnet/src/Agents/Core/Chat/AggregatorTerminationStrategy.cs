@@ -33,7 +33,7 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <summary>
     /// Logical operation for aggregation: All or Any (and/or). Default: All.
     /// </summary>
-    public AggregateTerminationCondition Condition { get; set; } = AggregateTerminationCondition.All;
+    public AggregateTerminationCondition Condition { get; init; } = AggregateTerminationCondition.All;
 
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)

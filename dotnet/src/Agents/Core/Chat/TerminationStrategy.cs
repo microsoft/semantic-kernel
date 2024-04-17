@@ -12,12 +12,13 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public abstract class TerminationStrategy
 {
     /// <summary>
-    /// Restrict number of turns to a reasonable number.
+    /// Restrict number of turns to a reasonable number (99).
     /// </summary>
     public const int DefaultMaximumIterations = 99;
 
     /// <summary>
     /// The maximum number of agent interactions for a given chat invocation.
+    /// Defaults to: <see cref="TerminationStrategy.DefaultMaximumIterations"/>.
     /// </summary>
     public int MaximumIterations { get; set; } = DefaultMaximumIterations;
 
