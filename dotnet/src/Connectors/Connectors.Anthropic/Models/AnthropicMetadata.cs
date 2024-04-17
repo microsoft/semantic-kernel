@@ -10,11 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.Anthropic;
 /// <summary>
 /// Represents the metadata associated with a Claude response.
 /// </summary>
-public sealed class ClaudeMetadata : ReadOnlyDictionary<string, object?>
+public sealed class AnthropicMetadata : ReadOnlyDictionary<string, object?>
 {
-    internal ClaudeMetadata() : base(new Dictionary<string, object?>()) { }
+    internal AnthropicMetadata() : base(new Dictionary<string, object?>()) { }
 
-    private ClaudeMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
+    private AnthropicMetadata(IDictionary<string, object?> dictionary) : base(dictionary) { }
 
     /// <summary>
     /// Unique message object identifier.
@@ -28,9 +28,9 @@ public sealed class ClaudeMetadata : ReadOnlyDictionary<string, object?>
     /// <summary>
     /// The reason generating was stopped.
     /// </summary>
-    public ClaudeFinishReason? FinishReason
+    public AnthropicFinishReason? FinishReason
     {
-        get => (ClaudeFinishReason?)this.GetValueFromDictionary(nameof(this.FinishReason));
+        get => (AnthropicFinishReason?)this.GetValueFromDictionary(nameof(this.FinishReason));
         internal init => this.SetValueInDictionary(value, nameof(this.FinishReason));
     }
 
@@ -62,14 +62,14 @@ public sealed class ClaudeMetadata : ReadOnlyDictionary<string, object?>
     }
 
     /// <summary>
-    /// Converts a dictionary to a <see cref="ClaudeMetadata"/> object.
+    /// Converts a dictionary to a <see cref="AnthropicMetadata"/> object.
     /// </summary>
-    public static ClaudeMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
+    public static AnthropicMetadata FromDictionary(IReadOnlyDictionary<string, object?> dictionary) => dictionary switch
     {
         null => throw new ArgumentNullException(nameof(dictionary)),
-        ClaudeMetadata metadata => metadata,
-        IDictionary<string, object?> metadata => new ClaudeMetadata(metadata),
-        _ => new ClaudeMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
+        AnthropicMetadata metadata => metadata,
+        IDictionary<string, object?> metadata => new AnthropicMetadata(metadata),
+        _ => new AnthropicMetadata(dictionary.ToDictionary(pair => pair.Key, pair => pair.Value))
     };
 
     private void SetValueInDictionary(object? value, string propertyName)

@@ -4,31 +4,19 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Anthropic.Core;
 
-/// <summary>
-/// Represents the request/response content of Claude.
-/// </summary>
-internal sealed class ClaudeMessageContent
+internal sealed class AnthropicImageContent : AnthropicContent
 {
-    /// <summary>
-    /// Type of content. Possible values are "text" and "image".
-    /// </summary>
-    [JsonRequired]
-    [JsonPropertyName("type")]
-    public string Type { get; set; } = null!;
-
-    /// <summary>
-    /// Only used when type is "text". The text content.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    [JsonConstructor]
+    public AnthropicImageContent(string type, string mediaType, string data)
+    {
+        this.Source = new SourceEntity(type, mediaType, data);
+    }
 
     /// <summary>
     /// Only used when type is "image". The image content.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("source")]
-    public SourceEntity? Image { get; set; }
+    public SourceEntity Source { get; set; }
 
     internal sealed class SourceEntity
     {
