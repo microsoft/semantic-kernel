@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>

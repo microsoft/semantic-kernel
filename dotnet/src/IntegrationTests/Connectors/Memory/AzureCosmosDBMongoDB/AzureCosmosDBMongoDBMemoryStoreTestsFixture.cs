@@ -4,15 +4,15 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
-public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
+public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
-    public AzureCosmosDBMongoVCoreMemoryStore MemoryStore { get; }
+    public AzureCosmosDBMongoDBMemoryStore MemoryStore { get; }
     public string DatabaseName { get; }
     public string CollectionName { get; }
 
@@ -26,7 +26,7 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
     private int efSearch = 40;
     private String applicationName = "DOTNET_SEMANTIC_KERNEL";
 
-    public AzureCosmosDBMemoryStoreTestsFixture()
+    public AzureCosmosDBMongoDBMemoryStoreTestsFixture()
     {
         // Load Configuration
         var configuration = new ConfigurationBuilder()
@@ -42,7 +42,7 @@ public class AzureCosmosDBMemoryStoreTestsFixture : IAsyncLifetime
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
-        this.MemoryStore = new AzureCosmosDBMongoVCoreMemoryStore(
+        this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
             this.indexName,

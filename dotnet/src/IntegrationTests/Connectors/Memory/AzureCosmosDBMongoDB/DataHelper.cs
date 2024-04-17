@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics.Tensors;
 using Microsoft.SemanticKernel.Memory;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 internal static class DataHelper
 {

@@ -16,13 +16,13 @@ using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure CosmosDB Mongo vCore database.
 /// Get more details about Azure Cosmos Mongo vCore vector search  https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
-public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
+public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 {
     private readonly MongoClient _cosmosDBMongoClient;
     private readonly IMongoDatabase _cosmosMongoDatabase;
@@ -40,7 +40,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     private readonly int _efSearch;
 
     /// <summary>
-    /// Initiates a AzureCosmosDBMongoVCoreMemoryStore instance using a Azure CosmosDB Mongo vCore connection string
+    /// Initiates a AzureCosmosDBMongoDBMemoryStore instance using a Azure CosmosDB Mongo vCore connection string
     /// and other properties required for vector search.
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure Cosmos Mongo vCore.</param>
@@ -69,7 +69,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     /// also increase the time required to build the index. EfConstruction has to be at least 2 * m.</param>
     /// <param name="efSearch">The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
     /// the cost of speed.</param>
-    public AzureCosmosDBMongoVCoreMemoryStore(
+    public AzureCosmosDBMongoDBMemoryStore(
         string connectionString,
         string databaseName,
         string? indexName = "default_index",
@@ -98,10 +98,10 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Initiates a AzureCosmosDBMongoVCoreMemoryStore instance using a Azure CosmosDB MongoDB client
+    /// Initiates a AzureCosmosDBMongoDBMemoryStore instance using a Azure CosmosDB MongoDB client
     /// and other properties required for vector search.
     /// </summary>
-    public AzureCosmosDBMongoVCoreMemoryStore(
+    public AzureCosmosDBMongoDBMemoryStore(
         IMongoClient mongoClient,
         string databaseName,
         string? indexName = "default_index",
@@ -191,7 +191,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default
     )
     {
-        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken))
+        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
         {
             if (existingCollectionName == collectionName)
             {
@@ -219,7 +219,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         var result = await GetCollection(collectionName)
             .ReplaceOneAsync(
                 GetFilterById(record.Metadata.Id),
-                new AzureCosmosDBMongoVCoreMemoryRecord(record),
+                new AzureCosmosDBMongoDBMemoryRecord(record),
                 replaceOptions,
                 cancellationToken
             )
@@ -322,7 +322,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
             return null;
         }
 
-        MemoryRecord memoryRecord = AzureCosmosDBMongoVCoreMemoryRecord.ToMemoryRecord(
+        MemoryRecord memoryRecord = AzureCosmosDBMongoDBMemoryRecord.ToMemoryRecord(
             result["document"].AsBsonDocument,
             withEmbedding
         );
@@ -357,7 +357,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
                     continue;
                 }
 
-                MemoryRecord memoryRecord = AzureCosmosDBMongoVCoreMemoryRecord.ToMemoryRecord(
+                MemoryRecord memoryRecord = AzureCosmosDBMongoDBMemoryRecord.ToMemoryRecord(
                     doc["document"].AsBsonDocument,
                     withEmbeddings
                 );
@@ -367,7 +367,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Disposes the <see cref="AzureCosmosDBMongoVCoreMemoryStore"/> instance.
+    /// Disposes the <see cref="AzureCosmosDBMongoDBMemoryStore"/> instance.
     /// </summary>
     public void Dispose()
     {
@@ -376,7 +376,7 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Disposes the resources used by the <see cref="AzureCosmosDBMongoVCoreMemoryStore"/> instance.
+    /// Disposes the resources used by the <see cref="AzureCosmosDBMongoDBMemoryStore"/> instance.
     /// </summary>
     /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
@@ -555,17 +555,17 @@ public class AzureCosmosDBMongoVCoreMemoryStore : IMemoryStore, IDisposable
         return new BsonDocument[] { searchBson, projectBson };
     }
 
-    private IMongoCollection<AzureCosmosDBMongoVCoreMemoryRecord> GetCollection(
+    private IMongoCollection<AzureCosmosDBMongoDBMemoryRecord> GetCollection(
         string collectionName
     ) =>
-        this._cosmosMongoDatabase.GetCollection<AzureCosmosDBMongoVCoreMemoryRecord>(
+        this._cosmosMongoDatabase.GetCollection<AzureCosmosDBMongoDBMemoryRecord>(
             collectionName
         );
 
-    private static FilterDefinition<AzureCosmosDBMongoVCoreMemoryRecord> GetFilterById(string id) =>
-        Builders<AzureCosmosDBMongoVCoreMemoryRecord>.Filter.Eq(m => m.Id, id);
+    private static FilterDefinition<AzureCosmosDBMongoDBMemoryRecord> GetFilterById(string id) =>
+        Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Eq(m => m.Id, id);
 
-    private static FilterDefinition<AzureCosmosDBMongoVCoreMemoryRecord> GetFilterByIds(
+    private static FilterDefinition<AzureCosmosDBMongoDBMemoryRecord> GetFilterByIds(
         IEnumerable<string> ids
-    ) => Builders<AzureCosmosDBMongoVCoreMemoryRecord>.Filter.In(m => m.Id, ids);
+    ) => Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.In(m => m.Id, ids);
 }

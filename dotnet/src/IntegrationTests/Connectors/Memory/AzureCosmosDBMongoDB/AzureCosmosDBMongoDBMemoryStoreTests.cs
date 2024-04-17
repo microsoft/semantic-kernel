@@ -3,23 +3,23 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDB;
+namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
-/// Integration tests of <see cref="AzureCosmosDBMongoVCoreMemoryStore"/>.
+/// Integration tests of <see cref="AzureCosmosDBMongoDBMemoryStore"/>.
 /// </summary>
-public class AzureCosmosDBMemoryStoreTests : IClassFixture<AzureCosmosDBMemoryStoreTestsFixture>
+public class AzureCosmosDBMongoDBMemoryStoreTests : IClassFixture<AzureCosmosDBMongoDBMemoryStoreTestsFixture>
 {
     private const string? SkipReason = "Azure CosmosDB Mongo vCore cluster is required";
 
-    private readonly AzureCosmosDBMemoryStoreTestsFixture _fixture;
+    private readonly AzureCosmosDBMongoDBMemoryStoreTestsFixture _fixture;
 
-    public AzureCosmosDBMemoryStoreTests(AzureCosmosDBMemoryStoreTestsFixture fixture)
+    public AzureCosmosDBMongoDBMemoryStoreTests(AzureCosmosDBMongoDBMemoryStoreTestsFixture fixture)
     {
         this._fixture = fixture;
     }

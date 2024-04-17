@@ -3,59 +3,59 @@
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
 /// A MongoDB memory record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
+public struct AzureCosmosDBMongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.IsReference"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.IsReference"/>.
     /// </summary>
     [BsonElement("isReference")]
     public bool IsReference { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.ExternalSourceName"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.ExternalSourceName"/>.
     /// </summary>
     [BsonElement("externalSourceName")]
     [BsonIgnoreIfDefault]
     public string ExternalSourceName { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.Id"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Id"/>.
     /// </summary>
     [BsonId]
     public string Id { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.Description"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Description"/>.
     /// </summary>
     [BsonElement("description")]
     [BsonIgnoreIfDefault]
     public string Description { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.Text"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Text"/>.
     /// </summary>
     [BsonElement("text")]
     [BsonIgnoreIfDefault]
     public string Text { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata.AdditionalMetadata"/>.
+    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.AdditionalMetadata"/>.
     /// </summary>
     [BsonElement("additionalMetadata")]
     [BsonIgnoreIfDefault]
     public string AdditionalMetadata { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata"/> structure.
+    /// Initializes a new instance of <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata"/> structure.
     /// </summary>
-    public AzureCosmosDBMongoVCoreMemoryRecordMetadata(MemoryRecordMetadata memoryRecordMetadata)
+    public AzureCosmosDBMongoDBMemoryRecordMetadata(MemoryRecordMetadata memoryRecordMetadata)
     {
         this.IsReference = memoryRecordMetadata.IsReference;
         this.ExternalSourceName = memoryRecordMetadata.ExternalSourceName;
@@ -66,7 +66,7 @@ public struct AzureCosmosDBMongoVCoreMemoryRecordMetadata
     }
 
     /// <summary>
-    /// Returns mapped <see cref="AzureCosmosDBMongoVCoreMemoryRecordMetadata"/>.
+    /// Returns mapped <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata"/>.
     /// </summary>
     public MemoryRecordMetadata ToMemoryRecordMetadata() =>
         new(

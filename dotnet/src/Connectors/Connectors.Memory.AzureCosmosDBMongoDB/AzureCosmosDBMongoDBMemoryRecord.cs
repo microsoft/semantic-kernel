@@ -7,12 +7,12 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoVCore;
+namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
 /// A MongoDB memory record .
 /// </summary>
-public sealed class AzureCosmosDBMongoVCoreMemoryRecord
+public sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     /// <summary>
     /// Unique identifier of the memory entry.
@@ -24,7 +24,7 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     /// Metadata associated with memory entity.
     /// </summary>
     [BsonElement("metadata")]
-    public AzureCosmosDBMongoVCoreMemoryRecordMetadata Metadata { get; set; }
+    public AzureCosmosDBMongoDBMemoryRecordMetadata Metadata { get; set; }
 
     /// <summary>
     /// Source content embedding.
@@ -42,13 +42,13 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     public DateTime? Timestamp { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoVCoreMemoryRecord"/> class.
+    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBMemoryRecord"/> class.
     /// </summary>
     /// <param name="memoryRecord"><see cref="MemoryRecord"/>Instance to copy values from.</param>
-    public AzureCosmosDBMongoVCoreMemoryRecord(MemoryRecord memoryRecord)
+    public AzureCosmosDBMongoDBMemoryRecord(MemoryRecord memoryRecord)
     {
         this.Id = memoryRecord.Key;
-        this.Metadata = new AzureCosmosDBMongoVCoreMemoryRecordMetadata(memoryRecord.Metadata);
+        this.Metadata = new AzureCosmosDBMongoDBMemoryRecordMetadata(memoryRecord.Metadata);
         this.Embedding = memoryRecord.Embedding.ToArray();
         this.Timestamp = memoryRecord.Timestamp?.UtcDateTime;
     }
@@ -60,7 +60,7 @@ public sealed class AzureCosmosDBMongoVCoreMemoryRecord
     {
         return new(
             BsonSerializer
-                .Deserialize<AzureCosmosDBMongoVCoreMemoryRecordMetadata>(
+                .Deserialize<AzureCosmosDBMongoDBMemoryRecordMetadata>(
                     doc["metadata"].AsBsonDocument
                 )
                 .ToMemoryRecordMetadata(),
