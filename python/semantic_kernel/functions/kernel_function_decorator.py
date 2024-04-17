@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 def kernel_function(
-    func: Callable[..., Any] | None = None,
+    func: Callable[..., object] | None = None,
     name: str | None = None,
     description: str | None = None,
-) -> Callable[..., Any]:
+) -> Callable[..., object]:
     """
     Decorator for kernel functions.
 
@@ -43,30 +43,30 @@ def kernel_function(
 
     """
 
-    @wraps(func)
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        func.__kernel_function__ = True
-        func.__kernel_function_description__ = description or func.__doc__
-        func.__kernel_function_name__ = name or func.__name__
-        func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)
-        logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
+    @wraps(wrapped=func)  # type: ignore
+    def decorator(func: Callable[..., object]) -> Callable[..., object]:
+        func.__kernel_function__ = True  # type: ignore
+        func.__kernel_function_description__ = description or func.__doc__  # type: ignore
+        func.__kernel_function_name__ = name or func.__name__  # type: ignore
+        func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)  # type: ignore
+        logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")  # type: ignore
 
         func_sig = signature(func)
         logger.debug(f"{func_sig=}")
-        func.__kernel_function_parameters__ = [
+        func.__kernel_function_parameters__ = [  # type: ignore
             _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
         ]
         return_param_dict = {}
         if func_sig.return_annotation != Signature.empty:
             return_param_dict = _parse_annotation(func_sig.return_annotation)
-        func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")
-        func.__kernel_function_return_description__ = return_param_dict.get("description", "")
-        func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)
+        func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")  # type: ignore
+        func.__kernel_function_return_description__ = return_param_dict.get("description", "")  # type: ignore
+        func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)  # type: ignore
         return func
 
     if func:
         return decorator(func)
-    return decorator
+    return decorator  # type: ignore
 
 
 def _parse_parameter(param: Parameter) -> dict[str, Any]:
@@ -88,19 +88,19 @@ def _parse_annotation(annotation: Parameter) -> dict[str, Any]:
         return {"type_": annotation, "is_required": True}
     logger.debug(f"{annotation=}")
     ret = _parse_internal_annotation(annotation, True)
-    if hasattr(annotation, "__metadata__") and annotation.__metadata__:
-        ret["description"] = annotation.__metadata__[0]
+    if hasattr(annotation, "__metadata__") and annotation.__metadata__:  # type: ignore
+        ret["description"] = annotation.__metadata__[0]  # type: ignore
     return ret
 
 
 def _parse_internal_annotation(annotation: Parameter, required: bool) -> dict[str, Any]:
     logger.debug(f"Internal {annotation=}")
     if hasattr(annotation, "__forward_arg__"):
-        return {"type_": annotation.__forward_arg__, "is_required": required}
+        return {"type_": annotation.__forward_arg__, "is_required": required}  # type: ignore
     if getattr(annotation, "__name__", None) == "Optional":
         required = False
     if hasattr(annotation, "__args__"):
-        results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]
+        results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]  # type: ignore
         type_objects = [
             result["type_object"]
             for result in results

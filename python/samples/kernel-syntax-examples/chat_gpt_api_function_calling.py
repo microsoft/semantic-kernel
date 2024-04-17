@@ -5,22 +5,21 @@ import os
 from functools import reduce
 from typing import TYPE_CHECKING, Any, Dict, List
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatMessageContent,
+    OpenAIChatPromptExecutionSettings,
     OpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions import KernelFunction
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -35,12 +34,12 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 kernel.add_service(
-    sk_oai.OpenAIChatCompletion(
+    OpenAIChatCompletion(
         service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
@@ -68,7 +67,7 @@ chat_function = kernel.add_function(
 
 # Note: the number of responses for auto inoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
-execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
+execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
     ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
@@ -109,7 +108,7 @@ def print_tool_calls(message: OpenAIChatMessageContent) -> None:
 
 
 async def handle_streaming(
-    kernel: sk.Kernel,
+    kernel: Kernel,
     chat_function: "KernelFunction",
     user_input: str,
     history: ChatHistory,

@@ -9,11 +9,11 @@ pf_client = PFClient()
 
 # Load the configuration from the .env file
 config = dotenv_values(".env")
-deployment_type = config.get("AZURE_OPEN_AI__DEPLOYMENT_TYPE", None)
+deployment_type = config.get("AZURE_OPEN_AI_DEPLOYMENT_TYPE", None)
 if deployment_type == "chat-completion":
-    deployment_name = config.get("AZURE_OPEN_AI__CHAT_COMPLETION_DEPLOYMENT_NAME", None)
+    deployment_name = config.get("AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME", None)
 elif deployment_type == "text-completion":
-    deployment_name = config.get("AZURE_OPEN_AI__TEXT_COMPLETION_DEPLOYMENT_NAME", None)
+    deployment_name = config.get("AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME", None)
 
 # Define the inputs of the flow
 inputs = {
