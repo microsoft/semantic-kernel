@@ -235,6 +235,8 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: get request iteration
             this._output.WriteLine($"Request iteration: {context.RequestIteration + 1}");
 
+            // Calling next filter in pipeline or function itself.
+            // By skipping this call, next filters and function won't be invoked, and function call loop will proceed to the next function.
             await next(context);
 
             // Example: get function result

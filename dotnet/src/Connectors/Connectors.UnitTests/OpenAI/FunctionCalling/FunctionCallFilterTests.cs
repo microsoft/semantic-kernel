@@ -71,6 +71,47 @@ public sealed class FunctionCallFilterTests : IDisposable
     }
 
     [Fact]
+    public async Task FunctionCallFiltersCanSkipFunctionExecutionAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        int firstFunctionCallCount = 0;
+        int secondFunctionCallCount = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionCallCount++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionCallCount++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Filter delegate is invoked only for second function, the first one should be skipped.
+            if (context.Function.Name == "Function2")
+            {
+                await next(context);
+            }
+
+            filterInvocations++;
+        });
+
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal(2, filterInvocations);
+        Assert.Equal(0, firstFunctionCallCount);
+        Assert.Equal(1, secondFunctionCallCount);
+    }
+
+    [Fact]
     public async Task FunctionCallFiltersAreExecutedCorrectlyOnStreamingAsync()
     {
         // Arrange
