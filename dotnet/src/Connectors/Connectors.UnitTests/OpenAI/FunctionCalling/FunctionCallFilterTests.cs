@@ -297,15 +297,16 @@ public sealed class FunctionCallFilterTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         var chatCompletion = new OpenAIChatCompletionService(modelId: "test-model-id", apiKey: "test-api-key", httpClient: this._httpClient);
-        var chatHistory = new ChatHistory();
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
         // Act
-        await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
-        var lastMessage = chatHistory.Last();
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
 
         // Assert
-        Assert.Equal("Result from filter", lastMessage.Content);
+        Assert.Equal("Result from filter", result.ToString());
     }
 
     [Fact]

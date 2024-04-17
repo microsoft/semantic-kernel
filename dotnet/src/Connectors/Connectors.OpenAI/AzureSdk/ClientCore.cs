@@ -527,7 +527,7 @@ internal abstract class ClientCore
                     this.Logger.LogDebug("Filter requested to stop request iteration.");
                 }
 
-                return [result];
+                return [chat.Last()];
             }
         }
     }

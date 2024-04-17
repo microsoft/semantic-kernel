@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -141,45 +142,36 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         // Output: first chunk, chunk instead of exception.
     }
 
-    #region Filters
-
-    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    [Fact]
+    public async Task FunctionCallFilterAsync()
     {
-        private readonly ITestOutputHelper _output = output;
+        var builder = Kernel.CreateBuilder();
 
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
+
+        // This filter handles an exception and returns overridden result.
+        builder.Services.AddSingleton<IFunctionCallFilter>(new FunctionCallFilter(this.Output));
+
+        var kernel = builder.Build();
+
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result from function", "MyFunction");
+
+        kernel.ImportPluginFromFunctions("MyPlugin", [function]);
+
+        var executionSettings = new OpenAIPromptExecutionSettings
         {
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
-            await next(context);
-            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
-        }
+            ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), autoInvoke: true)
+        };
+
+        var result = await kernel.InvokePromptAsync("Invoke provided function", new(executionSettings));
+
+        WriteLine(result);
+
+        // Output:
+        // Function call iteration: 1 out of 1
+        // Request iteration: 1
+        // Result from function call filter
     }
-
-    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionFilter
-    {
-        private readonly ITestOutputHelper _output = output;
-
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
-        {
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
-            await next(context);
-            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
-        }
-    }
-
-    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
-    {
-        private readonly ITestOutputHelper _output = output;
-
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
-        {
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendering - {context.Function.PluginName}.{context.Function.Name}");
-            await next(context);
-            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendered - {context.Function.PluginName}.{context.Function.Name}");
-        }
-    }
-
-    #endregion
 
     #region Filter capabilities
 
@@ -209,6 +201,56 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             {
                 Metadata = metadata
             };
+        }
+    }
+
+    /// <summary>Shows syntax for prompt filter.</summary>
+    private sealed class PromptFilterExample : IPromptFilter
+    {
+        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        {
+            // Example: get function information
+            var functionName = context.Function.Name;
+
+            await next(context);
+
+            // Example: override rendered prompt before sending it to AI
+            context.RenderedPrompt = "Safe prompt";
+        }
+    }
+
+    /// <summary>Shows syntax for function call filter.</summary>
+    private sealed class FunctionCallFilter(ITestOutputHelper output) : IFunctionCallFilter
+    {
+        private readonly ITestOutputHelper _output = output;
+
+        public async Task OnFunctionCallInvocationAsync(FunctionCallInvocationContext context, Func<FunctionCallInvocationContext, Task> next)
+        {
+            // Example: get function information
+            var functionName = context.Function.Name;
+
+            // Example: get function call iteration information
+            this._output.WriteLine($"Function call iteration: {context.FunctionCallIteration + 1} out of {context.FunctionCallCount}");
+
+            // Example: get request iteration
+            this._output.WriteLine($"Request iteration: {context.RequestIteration + 1}");
+
+            await next(context);
+
+            // Example: get function result
+            var result = context.Result;
+
+            // Example: override function result value
+            context.Result = new FunctionResult(context.Result, "Result from function call filter");
+
+            // Example: stop further function calling. but proceed with request iteration
+            context.Action = FunctionCallAction.StopFunctionCallIteration;
+
+            // Example: call remaining functions, but stop request iteration
+            context.Action = FunctionCallAction.StopRequestIteration;
+
+            // Example: stop function calling and request iterations, return immediately
+            context.Action = FunctionCallAction.StopRequestIteration | FunctionCallAction.StopFunctionCallIteration;
         }
     }
 
@@ -304,18 +346,43 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    /// <summary>Shows syntax for prompt filter.</summary>
-    private sealed class PromptFilterExample : IPromptFilter
+    #endregion
+
+    #region Filters
+
+    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
+        private readonly ITestOutputHelper _output = output;
+
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
+            await next(context);
+            this._output.WriteLine($"{nameof(FirstFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
+        }
+    }
+
+    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    {
+        private readonly ITestOutputHelper _output = output;
+
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoking - {context.Function.PluginName}.{context.Function.Name}");
+            await next(context);
+            this._output.WriteLine($"{nameof(SecondFunctionFilter)}.FunctionInvoked - {context.Function.PluginName}.{context.Function.Name}");
+        }
+    }
+
+    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
+    {
+        private readonly ITestOutputHelper _output = output;
+
         public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
         {
-            // Example: get function information
-            var functionName = context.Function.Name;
-
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendering - {context.Function.PluginName}.{context.Function.Name}");
             await next(context);
-
-            // Example: override rendered prompt before sending it to AI
-            context.RenderedPrompt = "Safe prompt";
+            this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendered - {context.Function.PluginName}.{context.Function.Name}");
         }
     }
 
