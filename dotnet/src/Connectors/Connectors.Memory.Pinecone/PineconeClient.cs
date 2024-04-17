@@ -154,7 +154,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         this._logger.LogDebug("Searching top {0} nearest vectors with threshold {1}", topK, threshold);
 
-        List<(PineconeDocument document, float score)> documents = new();
+        List<(PineconeDocument document, float score)> documents = [];
 
         Query query = Query.Create(topK)
             .WithVector(vector)
@@ -166,7 +166,7 @@ public sealed class PineconeClient : IPineconeClient
             includeValues,
             includeMetadata, cancellationToken);
 
-        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken))
+        await foreach (PineconeDocument? match in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             if (match == null)
             {
@@ -185,8 +185,8 @@ public sealed class PineconeClient : IPineconeClient
             yield break;
         }
 
-        // sort documents by score, and order by descending
-        documents = documents.OrderByDescending(x => x.score).ToList();
+        // sort documents descending by score
+        documents.Sort((x, y) => y.score.CompareTo(x.score));
 
         foreach ((PineconeDocument document, float score) in documents)
         {
@@ -209,7 +209,7 @@ public sealed class PineconeClient : IPineconeClient
         string basePath = await this.GetVectorOperationsApiBasePathAsync(indexName).ConfigureAwait(false);
         IAsyncEnumerable<PineconeDocument> validVectors = PineconeUtils.EnsureValidMetadataAsync(vectors.ToAsyncEnumerable());
 
-        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken))
+        await foreach (UpsertRequest? batch in PineconeUtils.GetUpsertBatchesAsync(validVectors, MaxBatchSize).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             totalBatches++;
 
@@ -556,12 +556,8 @@ public sealed class PineconeClient : IPineconeClient
 
         this._logger.LogDebug("Getting index host from Pinecone.");
 
-        PineconeIndex? pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false);
-
-        if (pineconeIndex == null)
-        {
+        PineconeIndex pineconeIndex = await this.DescribeIndexAsync(indexName, cancellationToken).ConfigureAwait(false) ??
             throw new KernelException("Index not found in Pinecone. Create index to perform operations with vectors.");
-        }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {

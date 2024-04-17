@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example13_ConversationSummaryPlugin : BaseTest
+public class Example13_ConversationSummaryPlugin(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ChatTranscript =
         @"
@@ -79,7 +79,7 @@ Jane: Here's a 4096 character Lorem Ipsum text:
 Jane: Lorem ipsum dolor sit amet, con
 Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
 Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
-Jane: Darn, it's just repeating stuf now.
+Jane: Darn, it's just repeating stuff now.
 John: I think we're done.
 Jane: We're not though! We need like 1500 more characters.
 John: Oh Cananda, our home and native land.
@@ -179,10 +179,6 @@ Jane: Goodbye!
             .Build();
 
         return kernel;
-    }
-
-    public Example13_ConversationSummaryPlugin(ITestOutputHelper output) : base(output)
-    {
     }
 }
 

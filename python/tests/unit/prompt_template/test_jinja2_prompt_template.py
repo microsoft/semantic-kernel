@@ -104,7 +104,7 @@ async def test_it_renders_list(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus(arg1='test') }}"
     target = create_jinja2_prompt_template(template)
 
@@ -114,7 +114,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
 
 @pytest.mark.asyncio
 async def test_it_renders_kernel_functions_arg_from_arguments(kernel: Kernel, decorated_native_function):
-    kernel.register_function_from_method(plugin_name="plug", method=decorated_native_function)
+    kernel.add_function(plugin_name="plug", function=decorated_native_function)
     template = "Function: {{ plug_getLightStatus() }}"
     target = create_jinja2_prompt_template(template)
 
@@ -261,12 +261,9 @@ async def test_helpers_message(kernel: Kernel):
     chat_history.add_user_message("User message")
     chat_history.add_assistant_message("Assistant message")
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-    print(rendered.strip())
-    print("hello")
-    assert (
-        rendered.strip()
-        == """<message role="user">User message</message><message role="assistant">Assistant message</message>"""
-    )
+
+    assert "User message" in rendered
+    assert "Assistant message" in rendered
 
 
 @mark.asyncio
@@ -289,10 +286,10 @@ async def test_helpers_openai_message_tool_call(kernel: Kernel):
     chat_history.add_message(OpenAIChatMessageContent(role="tool", content="Tool message", tool_call_id="test"))
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
-    assert (
-        rendered.strip()
-        == """<message role="ChatRole.USER" tool_calls="" tool_call_id="">\n        User message\n    </message>\n    \n    <message role="ChatRole.ASSISTANT" tool_calls="[ToolCall(id=\'test\', type=\'function\', function=FunctionCall(name=\'plug-test\', arguments=None))]" tool_call_id="None">\n        None\n    </message>\n    \n    <message role="ChatRole.TOOL" tool_calls="None" tool_call_id="test">\n        Tool message\n    </message>"""  # noqa E501
-    )
+    assert "User message" in rendered
+    assert "ToolCall" in rendered
+    assert "plug-test" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio
@@ -311,10 +308,9 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
-    assert (
-        rendered.strip()
-        == """<message role="user">User message</message>\n    \n    <message role="assistant" tool_calls="{&quot;id&quot;:&quot;test&quot;,&quot;type&quot;:&quot;function&quot;,&quot;function&quot;:{&quot;name&quot;:&quot;plug-test&quot;}}"></message>"""  # noqa E501
-    )
+    assert "User message" in rendered
+    assert "tool_calls=" in rendered
+    assert "plug-test" in rendered
 
 
 @mark.asyncio

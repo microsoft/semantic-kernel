@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class Example52_CustomOpenAIClient : BaseTest
+public sealed class Example52_CustomOpenAIClient(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -60,6 +60,4 @@ public sealed class Example52_CustomOpenAIClient : BaseTest
 
         httpClient.Dispose();
     }
-
-    public Example52_CustomOpenAIClient(ITestOutputHelper output) : base(output) { }
 }

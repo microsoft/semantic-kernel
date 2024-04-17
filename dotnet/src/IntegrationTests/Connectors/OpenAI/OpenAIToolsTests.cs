@@ -11,23 +11,11 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.Planners.Stepwise;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 public sealed class OpenAIToolsTests : BaseIntegrationTest
 {
-    public OpenAIToolsTests(ITestOutputHelper output)
-    {
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
-            .Build();
-    }
-
     [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
@@ -136,7 +124,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -161,7 +149,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
             "NewsProvider",
             "Delivers up-to-date news content.",
-            new[] { promptFunction }));
+            [promptFunction]));
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -196,7 +184,12 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         return kernel;
     }
 
-    private readonly IConfigurationRoot _configuration;
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
+        .Build();
 
     /// <summary>
     /// A plugin that returns the current time.

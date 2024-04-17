@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example81_TextEmbedding : BaseTest
+public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -62,10 +62,6 @@ public class Example81_TextEmbedding : BaseTest
         var tokens = encoding.Encode(text);
 
         return tokens.Count;
-    }
-
-    public Example81_TextEmbedding(ITestOutputHelper output) : base(output)
-    {
     }
 
     #region Transcript
@@ -139,7 +135,7 @@ Jane: Here's a 4096 character Lorem Ipsum text:
 Jane: Lorem ipsum dolor sit amet, con
 Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
 Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc sit amet aliquam
-Jane: Darn, it's just repeating stuf now.
+Jane: Darn, it's just repeating stuff now.
 John: I think we're done.
 Jane: We're not though! We need like 1500 more characters.
 John: Oh Cananda, our home and native land.

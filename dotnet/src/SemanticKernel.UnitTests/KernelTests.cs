@@ -505,7 +505,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel();
-        kernel.ImportPluginFromFunctions("plugin", new[] { function });
+        kernel.ImportPluginFromFunctions("plugin", [function]);
 
         //Act
         var result = await kernel.InvokeAsync("plugin", "function");
@@ -676,9 +676,7 @@ public class KernelTests
 
     private sealed class FakeChatCompletionService(string result) : IChatCompletionService
     {
-        private readonly IReadOnlyDictionary<string, object?> _attributes = new Dictionary<string, object?>();
-
-        public IReadOnlyDictionary<string, object?> Attributes => this._attributes;
+        public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
 
         public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
@@ -700,7 +698,7 @@ public class KernelTests
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         return (mockTextContent, mockTextCompletion);
     }
 

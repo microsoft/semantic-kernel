@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.HuggingFace.Client;
+using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private HuggingFaceClient Client { get; }
 
     /// <inheritdoc />

@@ -1,72 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
 import asyncio
+import os
 
-import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-)
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (
-    FunctionCallingStepwisePlanner,
-)
-from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner_options import (
-    FunctionCallingStepwisePlannerOptions,
-)
-
-
-# Define an example EmailPlugin
-class EmailPlugin:
-    """
-    Description: EmailPlugin provides a set of functions to send emails.
-
-    Usage:
-        kernel.import_plugin_from_object(EmailPlugin(), plugin_name="email")
-
-    Examples:
-        {{email.SendEmail}} => Sends an email with the provided subject and body.
-    """
-
-    @kernel_function(name="SendEmail", description="Given an e-mail and message body, send an e-email")
-    def send_email(
-        self,
-        subject: Annotated[str, "the subject of the email"],
-        body: Annotated[str, "the body of the email"],
-    ) -> Annotated[str, "the output is a string"]:
-        """Sends an email with the provided subject and body."""
-        return f"Email sent with subject: {subject} and body: {body}"
-
-    @kernel_function(name="GetEmailAddress", description="Given a name, find the email address")
-    def get_email_address(
-        self,
-        input: Annotated[str, "the name of the person"],
-    ):
-        email = ""
-        if input == "Jane":
-            email = "janedoe4321@example.com"
-        elif input == "Paul":
-            email = "paulsmith5678@example.com"
-        elif input == "Mary":
-            email = "maryjones8765@example.com"
-        else:
-            input = "johndoe1234@example.com"
-        return email
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.core_plugins import MathPlugin, TimePlugin
+from semantic_kernel.planners import FunctionCallingStepwisePlanner, FunctionCallingStepwisePlannerOptions
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     service_id = "planner"
-    api_key, _ = sk.openai_settings_from_dot_env()
+    api_key, _ = openai_settings_from_dot_env()
     kernel.add_service(
         OpenAIChatCompletion(
             service_id=service_id,
@@ -75,9 +23,9 @@ async def main():
         ),
     )
 
-    kernel.import_plugin_from_object(MathPlugin(), "MathPlugin")
-    kernel.import_plugin_from_object(TimePlugin(), "TimePlugin")
-    kernel.import_plugin_from_object(EmailPlugin(), "EmailPlugin")
+    cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
+    kernel.add_plugin(parent_directory=cur_dir, plugin_name="email_plugin")
+    kernel.add_plugins({"MathPlugin": MathPlugin(), "TimePlugin": TimePlugin()})
 
     questions = [
         "What is the current hour number, plus 5?",
@@ -97,7 +45,7 @@ async def main():
         print(f"Q: {question}\nA: {result.final_answer}\n")
 
         # Uncomment the following line to view the planner's process for completing the request
-        # print(f"Chat history: {result.chat_history}\n")
+        # print(f"\nChat history: {result.chat_history}\n")
 
 
 if __name__ == "__main__":

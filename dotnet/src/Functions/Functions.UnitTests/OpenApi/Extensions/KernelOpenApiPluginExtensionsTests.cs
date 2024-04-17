@@ -243,12 +243,38 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
     }
 
+    [Fact]
+    public async Task ItCanIncludeOpenApiDeleteAndPatchOperationsAsync()
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource("repair-service.json");
+
+        // Act
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("repairServicePlugin", openApiDocument, this._executionParameters);
+
+        // Assert
+        Assert.NotNull(plugin);
+        var functionsMetadata = plugin.GetFunctionsMetadata();
+        Assert.Equal(4, functionsMetadata.Count);
+        AssertPayloadParameters(plugin, "updateRepair");
+        AssertPayloadParameters(plugin, "deleteRepair");
+    }
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
 
     #region private ================================================================================
+
+    private static void AssertPayloadParameters(KernelPlugin plugin, string functionName)
+    {
+        Assert.True(plugin.TryGetFunction(functionName, out var function));
+        Assert.NotNull(function.Metadata.Parameters);
+        Assert.Equal(2, function.Metadata.Parameters.Count);
+        Assert.Equal("payload", function.Metadata.Parameters[0].Name);
+        Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
+    }
 
     private KernelArguments GetFakeFunctionArguments()
     {

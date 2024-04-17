@@ -77,11 +77,11 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         """
         if not self._env:
             return ""
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments()
         helpers = {}
         helpers.update(JINJA2_SYSTEM_HELPERS)
-        for plugin in kernel.plugins:
+        for plugin in kernel.plugins.values():
             helpers.update(
                 {
                     function.fully_qualified_name.replace("-", "_"): create_template_helper_from_function(
@@ -90,7 +90,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                         arguments,
                         self.prompt_template_config.template_format,
                     )
-                    for function in plugin.functions.values()
+                    for function in plugin
                 }
             )
         try:

@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.ImageToText;
 namespace HuggingFaceImageTextDemo;
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
 /// <summary>
 /// Main form of the application.
@@ -156,7 +156,7 @@ public partial class FormMain : Form
     private static ReadOnlyMemory<byte> ConvertImageToReadOnlyMemory(PictureBox pictureBox)
     {
         var image = pictureBox.Image;
-        var fileName = pictureBox.Tag.ToString()!;
+        var fileName = pictureBox.Tag!.ToString()!;
 
         using var memoryStream = new MemoryStream();
 
