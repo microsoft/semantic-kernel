@@ -12,7 +12,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 /// <summary>
 /// Unit testing of <see cref="RegExTerminationStrategy"/>.
 /// </summary>
-public class RegExTerminationStrategyTest
+public class RegExTerminationStrategyTests
 {
     /// <summary>
     /// Verify abililty of strategy to match expression.
