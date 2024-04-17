@@ -72,6 +72,7 @@ class ActionPlanner:
         execute_settings = PromptExecutionSettings(
             service_id=service_id,
             extension_data={"max_tokens": self.config.max_tokens, "stop_sequences": self._stop_sequence},
+            **kwargs
         )
 
         kernel.add_plugin(self, self.RESTRICTED_PLUGIN_NAME)
