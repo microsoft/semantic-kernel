@@ -357,28 +357,20 @@ public sealed class FunctionCallFilterTests : IDisposable
 #pragma warning disable CA2000 // Dispose objects before losing scope
     private static List<HttpResponseMessage> GetFunctionCallingResponses()
     {
-        return
-            [
-            // 1st LLM response to call Function1 and Function2
+        return [
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) },
-            // 2nd LLM response to call Function1 and Function2
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) },
-            // 3rd LLM response with plain text
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) }
-            ];
+        ];
     }
 
     private static List<HttpResponseMessage> GetFunctionCallingStreamingResponses()
     {
-        return
-            [
-            // 1st LLM response to call Function1 and Function2
+        return [
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_streaming_multiple_function_calls_test_response.txt")) },
-            // 2nd LLM response to call Function1 and Function2
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_streaming_multiple_function_calls_test_response.txt")) },
-            // 3rd LLM response with plain text
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_test_response.txt")) }
-            ];
+        ];
     }
 #pragma warning restore CA2000
 
