@@ -1,4 +1,4 @@
-name: Python Lint
+name: Python Code Quality Checks
 on:
   workflow_dispatch:
   pull_request:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   ruff:
+    if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
@@ -25,9 +26,10 @@ jobs:
           cache: "poetry"
       - name: Install Semantic Kernel
         run: cd python && poetry install --no-ansi
-      - name: Run lint
+      - name: Run ruff
         run: cd python && poetry run ruff check .
   black:
+    if: '!cancelled()'
     strategy:
       fail-fast: false
       matrix:
@@ -45,5 +47,27 @@ jobs:
           cache: "poetry"
       - name: Install Semantic Kernel
         run: cd python && poetry install --no-ansi
-      - name: Run lint
+      - name: Run black
         run: cd python && poetry run black --check .
+  mypy:
+    if: '!cancelled()'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "/root/.local/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+      - name: Install Semantic Kernel
+        run: cd python && poetry install --no-ansi
+      - name: Run mypy
+        run: cd python && poetry run mypy -p semantic_kernel --config-file=python/mypy.ini
+
