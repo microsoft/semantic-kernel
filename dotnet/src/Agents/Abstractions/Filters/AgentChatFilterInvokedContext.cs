@@ -23,6 +23,7 @@ public sealed class AgentChatFilterInvokedContext : AgentChatFilterContext
     /// </summary>
     /// <param name="agent"></param>
     /// <param name="history"></param>
+    /// <param name="message"></param>
     internal AgentChatFilterInvokedContext(Agent agent, IReadOnlyList<ChatMessageContent> history, ChatMessageContent message)
         : base(agent, history)
     {
