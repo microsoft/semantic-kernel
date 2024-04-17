@@ -64,7 +64,7 @@ class SequentialPlannerKernelExtension:
 
         available_functions = [
             func
-            for func in kernel.plugins.get_list_of_function_metadata()
+            for func in kernel.get_list_of_function_metadata()
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
 

@@ -72,16 +72,16 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         """
         if not self._template_compiler:
             return ""
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments()
         helpers = {}
-        for plugin in kernel.plugins:
+        for plugin in kernel.plugins.values():
             helpers.update(
                 {
                     function.fully_qualified_name: create_template_helper_from_function(
                         function, kernel, arguments, self.prompt_template_config.template_format
                     )
-                    for function in plugin.functions.values()
+                    for function in plugin
                 }
             )
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)

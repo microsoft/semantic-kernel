@@ -14,7 +14,7 @@ namespace Examples;
 /// <summary>
 /// Showcase usage of Open AI file-service.
 /// </summary>
-public sealed class Example79_OpenAIFiles : BaseTest
+public sealed class Example79_OpenAIFiles(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ResourceFileName = "30-user-context.txt";
 
@@ -69,6 +69,4 @@ public sealed class Example79_OpenAIFiles : BaseTest
             await fileService.DeleteFileAsync(fileReference.Id);
         }
     }
-
-    public Example79_OpenAIFiles(ITestOutputHelper output) : base(output) { }
 }

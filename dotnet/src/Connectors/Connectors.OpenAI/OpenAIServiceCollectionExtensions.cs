@@ -1044,6 +1044,80 @@ public static class OpenAIServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Adds the Custom OpenAI chat completion service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="endpoint">A Custom Message API compatible endpoint.</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddOpenAIChatCompletion(
+        this IServiceCollection services,
+        string modelId,
+        Uri endpoint,
+        string? apiKey = null,
+        string? orgId = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
+            new(modelId,
+                endpoint,
+                apiKey,
+                orgId,
+                HttpClientProvider.GetHttpClient(serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>());
+
+        services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
+        services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the Custom Endpoint OpenAI chat completion service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
+    /// <param name="endpoint">Custom OpenAI Compatible Message API endpoint</param>
+    /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
+    /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddOpenAIChatCompletion(
+        this IKernelBuilder builder,
+        string modelId,
+        Uri endpoint,
+        string? apiKey,
+        string? orgId = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        Func<IServiceProvider, object?, OpenAIChatCompletionService> factory = (serviceProvider, _) =>
+            new(modelId: modelId,
+                apiKey: apiKey,
+                endpoint: endpoint,
+                organization: orgId,
+                httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>());
+
+        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, factory);
+        builder.Services.AddKeyedSingleton<ITextGenerationService>(serviceId, factory);
+
+        return builder;
+    }
+
     #endregion
 
     #region Images

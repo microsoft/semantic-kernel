@@ -89,8 +89,8 @@ async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt
     service_id = "chat_completion" if use_chat_model else "text_completion"
 
     kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
-    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
-    kernel.import_plugin_from_object(FunPluginFake(), "fun_plugin_fake")
+    kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
 
     planner = SequentialPlanner(kernel, service_id=service_id)
 
@@ -120,8 +120,8 @@ async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt
 async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
     # Arrange
     kernel = initialize_kernel(get_aoai_config)
-    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
-    kernel.import_plugin_from_object(WriterPluginFake(), "WriterPlugin")
+    kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.add_plugin(WriterPluginFake(), "WriterPlugin")
 
     planner = SequentialPlanner(kernel, service_id="text_completion")
 
@@ -155,9 +155,9 @@ async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_funct
 async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):
     # Arrange
     kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
-    kernel.import_plugin_from_object(EmailPluginFake(), "email_plugin_fake")
-    kernel.import_plugin_from_object(FunPluginFake(), "fun_plugin_fake")
-    kernel.import_plugin_from_object(WriterPluginFake(), "writer_plugin_fake")
+    kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
+    kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
+    kernel.add_plugin(WriterPluginFake(), "writer_plugin_fake")
 
     planner = SequentialPlanner(
         kernel,

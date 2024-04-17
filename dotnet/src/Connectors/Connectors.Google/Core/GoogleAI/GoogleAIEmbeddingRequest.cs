@@ -18,13 +18,13 @@ internal sealed class GoogleAIEmbeddingRequest
             Model = $"models/{modelId}",
             Content = new()
             {
-                Parts = new List<GeminiPart>
-                {
+                Parts =
+                [
                     new()
                     {
                         Text = text
                     }
-                }
+                ]
             }
         }).ToList()
     };

@@ -140,7 +140,7 @@ public sealed class OpenAIFileService
     {
         var result = await this.ExecuteGetRequestAsync<FileInfoList>(this._serviceUri.ToString(), cancellationToken).ConfigureAwait(false);
 
-        return result.Data.Select(r => this.ConvertFileReference(r)).ToArray();
+        return result.Data.Select(this.ConvertFileReference).ToArray();
     }
 
     /// <summary>
@@ -292,7 +292,7 @@ public sealed class OpenAIFileService
     private class FileInfoList
     {
         [JsonPropertyName("data")]
-        public FileInfo[] Data { get; set; } = Array.Empty<FileInfo>();
+        public FileInfo[] Data { get; set; } = [];
 
         [JsonPropertyName("object")]
         public string Object { get; set; } = "list";
