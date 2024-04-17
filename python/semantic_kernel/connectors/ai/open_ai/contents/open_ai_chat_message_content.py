@@ -6,7 +6,7 @@ from pydantic import field_validator
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
-from semantic_kernel.contents.const import OPENAI_CHAT_MESSAGE_CONTENT
+from semantic_kernel.contents.types import OPENAI_CHAT_MESSAGE_CONTENT
 
 
 class OpenAIChatMessageContent(ChatMessageContent):

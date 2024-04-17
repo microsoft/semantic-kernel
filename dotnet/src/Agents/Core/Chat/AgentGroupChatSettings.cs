@@ -30,8 +30,9 @@ public class AgentGroupChatSettings
     public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy();
 
     /// <summary>
-    /// The termination strategy attached to the default state of <see cref="AgentGroupChatSettings.TerminationStrategy"/> will
-    /// execute to <see cref="TerminationStrategy.MaximumIterations"/> without signaling termination.
+    /// The termination strategy attached to the default state of <see cref="AgentGroupChatSettings.TerminationStrategy"/>.
+    /// This strategy will execute without signaling termination.  Execution of <see cref="AgentGroupChat"/> will only be
+    /// bound by <see cref="TerminationStrategy.MaximumIterations"/>.
     /// </summary>
     internal sealed class DefaultTerminationStrategy : TerminationStrategy
     {
