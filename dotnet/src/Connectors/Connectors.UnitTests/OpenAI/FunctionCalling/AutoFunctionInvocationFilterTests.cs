@@ -36,6 +36,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         int[] expectedFunctionCallIterations = [0, 1, 0, 1];
         List<int> actualRequestIterations = [];
         List<int> actualFunctionCallIterations = [];
+        Kernel? contextKernel = null;
 
         var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
         var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
@@ -44,6 +45,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
+            contextKernel = context.Kernel;
             Assert.Equal(2, context.FunctionCallCount);
 
             actualRequestIterations.Add(context.RequestIteration);
@@ -67,6 +69,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         Assert.Equal(4, functionInvocations);
         Assert.Equal(expectedRequestIterations, actualRequestIterations);
         Assert.Equal(expectedFunctionCallIterations, actualFunctionCallIterations);
+        Assert.Same(kernel, contextKernel);
         Assert.Equal("Test chat response", result.ToString());
     }
 

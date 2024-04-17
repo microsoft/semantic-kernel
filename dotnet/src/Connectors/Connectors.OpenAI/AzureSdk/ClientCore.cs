@@ -406,7 +406,7 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(function, functionResult)
+                invocationContext = new(kernel, function, functionResult)
                 {
                     Arguments = functionArgs,
                     RequestIteration = requestIteration - 1,
@@ -667,7 +667,7 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(function, functionResult)
+                invocationContext = new(kernel, function, functionResult)
                 {
                     Arguments = functionArgs,
                     RequestIteration = requestIteration - 1,

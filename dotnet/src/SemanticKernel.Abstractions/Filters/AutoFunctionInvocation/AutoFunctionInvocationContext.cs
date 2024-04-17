@@ -13,15 +13,19 @@ public class AutoFunctionInvocationContext
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
     /// </summary>
+    /// <param name="kernel">The <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="result">The result of the function's invocation.</param>
     public AutoFunctionInvocationContext(
+        Kernel kernel,
         KernelFunction function,
         FunctionResult result)
     {
+        Verify.NotNull(kernel);
         Verify.NotNull(function);
         Verify.NotNull(result);
 
+        this.Kernel = kernel;
         this.Function = function;
         this.Result = result;
     }
@@ -52,6 +56,11 @@ public class AutoFunctionInvocationContext
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
     public KernelFunction Function { get; }
+
+    /// <summary>
+    /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
+    /// </summary>
+    public Kernel Kernel { get; }
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.
