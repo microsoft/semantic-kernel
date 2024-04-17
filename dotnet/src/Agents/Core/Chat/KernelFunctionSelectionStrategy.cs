@@ -67,7 +67,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
             throw new KernelException("Agent Failure - Strategy unable to determine selection result.");
 
         return
-            agents.Where(a => a.Name == agentName).FirstOrDefault() ??
+            agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??
             throw new KernelException("Agent Failure - Strategy unable to select next agent.");
     }
 }

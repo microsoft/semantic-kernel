@@ -48,7 +48,7 @@ public class KernelFunctionTerminationStrategyTests
         KernelFunctionTerminationStrategy strategy =
             new(plugin.Single())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions }) { { "key", "test" } },
+                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
                 Kernel = Kernel.CreateBuilder().Build(),
                 ResultParser = new TestParser()
             };
