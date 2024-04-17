@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -22,6 +24,15 @@ public abstract class AgentChat
     private readonly ChatHistory _history;
 
     private int _isActive;
+    private List<IAgentChatFilter>? _filters;
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public IList<IAgentChatFilter> Filters =>
+        this._filters ??
+            Interlocked.CompareExchange(ref this._filters, [], null) ??
+                this._filters;
 
     /// <summary>
     /// Retrieve the message history, either the primary history or
@@ -106,6 +117,8 @@ public abstract class AgentChat
 
         try
         {
+            this.OnAgentInvokingFilter(agent, this._history);
+
             // Manifest the required channel.  Will throw if channel not in sync.
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
 
@@ -113,6 +126,15 @@ public abstract class AgentChat
             List<ChatMessageContent> messages = [];
             await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
+                // Invoke filter
+                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this._history, message);
+
+                if (context?.SuppressMessage ?? false)
+                {
+                    // Suppress message processing
+                    continue;
+                }
+
                 // Add to primary history
                 this._history.Add(message);
                 messages.Add(message);
@@ -169,6 +191,40 @@ public abstract class AgentChat
         this._channelMap.Add(agent, hash);
 
         return hash;
+    }
+
+    private AgentChatFilterInvokingContext? OnAgentInvokingFilter(Agent agent, IReadOnlyList<ChatMessageContent> history)
+    {
+        AgentChatFilterInvokingContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoking(context);
+            }
+        }
+
+        return context;
+    }
+
+    private AgentChatFilterInvokedContext? OnAgentInvokedFilter(Agent agent, IReadOnlyList<ChatMessageContent> history, ChatMessageContent message)
+    {
+        AgentChatFilterInvokedContext? context = null;
+
+        if (this._filters is { Count: > 0 })
+        {
+            context = new(agent, history, message);
+
+            for (int i = 0; i < this._filters.Count; i++)
+            {
+                this._filters[i].OnAgentInvoked(context);
+            }
+        }
+
+        return context;
     }
 
     /// <summary>
