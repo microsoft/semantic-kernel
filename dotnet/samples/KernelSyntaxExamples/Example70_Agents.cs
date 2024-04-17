@@ -15,13 +15,20 @@ namespace Examples;
 /// Showcase Open AI Agent integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/agents
 /// </summary>
-public class Example70_Agent : BaseTest
+public class Example70_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
     /// Currently this is limited to Open AI hosted services.
     /// </summary>
     private const string OpenAIFunctionEnabledModel = "gpt-3.5-turbo-1106";
+
+    /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    private const bool ForceOpenAI = false;
 
     /// <summary>
     /// Chat using the "Parrot" agent.
@@ -61,6 +68,7 @@ public class Example70_Agent : BaseTest
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
+            "Do you have enough soup for 5 orders?",
             "Thank you!");
     }
 
@@ -79,7 +87,7 @@ public class Example70_Agent : BaseTest
               functionName: "spellChecker",
               description: "Correct the spelling for the user input.");
 
-        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", new[] { function });
+        var plugin = KernelPluginFactory.CreateFromFunctions("spelling", "Spelling functions", [function]);
 
         // Call the common chat-loop
         return ChatAsync(
@@ -141,8 +149,7 @@ public class Example70_Agent : BaseTest
 
         // Create agent
         var agent =
-            await new AgentBuilder()
-                .WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey)
+            await CreateAgentBuilder()
                 .FromTemplate(definition)
                 .WithPlugin(plugin)
                 .BuildAsync();
@@ -173,7 +180,11 @@ public class Example70_Agent : BaseTest
         }
     }
 
-    public Example70_Agent(ITestOutputHelper output) : base(output)
+    private static AgentBuilder CreateAgentBuilder()
     {
+        return
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
+                new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
     }
 }

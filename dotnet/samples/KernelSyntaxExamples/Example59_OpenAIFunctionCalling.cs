@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
-public class Example59_OpenAIFunctionCalling : BaseTest
+public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -33,8 +33,8 @@ public class Example59_OpenAIFunctionCalling : BaseTest
         Kernel kernel = builder.Build();
 
         // Add a plugin with some helper functions we want to allow the model to utilize.
-        kernel.ImportPluginFromFunctions("HelperFunctions", new[]
-        {
+        kernel.ImportPluginFromFunctions("HelperFunctions",
+        [
             kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
             kernel.CreateFunctionFromMethod((string cityName) =>
                 cityName switch
@@ -48,7 +48,7 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-        });
+        ]);
 
         WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
@@ -136,9 +136,5 @@ public class Example59_OpenAIFunctionCalling : BaseTest
                 Console.WriteLine();
             }
         }*/
-    }
-
-    public Example59_OpenAIFunctionCalling(ITestOutputHelper output) : base(output)
-    {
     }
 }

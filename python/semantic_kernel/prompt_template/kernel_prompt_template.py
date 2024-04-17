@@ -92,7 +92,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         Returns:
             The prompt template ready to be used for an AI request
         """
-        if not arguments:
+        if arguments is None:
             arguments = KernelArguments()
         return await self.render_blocks(self._blocks, kernel, arguments)
 

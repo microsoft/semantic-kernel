@@ -78,7 +78,7 @@ internal abstract class ClientCore
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = new();
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -140,7 +140,7 @@ internal abstract class ClientCore
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetChoiceMetadata(responseData, choice))).ToList();
+        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -157,30 +157,36 @@ internal abstract class ClientCore
 
         StreamingResponse<Completions>? response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
 
-        await foreach (Completions completions in response)
+        await foreach (Completions completions in response.ConfigureAwait(false))
         {
             foreach (Choice choice in completions.Choices)
             {
-                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetChoiceMetadata(completions, choice));
+                yield return new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
             }
         }
     }
 
-    private static Dictionary<string, object?> GetChoiceMetadata(Completions completions, Choice choice)
+    private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice)
     {
-        return new Dictionary<string, object?>(5)
+        return new Dictionary<string, object?>(8)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.PromptFilterResults), completions.PromptFilterResults },
             { nameof(completions.Usage), completions.Usage },
             { nameof(choice.ContentFilterResults), choice.ContentFilterResults },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(choice.FinishReason), choice.FinishReason?.ToString() },
+
+            { nameof(choice.LogProbabilityModel), choice.LogProbabilityModel },
+            { nameof(choice.Index), choice.Index },
         };
     }
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletions completions, ChatChoice chatChoice)
     {
-        return new Dictionary<string, object?>(6)
+        return new Dictionary<string, object?>(12)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
@@ -188,16 +194,27 @@ internal abstract class ClientCore
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
             { nameof(completions.Usage), completions.Usage },
             { nameof(chatChoice.ContentFilterResults), chatChoice.ContentFilterResults },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(chatChoice.FinishReason), chatChoice.FinishReason?.ToString() },
+
+            { nameof(chatChoice.FinishDetails), chatChoice.FinishDetails },
+            { nameof(chatChoice.LogProbabilityInfo), chatChoice.LogProbabilityInfo },
+            { nameof(chatChoice.Index), chatChoice.Index },
+            { nameof(chatChoice.Enhancements), chatChoice.Enhancements },
         };
     }
 
     private static Dictionary<string, object?> GetResponseMetadata(StreamingChatCompletionsUpdate completions)
     {
-        return new Dictionary<string, object?>(3)
+        return new Dictionary<string, object?>(4)
         {
             { nameof(completions.Id), completions.Id },
             { nameof(completions.Created), completions.Created },
             { nameof(completions.SystemFingerprint), completions.SystemFingerprint },
+
+            // Serialization of this struct behaves as an empty object {}, need to cast to string to avoid it.
+            { nameof(completions.FinishReason), completions.FinishReason?.ToString() },
         };
     }
 
@@ -268,7 +285,7 @@ internal abstract class ClientCore
 
         AudioTranscription responseData = (await RunRequestAsync(() => this.Client.GetAudioTranscriptionAsync(audioOptions, cancellationToken)).ConfigureAwait(false)).Value;
 
-        return new List<TextContent> { new(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData)) };
+        return [new(responseData.Text, this.DeploymentOrModelName, metadata: GetResponseMetadata(responseData))];
     }
 
     /// <summary>
@@ -324,7 +341,7 @@ internal abstract class ClientCore
             OpenAIChatMessageContent result = new(resultChoice.Message, this.DeploymentOrModelName, GetChatChoiceMetadata(responseData, resultChoice));
             if (result.ToolCalls.Count == 0)
             {
-                return new[] { result };
+                return [result];
             }
 
             if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -397,7 +414,7 @@ internal abstract class ClientCore
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
-#pragma warning restore CA1031
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     AddResponseMessage(chatOptions, chat, null, $"Error: Exception while invoking function. {e.Message}", toolCall.Id, this.Logger);
                     continue;
@@ -503,12 +520,14 @@ internal abstract class ClientCore
 
             // Stream the response.
             IReadOnlyDictionary<string, object?>? metadata = null;
+            string? streamedName = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
             await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
             {
-                metadata ??= GetResponseMetadata(update);
+                metadata = GetResponseMetadata(update);
                 streamedRole ??= update.Role;
+                streamedName ??= update.AuthorName;
                 finishReason = update.FinishReason ?? default;
 
                 // If we're intending to invoke function calls, we need to consume that function call information.
@@ -522,7 +541,7 @@ internal abstract class ClientCore
                     OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                 }
 
-                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata);
+                yield return new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
             }
 
             // If we don't have a function to invoke, we're done.
@@ -554,8 +573,8 @@ internal abstract class ClientCore
 
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
-            chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata));
+            chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
+            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
             foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
@@ -608,7 +627,7 @@ internal abstract class ClientCore
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
-#pragma warning restore CA1031
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, result: null, $"Error: Exception while invoking function. {e.Message}", this.Logger);
                     continue;
@@ -706,7 +725,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ChatHistory chat = CreateNewChat(prompt, chatSettings);
 
-        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken))
+        await foreach (var chatUpdate in this.GetStreamingChatMessageContentsAsync(chat, executionSettings, kernel, cancellationToken).ConfigureAwait(false))
         {
             yield return new StreamingTextContent(chatUpdate.Content, chatUpdate.ChoiceIndex, chatUpdate.ModelId, chatUpdate, Encoding.UTF8, chatUpdate.Metadata);
         }
@@ -763,7 +782,7 @@ internal abstract class ClientCore
     /// <param name="text">Optional chat instructions for the AI service</param>
     /// <param name="executionSettings">Execution settings</param>
     /// <returns>Chat object</returns>
-    internal static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
+    private static ChatHistory CreateNewChat(string? text = null, OpenAIPromptExecutionSettings? executionSettings = null)
     {
         var chat = new ChatHistory();
 
@@ -772,7 +791,7 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings?.ChatSystemPrompt))
         {
-            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt);
+            chat.AddSystemMessage(executionSettings!.ChatSystemPrompt!);
             textRole = AuthorRole.User;
         }
 
@@ -921,21 +940,21 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, ChatCompletionsFunctionToolCall[]? tools)
+    private static ChatRequestMessage GetRequestMessage(ChatRole chatRole, string contents, string? name, ChatCompletionsFunctionToolCall[]? tools)
     {
         if (chatRole == ChatRole.User)
         {
-            return new ChatRequestUserMessage(contents);
+            return new ChatRequestUserMessage(contents) { Name = name };
         }
 
         if (chatRole == ChatRole.System)
         {
-            return new ChatRequestSystemMessage(contents);
+            return new ChatRequestSystemMessage(contents) { Name = name };
         }
 
         if (chatRole == ChatRole.Assistant)
         {
-            var msg = new ChatRequestAssistantMessage(contents);
+            var msg = new ChatRequestAssistantMessage(contents) { Name = name };
             if (tools is not null)
             {
                 foreach (ChatCompletionsFunctionToolCall tool in tools)
@@ -953,7 +972,7 @@ internal abstract class ClientCore
     {
         if (message.Role == AuthorRole.System)
         {
-            return new ChatRequestSystemMessage(message.Content);
+            return new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName };
         }
 
         if (message.Role == AuthorRole.User || message.Role == AuthorRole.Tool)
@@ -966,7 +985,7 @@ internal abstract class ClientCore
 
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new ChatRequestUserMessage(textContent.Text);
+                return new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName };
             }
 
             return new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
@@ -974,12 +993,13 @@ internal abstract class ClientCore
                 TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                 ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
-            })));
+            })))
+            { Name = message.AuthorName };
         }
 
         if (message.Role == AuthorRole.Assistant)
         {
-            var asstMessage = new ChatRequestAssistantMessage(message.Content);
+            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
 
             IEnumerable<ChatCompletionsToolCall>? tools = (message as OpenAIChatMessageContent)?.ToolCalls;
             if (tools is null && message.Metadata?.TryGetValue(OpenAIChatMessageContent.FunctionToolCallsProperty, out object? toolCallsObject) is true)
@@ -1131,6 +1151,8 @@ internal abstract class ClientCore
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
+#pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

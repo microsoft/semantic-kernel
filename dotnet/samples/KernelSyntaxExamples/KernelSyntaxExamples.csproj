@@ -5,12 +5,11 @@
   <PropertyGroup>
     <AssemblyName>KernelSyntaxExamples</AssemblyName>
     <RootNamespace></RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
-    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0101</NoWarn>
+    <NoWarn>CS8618,IDE0009,CA1051,CA1050,CA1707,CA1054,CA2007,VSTHRD111,CS1591,RCS1110,RCS1243,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0101</NoWarn>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
@@ -40,6 +39,7 @@
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Google\Connectors.Google.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
@@ -68,11 +68,6 @@
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="RepoUtils\PlanExtensions.cs" />

@@ -9,7 +9,7 @@ paths:
   '/secrets/{secret-name}':
     get:
       summary: Get secret
-      description: 'Get a specified secret from a given key vault. For details, see: https://docs.microsoft.com/rest/api/keyvault/getsecret/getsecret.'
+      description: 'Get a specified secret from a given key vault. For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret/get-secret.'
       operationId: GetSecret
       parameters:
         - name: secret-name

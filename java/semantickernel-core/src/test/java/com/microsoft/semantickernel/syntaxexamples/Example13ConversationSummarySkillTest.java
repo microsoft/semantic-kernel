@@ -87,7 +87,7 @@ public class Example13ConversationSummarySkillTest {
                 + " sit amet aliquam\n"
                 + "Jane: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc"
                 + " sit amet aliquam\n"
-                + "Jane: Darn, it's just repeating stuf now.\n"
+                + "Jane: Darn, it's just repeating stuff now.\n"
                 + "John: I think we're done.\n"
                 + "Jane: We're not though! We need like 1500 more characters.\n"
                 + "John: Oh Cananda, our home and native land.\n"

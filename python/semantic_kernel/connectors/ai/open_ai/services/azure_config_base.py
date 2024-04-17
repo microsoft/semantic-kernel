@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 import logging
 from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 
@@ -15,7 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIHandler,
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.telemetry import APP_INFO
+from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
@@ -61,7 +60,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         # Merge APP_INFO into the headers if it exists
         merged_headers = default_headers.copy() if default_headers else {}
         if APP_INFO:
-            merged_headers[USER_AGENT] = json.dumps(APP_INFO)
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
 
         if not async_client:
             if not api_key and not ad_token and not ad_token_provider:

@@ -14,20 +14,21 @@ namespace Microsoft.SemanticKernel.Planners.UnitTests.Handlebars;
 
 public sealed class HandlebarsPlannerTests
 {
-    private const string PlanString =
-    @"```handlebars
-{{!-- Step 1: Call Summarize function --}}  
-{{set ""summary"" (SummarizePlugin-Summarize)}}  
+    private const string PlanString = """
+        ```handlebars
+        {{!-- Step 1: Call Summarize function --}}  
+        {{set "summary" (SummarizePlugin-Summarize)}}  
 
-{{!-- Step 2: Call Translate function with the language set to French --}}  
-{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
+        {{!-- Step 2: Call Translate function with the language set to French --}}  
+        {{set "translatedSummary" (WriterPlugin-Translate language="French" input=(get "summary"))}}  
 
-{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
-{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+        {{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+        {{set "emailAddress" (email-GetEmailAddress input="John Doe")}}  
 
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```";
+        {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+        {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+        ```
+        """;
 
     [Theory]
     [InlineData("Summarize this text, translate it to French and send it to John Doe.")]
@@ -197,29 +198,30 @@ public sealed class HandlebarsPlannerTests
     public async Task ItThrowsIfStrictlyOnePlanCantBeIdentifiedAsync()
     {
         // Arrange
-        var ResponseWithMultipleHbTemplates =
-    @"```handlebars
-{{!-- Step 1: Call Summarize function --}}  
-{{set ""summary"" (SummarizePlugin-Summarize)}}  
-```
+        var ResponseWithMultipleHbTemplates = """
+            ```handlebars
+            {{!-- Step 1: Call Summarize function --}}  
+            {{set "summary" (SummarizePlugin-Summarize)}}  
+            ```
 
-```handlebars
-{{!-- Step 2: Call Translate function with the language set to French --}}  
-{{set ""translatedSummary"" (WriterPlugin-Translate language=""French"" input=(get ""summary""))}}  
-```
+            ```handlebars
+            {{!-- Step 2: Call Translate function with the language set to French --}}  
+            {{set "translatedSummary" (WriterPlugin-Translate language="French" input=(get "summary"))}}  
+            ```
 
-```handlebars
-{{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
-{{set ""emailAddress"" (email-GetEmailAddress input=""John Doe"")}}  
+            ```handlebars
+            {{!-- Step 3: Call GetEmailAddress function with input set to John Doe --}}  
+            {{set "emailAddress" (email-GetEmailAddress input="John Doe")}}  
 
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```
+            {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+            {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+            ```
 
-```handlebars
-{{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
-{{email-SendEmail input=(get ""translatedSummary"") email_address=(get ""emailAddress"")}}
-```";
+            ```handlebars
+            {{!-- Step 4: Call SendEmail function with input set to the translated summary and email_address set to the retrieved email address --}}  
+            {{email-SendEmail input=(get "translatedSummary") email_address=(get "emailAddress")}}
+            ```
+            """;
         var kernel = this.CreateKernelWithMockCompletionResult(ResponseWithMultipleHbTemplates);
         var planner = new HandlebarsPlanner();
 
@@ -230,20 +232,20 @@ public sealed class HandlebarsPlannerTests
 
     private Kernel CreateKernelWithMockCompletionResult(string testPlanString, KernelPluginCollection? plugins = null)
     {
-        plugins ??= new KernelPluginCollection();
+        plugins ??= [];
 
         var chatMessage = new ChatMessageContent(AuthorRole.Assistant, testPlanString);
 
         var chatCompletion = new Mock<IChatCompletionService>();
         chatCompletion
             .Setup(cc => cc.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent> { chatMessage });
+            .ReturnsAsync([chatMessage]);
 
         var serviceSelector = new Mock<IAIServiceSelector>();
         IChatCompletionService resultService = chatCompletion.Object;
-        PromptExecutionSettings resultSettings = new();
+        PromptExecutionSettings? resultSettings = new();
         serviceSelector
-            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings!))
+            .Setup(ss => ss.TrySelectAIService<IChatCompletionService>(It.IsAny<Kernel>(), It.IsAny<KernelFunction>(), It.IsAny<KernelArguments>(), out resultService!, out resultSettings))
             .Returns(true);
 
         var serviceCollection = new ServiceCollection();
@@ -253,23 +255,20 @@ public sealed class HandlebarsPlannerTests
         return new Kernel(serviceCollection.BuildServiceProvider(), plugins);
     }
 
-    private KernelPluginCollection CreatePluginCollection()
-    {
-        return new()
-        {
-            KernelPluginFactory.CreateFromFunctions("email", "Email functions", new[]
-            {
+    private KernelPluginCollection CreatePluginCollection() =>
+        [
+            KernelPluginFactory.CreateFromFunctions("email", "Email functions",
+            [
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "SendEmail", "Send an e-mail"),
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "GetEmailAddress", "Get an e-mail address")
-            }),
-            KernelPluginFactory.CreateFromFunctions("WriterPlugin", "Writer functions", new[]
-            {
+            ]),
+            KernelPluginFactory.CreateFromFunctions("WriterPlugin", "Writer functions",
+            [
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Translate", "Translate something"),
-            }),
-            KernelPluginFactory.CreateFromFunctions("SummarizePlugin", "Summarize functions", new[]
-            {
+            ]),
+            KernelPluginFactory.CreateFromFunctions("SummarizePlugin", "Summarize functions",
+            [
                 KernelFunctionFactory.CreateFromMethod(() => "MOCK FUNCTION CALLED", "Summarize", "Summarize something"),
-            })
-        };
-    }
+            ])
+        ];
 }

@@ -5,7 +5,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (
@@ -53,8 +55,14 @@ async def test_build_chat_history_for_step():
     planner = FunctionCallingStepwisePlanner(service_id="test_service", options=None)
     kernel_mock = AsyncMock(Kernel)
     kernel_mock.get_service.return_value = AsyncMock()
-    chat_history = await planner._build_chat_history_for_step("goal", "initial_plan", kernel_mock)
+    service_mock = AsyncMock(spec=OpenAIChatCompletion)
+    arguments_mock = KernelArguments(goal="Test", initial_plan="Initial Plan")
+    service_mock.get_chat_message_content_type.return_value = "OpenAIChatMessageContent"
+    chat_history = await planner._build_chat_history_for_step(
+        "goal", "initial_plan", kernel_mock, arguments_mock, service_mock
+    )
     assert chat_history is not None
+    assert chat_history[0].role == "user"
 
 
 @pytest.mark.asyncio
@@ -63,19 +71,22 @@ async def test_generate_plan():
 
     kernel_mock = AsyncMock(Kernel)
     kernel_mock.get_service.return_value = AsyncMock()
+    plugins_mock = MagicMock()
+    kernel_mock.plugins = MagicMock(plugins=plugins_mock)
+
+    mock_arguments = KernelArguments()
 
     with patch(
         "semantic_kernel.planners.function_calling_stepwise_planner.FunctionCallingStepwisePlanner._create_config_from_yaml",
         return_value=AsyncMock(spec=KernelFunction),
     ) as mock_create_yaml_config, patch(
-        "semantic_kernel.planners.planner_extensions.PlannerKernelExtension.get_functions_manual",
-        new=AsyncMock(),
-    ) as mock_get_functions_manual:
+        "semantic_kernel.connectors.ai.open_ai.utils.get_function_calling_object",
+        return_value=AsyncMock(return_value=MagicMock()),
+    ):
         question = "Why is the sky blue?"
-        result = await planner._generate_plan(question, kernel_mock)
+        result = await planner._generate_plan(question, kernel_mock, mock_arguments)
 
         mock_create_yaml_config.assert_called_once_with(kernel_mock)
-        mock_get_functions_manual.assert_awaited_once()
         assert result is not None
 
 

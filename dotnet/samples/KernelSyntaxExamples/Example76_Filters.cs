@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example76_Filters : BaseTest
+public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Shows how to use function and prompt filters in Kernel.
@@ -35,26 +35,17 @@ public class Example76_Filters : BaseTest
         kernel.PromptFilters.Add(new FirstPromptFilter(this.Output));
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: new[] { function }));
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));
         var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
         WriteLine(result);
     }
 
-    public Example76_Filters(ITestOutputHelper output) : base(output)
-    {
-    }
-
     #region Filters
 
-    private sealed class FirstFunctionFilter : IFunctionFilter
+    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public FirstFunctionFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
@@ -63,14 +54,9 @@ public class Example76_Filters : BaseTest
             this._output.WriteLine($"{nameof(FirstFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
     }
 
-    private sealed class SecondFunctionFilter : IFunctionFilter
+    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public SecondFunctionFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnFunctionInvoking(FunctionInvokingContext context) =>
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoking)} - {context.Function.PluginName}.{context.Function.Name}");
@@ -79,14 +65,9 @@ public class Example76_Filters : BaseTest
             this._output.WriteLine($"{nameof(SecondFunctionFilter)}.{nameof(OnFunctionInvoked)} - {context.Function.PluginName}.{context.Function.Name}");
     }
 
-    private sealed class FirstPromptFilter : IPromptFilter
+    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
     {
-        private readonly ITestOutputHelper _output;
-
-        public FirstPromptFilter(ITestOutputHelper output)
-        {
-            this._output = output;
-        }
+        private readonly ITestOutputHelper _output = output;
 
         public void OnPromptRendering(PromptRenderingContext context) =>
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.{nameof(OnPromptRendering)} - {context.Function.PluginName}.{context.Function.Name}");

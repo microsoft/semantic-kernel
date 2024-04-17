@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, Dict, List, Optional, Union
+from collections.abc import AsyncGenerator
+from copy import copy, deepcopy
+from typing import TYPE_CHECKING, Any, Callable
 
-from semantic_kernel.contents.streaming_kernel_content import StreamingKernelContent
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -22,6 +24,7 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+    from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
     from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
     from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
     from semantic_kernel.kernel import Kernel
@@ -67,15 +70,15 @@ class KernelFunction(KernelBaseModel):
         cls,
         function_name: str,
         plugin_name: str,
-        description: Optional[str] = None,
-        prompt: Optional[str] = None,
+        description: str | None = None,
+        prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: Optional["PromptTemplateBase"] = None,
-        prompt_template_config: Optional["PromptTemplateConfig"] = None,
-        prompt_execution_settings: Optional[
-            Union["PromptExecutionSettings", List["PromptExecutionSettings"], Dict[str, "PromptExecutionSettings"]]
-        ] = None,
-    ) -> "KernelFunctionFromPrompt":
+        prompt_template: PromptTemplateBase | None = None,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_execution_settings: (
+            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+        ) = None,
+    ) -> KernelFunctionFromPrompt:
         """
         Create a new instance of the KernelFunctionFromPrompt class.
         """
@@ -96,9 +99,9 @@ class KernelFunction(KernelBaseModel):
     def from_method(
         cls,
         method: Callable[..., Any],
-        plugin_name: Optional[str] = None,
-        stream_method: Optional[Callable[..., Any]] = None,
-    ) -> "KernelFunctionFromMethod":
+        plugin_name: str | None = None,
+        stream_method: Callable[..., Any] | None = None,
+    ) -> KernelFunctionFromMethod:
         """
         Create a new instance of the KernelFunctionFromMethod class.
         """
@@ -123,7 +126,7 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.fully_qualified_name
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return self.metadata.description
 
     @property
@@ -131,19 +134,19 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.is_prompt
 
     @property
-    def parameters(self) -> List[KernelParameterMetadata]:
+    def parameters(self) -> list[KernelParameterMetadata]:
         return self.metadata.parameters
 
     @property
-    def return_parameter(self) -> Optional[KernelParameterMetadata]:
+    def return_parameter(self) -> KernelParameterMetadata | None:
         return self.metadata.return_parameter
 
     async def __call__(
         self,
-        kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        kernel: Kernel,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> "FunctionResult":
+    ) -> FunctionResult:
         """Invoke the function with the given arguments.
 
         Args:
@@ -160,17 +163,17 @@ class KernelFunction(KernelBaseModel):
     @abstractmethod
     async def _invoke_internal(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         arguments: KernelArguments,
-    ) -> "FunctionResult":
+    ) -> FunctionResult:
         pass
 
     async def invoke(
         self,
-        kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        kernel: Kernel,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> "FunctionResult":
+    ) -> FunctionResult:
         """Invoke the function with the given arguments.
 
         Args:
@@ -193,19 +196,24 @@ class KernelFunction(KernelBaseModel):
             )
 
     @abstractmethod
-    async def _invoke_internal_stream(
+    def _invoke_internal_stream(
         self,
-        kernel: "Kernel",
+        kernel: Kernel,
         arguments: KernelArguments,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
-        pass
+    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
+        """Internal invoke method of the the function with the given arguments.
+
+        The abstract method is defined without async because otherwise the typing fails.
+        A implementation of this function should be async.
+        """
+        ...
 
     async def invoke_stream(
         self,
-        kernel: "Kernel",
-        arguments: Optional[KernelArguments] = None,
+        kernel: Kernel,
+        arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingKernelContent, Any]]]]:
+    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
         """
         Invoke a stream async function with the given arguments.
 
@@ -227,3 +235,18 @@ class KernelFunction(KernelBaseModel):
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})
+
+    def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
+        """Copy the function, can also override the plugin_name.
+
+        Args:
+            plugin_name (str): The new plugin name.
+
+        Returns:
+            KernelFunction: The copied function.
+        """
+        cop: KernelFunction = copy(self)
+        cop.metadata = deepcopy(self.metadata)
+        if plugin_name:
+            cop.metadata.plugin_name = plugin_name
+        return cop

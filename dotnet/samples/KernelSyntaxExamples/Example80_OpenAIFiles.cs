@@ -14,9 +14,16 @@ namespace Examples;
 /// <summary>
 /// Showcase usage of Open AI file-service.
 /// </summary>
-public sealed class Example79_OpenAIFiles : BaseTest
+public sealed class Example79_OpenAIFiles(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ResourceFileName = "30-user-context.txt";
+
+    /// <summary>
+    /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
+    /// and <see cref="TestConfiguration.AzureOpenAI"/> are defined.
+    /// If 'false', Azure takes precedence.
+    /// </summary>
+    private const bool ForceOpenAI = false;
 
     /// <summary>
     /// Show how to utilize OpenAI file-service.
@@ -26,17 +33,11 @@ public sealed class Example79_OpenAIFiles : BaseTest
     {
         this.WriteLine("======== OpenAI File-Service ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
-        {
-            this.WriteLine("OpenAI apiKey not found. Skipping example.");
-            return;
-        }
-
         // Initialize file-service
         var kernel =
-            Kernel.CreateBuilder()
-                .AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey)
-                .Build();
+            ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
+                Kernel.CreateBuilder().AddOpenAIFiles(TestConfiguration.OpenAI.ApiKey).Build() :
+                Kernel.CreateBuilder().AddAzureOpenAIFiles(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey).Build();
 
         var fileService = kernel.GetRequiredService<OpenAIFileService>();
 
@@ -68,6 +69,4 @@ public sealed class Example79_OpenAIFiles : BaseTest
             await fileService.DeleteFileAsync(fileReference.Id);
         }
     }
-
-    public Example79_OpenAIFiles(ITestOutputHelper output) : base(output) { }
 }

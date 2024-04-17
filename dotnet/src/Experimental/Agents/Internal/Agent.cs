@@ -119,10 +119,9 @@ internal sealed class Agent : IAgent
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         this.Kernel =
-            Kernel
-                .CreateBuilder()
-                .AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey)
-                .Build();
+            this._restContext.HasVersion ?
+                builder.AddAzureOpenAIChatCompletion(this._model.Model, this.GetAzureRootEndpoint(), this._restContext.ApiKey).Build() :
+                builder.AddOpenAIChatCompletion(this._model.Model, this._restContext.ApiKey).Build();
 
         if (plugins is not null)
         {
@@ -265,6 +264,12 @@ internal sealed class Agent : IAgent
         return factory.Create(config);
     }
 
+    private string GetAzureRootEndpoint()
+    {
+        var endpointUri = new Uri(this._restContext.Endpoint);
+        return endpointUri.AbsoluteUri.Replace(endpointUri.AbsolutePath, string.Empty);
+    }
+
     private void ThrowIfDeleted()
     {
         if (this._isDeleted)
@@ -273,23 +278,17 @@ internal sealed class Agent : IAgent
         }
     }
 
-    private sealed class AgentPluginImpl : AgentPlugin
+    private sealed class AgentPluginImpl(Agent agent, KernelFunction functionAsk) :
+        AgentPlugin(s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty),
+               agent.Description ?? agent.Instructions)
     {
-        public KernelFunction FunctionAsk { get; }
+        public KernelFunction FunctionAsk { get; } = functionAsk;
 
-        internal override Agent Agent { get; }
+        internal override Agent Agent { get; } = agent;
 
         public override int FunctionCount => 1;
 
         private static readonly string s_functionName = nameof(Agent.AskAsync).Substring(0, nameof(AgentPluginImpl.Agent.AskAsync).Length - 5);
-
-        public AgentPluginImpl(Agent agent, KernelFunction functionAsk)
-            : base(s_removeInvalidCharsRegex.Replace(agent.Name ?? agent.Id, string.Empty),
-                   agent.Description ?? agent.Instructions)
-        {
-            this.Agent = agent;
-            this.FunctionAsk = functionAsk;
-        }
 
         public override IEnumerator<KernelFunction> GetEnumerator()
         {

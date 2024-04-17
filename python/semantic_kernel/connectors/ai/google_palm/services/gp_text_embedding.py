@@ -2,7 +2,7 @@
 
 
 import sys
-from typing import List
+from typing import Any, List
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -13,9 +13,7 @@ import google.generativeai as palm
 from numpy import array, ndarray
 from pydantic import StringConstraints
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
 
 
@@ -34,7 +32,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         """
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def generate_embeddings(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
@@ -54,10 +52,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         embeddings = []
         for text in texts:
             try:
-                response = palm.generate_embeddings(
-                    model=self.ai_model_id,
-                    text=text,
-                )
+                response = palm.generate_embeddings(model=self.ai_model_id, text=text, **kwargs)
                 embeddings.append(array(response["embedding"]))
             except Exception as ex:
                 raise ServiceResponseException(

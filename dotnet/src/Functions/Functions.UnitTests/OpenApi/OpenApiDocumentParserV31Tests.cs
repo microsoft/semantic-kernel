@@ -339,7 +339,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(response.Schema);
         Assert.Equal("string", response.Schema.RootElement.GetProperty("type").GetString());
         Assert.Equal(
-            JsonSerializer.Serialize(KernelJsonSchema.Parse("{\"type\": \"string\"}")),
+            JsonSerializer.Serialize(KernelJsonSchema.Parse("""{"type": "string"}""")),
             JsonSerializer.Serialize(response.Schema));
     }
 
@@ -387,7 +387,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var binaryDataParameter = parameters.Single(p => p.Name == "binary-data-parameter");
         Assert.True(binaryDataParameter.DefaultValue is byte[]);
-        Assert.Equal(new byte[] { 50, 51, 52, 53, 54 }, binaryDataParameter.DefaultValue);
+        Assert.Equal("23456"u8.ToArray(), binaryDataParameter.DefaultValue);
 
         var dateParameter = parameters.Single(p => p.Name == "date-parameter");
         Assert.True(dateParameter.DefaultValue is DateTime);
