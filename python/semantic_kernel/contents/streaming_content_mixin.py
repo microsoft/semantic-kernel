@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 import sys
 from abc import ABC, abstractmethod
+from typing import Any
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
 
-from typing import Any
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
