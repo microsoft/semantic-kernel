@@ -109,13 +109,6 @@ public class KernelPluginFactory {
             throw new SKException("Target object is not an instance of the provided class");
         }
 
-        if (clazz.getName().endsWith("_ClientProxy")) {
-            LOGGER.warn(
-                "The class " + clazz.getName() + " is likely a proxy from a DI framework, "
-                    + "this likely will prevent Semantic Kernel from detecting methods. "
-                    + "Try using: KernelPluginFactory.createFromObject(Class<?> clazz, Object target, String pluginName).");
-        }
-
         List<KernelFunction<?>> methods = Arrays.stream(clazz.getMethods())
             .filter(method -> method.isAnnotationPresent(DefineKernelFunction.class))
             .map(method -> {
@@ -146,7 +139,15 @@ public class KernelPluginFactory {
 
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
-        return createFromFunctions(pluginName, methods);
+        KernelPlugin plugin = createFromFunctions(pluginName, methods);
+
+        if (plugin.getFunctions().isEmpty()) {
+            LOGGER.warn(
+                "No functions found in class {}. This can be caused by DI frameworks that create proxies, or modules that are not making your methods visible. "
+                    + "Try using: KernelPluginFactory.createFromObject(Class<?> clazz, Object target, String pluginName).",
+                clazz.getName());
+        }
+        return plugin;
     }
 
     private static Class<?> getReturnType(DefineKernelFunction annotation, Method method) {
