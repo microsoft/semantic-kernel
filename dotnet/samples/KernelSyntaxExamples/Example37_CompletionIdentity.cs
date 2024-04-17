@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with identity associated with each chat message.
-public class Example37_CompletionIdentity : BaseTest
+public class Example37_CompletionIdentity(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Flag to force usage of OpenAI configuration if both <see cref="TestConfiguration.OpenAI"/>
@@ -72,11 +72,10 @@ public class Example37_CompletionIdentity : BaseTest
     private static ChatHistory CreateHistory(bool withName)
     {
         return
-            new ChatHistory()
-            {
+            [
                 new ChatMessageContent(AuthorRole.System, "Write one paragraph in response to the user that rhymes") { AuthorName = withName ? "Echo" : null },
                 new ChatMessageContent(AuthorRole.User, "Why is AI awesome") { AuthorName = withName ? "Ralph" : null },
-            };
+            ];
     }
 
     private void ValidateMessages(ChatHistory chatHistory, bool expectName)
@@ -116,9 +115,5 @@ public class Example37_CompletionIdentity : BaseTest
                     endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                     apiKey: TestConfiguration.AzureOpenAI.ApiKey,
                     modelId: TestConfiguration.AzureOpenAI.ChatModelId);
-    }
-
-    public Example37_CompletionIdentity(ITestOutputHelper output) : base(output)
-    {
     }
 }

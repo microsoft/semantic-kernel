@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use GPT Vision model with different content types (text and image).
-public class Example68_GPTVision : BaseTest
+public class Example68_GPTVision(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -25,18 +25,14 @@ public class Example68_GPTVision : BaseTest
 
         var chatHistory = new ChatHistory("You are a friendly assistant.");
 
-        chatHistory.AddUserMessage(new ChatMessageContentItemCollection
-        {
+        chatHistory.AddUserMessage(
+        [
             new TextContent("What’s in this image?"),
             new ImageContent(new Uri(ImageUri))
-        });
+        ]);
 
         var reply = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
 
         WriteLine(reply.Content);
-    }
-
-    public Example68_GPTVision(ITestOutputHelper output) : base(output)
-    {
     }
 }

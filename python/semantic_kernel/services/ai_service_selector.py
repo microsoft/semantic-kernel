@@ -1,16 +1,18 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING, Tuple, Union
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
-ALL_COMPLETION_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase]
-
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+    from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
+
+    ALL_COMPLETION_SERVICE_TYPES = Union[TextCompletionClientBase, ChatCompletionClientBase]
 
 
 class AIServiceSelector:
@@ -22,12 +24,15 @@ class AIServiceSelector:
 
     def select_ai_service(
         self, kernel: "Kernel", function: "KernelFunction", arguments: KernelArguments
-    ) -> Tuple[ALL_COMPLETION_SERVICE_TYPES, PromptExecutionSettings]:
+    ) -> Tuple["ALL_COMPLETION_SERVICE_TYPES", PromptExecutionSettings]:
         """Select a AI Service on a first come, first served basis,
         starting with execution settings in the arguments,
         followed by the execution settings from the function.
         If the same service_id is in both, the one in the arguments will be used.
         """
+        from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+        from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+
         execution_settings_dict = arguments.execution_settings or {}
         if func_exec_settings := getattr(function, "prompt_execution_settings", None):
             for id, settings in func_exec_settings.items():

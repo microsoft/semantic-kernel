@@ -3,25 +3,18 @@
 import asyncio
 import os
 
-import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-)
-from semantic_kernel.core_plugins.math_plugin import MathPlugin
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
-from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner import (
-    FunctionCallingStepwisePlanner,
-)
-from semantic_kernel.planners.function_calling_stepwise_planner.function_calling_stepwise_planner_options import (
-    FunctionCallingStepwisePlannerOptions,
-)
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.core_plugins import MathPlugin, TimePlugin
+from semantic_kernel.planners import FunctionCallingStepwisePlanner, FunctionCallingStepwisePlannerOptions
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     service_id = "planner"
-    api_key, _ = sk.openai_settings_from_dot_env()
+    api_key, _ = openai_settings_from_dot_env()
     kernel.add_service(
         OpenAIChatCompletion(
             service_id=service_id,
@@ -31,10 +24,8 @@ async def main():
     )
 
     cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
-    kernel.import_native_plugin_from_directory(cur_dir, "email_plugin")
-
-    kernel.import_plugin_from_object(MathPlugin(), "MathPlugin")
-    kernel.import_plugin_from_object(TimePlugin(), "TimePlugin")
+    kernel.add_plugin(parent_directory=cur_dir, plugin_name="email_plugin")
+    kernel.add_plugins({"MathPlugin": MathPlugin(), "TimePlugin": TimePlugin()})
 
     questions = [
         "What is the current hour number, plus 5?",
@@ -54,7 +45,7 @@ async def main():
         print(f"Q: {question}\nA: {result.final_answer}\n")
 
         # Uncomment the following line to view the planner's process for completing the request
-        # print(f"Chat history: {result.chat_history}\n")
+        # print(f"\nChat history: {result.chat_history}\n")
 
 
 if __name__ == "__main__":

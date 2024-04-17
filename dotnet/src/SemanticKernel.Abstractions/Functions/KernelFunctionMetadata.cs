@@ -16,7 +16,7 @@ public sealed class KernelFunctionMetadata
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
     /// <summary>The function's parameters.</summary>
-    private IReadOnlyList<KernelParameterMetadata> _parameters = Array.Empty<KernelParameterMetadata>();
+    private IReadOnlyList<KernelParameterMetadata> _parameters = [];
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
 
