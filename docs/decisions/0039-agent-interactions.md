@@ -280,7 +280,7 @@ An agent that relies solely on local chat-history can bind to the `LocalChannel`
 > Note now the `LocalChannel` accepts the static `InvokeAsync` as a callback which has private access to `agent`.
 
 ```c#
-public sealed class ChatCompletionAgent : KernelAgent
+public sealed class ChatCompletionAgent : LocalKernelAgent
 {
     private readonly PromptExecutionSettings? _executionSettings;
 
@@ -289,18 +289,6 @@ public sealed class ChatCompletionAgent : KernelAgent
     public override string? Name { get; }
 
     public string? Instructions { get; }
-
-    protected internal override Type ChannelType => 
-        typeof(LocalChannel<ChatCompletionAgent>);
-
-    protected internal override Task<AgentChannel> CreateChannelAsync(
-        AgentNexus nexus,
-        CancellationToken cancellationToken)
-    {
-        return 
-            Task.FromResult<AgentChannel>(
-                new LocalChannel<ChatCompletionAgent>(nexus, InvokeAsync));
-    }
 
     private static async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatAgent agent,
@@ -445,9 +433,6 @@ sealed class OpenAIAssistantChannel : AgentChannel<OpenAIAssistantAgent>
 - 
 
 ## TBD
-
-- RetryQueue/EventualConsistency* (I got this/just not in POC)
-- Plugin* (Nexus as Plug-in/Separate ADR)
 - StreamingKernelContent (Layer into design)
 - Filters: SK, today, already has the concept of filters for [prompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Prompt/IPromptFilter.cs) and [functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Function/IFunctionFilter.cs). Ideally, the same approach should be taken for Agent filters.
 
