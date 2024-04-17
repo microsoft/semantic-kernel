@@ -2,7 +2,7 @@
 from typing import Literal, Optional
 
 from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.contents.const import AZURE_CHAT_MESSAGE_CONTENT
+from semantic_kernel.contents.types import AZURE_CHAT_MESSAGE_CONTENT
 
 
 class AzureChatMessageContent(OpenAIChatMessageContent):
