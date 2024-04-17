@@ -8,7 +8,7 @@ If you want to use some of the optional dependencies (OpenAI is installed by def
 
     python -m pip install --upgrade semantic-kernel[hugging_face]
 
-of all of them:
+or all of them:
 
     python -m pip install --upgrade semantic-kernel[all]
 
@@ -34,9 +34,9 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import asyncio
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = sk.Kernel()
