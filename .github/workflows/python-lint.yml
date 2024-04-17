@@ -69,5 +69,5 @@ jobs:
       - name: Install Semantic Kernel
         run: cd python && poetry install --no-ansi
       - name: Run mypy
-        run: cd python && poetry run mypy -p semantic_kernel --config-file=python/mypy.ini
+        run: cd python && poetry run mypy -p semantic_kernel --config-file=mypy.ini
 
