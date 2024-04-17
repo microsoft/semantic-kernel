@@ -500,7 +500,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             .collect(Collectors.toList());
     }
 
-    static ChatRequestMessage getChatRequestMessage(
+    private static ChatRequestMessage getChatRequestMessage(
         ChatMessageContent<?> message) {
 
         AuthorRole authorRole = message.getAuthorRole();
@@ -534,6 +534,26 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             case TOOL:
                 String id = message.getMetadata().getId();
                 return new ChatRequestToolMessage(content, id);
+            default:
+                LOGGER.debug("Unexpected author role: " + authorRole);
+                throw new SKException("Unexpected author role: " + authorRole);
+        }
+
+    }
+
+    static ChatRequestMessage getChatRequestMessage(
+        AuthorRole authorRole, 
+        String content) {
+
+        switch (authorRole) {
+            case ASSISTANT:
+                return new ChatRequestAssistantMessage(content);
+            case SYSTEM:
+                return new ChatRequestSystemMessage(content);
+            case USER:
+                return new ChatRequestUserMessage(content);
+            case TOOL:
+                return new ChatRequestToolMessage(content, null);
             default:
                 LOGGER.debug("Unexpected author role: " + authorRole);
                 throw new SKException("Unexpected author role: " + authorRole);

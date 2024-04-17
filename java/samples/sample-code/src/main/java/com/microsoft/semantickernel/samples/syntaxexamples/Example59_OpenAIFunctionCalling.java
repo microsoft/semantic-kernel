@@ -11,11 +11,14 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatM
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
