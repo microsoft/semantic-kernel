@@ -64,7 +64,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
                 };
 
-            foreach (var fileId in definition.FileIds ?? Array.Empty<string>())
+            foreach (var fileId in definition.FileIds ?? [])
             {
                 assistantCreationOptions.FileIds.Add(fileId);
             }

@@ -24,31 +24,32 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <summary>
     /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
-    private sealed class Channel : AgentChannel<OpenAIAssistantAgent>
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="Channel"/> class.
+    /// </remarks>
+    private sealed class Channel(AssistantsClient client, string threadId) : AgentChannel<OpenAIAssistantAgent>
     {
         private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
 
         private static readonly HashSet<RunStatus> s_pollingStates =
-            new()
-            {
+            [
                 RunStatus.Queued,
                 RunStatus.InProgress,
                 RunStatus.Cancelling,
-            };
+            ];
 
         private static readonly HashSet<RunStatus> s_terminalStates =
-            new()
-            {
+            [
                 RunStatus.Expired,
                 RunStatus.Failed,
                 RunStatus.Cancelled,
-            };
+            ];
 
-        private readonly AssistantsClient _client;
-        private readonly string _threadId;
-        private readonly Dictionary<string, ToolDefinition[]> _agentTools;
-        private readonly Dictionary<string, string> _agentNames; // Cache agent names by their identifier for GetHistoryAsync()
+        private readonly AssistantsClient _client = client;
+        private readonly string _threadId = threadId;
+        private readonly Dictionary<string, ToolDefinition[]> _agentTools = [];
+        private readonly Dictionary<string, string> _agentNames = []; // Cache agent names by their identifier for GetHistoryAsync()
 
         /// <inheritdoc/>
         protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -82,7 +83,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
             if (!this._agentTools.TryGetValue(agent.Id, out var tools))
             {
-                tools = agent.Tools.Concat(agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))).ToArray();
+                tools = [.. agent.Tools, .. agent.Kernel.Plugins.SelectMany(p => p.Select(f => f.ToToolDefinition(p.Name, FunctionDelimiter)))];
                 this._agentTools.Add(agent.Id, tools);
             }
 
@@ -336,17 +337,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 }
             }
             while (messages.HasMore);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Channel"/> class.
-        /// </summary>
-        public Channel(AssistantsClient client, string threadId)
-        {
-            this._client = client;
-            this._threadId = threadId;
-            this._agentTools = new();
-            this._agentNames = new();
         }
     }
 }

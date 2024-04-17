@@ -41,7 +41,7 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
                 {
                     EnableRetrieval = true, // Enable retrieval
                     Model = this.Model,
-                    FileIds = new[] { uploadFile.Id } // Associate uploaded file
+                    FileIds = [uploadFile.Id] // Associate uploaded file
                 });
 
         // Create a chat for agent interaction.

@@ -117,15 +117,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RestoreAsync"/>.
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentRestoreAsync()
+    public async Task VerifyOpenAIAssistantAgentRetrieveAsync()
     {
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
 
         OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.RestoreAsync(
+            await OpenAIAssistantAgent.RetrieveAsync(
                 this._emptyKernel,
                 this.CreateTestConfiguration(),
                 "#id");
