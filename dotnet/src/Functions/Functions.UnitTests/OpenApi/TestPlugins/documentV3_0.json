@@ -308,7 +308,7 @@
     "/api-with-open-api-extensions": {
       "get": {
         "summary": "Get API with open-api specification extensions",
-        "description": "For more information on specificaiton extensions see the specification extensions section of the open api spec: https://swagger.io/specification/v3/",
+        "description": "For more information on specification extensions see the specification extensions section of the open api spec: https://swagger.io/specification/v3/",
         "operationId": "OpenApiExtensions",
         "parameters": [],
         "responses": {
