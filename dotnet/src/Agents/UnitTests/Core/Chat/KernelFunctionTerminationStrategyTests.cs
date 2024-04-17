@@ -17,7 +17,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 public class KernelFunctionTerminationStrategyTests
 {
     /// <summary>
-    /// Verify default state and behaviuor
+    /// Verify default state and behavior
     /// </summary>
     [Fact]
     public async Task VerifyKernelFunctionTerminationStrategyDefaultsAsync()
