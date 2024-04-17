@@ -18,6 +18,9 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// ```
 /// </example>
 /// </summary>
+/// <remarks>
+/// Encountering json with this form of delimiters is not uncommon for agent scenarios.
+/// </remarks>
 public static class JsonResultTranslator
 {
     private const string LiteralDelimiter = "```";
