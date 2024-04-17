@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 
@@ -55,7 +56,14 @@ public abstract class FunctionResultProcessor<TResult>
             TypeConverter? converter = TypeConverterFactory.GetTypeConverter(typeof(TResult));
             if (converter != null)
             {
-                parsedResult = (TResult?)converter.ConvertFrom(result); // %%% EXCEPTION ???
+                try
+                {
+                    parsedResult = (TResult?)converter.ConvertFrom(result);
+                }
+                catch (Exception exception) when (!exception.IsCriticalException())
+                {
+                    // %%% TODO: LOGGING
+                }
             }
             else
             {
