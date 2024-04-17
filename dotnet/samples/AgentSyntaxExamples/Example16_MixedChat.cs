@@ -17,7 +17,7 @@ namespace Examples;
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class Example09_MixedChat : BaseTest
+public class Example16_MixedChat : BaseTest
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -91,7 +91,7 @@ public class Example09_MixedChat : BaseTest
         this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
-    public Example09_MixedChat(ITestOutputHelper output)
+    public Example16_MixedChat(ITestOutputHelper output)
         : base(output)
     {
         // Nothing to do...

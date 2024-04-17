@@ -10,18 +10,10 @@ using Xunit.Abstractions;
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
-/// eliciting its response to three explicit user messages.
+/// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-/// <remarks>
-/// This example demonstrates that outside of initialization (and cleanup), using
-/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
-/// </remarks>
-public class Example04_OpenAIAssistant : BaseTest
+public class Example13_OpenAIAssistant_CodeInterpreter : BaseTest
 {
-    private const string ParrotName = "Parrot";
-    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
-
     [Fact]
     public async Task RunAsync()
     {
@@ -30,10 +22,9 @@ public class Example04_OpenAIAssistant : BaseTest
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
                 config: new(this.GetApiKey(), this.GetEndpoint()),
-                definition: new()
+                new()
                 {
-                    Instructions = ParrotInstructions,
-                    Name = ParrotName,
+                    EnableCodeInterpreter = true, // Enable code-interpreter
                     Model = this.GetModel(),
                 });
 
@@ -43,9 +34,8 @@ public class Example04_OpenAIAssistant : BaseTest
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Fortune favors the bold.");
-            await InvokeAgentAsync("I came, I saw, I conquered.");
-            await InvokeAgentAsync("Practice makes perfect.");
+            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
+            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
         }
         finally
         {
@@ -66,7 +56,7 @@ public class Example04_OpenAIAssistant : BaseTest
         }
     }
 
-    public Example04_OpenAIAssistant(ITestOutputHelper output)
+    public Example13_OpenAIAssistant_CodeInterpreter(ITestOutputHelper output)
         : base(output)
     { }
 }

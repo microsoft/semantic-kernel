@@ -15,7 +15,7 @@ namespace Examples;
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Example07_OpenAIAssistant_Retrieval : BaseTest
+public class Example14_OpenAIAssistant_Retrieval : BaseTest
 {
     /// <summary>
     /// Retrieval tool not supported on Azure OpenAI.
@@ -73,7 +73,7 @@ public class Example07_OpenAIAssistant_Retrieval : BaseTest
         }
     }
 
-    public Example07_OpenAIAssistant_Retrieval(ITestOutputHelper output)
+    public Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output)
         : base(output)
     { }
 }

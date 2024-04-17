@@ -4,16 +4,25 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
 
 /// <summary>
-/// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> with a <see cref="KernelPlugin"/>,
+/// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
+/// <remarks>
+/// This example demonstrates that outside of initialization (and cleanup), plugin
+/// usage for <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// </remarks>
+public class Example12_OpenAIAssistant_Plugins : BaseTest
 {
+    private const string HostName = "Host";
+    private const string HostInstructions = "Answer questions about the menu.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -24,9 +33,14 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
                 config: new(this.GetApiKey(), this.GetEndpoint()),
                 new()
                 {
-                    EnableCodeInterpreter = true, // Enable code-interpreter
+                    Instructions = HostInstructions,
+                    Name = HostName,
                     Model = this.GetModel(),
                 });
+
+        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
@@ -34,8 +48,10 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
-            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
+            await InvokeAgentAsync("Hello");
+            await InvokeAgentAsync("What is the special soup?");
+            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("Thank you");
         }
         finally
         {
@@ -56,7 +72,7 @@ public class Example06_OpenAIAssistant_CodeInterpreter : BaseTest
         }
     }
 
-    public Example06_OpenAIAssistant_CodeInterpreter(ITestOutputHelper output)
+    public Example12_OpenAIAssistant_Plugins(ITestOutputHelper output)
         : base(output)
     { }
 }

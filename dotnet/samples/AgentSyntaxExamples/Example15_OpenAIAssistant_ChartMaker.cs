@@ -14,7 +14,7 @@ namespace Examples;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class Example08_OpenAIAssistant_ChartMaker : BaseTest
+public class Example15_OpenAIAssistant_ChartMaker : BaseTest
 {
     /// <summary>
     /// Target Open AI services.
@@ -87,7 +87,7 @@ public class Example08_OpenAIAssistant_ChartMaker : BaseTest
         }
     }
 
-    public Example08_OpenAIAssistant_ChartMaker(ITestOutputHelper output)
+    public Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output)
         : base(output)
     { }
 }

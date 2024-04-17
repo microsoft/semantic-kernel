@@ -4,24 +4,23 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
 
 /// <summary>
-/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> with a <see cref="KernelPlugin"/>,
-/// and then eliciting its response to explicit user messages.
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
+/// eliciting its response to three explicit user messages.
 /// </summary>
 /// <remarks>
-/// This example demonstrates that outside of initialization (and cleanup), plugin
-/// usage for <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// This example demonstrates that outside of initialization (and cleanup), using
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
 /// </remarks>
-public class Example05_OpenAIAssistant_Plugins : BaseTest
+public class Example11_OpenAIAssistant : BaseTest
 {
-    private const string HostName = "Host";
-    private const string HostInstructions = "Answer questions about the menu.";
+    private const string ParrotName = "Parrot";
+    private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
     [Fact]
     public async Task RunAsync()
@@ -31,16 +30,12 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
                 config: new(this.GetApiKey(), this.GetEndpoint()),
-                new()
+                definition: new()
                 {
-                    Instructions = HostInstructions,
-                    Name = HostName,
+                    Instructions = ParrotInstructions,
+                    Name = ParrotName,
                     Model = this.GetModel(),
                 });
-
-        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
@@ -48,10 +43,9 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Hello");
-            await InvokeAgentAsync("What is the special soup?");
-            await InvokeAgentAsync("What is the special drink?");
-            await InvokeAgentAsync("Thank you");
+            await InvokeAgentAsync("Fortune favors the bold.");
+            await InvokeAgentAsync("I came, I saw, I conquered.");
+            await InvokeAgentAsync("Practice makes perfect.");
         }
         finally
         {
@@ -72,7 +66,7 @@ public class Example05_OpenAIAssistant_Plugins : BaseTest
         }
     }
 
-    public Example05_OpenAIAssistant_Plugins(ITestOutputHelper output)
+    public Example11_OpenAIAssistant(ITestOutputHelper output)
         : base(output)
     { }
 }
