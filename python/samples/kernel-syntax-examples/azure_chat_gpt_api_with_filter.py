@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 from typing import Any, Callable, Coroutine
 
@@ -13,15 +14,18 @@ from semantic_kernel.hooks.function.function_hook_context_base import FunctionCo
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
+logger = logging.getLogger(__name__)
+
 
 class ChatHistoryHooked(ChatHistory):
     async def function_filter(
         self,
         function_context: FunctionContext,
-        next: Callable[[FunctionContext], Coroutine[Any, Any, FunctionContext]],
-    ) -> FunctionContext:
+        next: Callable[[FunctionContext], Coroutine[Any, Any, None]],
+    ) -> None:
         if function_context.function.plugin_name != "chat":
-            return await next(function_context)
+            await next(function_context)
+            return
         try:
             user_input = input("User:> ")
         except KeyboardInterrupt:
@@ -32,12 +36,12 @@ class ChatHistoryHooked(ChatHistory):
             raise OperationCancelledException("User stopped the operation")
         self.add_user_message(user_input)
 
-        function_context = await next(function_context)
+        await next(function_context)
 
         if function_context.result:
+            logger.info(f'Usage: {function_context.result.metadata.get("usage")}')
             self.add_message(function_context.result.value[0])
             print(f"Mosscap:> {str(function_context.result)}")
-        return function_context
 
 
 async def main() -> None:

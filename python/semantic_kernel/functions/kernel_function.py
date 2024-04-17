@@ -194,20 +194,19 @@ class KernelFunction(KernelBaseModel):
         KernelFunction._rebuild_context()
         function_context = FunctionContext(function=self, kernel=kernel, arguments=arguments, metadata=metadata)
 
-        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, FunctionContext]]] = [self._wrap()]
+        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, None]]] = [self._wrap()]
         index = 0
         for id, hook in kernel.hooks:
             hook_func = functools.partial(hook.function_filter, next=stack[0])
             stack.append(hook_func)
             index += 1
-        result = await stack[-1](function_context)
-        return result.result
+        await stack[-1](function_context)
+        return function_context.result
 
-    def _wrap(self) -> Callable[["FunctionContext"], Coroutine[Any, Any, "FunctionContext"]]:
-        async def inner_func(function_context: "FunctionContext") -> "FunctionContext":
+    def _wrap(self) -> Callable[["FunctionContext"], Coroutine[Any, Any, None]]:
+        async def inner_func(function_context: "FunctionContext") -> None:
             result = await self._invoke_internal(function_context.kernel, function_context.arguments)
             function_context.result = result
-            return function_context
 
         return inner_func
 

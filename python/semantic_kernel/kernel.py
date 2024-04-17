@@ -247,7 +247,7 @@ class Kernel(KernelBaseModel):
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function, or function- and plugin name provided")
-            function = self.func(plugin_name, function_name)
+            function = self.get_function(plugin_name, function_name)
 
         try:
             return await function.invoke(kernel=self, arguments=arguments, metadata=metadata)
