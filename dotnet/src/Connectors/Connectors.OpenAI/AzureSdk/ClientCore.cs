@@ -449,7 +449,7 @@ internal abstract class ClientCore
                         // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
                         // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
                         var functionName = FunctionName.Parse(functionCall.Name, OpenAIFunction.NameSeparator);
-                        message.Items.Add(new FunctionCallResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
+                        message.Items.Add(new FunctionResultContent(functionName.Name, functionName.PluginName, functionCall.Id, result));
                     }
 
                     chat.Add(message);
@@ -989,7 +989,7 @@ internal abstract class ClientCore
 
         if (message.Role == AuthorRole.Tool)
         {
-            // Handling function call results represented by the TextContent type.
+            // Handling function results represented by the TextContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, content, metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } })
             if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
                 toolId?.ToString() is string toolIdString)
@@ -997,12 +997,12 @@ internal abstract class ClientCore
                 return new[] { new ChatRequestToolMessage(message.Content, toolIdString) };
             }
 
-            // Handling function call results represented by the FunctionCallResultContent type.
-            // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionCallResultContent(functionCall, result) })
+            // Handling function results represented by the FunctionResultContent type.
+            // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
             List<ChatRequestToolMessage>? toolMessages = null;
             foreach (var item in message.Items)
             {
-                if (item is not FunctionCallResultContent resultContent)
+                if (item is not FunctionResultContent resultContent)
                 {
                     continue;
                 }
@@ -1081,11 +1081,11 @@ internal abstract class ClientCore
                 asstMessage.ToolCalls.AddRange(tools);
             }
 
-            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallRequestContent type.
+            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
             HashSet<string>? functionCallIds = null;
             foreach (var item in message.Items)
             {
-                if (item is not FunctionCallRequestContent callRequest)
+                if (item is not FunctionCallContent callRequest)
                 {
                     continue;
                 }
@@ -1143,7 +1143,7 @@ internal abstract class ClientCore
 
         foreach (var toolCall in chatChoice.Message.ToolCalls)
         {
-            // Adding items of 'FunctionCallRequestContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
+            // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
             // This allows consumers to work with functions in an LLM-agnostic way.
             if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
@@ -1172,7 +1172,7 @@ internal abstract class ClientCore
 
                 var functionName = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
 
-                var functionCallRequestContent = new FunctionCallRequestContent(
+                var functionCallContent = new FunctionCallContent(
                     functionName: functionName.Name,
                     pluginName: functionName.PluginName,
                     id: functionToolCall.Id,
@@ -1182,7 +1182,7 @@ internal abstract class ClientCore
                     Exception = exception
                 };
 
-                message.Items.Add(functionCallRequestContent);
+                message.Items.Add(functionCallContent);
             }
         }
 

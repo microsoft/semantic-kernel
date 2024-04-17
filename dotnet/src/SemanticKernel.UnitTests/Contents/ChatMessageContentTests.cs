@@ -183,8 +183,8 @@ public class ChatMessageContentTests
             {
                 ["metadata-key-6"] = "metadata-value-6"
             }) { MimeType = "mime-type-6" },
-            new FunctionCallRequestContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
-            new FunctionCallResultContent(new FunctionCallRequestContent("function-name", "plugin-name", "function-id"), "function-result")
+            new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
+            new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result")
         };
 
         // Act
@@ -267,7 +267,7 @@ public class ChatMessageContentTests
         Assert.Single(textContent.Metadata);
         Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
 
-        var functionCallContent = deserializedMessage.Items[6] as FunctionCallRequestContent;
+        var functionCallContent = deserializedMessage.Items[6] as FunctionCallContent;
         Assert.NotNull(functionCallContent);
         Assert.Equal("function-name", functionCallContent.FunctionName);
         Assert.Equal("plugin-name", functionCallContent.PluginName);
@@ -276,7 +276,7 @@ public class ChatMessageContentTests
         Assert.Single(functionCallContent.Arguments);
         Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
 
-        var functionResultContent = deserializedMessage.Items[7] as FunctionCallResultContent;
+        var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-name", functionResultContent.FunctionName);

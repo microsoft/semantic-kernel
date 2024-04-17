@@ -82,7 +82,7 @@ public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTes
                     Write(result.Content);
                 }
 
-                IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(result);
+                IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
                 if (!functionCalls.Any())
                 {
                     break;
@@ -94,17 +94,17 @@ public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTes
                 {
                     try
                     {
-                        FunctionCallResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
+                        FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
 
                         chatHistory.Add(resultContent.ToChatMessage());
                     }
                     catch (Exception ex)
                     {
-                        chatHistory.Add(new FunctionCallResultContent(functionCall, ex).ToChatMessage()); // Adding function result to chat history.
+                        chatHistory.Add(new FunctionResultContent(functionCall, ex).ToChatMessage()); // Adding function result to chat history.
                         // Adding exception to chat history.
                         // or
                         //string message = "Error details that LLM can reason about.";
-                        //chatHistory.Add(new FunctionCallResultContent(functionCall, message).ToChatMessageContent()); // Adding function result to chat history.
+                        //chatHistory.Add(new FunctionResultContent(functionCall, message).ToChatMessageContent()); // Adding function result to chat history.
                     }
                 }
 
@@ -131,7 +131,7 @@ public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTes
 
                 chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
 
-                IEnumerable<FunctionCallRequestContent> functionCalls = FunctionCallRequestContent.GetFunctionCalls(result);
+                IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
                 if (!functionCalls.Any())
                 {
                     break;
@@ -139,18 +139,18 @@ public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTes
 
                 foreach (var functionCall in functionCalls)
                 {
-                    FunctionCallResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
+                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
 
                     chatHistory.Add(resultContent.ToChatMessage());
                 }
 
-                // Adding a simulated function call request to the connector response message
-                var simulatedFunctionCall = new FunctionCallRequestContent("weather-alert", id: "call_123");
+                // Adding a simulated function call to the connector response message
+                var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
                 result.Items.Add(simulatedFunctionCall);
 
                 // Adding a simulated function result to chat history
                 var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
-                chatHistory.Add(new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+                chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
 
                 WriteLine();
             }

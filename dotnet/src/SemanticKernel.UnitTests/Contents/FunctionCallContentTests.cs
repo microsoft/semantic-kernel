@@ -8,11 +8,11 @@ using Xunit;
 
 namespace Microsoft.SemanticKernel.Contents;
 
-public class FunctionCallRequestContentTests
+public class FunctionCallContentTests
 {
     private readonly KernelArguments _arguments;
 
-    public FunctionCallRequestContentTests()
+    public FunctionCallContentTests()
     {
         this._arguments = [];
     }
@@ -21,7 +21,7 @@ public class FunctionCallRequestContentTests
     public void ItShouldBeInitializedFromFunctionAndPluginName()
     {
         // Arrange & act
-        var sut = new FunctionCallRequestContent("f1", "p1", "id", this._arguments);
+        var sut = new FunctionCallContent("f1", "p1", "id", this._arguments);
 
         // Assert
         Assert.Equal("f1", sut.FunctionName);
@@ -46,7 +46,7 @@ public class FunctionCallRequestContentTests
 
         kernel.Plugins.AddFromFunctions("p1", [function]);
 
-        var sut = new FunctionCallRequestContent("f1", "p1", "id", this._arguments);
+        var sut = new FunctionCallContent("f1", "p1", "id", this._arguments);
 
         // Act
         var resultContent = await sut.InvokeAsync(kernel);
@@ -63,7 +63,7 @@ public class FunctionCallRequestContentTests
         // Arrange
         var kernel = new Kernel();
 
-        var sut = new FunctionCallRequestContent("f1", "p1", "id")
+        var sut = new FunctionCallContent("f1", "p1", "id")
         {
             Exception = new JsonException("Error: Function call arguments were invalid JSON.")
         };
@@ -80,17 +80,17 @@ public class FunctionCallRequestContentTests
     public void ItShouldReturnListOfFunctionCallRequests()
     {
         // Arrange
-        var functionCallRequestContents = new ChatMessageContentItemCollection
+        var functionCallContents = new ChatMessageContentItemCollection
         {
-            new FunctionCallRequestContent("f1", "p1", "id1", this._arguments),
-            new FunctionCallRequestContent("f2", "p2", "id2", this._arguments),
-            new FunctionCallRequestContent("f3", "p3", "id3", this._arguments)
+            new FunctionCallContent("f1", "p1", "id1", this._arguments),
+            new FunctionCallContent("f2", "p2", "id2", this._arguments),
+            new FunctionCallContent("f3", "p3", "id3", this._arguments)
         };
 
-        var chatMessage = new ChatMessageContent(AuthorRole.Tool, functionCallRequestContents);
+        var chatMessage = new ChatMessageContent(AuthorRole.Tool, functionCallContents);
 
         // Act
-        var result = FunctionCallRequestContent.GetFunctionCalls(chatMessage).ToArray();
+        var result = FunctionCallContent.GetFunctionCalls(chatMessage).ToArray();
 
         // Assert
         Assert.NotNull(result);

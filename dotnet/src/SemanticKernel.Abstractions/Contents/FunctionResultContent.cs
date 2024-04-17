@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// Represents the result of a function call.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class FunctionCallResultContent : KernelContent
+public sealed class FunctionResultContent : KernelContent
 {
     /// <summary>
     /// The function call ID.
@@ -37,14 +37,14 @@ public sealed class FunctionCallResultContent : KernelContent
     public object? Result { get; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallResultContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionResultContent"/> class.
     /// </summary>
     /// <param name="functionName">The function name.</param>
     /// <param name="pluginName">The plugin name.</param>
     /// <param name="id">The function call ID.</param>
     /// <param name="result">The function result.</param>
     [JsonConstructor]
-    public FunctionCallResultContent(string? functionName = null, string? pluginName = null, string? id = null, object? result = null)
+    public FunctionResultContent(string? functionName = null, string? pluginName = null, string? id = null, object? result = null)
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
@@ -53,11 +53,11 @@ public sealed class FunctionCallResultContent : KernelContent
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
     /// <param name="functionCall">The function call.</param>
     /// <param name="result">The function result.</param>
-    public FunctionCallResultContent(FunctionCallRequestContent functionCall, object? result = null)
+    public FunctionResultContent(FunctionCallContent functionCall, object? result = null)
     {
         this.Id = functionCall.Id;
         this.PluginName = functionCall.PluginName;
@@ -66,11 +66,11 @@ public sealed class FunctionCallResultContent : KernelContent
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FunctionCallRequestContent"/> class.
+    /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
     /// <param name="functionCallContent">The function call content.</param>
     /// <param name="result">The function result.</param>
-    public FunctionCallResultContent(FunctionCallRequestContent functionCallContent, FunctionResult result) :
+    public FunctionResultContent(FunctionCallContent functionCallContent, FunctionResult result) :
         this(functionCallContent, result.Value)
     {
         this.InnerContent = result;
