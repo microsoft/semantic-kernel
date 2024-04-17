@@ -55,7 +55,7 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(root_key)
         for field in self.model_fields_set:
-            if field in ["content", DISCRIMINATOR_FIELD]:
+            if field in ["content", DISCRIMINATOR_FIELD, "metadata", "inner_content"]:
                 continue
             value = getattr(self, field)
             if value is None:
