@@ -177,3 +177,29 @@ async def test_azure_text_embedding_calls_with_batches(mock_create) -> None:
         ],
         any_order=False,
     )
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    texts = ["hello world", "goodbye world"]
+    embedding_kwargs = {"dimensions": 1536}
+
+    azure_text_embedding = AzureTextEmbedding(
+        deployment_name=deployment_name,
+        endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version,
+    )
+
+    await azure_text_embedding.generate_embeddings(texts, **embedding_kwargs)
+
+    mock_create.assert_awaited_once_with(
+        input=texts,
+        model=deployment_name,
+        **embedding_kwargs
+    )

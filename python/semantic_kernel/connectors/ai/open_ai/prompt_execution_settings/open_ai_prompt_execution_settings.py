@@ -82,3 +82,4 @@ class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):
     extra_query: Optional[Dict] = None
     extra_body: Optional[Dict] = None
     timeout: Optional[float] = None
+    dimensions: Optional[int] = None
