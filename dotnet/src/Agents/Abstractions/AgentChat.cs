@@ -120,7 +120,7 @@ public abstract class AgentChat
 
         try
         {
-            this.OnAgentInvokingFilter(agent, this._history);
+            this.OnAgentInvokingFilter(agent, this.History);
 
             // Manifest the required channel.  Will throw if channel not in sync.
             var channel = await this.GetChannelAsync(agent, cancellationToken).ConfigureAwait(false);
@@ -130,7 +130,7 @@ public abstract class AgentChat
             await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 // Invoke filter
-                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this._history, message);
+                AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
 
                 if (context?.SuppressMessage ?? false)
                 {
