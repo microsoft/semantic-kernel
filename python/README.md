@@ -87,7 +87,7 @@ prompt_template_config = sk.PromptTemplateConfig(
     execution_settings=req_settings,
 )
 
-function = kernel.create_function_from_prompt(
+function = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
     prompt_template_config=prompt_template_config,
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
 ```python
 # Create a reusable function summarize function
-summarize = kernel.create_function_from_prompt(
+summarize = kernel.add_function(
         function_name="tldr_function",
         plugin_name="tldr_plugin",
         prompt="{{$input}}\n\nOne line TLDR with the fewest words.",

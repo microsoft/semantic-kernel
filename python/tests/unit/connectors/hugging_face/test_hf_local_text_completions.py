@@ -52,16 +52,16 @@ async def test_text_completion(model_name, task, input_str):
 
     prompt_template_config = PromptTemplateConfig(template=prompt, execution_settings=exec_settings)
 
-    test_func = kernel.create_function_from_prompt(
+    kernel.add_function(
         prompt_template_config=prompt_template_config,
         function_name="TestFunction",
         plugin_name="TestPlugin",
-        execution_settings=exec_settings,
+        prompt_execution_settings=exec_settings,
     )
 
     arguments = KernelArguments(input=input_str)
 
-    summary = await kernel.invoke(test_func, arguments)
+    summary = await kernel.invoke(function_name="TestFunction", plugin_name="TestPlugin", arguments=arguments)
 
     output = str(summary).strip()
     try:
@@ -70,7 +70,7 @@ async def test_text_completion(model_name, task, input_str):
         pytest.xfail("The output is empty, but completed invoke")
 
     stream_summary = ""
-    async for text in kernel.invoke_stream(test_func, arguments):
+    async for text in kernel.invoke_stream(function_name="TestFunction", plugin_name="TestPlugin", arguments=arguments):
         stream_summary += str(text[0])
 
     stream_output = str(stream_summary).strip()

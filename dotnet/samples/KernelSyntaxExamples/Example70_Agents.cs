@@ -15,7 +15,7 @@ namespace Examples;
 /// Showcase Open AI Agent integration with semantic kernel:
 /// https://platform.openai.com/docs/api-reference/agents
 /// </summary>
-public class Example70_Agent : BaseTest
+public class Example70_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Specific model is required that supports agents and function calling.
@@ -186,9 +186,5 @@ public class Example70_Agent : BaseTest
             ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) ?
                 new AgentBuilder().WithOpenAIChatCompletion(OpenAIFunctionEnabledModel, TestConfiguration.OpenAI.ApiKey) :
                 new AgentBuilder().WithAzureOpenAIChatCompletion(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.ApiKey);
-    }
-
-    public Example70_Agent(ITestOutputHelper output) : base(output)
-    {
     }
 }

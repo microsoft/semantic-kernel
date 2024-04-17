@@ -217,14 +217,9 @@ public sealed class KernelFunctionHelpersTests
         public CustomReturnType CustomReturnType(string textProperty) => new(textProperty);
     }
 
-    private sealed class CustomReturnType
+    private sealed class CustomReturnType(string textProperty)
     {
-        public CustomReturnType(string textProperty)
-        {
-            this.TextProperty = textProperty;
-        }
-
-        public string TextProperty { get; set; }
+        public string TextProperty { get; set; } = textProperty;
 
         public override string ToString() => this.TextProperty;
     }

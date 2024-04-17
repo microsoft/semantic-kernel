@@ -52,6 +52,6 @@ public class ChatHistoryChannel : AgentChannel
     /// </summary>
     public ChatHistoryChannel()
     {
-        this._history = new();
+        this._history = [];
     }
 }

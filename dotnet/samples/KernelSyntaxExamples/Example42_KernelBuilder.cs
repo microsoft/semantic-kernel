@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example42_KernelBuilder : BaseTest
+public class Example42_KernelBuilder(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public void BuildKernelWithAzureChatCompletion()
@@ -99,9 +99,5 @@ public class Example42_KernelBuilder : BaseTest
         services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<TimePlugin>(serviceProvider: sp));
         services.AddSingleton<KernelPlugin>(sp => KernelPluginFactory.CreateFromType<HttpPlugin>(serviceProvider: sp));
         Kernel kernel6 = services.BuildServiceProvider().GetRequiredService<Kernel>();
-    }
-
-    public Example42_KernelBuilder(ITestOutputHelper output) : base(output)
-    {
     }
 }

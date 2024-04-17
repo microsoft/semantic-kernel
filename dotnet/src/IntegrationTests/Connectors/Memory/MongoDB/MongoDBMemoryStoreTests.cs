@@ -253,7 +253,7 @@ public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : I
         // Arrange
         var collectionName = GetRandomName();
         var memoryStore = this._fixture.MemoryStore;
-        var ids = new[] { "a", "b", "c" };
+        string[] ids = ["a", "b", "c"];
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
@@ -287,7 +287,7 @@ public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : I
     {
         // Arrange
         var memoryStore = this._fixture.ListCollectionsMemoryStore;
-        var testCollections = new[] { "collection1", "collection2", "collection3" };
+        string[] testCollections = ["collection1", "collection2", "collection3"];
         foreach (var collection in testCollections)
         {
             await memoryStore.CreateCollectionAsync(collection);
