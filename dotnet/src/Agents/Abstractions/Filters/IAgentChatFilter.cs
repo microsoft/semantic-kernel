@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Agents.Filters;
 
 /// <summary>
 /// Interface for filtering actions during agent chat.
 /// </summary>
-[Experimental("SKEXP0110")]
 public interface IAgentChatFilter
 {
     /// <summary>
