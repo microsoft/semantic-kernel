@@ -15,7 +15,7 @@ namespace Examples;
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Example14_OpenAIAssistant_Retrieval : BaseTest
+public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Retrieval tool not supported on Azure OpenAI.
@@ -36,11 +36,11 @@ public class Example14_OpenAIAssistant_Retrieval : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                config: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
                     EnableRetrieval = true, // Enable retrieval
-                    Model = this.GetModel(),
+                    Model = this.Model,
                     FileIds = new[] { uploadFile.Id } // Associate uploaded file
                 });
 
@@ -72,8 +72,4 @@ public class Example14_OpenAIAssistant_Retrieval : BaseTest
             }
         }
     }
-
-    public Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output)
-        : base(output)
-    { }
 }

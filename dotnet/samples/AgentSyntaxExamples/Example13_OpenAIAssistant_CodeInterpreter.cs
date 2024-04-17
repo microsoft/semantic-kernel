@@ -12,7 +12,7 @@ namespace Examples;
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Example13_OpenAIAssistant_CodeInterpreter : BaseTest
+public class Example13_OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -21,11 +21,11 @@ public class Example13_OpenAIAssistant_CodeInterpreter : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                config: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
                     EnableCodeInterpreter = true, // Enable code-interpreter
-                    Model = this.GetModel(),
+                    Model = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -55,8 +55,4 @@ public class Example13_OpenAIAssistant_CodeInterpreter : BaseTest
             }
         }
     }
-
-    public Example13_OpenAIAssistant_CodeInterpreter(ITestOutputHelper output)
-        : base(output)
-    { }
 }

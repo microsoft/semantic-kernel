@@ -14,7 +14,7 @@ namespace Examples;
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class Example15_OpenAIAssistant_ChartMaker : BaseTest
+public class Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Target Open AI services.
@@ -31,13 +31,13 @@ public class Example15_OpenAIAssistant_ChartMaker : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                config: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
-                    Model = this.GetModel(),
+                    Model = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -86,8 +86,4 @@ public class Example15_OpenAIAssistant_ChartMaker : BaseTest
             }
         }
     }
-
-    public Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output)
-        : base(output)
-    { }
 }

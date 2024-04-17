@@ -18,7 +18,7 @@ namespace Examples;
 /// This example demonstrates that outside of initialization (and cleanup), plugin
 /// usage for <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
 /// </remarks>
-public class Example12_OpenAIAssistant_Plugins : BaseTest
+public class Example12_OpenAIAssistant_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -30,12 +30,12 @@ public class Example12_OpenAIAssistant_Plugins : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                config: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
-                    Model = this.GetModel(),
+                    Model = this.Model,
                 });
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
@@ -71,8 +71,4 @@ public class Example12_OpenAIAssistant_Plugins : BaseTest
             }
         }
     }
-
-    public Example12_OpenAIAssistant_Plugins(ITestOutputHelper output)
-        : base(output)
-    { }
 }

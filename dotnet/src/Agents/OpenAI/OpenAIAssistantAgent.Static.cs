@@ -144,7 +144,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="id">The agent identifier</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance</returns>
-    public static async Task<OpenAIAssistantAgent> RestoreAsync(
+    public static async Task<OpenAIAssistantAgent> RetrieveAsync(
         Kernel kernel,
         OpenAIAssistantConfiguration config,
         string id,

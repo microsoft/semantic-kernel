@@ -17,7 +17,7 @@ namespace Examples;
 /// This example demonstrates that outside of initialization (and cleanup), using
 /// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
 /// </remarks>
-public class Example11_OpenAIAssistant : BaseTest
+public class Example11_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
@@ -29,12 +29,12 @@ public class Example11_OpenAIAssistant : BaseTest
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
                 kernel: this.CreateEmptyKernel(),
-                config: new(this.GetApiKey(), this.GetEndpoint()),
+                config: new(this.ApiKey, this.Endpoint),
                 definition: new()
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
-                    Model = this.GetModel(),
+                    Model = this.Model,
                 });
 
         // Create a chat for agent interaction.
@@ -65,8 +65,4 @@ public class Example11_OpenAIAssistant : BaseTest
             }
         }
     }
-
-    public Example11_OpenAIAssistant(ITestOutputHelper output)
-        : base(output)
-    { }
 }
