@@ -11,14 +11,15 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <see cref="KernelFunctionTerminationStrategy"/>.
 /// </summary>
 /// <typeparam name="TResult">The target type of the <see cref="FunctionResult"/>.</typeparam>
-public abstract class FunctionResultProcessor<TResult>
+public class FunctionResultProcessor<TResult>
 {
     /// <summary>
     /// Responsible for translating the provided text result to the requested type.
     /// </summary>
     /// <param name="result">The text content from the function result.</param>
     /// <returns>A translated result.</returns>
-    protected abstract TResult? ProcessTextResult(string result);
+    protected virtual TResult? ProcessTextResult(string result)
+        => this.ConvertResult(result);
 
     /// <summary>
     /// Process a <see cref="FunctionResult"/> and translate to the requested type.
@@ -28,14 +29,19 @@ public abstract class FunctionResultProcessor<TResult>
     public TResult? InterpretResult(FunctionResult result)
     {
         // Is result already of the requested type?
-        if (result.GetType() == typeof(TResult))
+        if (result.ValueType == typeof(TResult))
         {
             return result.GetValue<TResult>();
         }
 
-        string rawContent = result.GetValue<string>() ?? string.Empty;
+        string? rawContent = result.GetValue<string>();
 
-        return this.ProcessTextResult(rawContent);
+        if (!string.IsNullOrEmpty(rawContent))
+        {
+            return this.ProcessTextResult(rawContent!);
+        }
+
+        return default;
     }
 
     /// <summary>
@@ -54,20 +60,20 @@ public abstract class FunctionResultProcessor<TResult>
         else
         {
             TypeConverter? converter = TypeConverterFactory.GetTypeConverter(typeof(TResult));
-            if (converter != null)
+            try
             {
-                try
+                if (converter != null)
                 {
                     parsedResult = (TResult?)converter.ConvertFrom(result);
                 }
-                catch (Exception exception) when (!exception.IsCriticalException())
+                else
                 {
-                    // %%% TODO: LOGGING
+                    parsedResult = JsonSerializer.Deserialize<TResult>(result);
                 }
             }
-            else
+            catch (Exception exception) when (!exception.IsCriticalException())
             {
-                parsedResult = JsonSerializer.Deserialize<TResult>(result);
+                // Allow default fall-through.
             }
         }
 
