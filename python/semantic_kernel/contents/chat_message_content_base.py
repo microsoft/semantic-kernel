@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-import sys
-from typing import TYPE_CHECKING, Any, Dict, Final
+from __future__ import annotations
 
-from semantic_kernel.contents.const import ALL_CHAT_MESSAGE_CONTENTS, CHAT_MESSAGE_CONTENT
+import sys
+from typing import TYPE_CHECKING, Any, Union
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -13,10 +13,14 @@ from xml.etree.ElementTree import Element
 
 from pydantic import Field, RootModel
 
+from semantic_kernel.contents.const import DISCRIMINATOR_FIELD
+from semantic_kernel.contents.types import CHAT_MESSAGE_CONTENT
+
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.open_ai.contents import AzureChatMessageContent, OpenAIChatMessageContent
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
-DISCRIMINATOR_FIELD: Final[str] = "type"
+CHAT_MESSAGE_CONTENT_TYPES = Union["ChatMessageContent", "OpenAIChatMessageContent", "AzureChatMessageContent"]
 
 
 class ChatMessageContentBase(RootModel):
@@ -33,10 +37,10 @@ class ChatMessageContentBase(RootModel):
       which is a instance of ChatMessageContent or the requested subclass.
     """
 
-    root: Annotated[ALL_CHAT_MESSAGE_CONTENTS, Field(discriminator=DISCRIMINATOR_FIELD)]
+    root: Annotated[CHAT_MESSAGE_CONTENT_TYPES, Field(discriminator=DISCRIMINATOR_FIELD)]
 
     @classmethod
-    def from_fields(cls, **kwargs: Any) -> "ChatMessageContent":
+    def from_fields(cls, **kwargs: Any) -> ChatMessageContent:
         """Create a new instance of ChatMessageContent from fields.
 
         Args:
@@ -54,10 +58,10 @@ class ChatMessageContentBase(RootModel):
         cls.model_rebuild()
         if DISCRIMINATOR_FIELD not in kwargs:
             kwargs[DISCRIMINATOR_FIELD] = CHAT_MESSAGE_CONTENT
-        return cls(**kwargs).root
+        return cls(**kwargs).root  # type: ignore
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ChatMessageContent":
+    def from_dict(cls, data: dict[str, Any]) -> ChatMessageContent:
         """Create a new instance of ChatMessageContent from a dictionary.
 
         Args:
@@ -69,7 +73,7 @@ class ChatMessageContentBase(RootModel):
         return cls.from_fields(**data)
 
     @classmethod
-    def from_element(cls, element: Element) -> "ChatMessageContent":
+    def from_element(cls, element: Element) -> ChatMessageContent:
         """Create a new instance of ChatMessageContent from a XML element.
 
         Args:
@@ -78,7 +82,7 @@ class ChatMessageContentBase(RootModel):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
-        kwargs: Dict[str, Any] = {"content": element.text}
+        kwargs: dict[str, Any] = {"content": element.text}
         for key, value in element.items():
             kwargs[key] = value
         return cls.from_fields(**kwargs)
