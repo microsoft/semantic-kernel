@@ -24,6 +24,7 @@ internal static class KernelFunctionHelpers
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="executionContext">Kernel arguments maintained as the executing context.</param>
     /// <param name="promptConfig">The associated prompt template configuration.</param>
+    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
     /// <param name="nameDelimiter">The character used to delimit the plugin name and function name in a Handlebars template.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static void Register(
@@ -31,12 +32,13 @@ internal static class KernelFunctionHelpers
         Kernel kernel,
         KernelArguments executionContext,
         PromptTemplateConfig promptConfig,
+        bool allowUnsafeContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, promptConfig.AllowUnsafeContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowUnsafeContent || promptConfig.AllowUnsafeContent, nameDelimiter, cancellationToken);
         }
     }
 
