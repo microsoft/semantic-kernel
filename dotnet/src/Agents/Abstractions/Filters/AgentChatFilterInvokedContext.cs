@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.Agents.Filters;
 
 /// <summary>
-/// Context assocaited with to <see cref="IAgentChatFilter.OnAgentInvoked"/>.
+/// Context associated with to <see cref="IAgentChatFilter.OnAgentInvoked"/>.
 /// </summary>
 public sealed class AgentChatFilterInvokedContext : AgentChatFilterContext
 {
