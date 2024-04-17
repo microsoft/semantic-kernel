@@ -37,7 +37,11 @@ public sealed class OpenAIAssistantConfiguration
     public OpenAIAssistantConfiguration(string apiKey, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
-        Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            // Only verify `endpoint` when provided (AzureOAI vs OpenAI)
+            Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
+        }
 
         this.ApiKey = apiKey;
         this.Endpoint = endpoint;
