@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -15,7 +16,7 @@ public class Example21_OpenAIPlugins(ITestOutputHelper output) : BaseTest(output
     /// <summary>
     /// Generic template on how to call OpenAI plugins
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Run it only after filling the template below")]
     public async Task RunOpenAIPluginAsync()
     {
         Kernel kernel = new();
@@ -24,13 +25,13 @@ public class Example21_OpenAIPlugins(ITestOutputHelper output) : BaseTest(output
         using HttpClient httpClient = new();
 
         // Import an Open AI plugin via URI
-        var plugin = await kernel.ImportPluginFromOpenApiAsync("Test", new Uri("https://localhost:7031/swagger/v1/swagger.json"), new OpenAIFunctionExecutionParameters(httpClient));
+        var plugin = await kernel.ImportPluginFromOpenAIAsync("<plugin name>", new Uri("<OpenAI-plugin>"), new OpenAIFunctionExecutionParameters(httpClient));
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
-        var arguments = new KernelArguments { ["name"] = "fake-name" };
+        var arguments = new KernelArguments { ["<parameter-name>"] = "<parameter-value>" };
 
         // Run
-        var functionResult = await kernel.InvokeAsync(plugin["Test-get"], arguments);
+        var functionResult = await kernel.InvokeAsync(plugin["<function-name>"], arguments);
 
         var result = functionResult.GetValue<RestApiOperationResponse>();
 

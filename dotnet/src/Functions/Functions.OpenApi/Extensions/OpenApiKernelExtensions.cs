@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -200,6 +201,18 @@ public static class OpenApiKernelExtensions
 
     #region private
 
+    /// <summary>The metadata property bag key to use when storing the id of an operation.</summary>
+    private const string OperationExtensionsIdKey = "id";
+
+    /// <summary>The metadata property bag key to use when storing the path of an operation.</summary>
+    private const string OperationExtensionsPathKey = "path";
+
+    /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
+    private const string OperationExtensionsMethodKey = "method";
+
+    /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
+    private const string OperationExtensionsMetadataKey = "operation-extensions";
+
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
@@ -333,14 +346,14 @@ public static class OpenApiKernelExtensions
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
-        // Consts should be used instead of strings
-        var properties = new Dictionary<string, object?>();
-        properties.Add("id", operation.Id);
-        properties.Add("path", operation.Path);
-        properties.Add("method", operation.Method.ToString());
-        if (operation.Extensions.Any())
+        // Add unstructured metadata, specific to Open API, to the metadata property bag.
+        var metadataPropertyBag = new Dictionary<string, object?>();
+        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsIdKey, operation.Id);
+        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsPathKey, operation.Path);
+        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString());
+        if (operation.Extensions is not null && operation.Extensions.Any())
         {
-            properties.Add("operation-extensions", operation.Extensions);
+            metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
         }
 
         return KernelFunctionFactory.CreateFromMethod(
@@ -350,7 +363,7 @@ public static class OpenApiKernelExtensions
             description: operation.Description,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory,
-            properties: properties);
+            metadataPropertyBag: new ReadOnlyDictionary<string, object?>(metadataPropertyBag));
     }
 
     /// <summary>

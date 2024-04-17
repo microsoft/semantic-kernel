@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/>.
 /// </summary>
-public sealed class KernelFunctionMetadata
+public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
 {
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
@@ -19,12 +20,16 @@ public sealed class KernelFunctionMetadata
     private IReadOnlyList<KernelParameterMetadata> _parameters = [];
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
+    /// <summary>A static empty dictionary to default to when none is provided.</summary>
+    private static readonly Dictionary<string, object?> s_emptyDictionary = new();
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
+    /// <param name="propertyBag">Optional metadata in addition to the named properties already available on this class.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
-    public KernelFunctionMetadata(string name)
+    public KernelFunctionMetadata(string name, ReadOnlyDictionary<string, object?>? propertyBag = null)
+         : base(propertyBag == null ? s_emptyDictionary : propertyBag)
     {
         this.Name = name;
     }
@@ -36,6 +41,7 @@ public sealed class KernelFunctionMetadata
     /// <see cref="ReturnParameter"/> properties will return the same objects as in the original instance.
     /// </remarks>
     public KernelFunctionMetadata(KernelFunctionMetadata metadata)
+        : base(metadata)
     {
         Verify.NotNull(metadata);
         this.Name = metadata.Name;
@@ -91,9 +97,4 @@ public sealed class KernelFunctionMetadata
             this._returnParameter = value;
         }
     }
-
-    /// <summary>
-    /// The function properties/metadata.
-    /// </summary>
-    public IReadOnlyDictionary<string, object?>? Properties { get; init; }
 }

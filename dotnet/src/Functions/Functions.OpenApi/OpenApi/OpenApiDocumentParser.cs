@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -197,36 +198,47 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
         return operations;
     }
 
-    private static List<object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions)
+    /// <summary>
+    /// Build a dictionary of extension key value pairs from the given open api extension model, where the key is the extension name
+    /// and the value is either the actual value in the case of primitive types like string, int, date, etc, or a json string in the
+    /// case of complex types.
+    /// </summary>
+    /// <param name="extensions">The dictionary of extension properties in the open api model.</param>
+    /// <returns>The dictionary of extension properties using a simplified model that doesn't use any open api models.</returns>
+    /// <exception cref="KernelException">Thrown when any extension data types are encountered that are not supported.</exception>
+    private static Dictionary<string, object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions)
     {
-        var result = new List<object?>();
+        var result = new Dictionary<string, object?>();
 
+        // Map each extension property.
         foreach (var extension in extensions)
         {
-            // This code needs to be refactored and tested properly to make sure it supports all derevitives of IOpenApiExtension - https://github.com/microsoft/OpenAPI.NET/blob/vnext/src/Microsoft.OpenApi/Interfaces/IOpenApiExtension.cs
-            var schemaBuilder = new StringBuilder();
-            var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
-            extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
-
-            var extensionValue = new JsonObject();
-            extensionValue.Add("name", extension.Key);
+            object? extensionValueObj = null;
 
             if (extension.Value is IOpenApiPrimitive primitive)
             {
-                extensionValue.Add("type", primitive.PrimitiveType.ToString().ToLowerInvariant()); // integer, double, string, date, etc.
+                // Set primitive values directly into the dictionary.
+                extensionValueObj = GetParameterValue(primitive, "extension property", extension.Key);
             }
             else if (extension.Value is IOpenApiAny any)
             {
-                extensionValue.Add("type", any.AnyType.ToString().ToLowerInvariant()); //primitive, null, array, object
+                // Serialize complex objects and set as json strings.
+                // The only remaining type not referenced here is null, but the default value of extensionValueObj
+                // is null, so if we just continue that will handle the null case.
+                if (any.AnyType == AnyType.Array || any.AnyType == AnyType.Object)
+                {
+                    var schemaBuilder = new StringBuilder();
+                    var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
+                    extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
+                    extensionValueObj = schemaBuilder.ToString();
+                }
             }
             else
             {
-                extensionValue.Add("type", "object");
+                throw new KernelException($"The type of extension property '{extension.Key}' is not supported while trying to consume the OpenApi schema.");
             }
 
-            extensionValue.Add("value", schemaBuilder.ToString());
-
-            result.Add(extensionValue.ToJsonString());
+            result.Add(extension.Key, extensionValueObj);
         }
 
         return result;
@@ -262,7 +274,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()!),
                 (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()!),
                 parameter.Schema.Items?.Type,
-                GetParameterValue(parameter.Schema.Default),
+                GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
                 parameter.Description,
                 parameter.Schema.ToJsonSchema()
             );
@@ -345,7 +357,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
                 propertySchema.Description,
                 propertySchema.ToJsonSchema(),
-                GetParameterValue(propertySchema.Default));
+                GetParameterValue(propertySchema.Default, "payload property", propertyName));
 
             result.Add(property);
         }
@@ -357,8 +369,10 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// Returns parameter value.
     /// </summary>
     /// <param name="valueMetadata">The value metadata.</param>
+    /// <param name="entityDescription">A description of the type of entity we are trying to get a value for.</param>
+    /// <param name="entityName">The name of the entity that we are trying to get the value for.</param>
     /// <returns>The parameter value.</returns>
-    private static object? GetParameterValue(IOpenApiAny valueMetadata)
+    private static object? GetParameterValue(IOpenApiAny valueMetadata, string entityDescription, string entityName)
     {
         if (valueMetadata is not IOpenApiPrimitive value)
         {
@@ -378,7 +392,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
             PrimitiveType.Date => ((OpenApiDate)value).Value,
             PrimitiveType.DateTime => ((OpenApiDateTime)value).Value,
             PrimitiveType.Password => ((OpenApiPassword)value).Value,
-            _ => throw new KernelException($"The value type - {value.PrimitiveType} is not supported."),
+            _ => throw new KernelException($"The value type '{value.PrimitiveType}' of {entityDescription} '{entityName}' is not supported."),
         };
     }
 

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -40,7 +41,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="properties">Optional properties/metadata to associate with the function.</param>
+    /// <param name="metadataPropertyBag">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static KernelFunction Create(
         MethodInfo method,
@@ -50,7 +51,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null,
-        IReadOnlyDictionary<string, object?>? properties = null)
+        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null)
     {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
@@ -65,7 +66,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             description ?? methodDetails.Description,
             parameters?.ToList() ?? methodDetails.Parameters,
             returnParameter ?? methodDetails.ReturnParameter,
-            properties);
+            metadataPropertyBag);
 
         if (loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
@@ -140,7 +141,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.Metadata.Properties);
+            this.Metadata);
     }
 
     /// <summary>
@@ -168,8 +169,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        IReadOnlyDictionary<string, object?>? properties = null) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter, properties)
+        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) :
+        this(implementationFunc, functionName, null, description, parameters, returnParameter, metadataPropertyBag)
     {
     }
 
@@ -180,8 +181,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        IReadOnlyDictionary<string, object?>? properties = null) :
-        base(functionName, pluginName, description, parameters, returnParameter, properties: properties)
+        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) :
+        base(functionName, pluginName, description, parameters, returnParameter, properties: metadataPropertyBag)
     {
         Verify.ValidFunctionName(functionName);
 

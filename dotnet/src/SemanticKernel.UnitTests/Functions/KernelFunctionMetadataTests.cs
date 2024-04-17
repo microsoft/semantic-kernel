@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -174,6 +175,27 @@ public class KernelFunctionMetadataTests
 
         Assert.Equal(emptyList, fv.Parameters);
         Assert.Equal(typeof(void), fv.ReturnParameter.ParameterType);
+    }
+
+    [Fact]
+    public void ItSupportsAdditionalUnstructuredMetadata()
+    {
+        // Arrange
+        var additionalMetadataA = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+        {
+            { "method", "POST" },
+            { "path", "/api/v1" },
+        });
+
+        // Act
+        var actual = new KernelFunctionMetadata("funcA", additionalMetadataA);
+
+        // Assert
+        Assert.NotNull(actual);
+
+        Assert.Equal(2, actual.Count);
+        Assert.Equal("POST", actual["method"]);
+        Assert.Equal("/api/v1", actual["path"]);
     }
 
     private static void ValidFunctionName() { }
