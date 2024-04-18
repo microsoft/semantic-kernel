@@ -42,7 +42,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude);
+        return ExtractRestApiOperations(result.OpenApiDocument, operationsToExclude, this._logger);
     }
 
     #region private
@@ -137,8 +137,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// </summary>
     /// <param name="document">The OpenAPI document.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    /// <param name="logger">Used to perform logging.</param>
     /// <returns>List of Rest operations.</returns>
-    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude = null)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, IList<string>? operationsToExclude, ILogger logger)
     {
         var result = new List<RestApiOperation>();
 
@@ -146,7 +147,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
 
         foreach (var pathPair in document.Paths)
         {
-            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude);
+            var operations = CreateRestApiOperations(serverUrl, pathPair.Key, pathPair.Value, operationsToExclude, logger);
 
             result.AddRange(operations);
         }
@@ -161,8 +162,9 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// <param name="path">Rest resource path.</param>
     /// <param name="pathItem">Rest resource metadata.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
+    /// <param name="logger">Used to perform logging.</param>
     /// <returns>Rest operation.</returns>
-    internal static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude = null)
+    internal static List<RestApiOperation> CreateRestApiOperations(string? serverUrl, string path, OpenApiPathItem pathItem, IList<string>? operationsToExclude, ILogger logger)
     {
         var operations = new List<RestApiOperation>();
 
@@ -188,7 +190,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(item => item.Item1, item => item.Item2)
             )
             {
-                Extensions = CreateRestApiOperationExtensions(operationItem.Extensions)
+                Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
             };
 
             operations.Add(operation);
@@ -203,21 +205,21 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     /// case of complex types.
     /// </summary>
     /// <param name="extensions">The dictionary of extension properties in the open api model.</param>
+    /// <param name="logger">Used to perform logging.</param>
     /// <returns>The dictionary of extension properties using a simplified model that doesn't use any open api models.</returns>
     /// <exception cref="KernelException">Thrown when any extension data types are encountered that are not supported.</exception>
-    private static Dictionary<string, object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions)
+    private static Dictionary<string, object?> CreateRestApiOperationExtensions(IDictionary<string, IOpenApiExtension> extensions, ILogger logger)
     {
         var result = new Dictionary<string, object?>();
 
         // Map each extension property.
         foreach (var extension in extensions)
         {
-            object? extensionValueObj = null;
-
             if (extension.Value is IOpenApiPrimitive primitive)
             {
                 // Set primitive values directly into the dictionary.
-                extensionValueObj = GetParameterValue(primitive, "extension property", extension.Key);
+                object? extensionValueObj = GetParameterValue(primitive, "extension property", extension.Key);
+                result.Add(extension.Key, extensionValueObj);
             }
             else if (extension.Value is IOpenApiAny any)
             {
@@ -229,15 +231,14 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                     var schemaBuilder = new StringBuilder();
                     var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });
                     extension.Value.Write(jsonWriter, Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
-                    extensionValueObj = schemaBuilder.ToString();
+                    object? extensionValueObj = schemaBuilder.ToString();
+                    result.Add(extension.Key, extensionValueObj);
                 }
             }
             else
             {
-                throw new KernelException($"The type of extension property '{extension.Key}' is not supported while trying to consume the OpenApi schema.");
+                logger.LogWarning("The type of extension property '{ExtensionPropertyName}' is not supported while trying to consume the OpenApi schema.", extension.Key);
             }
-
-            result.Add(extension.Key, extensionValueObj);
         }
 
         return result;
