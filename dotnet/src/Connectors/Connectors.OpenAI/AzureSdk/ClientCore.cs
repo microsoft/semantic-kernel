@@ -315,7 +315,7 @@ internal abstract class ClientCore
 
         AutoFunctionInvocationContext? invocationContext = null;
 
-        for (int requestIteration = 1; ; requestIteration++)
+        for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
@@ -364,9 +364,9 @@ internal abstract class ClientCore
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-            for (int toolCallIteration = 0; toolCallIteration < result.ToolCalls.Count; toolCallIteration++)
+            for (int toolCallIndex = 0; toolCallIndex < result.ToolCalls.Count; toolCallIndex++)
             {
-                ChatCompletionsToolCall toolCall = result.ToolCalls[toolCallIteration];
+                ChatCompletionsToolCall toolCall = result.ToolCalls[toolCallIndex];
 
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
@@ -409,8 +409,8 @@ internal abstract class ClientCore
                 invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestSequenceIndex = requestIteration - 1,
-                    FunctionSequenceIndex = toolCallIteration,
+                    RequestSequenceIndex = requestIndex - 1,
+                    FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = result.ToolCalls.Count,
                     Cancel = invocationContext?.Cancel ?? false
                 };
@@ -475,7 +475,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -499,7 +499,7 @@ internal abstract class ClientCore
             }
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -544,7 +544,7 @@ internal abstract class ClientCore
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
         AutoFunctionInvocationContext? invocationContext = null;
 
-        for (int requestIteration = 1; ; requestIteration++)
+        for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -614,9 +614,9 @@ internal abstract class ClientCore
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
-            for (int toolCallIteration = 0; toolCallIteration < toolCalls.Length; toolCallIteration++)
+            for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
             {
-                ChatCompletionsFunctionToolCall toolCall = toolCalls[toolCallIteration];
+                ChatCompletionsFunctionToolCall toolCall = toolCalls[toolCallIndex];
 
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (string.IsNullOrEmpty(toolCall.Name))
@@ -659,8 +659,8 @@ internal abstract class ClientCore
                 invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestSequenceIndex = requestIteration - 1,
-                    FunctionSequenceIndex = toolCallIteration,
+                    RequestSequenceIndex = requestIndex - 1,
+                    FunctionSequenceIndex = toolCallIndex,
                     FunctionCount = toolCalls.Length,
                     Cancel = invocationContext?.Cancel ?? false,
                 };
@@ -726,7 +726,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -750,7 +750,7 @@ internal abstract class ClientCore
             }
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (requestIteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
