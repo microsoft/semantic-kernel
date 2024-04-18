@@ -1,0 +1,30 @@
+classDiagram
+
+	Agent
+
+    AgentChannel
+	
+    KernelAgent <|-- OpenAIAssistantAgent
+    OpenAIAssistantAgent --> OpenAIAssistantChannel
+    class OpenAIAssistantAgent {
+        <<Final>>
+        -AssistantClient _client
+        -Assistant _assistant
+        +bool IsDeleted
+        +IReadOnlyList~string~ FileIds
+        +IReadOnlyDictionary~string,string~ Metadata
+        +Task DeleteAsync()
+        #IEnumerable~String GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync()
+    }
+
+    AgentChannel <|-- OpenAIAssistantChannel
+    class OpenAIAssistantChannel {
+        <<Final>>
+        -AssistantClient _client
+        -string _threadId
+        #IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent, ChatMessageContent? input = null)
+        #IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
+        #Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history)
+    }
+	

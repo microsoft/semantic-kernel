@@ -1,0 +1,25 @@
+classDiagram
+
+	Agent
+
+    AgentChannel
+
+	
+    Agent <|-- AggregatorAgent
+    AggregatorAgent --> AggregatorChannel
+    class AggregatorAgent {
+        <<Final>>
+        -AgentChat _chat
+        #IEnumerable~String GetChannelKeys()
+        #Task~AgentChannel~ CreateChannelAsync()
+    }
+	
+    AgentChannel <|-- AggregatorChannel
+    class AggregatorChannel {
+        <<Final>>
+        -AgentChat _chat
+        ~#IAsyncEnumerable~ChatMessageContent~ InvokeAsync(Agent agent)
+        ~#IAsyncEnumerable~ChatMessageContent~ GetHistoryAsync()
+        ~#Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history)
+    }
+	

@@ -1,0 +1,39 @@
+classDiagram
+
+	Agent
+    AgentChannel
+	AgentChat
+	
+    AgentChat <|-- AgentGroupChat
+    AgentGroupChat o-- Agent
+    AgentGroupChat --> AgentGroupChatSettings
+    class AgentGroupChat {
+        <<Final>>
+        +IReadOnlyList<Agent> Agents
+        +AgentGroupChatSettings AgentGroupChatSettings
+        +bool IsComplete
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync()
+        +IAsyncEnumerable~ChatMessageContent~ InvokeAgentAsync(Agent agent)
+    }
+
+    AgentGroupChatSettings --> SelectionStrategy
+    AgentGroupChatSettings --> TerminationStrategy
+    class AgentGroupChatSettings {
+        <<Final>>
+        +SelectionStrategy SelectionStrategy
+        +TerminationStrategy TerminationStrategy
+    }
+	
+    class SelectionStrategy {
+        <<Abstract>>
+        Task~Agent~ NextAsync(IReadOnlyList~Agent~ agents, IReadOnlyList~ChatMessageContent~ history)*
+    }    
+
+    class TerminationStrategy {
+        <<Abstract>>
+        +bool AutomaticReset
+        +int MaximumIterations
+        +IReadOnlyList~Agent~? Agents
+        +Task~bool~ ShouldTerminateAsync(Agent agent, IReadOnlyList~ChatMessageContent~ history)
+        #Task~bool~ ShouldAgentTerminateAsync(Agent agent, IReadOnlyList~ChatMessageContent~ history)*
+    }
