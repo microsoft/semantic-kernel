@@ -56,7 +56,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: Optional[Dict[Literal["type"], Literal["text", "json_object"]]] = None
-    tools: Optional[List[Dict[str, Any]]] = None
+    tools: Optional[List[Dict[str, Any]]] = Field(None, max_items=64)
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
