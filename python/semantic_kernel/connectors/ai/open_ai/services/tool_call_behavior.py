@@ -24,8 +24,6 @@ class ToolCallBehavior(KernelBaseModel):
 
     enable_kernel_functions: bool = True
     max_auto_invoke_attempts: int = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
-    max_use_attempts: int | None = None
-    allow_any_requested_kernel_function: bool = False
 
     @property
     def auto_invoke_kernel_functions(self):
@@ -104,7 +102,6 @@ class KernelFunctions(ToolCallBehavior):
             raise ValueError("The execution settings must have tools and tool_choice attributes.")
         execution_settings.tools = kernel.get_json_schema_of_functions()
         execution_settings.tool_choice = "auto"
-        self.allow_any_requested_kernel_function = True
 
 
 class EnabledFunctions(ToolCallBehavior):
@@ -120,7 +117,6 @@ class EnabledFunctions(ToolCallBehavior):
             raise ValueError("The execution settings must have tools and tool_choice attributes.")
         execution_settings.tools = kernel.get_json_schema_of_functions(filters=self.filters)
         execution_settings.tool_choice = "auto"
-        self.allow_any_requested_kernel_function = True
 
 
 class RequiredFunction(ToolCallBehavior):
@@ -140,5 +136,5 @@ class RequiredFunction(ToolCallBehavior):
             filters={"include_function": [self.function_fully_qualified_name]}
         )
         # since using this always calls this single function, we do not want to allow repeated calls
-        self.max_auto_invoke_attempts = 1
-        self.allow_any_requested_kernel_function = True
+        if self.max_auto_invoke_attempts > 1:
+            self.max_auto_invoke_attempts = 1
