@@ -358,12 +358,15 @@ public static class OpenApiKernelExtensions
 
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: parameters,
-            returnParameter: returnParameter,
-            description: operation.Description,
-            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            loggerFactory: loggerFactory,
-            additionalMetadata: new ReadOnlyDictionary<string, object?>(additionalMetadata));
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = ConvertOperationIdToValidFunctionName(operation.Id, logger),
+                Description = operation.Description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory,
+                AdditionalMetadata = new ReadOnlyDictionary<string, object?>(additionalMetadata),
+            });
     }
 
     /// <summary>
