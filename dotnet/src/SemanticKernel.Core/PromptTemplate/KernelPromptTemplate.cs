@@ -30,8 +30,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// Constructor for PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
+    internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
@@ -42,8 +43,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._allowUnsafeContent = promptConfig.AllowUnsafeContent;
-        this._safeBlocks = promptConfig.InputVariables.Where(iv => iv.AllowUnsafeContent).Select(iv => iv.Name).ToList();
+        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
+        this._safeBlocks = promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name).ToList();
     }
 
     /// <inheritdoc/>
@@ -188,12 +189,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             return !safeBlocks.Contains(varBlock.Name);
         }
 
-        if (!disableTagEncoding && block is not TextBlock)
-        {
-            return true;
-        }
-
-        return false;
+        return !disableTagEncoding && block is not TextBlock;
     }
 
     #endregion

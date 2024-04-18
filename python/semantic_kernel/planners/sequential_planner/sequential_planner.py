@@ -84,7 +84,7 @@ class SequentialPlanner:
                 settings = prompt_config.execution_settings.pop("default")
                 prompt_config.execution_settings[service_id] = settings
 
-        return self._kernel.create_function_from_prompt(
+        return self._kernel.add_function(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,
             function_name=self.RESTRICTED_PLUGIN_NAME,
             prompt_template_config=prompt_config,

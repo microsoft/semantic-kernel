@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Web;
 using System.Xml;
 
 namespace Microsoft.SemanticKernel;
@@ -69,11 +70,12 @@ internal static class XmlPromptParser
             return null;
         }
 
-        var nodeContent = node.InnerText.Trim();
+        var isCData = node.FirstChild?.Name.Equals("#cdata-section", StringComparison.OrdinalIgnoreCase) ?? false;
+        var nodeContent = isCData ? node.InnerText.Trim() : node.InnerXml.Trim();
 
         var promptNode = new PromptNode(node.Name)
         {
-            Content = !string.IsNullOrEmpty(nodeContent) ? nodeContent : null
+            Content = !string.IsNullOrEmpty(nodeContent) ? HttpUtility.HtmlDecode(nodeContent) : null
         };
 
         if (node.Attributes is not null)

@@ -6,12 +6,11 @@ from semantic_kernel.kernel import Kernel
 
 
 async def main():
-
     # This is an example of how to import a plugin from OpenAI and invoke a function from the plugin
     # It does not require authentication
 
     kernel = Kernel()
-    plugin = await kernel.import_plugin_from_openai(
+    plugin = await kernel.add_plugin_from_openai(
         plugin_name="Klarna",
         plugin_url="https://www.klarna.com/.well-known/ai-plugin.json",
     )

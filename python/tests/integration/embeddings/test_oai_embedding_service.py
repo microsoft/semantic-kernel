@@ -20,7 +20,7 @@ async def test_oai_embedding_service(kernel: Kernel, get_oai_config):
     kernel.add_service(embedding_gen)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_reference(
         "test",
@@ -45,7 +45,7 @@ async def test_oai_embedding_service_with_provided_client(kernel: Kernel, get_oa
 
     kernel.add_service(embedding_gen)
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embedding_gen)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_reference(
         "test",
