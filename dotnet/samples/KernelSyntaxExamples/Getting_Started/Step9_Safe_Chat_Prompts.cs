@@ -32,6 +32,7 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
             .Build();
 
         // Each example demonstrates a different way to construct a chat prompt
+        /*
         await ExamplePlainTextAsync(kernel);
         await ExampleTextContentAsync(kernel);
         await ExampleHtmlEncodedTextAsync(kernel);
@@ -43,6 +44,30 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
         await ExampleUnsafeFunctionAsync(kernel);
         await ExampleTrustedVariablesAsync(kernel);
         await ExampleTrustedFunctionAsync(kernel);
+        */
+        await ExampleTrustedTemplateAsync(kernel);
+    }
+
+    private async Task ExampleTrustedTemplateAsync(Kernel kernel)
+    {
+        KernelFunction trustedMessageFunction = KernelFunctionFactory.CreateFromMethod(() => "<message role=\"system\">You are a helpful assistant who knows all about cities in the USA</message>", "TrustedMessageFunction");
+        KernelFunction trustedContentFunction = KernelFunctionFactory.CreateFromMethod(() => "<text>What is Seattle?</text>", "TrustedContentFunction");
+        kernel.ImportPluginFromFunctions("TrustedPlugin", [trustedMessageFunction, trustedContentFunction]);
+
+        var chatPrompt = @"
+            {{TrustedPlugin.TrustedMessageFunction}}
+            <message role=""user"">{{$input}}</message>
+            <message role=""user"">{{TrustedPlugin.TrustedContentFunction}}</message>
+        ";
+        var promptConfig = new PromptTemplateConfig(chatPrompt);
+        var kernelArguments = new KernelArguments()
+        {
+            ["input"] = "<text>What is Washington?</text>",
+        };
+        var factory = new KernelPromptTemplateFactory() { AllowUnsafeContent = true };
+        var function = KernelFunctionFactory.CreateFromPrompt(promptConfig, factory);
+        WriteLine(await RenderPromptAsync(promptConfig, kernel, kernelArguments, factory));
+        WriteLine(await kernel.InvokeAsync(function, kernelArguments));
     }
 
     private async Task ExampleTrustedFunctionAsync(Kernel kernel)
@@ -55,10 +80,7 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
             {{TrustedPlugin.TrustedMessageFunction}}
             <message role=""user"">{{TrustedPlugin.TrustedContentFunction}}</message>
         ";
-        var promptConfig = new PromptTemplateConfig(chatPrompt)
-        {
-            AllowUnsafeContent = true
-        };
+        var promptConfig = new PromptTemplateConfig(chatPrompt);
         var kernelArguments = new KernelArguments();
         var function = KernelFunctionFactory.CreateFromPrompt(promptConfig);
         WriteLine(await RenderPromptAsync(promptConfig, kernel, kernelArguments));
@@ -183,18 +205,19 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
 
     private readonly IPromptTemplateFactory _promptTemplateFactory = new KernelPromptTemplateFactory();
 
-    private Task<string> RenderPromptAsync(string template, Kernel kernel, KernelArguments arguments)
+    private Task<string> RenderPromptAsync(string template, Kernel kernel, KernelArguments arguments, IPromptTemplateFactory? promptTemplateFactory = null)
     {
         return this.RenderPromptAsync(new PromptTemplateConfig
         {
             TemplateFormat = PromptTemplateConfig.SemanticKernelTemplateFormat,
             Template = template
-        }, kernel, arguments);
+        }, kernel, arguments, promptTemplateFactory);
     }
 
-    private Task<string> RenderPromptAsync(PromptTemplateConfig promptConfig, Kernel kernel, KernelArguments arguments)
+    private Task<string> RenderPromptAsync(PromptTemplateConfig promptConfig, Kernel kernel, KernelArguments arguments, IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        var promptTemplate = this._promptTemplateFactory.Create(promptConfig);
+        promptTemplateFactory ??= this._promptTemplateFactory;
+        var promptTemplate = promptTemplateFactory.Create(promptConfig);
         return promptTemplate.RenderAsync(kernel, arguments);
     }
 
