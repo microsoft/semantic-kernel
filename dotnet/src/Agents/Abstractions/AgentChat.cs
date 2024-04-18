@@ -127,23 +127,20 @@ public abstract class AgentChat
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
-            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 // Invoke filter
                 AgentChatFilterInvokedContext? context = this.OnAgentInvokedFilter(agent, this.History, message);
 
-                if (context?.SuppressMessage ?? false)
-                {
-                    // Suppress message processing
-                    continue;
-                }
+                // Capture potential message replacement
+                ChatMessageContent effectiveMessage = context?.Message ?? message;
 
                 // Add to primary history
-                this.History.Add(message);
-                messages.Add(message);
+                this.History.Add(effectiveMessage);
+                messages.Add(effectiveMessage);
 
                 // Yield message to caller
-                yield return message;
+                yield return effectiveMessage;
             }
 
             // Broadcast message to other channels (in parallel)

@@ -11,12 +11,7 @@ public sealed class AgentChatFilterInvokedContext : AgentChatFilterContext
     /// <summary>
     /// %%%
     /// </summary>
-    public ChatMessageContent Message { get; }
-
-    /// <summary>
-    /// %%%
-    /// </summary>
-    public bool SuppressMessage { get; set; }
+    public ChatMessageContent Message { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentChatFilterInvokedContext"/> class.
