@@ -12,7 +12,9 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatPromptExecutionSettings,
     OpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+
+# from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -73,10 +75,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    tool_choice="auto",
-    tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-    auto_invoke_kernel_functions=True,
-    max_auto_invoke_attempts=3,
+    tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions(),
 )
 
 history = ChatHistory()
@@ -126,7 +125,7 @@ async def handle_streaming(
     tool_call_ids_by_index: Dict[str, Any] = {}
 
     async for message in response:
-        if not execution_settings.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.tool_call_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], OpenAIStreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
@@ -163,16 +162,16 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    stream = True
+    stream = False
     if stream:
         await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
     else:
-        result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
+        result = await kernel.invoke(chat_function, arguments=arguments, user_input=user_input, chat_history=history)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # OpenAIChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.tool_call_behavior.auto_invoke_kernel_functions and isinstance(
             result.value[0], OpenAIChatMessageContent
         ):
             print_tool_calls(result.value[0])

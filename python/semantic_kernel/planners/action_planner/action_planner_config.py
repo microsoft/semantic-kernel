@@ -1,13 +1,12 @@
-from typing import List
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
+from pydantic import Field
+
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
-class ActionPlannerConfig:
-    def __init__(
-        self,
-        excluded_plugins: List[str] = None,
-        excluded_functions: List[str] = None,
-        max_tokens: int = 1024,
-    ):
-        self.excluded_plugins: List[str] = excluded_plugins or []
-        self.excluded_functions: List[str] = excluded_functions or []
-        self.max_tokens: int = max_tokens
+class ActionPlannerConfig(KernelBaseModel):
+    excluded_plugins: list[str] = Field(default_factory=list)
+    excluded_functions: list[str] = Field(default_factory=list)
+    max_tokens: int = 1024

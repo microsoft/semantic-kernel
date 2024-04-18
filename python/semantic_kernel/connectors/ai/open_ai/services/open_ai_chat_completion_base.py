@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
@@ -15,7 +16,6 @@ from semantic_kernel.connectors.ai.open_ai.contents.function_call import Functio
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
-    OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
@@ -56,7 +56,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat(
         self,
         chat_history: ChatHistory,
-        settings: OpenAIPromptExecutionSettings,
+        settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> List[OpenAIChatMessageContent]:
         """Executes a chat completion request and returns the result.
@@ -70,27 +70,38 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[OpenAIChatMessageContent | AzureChatMessageContent] -- The completion result(s).
         """
-        tool_call_behavior = self._get_tool_call_behavior(settings)
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
+        if (
+            settings.tool_call_behavior is not None
+            and settings.tool_call_behavior.auto_invoke_kernel_functions
+            and (kernel is None or arguments is None)
+        ):
             raise ServiceInvalidExecutionSettingsError(
-                "The kernel argument and arguments are required for OpenAI tool calling."
+                "The kernel argument and arguments are required for auto invoking OpenAI tool calls."
             )
+        # behavior for non-function calling or for enable, but not auto-invoke.
+        settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
+        if settings.tool_call_behavior is None or (
+            settings.tool_call_behavior and not settings.tool_call_behavior.auto_invoke_kernel_functions
+        ):
+            return await self._send_chat_request(settings)
 
-        for _ in range(tool_call_behavior.max_auto_invoke_attempts):
-            settings = self._prepare_settings(settings, chat_history, stream_request=False)
+        # loop for auto-invoke function calls
+        for _ in range(settings.tool_call_behavior.max_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
-            if self._should_return_completions_response(completions=completions, tool_call_behavior=tool_call_behavior):
+            if self._should_return_completions_response(completions=completions):
                 return completions
             await self._process_chat_response_with_tool_call(
                 completions=completions, chat_history=chat_history, kernel=kernel, arguments=arguments
             )
+            settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
 
     async def complete_chat_stream(
         self,
         chat_history: ChatHistory,
-        settings: OpenAIPromptExecutionSettings,
+        settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[List[OpenAIStreamingChatMessageContent], Any]:
         """Executes a streaming chat completion request and returns the result.
@@ -105,28 +116,32 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[OpenAIStreamingChatMessageContent | AzureStreamingChatMessageContent] -- A stream of
                 OpenAIStreamingChatMessages or AzureStreamingChatMessageContent when using Azure.
         """
-        tool_call_behavior = self._get_tool_call_behavior(settings)
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
+        if (
+            settings.tool_call_behavior is not None
+            and settings.tool_call_behavior.auto_invoke_kernel_functions
+            and (kernel is None or arguments is None)
+        ):
             raise ServiceInvalidExecutionSettingsError(
                 "The kernel argument and arguments are required for OpenAI tool calling."
             )
 
-        for _ in range(tool_call_behavior.max_auto_invoke_attempts):
-            settings = self._prepare_settings(settings, chat_history, stream_request=True)
+        settings = self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
+        for _ in range(settings.tool_call_behavior.max_auto_invoke_attempts):
             response = await self._send_chat_stream_request(settings)
             finish_reason = None
             async for content, finish_reason in self._process_chat_stream_response(
                 response=response,
                 chat_history=chat_history,
                 kernel=kernel,
-                tool_call_behavior=tool_call_behavior,
+                tool_call_behavior=settings.tool_call_behavior,  # type: ignore
                 arguments=arguments,
             ):
                 yield content
             if finish_reason != FinishReason.TOOL_CALLS:
                 break
+            settings = self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
     def _chat_message_content_to_dict(self, message: ChatMessageContent) -> Dict[str, Optional[str]]:
         msg = super()._chat_message_content_to_dict(message)
@@ -298,22 +313,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             return None
         return FunctionCall(name=content.function_call.name, arguments=content.function_call.arguments)
 
-    def _get_tool_call_behavior(self, execution_settings: OpenAIPromptExecutionSettings) -> ToolCallBehavior:
-        """Gets the auto invoke and max iterations settings through ToolCallBehavior."""
-        auto_invoke_kernel_functions = False
-        max_auto_invoke_attempts = 1
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
-            if execution_settings.auto_invoke_kernel_functions is not None:
-                auto_invoke_kernel_functions = execution_settings.auto_invoke_kernel_functions
-            if auto_invoke_kernel_functions and execution_settings.max_auto_invoke_attempts is not None:
-                max_auto_invoke_attempts = (
-                    execution_settings.max_auto_invoke_attempts if auto_invoke_kernel_functions else 1
-                )
-
-        return ToolCallBehavior(
-            auto_invoke_kernel_functions=auto_invoke_kernel_functions, max_auto_invoke_attempts=max_auto_invoke_attempts
-        )
-
     # endregion
     # region request preparation
 
@@ -322,6 +321,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings: OpenAIChatPromptExecutionSettings,
         chat_history: ChatHistory,
         stream_request: bool = False,
+        kernel: "Kernel | None" = None,
     ) -> OpenAIChatPromptExecutionSettings:
         """Prepare the promp execution settings for the chat request."""
         settings.messages = self._prepare_chat_history_for_request(chat_history)
@@ -331,14 +331,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         # If auto_invoke_kernel_functions is True and num_of_responses > 1 provide a warning
         # that the num_of_responses will be configured to one.
-        if settings.auto_invoke_kernel_functions and settings.number_of_responses > 1:
-            logger.warning(
-                (
-                    "Auto invoking functions does not support more than one num_of_response. "
-                    "The num_of_responses setting is configured as 1."
-                )
-            )
-            settings.number_of_responses = 1
+        if settings.tool_call_behavior and kernel:
+            settings.tool_call_behavior.configure_options(kernel=kernel, execution_settings=settings)
+        if not settings.tool_call_behavior:
+            settings.tool_call_behavior = ToolCallBehavior(enable_kernel_functions=False, max_auto_invoke_attempts=0)
         return settings
 
     # endregion
@@ -352,52 +348,58 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments",
     ) -> None:
         """Processes the tool calls in the result and return it as part of the chat history."""
-        logger.info(f"processing {len(result.tool_calls)} tool calls")
-        args_cloned = copy(arguments)
-        for tool_call in result.tool_calls:
-            if tool_call.function is None:
-                continue
-            try:
-                func_args = tool_call.function.parse_arguments()
-                args_cloned.update(func_args)
-            except FunctionCallInvalidArgumentsException as exc:
-                logger.exception(
-                    f"Received invalid arguments for function {tool_call.function.name}: {exc}. Trying tool call again."
-                )
-                msg = OpenAIChatMessageContent(
+        logger.info(f"processing {len(result.tool_calls)} tool calls in parallel.")
+        await asyncio.gather(
+            *[self._process_tool_call(tc, kernel, copy(arguments), chat_history) for tc in result.tool_calls]
+        )
+
+    async def _process_tool_call(
+        self,
+        tool_call: ToolCall,
+        kernel: "Kernel",
+        args_cloned: "KernelArguments",
+        chat_history: ChatHistory,
+    ) -> None:
+        func: FunctionCall | None = tool_call.function
+        if not func:
+            return
+        try:
+            parsed_args = func.parse_arguments()
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except FunctionCallInvalidArgumentsException as exc:
+            logger.exception(f"Received invalid arguments for function {func.name}: {exc}. Trying tool call again.")
+            chat_history.add_message(
+                message=OpenAIChatMessageContent(
                     role=ChatRole.TOOL,
                     content="The tool call arguments are malformed, please try again.",
                     tool_call_id=tool_call.id,
-                    metadata={"function_name": tool_call.function.name},
+                    metadata={"function_name": func.name},
                 )
-                chat_history.add_message(message=msg)
-                continue
-            logger.info(f"Calling {tool_call.function.name} function with args: {tool_call.function.arguments}")
-            try:
-                func_result = await kernel.invoke(**tool_call.function.split_name_dict(), arguments=args_cloned)
-            except Exception as exc:
-                logger.exception(f"Error occurred while invoking function {tool_call.function.name}")
-                raise ServiceInvalidResponseError(
-                    f"Error occurred while invoking function {tool_call.function.name}"
-                ) from exc
-            msg = OpenAIChatMessageContent(
+            )
+            return
+        logger.info(f"Calling {func.name} function with args: {func.arguments}")
+        try:
+            func_result = await kernel.invoke(**func.split_name_dict(), arguments=args_cloned)
+        except Exception as exc:
+            logger.exception(f"Error occurred while invoking function {func.name}")
+            raise ServiceInvalidResponseError(f"Error occurred while invoking function {func.name}") from exc
+        chat_history.add_message(
+            message=OpenAIChatMessageContent(
                 role=ChatRole.TOOL,
                 content=str(func_result),
                 tool_call_id=tool_call.id,
-                metadata={"function_name": tool_call.function.name, "function_arguments": func_result.metadata},
+                metadata={"function_name": func.name, "function_arguments": func_result.metadata},
             )
-            chat_history.add_message(message=msg)
+        )
 
     def _should_return_completions_response(
         self,
         completions: Union[List[OpenAIChatMessageContent], List[OpenAIStreamingChatMessageContent]],
-        tool_call_behavior: ToolCallBehavior,
     ) -> bool:
         """Determines if the completions should be returned."""
-        return (
-            not tool_call_behavior.auto_invoke_kernel_functions
-            or any(not isinstance(completion, OpenAIChatMessageContent) for completion in completions)
-            or any(not hasattr(completion, "tool_calls") or not completion.tool_calls for completion in completions)
+        return any(not isinstance(completion, OpenAIChatMessageContent) for completion in completions) or any(
+            not hasattr(completion, "tool_calls") or not completion.tool_calls for completion in completions
         )
 
 

@@ -3,10 +3,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from semantic_kernel.exceptions import (
-    FunctionCallInvalidArgumentsException,
-    FunctionCallInvalidNameException,
-)
+from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -24,13 +21,27 @@ class FunctionCall(KernelBaseModel):
         return FunctionCall(name=self.name or other.name, arguments=(self.arguments or "") + (other.arguments or ""))
 
     def parse_arguments(self) -> Optional[Dict[str, Any]]:
-        """Parse the arguments into a dictionary."""
+        """Parse the arguments into a dictionary.
+
+        Raises:
+            FunctionCallInvalidArgumentsException: If the arguments are not valid JSON.
+        """
         if not self.arguments:
             return None
         try:
             return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
             raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
+
+    def try_parse_arguments(self) -> Dict[str, Any]:
+        """Try to parse the arguments into a dictionary.
+
+        Does not raise an exception if the arguments are not valid JSON, returns an empty dictionary instead.
+        """
+        try:
+            return self.parse_arguments() or {}
+        except FunctionCallInvalidArgumentsException:
+            return {}
 
     def to_kernel_arguments(self) -> KernelArguments:
         """Return the arguments as a KernelArguments instance."""

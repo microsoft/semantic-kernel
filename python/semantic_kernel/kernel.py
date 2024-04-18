@@ -245,6 +245,8 @@ class Kernel(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function or plugin name provided")
@@ -400,7 +402,7 @@ class Kernel(KernelBaseModel):
 
     def add_plugin(
         self,
-        plugin: KernelPlugin | Any | dict[str, Any] | None = None,
+        plugin: KernelPlugin | object | dict[str, Any] | None = None,
         plugin_name: str | None = None,
         parent_directory: str | None = None,
         description: str | None = None,
@@ -452,7 +454,7 @@ class Kernel(KernelBaseModel):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object]) -> None:
+    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
         """
         Adds a list of plugins to the kernel's collection of plugins.
 
@@ -460,8 +462,8 @@ class Kernel(KernelBaseModel):
             plugins (list[KernelPlugin] | dict[str, KernelPlugin]): The plugins to add to the kernel
         """
         if isinstance(plugins, list):
-            for plugin in plugins:
-                self.add_plugin(plugin)
+            for plug in plugins:
+                self.add_plugin(plug)
             return
         for name, plugin in plugins.items():
             self.add_plugin(plugin, plugin_name=name)
@@ -708,6 +710,67 @@ class Kernel(KernelBaseModel):
             for func in plugin.functions.values()
             if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
         ]
+
+    def get_json_schema_of_functions(
+        self,
+        filters: dict[
+            Literal["exclude_plugin", "include_plugin", "exclude_function", "include_function"], list[str]
+        ] = {},
+    ) -> list[dict[str, Any]]:
+        """Create the object used for a tool call.
+
+        args:
+            filters: a dictionary with keys
+                exclude_plugin, include_plugin, exclude_function, include_function
+                and lists of the required filter.
+                The function name should be in the format "plugin_name-function_name".
+                Using exclude_plugin and include_plugin at the same time will raise an error.
+                Using exclude_function and include_function at the same time will raise an error.
+                If using include_* implies that all other function will be excluded.
+                Example:
+                    filter = {
+                        "exclude_plugin": ["plugin1", "plugin2"],
+                        "include_function": ["plugin3-function1", "plugin4-function2"],
+                        }
+                    will return only plugin3-function1 and plugin4-function2.
+                    filter = {
+                        "exclude_function": ["plugin1-function1", "plugin2-function2"],
+                        }
+                    will return all functions except plugin1-function1 and plugin2-function2.
+            is_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
+        returns:
+            a filtered list of jsons of the functions in the kernel that can be passed to the function calling api.
+        """
+        if not filters:
+            return [function.get_json_schema() for plugin in self.plugins.values() for function in plugin]
+        include_plugin = filters.get("include_plugin", None)
+        exclude_plugin = filters.get("exclude_plugin", [])
+        include_function = filters.get("include_function", None)
+        exclude_function = filters.get("exclude_function", [])
+        if include_plugin and exclude_plugin:
+            raise ValueError("Cannot use both include_plugin and exclude_plugin at the same time.")
+        if include_function and exclude_function:
+            raise ValueError("Cannot use both include_function and exclude_function at the same time.")
+        if include_plugin:
+            include_plugin = [plugin for plugin in include_plugin]
+        if exclude_plugin:
+            exclude_plugin = [plugin for plugin in exclude_plugin]
+        if include_function:
+            include_function = [function for function in include_function]
+        if exclude_function:
+            exclude_function = [function for function in exclude_function]
+
+        result: list[dict[str, Any]] = []
+        for plugin_name, plugin in self.plugins.items():
+            if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
+                continue
+            for function in plugin:
+                if function.fully_qualified_name in exclude_function or (
+                    include_function and function.fully_qualified_name not in include_function
+                ):
+                    continue
+                result.append(function.get_json_schema())
+        return result
 
     # endregion
     # region Services

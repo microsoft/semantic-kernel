@@ -80,7 +80,7 @@ async def test_generate_plan():
         "semantic_kernel.planners.function_calling_stepwise_planner.FunctionCallingStepwisePlanner._create_config_from_yaml",
         return_value=AsyncMock(spec=KernelFunction),
     ) as mock_create_yaml_config, patch(
-        "semantic_kernel.connectors.ai.open_ai.utils.get_function_calling_object",
+        "semantic_kernel.kernel.Kernel.get_json_schema_of_functions",
         return_value=AsyncMock(return_value=MagicMock()),
     ):
         question = "Why is the sky blue?"

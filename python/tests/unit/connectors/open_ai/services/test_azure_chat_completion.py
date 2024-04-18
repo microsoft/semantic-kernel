@@ -21,6 +21,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
@@ -611,7 +612,9 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create
     api_version = "2023-03-15-preview"
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
-    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(auto_invoke_kernel_functions=True)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions()
+    )
 
     mock_create.side_effect = openai.BadRequestError(
         "The request was bad.", response=Response(400, request=Request("POST", endpoint)), body={}
@@ -626,6 +629,6 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create
 
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
-        match="The kernel argument and arguments are required for OpenAI tool calling.",
+        match="The kernel argument and arguments are required for auto invoking OpenAI tool calls.",
     ):
         await azure_chat_completion.complete_chat(chat_history, complete_prompt_execution_settings)

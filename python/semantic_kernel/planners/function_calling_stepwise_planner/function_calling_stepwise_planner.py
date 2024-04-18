@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object, get_tool_call_object
+from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -124,14 +124,12 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 f"The service with id `{self.service_id}` is not an OpenAI based service."
             )
 
-        prompt_execution_settings: (
-            OpenAIChatPromptExecutionSettings
-        ) = self.options.execution_settings or chat_completion.get_prompt_execution_settings_class()(
-            service_id=self.service_id
+        prompt_execution_settings: OpenAIChatPromptExecutionSettings = (
+            self.options.execution_settings
+            or chat_completion.instantiate_prompt_execution_settings(service_id=self.service_id)
         )
         if self.options.max_completion_tokens:
             prompt_execution_settings.max_tokens = self.options.max_completion_tokens
-        prompt_execution_settings.max_auto_invoke_attempts = self.options.max_iterations
 
         # Clone the kernel so that we can add planner-specific plugins without affecting the original kernel instance
         cloned_kernel = copy(kernel)
@@ -143,8 +141,9 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_history_for_steps = await self._build_chat_history_for_step(
             goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
         )
-        prompt_execution_settings.tool_choice = "auto"
-        prompt_execution_settings.tools = get_tool_call_object(kernel, {"exclude_plugin": [self.service_id]})
+        prompt_execution_settings.tool_call_behavior = ToolCallBehavior.EnableFunctions(
+            auto_invoke=False, filters={"exclude_plugin": list(self.options.excluded_plugins)}
+        )
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
             if i > 0:
@@ -164,11 +163,13 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 continue
 
             # Try to get the final answer out
-            if chat_result.tool_calls[0].function.name == USER_INTERACTION_SEND_FINAL_ANSWER:
-                args = chat_result.tool_calls[0].function.parse_arguments()
-                answer = args["answer"]
+            if (
+                chat_result.tool_calls[0].function
+                and chat_result.tool_calls[0].function.name == USER_INTERACTION_SEND_FINAL_ANSWER
+            ):
+                args = chat_result.tool_calls[0].function.try_parse_arguments()
                 return FunctionCallingStepwisePlannerResult(
-                    final_answer=answer,
+                    final_answer=args.get("answer", ""),
                     chat_history=chat_history_for_steps,
                     iterations=i + 1,
                 )
@@ -236,8 +237,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     ) -> str:
         """Generate the plan for the given question using the kernel"""
         generate_plan_function = self._create_config_from_yaml(kernel)
-        functions_manual = get_function_calling_object(
-            kernel, {"exclude_function": [f"{self.service_id}", "sequential_planner-create_plan"]}
+        functions_manual = kernel.get_json_schema_of_functions(
+            filters={"exclude_function": [f"{self.service_id}", "sequential_planner-create_plan"]}
         )
         generated_plan_args = KernelArguments(
             name_delimiter="-",
