@@ -14,7 +14,7 @@ namespace Examples;
 /// <summary>
 /// Examples to show how to create plugins from OpenAPI specs.
 /// </summary>
-public class Example23_OpenAPIPlugin : BaseTest
+public class Example23_OpenAPIPlugin(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Example to show how to consume operation extensions and other metadata from an OpenAPI spec.
@@ -32,36 +32,33 @@ public class Example23_OpenAPIPlugin : BaseTest
 
         // Create a sample OpenAPI schema that calls the github versions api, and has an operation extension property.
         // The x-openai-isConsequential property is the operation extension property.
-        var schema =
-            "{" +
-            "  \"openapi\": \"3.0.1\"," +
-            "  \"info\": {" +
-            "    \"title\": \"Github Versions API\"," +
-            "    \"version\": \"1.0.0\"" +
-            "  }," +
-            "  \"servers\": [" +
-            "    {" +
-            "      \"url\": \"https://api.github.com\"" +
-            "    }" +
-            "  ]," +
-            "  \"paths\": {" +
-            "    \"/versions\": {" +
-            "      \"get\": {" +
-            "        \"x-openai-isConsequential\": false," +
-            "        \"operationId\": \"getVersions\"," +
-            "        \"responses\": {" +
-            "          \"200\": {" +
-            "            \"description\": \"OK\"" +
-            "          }" +
-            "        }" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "}";
+        var schema = """
+            {
+                "openapi": "3.0.1",
+                "info": {
+                    "title": "Github Versions API",
+                    "version": "1.0.0"
+                },
+                "servers": [ { "url": "https://api.github.com" } ],
+                "paths": {
+                    "/versions": {
+                        "get": {
+                            "x-openai-isConsequential": false,
+                            "operationId": "getVersions",
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """;
         var schemaStream = new MemoryStream();
         WriteStringToStream(schemaStream, schema);
 
-        // Import an Open AI plugin from a stream.
+        // Import an Open API plugin from a stream.
         var plugin = await kernel.CreatePluginFromOpenApiAsync("GithubVersionsApi", schemaStream, new OpenAIFunctionExecutionParameters(httpClient));
 
         // Get the function to be invoked and its metadata and extension properties.
@@ -85,10 +82,6 @@ public class Example23_OpenAPIPlugin : BaseTest
             var result = functionResult.GetValue<RestApiOperationResponse>();
             WriteLine($"Function execution result: {result?.Content}");
         }
-    }
-
-    public Example23_OpenAPIPlugin(ITestOutputHelper output) : base(output)
-    {
     }
 
     private static void WriteStringToStream(Stream stream, string input)

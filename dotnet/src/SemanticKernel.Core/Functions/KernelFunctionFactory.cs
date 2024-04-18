@@ -26,7 +26,7 @@ public static class KernelFunctionFactory
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="metadataPropertyBag">Optional metadata in addition to the named values already provided in other arguments.</param>
+    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFromMethod(
         Delegate method,
@@ -35,8 +35,8 @@ public static class KernelFunctionFactory
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) =>
-        CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory, metadataPropertyBag);
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) =>
+        CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory, additionalMetadata);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -49,7 +49,7 @@ public static class KernelFunctionFactory
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to ones derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="metadataPropertyBag">Optional metadata in addition to the named values already provided in other arguments.</param>
+    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
@@ -59,8 +59,8 @@ public static class KernelFunctionFactory
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) =>
-        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory, metadataPropertyBag);
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) =>
+        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory, additionalMetadata);
     #endregion
 
     #region FromPrompt

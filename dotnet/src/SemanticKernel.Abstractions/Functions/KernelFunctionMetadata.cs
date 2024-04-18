@@ -25,11 +25,21 @@ public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
-    /// <param name="propertyBag">Optional metadata in addition to the named properties already available on this class.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
-    public KernelFunctionMetadata(string name, ReadOnlyDictionary<string, object?>? propertyBag = null)
-         : base(propertyBag == null ? s_emptyDictionary : propertyBag)
+    public KernelFunctionMetadata(string name)
+         : base(s_emptyDictionary)
+    {
+        this.Name = name;
+    }
+
+    /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
+    /// <param name="name">The name of the function.</param>
+    /// <param name="additionalMetadata">Optional metadata in addition to the named properties already available on this class.</param>
+    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
+    /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
+    public KernelFunctionMetadata(string name, ReadOnlyDictionary<string, object?>? additionalMetadata)
+         : base(additionalMetadata == null ? s_emptyDictionary : additionalMetadata)
     {
         this.Name = name;
     }

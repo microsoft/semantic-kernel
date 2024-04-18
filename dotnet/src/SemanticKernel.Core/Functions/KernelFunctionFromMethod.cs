@@ -41,7 +41,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="metadataPropertyBag">Optional metadata in addition to the named values already provided in other arguments.</param>
+    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static KernelFunction Create(
         MethodInfo method,
@@ -51,7 +51,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null)
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
@@ -66,7 +66,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             description ?? methodDetails.Description,
             parameters?.ToList() ?? methodDetails.Parameters,
             returnParameter ?? methodDetails.ReturnParameter,
-            metadataPropertyBag);
+            additionalMetadata);
 
         if (loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
@@ -169,8 +169,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter, metadataPropertyBag)
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        this(implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
     {
     }
 
@@ -181,8 +181,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
-        ReadOnlyDictionary<string, object?>? metadataPropertyBag = null) :
-        base(functionName, pluginName, description, parameters, returnParameter, properties: metadataPropertyBag)
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        base(functionName, pluginName, description, parameters, returnParameter, properties: additionalMetadata)
     {
         Verify.ValidFunctionName(functionName);
 

@@ -347,13 +347,13 @@ public static class OpenApiKernelExtensions
         var returnParameter = operation.GetDefaultReturnParameter();
 
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
-        var metadataPropertyBag = new Dictionary<string, object?>();
-        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsIdKey, operation.Id);
-        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsPathKey, operation.Path);
-        metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString());
-        if (operation.Extensions is not null && operation.Extensions.Any())
+        var additionalMetadata = new Dictionary<string, object?>();
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsIdKey, operation.Id);
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsPathKey, operation.Path);
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString());
+        if (operation.Extensions is { Count: > 0 })
         {
-            metadataPropertyBag.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
+            additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
         }
 
         return KernelFunctionFactory.CreateFromMethod(
@@ -363,7 +363,7 @@ public static class OpenApiKernelExtensions
             description: operation.Description,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: loggerFactory,
-            metadataPropertyBag: new ReadOnlyDictionary<string, object?>(metadataPropertyBag));
+            additionalMetadata: new ReadOnlyDictionary<string, object?>(additionalMetadata));
     }
 
     /// <summary>
