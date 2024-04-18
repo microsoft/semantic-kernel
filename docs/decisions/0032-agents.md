@@ -1,10 +1,10 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: experimental
 contact: crickman, SergeyMenshykh
 date: 2024-01-24
 deciders: markwallace-microsoft, matthewbolanos
-consulted: rogerbarreto, dmytrostruk
+consulted: rogerbarreto, dmytrostruk, alliscode
 informed:
 ---
 
@@ -52,9 +52,7 @@ An _Agent_ be of various modalities.  Modalities are assymetrical with regards a
 - An _Agent_ shall be able to support its own modality requirements. (Specialization)
 - _Agent_ input and output shall align to SK content type `ChatMessageContent`.
 
-## **Design**
-
-### **Analysis**
+## **Design - Analysis**
 
 Agents participate in a conversation, often in response to user or environmental input.  
 
@@ -83,8 +81,13 @@ KernelAgent|Agent|Agent|Abstraction|Includes `Kernel` services and plug-ins
 AgentChannel|-|Channel|Abstraction|Conduit for an agent's participation in a chat.
 AgentChat|-|Chat|Abstraction|Provides core capabilities for agent interactions.
 AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
+---
 
-### **Abstraction**
+## **Design - Abstractions**
+Here the detailed class definitions from the  high-level pattern from the previous section.
+
+Also shown are entities defined as part of the _ChatHistory_ optimization: `IChatHistoryHandler`, `ChatHistoryKernelAgent`, and `ChatHistoryChannel`.
+These _ChatHistory_ entities elimintates the requirement for _Agents_ that act on a locally managed `ChatHistory` instance (as opposed to agents managed via remotely hosted frameworks) to implement their own `AgentChannel`.
 
 <img src="./diagrams/agent-abstractions.png" alt="Agent Abstractions Diagram" width="1020" />
 
@@ -97,40 +100,25 @@ AgentChannel|-|Channel|Abstraction|Conduit for an agent's participation in a cha
 ChatHistoryChannel|AgentChannel|Channel|Abstraction|%%%
 AgentChat|-|Chat|Abstraction|Provides core capabilities for agent interactions.
 AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
+---
 
+## **Design - Chat-Completion Agent**
+The first concrete agent is `ChatCompletionAgent`.
+The `ChatCompletionAgent` implementation is able to integrate with any `IChatCompletionService` implementation.
+Since `IChatCompletionService` acts upon `ChatHistory`, this demonstrates how `ChatHistoryKernelAgent` may be simply impelemented.
 
-### **ChatCompletion**
+Agent behavior is (naturally) constrained according to the specific behavior of any `IChatCompletionService`. 
+For example, a connector that does not support function-calling will likewise not execute any `KernelFunction` as an _Agent_.
 
 <img src="./diagrams/agent-chatcompletion.png" alt="ChatCompletion Agent Diagram" width="540" />
 
 Class Name|Parent Class|Role|Modality|Note
 -|-|-|-|-
-ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Based on `IChatCompletionService`
+ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Fundamental _Agent_ component.
+---
 
-
-
-### **OpenAI Assistant API**
-
-<!-- %%% STATIC METHODS -->
-<img src="./diagrams/agent-assistant.png" alt=" OpenAI Assistant Agent Diagram" width="640" />
-
-Class Name|Parent Class|Role|Modality|Note
--|-|-|-|-
-OpenAIAssistantAgent|KernelAgent|Agent|OpenAI Assistant|A functional agent based on _OpenAI Assistant API_
-OpenAIAssistantChannel|AgentChannel|Channel|OpenAI Assistant|Channel associated with `OpenAIAssistantAgent`
-
-
-### **Aggregation**
-
-<img src="./diagrams/agent-aggregator.png" alt="Aggregator Agent Diagram" width="480" />
-
-Class Name|Parent Class|Role|Modality|Note
--|-|-|-|-
-AggregatorAgent|Agent|Agent|Utility|Adapts an `AgentChat` as an `Agent`
-AggregatorChannel|AgentChannel|Channel|Utility|`AgentChannel` used by `AggregatorAgent`.
-
-
-### **Group Chat**
+## **Design - Group Chat**
+`AgentGroupChat` is a concrete `AgentChat` whose behavior is defined by various _Strategies_.
 
 <img src="./diagrams/agent-groupchat.png" alt="Agent Group Chat Diagram" width="1020" />
 
@@ -140,6 +128,40 @@ AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 AgentGroupChatSettings|-|Config|Utility|%%%
 SelectionStrategy|-|Config|Utility|%%%
 TerminationStrategy|-|Config|Utility|%%%
+---
+
+
+## **Design - OpenAI Assistant Agent**
+The next concrete agent is `OpenAIAssistantAgent`.
+This agent is based on the _OpenAI Assistant API_ and implements its own channel as chat history is managed remotely.
+
+<!-- %%% STATIC METHODS -->
+<img src="./diagrams/agent-assistant.png" alt=" OpenAI Assistant Agent Diagram" width="640" />
+
+Class Name|Parent Class|Role|Modality|Note
+-|-|-|-|-
+OpenAIAssistantAgent|KernelAgent|Agent|OpenAI Assistant|A functional agent based on _OpenAI Assistant API_
+OpenAIAssistantChannel|AgentChannel|Channel|OpenAI Assistant|Channel associated with `OpenAIAssistantAgent`
+---
+
+### **OpenAI Assistant API Reference**
+
+- [Assistants Documentation](https://platform.openai.com/docs/assistants)
+- [Assistants API](https://platform.openai.com/docs/api-reference/assistants)
+
+<img src="./diagrams/open-ai-assistant-api-objects.png" alt="OpenAI Assistant API Objects.png" width="560"/>
+
+
+## **Design - Aggregator Agent**
+In order to support complex calling patterns, `AggregatorAgent` enables one or more agents participating in an `AgentChat` to present as a single logical `Agent`.
+
+<img src="./diagrams/agent-aggregator.png" alt="Aggregator Agent Diagram" width="480" />
+
+Class Name|Parent Class|Role|Modality|Note
+-|-|-|-|-
+AggregatorAgent|Agent|Agent|Utility|Adapts an `AgentChat` as an `Agent`
+AggregatorChannel|AgentChannel|Channel|Utility|`AgentChannel` used by `AggregatorAgent`.
+---
 
 
 ## **Usage Patterns**
@@ -382,12 +404,4 @@ await agent.InvokeAsync(...);
 
 SK, today, already has the concept of filters for [prompts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Prompt/IPromptFilter.cs) and [functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/Filters/Function/IFunctionFilter.cs). Ideally, the same approach should be taken for Agent filters.
 
-
-## OpenAI Assistant API
-
-<img src="./diagrams/open-ai-assistant-api-objects.png" alt="OpenAI Assistant API Objects.png" width="700"/>
-
-[Source](https://platform.openai.com/docs/assistants/how-it-works/objects)
-
-[Playground](https://platform.openai.com/playground)
 
