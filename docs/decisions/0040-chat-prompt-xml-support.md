@@ -116,6 +116,7 @@ This solution work as follows:
 1. Developers can opt out as follows:
     1. Set `AllowUnsafeContent = true` for the `PromptTemplateConfig` to allow function call return values to be trusted.
     1. Set `AllowUnsafeContent = true` for the `InputVariable` to allow a specific input variable to be trusted.
+    1. Set `AllowUnsafeContent = true` for the `KernelPromptTemplateFactory` or `HandlebarsPromptTemplateFactory` to trust all inserted content i.e. revert to behavior before these changes were implemented.
 
 - Good, because values inserted into a prompt are not trusted by default.
 - Bad, because there isn't a reliable way to decode message tags that were encoded.
@@ -403,6 +404,53 @@ await kernel.InvokeAsync(function, kernelArguments);
         {
             "content": "You are a helpful assistant who knows all about cities in the USA",
             "role": "system"
+        },
+        {
+            "content": "What is Seattle?",
+            "role": "user"
+        }
+    ]
+}
+```
+
+#### Trusted Prompt Templates
+
+```csharp
+KernelFunction trustedMessageFunction = KernelFunctionFactory.CreateFromMethod(() => "<message role=\"system\">You are a helpful assistant who knows all about cities in the USA</message>", "TrustedMessageFunction");
+KernelFunction trustedContentFunction = KernelFunctionFactory.CreateFromMethod(() => "<text>What is Seattle?</text>", "TrustedContentFunction");
+kernel.ImportPluginFromFunctions("TrustedPlugin", [trustedMessageFunction, trustedContentFunction]);
+
+var chatPrompt = @"
+    {{TrustedPlugin.TrustedMessageFunction}}
+    <message role=""user"">{{$input}}</message>
+    <message role=""user"">{{TrustedPlugin.TrustedContentFunction}}</message>
+";
+var promptConfig = new PromptTemplateConfig(chatPrompt);
+var kernelArguments = new KernelArguments()
+{
+    ["input"] = "<text>What is Washington?</text>",
+};
+var factory = new KernelPromptTemplateFactory() { AllowUnsafeContent = true };
+var function = KernelFunctionFactory.CreateFromPrompt(promptConfig, factory);
+await kernel.InvokeAsync(function, kernelArguments);
+```
+
+```text
+<message role="system">You are a helpful assistant who knows all about cities in the USA</message>
+<message role="user"><text>What is Washington?</text></message>
+<message role="user"><text>What is Seattle?</text></message>
+```
+
+```json
+{
+    "messages": [
+        {
+            "content": "You are a helpful assistant who knows all about cities in the USA",
+            "role": "system"
+        },
+        {
+            "content": "What is Washington?",
+            "role": "user"
         },
         {
             "content": "What is Seattle?",

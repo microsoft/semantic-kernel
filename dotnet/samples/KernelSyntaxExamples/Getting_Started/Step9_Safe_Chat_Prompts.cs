@@ -32,7 +32,6 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
             .Build();
 
         // Each example demonstrates a different way to construct a chat prompt
-        /*
         await ExamplePlainTextAsync(kernel);
         await ExampleTextContentAsync(kernel);
         await ExampleHtmlEncodedTextAsync(kernel);
@@ -44,7 +43,6 @@ public sealed class Step9_Safe_Chat_Prompts(ITestOutputHelper output) : BaseTest
         await ExampleUnsafeFunctionAsync(kernel);
         await ExampleTrustedVariablesAsync(kernel);
         await ExampleTrustedFunctionAsync(kernel);
-        */
         await ExampleTrustedTemplateAsync(kernel);
     }
 
