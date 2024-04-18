@@ -16,6 +16,7 @@
 
     <modules>
         <module>sample-code</module>
+        <module>booking-agent-m365</module>
     </modules>
 
     <properties>
