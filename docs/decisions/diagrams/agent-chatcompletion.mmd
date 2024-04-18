@@ -1,15 +1,13 @@
 classDiagram
 
-	Agent
+    Agent
     Agent <|-- KernelAgent
     KernelAgent <|-- ChatHistoryKernelAgent
     IChatHistoryHandler <|-- ChatHistoryKernelAgent
     ChatHistoryKernelAgent --> ChatHistoryChannel
-
     AgentChannel
     AgentChannel <|-- ChatHistoryChannel
-
-	
+    
     ChatHistoryKernelAgent <|-- ChatCompletionAgent
     class ChatCompletionAgent {
         <<Final>>

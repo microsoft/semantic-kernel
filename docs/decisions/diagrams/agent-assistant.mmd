@@ -1,9 +1,8 @@
 classDiagram
 
-	Agent
-
+    Agent
     AgentChannel
-	
+    
     KernelAgent <|-- OpenAIAssistantAgent
     OpenAIAssistantAgent --> OpenAIAssistantChannel
     class OpenAIAssistantAgent {
@@ -27,4 +26,3 @@ classDiagram
         #IAsyncEnumerable<ChatMessageContent> GetHistoryAsync()
         #Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history)
     }
-	

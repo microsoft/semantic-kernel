@@ -1,0 +1,27 @@
+classDiagram
+
+    Agent --> AgentChannel
+    class Agent {
+        <<Abstract>>        
+    }
+
+    Agent <|-- KernelAgent
+    class KernelAgent {
+        <<Abstract>>
+    }
+
+    class AgentChannel {
+        <<Abstract>>
+    }
+
+    AgentChat o-- AgentChannel
+    class AgentChat {
+        <<Abstract>>
+    }
+
+    AgentChat <|-- AgentGroupChat
+    AgentGroupChat o-- Agent
+    AgentGroupChat --> AgentGroupChatSettings
+    class AgentGroupChat {
+        <<Final>>
+    }

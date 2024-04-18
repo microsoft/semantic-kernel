@@ -1,9 +1,9 @@
 classDiagram
 
-	Agent
+    Agent
     AgentChannel
-	AgentChat
-	
+    AgentChat
+    
     AgentChat <|-- AgentGroupChat
     AgentGroupChat o-- Agent
     AgentGroupChat --> AgentGroupChatSettings
@@ -23,7 +23,7 @@ classDiagram
         +SelectionStrategy SelectionStrategy
         +TerminationStrategy TerminationStrategy
     }
-	
+    
     class SelectionStrategy {
         <<Abstract>>
         Task~Agent~ NextAsync(IReadOnlyList~Agent~ agents, IReadOnlyList~ChatMessageContent~ history)*
