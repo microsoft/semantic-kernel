@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Web;
 using System.Xml;
 
@@ -38,9 +39,14 @@ internal static class XmlPromptParser
             return false;
         }
 
-        var xmlDocument = new XmlDocument();
+        var xmlDocument = new XmlDocument()
+        {
+            PreserveWhitespace = true
+        };
+
         try
         {
+
             xmlDocument.LoadXml($"<root>{prompt}</root>");
         }
         catch (XmlException)
@@ -70,8 +76,17 @@ internal static class XmlPromptParser
             return null;
         }
 
-        var isCData = node.FirstChild?.Name.Equals("#cdata-section", StringComparison.OrdinalIgnoreCase) ?? false;
-        var nodeContent = isCData ? node.InnerText.Trim() : node.InnerXml.Trim();
+        // Since we're preserving whitespace for the contents within each XMLNode, we
+        //  need to skip any whitespace nodes at the front of the children.
+        var firstNonWhitespaceChild = node.ChildNodes
+                    .Cast<XmlNode>()
+                    .Where(n => n.NodeType != XmlNodeType.Whitespace)
+                    .FirstOrDefault();
+
+        var isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
+        var nodeContent = isCData
+            ? node.InnerText.Trim()
+            : node.InnerXml.Trim();
 
         var promptNode = new PromptNode(node.Name)
         {
