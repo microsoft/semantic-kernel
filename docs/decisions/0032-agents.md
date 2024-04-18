@@ -90,7 +90,7 @@ AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 Here the detailed class definitions from the  high-level pattern from the previous section.
 
 Also shown are entities defined as part of the _ChatHistory_ optimization: `IChatHistoryHandler`, `ChatHistoryKernelAgent`, and `ChatHistoryChannel`.
-These _ChatHistory_ entities elimintates the requirement for _Agents_ that act on a locally managed `ChatHistory` instance (as opposed to agents managed via remotely hosted frameworks) to implement their own `AgentChannel`.
+These _ChatHistory_ entities eliminates the requirement for _Agents_ that act on a locally managed `ChatHistory` instance (as opposed to agents managed via remotely hosted frameworks) to implement their own `AgentChannel`.
 
 <img src="./diagrams/agent-abstractions.png" alt="Agent Abstractions Diagram" width="1020" />
 
