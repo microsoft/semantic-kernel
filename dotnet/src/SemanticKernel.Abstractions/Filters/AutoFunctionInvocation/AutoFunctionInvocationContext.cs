@@ -71,7 +71,7 @@ public class AutoFunctionInvocationContext
     public FunctionResult Result { get; set; }
 
     /// <summary>
-    /// Gets or sets function call iteration action.
+    /// Gets or sets a value indicating whether the operation associated with the filter should be canceled.
     /// </summary>
-    public AutoFunctionInvocationAction Action { get; set; }
+    public bool Cancel { get; set; }
 }

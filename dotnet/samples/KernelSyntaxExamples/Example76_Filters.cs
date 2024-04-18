@@ -168,8 +168,8 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result);
 
         // Output:
-        // Function call iteration: 1 out of 1
-        // Request iteration: 1
+        // Function sequence number: 0
+        // Request sequence number: 0
         // Result from auto function invocation filter
     }
 
@@ -229,6 +229,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: get function information
             var functionName = context.Function.Name;
 
+            // Example: get chat history
+            var chatHistory = context.ChatHistory;
+
             // Example: get request sequence number
             this._output.WriteLine($"Request sequence number: {context.RequestSequenceNumber}");
 
@@ -245,14 +248,8 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: override function result value
             context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
 
-            // Example: stop further function calling. but proceed with request iteration
-            context.Action = AutoFunctionInvocationAction.StopFunctionCallIteration;
-
-            // Example: call remaining functions, but stop request iteration
-            context.Action = AutoFunctionInvocationAction.StopRequestIteration;
-
-            // Example: stop function calling and request iterations, return immediately
-            context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
+            // Example: cancel function invocation
+            context.Cancel = true;
         }
     }
 

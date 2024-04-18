@@ -410,7 +410,8 @@ internal abstract class ClientCore
                 {
                     Arguments = functionArgs,
                     RequestSequenceNumber = requestIteration - 1,
-                    FunctionSequenceNumber = toolCallIteration
+                    FunctionSequenceNumber = toolCallIteration,
+                    Cancel = invocationContext?.Cancel ?? false
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -418,9 +419,8 @@ internal abstract class ClientCore
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
-                        // Check if filter didn't ask to stop request or function call iteration.
-                        var stopAction = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
-                        if ((context.Action & stopAction) != 0)
+                        // Check if filter requested cancellation.
+                        if (context.Cancel)
                         {
                             return;
                         }
@@ -450,17 +450,6 @@ internal abstract class ClientCore
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, toolCall.Id, this.Logger);
-
-                // If filter requested to stop function call iteration, breaking function calling loop.
-                if (invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopFunctionCallIteration))
-                {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
-                    {
-                        this.Logger.LogDebug("Filter requested to stop function calling iteration.");
-                    }
-
-                    break;
-                }
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, string toolId, ILogger logger)
                 {
@@ -518,12 +507,12 @@ internal abstract class ClientCore
                 }
             }
 
-            // If filter requested to stop request iteration, returning latest result from LLM.
-            if (invocationContext is not null && invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopRequestIteration))
+            // If filter requested cancellation, returning latest result from LLM.
+            if (invocationContext is not null && invocationContext.Cancel)
             {
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Filter requested to stop request iteration.");
+                    this.Logger.LogDebug("Filter requested cancellation.");
                 }
 
                 return [chat.Last()];
@@ -670,7 +659,8 @@ internal abstract class ClientCore
                 {
                     Arguments = functionArgs,
                     RequestSequenceNumber = requestIteration - 1,
-                    FunctionSequenceNumber = toolCallIteration
+                    FunctionSequenceNumber = toolCallIteration,
+                    Cancel = invocationContext?.Cancel ?? false
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -678,9 +668,8 @@ internal abstract class ClientCore
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
-                        // Check if filter didn't ask to stop request or function call iteration.
-                        var stopAction = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
-                        if ((context.Action & stopAction) != 0)
+                        // Check if filter requested cancellation.
+                        if (context.Cancel)
                         {
                             return;
                         }
@@ -710,17 +699,6 @@ internal abstract class ClientCore
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
-
-                // If filter requested to stop function call iteration, breaking function calling loop.
-                if (invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopFunctionCallIteration))
-                {
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
-                    {
-                        this.Logger.LogDebug("Filter requested to stop function calling iteration.");
-                    }
-
-                    break;
-                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
@@ -779,12 +757,12 @@ internal abstract class ClientCore
                 }
             }
 
-            // If filter requested to stop request iteration, breaking request iteration loop.
-            if (invocationContext is not null && invocationContext.Action.HasFlag(AutoFunctionInvocationAction.StopRequestIteration))
+            // If filter requested cancellation, breaking request iteration loop.
+            if (invocationContext is not null && invocationContext.Cancel)
             {
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
-                    this.Logger.LogDebug("Filter requested to stop request iteration.");
+                    this.Logger.LogDebug("Filter requested cancellation.");
                 }
 
                 yield break;

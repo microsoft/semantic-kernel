@@ -78,6 +78,50 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
+    public async Task FiltersAreExecutedCorrectlyOnStreamingAsync()
+    {
+        // Arrange
+        int filterInvocations = 0;
+        int functionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            if (context.ChatHistory.Last() is OpenAIChatMessageContent content)
+            {
+                Assert.Equal(2, content.ToolCalls.Count);
+            }
+
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+
+            await next(context);
+
+            filterInvocations++;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        { }
+
+        // Assert
+        Assert.Equal(4, filterInvocations);
+        Assert.Equal(4, functionInvocations);
+        Assert.Equal([0, 0, 1, 1], requestSequenceNumbers);
+        Assert.Equal([0, 1, 0, 1], functionSequenceNumbers);
+    }
+
+    [Fact]
     public async Task FiltersCanSkipFunctionExecutionAsync()
     {
         // Arrange
@@ -119,161 +163,21 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task FiltersAreExecutedCorrectlyOnStreamingAsync()
+    public async Task PreFilterCanCancelOperationAsync()
     {
         // Arrange
-        int filterInvocations = 0;
-        int functionInvocations = 0;
-        int[] expectedRequestSequenceNumbers = [0, 0, 1, 1];
-        int[] expectedFunctionSequenceNumbers = [0, 1, 0, 1];
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            if (context.ChatHistory.Last() is OpenAIChatMessageContent content)
-            {
-                Assert.Equal(2, content.ToolCalls.Count);
-            }
-
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
-
-            await next(context);
-
-            filterInvocations++;
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        // Act
-        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
-        { }
-
-        // Assert
-        Assert.Equal(4, filterInvocations);
-        Assert.Equal(4, functionInvocations);
-        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
-        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
-    }
-
-    [Theory]
-    [InlineData(AutoFunctionInvocationAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
-    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
-    public async Task PostExecutionWithStopActionStopsFunctionCallingLoopAsync(
-        AutoFunctionInvocationAction action,
-        int[] expectedRequestSequenceNumbers,
-        int[] expectedFunctionSequenceNumbers,
-        int expectedFunctionInvocations)
-    {
-        // Arrange
-        int functionInvocations = 0;
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
-
-            await next(context);
-
-            // Setting function calling action after function was invoked.
-            context.Action = action;
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
-
-        // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        }));
-
-        // Assert
-        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
-        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
-        Assert.Equal(expectedFunctionInvocations, functionInvocations);
-    }
-
-    [Theory]
-    [InlineData(AutoFunctionInvocationAction.None, new int[] { 0, 0, 1, 1 }, new int[] { 0, 1, 0, 1 }, 4)]
-    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0, 1 }, new int[] { 0, 0 }, 2)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration, new int[] { 0, 0 }, new int[] { 0, 1 }, 2)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration, new int[] { 0 }, new int[] { 0 }, 1)]
-    public async Task PostExecutionWithStopActionStopsFunctionCallingLoopOnStreamingAsync(
-        AutoFunctionInvocationAction action,
-        int[] expectedRequestSequenceNumbers,
-        int[] expectedFunctionSequenceNumbers,
-        int expectedFunctionInvocations)
-    {
-        // Arrange
-        int functionInvocations = 0;
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
-
-            await next(context);
-
-            // Setting function calling action after function was invoked.
-            context.Action = action;
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        // Act
-        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
-        { }
-
-        // Assert
-        Assert.Equal(expectedRequestSequenceNumbers, requestSequenceNumbers);
-        Assert.Equal(expectedFunctionSequenceNumbers, functionSequenceNumbers);
-        Assert.Equal(expectedFunctionInvocations, functionInvocations);
-    }
-
-    [Theory]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration)]
-    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration)]
-    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionAsync(AutoFunctionInvocationAction action)
-    {
-        // Arrange
-        int functionInvocations = 0;
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            // Setting function calling action before function was invoked.
-            context.Action = action;
+            // Cancelling before first function, so all functions won't be invoked.
+            context.Cancel = true;
 
             await next(context);
         });
@@ -287,27 +191,26 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal(0, functionInvocations);
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
     }
 
-    [Theory]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration)]
-    [InlineData(AutoFunctionInvocationAction.StopFunctionCallIteration)]
-    [InlineData(AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration)]
-    public async Task PreExecutionWithStopActionDoesNotInvokeFunctionOnStreamingAsync(AutoFunctionInvocationAction action)
+    [Fact]
+    public async Task PreFilterCanCancelOperationOnStreamingAsync()
     {
         // Arrange
-        int functionInvocations = 0;
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { functionInvocations++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            // Setting function calling action before function was invoked.
-            context.Action = action;
+            // Cancelling before first function, so all functions won't be invoked.
+            context.Cancel = true;
 
             await next(context);
         });
@@ -321,7 +224,88 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         { }
 
         // Assert
-        Assert.Equal(0, functionInvocations);
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PostFilterCanCancelOperationAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+
+            await next(context);
+
+            // Cancelling after first function, so second function won't be invoked.
+            context.Cancel = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0, 0], requestSequenceNumbers);
+        Assert.Equal([0, 1], functionSequenceNumbers);
+    }
+
+    [Fact]
+    public async Task PostFilterCanCancelOperationOnStreamingAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceNumber);
+            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+
+            await next(context);
+
+            // Cancelling after first function, so second function won't be invoked.
+            context.Cancel = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        { }
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0, 0], requestSequenceNumbers);
+        Assert.Equal([0, 1], functionSequenceNumbers);
     }
 
     [Fact]
@@ -341,7 +325,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             catch (KernelException)
             {
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
+                context.Cancel = true;
             }
         });
 
@@ -377,7 +361,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             catch (KernelException)
             {
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Action = AutoFunctionInvocationAction.StopRequestIteration | AutoFunctionInvocationAction.StopFunctionCallIteration;
+                context.Cancel = true;
             }
         });
 
