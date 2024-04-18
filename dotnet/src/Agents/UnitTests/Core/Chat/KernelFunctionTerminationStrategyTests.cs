@@ -49,7 +49,7 @@ public class KernelFunctionTerminationStrategyTests
             new(plugin.Single())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
-                Kernel = Kernel.CreateBuilder().Build(),
+                Kernel = new Kernel(),
                 ResultParser = new TestParser()
             };
 

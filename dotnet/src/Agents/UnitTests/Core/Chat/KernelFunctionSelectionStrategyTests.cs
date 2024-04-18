@@ -49,7 +49,7 @@ public class KernelFunctionSelectionStrategyTests
             new(plugin.Single())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                Kernel = Kernel.CreateBuilder().Build(),
+                Kernel = new Kernel(),
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent.Object], []));

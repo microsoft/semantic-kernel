@@ -60,7 +60,7 @@ public class Example04_KernelFunctionStrategies(ITestOutputHelper output) : Base
                 Determine if the copy has been approved.  If so, respond with a single word: yes
 
                 History:
-                {{${{{KernelFunctionTerminationStrategy.ArgumentKeyHistory}}}}}
+                {{${{{KernelFunctionTerminationStrategy.HistoryArgumentName}}}}}
                 """);
 
         KernelFunction selectionFunction =
@@ -70,10 +70,10 @@ public class Example04_KernelFunctionStrategies(ITestOutputHelper output) : Base
                 Carefully read the conversation history and carry on the conversation by specifying only the name of player to take the next turn.
 
                 The available names are:
-                {{${{{KernelFunctionSelectionStrategy.ArgumentKeyAgents}}}}}
+                {{${{{KernelFunctionSelectionStrategy.AgentsArgumentName}}}}}
 
                 History:
-                {{${{{KernelFunctionSelectionStrategy.ArgumentKeyHistory}}}}}
+                {{${{{KernelFunctionSelectionStrategy.HistoryArgumentName}}}}}
                 """);
 
         // Create a chat for agent interaction.

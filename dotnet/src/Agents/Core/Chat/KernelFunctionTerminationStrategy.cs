@@ -16,12 +16,12 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     /// <summary>
     /// A well-known <see cref="KernelArguments"/> key associated with the agent name.
     /// </summary>
-    public const string ArgumentKeyAgent = "_agent_";
+    public const string AgentArgumentName = "_agent_";
 
     /// <summary>
     /// A well-known <see cref="KernelArguments"/> key associated with the chat history.
     /// </summary>
-    public const string ArgumentKeyHistory = "_history_";
+    public const string HistoryArgumentName = "_history_";
 
     /// <summary>
     /// Optional arguments used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
@@ -31,7 +31,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
+    public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
     /// The <see cref="KernelFunction"/> invoked as termination criteria.
@@ -56,8 +56,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { ArgumentKeyAgent, agent.Name ?? agent.Id },
-                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { AgentArgumentName, agent.Name ?? agent.Id },
+                { HistoryArgumentName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);

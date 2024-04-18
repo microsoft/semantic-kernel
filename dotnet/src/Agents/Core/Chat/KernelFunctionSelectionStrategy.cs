@@ -16,12 +16,12 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     /// <summary>
     /// A well-known <see cref="KernelArguments"/> key associated with the list of agent names.
     /// </summary>
-    public const string ArgumentKeyAgents = "_agents_";
+    public const string AgentsArgumentName = "_agents_";
 
     /// <summary>
     /// A well-known <see cref="KernelArguments"/> key associated with the chat history.
     /// </summary>
-    public const string ArgumentKeyHistory = "_history_";
+    public const string HistoryArgumentName = "_history_";
 
     /// <summary>
     /// Optional arguments used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
@@ -31,7 +31,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; init; } = Kernel.CreateBuilder().Build();
+    public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
     /// The <see cref="KernelFunction"/> invoked as selection criteria.
@@ -56,8 +56,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { ArgumentKeyAgents, string.Join(",", agents.Select(a => a.Name)) },
-                { ArgumentKeyHistory, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { AgentsArgumentName, string.Join(",", agents.Select(a => a.Name)) },
+                { HistoryArgumentName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
