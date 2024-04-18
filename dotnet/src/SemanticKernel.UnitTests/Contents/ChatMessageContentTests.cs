@@ -182,7 +182,9 @@ public class ChatMessageContentTests
             new TextContent("content-6", "model-6", metadata: new Dictionary<string, object?>()
             {
                 ["metadata-key-6"] = "metadata-value-6"
-            }) { MimeType = "mime-type-6" }
+            }) { MimeType = "mime-type-6" },
+            new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
+            new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result")
         };
 
         // Act
@@ -209,7 +211,7 @@ public class ChatMessageContentTests
         Assert.Null(deserializedMessage.Source);
 
         Assert.NotNull(deserializedMessage?.Items);
-        Assert.Equal(6, deserializedMessage.Items.Count);
+        Assert.Equal(items.Count, deserializedMessage.Items.Count);
 
         var textContent = deserializedMessage.Items[0] as TextContent;
         Assert.NotNull(textContent);
@@ -264,5 +266,21 @@ public class ChatMessageContentTests
         Assert.NotNull(textContent.Metadata);
         Assert.Single(textContent.Metadata);
         Assert.Equal("metadata-value-6", textContent.Metadata["metadata-key-6"]?.ToString());
+
+        var functionCallContent = deserializedMessage.Items[6] as FunctionCallContent;
+        Assert.NotNull(functionCallContent);
+        Assert.Equal("function-name", functionCallContent.FunctionName);
+        Assert.Equal("plugin-name", functionCallContent.PluginName);
+        Assert.Equal("function-id", functionCallContent.Id);
+        Assert.NotNull(functionCallContent.Arguments);
+        Assert.Single(functionCallContent.Arguments);
+        Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
+
+        var functionResultContent = deserializedMessage.Items[7] as FunctionResultContent;
+        Assert.NotNull(functionResultContent);
+        Assert.Equal("function-result", functionResultContent.Result?.ToString());
+        Assert.Equal("function-name", functionResultContent.FunctionName);
+        Assert.Equal("function-id", functionResultContent.Id);
+        Assert.Equal("plugin-name", functionResultContent.PluginName);
     }
 }
