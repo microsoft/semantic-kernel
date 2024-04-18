@@ -31,7 +31,7 @@ Various agents specializations might include:
 
 
 ### **Agent Modalities**
-An _Agent_ be of various modalities.  Modalities are assymetrical with regards abilities and constraints.
+An _Agent_ be of various modalities.  Modalities are asymetrical with regards abilities and constraints.
 
 - **SemanticKernel - IChatCompletionService**: An _Agent_ based solely on the *SemanticKernel* `IChatCompletionService`.
 - **OpenAI Assistants**: A hosted _Agent_ solution supported the _OpenAI Assistant API_ (both OpenAI & Azure OpenAI).
