@@ -8,8 +8,8 @@ If you want to use some of the optional dependencies (OpenAI is installed by def
 
     python -m pip install --upgrade semantic-kernel[hugging_face]
 
-of all of them:
-    
+or all of them:
+
     python -m pip install --upgrade semantic-kernel[all]
 
 # AI Services
@@ -34,13 +34,15 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import asyncio
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = sk.Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
@@ -52,10 +54,10 @@ kernel.add_service(
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
-#       service_id="dv",
+#       service_id=service_id,
 #       deployment_name=deployment,
 #       endpoint=endpoint,
 #       api_key=api_key
@@ -80,7 +82,7 @@ does not conflict with the First or Second Law.
 
 Give me the TLDR in exactly 5 words."""
 
-prompt_template_config = sk.PromptTemplateConfig(
+prompt_template_config = PromptTemplateConfig(
     template=prompt,
     name="tldr",
     template_format="semantic-kernel",
@@ -101,6 +103,8 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+# If running from a jupyter-notebook:
+# await main()
 ```
 
 # **Semantic Prompt Functions** are Prompts with input parameters
