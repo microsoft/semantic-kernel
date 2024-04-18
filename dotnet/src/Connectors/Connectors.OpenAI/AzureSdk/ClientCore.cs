@@ -508,7 +508,7 @@ internal abstract class ClientCore
                 }
             }
 
-            // If filter requested cancellation, returning latest result from LLM.
+            // If filter requested cancellation, returning latest function result.
             if (invocationContext is not null && invocationContext.Cancel)
             {
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -516,7 +516,7 @@ internal abstract class ClientCore
                     this.Logger.LogDebug("Filter requested cancellation.");
                 }
 
-                return [result];
+                return [chat.Last()];
             }
         }
     }
