@@ -163,14 +163,15 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), autoInvoke: true)
         };
 
-        var result = await kernel.InvokePromptAsync("Invoke provided function", new(executionSettings));
+        var result = await kernel.InvokePromptAsync("Invoke provided function and return result", new(executionSettings));
 
         WriteLine(result);
 
         // Output:
         // Request sequence number: 0
         // Function sequence number: 0
-        // Result from auto function invocation filter
+        // Total number of functions: 1
+        // The result of the function you provided is "Result from auto function invocation filter".
     }
 
     #region Filter capabilities
@@ -232,11 +233,14 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: get chat history
             var chatHistory = context.ChatHistory;
 
-            // Example: get request sequence number
-            this._output.WriteLine($"Request sequence number: {context.RequestSequenceNumber}");
+            // Example: get request sequence index
+            this._output.WriteLine($"Request sequence index: {context.RequestSequenceIndex}");
 
-            // Example: get function sequence number
-            this._output.WriteLine($"Function sequence number: {context.FunctionSequenceNumber}");
+            // Example: get function sequence index
+            this._output.WriteLine($"Function sequence index: {context.FunctionSequenceIndex}");
+
+            // Example: get total number of functions which will be called
+            this._output.WriteLine($"Total number of functions: {context.FunctionCount}");
 
             // Calling next filter in pipeline or function itself.
             // By skipping this call, next filters and function won't be invoked, and function call loop will proceed to the next function.
@@ -247,9 +251,6 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 
             // Example: override function result value
             context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
-
-            // Example: cancel function invocation
-            context.Cancel = true;
         }
     }
 

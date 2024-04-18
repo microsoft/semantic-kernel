@@ -41,14 +41,19 @@ public class AutoFunctionInvocationContext
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// Request sequence number of automatic function invocation process. Starts from 0.
+    /// Request sequence index of automatic function invocation process. Starts from 0.
     /// </summary>
-    public int RequestSequenceNumber { get; init; }
+    public int RequestSequenceIndex { get; init; }
 
     /// <summary>
-    /// Function sequence number. Starts from 0.
+    /// Function sequence index. Starts from 0.
     /// </summary>
-    public int FunctionSequenceNumber { get; init; }
+    public int FunctionSequenceIndex { get; init; }
+
+    /// <summary>
+    /// Number of functions that will be invoked during auto function invocation request.
+    /// </summary>
+    public int FunctionCount { get; init; }
 
     /// <summary>
     /// The chat history associated with automatic function invocation.

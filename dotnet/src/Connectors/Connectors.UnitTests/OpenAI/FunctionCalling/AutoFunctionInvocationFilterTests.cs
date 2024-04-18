@@ -52,8 +52,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
                 Assert.Equal(2, content.ToolCalls.Count);
             }
 
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
 
             await next(context);
 
@@ -98,8 +98,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
                 Assert.Equal(2, content.ToolCalls.Count);
             }
 
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
 
             await next(context);
 
@@ -244,8 +244,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
 
             await next(context);
 
@@ -284,8 +284,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            requestSequenceNumbers.Add(context.RequestSequenceNumber);
-            functionSequenceNumbers.Add(context.FunctionSequenceNumber);
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
 
             await next(context);
 

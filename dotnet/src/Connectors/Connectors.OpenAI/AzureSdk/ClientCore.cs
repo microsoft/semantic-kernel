@@ -409,8 +409,9 @@ internal abstract class ClientCore
                 invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestSequenceNumber = requestIteration - 1,
-                    FunctionSequenceNumber = toolCallIteration,
+                    RequestSequenceIndex = requestIteration - 1,
+                    FunctionSequenceIndex = toolCallIteration,
+                    FunctionCount = result.ToolCalls.Count,
                     Cancel = invocationContext?.Cancel ?? false
                 };
 
@@ -658,9 +659,10 @@ internal abstract class ClientCore
                 invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
-                    RequestSequenceNumber = requestIteration - 1,
-                    FunctionSequenceNumber = toolCallIteration,
-                    Cancel = invocationContext?.Cancel ?? false
+                    RequestSequenceIndex = requestIteration - 1,
+                    FunctionSequenceIndex = toolCallIteration,
+                    FunctionCount = toolCalls.Length,
+                    Cancel = invocationContext?.Cancel ?? false,
                 };
 
                 s_inflightAutoInvokes.Value++;
