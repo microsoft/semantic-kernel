@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Optional options that can be provided when creating a <see cref="KernelFunction"/> from a method.
 /// </summary>
+[Experimental("SKEXP0001")]
 public sealed class KernelFunctionFromMethodOptions
 {
     /// <summary>

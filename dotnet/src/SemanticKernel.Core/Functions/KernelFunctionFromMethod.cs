@@ -72,6 +72,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
     public static KernelFunction Create(
         MethodInfo method,
         object? target = null,
