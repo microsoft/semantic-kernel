@@ -515,7 +515,7 @@ internal abstract class ClientCore
                     this.Logger.LogDebug("Filter requested cancellation.");
                 }
 
-                return [chat.Last()];
+                return [result];
             }
         }
     }

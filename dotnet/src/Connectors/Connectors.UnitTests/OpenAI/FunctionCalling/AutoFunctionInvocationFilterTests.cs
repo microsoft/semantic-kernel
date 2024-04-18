@@ -312,8 +312,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     public async Task FilterCanHandleExceptionAsync()
     {
         // Arrange
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from method"); }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from Function1"); }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => "Result from Function2", "Function2");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
@@ -322,10 +322,10 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             {
                 await next(context);
             }
-            catch (KernelException)
+            catch (KernelException exception)
             {
+                Assert.Equal("Exception from Function1", exception.Message);
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Cancel = true;
             }
         });
 
@@ -334,22 +334,25 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService(modelId: "test-model-id", apiKey: "test-api-key", httpClient: this._httpClient);
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
+        var chatHistory = new ChatHistory();
+
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        }));
+        var result = await chatCompletion.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        var firstFunctionResult = chatHistory[^2].Content;
+        var secondFunctionResult = chatHistory[^1].Content;
 
         // Assert
-        Assert.Equal("Result from filter", result.ToString());
+        Assert.Equal("Result from filter", firstFunctionResult);
+        Assert.Equal("Result from Function2", secondFunctionResult);
     }
 
     [Fact]
     public async Task FilterCanHandleExceptionOnStreamingAsync()
     {
         // Arrange
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from method"); }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { throw new KernelException("Exception from Function1"); }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => "Result from Function2", "Function2");
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
@@ -361,7 +364,6 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
             catch (KernelException)
             {
                 context.Result = new FunctionResult(context.Result, "Result from filter");
-                context.Cancel = true;
             }
         });
 
@@ -375,10 +377,12 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         await foreach (var item in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
         { }
 
-        var lastMessage = chatHistory.Last();
+        var firstFunctionResult = chatHistory[^2].Content;
+        var secondFunctionResult = chatHistory[^1].Content;
 
         // Assert
-        Assert.Equal("Result from filter", lastMessage.Content);
+        Assert.Equal("Result from filter", firstFunctionResult);
+        Assert.Equal("Result from Function2", secondFunctionResult);
     }
 
     public void Dispose()
