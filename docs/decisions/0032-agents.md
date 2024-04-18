@@ -110,7 +110,7 @@ AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 
 The first concrete agent is `ChatCompletionAgent`.
 The `ChatCompletionAgent` implementation is able to integrate with any `IChatCompletionService` implementation.
-Since `IChatCompletionService` acts upon `ChatHistory`, this demonstrates how `ChatHistoryKernelAgent` may be simply impelemented.
+Since `IChatCompletionService` acts upon `ChatHistory`, this demonstrates how `ChatHistoryKernelAgent` may be simply implemented.
 
 Agent behavior is (naturally) constrained according to the specific behavior of any `IChatCompletionService`. 
 For example, a connector that does not support function-calling will likewise not execute any `KernelFunction` as an _Agent_.
