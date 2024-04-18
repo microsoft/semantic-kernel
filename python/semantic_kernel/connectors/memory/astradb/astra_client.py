@@ -1,10 +1,19 @@
 import json
+from importlib.metadata import PackageNotFoundError, version
 from typing import Dict, List, Optional
 
 import aiohttp
 
 from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
 from semantic_kernel.exceptions import ServiceResponseException
+
+SEMANTIC_KERNEL_VERSION: Optional[str]
+try:
+    SEMANTIC_KERNEL_VERSION = version("semantic_kernel")
+    ASTRA_CALLER_IDENTITY = f"semantic_kernel/{SEMANTIC_KERNEL_VERSION}"
+except PackageNotFoundError:
+    SEMANTIC_KERNEL_VERSION = None
+    ASTRA_CALLER_IDENTITY = "semantic_kernel"
 
 
 class AstraClient:
@@ -31,6 +40,7 @@ class AstraClient:
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
+            "User-Agent": ASTRA_CALLER_IDENTITY,
         }
         self._session = session
 
