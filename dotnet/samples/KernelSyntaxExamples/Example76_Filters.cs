@@ -149,7 +149,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 
         builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
-        // This filter handles an exception and returns overridden result.
+        // This filter outputs information about auto function invocation and returns overridden result.
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
 
         var kernel = builder.Build();
@@ -168,8 +168,8 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         WriteLine(result);
 
         // Output:
-        // Function sequence number: 0
         // Request sequence number: 0
+        // Function sequence number: 0
         // Result from auto function invocation filter
     }
 
