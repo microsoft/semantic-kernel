@@ -46,7 +46,6 @@ internal static class XmlPromptParser
 
         try
         {
-
             xmlDocument.LoadXml($"<root>{prompt}</root>");
         }
         catch (XmlException)
