@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 TYPE_MAPPER = {
     "str": "string",
