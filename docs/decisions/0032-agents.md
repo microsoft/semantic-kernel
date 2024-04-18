@@ -52,6 +52,7 @@ An _Agent_ be of various modalities.  Modalities are asymmetrical with regards a
 - An _Agent_ shall be able to support its own modality requirements. (Specialization)
 - _Agent_ input and output shall align to SK content type `ChatMessageContent`.
 
+
 ## **Design - Analysis**
 
 Agents participate in a conversation, often in response to user or environmental input.  
@@ -83,7 +84,9 @@ AgentChat|-|Chat|Abstraction|Provides core capabilities for agent interactions.
 AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 ---
 
+
 ## **Design - Abstractions**
+
 Here the detailed class definitions from the  high-level pattern from the previous section.
 
 Also shown are entities defined as part of the _ChatHistory_ optimization: `IChatHistoryHandler`, `ChatHistoryKernelAgent`, and `ChatHistoryChannel`.
@@ -102,7 +105,9 @@ AgentChat|-|Chat|Abstraction|Provides core capabilities for agent interactions.
 AgentGroupChat|AgentChat|Chat|Utility|Strategy based chat
 ---
 
+
 ## **Design - Chat-Completion Agent**
+
 The first concrete agent is `ChatCompletionAgent`.
 The `ChatCompletionAgent` implementation is able to integrate with any `IChatCompletionService` implementation.
 Since `IChatCompletionService` acts upon `ChatHistory`, this demonstrates how `ChatHistoryKernelAgent` may be simply impelemented.
@@ -117,7 +122,9 @@ Class Name|Parent Class|Role|Modality|Note
 ChatCompletionAgent|ChatHistoryKernelAgent|Agent|SemanticKernel|Fundamental _Agent_ component.
 ---
 
+
 ## **Design - Group Chat**
+
 `AgentGroupChat` is a concrete `AgentChat` whose behavior is defined by various _Strategies_.
 
 <img src="./diagrams/agent-groupchat.png" alt="Agent Group Chat Diagram" width="1020" />
@@ -132,6 +139,7 @@ TerminationStrategy|-|Config|Utility|%%%
 
 
 ## **Design - OpenAI Assistant Agent**
+
 The next concrete agent is `OpenAIAssistantAgent`.
 This agent is based on the _OpenAI Assistant API_ and implements its own channel as chat history is managed remotely.
 
@@ -153,6 +161,7 @@ OpenAIAssistantChannel|AgentChannel|Channel|OpenAI Assistant|Channel associated 
 
 
 ## **Design - Aggregator Agent**
+
 In order to support complex calling patterns, `AggregatorAgent` enables one or more agents participating in an `AgentChat` to present as a single logical `Agent`.
 
 <img src="./diagrams/agent-aggregator.png" alt="Aggregator Agent Diagram" width="480" />
@@ -166,6 +175,130 @@ AggregatorChannel|AgentChannel|Channel|Utility|`AgentChannel` used by `Aggregato
 
 ## **Usage Patterns**
 
+**1. Agent Instantiation: ChatCompletion**
+
+TBD
+
+```c#
+// Start with the Kernel
+IKernelBuilder builder = Kernel.CreateBuilder();
+
+// Add any IChatCompletionService
+builder.AddOpenAIChatCompletion(...);
+
+// Include desired plugins / functions    
+builder.Plugins.Add(...);
+
+// Include desired filters
+builder.Filters.Add(...);
+
+// Create the agent
+ChatCompletionAgent agent =
+    new()
+    {
+        Instructions = "instructions",
+        Name = "name",
+        Kernel = builder.Build()
+    };
+```
+
+**2. Agent Instantiation: OpenAI Assistant**
+
+Since every Assistant action is a call to a REST endpoint, `OpenAIAssistantAgent` is access via static methods:
+
+**Create:**
+```c#
+// Create config and definition
+OpenAIAssistantConfiguration config = new("apikey", "endpoint");
+OpenAIAssistantDefinition definition = new()
+{
+    Instructions = "instructions",
+    Name = "naem",
+    Model = "gpt-4",
+};
+
+// Create the agent
+OpenAIAssistantAgent agent =  OpenAIAssistantAgent.CreateAsync(config, definition);
+```
+
+**Retrieval:**
+```c#
+// Create config
+OpenAIAssistantConfiguration config = new("apikey", "endpoint");
+
+// Create the agent based on an existing definition
+OpenAIAssistantAgent agent =  OpenAIAssistantAgent.RetrieveAsync(config, "agent-id");
+```
+
+**Inspection:**
+```c#
+// Create config
+OpenAIAssistantConfiguration config = new("apikey", "endpoint");
+
+// Create the agent based on an existing definition
+IAsyncEnumerable<OpenAIAssistantDefinition> definitions = OpenAIAssistantAgent.ListAsync(config;
+```
+
+**3. Agent Chat: Explicit**
+
+An _Agent_ may be explicitly selected to respond in an `AgentGroupChat`.
+
+```c#
+// Define agents
+ChatCompletionAgent agent1 = ...;
+OpenAIAssistantAgent agent2 = ...;
+
+// Create chat
+AgentGroupChat chat = new();
+
+// Provide input for chat
+ChatMessageContent input = new (AuthorRole.User, "input");
+await WriteMessageAsync(input);
+chat.AddMessage(new ChatMessageContent(AuthorRole.User, input));
+
+// First invoke one agent, then the other, display each response.
+await WriteMessagesAsync(chat.InvokeAsync(agent1));
+await WriteMessagesAsync(chat.InvokeAsync(agent2));
+
+// The entire history may be accessed.  Agent specific history
+// may be transformed from primary history.
+await WriteMessagesAsync(chat.GetHistoryAsync());
+await WriteMessagesAsync(chat.GetHistoryAsync(agent1));
+await WriteMessagesAsync(chat.GetHistoryAsync(agent2));
+```
+
+**4. Agent Chat: Multi-Turn**
+
+_Agents_ may also take turns working towards an objective:
+
+```c#
+// Define agents
+Agent agent1 = ...;
+Agent agent2 = ...;
+Agent agent3 = ...;
+
+// Create chat with two agents.
+AgentGroupChat chat =
+    new(agent1, agent2)
+    { 
+        ExecutionSettings =
+        {
+            // Chat will continue until it meets the termination criteria.
+            TerminationionStrategy = new MyTerminationStrategy(),
+        } 
+    };
+
+// Provide input for chat
+ChatMessageContent input = new (AuthorRole.User, "input");
+await WriteMessageAsync(input);
+chat.AddMessage(new ChatMessageContent(AuthorRole.User, input));
+
+// Agent may be added to an existing chat
+chat.AddAgent(agent3);
+
+// Execute the chat until termination
+await WriteMessagesAsync(chat.InvokeAsync());
+```
 
 
 ## **Builder Patterns**
