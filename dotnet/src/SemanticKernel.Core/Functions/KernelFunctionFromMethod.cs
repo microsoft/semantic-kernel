@@ -41,7 +41,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
     public static KernelFunction Create(
         MethodInfo method,
@@ -50,8 +49,33 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? additionalMetadata = null)
+        ILoggerFactory? loggerFactory = null)
+    {
+        return Create(
+            method,
+            target,
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory
+            });
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction Create(
+        MethodInfo method,
+        object? target = null,
+        KernelFunctionFromMethodOptions? options = default)
     {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
@@ -59,16 +83,16 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        MethodDetails methodDetails = GetMethodDetails(functionName, method, target);
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, target);
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
-            description ?? methodDetails.Description,
-            parameters?.ToList() ?? methodDetails.Parameters,
-            returnParameter ?? methodDetails.ReturnParameter,
-            additionalMetadata);
+            options?.Description ?? methodDetails.Description,
+            options?.Parameters?.ToList() ?? methodDetails.Parameters,
+            options?.ReturnParameter ?? methodDetails.ReturnParameter,
+            options?.AdditionalMetadata);
 
-        if (loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunction '{Name}' for '{MethodName}'", result.Name, method.Name);

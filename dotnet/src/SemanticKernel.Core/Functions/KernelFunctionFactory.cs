@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -26,7 +25,6 @@ public static class KernelFunctionFactory
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFromMethod(
         Delegate method,
@@ -34,9 +32,19 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? additionalMetadata = null) =>
-        CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory, additionalMetadata);
+        ILoggerFactory? loggerFactory = null) =>
+        CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFromMethod(
+        Delegate method,
+        KernelFunctionFromMethodOptions? options) =>
+        CreateFromMethod(method.Method, method.Target, options);
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -49,7 +57,6 @@ public static class KernelFunctionFactory
     /// <param name="parameters">Optional parameter descriptions. If null, it will default to ones derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="additionalMetadata">Optional metadata in addition to the named values already provided in other arguments.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
@@ -58,9 +65,22 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null,
-        ReadOnlyDictionary<string, object?>? additionalMetadata = null) =>
-        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory, additionalMetadata);
+        ILoggerFactory? loggerFactory = null) =>
+        KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    public static KernelFunction CreateFromMethod(
+        MethodInfo method,
+        object? target,
+        KernelFunctionFromMethodOptions? options) =>
+        KernelFunctionFromMethod.Create(method, target, options);
     #endregion
 
     #region FromPrompt
