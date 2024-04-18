@@ -26,7 +26,7 @@ public sealed class KernelFunctionFromMethodOptions
     public string? Description { get; init; }
 
     /// <summary>
-    /// >Optional parameter descriptions. If null, it will default to one derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
+    /// Optional parameter descriptions. If null, it will default to one derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
     /// </summary>
     public IEnumerable<KernelParameterMetadata>? Parameters { get; init; }
 
