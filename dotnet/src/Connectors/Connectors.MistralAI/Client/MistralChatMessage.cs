@@ -15,7 +15,7 @@ internal class MistralChatMessage
     public string? Role { get; set; }
 
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 
     [JsonPropertyName("tool_calls")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -27,7 +27,7 @@ internal class MistralChatMessage
     /// <param name="role">If provided must be one of: system, user, assistant</param>
     /// <param name="content">Content of the chat message</param>
     [JsonConstructor]
-    internal MistralChatMessage(string? role, string content)
+    internal MistralChatMessage(string? role, string? content)
     {
         if (role is not null && role is not "system" && role is not "user" && role is not "assistant" && role is not "tool")
         {

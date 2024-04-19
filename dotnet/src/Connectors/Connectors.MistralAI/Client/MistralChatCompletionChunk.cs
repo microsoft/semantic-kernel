@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
@@ -52,10 +51,9 @@ internal class MistralChatCompletionChunk
         return this.Choices?.Count ?? 0;
     }
 
-    internal AuthorRole? GetRole(int index)
+    internal string? GetRole(int index)
     {
-        var role = this.Choices?[index]?.Delta?.Role;
-        return role is null ? null : new AuthorRole(role);
+        return this.Choices?[index]?.Delta?.Role;
     }
 
     internal string? GetContent(int index)

@@ -35,6 +35,7 @@ internal class MistralFunction
     /// The arguments provided by the model to call the function.
     /// </summary>
     [JsonPropertyName("arguments")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Arguments { get; set; }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>

@@ -28,7 +28,7 @@ public sealed class MistralAI_Function_Calling : BaseTest
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = @"
-            <message role=""system"">What is the weather like in Paris?</message>
+            <message role=""user"">What is the weather like in Paris?</message>
         ";
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions });
@@ -43,7 +43,7 @@ public sealed class MistralAI_Function_Calling : BaseTest
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => "17°C\nWind: 23 KMPH\nHumidity: 59%\nMostly cloudy";
+            ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
 
     public MistralAI_Function_Calling(ITestOutputHelper output) : base(output) { }

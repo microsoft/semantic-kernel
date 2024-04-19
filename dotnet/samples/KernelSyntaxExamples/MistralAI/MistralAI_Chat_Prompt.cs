@@ -38,6 +38,28 @@ public sealed class MistralAI_Chat_Prompt : BaseTest
     }
 
     [Fact]
+    public async Task GetStreamingChatMessageContentsAsync()
+    {
+        var service = new MistralAIChatCompletionService(
+            TestConfiguration.MistralAI.ChatModelId!,
+            TestConfiguration.MistralAI.ApiKey!
+        );
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.System, "Respond in French."),
+            new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
+        };
+        var streamingChat = service.GetStreamingChatMessageContentsAsync(
+            chatHistory, new MistralAIPromptExecutionSettings { MaxTokens = 500 });
+
+        await foreach (var update in streamingChat)
+        {
+            Write(update);
+        }
+    }
+
+    [Fact]
     public async Task ChatPromptAsync()
     {
         const string ChatPrompt = @"

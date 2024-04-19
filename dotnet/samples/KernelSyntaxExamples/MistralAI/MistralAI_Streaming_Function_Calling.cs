@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace MistralAI;
 
 /// <summary>
-/// Demonstrates the use of function calling with MistralAI.
+/// Demonstrates the use of function calling and streaming with MistralAI.
 /// </summary>
 public sealed class MistralAI_Streaming_Function_Calling : BaseTest
 {
@@ -34,7 +34,7 @@ public sealed class MistralAI_Streaming_Function_Calling : BaseTest
 
         // Get the streaming chat message contents
         var streamingChat = chat.GetStreamingChatMessageContentsAsync(
-            chatHistory, new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions });
+            chatHistory, new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions }, kernel);
 
         await foreach (var update in streamingChat)
         {
