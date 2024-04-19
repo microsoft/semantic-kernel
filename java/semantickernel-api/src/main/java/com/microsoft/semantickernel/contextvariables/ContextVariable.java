@@ -295,11 +295,13 @@ public class ContextVariable<T> {
      * {@code ContextVariable} to a prompt string. This method is useful when the convert of this
      * {@code ContextVariableType} does not create the expected prompt string.
      *
-     * @param types     the types to use when converting the value
+     * @param types     the types to use when converting the value, if {@code null} the global types
+     *                  are used
      * @param converter the converter to use when converting the value
      * @return the value of this {@code ContextVariable} as a prompt string
      */
-    public String toPromptString(ContextVariableTypes types,
+    public String toPromptString(
+        @Nullable ContextVariableTypes types,
         ContextVariableTypeConverter<T> converter) {
         return converter.toPromptString(types, value);
     }
@@ -314,6 +316,17 @@ public class ContextVariable<T> {
      */
     public String toPromptString(ContextVariableTypes types) {
         return toPromptString(types, type.getConverter());
+    }
+
+    /**
+     * Use the given {@code ContextVariableTypeConverter} to convert the value of this
+     * {@code ContextVariable} to a prompt string. This method is useful when the convert of this
+     * {@code ContextVariableType} does not create the expected prompt string.
+     *
+     * @return the value of this {@code ContextVariable} as a prompt string
+     */
+    public String toPromptString() {
+        return toPromptString(null, type.getConverter());
     }
 
     /**

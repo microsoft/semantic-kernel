@@ -94,6 +94,10 @@ public class ContextVariableTypes {
         variableTypes = new HashMap<>();
     }
 
+    public static ContextVariableTypes getGlobalTypes() {
+        return new ContextVariableTypes(DEFAULT_TYPES);
+    }
+
     /**
      * Create a new collection of context variable types.
      *

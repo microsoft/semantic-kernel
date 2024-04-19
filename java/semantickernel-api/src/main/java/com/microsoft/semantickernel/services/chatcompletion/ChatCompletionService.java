@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.chatcompletion;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.services.TextAIService;
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -62,50 +61,8 @@ public interface ChatCompletionService extends TextAIService {
      * {@link ChatCompletionService} must implement the {@link SemanticKernelBuilder#build()}
      * method.
      */
-    abstract class Builder implements SemanticKernelBuilder<ChatCompletionService> {
+    abstract class Builder extends OpenAiServiceBuilder<ChatCompletionService, Builder> {
 
-        @Nullable
-        protected OpenAIAsyncClient client;
-
-        @Nullable
-        protected String modelId;
-
-        @Nullable
-        protected String serviceId;
-
-        /**
-         * Sets the model ID to use with the ChatCompletion service.
-         *
-         * @param modelId the model ID to use with the ChatCompletion service
-         * @return this builder
-         */
-        public Builder withModelId(String modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        /**
-         * Sets the {@link OpenAIClient} to use for communication with the ChatCompletion service.
-         *
-         * @param openAIClient the {@link OpenAIClient} to use for communication with the
-         *                     ChatCompletion service
-         * @return this builder
-         */
-        public Builder withOpenAIAsyncClient(OpenAIAsyncClient openAIClient) {
-            this.client = openAIClient;
-            return this;
-        }
-
-        /**
-         * Sets the service ID to use with the ChatCompletion service.
-         *
-         * @param serviceId the service ID to use with the ChatCompletion service
-         * @return this builder
-         */
-        public Builder withServiceId(String serviceId) {
-            this.serviceId = serviceId;
-            return this;
-        }
     }
 
 }

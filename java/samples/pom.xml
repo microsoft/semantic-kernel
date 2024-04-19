@@ -21,7 +21,7 @@
     </modules>
 
     <properties>
-        <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
+        <com.uber.nullaway.version>0.10.21</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <log4j2.version>2.20.0</log4j2.version>
         <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>

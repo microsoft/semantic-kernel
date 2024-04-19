@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.textcompletion;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.services.TextAIService;
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import java.util.List;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -61,50 +60,6 @@ public interface TextGenerationService extends TextAIService {
     /**
      * Builder for a TextGenerationService
      */
-    abstract class Builder implements SemanticKernelBuilder<TextGenerationService> {
-
-        @Nullable
-        protected String modelId;
-        @Nullable
-        protected OpenAIAsyncClient client;
-        @Nullable
-        protected String serviceId;
-
-        /**
-         * Sets the model ID for the service
-         *
-         * @param modelId The model ID
-         * @return The builder
-         */
-        public Builder withModelId(String modelId) {
-            this.modelId = modelId;
-            return this;
-        }
-
-        /**
-         * Sets the OpenAI client for the service
-         *
-         * @param client The OpenAI client
-         * @return The builder
-         */
-        public Builder withOpenAIAsyncClient(OpenAIAsyncClient client) {
-            this.client = client;
-            return this;
-        }
-
-        /**
-         * Sets the service ID for the service
-         *
-         * @param serviceId The service ID
-         * @return The builder
-         */
-        public Builder withServiceId(String serviceId) {
-            this.serviceId = serviceId;
-            return this;
-        }
-
-        @Override
-        public abstract TextGenerationService build();
-
+    abstract class Builder extends OpenAiServiceBuilder<TextGenerationService, Builder> {
     }
 }

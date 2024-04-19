@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -25,7 +26,7 @@ public class BookingAgent {
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     // Config for Graph
     // https://learn.microsoft.com/en-us/graph/tutorials/java?tabs=aad&tutorial-step=1
@@ -41,13 +42,13 @@ public class BookingAgent {
 
     public static void initializeGraph() {
         InteractiveBrowserCredential interactiveBrowserCredential = new InteractiveBrowserCredentialBuilder()
-                .clientId(CLIENT_ID)
-                .tenantId(TENANT_ID)
-                .redirectUrl(REDIRECT_URL)
-                .build();
+            .clientId(CLIENT_ID)
+            .tenantId(TENANT_ID)
+            .redirectUrl(REDIRECT_URL)
+            .build();
 
         userClient = new GraphServiceClient(interactiveBrowserCredential,
-                "User.Read", "BookingsAppointment.ReadWrite.All");
+            "User.Read", "BookingsAppointment.ReadWrite.All");
     }
 
     public static void main(String[] args) throws NoSuchMethodException {
@@ -56,34 +57,33 @@ public class BookingAgent {
         OpenAIAsyncClient client;
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
 
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         initializeGraph();
 
         KernelPlugin plugin = KernelPluginFactory.createFromObject(new BookingPlugin(
-                userClient,
-                BOOKING_BUSINESS_ID,
-                SERVICE_ID,
-                "UTC"
-        ), "BookingRestaurant");
+            userClient,
+            BOOKING_BUSINESS_ID,
+            SERVICE_ID,
+            "UTC"), "BookingRestaurant");
 
         ChatCompletionService chat = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         Kernel kernel = Kernel.builder()
-                .withPlugin(plugin)
-                .withAIService(ChatCompletionService.class, chat)
-                .build();
+            .withPlugin(plugin)
+            .withAIService(ChatCompletionService.class, chat)
+            .build();
 
         ChatHistory chatHistory = new ChatHistory();
 
@@ -94,10 +94,11 @@ public class BookingAgent {
         while ((userMessage = scanner.nextLine()) != null) {
 
             chatHistory.addUserMessage(userMessage);
-            InvocationContext invocationContext = InvocationContext.builder().
-                    withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true)).build();
+            InvocationContext invocationContext = InvocationContext.builder()
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true)).build();
 
-            ChatMessageContent<?> result = chat.getChatMessageContentsAsync(chatHistory, kernel, invocationContext).block().get(0);
+            ChatMessageContent<?> result = chat
+                .getChatMessageContentsAsync(chatHistory, kernel, invocationContext).block().get(0);
             chatHistory.addAssistantMessage(result.getContent());
 
             System.out.println("Assistant > " + result);

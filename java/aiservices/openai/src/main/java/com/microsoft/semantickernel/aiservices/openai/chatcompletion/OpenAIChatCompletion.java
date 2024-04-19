@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
@@ -60,22 +61,15 @@ import reactor.core.publisher.Mono;
 /**
  * OpenAI chat completion service.
  */
-public class OpenAIChatCompletion implements ChatCompletionService {
+public class OpenAIChatCompletion extends OpenAiService implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
-    private final OpenAIAsyncClient client;
-
-    @Nullable
-    private final String serviceId;
-    private final String modelId;
 
     protected OpenAIChatCompletion(
         OpenAIAsyncClient client,
         String modelId,
         @Nullable String serviceId) {
-        this.serviceId = serviceId;
-        this.client = client;
-        this.modelId = modelId;
+        super(client, serviceId, modelId);
     }
 
     /**
@@ -85,12 +79,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
      */
     public static OpenAIChatCompletion.Builder builder() {
         return new OpenAIChatCompletion.Builder();
-    }
-
-    @Override
-    @Nullable
-    public String getServiceId() {
-        return serviceId;
     }
 
     @Override
@@ -161,7 +149,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     autoInvokeAttempts)))
             .getOptions();
 
-        Mono<List<? extends ChatMessageContent>> result = client
+        Mono<List<? extends ChatMessageContent>> result = getClient()
             .getChatCompletionsWithResponse(getModelId(), options,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
@@ -216,6 +204,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         })
                     .flatMap(it -> it)
                     .flatMap(msgs -> {
+                        ChatRequestMessage m = msgs.get(msgs.size() - 1);
+                        if (m instanceof ChatRequestAssistantMessage &&
+                            ((ChatRequestAssistantMessage) m).getToolCalls().size() > 0) {
+                            LOGGER.error("No response");
+                        }
                         return internalChatMessageContentsAsync(msgs, kernel, functions,
                             invocationContext, autoInvokeAttempts - 1);
                     })
@@ -607,8 +600,9 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         switch (authorRole) {
             case ASSISTANT:
                 // TODO: break this out into a separate method and handle tools other than function calls
-                ChatRequestAssistantMessage asstMessage =  new ChatRequestAssistantMessage(content);
-                List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) message).getToolCall();
+                ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
+                List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) message)
+                    .getToolCall();
                 if (toolCalls != null) {
                     asstMessage.setToolCalls(
                         toolCalls.stream()
@@ -616,22 +610,33 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                                 KernelFunctionArguments arguments = toolCall.getArguments();
                                 String args = arguments != null && !arguments.isEmpty()
                                     ? arguments.entrySet().stream()
-                                        .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
-                                        .collect(Collectors.joining("{","}",","))
+                                        .map(entry -> String.format("\"%s\": \"%s\"",
+                                            entry.getKey(), entry.getValue()))
+                                        .collect(Collectors.joining("{", "}", ","))
                                     : "{}";
-                                FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(), args);
-                                return new ChatCompletionsFunctionToolCall(toolCall.getId(), fnCall);
+                                FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(),
+                                    args);
+                                return new ChatCompletionsFunctionToolCall(toolCall.getId(),
+                                    fnCall);
                             })
-                            .collect(Collectors.toList())
-                    );
-                    return asstMessage;
+                            .collect(Collectors.toList()));
                 }
+                return asstMessage;
             case SYSTEM:
                 return new ChatRequestSystemMessage(content);
             case USER:
                 return new ChatRequestUserMessage(content);
             case TOOL:
-                String id = message.getMetadata().getId();
+                String id = null;
+
+                if (message.getMetadata() != null) {
+                    id = message.getMetadata().getId();
+                }
+
+                if (id == null) {
+                    throw new SKException(
+                        "Require to create a tool call message, but not tool call id is available");
+                }
                 return new ChatRequestToolMessage(content, id);
             default:
                 LOGGER.debug("Unexpected author role: " + authorRole);
@@ -641,7 +646,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
     }
 
     static ChatRequestMessage getChatRequestMessage(
-        AuthorRole authorRole, 
+        AuthorRole authorRole,
         String content) {
 
         switch (authorRole) {
@@ -658,12 +663,6 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 throw new SKException("Unexpected author role: " + authorRole);
         }
 
-    }
-
-    @Nullable
-    @Override
-    public String getModelId() {
-        return modelId;
     }
 
     /**
