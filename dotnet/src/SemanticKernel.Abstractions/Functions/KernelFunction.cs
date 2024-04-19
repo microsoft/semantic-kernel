@@ -168,14 +168,40 @@ public abstract class KernelFunction
             // Quick check for cancellation after logging about function start but before doing any real work.
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
+            var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
+
+            if (invokingEventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+            }
+
             var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
             {
                 // Invoking the function and updating context with result.
-                context.Result = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+                context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
             functionResult = new FunctionResult(invocationContext.Result);
+
+            // Invoke the post-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
+            var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
+#pragma warning restore CS0618 // Events are deprecated
+
+            if (invokedEventArgs is not null)
+            {
+                // Apply any changes from the event handlers to final result.
+                functionResult = new FunctionResult(this, invokedEventArgs.ResultValue, functionResult.Culture, invokedEventArgs.Metadata ?? functionResult.Metadata);
+            }
+
+            if (invokedEventArgs?.Cancel is true)
+            {
+                throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
+            }
 
             logger.LogFunctionInvokedSuccess(this.Name);
             logger.LogFunctionResultValue(functionResult);
@@ -269,6 +295,16 @@ public abstract class KernelFunction
             {
                 // Quick check for cancellation after logging about function start but before doing any real work.
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // Invoke pre-invocation event handler. If it requests cancellation, throw.
+#pragma warning disable CS0618 // Events are deprecated
+                var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
+#pragma warning restore CS0618 // Events are deprecated
+
+                if (invokingEventArgs?.Cancel is true)
+                {
+                    throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
+                }
 
                 FunctionResult functionResult = new(this, culture: kernel.Culture);
 
