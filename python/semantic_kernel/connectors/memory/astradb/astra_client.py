@@ -10,9 +10,9 @@ from semantic_kernel.exceptions import ServiceResponseException
 ASTRA_CALLER_IDENTITY: str
 SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
 if SEMANTIC_KERNEL_VERSION:
-    ASTRA_CALLER_IDENTITY = f"semantic_kernel/{SEMANTIC_KERNEL_VERSION}"
+    ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}"
 else:
-    ASTRA_CALLER_IDENTITY = "semantic_kernel"
+    ASTRA_CALLER_IDENTITY = "semantic-kernel"
 
 
 class AstraClient:
