@@ -16,13 +16,6 @@
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.SemanticKernel.PromptRenderingContext</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Kernel.get_FunctionFilters</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
