@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -34,7 +33,7 @@ internal static class RestApiOperationExtensions
         var parameters = new List<RestApiOperationParameter>(operation.Parameters);
 
         // Add payload parameters
-        if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
+        if (operation.Payload is not null)
         {
             parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }

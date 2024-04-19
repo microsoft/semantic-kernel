@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import sys
-from typing import AsyncIterable, Iterable, Optional, Union
+from typing import Any, AsyncGenerator, Iterable, Optional, Union
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -176,7 +176,7 @@ async def test_invoke_gen():
 @pytest.mark.asyncio
 async def test_invoke_gen_async():
     @kernel_function()
-    async def async_gen_function() -> AsyncIterable[str]:
+    async def async_gen_function() -> AsyncGenerator[str, Any]:
         yield ""
 
     native_function = KernelFunction.from_method(method=async_gen_function, plugin_name="MockPlugin")

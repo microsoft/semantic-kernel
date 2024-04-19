@@ -2,10 +2,11 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.prompt_template.input_variable import InputVariable
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.google_palm import GooglePalmChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
+from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
 
 """
 System messages prime the assistant with different personalities or behaviors.
@@ -28,18 +29,18 @@ with no elaboration. Your full name is Captain
 Bartholomew "Blackbeard" Thorne. 
 """
 
-kernel = sk.Kernel()
-api_key = sk.google_palm_settings_from_dot_env()
+kernel = Kernel()
+api_key = google_palm_settings_from_dot_env()
 service_id = "models/chat-bison-001"
-palm_chat_completion = sk_gp.GooglePalmChatCompletion(service_id, api_key)
+palm_chat_completion = GooglePalmChatCompletion(service_id, api_key)
 kernel.add_service(palm_chat_completion)
 
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
 
-prompt_template_config = sk.PromptTemplateConfig(
+prompt_template_config = PromptTemplateConfig(
     template="{{$user_input}}",
     name="chat",
     template_format="semantic-kernel",
