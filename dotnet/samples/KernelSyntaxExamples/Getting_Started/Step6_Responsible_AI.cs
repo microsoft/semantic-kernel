@@ -27,7 +27,7 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
         builder.Services.AddSingleton<ITestOutputHelper>(this.Output);
 
         // Add prompt filter to the kernel
-        builder.Services.AddSingleton<IPromptFilter, PromptFilter>();
+        builder.Services.AddSingleton<IPromptRenderFilter, PromptFilter>();
 
         var kernel = builder.Build();
 
@@ -40,7 +40,7 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
         // Output: Sorry, but I can't assist with that.
     }
 
-    private sealed class PromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class PromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 

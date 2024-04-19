@@ -526,7 +526,7 @@ public class CodeBlockTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null) : IPromptFilter
+        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null) : IPromptRenderFilter
     {
         private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 

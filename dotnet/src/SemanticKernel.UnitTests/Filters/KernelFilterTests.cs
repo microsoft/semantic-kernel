@@ -318,8 +318,8 @@ public class KernelFilterTests
         builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
         builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
 
-        builder.Services.AddSingleton<IPromptFilter>(promptFilter1);
-        builder.Services.AddSingleton<IPromptFilter>(promptFilter2);
+        builder.Services.AddSingleton<IPromptRenderFilter>(promptFilter1);
+        builder.Services.AddSingleton<IPromptRenderFilter>(promptFilter2);
 
         builder.Services.AddSingleton<ITextGenerationService>(mockTextGeneration.Object);
 
@@ -439,7 +439,7 @@ public class KernelFilterTests
 
         // Act
         // Case #1 - Add filter to services
-        builder.Services.AddSingleton<IPromptFilter>(promptFilter1);
+        builder.Services.AddSingleton<IPromptRenderFilter>(promptFilter1);
 
         var kernel = builder.Build();
 
@@ -1139,7 +1139,7 @@ public class KernelFilterTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering) : IPromptFilter
+        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering) : IPromptRenderFilter
     {
         private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 

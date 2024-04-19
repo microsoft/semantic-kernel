@@ -133,7 +133,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
-    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 

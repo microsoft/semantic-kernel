@@ -36,7 +36,7 @@ public sealed class Kernel
     /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IFunctionInvocationFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private NonNullCollection<IPromptFilter>? _promptFilters;
+    private NonNullCollection<IPromptRenderFilter>? _promptFilters;
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
 
@@ -139,7 +139,7 @@ public sealed class Kernel
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public IList<IPromptFilter> PromptFilters =>
+    public IList<IPromptRenderFilter> PromptFilters =>
         this._promptFilters ??
         Interlocked.CompareExchange(ref this._promptFilters, [], null) ??
         this._promptFilters;
@@ -290,7 +290,7 @@ public sealed class Kernel
         }
 
         // Enumerate any prompt filters that may have been registered.
-        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+        IEnumerable<IPromptRenderFilter> promptFilters = this.Services.GetServices<IPromptRenderFilter>();
 
         if (promptFilters.IsNotEmpty())
         {
@@ -365,7 +365,7 @@ public sealed class Kernel
     /// Prompt rendering will be always executed as last step after all filters.
     /// </summary>
     private static async Task InvokeFilterOrPromptRenderingAsync(
-        NonNullCollection<IPromptFilter>? promptFilters,
+        NonNullCollection<IPromptRenderFilter>? promptFilters,
         Func<PromptRenderingContext, Task> renderingCallback,
         PromptRenderingContext context,
         int index = 0)

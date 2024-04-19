@@ -206,7 +206,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>Shows syntax for prompt filter.</summary>
-    private sealed class PromptFilterExample : IPromptFilter
+    private sealed class PromptFilterExample : IPromptRenderFilter
     {
         public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
         {
@@ -380,7 +380,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 
