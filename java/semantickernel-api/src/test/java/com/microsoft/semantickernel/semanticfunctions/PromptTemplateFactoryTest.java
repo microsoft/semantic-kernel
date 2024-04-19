@@ -41,7 +41,7 @@ public class PromptTemplateFactoryTest {
         Method method = PromptTemplateFactoryTest.class.getMethod("function", String.class);
         List<InputVariable> parameters = Collections.singletonList(
             new InputVariable("input", String.class.getName(), "the input", "borked",
-                true));
+                true, null));
         OutputVariable<String> returnParameter = new OutputVariable<>(
             "the output", String.class);
         KernelFunction<?> function = KernelFunctionFromMethod.create(
@@ -72,7 +72,7 @@ public class PromptTemplateFactoryTest {
         List<InputVariable> inputVariables = Arrays.asList(
             new InputVariable("input", "java.lang.String", "a description",
                 "input from config",
-                true));
+                true, null));
         OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {

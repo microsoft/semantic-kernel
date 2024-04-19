@@ -89,7 +89,27 @@ public class KernelPluginFactory {
      * @return The new plugin.
      */
     public static KernelPlugin createFromObject(Object target, String pluginName) {
-        List<KernelFunction<?>> methods = Arrays.stream(target.getClass().getMethods())
+        Class<?> clazz = target.getClass();
+        return KernelPluginFactory.createFromObject(clazz, target, pluginName);
+    }
+
+    /**
+     * Creates a plugin that wraps the specified target object. Methods decorated with
+     * {@code {@literal @}DefineSKFunction} will be included in the plugin.
+     *
+     * @param clazz      The class to be wrapped.
+     * @param target     The instance of the class to be wrapped.
+     * @param pluginName Name of the plugin for function collection and prompt templates. If the
+     *                   value is {@code null}, a plugin name is derived from the type of the
+     *                   target.
+     * @return The new plugin.
+     */
+    public static KernelPlugin createFromObject(Class<?> clazz, Object target, String pluginName) {
+        if (!clazz.isInstance(target)) {
+            throw new SKException("Target object is not an instance of the provided class");
+        }
+
+        List<KernelFunction<?>> methods = Arrays.stream(clazz.getMethods())
             .filter(method -> method.isAnnotationPresent(DefineKernelFunction.class))
             .map(method -> {
                 DefineKernelFunction annotation = method.getAnnotation(DefineKernelFunction.class);
@@ -119,7 +139,15 @@ public class KernelPluginFactory {
 
             }).collect(ArrayList::new, (list, it) -> list.add(it), (a, b) -> a.addAll(b));
 
-        return createFromFunctions(pluginName, methods);
+        KernelPlugin plugin = createFromFunctions(pluginName, methods);
+
+        if (plugin.getFunctions().isEmpty()) {
+            LOGGER.warn(
+                "No functions found in class {}. This can be caused by DI frameworks that create proxies, or modules that are not making your methods visible. "
+                    + "Try using: KernelPluginFactory.createFromObject(Class<?> clazz, Object target, String pluginName).",
+                clazz.getName());
+        }
+        return plugin;
     }
 
     private static Class<?> getReturnType(DefineKernelFunction annotation, Method method) {
@@ -270,11 +298,15 @@ public class KernelPluginFactory {
                 KernelFunctionParameter annotation = parameter.getAnnotation(
                     KernelFunctionParameter.class);
 
+                List<String> enumValues = KernelFunctionFromMethod
+                    .getEnumOptions(annotation.type());
+
                 return InputVariable.build(
                     annotation.name(),
                     annotation.type(),
                     annotation.description(),
                     annotation.defaultValue(),
+                    enumValues,
                     annotation.required());
             }).collect(Collectors.toList());
     }

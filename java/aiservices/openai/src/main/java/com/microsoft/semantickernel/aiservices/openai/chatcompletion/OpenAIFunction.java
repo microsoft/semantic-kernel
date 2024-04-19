@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -87,8 +88,8 @@ class OpenAIFunction {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             for (InputVariable parameter : metadata.getParameters()) {
-                String parameterJsonSchema = getSchemaForFunctionParameter(
-                    parameter.getDescription());
+                String parameterJsonSchema = getSchemaForFunctionParameter(parameter);
+
                 properties.put(parameter.getName(), objectMapper.readTree(parameterJsonSchema));
 
                 if (parameter.isRequired()) {
@@ -145,10 +146,37 @@ class OpenAIFunction {
         }
     }
 
-    private static String getSchemaForFunctionParameter(@Nullable String description) {
-        if (description == null) {
-            return "{\"type\":\"string\"}";
+    private static String getSchemaForFunctionParameter(@Nullable InputVariable parameter) {
+        List<String> entries = new ArrayList<>();
+
+        entries.add("\"type\":\"string\"");
+
+        // Add description if present
+        if (parameter != null && parameter.getDescription() != null && !parameter.getDescription()
+            .isEmpty()) {
+            String description = parameter.getDescription();
+            description = description.replace("\n", "");
+            description = description.replace("\"", "\\\"");
+
+            description = String.format("\"description\":\"%s\"", description);
+            entries.add(description);
         }
-        return String.format("{\"type\":\"string\", \"description\":\"%s\"}", description);
+
+        // Add enum options if parameter is an enum
+        if (parameter != null && parameter.getEnumValues() != null && !parameter.getEnumValues()
+            .isEmpty()) {
+            String enumEntry = parameter
+                .getEnumValues()
+                .stream()
+                .map(Object::toString)
+                .map(it -> "\"" + it + "\"")
+                .collect(Collectors.joining(","));
+
+            entries.add("\"enum\":[ " + enumEntry + " ]");
+        }
+
+        String schema = String.join(",", entries);
+
+        return "{" + schema + "}";
     }
 }

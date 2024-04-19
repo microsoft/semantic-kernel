@@ -59,7 +59,7 @@ public class KernelFunctionFromMethodTest {
         String functionName = "concat";
         String description = "concatenate two strings";
         List<InputVariable> parameters = Collections.singletonList(InputVariable.build(
-            "string1", String.class, "first string to concatenate", null, true));
+            "string1", String.class, "first string to concatenate", null, null, true));
         OutputVariable<String> returnParameter = new OutputVariable<>(
             "concatenated strings", String.class);
         KernelFunction<?> result = KernelFunctionFromMethod.create(method, "test", pluginName,
@@ -81,7 +81,7 @@ public class KernelFunctionFromMethodTest {
         String description = "concatenate two strings";
         List<InputVariable> parameters = Collections
             .singletonList(new InputVariable("string1",
-                "java.lang.String", "first string to concatenate", null, true));
+                "java.lang.String", "first string to concatenate", null, true, null));
         OutputVariable<?> returnParameter = new OutputVariable<>("java.lang.String",
             "concatenated strings");
         KernelFunction<String> result = new KernelFunctionFromPrompt.Builder()

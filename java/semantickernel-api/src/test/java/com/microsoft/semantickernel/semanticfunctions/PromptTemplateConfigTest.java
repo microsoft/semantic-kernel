@@ -19,7 +19,7 @@ public class PromptTemplateConfigTest {
         String template = "A template for testing {{plugin.function input}}";
         List<InputVariable> inputVariables = Arrays.asList(
             new InputVariable("input", "java.lang.String", "a description", "default value",
-                true));
+                true, null));
         OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
 
@@ -61,7 +61,7 @@ public class PromptTemplateConfigTest {
         String templateFormat = "semantic-kernel";
         List<InputVariable> inputVariables = Arrays.asList(
             new InputVariable("input", "java.lang.String", "a description", "default value",
-                true));
+                true, null));
         OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {
@@ -100,7 +100,7 @@ public class PromptTemplateConfigTest {
         String templateFormat = "semantic-kernel";
         List<InputVariable> inputVariables = Arrays.asList(
             new InputVariable("input", "java.lang.String", "a description", "default value",
-                true));
+                true, null));
         OutputVariable outputVariable = new OutputVariable("java.lang.String",
             "a description");
         HashMap<String, PromptExecutionSettings> executionSettings = new HashMap<String, PromptExecutionSettings>() {

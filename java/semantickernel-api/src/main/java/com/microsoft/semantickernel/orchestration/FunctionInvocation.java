@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -109,6 +110,13 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 null,
                 new InvocationContext(context))
             .handle(convertToType(variableType))
+            .onErrorResume(e -> {
+                if (e instanceof NoSuchElementException) {
+                    return Mono.empty();
+                } else {
+                    return Mono.error(e);
+                }
+            })
             .subscribe(coreSubscriber);
     }
 

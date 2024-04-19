@@ -22,6 +22,7 @@ import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
@@ -29,9 +30,11 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.hooks.KernelHookEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
+import com.microsoft.semantickernel.hooks.PreToolCallEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -147,15 +150,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable InvocationContext invocationContext,
         int autoInvokeAttempts) {
 
-        KernelHooks kernelHooks = invocationContext != null
-            && invocationContext.getKernelHooks() != null
-                ? invocationContext.getKernelHooks()
-                : new KernelHooks();
-
-        ChatCompletionsOptions options = kernelHooks
-            .executeHooks(new PreChatCompletionEvent(
-                getCompletionsOptions(this, messages,
-                    functions, invocationContext, autoInvokeAttempts)))
+        ChatCompletionsOptions options = executeHook(
+            invocationContext,
+            new PreChatCompletionEvent(
+                getCompletionsOptions(
+                    this,
+                    messages,
+                    functions,
+                    invocationContext,
+                    autoInvokeAttempts)))
             .getOptions();
 
         Mono<List<? extends ChatMessageContent>> result = client
@@ -177,7 +180,7 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                     .collect(Collectors.toList());
 
                 // execute post chat completion hook
-                kernelHooks.executeHooks(new PostChatCompletionEvent(completions));
+                executeHook(invocationContext, new PostChatCompletionEvent(completions));
 
                 // Just return the result:
                 // If we don't want to attempt to invoke any functions
@@ -206,53 +209,122 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                         Mono.just(messages),
                         (requestMessages, toolCall) -> {
                             if (toolCall instanceof ChatCompletionsFunctionToolCall) {
-                                return requestMessages
-                                    .flatMap(msgs -> {
-                                        // OpenAI only supports function tool call at the moment
-                                        ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
-                                        if (kernel == null) {
-                                            return Mono
-                                                .error(new SKException(
-                                                    "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
-                                        }
-
-                                        ContextVariableTypes contextVariableTypes = invocationContext == null
-                                            ? new ContextVariableTypes()
-                                            : invocationContext.getContextVariableTypes();
-
-                                        return invokeFunctionTool(
-                                            kernel,
-                                            functionToolCall,
-                                            contextVariableTypes)
-                                            .map(functionResult -> {
-                                                // Add chat request tool message to the chat options
-                                                ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
-                                                    functionResult.getResult(),
-                                                    functionToolCall.getId());
-
-                                                ArrayList<ChatRequestMessage> res = new ArrayList<>(
-                                                    msgs);
-                                                res.add(requestToolMessage);
-                                                return res;
-                                            });
-                                    });
+                                return performToolCall(kernel, invocationContext, requestMessages,
+                                    toolCall);
                             }
                             return requestMessages;
                         })
                     .flatMap(it -> it)
-                    .flatMap(
-                        msgs -> {
-                            return internalChatMessageContentsAsync(msgs, kernel, functions,
+                    .flatMap(msgs -> {
+                        return internalChatMessageContentsAsync(msgs, kernel, functions,
+                            invocationContext, autoInvokeAttempts - 1);
+                    })
+                    .onErrorResume(e -> {
+                        // If FunctionInvocationError occurred and there are still attempts left, retry, else exit
+                        if (autoInvokeAttempts > 0) {
+                            List<ChatRequestMessage> currentMessages = messages;
+                            if (e instanceof FunctionInvocationError) {
+                                currentMessages = ((FunctionInvocationError) e).getMessages();
+                            }
+                            return internalChatMessageContentsAsync(currentMessages, kernel,
+                                functions,
                                 invocationContext, autoInvokeAttempts - 1);
-                        });
+                        } else {
+                            return Mono.error(e);
+                        }
+                    });
             });
 
         return result.map(op -> (List<ChatMessageContent<?>>) op);
     }
 
+    private Mono<List<ChatRequestMessage>> performToolCall(
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext,
+        Mono<List<ChatRequestMessage>> requestMessages,
+        ChatCompletionsToolCall toolCall) {
+        return requestMessages
+            .flatMap(msgs -> {
+                try {
+                    // OpenAI only supports function tool call at the moment
+                    ChatCompletionsFunctionToolCall functionToolCall = (ChatCompletionsFunctionToolCall) toolCall;
+                    if (kernel == null) {
+                        return Mono
+                            .error(new SKException(
+                                "A tool call was requested, but no kernel was provided to the invocation, this is a unsupported configuration"));
+                    }
+
+                    ContextVariableTypes contextVariableTypes = invocationContext == null
+                        ? new ContextVariableTypes()
+                        : invocationContext.getContextVariableTypes();
+
+                    return invokeFunctionTool(
+                        kernel,
+                        invocationContext,
+                        functionToolCall,
+                        contextVariableTypes)
+                        .map(functionResult -> {
+                            // Add chat request tool message to the chat options
+                            ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
+                                functionResult.getResult(),
+                                functionToolCall.getId());
+
+                            ArrayList<ChatRequestMessage> res = new ArrayList<>(
+                                msgs);
+                            res.add(requestToolMessage);
+                            return res;
+                        })
+                        .switchIfEmpty(Mono.fromSupplier(
+                            () -> {
+                                ChatRequestMessage requestToolMessage = new ChatRequestToolMessage(
+                                    "Completed successfully with no return value",
+                                    functionToolCall.getId());
+
+                                ArrayList<ChatRequestMessage> res = new ArrayList<>(msgs);
+                                res.add(requestToolMessage);
+                                return res;
+                            }))
+                        .onErrorResume(e -> emitError(toolCall, msgs, e));
+                } catch (Exception e) {
+                    return emitError(toolCall, msgs, e);
+                }
+            });
+    }
+
+    private Mono<ArrayList<ChatRequestMessage>> emitError(
+        ChatCompletionsToolCall toolCall,
+        List<ChatRequestMessage> msgs,
+        Throwable e) {
+
+        msgs.add(new ChatRequestToolMessage(
+            "Call failed: " + e.getMessage(),
+            toolCall.getId()));
+
+        return Mono.error(
+            new FunctionInvocationError(e, msgs));
+    }
+
+    /**
+     * Exception to be thrown when a function invocation fails.
+     */
+    private static class FunctionInvocationError extends SKException {
+
+        private final List<ChatRequestMessage> messages;
+
+        public FunctionInvocationError(Throwable e, List<ChatRequestMessage> msgs) {
+            super(e.getMessage(), e);
+            this.messages = msgs;
+        }
+
+        public List<ChatRequestMessage> getMessages() {
+            return messages;
+        }
+    }
+
     @SuppressWarnings("StringSplitter")
     private Mono<FunctionResult<String>> invokeFunctionTool(
         Kernel kernel,
+        @Nullable InvocationContext invocationContext,
         ChatCompletionsFunctionToolCall toolCall,
         ContextVariableTypes contextVariableTypes) {
 
@@ -268,13 +340,33 @@ public class OpenAIChatCompletion implements ChatCompletionService {
                 pluginName,
                 openAIFunctionToolCall.getFunctionName());
 
+            PreToolCallEvent hookResult = executeHook(invocationContext, new PreToolCallEvent(
+                openAIFunctionToolCall.getFunctionName(),
+                openAIFunctionToolCall.getArguments(),
+                function,
+                contextVariableTypes));
+
+            function = hookResult.getFunction();
+            KernelFunctionArguments arguments = hookResult.getArguments();
+
             return function
                 .invokeAsync(kernel)
-                .withArguments(openAIFunctionToolCall.getArguments())
+                .withArguments(arguments)
                 .withResultType(contextVariableTypes.getVariableTypeForClass(String.class));
         } catch (JsonProcessingException e) {
             return Mono.error(new SKException("Failed to parse tool arguments"));
         }
+    }
+
+    private static <T extends KernelHookEvent> T executeHook(
+        @Nullable InvocationContext invocationContext,
+        T event) {
+        KernelHooks kernelHooks = invocationContext != null
+            && invocationContext.getKernelHooks() != null
+                ? invocationContext.getKernelHooks()
+                : new KernelHooks();
+
+        return kernelHooks.executeHooks(event);
     }
 
     @SuppressWarnings("StringSplitter")
@@ -293,8 +385,15 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         JsonNode jsonToolCallArguments = mapper.readTree(toolCall.getFunction().getArguments());
 
         jsonToolCallArguments.fields().forEachRemaining(
-            entry -> arguments.put(entry.getKey(),
-                ContextVariable.of(entry.getValue().asText())));
+            entry -> {
+                if (entry.getValue() instanceof ContainerNode) {
+                    arguments.put(entry.getKey(),
+                        ContextVariable.of(entry.getValue().toPrettyString()));
+                } else {
+                    arguments.put(entry.getKey(),
+                        ContextVariable.of(entry.getValue().asText()));
+                }
+            });
 
         return new OpenAIFunctionToolCall(
             toolCall.getId(),

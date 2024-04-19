@@ -62,6 +62,17 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
     }
 
     /**
+     * A hook that accepts {@link PreToolCallEvent}
+     */
+    interface PreToolCallHook extends KernelHook<PreToolCallEvent> {
+
+        @Override
+        default boolean test(KernelHookEvent arguments) {
+            return PreToolCallEvent.class.isAssignableFrom(arguments.getClass());
+        }
+    }
+
+    /**
      * A hook that accepts {@link PromptRenderedEvent}
      */
     interface PromptRenderedHook extends KernelHook<PromptRenderedEvent> {

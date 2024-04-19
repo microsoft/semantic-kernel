@@ -315,6 +315,13 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                             e);
                     }
                 })
+                .flatMap(it -> {
+                    if (it == null) {
+                        return Mono.empty();
+                    } else {
+                        return Mono.just(it);
+                    }
+                })
                 .subscribeOn(Schedulers.boundedElastic()));
     }
 
@@ -557,12 +564,27 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             type = annotation.type();
         }
 
+        List<String> enumValues = getEnumOptions(type);
+
         return InputVariable.build(
             name,
             type,
             description,
             defaultValue,
+            enumValues,
             isRequired);
+    }
+
+    public static @Nullable List<String> getEnumOptions(Class<?> type) {
+        List<String> enumValues = null;
+        if (type.isEnum()) {
+            enumValues = Arrays.stream(type.getEnumConstants())
+                .map(it -> {
+                    return it.toString();
+                })
+                .collect(Collectors.toList());
+        }
+        return enumValues;
     }
 
     /**
