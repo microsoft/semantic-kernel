@@ -67,10 +67,12 @@ public class AzureCosmosDBMongoDBConfig
     /// </summary>
     public int EfSearch { get; set; }
 
+    /// <summary>
+    /// Initialize the AzureCosmosDBMongoDBConfig with default values
+    /// </summary>
     public AzureCosmosDBMongoDBConfig()
     {
-        // Initialize default values
-        this.ApplicationName = "DotNet_Kernel_Memory";
+        this.ApplicationName = "DotNet_Semantic_Kernel";
         this.IndexName = "default_index";
         this.Kind = AzureCosmosDBVectorSearchType.VectorHNSW;
         this.NumLists = 1;

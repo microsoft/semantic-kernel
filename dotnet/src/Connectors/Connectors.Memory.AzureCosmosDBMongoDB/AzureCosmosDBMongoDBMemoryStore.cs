@@ -37,10 +37,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     )
     {
         MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
+        this._config = config;
         settings.ApplicationName = this._config.ApplicationName;
         this._mongoClient = new MongoClient(settings);
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
-        this._config = config;
     }
 
     /// <summary>
@@ -54,10 +54,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     )
     {
         MongoClientSettings settings = mongoClient.Settings;
+        this._config = config;
         settings.ApplicationName = this._config.ApplicationName;
         this._mongoClient = new MongoClient(settings);
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
-        this._config = config;
     }
 
     /// <inheritdoc/>

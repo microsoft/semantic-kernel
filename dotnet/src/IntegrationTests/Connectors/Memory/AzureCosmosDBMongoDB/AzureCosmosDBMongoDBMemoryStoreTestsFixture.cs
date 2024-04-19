@@ -15,16 +15,7 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
     public AzureCosmosDBMongoDBMemoryStore MemoryStore { get; }
     public string DatabaseName { get; }
     public string CollectionName { get; }
-
-    private string indexName = "default_index";
-    private string kind = "vector_hnsw";
-    private int numLists = 1;
-    private string similarity = "COS";
-    private int dimensions = 3;
-    private int numberOfConnections = 16;
-    private int efConstruction = 64;
-    private int efSearch = 40;
-    private String applicationName = "DOTNET_SEMANTIC_KERNEL";
+    public AzureCosmosDBMongoDBConfig config;
 
     public AzureCosmosDBMongoDBMemoryStoreTestsFixture()
     {
@@ -42,18 +33,11 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
+        this.config = new AzureCosmosDBMongoDBConfig();
         this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
-            this.indexName,
-            this.applicationName,
-            this.kind,
-            this.numLists,
-            this.similarity,
-            this.dimensions,
-            this.numberOfConnections,
-            this.efConstruction,
-            this.efSearch
+            this.config
         );
     }
 
