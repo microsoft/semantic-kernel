@@ -526,11 +526,11 @@ public class CodeBlockTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null) : IPromptRenderFilter
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering = null) : IPromptRenderFilter
     {
-        private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
+        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 
-        public Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next) =>
+        public Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
             this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
     }
 

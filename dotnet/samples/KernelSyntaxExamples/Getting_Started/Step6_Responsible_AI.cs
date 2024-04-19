@@ -47,9 +47,9 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
         /// <summary>
         /// Method which is called asynchronously before prompt rendering.
         /// </summary>
-        /// <param name="context">Instance of <see cref="PromptRenderingContext"/> with prompt rendering details.</param>
+        /// <param name="context">Instance of <see cref="PromptRenderContext"/> with prompt rendering details.</param>
         /// <param name="next">Delegate to the next filter in pipeline or prompt rendering operation itself. If it's not invoked, next filter or prompt rendering won't be invoked.</param>
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             if (context.Arguments.ContainsName("card_number"))
             {

@@ -8,16 +8,16 @@ namespace Microsoft.SemanticKernel;
 /// Class with data related to prompt rendering.
 /// </summary>
 [Experimental("SKEXP0001")]
-public sealed class PromptRenderingContext
+public sealed class PromptRenderContext
 {
     private string? _renderedPrompt;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptRenderingContext"/> class.
+    /// Initializes a new instance of the <see cref="PromptRenderContext"/> class.
     /// </summary>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
-    internal PromptRenderingContext(KernelFunction function, KernelArguments arguments)
+    internal PromptRenderContext(KernelFunction function, KernelArguments arguments)
     {
         Verify.NotNull(function);
         Verify.NotNull(arguments);

@@ -345,12 +345,12 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal async Task<PromptRenderingContext> OnPromptRenderingAsync(
+    internal async Task<PromptRenderContext> OnPromptRenderingAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderingContext, Task> renderingCallback)
+        Func<PromptRenderContext, Task> renderingCallback)
     {
-        PromptRenderingContext context = new(function, arguments);
+        PromptRenderContext context = new(function, arguments);
 
         await InvokeFilterOrPromptRenderingAsync(this._promptRenderFilters, renderingCallback, context).ConfigureAwait(false);
 
@@ -366,8 +366,8 @@ public sealed class Kernel
     /// </summary>
     private static async Task InvokeFilterOrPromptRenderingAsync(
         NonNullCollection<IPromptRenderFilter>? promptFilters,
-        Func<PromptRenderingContext, Task> renderingCallback,
-        PromptRenderingContext context,
+        Func<PromptRenderContext, Task> renderingCallback,
+        PromptRenderContext context,
         int index = 0)
     {
         if (promptFilters is { Count: > 0 } && index < promptFilters.Count)

@@ -208,7 +208,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     /// <summary>Shows syntax for prompt filter.</summary>
     private sealed class PromptFilterExample : IPromptRenderFilter
     {
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             // Example: get function information
             var functionName = context.Function.Name;
@@ -384,7 +384,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     {
         private readonly ITestOutputHelper _output = output;
 
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendering - {context.Function.PluginName}.{context.Function.Name}");
             await next(context);

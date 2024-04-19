@@ -1087,7 +1087,7 @@ public class KernelFilterTests
 
     private Kernel GetKernelWithFilters(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null,
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null,
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering = null,
         ITextGenerationService? textGenerationService = null)
     {
         var builder = Kernel.CreateBuilder();
@@ -1139,11 +1139,11 @@ public class KernelFilterTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering) : IPromptRenderFilter
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering) : IPromptRenderFilter
     {
-        private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
+        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRendering = onPromptRendering;
 
-        public Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next) =>
+        public Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
             this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
     }
 }
