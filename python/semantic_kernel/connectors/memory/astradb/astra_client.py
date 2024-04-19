@@ -1,18 +1,17 @@
 import json
-from importlib.metadata import PackageNotFoundError, version
 from typing import Dict, List, Optional
 
 import aiohttp
 
 from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.exceptions import ServiceResponseException
 
-SEMANTIC_KERNEL_VERSION: Optional[str]
-try:
-    SEMANTIC_KERNEL_VERSION = version("semantic_kernel")
+ASTRA_CALLER_IDENTITY: str
+SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
+if SEMANTIC_KERNEL_VERSION:
     ASTRA_CALLER_IDENTITY = f"semantic_kernel/{SEMANTIC_KERNEL_VERSION}"
-except PackageNotFoundError:
-    SEMANTIC_KERNEL_VERSION = None
+else:
     ASTRA_CALLER_IDENTITY = "semantic_kernel"
 
 
