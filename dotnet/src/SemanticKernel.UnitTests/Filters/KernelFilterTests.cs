@@ -405,7 +405,7 @@ public class KernelFilterTests
         var kernel = builder.Build();
 
         // Case #2 - Add filter to kernel
-        kernel.FunctionFilters.Add(functionFilter2);
+        kernel.FunctionInvocationFilters.Add(functionFilter2);
 
         var result = await kernel.InvokeAsync(function);
 
@@ -444,7 +444,7 @@ public class KernelFilterTests
         var kernel = builder.Build();
 
         // Case #2 - Add filter to kernel
-        kernel.PromptFilters.Add(promptFilter2);
+        kernel.PromptRenderFilters.Add(promptFilter2);
 
         var result = await kernel.InvokeAsync(function);
 
@@ -488,7 +488,7 @@ public class KernelFilterTests
 
         var kernel = builder.Build();
 
-        kernel.FunctionFilters.Insert(1, functionFilter3);
+        kernel.FunctionInvocationFilters.Insert(1, functionFilter3);
 
         // Act
         var result = await kernel.InvokeAsync(function);
@@ -1109,7 +1109,7 @@ public class KernelFilterTests
         if (onPromptRendering is not null)
         {
             // Add prompt filter after kernel construction
-            kernel.PromptFilters.Add(new FakePromptFilter(onPromptRendering));
+            kernel.PromptRenderFilters.Add(new FakePromptFilter(onPromptRendering));
         }
 
         return kernel;

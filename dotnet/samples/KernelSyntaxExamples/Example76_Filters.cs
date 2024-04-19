@@ -38,7 +38,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         var kernel = builder.Build();
 
         // Add filter without DI
-        kernel.PromptFilters.Add(new FirstPromptFilter(this.Output));
+        kernel.PromptRenderFilters.Add(new FirstPromptFilter(this.Output));
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));

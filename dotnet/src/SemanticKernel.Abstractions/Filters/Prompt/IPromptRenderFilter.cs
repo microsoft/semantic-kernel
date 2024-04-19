@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// Interface for filtering actions during prompt rendering.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface IPromptFilter
+public interface IPromptRenderFilter
 {
     /// <summary>
     /// Method which is called asynchronously before prompt rendering.

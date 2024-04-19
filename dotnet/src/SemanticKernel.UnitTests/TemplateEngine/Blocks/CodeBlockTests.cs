@@ -418,8 +418,8 @@ public class CodeBlockTests
             await next(context);
         });
 
-        kernel.PromptFilters.Add(promptFilter);
-        kernel.FunctionFilters.Add(functionFilter);
+        kernel.PromptRenderFilters.Add(promptFilter);
+        kernel.FunctionInvocationFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel);
@@ -471,8 +471,8 @@ public class CodeBlockTests
             await next(context);
         });
 
-        kernel.PromptFilters.Add(promptFilter);
-        kernel.FunctionFilters.Add(functionFilter);
+        kernel.PromptRenderFilters.Add(promptFilter);
+        kernel.FunctionInvocationFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel, arguments);

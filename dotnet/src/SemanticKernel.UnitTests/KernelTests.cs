@@ -586,7 +586,7 @@ public class KernelTests
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
             .AddSingleton<IFunctionInvocationFilter>(new MyFunctionFilter())
-            .AddSingleton<IPromptFilter>(new MyPromptFilter())
+            .AddSingleton<IPromptRenderFilter>(new MyPromptFilter())
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
@@ -713,10 +713,10 @@ public class KernelTests
     private void AssertFilters(Kernel kernel1, Kernel kernel2)
     {
         var functionFilters1 = kernel1.GetAllServices<IFunctionInvocationFilter>().ToArray();
-        var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().ToArray();
+        var promptFilters1 = kernel1.GetAllServices<IPromptRenderFilter>().ToArray();
 
         var functionFilters2 = kernel2.GetAllServices<IFunctionInvocationFilter>().ToArray();
-        var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().ToArray();
+        var promptFilters2 = kernel2.GetAllServices<IPromptRenderFilter>().ToArray();
 
         Assert.Equal(functionFilters1.Length, functionFilters2.Length);
 
@@ -763,7 +763,7 @@ public class KernelTests
         }
     }
 
-    private sealed class MyPromptFilter : IPromptFilter
+    private sealed class MyPromptFilter : IPromptRenderFilter
     {
         public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
         {

@@ -35,7 +35,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             await next(context);
         });
 
-        kernel.FunctionFilters.Add(filter);
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -61,7 +61,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             await next(context);
         });
 
-        kernel.FunctionFilters.Add(filter);
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };

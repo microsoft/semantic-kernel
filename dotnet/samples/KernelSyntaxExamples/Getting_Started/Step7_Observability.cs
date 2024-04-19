@@ -36,7 +36,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         Kernel kernel = kernelBuilder.Build();
 
         // Add filter without DI
-        kernel.PromptFilters.Add(new MyPromptFilter(this.Output));
+        kernel.PromptRenderFilters.Add(new MyPromptFilter(this.Output));
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
