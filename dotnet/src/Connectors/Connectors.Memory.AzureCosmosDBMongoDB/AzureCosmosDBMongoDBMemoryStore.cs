@@ -1,15 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
@@ -24,20 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 {
-    private readonly MongoClient _cosmosDBMongoClient;
-    private readonly IMongoDatabase _cosmosMongoDatabase;
-
-    /// <summary>
-    /// Index name for the Mongo vCore DB
-    /// </summary>
-    private readonly String _indexName;
-    private readonly String _kind;
-    private readonly int _numLists;
-    private readonly String _similarity;
-    private readonly int _dimensions;
-    private readonly int _numberOfConnections;
-    private readonly int _efConstruction;
-    private readonly int _efSearch;
+    private readonly MongoClient _mongoClient;
+    private readonly IMongoDatabase _mongoDatabase;
+    private readonly AzureCosmosDBMongoDBConfig _config;
 
     /// <summary>
     /// Initiates a AzureCosmosDBMongoDBMemoryStore instance using a Azure CosmosDB Mongo vCore connection string
@@ -45,56 +29,18 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure Cosmos Mongo vCore.</param>
     /// <param name="databaseName">Database name for Mongo vCore DB</param>
-    /// <param name="indexName">Index name for the Mongo vCore DB</param>
-    /// <param name="applicationName">Application name for the client for tracking and logging</param>
-    /// <param name="kind">Kind: Type of vector index to create.
-    ///     Possible options are:
-    ///         - vector-ivf
-    ///         - vector-hnsw: available as a preview feature only,
-    ///                        to enable visit https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/preview-features</param>
-    /// <param name="numLists">This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data.
-    /// We recommend that numLists is set to documentCount/1000 for up to 1 million documents and to sqrt(documentCount)
-    /// for more than 1 million documents. Using a numLists value of 1 is akin to performing brute-force search, which has
-    /// limited performance.</param>
-    /// <param name="similarity">Similarity metric to use with the IVF index.
-    ///     Possible options are:
-    ///         - COS (cosine distance),
-    ///         - L2 (Euclidean distance), and
-    ///         - IP (inner product).</param>
-    /// <param name="dimensions">Number of dimensions for vector similarity. The maximum number of supported dimensions is 2000.</param>
-    /// <param name="numberOfConnections">The max number of connections per layer (16 by default, minimum value is 2, maximum value is
-    /// 100). Higher m is suitable for datasets with high dimensionality and/or high accuracy requirements.</param>
-    /// <param name="efConstruction">The size of the dynamic candidate list for constructing the graph (64 by default, minimum value is 4,
-    /// maximum value is 1000). Higher ef_construction will result in better index quality and higher accuracy, but it will
-    /// also increase the time required to build the index. EfConstruction has to be at least 2 * m.</param>
-    /// <param name="efSearch">The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
-    /// the cost of speed.</param>
+    /// <param name="config">Azure CosmosDB MongoDB Config containing specific parameters for vector search.</param>
     public AzureCosmosDBMongoDBMemoryStore(
         string connectionString,
         string databaseName,
-        string? indexName = "default_index",
-        string? applicationName = "DotNet_Semantic_Kernel",
-        string? kind = "vector_hnsw",
-        int? numLists = 1,
-        string? similarity = "COS",
-        int? dimensions = 3,
-        int? numberOfConnections = 16,
-        int? efConstruction = 64,
-        int? efSearch = 40
+        AzureCosmosDBMongoDBConfig config
     )
     {
         MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
-        settings.ApplicationName = applicationName ?? "DotNet_Semantic_Kernel";
-        this._cosmosDBMongoClient = new MongoClient(settings);
-        this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
-        this._indexName = indexName ?? "default_index";
-        this._kind = kind ?? "vector_hnsw";
-        this._numLists = numLists ?? 1;
-        this._similarity = similarity ?? "COS";
-        this._dimensions = dimensions ?? 3;
-        this._numberOfConnections = numberOfConnections ?? 16;
-        this._efConstruction = efConstruction ?? 64;
-        this._efSearch = efSearch ?? 40;
+        settings.ApplicationName = this._config.ApplicationName;
+        this._mongoClient = new MongoClient(settings);
+        this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._config = config;
     }
 
     /// <summary>
@@ -104,29 +50,14 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     public AzureCosmosDBMongoDBMemoryStore(
         IMongoClient mongoClient,
         string databaseName,
-        string? indexName = "default_index",
-        string? applicationName = "DotNet_Semantic_Kernel",
-        string? kind = "vector_hnsw",
-        int? numLists = 1,
-        string? similarity = "COS",
-        int? dimensions = 3,
-        int? numberOfConnections = 16,
-        int? efConstruction = 64,
-        int? efSearch = 40
+        AzureCosmosDBMongoDBConfig config
     )
     {
         MongoClientSettings settings = mongoClient.Settings;
-        settings.ApplicationName = applicationName ?? "DotNet_Semantic_Kernel";
-        this._cosmosDBMongoClient = new MongoClient(settings);
-        this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
-        this._indexName = indexName ?? "default_index";
-        this._kind = kind ?? "vector_hnsw";
-        this._numLists = numLists ?? 1;
-        this._similarity = similarity ?? "COS";
-        this._dimensions = dimensions ?? 3;
-        this._numberOfConnections = numberOfConnections ?? 16;
-        this._efConstruction = efConstruction ?? 64;
-        this._efSearch = efSearch ?? 40;
+        settings.ApplicationName = this._config.ApplicationName;
+        this._mongoClient = new MongoClient(settings);
+        this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._config = config;
     }
 
     /// <inheritdoc/>
@@ -136,7 +67,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     )
     {
         await this
-            ._cosmosMongoDatabase.CreateCollectionAsync(
+            ._mongoDatabase.CreateCollectionAsync(
                 collectionName,
                 cancellationToken: cancellationToken
             )
@@ -148,21 +79,24 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         if (
             !indexes
                 .ToList(cancellationToken: cancellationToken)
-                .Any(index => index["name"] == this._indexName)
+                .Any(index => index["name"] == this._config.IndexName)
         )
         {
             var command = new BsonDocument();
-            switch (this._kind)
+            switch (this._config.Kind)
             {
-                case "vector-ivf":
-                    command = GetIndexDefinitionVectorIVF(collectionName);
+                case AzureCosmosDBVectorSearchType.VectorIVF:
+                    command = this.GetIndexDefinitionVectorIVF(collectionName);
                     break;
-                case "vector-hnsw":
-                    command = GetIndexDefinitionVectorHNSW(collectionName);
+                case AzureCosmosDBVectorSearchType.VectorHNSW:
+                    command = this.GetIndexDefinitionVectorHNSW(collectionName);
                     break;
             }
-            await _cosmosMongoDatabase
-                .RunCommandAsync<BsonDocument>(command, cancellationToken: cancellationToken)
+            await this
+                ._mongoDatabase.RunCommandAsync<BsonDocument>(
+                    command,
+                    cancellationToken: cancellationToken
+                )
                 .ConfigureAwait(false);
         }
     }
@@ -173,7 +107,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     )
     {
         using var cursor = await this
-            ._cosmosMongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)
+            ._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -191,7 +125,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default
     )
     {
-        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (
+            var existingCollectionName in this.GetCollectionsAsync(cancellationToken)
+                .ConfigureAwait(false)
+        )
         {
             if (existingCollectionName == collectionName)
             {
@@ -205,7 +142,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     public Task DeleteCollectionAsync(
         string collectionName,
         CancellationToken cancellationToken = default
-    ) => this._cosmosMongoDatabase.DropCollectionAsync(collectionName, cancellationToken);
+    ) => this._mongoDatabase.DropCollectionAsync(collectionName, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(
@@ -216,7 +153,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     {
         var replaceOptions = new ReplaceOptions() { IsUpsert = true };
 
-        var result = await GetCollection(collectionName)
+        var result = await this.GetCollection(collectionName)
             .ReplaceOneAsync(
                 GetFilterById(record.Metadata.Id),
                 new AzureCosmosDBMongoDBMemoryRecord(record),
@@ -383,7 +320,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            this._cosmosDBMongoClient.Cluster.Dispose();
+            this._mongoClient.Cluster.Dispose();
         }
     }
 
@@ -398,7 +335,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                 {
                     new BsonDocument
                     {
-                        { "name", this._indexName },
+                        { "name", this._config.IndexName },
                         {
                             "key",
                             new BsonDocument { { "embedding", "cosmosSearch" } }
@@ -407,10 +344,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._kind },
-                                { "numLists", this._numLists },
-                                { "similarity", this._similarity },
-                                { "dimensions", this._dimensions }
+                                { "kind", this._config.Kind },
+                                { "numLists", this._config.NumLists },
+                                { "similarity", this._config.Similarity },
+                                { "dimensions", this._config.Dimensions }
                             }
                         }
                     }
@@ -430,7 +367,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                 {
                     new BsonDocument
                     {
-                        { "name", this._indexName },
+                        { "name", this._config.IndexName },
                         {
                             "key",
                             new BsonDocument { { "embedding", "cosmosSearch" } }
@@ -439,11 +376,11 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._kind },
-                                { "m", this._numberOfConnections },
-                                { "efConstruction", this._efConstruction },
-                                { "similarity", this._similarity },
-                                { "dimensions", this._dimensions }
+                                { "kind", this._config.Kind },
+                                { "m", this._config.NumberOfConnections },
+                                { "efConstruction", this._config.EfConstruction },
+                                { "similarity", this._config.Similarity },
+                                { "dimensions", this._config.Dimensions }
                             }
                         }
                     }
@@ -465,13 +402,13 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         }
 
         BsonDocument[] pipeline = Array.Empty<BsonDocument>();
-        switch (this._kind)
+        switch (this._config.Kind)
         {
-            case "vector-ivf":
-                pipeline = GetVectorIVFSearchPipeline(embedding, limit);
+            case AzureCosmosDBVectorSearchType.VectorIVF:
+                pipeline = this.GetVectorIVFSearchPipeline(embedding, limit);
                 break;
-            case "vector-hnsw":
-                pipeline = GetVectorHNSWSearchPipeline(embedding, limit);
+            case AzureCosmosDBVectorSearchType.VectorHNSW:
+                pipeline = this.GetVectorHNSWSearchPipeline(embedding, limit);
                 break;
         }
 
@@ -535,7 +472,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             + limit
             + @",
                     ""efSearch"": "
-            + this._efSearch
+            + this._config.EfSearch
             + @"
                 }
             }
@@ -557,10 +494,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 
     private IMongoCollection<AzureCosmosDBMongoDBMemoryRecord> GetCollection(
         string collectionName
-    ) =>
-        this._cosmosMongoDatabase.GetCollection<AzureCosmosDBMongoDBMemoryRecord>(
-            collectionName
-        );
+    ) => this._mongoDatabase.GetCollection<AzureCosmosDBMongoDBMemoryRecord>(collectionName);
 
     private static FilterDefinition<AzureCosmosDBMongoDBMemoryRecord> GetFilterById(string id) =>
         Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Eq(m => m.Id, id);

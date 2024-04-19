@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// A MongoDB memory record .
 /// </summary>
-public sealed class AzureCosmosDBMongoDBMemoryRecord
+internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     /// <summary>
     /// Unique identifier of the memory entry.

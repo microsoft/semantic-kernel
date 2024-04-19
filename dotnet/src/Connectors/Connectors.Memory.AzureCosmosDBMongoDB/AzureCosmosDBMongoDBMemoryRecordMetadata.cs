@@ -9,44 +9,46 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// A MongoDB memory record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-public struct AzureCosmosDBMongoDBMemoryRecordMetadata
+internal struct AzureCosmosDBMongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.IsReference"/>.
+    /// Whether the source data used to calculate embeddings are stored in the local
+    /// storage provider or is available through and external service, such as web site, MS Graph, etc.
     /// </summary>
     [BsonElement("isReference")]
     public bool IsReference { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.ExternalSourceName"/>.
+    /// A value used to understand which external service owns the data, to avoid storing the information
+    /// inside the URI. E.g. this could be "MSTeams", "WebSite", "GitHub", etc.
     /// </summary>
     [BsonElement("externalSourceName")]
     [BsonIgnoreIfDefault]
     public string ExternalSourceName { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Id"/>.
+    /// Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.
     /// </summary>
     [BsonId]
     public string Id { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Description"/>.
+    /// Optional title describing the content. Note: the title is not indexed.
     /// </summary>
     [BsonElement("description")]
     [BsonIgnoreIfDefault]
     public string Description { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.Text"/>.
+    /// Source text, available only when the memory is not an external source.
     /// </summary>
     [BsonElement("text")]
     [BsonIgnoreIfDefault]
     public string Text { get; set; }
 
     /// <summary>
-    /// <see cref="AzureCosmosDBMongoDBMemoryRecordMetadata.AdditionalMetadata"/>.
+    /// Field for saving custom metadata with a memory.
     /// </summary>
     [BsonElement("additionalMetadata")]
     [BsonIgnoreIfDefault]

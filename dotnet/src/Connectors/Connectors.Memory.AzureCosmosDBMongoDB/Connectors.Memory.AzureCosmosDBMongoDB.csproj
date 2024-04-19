@@ -15,12 +15,13 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Azure CosmosDB Mongo vCore Memory Store</Title>
-    <Description>Azure CosmosDB Mongo vCore connector for Semantic Kernel plugins and semantic memory</Description>
+    <Title>Semantic Kernel - Azure CosmosDB MongoDB vCore Connector</Title>
+    <Description>Azure CosmosDB MongoDB vCore connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver"/>
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
