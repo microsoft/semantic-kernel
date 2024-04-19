@@ -171,7 +171,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         // Request sequence number: 0
         // Function sequence number: 0
         // Total number of functions: 1
-        // The result of the function you provided is "Result from auto function invocation filter".
+        // Result from auto function invocation filter.
     }
 
     #region Filter capabilities
@@ -233,6 +233,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: get chat history
             var chatHistory = context.ChatHistory;
 
+            // Example: get information about all functions which will be invoked
+            var functionCalls = FunctionCallContent.GetFunctionCalls(context.ChatHistory.Last());
+
             // Example: get request sequence index
             this._output.WriteLine($"Request sequence index: {context.RequestSequenceIndex}");
 
@@ -251,6 +254,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 
             // Example: override function result value
             context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
+
+            // Example: cancel function invocation
+            context.Cancel = true;
         }
     }
 
