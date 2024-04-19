@@ -165,7 +165,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.Metadata);
+            this.Metadata.AdditionalProperties);
     }
 
     /// <summary>
@@ -206,7 +206,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        base(functionName, pluginName, description, parameters, returnParameter, properties: additionalMetadata)
+        base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
         Verify.ValidFunctionName(functionName);
 

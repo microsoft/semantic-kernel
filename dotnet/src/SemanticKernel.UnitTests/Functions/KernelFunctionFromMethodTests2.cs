@@ -216,8 +216,8 @@ public sealed class KernelFunctionFromMethodTests2
         });
 
         // Assert.
-        Assert.Contains("key1", func.Metadata.Keys);
-        Assert.Equal("value1", func.Metadata["key1"]);
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
 
     [Fact]
@@ -237,8 +237,8 @@ public sealed class KernelFunctionFromMethodTests2
         });
 
         // Assert.
-        Assert.Contains("key1", func.Metadata.Keys);
-        Assert.Equal("value1", func.Metadata["key1"]);
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
 
     private interface IExampleService;

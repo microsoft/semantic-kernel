@@ -201,12 +201,6 @@ public static class OpenApiKernelExtensions
 
     #region private
 
-    /// <summary>The metadata property bag key to use when storing the id of an operation.</summary>
-    private const string OperationExtensionsIdKey = "id";
-
-    /// <summary>The metadata property bag key to use when storing the path of an operation.</summary>
-    private const string OperationExtensionsPathKey = "path";
-
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
     private const string OperationExtensionsMethodKey = "method";
 
@@ -348,9 +342,7 @@ public static class OpenApiKernelExtensions
 
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
         var additionalMetadata = new Dictionary<string, object?>();
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsIdKey, operation.Id);
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsPathKey, operation.Path);
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString());
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant());
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);

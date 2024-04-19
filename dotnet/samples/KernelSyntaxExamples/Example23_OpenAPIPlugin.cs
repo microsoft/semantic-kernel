@@ -63,10 +63,13 @@ public class Example23_OpenAPIPlugin(ITestOutputHelper output) : BaseTest(output
 
         // Get the function to be invoked and its metadata and extension properties.
         var function = plugin["getVersions"];
-        function.Metadata.TryGetValue("operation-extensions", out var extensionsObject);
+        function.Metadata.AdditionalProperties.TryGetValue("operation-extensions", out var extensionsObject);
         var operationExtensions = extensionsObject as Dictionary<string, object?>;
 
-        // Here is a sample use case, where we would invoke the function only if it is consequence free based on the x-openai-isConsequential extension value.
+        // *******************************************************************************************************************************
+        // ******* Use case 1: Consume the x-openai-isConsequential extension value to determine if the function has consequences  *******
+        // ******* and only invoke the function if it is consequence free.                                                         *******
+        // *******************************************************************************************************************************
         if (operationExtensions is null || !operationExtensions.TryGetValue("x-openai-isConsequential", out var isConsequential) || isConsequential is null)
         {
             WriteLine("We cannot determine if the function has consequences, since the isConsequential extension is not provided, so safer not to run it.");
@@ -81,6 +84,22 @@ public class Example23_OpenAPIPlugin(ITestOutputHelper output) : BaseTest(output
             var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
             var result = functionResult.GetValue<RestApiOperationResponse>();
             WriteLine($"Function execution result: {result?.Content}");
+        }
+
+        // *******************************************************************************************************************************
+        // ******* Use case 2: Consume the http method type to determine if this is a read or write operation and only execute if  *******
+        // ******* it is a read operation.                                                                                         *******
+        // *******************************************************************************************************************************
+        if (function.Metadata.AdditionalProperties.TryGetValue("method", out var method) && method as string is "GET")
+        {
+            // Invoke the function and output the result.
+            var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
+            var result = functionResult.GetValue<RestApiOperationResponse>();
+            WriteLine($"Function execution result: {result?.Content}");
+        }
+        else
+        {
+            WriteLine("This is a write operation, so safer not to run it.");
         }
     }
 

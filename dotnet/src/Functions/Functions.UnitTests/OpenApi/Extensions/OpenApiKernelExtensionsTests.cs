@@ -275,19 +275,16 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
-        Assert.Equal(4, function.Metadata.Count);
+        var additionalProperties = function.Metadata.AdditionalProperties;
+        Assert.Equal(2, additionalProperties.Count);
 
-        Assert.Contains("id", function.Metadata.Keys);
-        Assert.Contains("path", function.Metadata.Keys);
-        Assert.Contains("method", function.Metadata.Keys);
-        Assert.Contains("operation-extensions", function.Metadata.Keys);
+        Assert.Contains("method", additionalProperties.Keys);
+        Assert.Contains("operation-extensions", additionalProperties.Keys);
 
-        Assert.Equal("OpenApiExtensions", function.Metadata["id"]);
-        Assert.Equal("/api-with-open-api-extensions", function.Metadata["path"]);
-        Assert.Equal("Get", function.Metadata["method"]);
+        Assert.Equal("GET", additionalProperties["method"]);
 
         // Assert Operation Extension keys
-        var operationExtensions = function.Metadata["operation-extensions"] as Dictionary<string, object?>;
+        var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
         Assert.NotNull(operationExtensions);
         Dictionary<string, object?> nonNullOperationExtensions = operationExtensions;
 

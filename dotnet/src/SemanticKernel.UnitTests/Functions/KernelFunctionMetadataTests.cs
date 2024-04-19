@@ -181,21 +181,21 @@ public class KernelFunctionMetadataTests
     public void ItSupportsAdditionalUnstructuredMetadata()
     {
         // Arrange
-        var additionalMetadataA = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+        var additionalMetadataPropertiesA = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
         {
             { "method", "POST" },
             { "path", "/api/v1" },
         });
 
         // Act
-        var actual = new KernelFunctionMetadata("funcA", additionalMetadataA);
+        var actual = new KernelFunctionMetadata("funcA") { AdditionalProperties = additionalMetadataPropertiesA };
 
         // Assert
         Assert.NotNull(actual);
 
-        Assert.Equal(2, actual.Count);
-        Assert.Equal("POST", actual["method"]);
-        Assert.Equal("/api/v1", actual["path"]);
+        Assert.Equal(2, actual.AdditionalProperties.Count);
+        Assert.Equal("POST", actual.AdditionalProperties["method"]);
+        Assert.Equal("/api/v1", actual.AdditionalProperties["path"]);
     }
 
     private static void ValidFunctionName() { }

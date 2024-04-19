@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/>.
 /// </summary>
-public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
+public sealed class KernelFunctionMetadata
 {
     /// <summary>The name of the function.</summary>
     private string _name = string.Empty;
@@ -20,26 +20,16 @@ public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
     private IReadOnlyList<KernelParameterMetadata> _parameters = [];
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
+    /// <summary>Optional metadata in addition to the named properties already available on this class.</summary>
+    private ReadOnlyDictionary<string, object?>? _additionalProperties;
     /// <summary>A static empty dictionary to default to when none is provided.</summary>
-    private static readonly Dictionary<string, object?> s_emptyDictionary = new();
+    internal static readonly ReadOnlyDictionary<string, object?> s_emptyDictionary = new(new Dictionary<string, object?>());
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
     public KernelFunctionMetadata(string name)
-         : base(s_emptyDictionary)
-    {
-        this.Name = name;
-    }
-
-    /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
-    /// <param name="name">The name of the function.</param>
-    /// <param name="additionalMetadata">Optional metadata in addition to the named properties already available on this class.</param>
-    /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
-    /// <exception cref="ArgumentException">An invalid name was supplied.</exception>
-    public KernelFunctionMetadata(string name, ReadOnlyDictionary<string, object?>? additionalMetadata)
-         : base(additionalMetadata == null ? s_emptyDictionary : additionalMetadata)
     {
         this.Name = name;
     }
@@ -51,7 +41,6 @@ public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
     /// <see cref="ReturnParameter"/> properties will return the same objects as in the original instance.
     /// </remarks>
     public KernelFunctionMetadata(KernelFunctionMetadata metadata)
-        : base(metadata)
     {
         Verify.NotNull(metadata);
         this.Name = metadata.Name;
@@ -59,6 +48,7 @@ public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
         this.Description = metadata.Description;
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
+        this.AdditionalProperties = metadata.AdditionalProperties;
     }
 
     /// <summary>Gets the name of the function.</summary>
@@ -105,6 +95,17 @@ public sealed class KernelFunctionMetadata : ReadOnlyDictionary<string, object?>
         {
             Verify.NotNull(value);
             this._returnParameter = value;
+        }
+    }
+
+    /// <summary>Gets optional metadata in addition to the named properties already available on this class.</summary>
+    public ReadOnlyDictionary<string, object?> AdditionalProperties
+    {
+        get => this._additionalProperties ??= s_emptyDictionary;
+        init
+        {
+            Verify.NotNull(value);
+            this._additionalProperties = value;
         }
     }
 }
