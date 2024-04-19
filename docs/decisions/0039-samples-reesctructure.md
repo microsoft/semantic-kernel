@@ -40,10 +40,10 @@ informed:
 | KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                               |
 | KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders               |
 | AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.                |
-| DocumentationExamples                | Move into `LearnResources` subfolder and rename to `Microsoft Learn Docs` |
+| DocumentationExamples                | Move into `LearnResources` subfolder and rename to `MicrosoftLearn`       |
 | CreateChatGptPlugin                  | Move into `Demo` subfolder                                                |
 | HomeAutomation                       | Move into `Demo` subfolder                                                |
-| TelemetryExample                     | Move into `Demo` subfolder and rename to `Telemetry with AppInsights`     |
+| TelemetryExample                     | Move into `Demo` subfolder and rename to `TelemetryWithAppInsights`       |
 | HuggingFaceImageTextExample          | Move into `Demo` subfolder and rename to `HuggingFaceImageToText`         |
 
 ## Considered Root Structure Options
@@ -575,9 +575,7 @@ This option decomposes the Kernel Syntax Examples by grouping big and related fe
 Concepts/
 ├── Functions/
 ├── Chat Completion/
-│ └── LocalModels/
 ├── Text Generation/
-│ └── LocalModels/
 ├── Text to Image/
 ├── Image to Text/
 ├── Text to Audio/
@@ -589,11 +587,12 @@ Concepts/
 ├── Auto Function Calling
 ├── Filtering
 ├── Memory
+├── Search
 ├── Agents
 ├── Templates
 ├── RAG
 ├── Prompts
-├── Search
+└── LocalModels/
 ```
 
 Pros:
