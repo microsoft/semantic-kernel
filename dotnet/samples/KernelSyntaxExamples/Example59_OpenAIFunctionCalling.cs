@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -70,44 +68,96 @@ public class Example59_OpenAIFunctionCalling(ITestOutputHelper output) : BaseTes
         WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
-            var chatHistory = new ChatHistory();
 
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+            var chatHistory = new ChatHistory();
             chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
             while (true)
             {
-                var result = (OpenAIChatMessageContent)await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
-
+                ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
                 if (result.Content is not null)
                 {
                     Write(result.Content);
                 }
 
-                List<ChatCompletionsFunctionToolCall> toolCalls = result.ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
-                if (toolCalls.Count == 0)
+                IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
+                if (!functionCalls.Any())
                 {
                     break;
                 }
 
-                chatHistory.Add(result);
-                foreach (var toolCall in toolCalls)
+                chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+
+                foreach (var functionCall in functionCalls)
                 {
-                    string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
-                        JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
-                        "Unable to find function. Please try again!";
+                    try
+                    {
+                        FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
 
-                    chatHistory.Add(new ChatMessageContent(
-                        AuthorRole.Tool,
-                        content,
-                        metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+                        chatHistory.Add(resultContent.ToChatMessage());
+                    }
+                    catch (Exception ex)
+                    {
+                        chatHistory.Add(new FunctionResultContent(functionCall, ex).ToChatMessage()); // Adding function result to chat history.
+                        // Adding exception to chat history.
+                        // or
+                        //string message = "Error details that LLM can reason about.";
+                        //chatHistory.Add(new FunctionResultContent(functionCall, message).ToChatMessageContent()); // Adding function result to chat history.
+                    }
                 }
-            }
 
-            WriteLine();
+                WriteLine();
+            }
+        }
+
+        WriteLine("======== Example 4: Simulated function calling with a non-streaming prompt ========");
+        {
+            var chat = kernel.GetRequiredService<IChatCompletionService>();
+
+            OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+            var chatHistory = new ChatHistory();
+            chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+            while (true)
+            {
+                ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
+                if (result.Content is not null)
+                {
+                    Write(result.Content);
+                }
+
+                chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
+
+                IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
+                if (!functionCalls.Any())
+                {
+                    break;
+                }
+
+                foreach (var functionCall in functionCalls)
+                {
+                    FunctionResultContent resultContent = await functionCall.InvokeAsync(kernel); // Executing each function.
+
+                    chatHistory.Add(resultContent.ToChatMessage());
+                }
+
+                // Adding a simulated function call to the connector response message
+                var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+                result.Items.Add(simulatedFunctionCall);
+
+                // Adding a simulated function result to chat history
+                var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
+                chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+
+                WriteLine();
+            }
         }
 
         /* Uncomment this to try in a console chat loop.
-        Console.WriteLine("======== Example 4: Use automated function calling with a streaming chat ========");
+        Console.WriteLine("======== Example 5: Use automated function calling with a streaming chat ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             var chat = kernel.GetRequiredService<IChatCompletionService>();
