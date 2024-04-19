@@ -17,6 +17,7 @@ import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
+import com.azure.ai.openai.models.FunctionCall;
 import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -432,12 +433,11 @@ public class OpenAIChatCompletion implements ChatCompletionService {
         @Nullable List<OpenAIFunction> functions,
         int autoInvokeAttempts) {
 
-        if (functions == null || functions.isEmpty()) {
+        if (toolCallBehavior == null) {
             return;
         }
 
-        if (toolCallBehavior == null || autoInvokeAttempts == 0) {
-            // if auto-invoked is not enabled, then we don't need to send any tool definitions
+        if (functions == null || functions.isEmpty()) {
             return;
         }
 
@@ -496,17 +496,54 @@ public class OpenAIChatCompletion implements ChatCompletionService {
             return new ArrayList<>();
         }
         return messages.stream()
-            .map(message -> {
-                AuthorRole authorRole = message.getAuthorRole();
-                String content = message.getContent();
-                return getChatRequestMessage(authorRole, content);
-            })
+            .map(message -> getChatRequestMessage(message))
             .collect(Collectors.toList());
     }
 
+    private static ChatRequestMessage getChatRequestMessage(
+        ChatMessageContent<?> message) {
+
+        AuthorRole authorRole = message.getAuthorRole();
+        String content = message.getContent();
+        switch (authorRole) {
+            case ASSISTANT:
+                // TODO: break this out into a separate method and handle tools other than function calls
+                ChatRequestAssistantMessage asstMessage =  new ChatRequestAssistantMessage(content);
+                List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) message).getToolCall();
+                if (toolCalls != null) {
+                    asstMessage.setToolCalls(
+                        toolCalls.stream()
+                            .map(toolCall -> {
+                                KernelFunctionArguments arguments = toolCall.getArguments();
+                                String args = arguments != null && !arguments.isEmpty()
+                                    ? arguments.entrySet().stream()
+                                        .map(entry -> String.format("\"%s\": \"%s\"", entry.getKey(), entry.getValue()))
+                                        .collect(Collectors.joining("{","}",","))
+                                    : "{}";
+                                FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(), args);
+                                return new ChatCompletionsFunctionToolCall(toolCall.getId(), fnCall);
+                            })
+                            .collect(Collectors.toList())
+                    );
+                    return asstMessage;
+                }
+            case SYSTEM:
+                return new ChatRequestSystemMessage(content);
+            case USER:
+                return new ChatRequestUserMessage(content);
+            case TOOL:
+                String id = message.getMetadata().getId();
+                return new ChatRequestToolMessage(content, id);
+            default:
+                LOGGER.debug("Unexpected author role: " + authorRole);
+                throw new SKException("Unexpected author role: " + authorRole);
+        }
+
+    }
+
     static ChatRequestMessage getChatRequestMessage(
-        AuthorRole authorRole,
-        @Nullable String content) {
+        AuthorRole authorRole, 
+        String content) {
 
         switch (authorRole) {
             case ASSISTANT:

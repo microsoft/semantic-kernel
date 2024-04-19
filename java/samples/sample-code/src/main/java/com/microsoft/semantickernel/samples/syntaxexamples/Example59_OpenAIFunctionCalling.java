@@ -7,16 +7,28 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
+import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
-import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
+import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Example59_OpenAIFunctionCalling {
 
@@ -26,7 +38,33 @@ public class Example59_OpenAIFunctionCalling {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+        .getOrDefault("MODEL_ID", "gpt-3.5-turbo-1106");
+
+    
+    // Define functions that can be called by the model
+    public static class HelperFunctions {
+
+        @DefineKernelFunction(name = "currentUtcTime", description = "Retrieves the current time in UTC.")
+        public String currentUtcTime() {
+            return ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME);
+        }
+
+        @DefineKernelFunction(name = "getWeatherForCity", description = "Gets the current weather for the specified city")
+        public String getWeatherForCity(
+            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
+            switch (cityName) {
+                case "Thrapston": return "80 and sunny";
+                case "Boston": return "61 and rainy";
+                case "London": return "55 and cloudy";
+                case "Miami": return "80 and sunny";
+                case "Paris": return "60 and rainy";
+                case "Tokyo": return "50 and sunny";
+                case "Sydney": return "75 and sunny";
+                case "Tel Aviv": return "80 and sunny";
+                default: return "31 and snowing";
+            }
+        }
+    }
 
     public static void main(String[] args) throws NoSuchMethodException {
         System.out.println("======== Open AI - Function calling ========");
@@ -50,16 +88,19 @@ public class Example59_OpenAIFunctionCalling {
             .withOpenAIAsyncClient(client)
             .build();
 
-        KernelPlugin plugin = KernelPluginFactory.createFromObject(new Plugin(), "plugin");
+        var plugin = KernelPluginFactory.createFromObject(new HelperFunctions(), "HelperFunctions");
 
         var kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, chat)
             .withPlugin(plugin)
             .build();
 
+            
+        System.out.println("======== Example 1: Use automated function calling ========");
+
         var function = KernelFunctionFromPrompt.builder()
             .withTemplate(
-                "What is the probable current color of the sky in Thrapston?")
+                "Given the current time of day and weather, what is the likely color of the sky in Boston?")
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withTemperature(0.4)
@@ -68,88 +109,70 @@ public class Example59_OpenAIFunctionCalling {
                     .build())
             .build();
 
-        // Example 1: All kernel functions are enabled to be called by the model
-        kernelFunctions(kernel, function);
-        // Example 2: A set of functions available to be called by the model
-        enableFunctions(kernel, plugin, function);
-        // Example 3: A specific function to be called by the model
-        requireFunction(kernel, plugin, function);
-    }
-
-    public static void kernelFunctions(Kernel kernel, KernelFunction<?> function) {
-        System.out.println("======== Kernel functions ========");
-
-        var toolCallBehavior = ToolCallBehavior.allowAllKernelFunctions(true);
-
         var result = kernel
             .invokeAsync(function)
-            .withToolCallBehavior(toolCallBehavior)
+            .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .block();
 
         System.out.println(result.getResult());
-    }
+        
+        System.out.println("======== Example 2: Use manual function calling ========");
 
-    public static void enableFunctions(Kernel kernel, KernelPlugin plugin,
-        KernelFunction<?> function) {
-        System.out.println("======== Enable functions ========");
+        var chatHistory = new ChatHistory();
+        chatHistory.addUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        // Based on coordinates
-        var toolCallBehavior = ToolCallBehavior.allowOnlyKernelFunctions(true,
-            plugin.get("getLatitudeOfCity"),
-            plugin.get("getLongitudeOfCity"),
-            plugin.get("getsTheWeatherAtAGivenLocation"));
+        while(true) {
+            var messages = chat.getChatMessageContentsAsync(
+                    chatHistory, 
+                    kernel, 
+                    InvocationContext.builder().withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build()
+                )
+                .block();
 
-        var result = kernel
-            .invokeAsync(function)
-            .withToolCallBehavior(toolCallBehavior)
-            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-            .block();
+            messages.stream()
+                .filter(it -> it.getContent() != null)
+                .forEach(it -> System.out.println(it.getContent()));    
 
-        System.out.println(result.getResult());
-    }
+            List<OpenAIFunctionToolCall> toolCalls =
+                messages.stream()
+                    .filter(it -> it instanceof OpenAIChatMessageContent)   
+                    .map(it -> (OpenAIChatMessageContent<?>)it)
+                    .map(OpenAIChatMessageContent::getToolCall)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
 
-    public static void requireFunction(Kernel kernel, KernelPlugin plugin,
-        KernelFunction<?> function) {
-        System.out.println("======== Require a function ========");
+            if (toolCalls.isEmpty()) {
+                break;
+            }
 
-        var toolCallBehavior = ToolCallBehavior
-            .requireKernelFunction(plugin.get("getsTheWeatherForCity"));
+            messages.stream()
+                .forEach(it -> chatHistory.addMessage(it)); 
 
-        var result = kernel
-            .invokeAsync(function)
-            .withToolCallBehavior(toolCallBehavior)
-            .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
-            .block();
+            for(var toolCall : toolCalls) {
 
-        System.out.println(result.getResult());
-    }
+                String content = null;
+                try {
+                    // getFunction will throw an exception if the function is not found
+                    var fn = kernel.getFunction(toolCall.getPluginName(), toolCall.getFunctionName());
+                    FunctionResult<?> fnResult = fn.invokeAsync(kernel, toolCall.getArguments(), null, null).block();
+                    content = (String)fnResult.getResult();
+                } catch (IllegalArgumentException e) {
+                    content = "Unable to find function. Please try again!";
+                }
 
-    public static class Plugin {
-
-        @DefineKernelFunction(name = "getLatitudeOfCity", description = "Gets the latitude of a given city")
-        public String getLatitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
-            return "1.0";
-        }
-
-        @DefineKernelFunction(name = "getLongitudeOfCity", description = "Gets the longitude of a given city")
-        public String getLongitudeOfCity(
-            @KernelFunctionParameter(name = "cityName", description = "City name") String cityName) {
-            return "2.0";
-        }
-
-        @DefineKernelFunction(name = "getsTheWeatherAtAGivenLocation", description = "Gets the current weather at a given longitude and latitude")
-        public String getWeatherForCityAtTime(
-            @KernelFunctionParameter(name = "latitude", description = "latitude of the location") String latitude,
-            @KernelFunctionParameter(name = "longitude", description = "longitude of the location") String longitude) {
-            return "61 and rainy";
-        }
-
-        @DefineKernelFunction(name = "getsTheWeatherForCity", description = "Gets the current weather at a city name")
-        public String getsTheWeatherForCity(
-            @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
-            return "80 and sunny";
+                chatHistory.addMessage(
+                    AuthorRole.TOOL,
+                    content,
+                    StandardCharsets.UTF_8,
+                    new FunctionResultMetadata(new CaseInsensitiveMap<>() {
+                        {
+                           put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
+                        }
+                    })
+                );
+            }   
         }
     }
+
 }
