@@ -605,6 +605,7 @@
                                     -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
                                     -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF
                                     -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
+                                    -XepExcludedPaths:.*/src/test/java/.*
                                 </arg>
                             </compilerArgs>
                             <annotationProcessorPaths>

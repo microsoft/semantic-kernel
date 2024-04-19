@@ -170,12 +170,16 @@ public class ContextVariableTypeConverter<T> {
      * Convert the type to a prompt string using the {@code toPromptString} function provided to the
      * constructor.
      *
+     * @param types the context variable types, if {@code null} the global types are used
      * @param t the type to convert
      * @return the prompt string
      */
-    public String toPromptString(ContextVariableTypes types, @Nullable T t) {
+    public String toPromptString(@Nullable ContextVariableTypes types, @Nullable T t) {
         if (t == null) {
             return "";
+        }
+        if (types == null) {
+            types = ContextVariableTypes.getGlobalTypes();
         }
         return toPromptString.toPromptString(types, t);
     }

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
@@ -23,12 +24,7 @@ import reactor.core.publisher.Mono;
 /**
  * An OpenAI implementation of a {@link TextGenerationService}.
  */
-public class OpenAITextGenerationService implements TextGenerationService {
-
-    private final OpenAIAsyncClient client;
-    @Nullable
-    private final String serviceId;
-    private final String modelId;
+public class OpenAITextGenerationService extends OpenAiService implements TextGenerationService {
 
     /**
      * Creates a new {@link OpenAITextGenerationService}.
@@ -41,9 +37,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
         OpenAIAsyncClient client,
         String modelId,
         @Nullable String serviceId) {
-        this.serviceId = serviceId;
-        this.client = client;
-        this.modelId = modelId;
+        super(client, serviceId, modelId);
     }
 
     /**
@@ -53,12 +47,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
      */
     public static Builder builder() {
         return new Builder();
-    }
-
-    @Override
-    @Nullable
-    public String getServiceId() {
-        return serviceId;
     }
 
     @Override
@@ -86,7 +74,7 @@ public class OpenAITextGenerationService implements TextGenerationService {
 
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
-        return client
+        return getClient()
             .getCompletionsWithResponse(getModelId(), completionsOptions,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
@@ -144,12 +132,6 @@ public class OpenAITextGenerationService implements TextGenerationService {
             .setBestOf(requestSettings.getBestOf())
             .setLogitBias(new HashMap<>());
         return options;
-    }
-
-    @Nullable
-    @Override
-    public String getModelId() {
-        return modelId;
     }
 
     /**

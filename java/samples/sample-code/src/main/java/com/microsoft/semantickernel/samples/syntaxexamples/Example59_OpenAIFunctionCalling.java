@@ -40,7 +40,6 @@ public class Example59_OpenAIFunctionCalling {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-3.5-turbo-1106");
 
-    
     // Define functions that can be called by the model
     public static class HelperFunctions {
 
@@ -53,15 +52,24 @@ public class Example59_OpenAIFunctionCalling {
         public String getWeatherForCity(
             @KernelFunctionParameter(name = "cityName", description = "Name of the city") String cityName) {
             switch (cityName) {
-                case "Thrapston": return "80 and sunny";
-                case "Boston": return "61 and rainy";
-                case "London": return "55 and cloudy";
-                case "Miami": return "80 and sunny";
-                case "Paris": return "60 and rainy";
-                case "Tokyo": return "50 and sunny";
-                case "Sydney": return "75 and sunny";
-                case "Tel Aviv": return "80 and sunny";
-                default: return "31 and snowing";
+                case "Thrapston":
+                    return "80 and sunny";
+                case "Boston":
+                    return "61 and rainy";
+                case "London":
+                    return "55 and cloudy";
+                case "Miami":
+                    return "80 and sunny";
+                case "Paris":
+                    return "60 and rainy";
+                case "Tokyo":
+                    return "50 and sunny";
+                case "Sydney":
+                    return "75 and sunny";
+                case "Tel Aviv":
+                    return "80 and sunny";
+                default:
+                    return "31 and snowing";
             }
         }
     }
@@ -95,7 +103,6 @@ public class Example59_OpenAIFunctionCalling {
             .withPlugin(plugin)
             .build();
 
-            
         System.out.println("======== Example 1: Use automated function calling ========");
 
         var function = KernelFunctionFromPrompt.builder()
@@ -116,47 +123,49 @@ public class Example59_OpenAIFunctionCalling {
             .block();
 
         System.out.println(result.getResult());
-        
+
         System.out.println("======== Example 2: Use manual function calling ========");
 
         var chatHistory = new ChatHistory();
-        chatHistory.addUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+        chatHistory.addUserMessage(
+            "Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        while(true) {
+        while (true) {
             var messages = chat.getChatMessageContentsAsync(
-                    chatHistory, 
-                    kernel, 
-                    InvocationContext.builder().withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build()
-                )
+                chatHistory,
+                kernel,
+                InvocationContext.builder()
+                    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build())
                 .block();
 
             messages.stream()
                 .filter(it -> it.getContent() != null)
-                .forEach(it -> System.out.println(it.getContent()));    
+                .forEach(it -> System.out.println(it.getContent()));
 
-            List<OpenAIFunctionToolCall> toolCalls =
-                messages.stream()
-                    .filter(it -> it instanceof OpenAIChatMessageContent)   
-                    .map(it -> (OpenAIChatMessageContent<?>)it)
-                    .map(OpenAIChatMessageContent::getToolCall)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+            List<OpenAIFunctionToolCall> toolCalls = messages.stream()
+                .filter(it -> it instanceof OpenAIChatMessageContent)
+                .map(it -> (OpenAIChatMessageContent<?>) it)
+                .map(OpenAIChatMessageContent::getToolCall)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
             if (toolCalls.isEmpty()) {
                 break;
             }
 
             messages.stream()
-                .forEach(it -> chatHistory.addMessage(it)); 
+                .forEach(it -> chatHistory.addMessage(it));
 
-            for(var toolCall : toolCalls) {
+            for (var toolCall : toolCalls) {
 
                 String content = null;
                 try {
                     // getFunction will throw an exception if the function is not found
-                    var fn = kernel.getFunction(toolCall.getPluginName(), toolCall.getFunctionName());
-                    FunctionResult<?> fnResult = fn.invokeAsync(kernel, toolCall.getArguments(), null, null).block();
-                    content = (String)fnResult.getResult();
+                    var fn = kernel.getFunction(toolCall.getPluginName(),
+                        toolCall.getFunctionName());
+                    FunctionResult<?> fnResult = fn
+                        .invokeAsync(kernel, toolCall.getArguments(), null, null).block();
+                    content = (String) fnResult.getResult();
                 } catch (IllegalArgumentException e) {
                     content = "Unable to find function. Please try again!";
                 }
@@ -167,11 +176,10 @@ public class Example59_OpenAIFunctionCalling {
                     StandardCharsets.UTF_8,
                     new FunctionResultMetadata(new CaseInsensitiveMap<>() {
                         {
-                           put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
+                            put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
                         }
-                    })
-                );
-            }   
+                    }));
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
                     + System.lineSeparator()
                     + entry.getKey()
                     + ": "
-                    + entry.getValue(),
+                    + entry.getValue().toPromptString(ContextVariableTypes.getGlobalTypes()),
                 (a, b) -> a + b);
     }
 
