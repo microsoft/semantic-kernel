@@ -1,6 +1,10 @@
-#Semantic Kernel documentation examples
+# Learn Resources
 
-This project contains a collection of examples used in documentation on [learn.microsoft.com](https://learn.microsoft.com/).
+This folder contains a project with code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others.
+
+| Subfolders        | Description                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `MicrosoftLearn`  | Code snippets that are related to [Microsoft Learn Docs](https://learn.microsoft.com/en-us/semantic-kernel/). |
 
 ## Running Examples with Filters
 

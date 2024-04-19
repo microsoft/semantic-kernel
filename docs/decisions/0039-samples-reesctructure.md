@@ -1,7 +1,7 @@
 ---
 # Reestructure of How Sample Code will be Structured In the Repository
 
-status: review
+status: accepted
 contact: rogerbarreto
 date: 2024-04-18
 deciders: rogerbarreto, markwallace-microsoft, sophialagerkranspandey, matthewbolanos
@@ -18,33 +18,33 @@ informed:
 
 ### Current identified types of samples
 
-| Type                                 | Description                                                                                                                                                     |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Getting started`                    | A single step-by-step tutorial to get started using semantic kernel                                                                                             |
-| `Concepts` / Feature Specific        | A singular and simple code snipped on how to use every new feature added to SK                                                                                  |
-| `Resources` for Online Documentation | Code snippets that are referenced or used by online documentation spaces like micorosft learn, devblogs or other                                                |
-| `Tutorials`                          | Step-by-Step tutorials (more in deepth) on using features from semantic kernel                                                                                  |
-| `Demos` / Use Cases                  | Simple to Complex demo applications that leverage the usage of one or many features from semantic kernel and can be used as a north star on development with SK |
+| Type              | Description                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `Getting started` | A single step-by-step tutorial to get started                                                            |
+| `Concepts`        | A concept by feature specific code snippets                                                              |
+| `LearnResources`  | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others |
+| `Tutorials`       | More in depth step-by-step tutorials                                                                     |
+| `Demos`           | Demostration applications that leverage the usage of one or many features                                |
 
 ## Decision Drivers and Principles
 
-- **Sends a Clear Message**: Avoidance of SK specific therms or jargons
-- **Lean namings**: Folder, Solution and Example names are as clear and short as possible
-- **Cross Language**: The sample structure will be similar on all supported SK languages.
 - **Easy to Search**: Well organized structure, making easy to find the different types of samples
+- **Lean namings**: Folder, Solution and Example names are as clear and as short as possible
+- **Sends a Clear Message**: Avoidance of Semantic Kernel specific therms or jargons
+- **Cross Language**: The sample structure will be similar on all supported SK languages.
 
 ## Strategy on the current existing folders
 
-| Current Folder                       | Proposal                                                              |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                           |
-| KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders           |
-| AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.            |
-| DocumentationExamples                | Move into `Resources` subfolder and rename to `Microsoft Learn Docs`  |
-| CreateChatGptPlugin                  | Move into `Demo` subfolder                                            |
-| HomeAutomation                       | Move into `Demo` subfolder                                            |
-| TelemetryExample                     | Move into `Demo` subfolder and rename to `Telemetry with AppInsights` |
-| HuggingFaceImageTextExample          | Move into `Demo` subfolder and rename to `HuggingFaceImageToText`     |
+| Current Folder                       | Proposal                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------- |
+| KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                               |
+| KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders               |
+| AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.                |
+| DocumentationExamples                | Move into `LearnResources` subfolder and rename to `Microsoft Learn Docs` |
+| CreateChatGptPlugin                  | Move into `Demo` subfolder                                                |
+| HomeAutomation                       | Move into `Demo` subfolder                                                |
+| TelemetryExample                     | Move into `Demo` subfolder and rename to `Telemetry with AppInsights`     |
+| HuggingFaceImageTextExample          | Move into `Demo` subfolder and rename to `HuggingFaceImageToText`         |
 
 ## Considered Root Structure Options
 
@@ -608,7 +608,7 @@ Cons:
 - Harder to evolve into more advanced concepts
 - More examples will be sharing the same folder, making it harder to find a specific example (major pain point for the KernelSyntaxExamples folder)
 
-# KernelSyntaxExamples Decomposition Option 3 - Concept by Difficulty Level
+# KernelSyntaxExamples Decomposition Option 4 - Concept by Difficulty Level
 
 Breaks the examples per difficulty level, from basic to expert. The overall structure would be similar to option 3 although only subitems would be different if they have that complexity level.
 
@@ -646,4 +646,8 @@ Cons:
 
 ## Decision Outcome
 
-TBD
+Chosen options:
+
+[x] Root Structure Decision: **Option 2** - Getting Started Root Categorization
+
+[x] KernelSyntaxExamples Decomposition Decision: **Option 3** - Concept by Feature Grouping

@@ -1,4 +1,4 @@
-﻿# Semantic Kernel Telemetry Example
+﻿# Semantic Kernel Telemetry with AppInsights
 
 This example project shows how an application can be configured to send Semantic Kernel telemetry to Application Insights.
 
