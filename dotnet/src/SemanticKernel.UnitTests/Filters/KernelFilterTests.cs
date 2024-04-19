@@ -172,7 +172,7 @@ public class KernelFilterTests
 
         var function = KernelFunctionFactory.CreateFromMethod(() => functionInvocations++);
 
-        var kernel = this.GetKernelWithFilters(onPromptRendering: async (context, next) =>
+        var kernel = this.GetKernelWithFilters(onPromptRender: async (context, next) =>
         {
             filterInvocations++;
             await next(context);
@@ -197,7 +197,7 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: async (context, next) =>
+            onPromptRender: async (context, next) =>
             {
                 filterInvocations++;
                 await next(context);
@@ -221,7 +221,7 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: async (context, next) =>
+            onPromptRender: async (context, next) =>
             {
                 filterInvocations++;
                 await next(context);
@@ -244,7 +244,7 @@ public class KernelFilterTests
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: async (context, next) =>
+            onPromptRender: async (context, next) =>
             {
                 await next(context);
                 context.RenderedPrompt += " - updated from filter";
@@ -264,7 +264,7 @@ public class KernelFilterTests
         var mockTextGeneration = this.GetMockTextGeneration();
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
-            onPromptRendering: (context, next) =>
+            onPromptRender: (context, next) =>
             {
                 // next(context) is not called here, prompt rendering is cancelled.
                 return Task.CompletedTask;
@@ -301,14 +301,14 @@ public class KernelFilterTests
             executionOrder.Add("FunctionFilter2-Invoked");
         });
 
-        var promptFilter1 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter1 = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             executionOrder.Add("PromptFilter1-Rendering");
             await next(context);
             executionOrder.Add("PromptFilter1-Rendered");
         });
 
-        var promptFilter2 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter2 = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             executionOrder.Add("PromptFilter2-Rendering");
             await next(context);
@@ -422,13 +422,13 @@ public class KernelFilterTests
         var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
         var executionOrder = new List<string>();
 
-        var promptFilter1 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter1 = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             executionOrder.Add("PromptFilter1-Rendering");
             await next(context);
         });
 
-        var promptFilter2 = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter2 = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             executionOrder.Add("PromptFilter2-Rendering");
             await next(context);
@@ -1087,7 +1087,7 @@ public class KernelFilterTests
 
     private Kernel GetKernelWithFilters(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null,
-        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering = null,
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender = null,
         ITextGenerationService? textGenerationService = null)
     {
         var builder = Kernel.CreateBuilder();
@@ -1106,10 +1106,10 @@ public class KernelFilterTests
 
         var kernel = builder.Build();
 
-        if (onPromptRendering is not null)
+        if (onPromptRender is not null)
         {
             // Add prompt filter after kernel construction
-            kernel.PromptRenderFilters.Add(new FakePromptFilter(onPromptRendering));
+            kernel.PromptRenderFilters.Add(new FakePromptFilter(onPromptRender));
         }
 
         return kernel;
@@ -1139,11 +1139,11 @@ public class KernelFilterTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering) : IPromptRenderFilter
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender) : IPromptRenderFilter
     {
-        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRendering = onPromptRendering;
+        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRender = onPromptRender;
 
-        public Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
-            this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
+        public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
+            this._onPromptRender?.Invoke(context, next) ?? Task.CompletedTask;
     }
 }

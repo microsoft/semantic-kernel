@@ -2,57 +2,36 @@
 <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IFunctionFilter.OnFunctionInvoked(Microsoft.SemanticKernel.FunctionInvokedContext)</Target>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.IFunctionFilter</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IFunctionFilter.OnFunctionInvoking(Microsoft.SemanticKernel.FunctionInvokingContext)</Target>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Microsoft.SemanticKernel.IPromptFilter</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IPromptFilter.OnPromptRendered(Microsoft.SemanticKernel.PromptRenderedContext)</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IPromptFilter.OnPromptRendering(Microsoft.SemanticKernel.PromptRenderingContext)</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.PromptRenderingContext.#ctor(Microsoft.SemanticKernel.KernelFunction,Microsoft.SemanticKernel.KernelArguments)</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IFunctionFilter.OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext,System.Func{Microsoft.SemanticKernel.FunctionInvocationContext,System.Threading.Tasks.Task})</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.SemanticKernel.IPromptFilter.OnPromptRenderingAsync(Microsoft.SemanticKernel.PromptRenderingContext,System.Func{Microsoft.SemanticKernel.PromptRenderingContext,System.Threading.Tasks.Task})</Target>
-    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0007</DiagnosticId>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Microsoft.SemanticKernel.PromptRenderingContext</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Kernel.get_FunctionFilters</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Kernel.get_PromptFilters</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

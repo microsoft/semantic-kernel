@@ -345,14 +345,14 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal async Task<PromptRenderContext> OnPromptRenderingAsync(
+    internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderContext, Task> renderingCallback)
+        Func<PromptRenderContext, Task> renderCallback)
     {
         PromptRenderContext context = new(function, arguments);
 
-        await InvokeFilterOrPromptRenderingAsync(this._promptRenderFilters, renderingCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
         return context;
     }
@@ -364,20 +364,20 @@ public sealed class Kernel
     /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or prompt rendering if there are no remaining filters to execute.
     /// Prompt rendering will be always executed as last step after all filters.
     /// </summary>
-    private static async Task InvokeFilterOrPromptRenderingAsync(
+    private static async Task InvokeFilterOrPromptRenderAsync(
         NonNullCollection<IPromptRenderFilter>? promptFilters,
-        Func<PromptRenderContext, Task> renderingCallback,
+        Func<PromptRenderContext, Task> renderCallback,
         PromptRenderContext context,
         int index = 0)
     {
         if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
         {
-            await promptFilters[index].OnPromptRenderingAsync(context,
-                (context) => InvokeFilterOrPromptRenderingAsync(promptFilters, renderingCallback, context, index + 1)).ConfigureAwait(false);
+            await promptFilters[index].OnPromptRenderAsync(context,
+                (context) => InvokeFilterOrPromptRenderAsync(promptFilters, renderCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {
-            await renderingCallback(context).ConfigureAwait(false);
+            await renderCallback(context).ConfigureAwait(false);
         }
     }
 

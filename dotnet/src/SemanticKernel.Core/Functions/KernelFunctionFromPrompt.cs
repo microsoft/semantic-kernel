@@ -332,7 +332,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         kernel.OnPromptRendering(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-        var renderingContext = await kernel.OnPromptRenderingAsync(this, arguments, async (context) =>
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, async (context) =>
         {
             renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 

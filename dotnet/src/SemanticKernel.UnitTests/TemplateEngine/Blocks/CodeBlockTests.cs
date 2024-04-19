@@ -406,7 +406,7 @@ public class CodeBlockTests
                 ]
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments[parameterName]);
             await next(context);
@@ -457,7 +457,7 @@ public class CodeBlockTests
                 ]
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments["foo"]);
             Assert.Equal(FooValue, context.Arguments["x11"]);
@@ -526,12 +526,12 @@ public class CodeBlockTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRendering = null) : IPromptRenderFilter
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender = null) : IPromptRenderFilter
     {
-        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRendering = onPromptRendering;
+        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRender = onPromptRender;
 
-        public Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
-            this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
+        public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
+            this._onPromptRender?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     #endregion

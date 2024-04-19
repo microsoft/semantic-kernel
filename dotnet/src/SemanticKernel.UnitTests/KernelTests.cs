@@ -765,7 +765,7 @@ public class KernelTests
 
     private sealed class MyPromptFilter : IPromptRenderFilter
     {
-        public async Task OnPromptRenderingAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             await next(context);
         }
