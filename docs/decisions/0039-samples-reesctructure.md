@@ -24,7 +24,7 @@ informed:
 | `Concepts`        | A concept by feature specific code snippets                                                              |
 | `LearnResources`  | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others |
 | `Tutorials`       | More in depth step-by-step tutorials                                                                     |
-| `Demos`           | Demostration applications that leverage the usage of one or many features                                |
+| `Demos`           | Demonstration applications that leverage the usage of one or many features                                |
 
 ## Decision Drivers and Principles
 
@@ -69,8 +69,8 @@ samples/
 
 Pros:
 
-- Simpler and Less verbose structure (Worse is Better: Less is more approach 😅)
-- Begginers will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
+- Simpler and Less verbose structure (Worse is Better: Less is more approach)
+- Beginers will be presented (sibling folders) to other tutorials that may fit better on their need and use case.
 - Getting started will not be imposed.
 
 Cons:
@@ -219,7 +219,7 @@ Identified Component Oriented Concepts:
 
 - Telemetry
 - Logging
-- Dependecy Injection
+- Dependency Injection
 
 - HttpClient
 
@@ -582,7 +582,7 @@ Concepts/
 ├── Audio to Text/
 ├── Telemetry
 ├── Logging
-├── Dependecy Injection
+├── Dependency Injection
 ├── Plugins
 ├── Auto Function Calling
 ├── Filtering
@@ -634,7 +634,7 @@ Concepts/
 
 Pros:
 
-- Begginers will be oriented to the right difficulty level and examples will be more organized by complexity
+- Beginers will be oriented to the right difficulty level and examples will be more organized by complexity
 
 Cons:
 
