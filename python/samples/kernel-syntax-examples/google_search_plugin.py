@@ -4,19 +4,20 @@ import os
 
 from dotenv import load_dotenv
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.search_engine import GoogleConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 load_dotenv()
 
 
 async def main():
-    kernel = sk.Kernel()
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    kernel = Kernel()
+    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
         OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )

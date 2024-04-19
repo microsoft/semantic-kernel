@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import abstractmethod
-from typing import List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
@@ -18,6 +18,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
         id: str,
         description: Optional[str] = None,
         additional_metadata: Optional[str] = None,
+        embeddings_kwargs: Optional[Dict[str, Any]] = None,
         # TODO: ctoken?
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
