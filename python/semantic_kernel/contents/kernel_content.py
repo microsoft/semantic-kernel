@@ -14,8 +14,20 @@ class KernelContent(KernelBaseModel, ABC):
 
     inner_content: Any | None = None
     ai_model_id: str | None = None
-    metadata: dict[str, Any] | None = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @abstractmethod
     def __str__(self) -> str:
+        pass
+
+    @abstractmethod
+    def to_element(self) -> Any:
+        pass
+
+    @abstractmethod
+    def from_element(self, element: Any) -> None:
+        pass
+
+    @abstractmethod
+    def to_dict(self) -> dict[str, Any]:
         pass

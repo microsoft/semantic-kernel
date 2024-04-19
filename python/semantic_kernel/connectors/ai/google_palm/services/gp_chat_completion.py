@@ -4,10 +4,6 @@ import logging
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
-
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -24,12 +20,15 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: ChatRole.TOOL}
+int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT, 4: AuthorRole.TOOL}
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):

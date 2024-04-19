@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 from pydantic import Field, model_validator

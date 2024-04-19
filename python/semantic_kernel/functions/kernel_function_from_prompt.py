@@ -9,9 +9,6 @@ import yaml
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -186,7 +183,7 @@ through prompt_template_config or in the prompt_template."
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
+        if hasattr(execution_settings, "auto_invoke_kernel_functions"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
@@ -283,7 +280,7 @@ through prompt_template_config or in the prompt_template."
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
+        if hasattr(execution_settings, "auto_invoke_kernel_functions"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 

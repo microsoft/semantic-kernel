@@ -6,14 +6,15 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import (
+from semantic_kernel.connectors.ai.open_ai import (  # OpenAIChatMessageContent,
     OpenAIChatCompletion,
-    OpenAIChatMessageContent,
     OpenAIChatPromptExecutionSettings,
-    OpenAIStreamingChatMessageContent,
 )
+
+# OpenAIStreamingChatMessageContent,
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.utils.settings import openai_settings_from_dot_env
@@ -88,10 +89,10 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-def print_tool_calls(message: OpenAIChatMessageContent) -> None:
+def print_tool_calls(message: ChatMessageContent) -> None:
     # A helper method to pretty print the tool calls from the message.
     # This is only triggered if auto invoke tool calls is disabled.
-    if isinstance(message, OpenAIChatMessageContent):
+    if isinstance(message, ChatMessageContent):
         tool_calls = message.tool_calls
         formatted_tool_calls = []
         for i, tool_call in enumerate(tool_calls, start=1):
@@ -170,11 +171,9 @@ async def chat() -> bool:
         result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
-        # OpenAIChatMessageContent with information about the tool calls, which need to be sent
+        # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.auto_invoke_kernel_functions and isinstance(
-            result.value[0], OpenAIChatMessageContent
-        ):
+        if not execution_settings.auto_invoke_kernel_functions and isinstance(result.value[0], ChatMessageContent):
             print_tool_calls(result.value[0])
             return True
 
