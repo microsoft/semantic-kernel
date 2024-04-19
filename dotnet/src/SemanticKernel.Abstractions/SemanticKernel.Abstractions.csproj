@@ -29,6 +29,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" />
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.PromptTemplates.Prompty" />
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
