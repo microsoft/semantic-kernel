@@ -31,7 +31,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Add filter using DI
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
-        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
+        kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, MyFunctionFilter>();
 
         Kernel kernel = kernelBuilder.Build();
 
@@ -111,7 +111,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Function filter for observability.
     /// </summary>
-    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 

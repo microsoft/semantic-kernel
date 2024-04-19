@@ -315,8 +315,8 @@ public class KernelFilterTests
             executionOrder.Add("PromptFilter2-Rendered");
         });
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
 
         builder.Services.AddSingleton<IPromptFilter>(promptFilter1);
         builder.Services.AddSingleton<IPromptFilter>(promptFilter2);
@@ -363,8 +363,8 @@ public class KernelFilterTests
 
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
 
         var kernel = builder.Build();
 
@@ -400,7 +400,7 @@ public class KernelFilterTests
         // Act
 
         // Case #1 - Add filter to services
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
 
         var kernel = builder.Build();
 
@@ -483,8 +483,8 @@ public class KernelFilterTests
 
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
 
         var kernel = builder.Build();
 
@@ -758,9 +758,9 @@ public class KernelFilterTests
 
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter3);
 
         var kernel = builder.Build();
 
@@ -819,9 +819,9 @@ public class KernelFilterTests
 
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter3);
 
         var kernel = builder.Build();
 
@@ -890,9 +890,9 @@ public class KernelFilterTests
 
         var builder = Kernel.CreateBuilder();
 
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter1);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter2);
-        builder.Services.AddSingleton<IFunctionFilter>(functionFilter3);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter1);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter2);
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter3);
 
         var kernel = builder.Build();
 
@@ -1096,7 +1096,7 @@ public class KernelFilterTests
         if (onFunctionInvocation is not null)
         {
             var functionFilter = new FakeFunctionFilter(onFunctionInvocation);
-            builder.Services.AddSingleton<IFunctionFilter>(functionFilter);
+            builder.Services.AddSingleton<IFunctionInvocationFilter>(functionFilter);
         }
 
         if (textGenerationService is not null)
@@ -1130,7 +1130,7 @@ public class KernelFilterTests
     }
 
     private sealed class FakeFunctionFilter(
-        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionFilter
+        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionInvocationFilter
     {
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
 

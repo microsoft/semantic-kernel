@@ -585,7 +585,7 @@ public class KernelTests
             .AddSingleton(new HttpClient())
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
-            .AddSingleton<IFunctionFilter>(new MyFunctionFilter())
+            .AddSingleton<IFunctionInvocationFilter>(new MyFunctionFilter())
             .AddSingleton<IPromptFilter>(new MyPromptFilter())
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
@@ -712,10 +712,10 @@ public class KernelTests
 
     private void AssertFilters(Kernel kernel1, Kernel kernel2)
     {
-        var functionFilters1 = kernel1.GetAllServices<IFunctionFilter>().ToArray();
+        var functionFilters1 = kernel1.GetAllServices<IFunctionInvocationFilter>().ToArray();
         var promptFilters1 = kernel1.GetAllServices<IPromptFilter>().ToArray();
 
-        var functionFilters2 = kernel2.GetAllServices<IFunctionFilter>().ToArray();
+        var functionFilters2 = kernel2.GetAllServices<IFunctionInvocationFilter>().ToArray();
         var promptFilters2 = kernel2.GetAllServices<IPromptFilter>().ToArray();
 
         Assert.Equal(functionFilters1.Length, functionFilters2.Length);
@@ -755,7 +755,7 @@ public class KernelTests
         }
     }
 
-    private sealed class MyFunctionFilter : IFunctionFilter
+    private sealed class MyFunctionFilter : IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {

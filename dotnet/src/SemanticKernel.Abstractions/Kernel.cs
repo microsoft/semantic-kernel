@@ -34,7 +34,7 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
     /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private NonNullCollection<IFunctionFilter>? _functionFilters;
+    private NonNullCollection<IFunctionInvocationFilter>? _functionFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IPromptFilter>? _promptFilters;
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
@@ -130,7 +130,7 @@ public sealed class Kernel
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public IList<IFunctionFilter> FunctionFilters =>
+    public IList<IFunctionInvocationFilter> FunctionFilters =>
         this._functionFilters ??
         Interlocked.CompareExchange(ref this._functionFilters, [], null) ??
         this._functionFilters;
@@ -282,7 +282,7 @@ public sealed class Kernel
     private void AddFilters()
     {
         // Enumerate any function filters that may have been registered.
-        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+        IEnumerable<IFunctionInvocationFilter> functionFilters = this.Services.GetServices<IFunctionInvocationFilter>();
 
         if (functionFilters.IsNotEmpty())
         {
@@ -328,7 +328,7 @@ public sealed class Kernel
     /// Kernel function will be always executed as last step after all filters.
     /// </summary>
     private static async Task InvokeFilterOrFunctionAsync(
-        NonNullCollection<IFunctionFilter>? functionFilters,
+        NonNullCollection<IFunctionInvocationFilter>? functionFilters,
         Func<FunctionInvocationContext, Task> functionCallback,
         FunctionInvocationContext context,
         int index = 0)

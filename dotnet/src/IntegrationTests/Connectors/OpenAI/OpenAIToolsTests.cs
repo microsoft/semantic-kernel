@@ -534,7 +534,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
     #region private
 
-    private sealed class FakeFunctionFilter : IFunctionFilter
+    private sealed class FakeFunctionFilter : IFunctionInvocationFilter
     {
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
 
