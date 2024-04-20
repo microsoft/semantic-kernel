@@ -53,9 +53,6 @@ public sealed class PromptyTest
             },
         };
 
-        // create a question from customer
-        var question = "What's in my previous order?";
-
         // create a list of documents
         // documents contains the following properties
         // - id
@@ -80,7 +77,6 @@ public sealed class PromptyTest
         // create
         var result = await kernel.InvokeAsync(function, arguments: new()
         {
-            { "question", question },
             { "customer", customer },
             { "documents", documents },
             { "history", chatHistory },
