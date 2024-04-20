@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Prompty.Core.Parsers;
 using Prompty.Core.Renderers;
 using Prompty.Core.Types;
+using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Prompty;
 internal class PromptyKernelFunction : KernelFunction
@@ -34,8 +35,51 @@ internal class PromptyKernelFunction : KernelFunction
         // get IChatCompletionService from kernel because prompty only work with Azure OpenAI Chat model for now
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
-        // step 2
-        // render prompty based on arguments
+        (ChatHistory chatHistory, PromptExecutionSettings settings) = this.CreateChatHistoryAndSettings(arguments);
+
+        // step 5
+        // call chat completion service to get response
+        var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return new FunctionResult(this, response, kernel.Culture, response.Metadata);
+    }
+
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    {
+        // step 1
+        // get IChatCompletionService from kernel because prompty only work with Azure OpenAI Chat model for now
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        (ChatHistory chatHistory, PromptExecutionSettings settings) = this.CreateChatHistoryAndSettings(arguments);
+
+
+        // step 5
+        // call chat completion service to get response
+        var asyncReference = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, settings, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await foreach (var content in asyncReference.ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            yield return typeof(TResult) switch
+            {
+                _ when typeof(TResult) == typeof(string)
+                    => (TResult)(object)content.ToString(),
+
+                _ when content is TResult contentAsT
+                    => contentAsT,
+
+                _ when content.InnerContent is TResult innerContentAsT
+                    => innerContentAsT,
+
+                _ when typeof(TResult) == typeof(byte[])
+                    => (TResult)(object)content.ToByteArray(),
+
+                _ => throw new NotSupportedException($"The specific type {typeof(TResult)} is not supported. Support types are {typeof(StreamingTextContent)}, string, byte[], or a matching type for {typeof(StreamingTextContent)}.{nameof(StreamingTextContent.InnerContent)} property")
+            };
+        }
+    }
+
+    private (ChatHistory, PromptExecutionSettings) CreateChatHistoryAndSettings(KernelArguments arguments)
+    {
         this._prompty.Inputs = arguments.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
         var renderTemplates = new RenderPromptLiquidTemplate(this._prompty);
         renderTemplates.RenderTemplate();
@@ -81,14 +125,6 @@ internal class PromptyKernelFunction : KernelFunction
             ModelId = modelName,
         };
 
-        // step 5
-        // call chat completion service to get response
-        var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return new FunctionResult(this, response, kernel.Culture, response.Metadata);
-    }
-
-    protected override IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        return (chatHistory, settings);
     }
 }
