@@ -34,9 +34,9 @@ public sealed class Kernel
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
     /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private NonNullCollection<IFunctionFilter>? _functionFilters;
+    private NonNullCollection<IFunctionInvocationFilter>? _functionInvocationFilters;
     /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
-    private NonNullCollection<IPromptFilter>? _promptFilters;
+    private NonNullCollection<IPromptRenderFilter>? _promptRenderFilters;
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
 
@@ -130,19 +130,19 @@ public sealed class Kernel
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public IList<IFunctionFilter> FunctionFilters =>
-        this._functionFilters ??
-        Interlocked.CompareExchange(ref this._functionFilters, [], null) ??
-        this._functionFilters;
+    public IList<IFunctionInvocationFilter> FunctionInvocationFilters =>
+        this._functionInvocationFilters ??
+        Interlocked.CompareExchange(ref this._functionInvocationFilters, [], null) ??
+        this._functionInvocationFilters;
 
     /// <summary>
     /// Gets the collection of function filters available through the kernel.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public IList<IPromptFilter> PromptFilters =>
-        this._promptFilters ??
-        Interlocked.CompareExchange(ref this._promptFilters, [], null) ??
-        this._promptFilters;
+    public IList<IPromptRenderFilter> PromptRenderFilters =>
+        this._promptRenderFilters ??
+        Interlocked.CompareExchange(ref this._promptRenderFilters, [], null) ??
+        this._promptRenderFilters;
 
     /// <summary>
     /// Gets the collection of auto function invocation filters available through the kernel.
@@ -282,19 +282,19 @@ public sealed class Kernel
     private void AddFilters()
     {
         // Enumerate any function filters that may have been registered.
-        IEnumerable<IFunctionFilter> functionFilters = this.Services.GetServices<IFunctionFilter>();
+        IEnumerable<IFunctionInvocationFilter> functionInvocationFilters = this.Services.GetServices<IFunctionInvocationFilter>();
 
-        if (functionFilters.IsNotEmpty())
+        if (functionInvocationFilters.IsNotEmpty())
         {
-            this._functionFilters = new(functionFilters);
+            this._functionInvocationFilters = new(functionInvocationFilters);
         }
 
         // Enumerate any prompt filters that may have been registered.
-        IEnumerable<IPromptFilter> promptFilters = this.Services.GetServices<IPromptFilter>();
+        IEnumerable<IPromptRenderFilter> promptRenderFilters = this.Services.GetServices<IPromptRenderFilter>();
 
-        if (promptFilters.IsNotEmpty())
+        if (promptRenderFilters.IsNotEmpty())
         {
-            this._promptFilters = new(promptFilters);
+            this._promptRenderFilters = new(promptRenderFilters);
         }
 
         // Enumerate any automatic function invocation filters that may have been registered.
@@ -315,7 +315,7 @@ public sealed class Kernel
     {
         FunctionInvocationContext context = new(function, arguments, functionResult);
 
-        await InvokeFilterOrFunctionAsync(this._functionFilters, functionCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
 
         return context;
     }
@@ -328,7 +328,7 @@ public sealed class Kernel
     /// Kernel function will be always executed as last step after all filters.
     /// </summary>
     private static async Task InvokeFilterOrFunctionAsync(
-        NonNullCollection<IFunctionFilter>? functionFilters,
+        NonNullCollection<IFunctionInvocationFilter>? functionFilters,
         Func<FunctionInvocationContext, Task> functionCallback,
         FunctionInvocationContext context,
         int index = 0)
@@ -345,14 +345,14 @@ public sealed class Kernel
     }
 
     [Experimental("SKEXP0001")]
-    internal async Task<PromptRenderingContext> OnPromptRenderingAsync(
+    internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
-        Func<PromptRenderingContext, Task> renderingCallback)
+        Func<PromptRenderContext, Task> renderCallback)
     {
-        PromptRenderingContext context = new(function, arguments);
+        PromptRenderContext context = new(function, arguments);
 
-        await InvokeFilterOrPromptRenderingAsync(this._promptFilters, renderingCallback, context).ConfigureAwait(false);
+        await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
         return context;
     }
@@ -364,20 +364,20 @@ public sealed class Kernel
     /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or prompt rendering if there are no remaining filters to execute.
     /// Prompt rendering will be always executed as last step after all filters.
     /// </summary>
-    private static async Task InvokeFilterOrPromptRenderingAsync(
-        NonNullCollection<IPromptFilter>? promptFilters,
-        Func<PromptRenderingContext, Task> renderingCallback,
-        PromptRenderingContext context,
+    private static async Task InvokeFilterOrPromptRenderAsync(
+        NonNullCollection<IPromptRenderFilter>? promptFilters,
+        Func<PromptRenderContext, Task> renderCallback,
+        PromptRenderContext context,
         int index = 0)
     {
         if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
         {
-            await promptFilters[index].OnPromptRenderingAsync(context,
-                (context) => InvokeFilterOrPromptRenderingAsync(promptFilters, renderingCallback, context, index + 1)).ConfigureAwait(false);
+            await promptFilters[index].OnPromptRenderAsync(context,
+                (context) => InvokeFilterOrPromptRenderAsync(promptFilters, renderCallback, context, index + 1)).ConfigureAwait(false);
         }
         else
         {
-            await renderingCallback(context).ConfigureAwait(false);
+            await renderCallback(context).ConfigureAwait(false);
         }
     }
 

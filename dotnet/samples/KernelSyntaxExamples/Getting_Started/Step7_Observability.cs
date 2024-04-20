@@ -31,12 +31,12 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Add filter using DI
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
-        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
+        kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, MyFunctionFilter>();
 
         Kernel kernel = kernelBuilder.Build();
 
         // Add filter without DI
-        kernel.PromptFilters.Add(new MyPromptFilter(this.Output));
+        kernel.PromptRenderFilters.Add(new MyPromptFilter(this.Output));
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -111,7 +111,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Function filter for observability.
     /// </summary>
-    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
@@ -133,11 +133,11 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
-    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
 

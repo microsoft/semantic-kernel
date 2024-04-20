@@ -32,13 +32,13 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         builder.Services.AddSingleton<ITestOutputHelper>(this.Output);
 
         // Add filters with DI
-        builder.Services.AddSingleton<IFunctionFilter, FirstFunctionFilter>();
-        builder.Services.AddSingleton<IFunctionFilter, SecondFunctionFilter>();
+        builder.Services.AddSingleton<IFunctionInvocationFilter, FirstFunctionFilter>();
+        builder.Services.AddSingleton<IFunctionInvocationFilter, SecondFunctionFilter>();
 
         var kernel = builder.Build();
 
         // Add filter without DI
-        kernel.PromptFilters.Add(new FirstPromptFilter(this.Output));
+        kernel.PromptRenderFilters.Add(new FirstPromptFilter(this.Output));
 
         var function = kernel.CreateFunctionFromPrompt("What is Seattle", functionName: "MyFunction");
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));
@@ -53,7 +53,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         var builder = Kernel.CreateBuilder();
 
         // This filter overrides result with "Result from filter" value.
-        builder.Services.AddSingleton<IFunctionFilter, FunctionFilterExample>();
+        builder.Services.AddSingleton<IFunctionInvocationFilter, FunctionFilterExample>();
 
         var kernel = builder.Build();
         var function = KernelFunctionFactory.CreateFromMethod(() => "Result from method");
@@ -74,7 +74,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         var builder = Kernel.CreateBuilder();
 
         // This filter overrides streaming results with "item * 2" logic.
-        builder.Services.AddSingleton<IFunctionFilter, StreamingFunctionFilterExample>();
+        builder.Services.AddSingleton<IFunctionInvocationFilter, StreamingFunctionFilterExample>();
 
         var kernel = builder.Build();
 
@@ -101,7 +101,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         var builder = Kernel.CreateBuilder();
 
         // This filter handles an exception and returns overridden result.
-        builder.Services.AddSingleton<IFunctionFilter>(new ExceptionHandlingFilterExample(NullLogger.Instance));
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(new ExceptionHandlingFilterExample(NullLogger.Instance));
 
         var kernel = builder.Build();
 
@@ -121,7 +121,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         var builder = Kernel.CreateBuilder();
 
         // This filter handles an exception and returns overridden streaming result.
-        builder.Services.AddSingleton<IFunctionFilter>(new StreamingExceptionHandlingFilterExample(NullLogger.Instance));
+        builder.Services.AddSingleton<IFunctionInvocationFilter>(new StreamingExceptionHandlingFilterExample(NullLogger.Instance));
 
         var kernel = builder.Build();
 
@@ -177,7 +177,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     #region Filter capabilities
 
     /// <summary>Shows syntax for function filter in non-streaming scenario.</summary>
-    private sealed class FunctionFilterExample : IFunctionFilter
+    private sealed class FunctionFilterExample : IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -206,9 +206,9 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>Shows syntax for prompt filter.</summary>
-    private sealed class PromptFilterExample : IPromptFilter
+    private sealed class PromptFilterExample : IPromptRenderFilter
     {
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             // Example: get function information
             var functionName = context.Function.Name;
@@ -261,7 +261,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>Shows syntax for function filter in streaming scenario.</summary>
-    private sealed class StreamingFunctionFilterExample : IFunctionFilter
+    private sealed class StreamingFunctionFilterExample : IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
@@ -284,7 +284,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>Shows syntax for exception handling in function filter in non-streaming scenario.</summary>
-    private sealed class ExceptionHandlingFilterExample(ILogger logger) : IFunctionFilter
+    private sealed class ExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
         private readonly ILogger _logger = logger;
 
@@ -308,7 +308,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>Shows syntax for exception handling in function filter in streaming scenario.</summary>
-    private sealed class StreamingExceptionHandlingFilterExample(ILogger logger) : IFunctionFilter
+    private sealed class StreamingExceptionHandlingFilterExample(ILogger logger) : IFunctionInvocationFilter
     {
         private readonly ILogger _logger = logger;
 
@@ -356,7 +356,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
 
     #region Filters
 
-    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    private sealed class FirstFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
@@ -368,7 +368,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    private sealed class SecondFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
@@ -380,11 +380,11 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class FirstPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 
-        public async Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             this._output.WriteLine($"{nameof(FirstPromptFilter)}.PromptRendering - {context.Function.PluginName}.{context.Function.Name}");
             await next(context);

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// Interface for filtering actions during function invocation.
 /// </summary>
 [Experimental("SKEXP0001")]
-public interface IFunctionFilter
+public interface IFunctionInvocationFilter
 {
     /// <summary>
     /// Method which is called asynchronously before function invocation.

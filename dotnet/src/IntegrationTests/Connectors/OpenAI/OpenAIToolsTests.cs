@@ -35,7 +35,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             await next(context);
         });
 
-        kernel.FunctionFilters.Add(filter);
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -61,7 +61,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             await next(context);
         });
 
-        kernel.FunctionFilters.Add(filter);
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -534,7 +534,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
     #region private
 
-    private sealed class FakeFunctionFilter : IFunctionFilter
+    private sealed class FakeFunctionFilter : IFunctionInvocationFilter
     {
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
 

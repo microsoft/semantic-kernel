@@ -406,7 +406,7 @@ public class CodeBlockTests
                 ]
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments[parameterName]);
             await next(context);
@@ -418,8 +418,8 @@ public class CodeBlockTests
             await next(context);
         });
 
-        kernel.PromptFilters.Add(promptFilter);
-        kernel.FunctionFilters.Add(functionFilter);
+        kernel.PromptRenderFilters.Add(promptFilter);
+        kernel.FunctionInvocationFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel);
@@ -457,7 +457,7 @@ public class CodeBlockTests
                 ]
             );
 
-        var promptFilter = new FakePromptFilter(onPromptRendering: async (context, next) =>
+        var promptFilter = new FakePromptFilter(onPromptRender: async (context, next) =>
         {
             Assert.Equal(FooValue, context.Arguments["foo"]);
             Assert.Equal(FooValue, context.Arguments["x11"]);
@@ -471,8 +471,8 @@ public class CodeBlockTests
             await next(context);
         });
 
-        kernel.PromptFilters.Add(promptFilter);
-        kernel.FunctionFilters.Add(functionFilter);
+        kernel.PromptRenderFilters.Add(promptFilter);
+        kernel.FunctionInvocationFilters.Add(functionFilter);
 
         var codeBlock = new CodeBlock(blockList, "");
         await codeBlock.RenderCodeAsync(kernel, arguments);
@@ -517,7 +517,7 @@ public class CodeBlockTests
     #region private
 
     private sealed class FakeFunctionFilter(
-        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionFilter
+        Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation) : IFunctionInvocationFilter
     {
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
 
@@ -526,12 +526,12 @@ public class CodeBlockTests
     }
 
     private sealed class FakePromptFilter(
-        Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? onPromptRendering = null) : IPromptFilter
+        Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? onPromptRender = null) : IPromptRenderFilter
     {
-        private readonly Func<PromptRenderingContext, Func<PromptRenderingContext, Task>, Task>? _onPromptRendering = onPromptRendering;
+        private readonly Func<PromptRenderContext, Func<PromptRenderContext, Task>, Task>? _onPromptRender = onPromptRender;
 
-        public Task OnPromptRenderingAsync(PromptRenderingContext context, Func<PromptRenderingContext, Task> next) =>
-            this._onPromptRendering?.Invoke(context, next) ?? Task.CompletedTask;
+        public Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next) =>
+            this._onPromptRender?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
     #endregion
