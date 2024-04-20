@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using Prompty.Core.Parsers;
+using Prompty.Core.Renderers;
 namespace Microsoft.SemanticKernel.PromptTemplates.Prompty.Extensions;
 public static class PromptyKernelExtension
 {
-    public static Task<KernelFunction> CreateFunctionFromPrompty(
-        this Kernel kernel,
+    public static KernelFunction CreateFunctionFromPrompty(
+        this Kernel _,
         global::Prompty.Core.Prompty prompty)
     {
-        var modelConfig = prompty.Model;
-        kernel.CreateFunctionFromPrompt
+        var promptFunction = new PromptyKernelFunction(prompty);
+
+        return promptFunction;
     }
 }

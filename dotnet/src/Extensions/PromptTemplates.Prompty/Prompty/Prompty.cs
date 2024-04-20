@@ -44,6 +44,9 @@ public class Prompty()
     // If sending a Prompty Object, this will not be used in execute.
     public Prompty Load(string promptyFileName, Prompty prompty)
     {
+        //Check for appsettings.json config and set to that first
+        prompty = Helpers.GetPromptyModelConfigFromSettings(prompty);
+
         //Then load settings from prompty file and override if not null
         var promptyFileInfo = new FileInfo(promptyFileName);
 

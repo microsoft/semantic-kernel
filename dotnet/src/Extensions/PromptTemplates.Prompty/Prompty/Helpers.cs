@@ -1,4 +1,5 @@
-﻿using global::Prompty.Core.Types;
+﻿using System;
+using global::Prompty.Core.Types;
 using YamlDotNet.Serialization;
 
 namespace Prompty.Core;
@@ -6,6 +7,18 @@ namespace Prompty.Core;
 
 public static class Helpers
 {
+    // This is to load the appsettings.json file config 
+    // These are the base configuration settings for the prompty file
+    // These can be overriden by the prompty file, or the execute method
+    public static Prompty GetPromptyModelConfigFromSettings(Prompty prompty)
+    {
+        // get variables from section and assign to promptymodelconfig
+        var promptyModelConfig = new PromptyModelConfig();
+        prompty.Model = promptyModelConfig;
+
+        return prompty;
+    }
+
     public static Prompty ParsePromptyYamlFile(Prompty prompty, string promptyFrontMatterYaml)
     {
         // desearialize yaml front matter

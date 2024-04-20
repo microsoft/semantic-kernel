@@ -25,5 +25,13 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\PromptTemplates.Prompty\PromptTemplates.Prompty.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="**/*.prompty">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
