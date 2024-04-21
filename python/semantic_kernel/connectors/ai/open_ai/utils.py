@@ -151,13 +151,10 @@ def get_function_calling_object(
     if exclude_function:
         exclude_function = [function for function in exclude_function]
     result = []
-    for (
-        plugin_name,
-        plugin,
-    ) in kernel.plugins.plugins.items():
+    for plugin_name, plugin in kernel.plugins.items():
         if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
             continue
-        for function in plugin.functions.values():
+        for function in plugin:
             if function.fully_qualified_name in exclude_function or (
                 include_function and function.fully_qualified_name not in include_function
             ):

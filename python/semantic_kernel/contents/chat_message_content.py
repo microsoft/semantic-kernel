@@ -1,15 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
 
-from semantic_kernel.contents.chat_message_content_base import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.chat_role import ChatRole
-from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT
+from semantic_kernel.contents.const import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.types import CHAT_MESSAGE_CONTENT
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -35,9 +37,9 @@ class ChatMessageContent(KernelContent):
 
     type: Literal[CHAT_MESSAGE_CONTENT] = CHAT_MESSAGE_CONTENT  # type: ignore
     role: ChatRole
-    content: Optional[str] = None
-    encoding: Optional[str] = None
-    finish_reason: Optional[FinishReason] = None
+    content: str | None = None
+    encoding: str | None = None
+    finish_reason: FinishReason | None = None
 
     def __str__(self) -> str:
         return self.content or ""
@@ -53,7 +55,7 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(root_key)
         for field in self.model_fields_set:
-            if field in ["content", DISCRIMINATOR_FIELD]:
+            if field in ["content", DISCRIMINATOR_FIELD, "metadata", "inner_content"]:
                 continue
             value = getattr(self, field)
             if value is None:

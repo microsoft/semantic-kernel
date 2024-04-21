@@ -12,13 +12,15 @@ public class PromptExecutionSettingsTests
     public void PromptExecutionSettingsCloneWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+        {
+            "max_tokens": 60,
+            "temperature": 0.5,
+            "top_p": 0.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0
+        }
+        """;
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
 
         // Act
@@ -34,13 +36,15 @@ public class PromptExecutionSettingsTests
     public void PromptExecutionSettingsFreezeWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+            {
+                "max_tokens": 60,
+                "temperature": 0.5,
+                "top_p": 0.0,
+                "presence_penalty": 0.0,
+                "frequency_penalty": 0.0
+            }
+            """;
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
 
         // Act

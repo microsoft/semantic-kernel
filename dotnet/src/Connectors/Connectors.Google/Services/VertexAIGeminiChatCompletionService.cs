@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google;
 /// </summary>
 public sealed class VertexAIGeminiChatCompletionService : IChatCompletionService
 {
-    private readonly Dictionary<string, object?> _attributesInternal = new();
+    private readonly Dictionary<string, object?> _attributesInternal = [];
     private readonly GeminiChatCompletionClient _chatCompletionClient;
 
     /// <summary>

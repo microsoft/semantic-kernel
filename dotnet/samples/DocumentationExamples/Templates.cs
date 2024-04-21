@@ -44,52 +44,51 @@ public class Templates : BaseTest
             Assistant: ");
 
         // Create choices
-        List<string> choices = new() { "ContinueConversation", "EndConversation" };
+        List<string> choices = ["ContinueConversation", "EndConversation"];
 
         // Create few-shot examples
         List<ChatHistory> fewShotExamples =
         [
-            new ChatHistory()
-            {
+            [
                 new ChatMessageContent(AuthorRole.User, "Can you send a very quick approval to the marketing team?"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "ContinueConversation")
-            },
-            new ChatHistory()
-            {
+            ],
+            [
                 new ChatMessageContent(AuthorRole.User, "Thanks, I'm done for now"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "EndConversation")
-            }
+            ]
         ];
 
         // Create handlebars template for intent
         var getIntent = kernel.CreateFunctionFromPrompt(
             new()
             {
-                Template = @"
-<message role=""system"">Instructions: What is the intent of this request?
-Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
-Choices: {{choices}}.</message>
+                Template = """
+                           <message role="system">Instructions: What is the intent of this request?
+                           Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
+                           Choices: {{choices}}.</message>
 
-{{#each fewShotExamples}}
-    {{#each this}}
-        <message role=""{{role}}"">{{content}}</message>
-    {{/each}}
-{{/each}}
+                           {{#each fewShotExamples}}
+                               {{#each this}}
+                                   <message role="{{role}}">{{content}}</message>
+                               {{/each}}
+                           {{/each}}
 
-{{#each chatHistory}}
-    <message role=""{{role}}"">{{content}}</message>
-{{/each}}
+                           {{#each chatHistory}}
+                               <message role="{{role}}">{{content}}</message>
+                           {{/each}}
 
-<message role=""user"">{{request}}</message>
-<message role=""system"">Intent:</message>",
+                           <message role="user">{{request}}</message>
+                           <message role="system">Intent:</message>
+                           """,
                 TemplateFormat = "handlebars"
             },
             new HandlebarsPromptTemplateFactory()
         );
 
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Start the chat loop
         while (true)

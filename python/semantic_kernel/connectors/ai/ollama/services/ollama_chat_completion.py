@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Any, AsyncIterable, List, Optional
+from typing import Any, AsyncGenerator, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
@@ -75,7 +75,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncIterable[List[StreamingChatMessageContent]]:
+    ) -> AsyncGenerator[List[StreamingChatMessageContent], Any]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.
@@ -147,7 +147,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.

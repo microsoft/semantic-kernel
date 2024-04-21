@@ -12,13 +12,15 @@ public sealed class MenuPlugin
     /// </summary>
     [KernelFunction, Description("Provides a list of specials from the menu.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
-    public string GetSpecials()
+    public string[] GetSpecials()
     {
-        return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+        return
+            new[]
+            {
+                "Special Soup: Clam Chowder",
+                "Special Salad: Cobb Salad",
+                "Special Drink: Chai Tea",
+            };
     }
 
     /// <summary>
