@@ -108,6 +108,7 @@ internal sealed class TextGenerationRequest
         /// and length of text generated.
         /// </summary>
         [JsonPropertyName("max_new_tokens")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? MaxNewTokens { get; set; }
 
         /// <summary>
@@ -145,7 +146,7 @@ internal sealed class TextGenerationRequest
         /// <remarks>
         /// Disabling this won't provide information about token usage.
         /// </remarks>
-        //[JsonPropertyName("details")]
+        [JsonPropertyName("details")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? Details { get; set; }
     }

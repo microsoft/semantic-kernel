@@ -71,7 +71,6 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
         get => this._maxTokens;
