@@ -41,7 +41,7 @@ internal sealed class TextGenerationRequest
     /// </summary>
     /// <param name="prompt">Prompt text for generation.</param>
     /// <param name="executionSettings">Execution settings to be used for the request.</param>
-    /// <returns>TexGenerationtRequest object.</returns>
+    /// <returns>TextGenerationRequest object.</returns>
     internal static TextGenerationRequest FromPromptAndExecutionSettings(string prompt, HuggingFacePromptExecutionSettings executionSettings)
     {
         return new TextGenerationRequest
@@ -50,7 +50,7 @@ internal sealed class TextGenerationRequest
             Parameters = new()
             {
                 Temperature = executionSettings.Temperature,
-                MaxNewTokens = executionSettings.MaxTokens,
+                MaxNewTokens = executionSettings.MaxNewTokens,
                 TopK = executionSettings.TopK,
                 TopP = executionSettings.TopP,
                 RepetitionPenalty = executionSettings.RepetitionPenalty,
@@ -108,7 +108,6 @@ internal sealed class TextGenerationRequest
         /// and length of text generated.
         /// </summary>
         [JsonPropertyName("max_new_tokens")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? MaxNewTokens { get; set; }
 
         /// <summary>
@@ -146,8 +145,9 @@ internal sealed class TextGenerationRequest
         /// <remarks>
         /// Disabling this won't provide information about token usage.
         /// </remarks>
-        [JsonPropertyName("details")]
-        public bool Details { get; set; } = true;
+        //[JsonPropertyName("details")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? Details { get; set; }
     }
 
     internal sealed class HuggingFaceTextOptions
