@@ -122,16 +122,17 @@ public sealed class MistralClientTests : IDisposable
     public async Task ValidateGetStreamingChatMessageContentsAsync()
     {
         // Arrange
-        var content = this.GetTestResponseAsStream("chat_completions_streaming_response.txt");
+        var content = this.GetTestResponseAsBytes("chat_completions_streaming_response.txt");
         this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
         this._httpClient = new HttpClient(this._delegatingHandler, false);
         var client = new MistralClient("mistral-tiny", this._httpClient, "key");
 
-        // Act
         var chatHistory = new ChatHistory
         {
             new ChatMessageContent(AuthorRole.User, "What is the best French cheese?")
         };
+
+        // Act
         var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default);
         var chunks = new List<StreamingChatMessageContent>();
         await foreach (var chunk in response)
@@ -156,7 +157,7 @@ public sealed class MistralClientTests : IDisposable
     public async Task ValidateChatHistoryAsync()
     {
         // Arrange
-        var content = this.GetTestResponseAsStream("chat_completions_streaming_response.txt");
+        var content = this.GetTestResponseAsBytes("chat_completions_streaming_response.txt");
         this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
         this._httpClient = new HttpClient(this._delegatingHandler, false);
         var client = new MistralClient("mistral-tiny", this._httpClient, "key");
@@ -207,6 +208,49 @@ public sealed class MistralClientTests : IDisposable
         Assert.Equal(2, chatRequest.Tools[0].Function.Parameters?.Properties["units"].RootElement.GetProperty("enum").GetArrayLength());
     }
 
+    [Fact]
+    public async Task ValidateGetStreamingChatMessageContentsWithToolsAsync()
+    {
+        // Arrange
+        var content = this.GetTestResponseAsBytes("chat_completions_streaming_function_call_response.txt");
+        this._delegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
+        this._httpClient = new HttpClient(this._delegatingHandler, false);
+        var client = new MistralClient("mistral-tiny", this._httpClient, "key");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        // Act
+        var response = client.GetStreamingChatMessageContentsAsync(chatHistory, default, executionSettings, kernel);
+        var chunks = new List<StreamingChatMessageContent>();
+        await foreach (var chunk in response)
+        {
+            chunks.Add(chunk);
+        };
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Equal(12, chunks.Count); // Test will loop until maximum use attempts is reached
+        var request = this._delegatingHandler.RequestContent;
+        Assert.NotNull(request);
+        var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
+        Assert.NotNull(chatRequest);
+        Assert.Equal("auto", chatRequest.ToolChoice);
+        Assert.NotNull(chatRequest.Tools);
+        Assert.Single(chatRequest.Tools);
+        Assert.NotNull(chatRequest.Tools[0].Function.Parameters);
+        Assert.Equal(["location", "units"], chatRequest.Tools[0].Function.Parameters?.Required);
+        Assert.Equal("string", chatRequest.Tools[0].Function.Parameters?.Properties["location"].RootElement.GetProperty("type").GetString());
+        Assert.Equal(2, chatRequest.Tools[0].Function.Parameters?.Properties["units"].RootElement.GetProperty("enum").GetArrayLength());
+    }
+
     public void Dispose()
     {
         this._delegatingHandler?.Dispose();
@@ -220,10 +264,9 @@ public sealed class MistralClientTests : IDisposable
         return File.ReadAllText($"./TestData/{fileName}");
     }
 
-    private MemoryStream GetTestResponseAsStream(string fileName)
+    private byte[] GetTestResponseAsBytes(string fileName)
     {
-        var bytes = File.ReadAllBytes($"./TestData/{fileName}");
-        return new MemoryStream(bytes);
+        return File.ReadAllBytes($"./TestData/{fileName}");
     }
 
     private static HttpRequestHeaders GetDefaultRequestHeaders(string key, bool stream)
@@ -248,27 +291,24 @@ public sealed class MistralClientTests : IDisposable
         public Uri RequestUri { get; init; }
         public HttpMethod Method { get; init; } = HttpMethod.Post;
         public HttpRequestHeaders RequestHeaders { get; init; } = GetDefaultRequestHeaders("key", false);
-        public HttpResponseMessage ResponseMessage { get; init; } = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        public HttpResponseMessage ResponseMessage { get; private set; } = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         public string? RequestContent { get; private set; } = null;
 
-        internal AssertingDelegatingHandler(string requestUri, string responseContent)
+        private readonly string? _responseString;
+        private readonly byte[]? _responseBytes;
+
+        internal AssertingDelegatingHandler(string requestUri, string responseString)
         {
             this.RequestUri = new Uri(requestUri);
             this.RequestHeaders = GetDefaultRequestHeaders("key", false);
-            this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(responseContent, System.Text.Encoding.UTF8, "application/json")
-            };
+            this._responseString = responseString;
         }
 
-        internal AssertingDelegatingHandler(string requestUri, Stream content)
+        internal AssertingDelegatingHandler(string requestUri, byte[] responseBytes)
         {
             this.RequestUri = new Uri(requestUri);
             this.RequestHeaders = GetDefaultRequestHeaders("key", true);
-            this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StreamContent(content)
-            };
+            this._responseBytes = responseBytes;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -278,6 +318,21 @@ public sealed class MistralClientTests : IDisposable
             Assert.Equal(this.RequestHeaders, request.Headers);
 
             this.RequestContent = await request.Content!.ReadAsStringAsync(cancellationToken);
+
+            if (this._responseString is not null)
+            {
+                this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(this._responseString, System.Text.Encoding.UTF8, "application/json")
+                };
+            }
+            if (this._responseBytes is not null)
+            {
+                this.ResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new MemoryStream(this._responseBytes))
+                };
+            }
 
             return await Task.FromResult(this.ResponseMessage);
         }

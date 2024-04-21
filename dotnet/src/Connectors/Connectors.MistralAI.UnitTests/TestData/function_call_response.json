@@ -12,7 +12,7 @@
         "tool_calls": [
           {
             "function": {
-              "name": "get_weather",
+              "name": "WeatherPlugin-GetWeather",
               "arguments": "{\"location\": \"Paris\", \"unit\": \"celsius\"}"
             }
           }
