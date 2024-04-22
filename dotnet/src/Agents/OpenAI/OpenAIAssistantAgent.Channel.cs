@@ -65,9 +65,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     this._threadId,
                     MessageRole.User,
                     message.Content,
-                    fileIds: null,
-                    metadata: null,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
