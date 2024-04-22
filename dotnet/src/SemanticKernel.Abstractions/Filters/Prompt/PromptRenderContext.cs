@@ -15,16 +15,24 @@ public sealed class PromptRenderContext
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderContext"/> class.
     /// </summary>
+    /// <param name="kernel">The <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="function">The <see cref="KernelFunction"/> with which this filter is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
-    internal PromptRenderContext(KernelFunction function, KernelArguments arguments)
+    internal PromptRenderContext(Kernel kernel, KernelFunction function, KernelArguments arguments)
     {
+        Verify.NotNull(kernel);
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
+        this.Kernel = kernel;
         this.Function = function;
         this.Arguments = arguments;
     }
+
+    /// <summary>
+    /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
+    /// </summary>
+    public Kernel Kernel { get; }
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.

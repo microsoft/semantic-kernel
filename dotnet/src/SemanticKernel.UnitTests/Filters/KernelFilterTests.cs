@@ -20,6 +20,8 @@ public class KernelFilterTests
     public async Task FunctionFilterIsTriggeredAsync()
     {
         // Arrange
+        Kernel? contextKernel = null;
+
         var functionInvocations = 0;
         var preFunctionInvocations = 0;
         var postFunctionInvocations = 0;
@@ -28,6 +30,8 @@ public class KernelFilterTests
 
         var kernel = this.GetKernelWithFilters(onFunctionInvocation: async (context, next) =>
         {
+            contextKernel = context.Kernel;
+
             preFunctionInvocations++;
             await next(context);
             postFunctionInvocations++;
@@ -40,6 +44,8 @@ public class KernelFilterTests
         Assert.Equal(1, functionInvocations);
         Assert.Equal(1, preFunctionInvocations);
         Assert.Equal(1, postFunctionInvocations);
+
+        Assert.Same(contextKernel, kernel);
     }
 
     [Fact]
@@ -191,6 +197,8 @@ public class KernelFilterTests
     public async Task PromptFiltersAreTriggeredForPromptsAsync()
     {
         // Arrange
+        Kernel? contextKernel = null;
+
         var filterInvocations = 0;
         var mockTextGeneration = this.GetMockTextGeneration();
 
@@ -199,6 +207,8 @@ public class KernelFilterTests
         var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
             onPromptRender: async (context, next) =>
             {
+                contextKernel = context.Kernel;
+
                 filterInvocations++;
                 await next(context);
                 filterInvocations++;
@@ -209,6 +219,7 @@ public class KernelFilterTests
 
         // Assert
         Assert.Equal(2, filterInvocations);
+        Assert.Same(contextKernel, kernel);
     }
 
     [Fact]

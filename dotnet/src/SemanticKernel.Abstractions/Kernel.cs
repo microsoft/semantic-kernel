@@ -313,7 +313,7 @@ public sealed class Kernel
         FunctionResult functionResult,
         Func<FunctionInvocationContext, Task> functionCallback)
     {
-        FunctionInvocationContext context = new(function, arguments, functionResult);
+        FunctionInvocationContext context = new(this, function, arguments, functionResult);
 
         await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
 
@@ -350,7 +350,7 @@ public sealed class Kernel
         KernelArguments arguments,
         Func<PromptRenderContext, Task> renderCallback)
     {
-        PromptRenderContext context = new(function, arguments);
+        PromptRenderContext context = new(this, function, arguments);
 
         await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
 
