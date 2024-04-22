@@ -2,12 +2,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Prompty.Core.Types;
 using YamlDotNet.Serialization;
 
-namespace Prompty.Core;
+namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 
-public class Prompty()
+internal class Prompty()
 {
     // PromptyModelConfig model, string prompt, bool isFromSettings = true
     // TODO: validate  the prompty attributes needed, what did I miss that should be included?

@@ -1,22 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.PromptTemplates.Prompty.Extensions;
+using Microsoft.SemanticKernel.Experimental.Prompty.Extension;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.PromptTemplates.Prompty;
+namespace SemanticKernel.Extensions.UnitTests.Prompty;
 public sealed class PromptyTest
 {
     [Fact]
-    public async Task ChatPromptyTemplateTest()
+    public async Task ChatPromptyTemplateTestAsync()
     {
         var modelId = "gpt-35-turbo-16k";
         var endPoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new Exception("AZURE_OPENAI_ENDPOINT is not set");
@@ -25,12 +22,9 @@ public sealed class PromptyTest
             .AddAzureOpenAIChatCompletion(modelId, endPoint, key)
             .Build();
 
-        var prompty = new global::Prompty.Core.Prompty();
         var cwd = Directory.GetCurrentDirectory();
-        var chatPromptyPath = Path.Combine(cwd, "prompties", "chat.prompty");
-        prompty = prompty.Load(chatPromptyPath, prompty);
-
-        var function = kernel.CreateFunctionFromPrompty(prompty);
+        var chatPromptyPath = Path.Combine(cwd, "TestData", "prompties", "chat.prompty");
+        var function = kernel.CreateFunctionFromPrompty(chatPromptyPath);
         // create a dynamic customer object
         // customer contains the following properties
         // - firstName
@@ -82,9 +76,9 @@ public sealed class PromptyTest
             { "history", chatHistory },
         });
 
-        Assert.IsType<OpenAIChatMessageContent>(result.Value);
+        Assert.IsType<OpenAIChatMessageContent>(result.GetValue<OpenAIChatMessageContent>());
 
-        if (result.Value is OpenAIChatMessageContent openAIChatMessageContent)
+        if (result.GetValue< OpenAIChatMessageContent>() is OpenAIChatMessageContent openAIChatMessageContent)
         {
             Assert.Equal(AuthorRole.Assistant, openAIChatMessageContent.Role);
             Assert.Contains("2024", openAIChatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);

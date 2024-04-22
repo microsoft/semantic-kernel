@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.PromptTemplates.Prompty</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.PromptTemplates.Prompty</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Experimental.Prompty</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Experimental.Prompty</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionSuffix>alpha</VersionSuffix>
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Experimental.Prompty.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

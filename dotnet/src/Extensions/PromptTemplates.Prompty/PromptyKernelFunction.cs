@@ -3,22 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Prompty.Core.Parsers;
-using Prompty.Core.Renderers;
-using Prompty.Core.Types;
-using YamlDotNet.Serialization;
+using Microsoft.SemanticKernel.Experimental.Prompty.Core;
 
-namespace Microsoft.SemanticKernel.PromptTemplates.Prompty;
-internal class PromptyKernelFunction : KernelFunction
+namespace Microsoft.SemanticKernel.Experimental.Prompty;
+public class PromptyKernelFunction : KernelFunction
 {
-    private readonly global::Prompty.Core.Prompty _prompty;
-    public PromptyKernelFunction(
-        global::Prompty.Core.Prompty prompty)
+    private readonly Core.Prompty _prompty;
+
+    internal PromptyKernelFunction(Core.Prompty prompty)
         : base(prompty.Name, prompty.Description, [])
     {
         this._prompty = prompty;

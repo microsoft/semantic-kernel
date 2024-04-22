@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Extensions.UnitTests</RootNamespace>
+    <AssemblyName>SemanticKernel.Experimental.Prompty.UnitTests</AssemblyName>
+    <RootNamespace>SemanticKernel.Experimental.Prompty.UnitTests</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0101</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -24,7 +24,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Prompty\Experimental.Prompty.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\**\*.prompty">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,11 +1,10 @@
-﻿using System;
-using global::Prompty.Core.Types;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using YamlDotNet.Serialization;
 
-namespace Prompty.Core;
+namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 
-
-public static class Helpers
+internal static class Helpers
 {
     // This is to load the appsettings.json file config 
     // These are the base configuration settings for the prompty file
@@ -84,11 +83,9 @@ public static class Helpers
                     prompty.Model.ApiKey = promptyFrontMatter.Model.ApiKey;
                 }
             }
-
         }
 
         return prompty;
-
     }
 
 }
