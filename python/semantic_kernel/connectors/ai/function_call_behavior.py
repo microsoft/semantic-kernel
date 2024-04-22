@@ -143,11 +143,10 @@ class KernelFunctions(FunctionCallBehavior):
         settings: "PromptExecutionSettings",
     ) -> None:
         """Set the options for the tool call behavior in the settings."""
-        if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
-            return
-        update_settings_callback(
-            FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata()), settings
-        )
+        if self.enable_kernel_functions:
+            update_settings_callback(
+                FunctionCallConfiguration(available_functions=kernel.get_full_list_of_function_metadata()), settings
+            )
 
 
 class EnabledFunctions(FunctionCallBehavior):
@@ -164,12 +163,11 @@ class EnabledFunctions(FunctionCallBehavior):
         settings: "PromptExecutionSettings",
     ) -> None:
         """Set the options for the tool call behavior in the settings."""
-        if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
-            return
-        update_settings_callback(
-            FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata(self.filters)),
-            settings,
-        )
+        if self.enable_kernel_functions:
+            update_settings_callback(
+                FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata(self.filters)),
+                settings,
+            )
 
 
 class RequiredFunction(FunctionCallBehavior):
@@ -184,7 +182,7 @@ class RequiredFunction(FunctionCallBehavior):
         settings: "PromptExecutionSettings",
     ) -> None:
         """Set the options for the tool call behavior in the settings."""
-        if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
+        if not self.enable_kernel_functions:
             return
         # since using this always calls this single function, we do not want to allow repeated calls
         # TODO: reevaluate when other models support function calling then OpenAI.
@@ -193,7 +191,7 @@ class RequiredFunction(FunctionCallBehavior):
         update_settings_callback(
             FunctionCallConfiguration(
                 required_functions=kernel.get_list_of_function_metadata(
-                    filters={"include_functions": [self.function_fully_qualified_name]}
+                    {"included_functions": [self.function_fully_qualified_name]}
                 )
             ),
             settings,

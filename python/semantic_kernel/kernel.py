@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from copy import copy
 from functools import singledispatchmethod
-from types import NoneType
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
@@ -691,22 +690,16 @@ class Kernel(KernelBaseModel):
             function_name = names[1]
         return self.get_function(plugin_name, function_name)
 
-    @singledispatchmethod
-    def get_list_of_function_metadata(self, *args: Any, **kwargs: Any) -> list["KernelFunctionMetadata"]:
-        """Get a list of all function metadata in the plugin collection."""
-        raise NotImplementedError("This method is not implemented for the provided type.")
-
-    @get_list_of_function_metadata.register(NoneType)
-    def get_list_of_function_metadata_none(self) -> list["KernelFunctionMetadata"]:
-        """
-        Get a list of all function metadata in the plugin collection
-
-        Returns:
-            A list of KernelFunctionMetadata objects in the collection.
-        """
+    def get_full_list_of_function_metadata(self) -> list["KernelFunctionMetadata"]:
+        """Get a list of all function metadata in the plugins."""
         if not self.plugins:
             return []
         return [func.metadata for plugin in self.plugins.values() for func in plugin]
+
+    @singledispatchmethod
+    def get_list_of_function_metadata(self, *args: Any, **kwargs: Any) -> list["KernelFunctionMetadata"]:
+        """Get a list of all function metadata in the plugin collection."""
+        raise NotImplementedError("This method is not implemented for the provided arguments.")
 
     @get_list_of_function_metadata.register(bool)
     def get_list_of_function_metadata_bool(
