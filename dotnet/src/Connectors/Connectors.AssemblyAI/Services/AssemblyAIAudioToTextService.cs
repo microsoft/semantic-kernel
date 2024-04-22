@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
     private readonly AssemblyAIClient _client;
+
     /// <summary>
     /// Attributes is not used by AssemblyAIAudioToTextService.
     /// </summary>
