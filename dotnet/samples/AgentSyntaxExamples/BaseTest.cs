@@ -43,7 +43,7 @@ public abstract class BaseTest
     {
         var builder = Kernel.CreateBuilder();
 
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
+        if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
                 TestConfiguration.OpenAI.ChatModelId,
