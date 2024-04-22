@@ -329,7 +329,7 @@ public static IKernelBuilder AddHuggingFaceTextGeneration(
 
 #### Comparison
 
-Both the static class implementation and the interface approach offer consistent APIs for instrumenting LLM requests. The static class implementation has the advantage of not necessitating modifications to the constructors of services and clients. However, it poses challenges in terms of configuration and future extensibility. On the other hand, the interface approach facilitates convenient configuration and greater expandability, but it necessitates alterations to the constructors.
+Both the static class implementation and the interface approach offer consistent APIs for instrumenting LLM requests. The static class implementation has the advantage of not necessitating modifications to the constructors of services and clients. However, it poses challenges in terms of configuration (through `PromptExecutionSettings`) and future extensibility. On the other hand, the interface approach facilitates convenient configuration and greater expandability, but it necessitates alterations to the constructors.
 
 ### Where do we create the activities
 
