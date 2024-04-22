@@ -31,6 +31,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan s_messageSynchronizationDelay = TimeSpan.FromMilliseconds(500);
 
         private static readonly HashSet<RunStatus> s_pollingStatuses =
             [
@@ -151,9 +152,17 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                         }
                         catch (RequestFailedException exception)
                         {
-                            // Step says message exists.  Try again.
+                            // Step has provided the message-id.  Retry on of NotFound/404 exists.
+                            // Extremely rarely there might be a synchronization issue between the
+                            // assistant response and message-service.
                             retry = exception.Status == (int)HttpStatusCode.NotFound && count < 3;
                         }
+
+                        if (retry)
+                        {
+                            await Task.Delay(s_messageSynchronizationDelay).ConfigureAwait(false);
+                        }
+
                         ++count;
                     }
                     while (retry);
