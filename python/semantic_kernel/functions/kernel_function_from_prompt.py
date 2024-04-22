@@ -179,7 +179,7 @@ through prompt_template_config or in the prompt_template."
         arguments: KernelArguments,
     ) -> FunctionResult:
         """Handles the chat service call."""
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
+        chat_history = ChatHistory.from_rendered_prompt(prompt)
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}

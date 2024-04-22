@@ -283,7 +283,3 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             return json.dumps(content.model_extra["context"])
 
         return None
-
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "AzureChatMessageContent"

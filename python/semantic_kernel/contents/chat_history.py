@@ -13,7 +13,6 @@ from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.types import CHAT_MESSAGE_CONTENT
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -233,7 +232,7 @@ class ChatHistory(KernelBaseModel):
         return self.messages == other.messages
 
     @classmethod
-    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = CHAT_MESSAGE_CONTENT) -> ChatHistory:
+    def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
         """
         Create a ChatHistory instance from a rendered prompt.
 
@@ -244,7 +243,7 @@ class ChatHistory(KernelBaseModel):
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
         prompt_tag = "prompt"
-        messages: list[ChatMessageContent] = []
+        messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
@@ -263,7 +262,7 @@ class ChatHistory(KernelBaseModel):
                 messages.append(ChatMessageContent(role=AuthorRole.USER, content=item.tail.strip()))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
-        return cls(messages=messages, message_type=message_type)
+        return cls(messages=messages)
 
     def serialize(self) -> str:
         """

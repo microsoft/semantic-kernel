@@ -24,8 +24,9 @@ class KernelContent(KernelBaseModel, ABC):
     def to_element(self) -> Any:
         pass
 
+    @classmethod
     @abstractmethod
-    def from_element(self, element: Any) -> None:
+    def from_element(cls, element: Any) -> "KernelContent":
         pass
 
     @abstractmethod

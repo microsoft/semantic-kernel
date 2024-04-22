@@ -209,7 +209,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             )
         )
         prompt = await kernel_prompt_template.render(kernel, arguments)
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
+        chat_history = ChatHistory.from_rendered_prompt(prompt)
         return chat_history
 
     def _create_config_from_yaml(self, kernel: Kernel) -> "KernelFunction":

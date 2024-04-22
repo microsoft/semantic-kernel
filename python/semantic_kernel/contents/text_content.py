@@ -51,3 +51,22 @@ class TextContent(KernelContent):
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""
         return {"type": "text", "text": self.text}
+
+    def __add__(self, other: "TextContent") -> "TextContent":
+        if not isinstance(other, TextContent):
+            raise TypeError(f"Cannot add TextContent with {type(other)}")
+        if not isinstance(self.inner_content, list):
+            self.inner_content = [self.inner_content]
+        else:
+            if other.inner_content:
+                self.inner_content.append(other.inner_content)
+        metadata = {}
+        if self.metadata or other.metadata:
+            metadata = {**(self.metadata or {}), **(other.metadata or {})}
+        return TextContent(
+            inner_content=self.inner_content,
+            ai_model_id=self.ai_model_id or other.ai_model_id,
+            metadata=metadata,
+            text=self.text + other.text,
+            encoding=self.encoding or other.encoding,
+        )

@@ -273,30 +273,11 @@ async def test_helpers_message(kernel: Kernel):
 
 
 @mark.asyncio
-async def test_helpers_openai_message_tool_call(kernel: Kernel):
-    template = """{{#each chat_history}}{{#message role=role tool_calls=tool_calls tool_call_id=tool_call_id}}{{~content~}}{{/message}} {{/each}}"""  # noqa E501
-    target = create_handlebars_prompt_template(template)
-    chat_history = ChatHistory()
-    chat_history.add_message(ChatMessageContent(role="user", content="User message"))
-    chat_history.add_message(
-        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
-    )
-    chat_history.add_message(
-        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
-    )
-    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
-    assert "User message" in rendered
-    assert "ToolCall" in rendered
-    assert "plug-test" in rendered
-    assert "Tool message" in rendered
-
-
-@mark.asyncio
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """{{#each chat_history}}{{message_to_prompt}} {{/each}}"""
     target = create_handlebars_prompt_template(template)
     chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
     chat_history.add_message(
         ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
     )
@@ -305,9 +286,12 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
+    assert "text" in rendered
     assert "User message" in rendered
-    assert "tool_calls=" in rendered
+    assert "function_call" in rendered
     assert "plug-test" in rendered
+    assert "function_result" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio
@@ -362,5 +346,5 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
     assert (
         rendered.strip()
-        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+        == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )

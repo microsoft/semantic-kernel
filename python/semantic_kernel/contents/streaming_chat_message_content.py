@@ -90,7 +90,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             encoding: Optional[str] - The encoding of the text.
         """
 
-    def __init__(
+    def __init__(  # type: ignore
         self,
         role: AuthorRole,
         choice_index: int,
@@ -127,8 +127,8 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 items = [item]
         if items:
             kwargs["items"] = items
-        if not items:
-            raise ValueError("ChatMessageContent must have either items or content.")
+        if not items and "finish_reason" not in kwargs:
+            raise ValueError("StreamingChatMessageContent must have either items or content.")
         if inner_content:
             kwargs["inner_content"] = inner_content
         if metadata:
@@ -156,8 +156,16 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
-        for id, item in enumerate(self.items):
-            item += other.items[id]
+        if self.items and other.items:
+            for id, item in enumerate(self.items):
+                self.items[id] = item + other.items[id]  # type: ignore
+        if not isinstance(self.inner_content, list):
+            self.inner_content = [self.inner_content]
+            if other.inner_content:
+                self.inner_content.append(other.inner_content)
+        else:
+            if other.inner_content:
+                self.inner_content.append(other.inner_content)
         return StreamingChatMessageContent(
             choice_index=self.choice_index,
             inner_content=self.inner_content,

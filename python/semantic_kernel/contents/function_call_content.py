@@ -1,18 +1,19 @@
-"""Class to hold chat messages."""
-
+# Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
 import json
+import logging
 from typing import TYPE_CHECKING, Any
+from xml.etree.ElementTree import Element
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
 
 if TYPE_CHECKING:
-    from xml.etree.ElementTree import Element
-
     from semantic_kernel.functions.kernel_arguments import KernelArguments
+
+logger = logging.getLogger(__name__)
 
 
 class FunctionCallContent(KernelContent):
@@ -71,7 +72,8 @@ class FunctionCallContent(KernelContent):
     def to_element(self) -> Element:
         """Convert the function call to an Element."""
         element = Element(FUNCTION_CALL_CONTENT_TAG)
-        element.set("id", self.id)
+        if self.id:
+            element.set("id", self.id)
         if self.name:
             element.set("name", self.name)
         if self.arguments:
@@ -86,6 +88,6 @@ class FunctionCallContent(KernelContent):
 
         return cls(name=element.get("name"), id=element.get("id"), arguments=element.text or "")
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | Any]:
         """Convert the instance to a dictionary."""
         return {"id": self.id, "type": "function", "function": {"name": self.name, "arguments": self.arguments}}

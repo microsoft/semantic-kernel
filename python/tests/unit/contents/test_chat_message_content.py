@@ -83,7 +83,7 @@ def test_cmc_content_set_empty():
 
 def test_cmc_to_element():
     message = ChatMessageContent(role="user", content="Hello, world!")
-    element = message.to_element("message")
+    element = message.to_element()
     assert element.tag == "message"
     assert element.attrib == {"role": "user"}
     for child in element:
@@ -93,12 +93,12 @@ def test_cmc_to_element():
 
 def test_cmc_to_prompt():
     message = ChatMessageContent(role="user", content="Hello, world!")
-    prompt = message.to_prompt("message")
+    prompt = message.to_prompt()
     assert prompt == '<message role="user"><text>Hello, world!</text></message>'
 
 
 def test_cmc_from_element():
-    element = ChatMessageContent(role="user", content="Hello, world!").to_element("message")
+    element = ChatMessageContent(role="user", content="Hello, world!").to_element()
     message = ChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"

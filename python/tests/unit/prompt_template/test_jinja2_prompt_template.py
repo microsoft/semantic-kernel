@@ -266,32 +266,6 @@ async def test_helpers_message(kernel: Kernel):
 
 
 @mark.asyncio
-async def test_helpers_openai_message_tool_call(kernel: Kernel):
-    template = """
-    {% for chat in chat_history %}
-    <message role="{{ chat.role }}" tool_calls="{{ chat.tool_calls }}" tool_call_id="{{ chat.tool_call_id }}">
-        {{ chat.content }}
-    </message>
-    {% endfor %}
-    """
-    target = create_jinja2_prompt_template(template)
-    chat_history = ChatHistory()
-    chat_history.add_message(ChatMessageContent(role="user", content="User message"))
-    chat_history.add_message(
-        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
-    )
-    chat_history.add_message(
-        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
-    )
-    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
-    assert "User message" in rendered
-    assert "ToolCall" in rendered
-    assert "plug-test" in rendered
-    assert "Tool message" in rendered
-
-
-@mark.asyncio
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """
     {% for chat in chat_history %}
@@ -299,6 +273,7 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     {% endfor %}"""
     target = create_jinja2_prompt_template(template)
     chat_history = ChatHistory()
+    chat_history.add_user_message("User message")
     chat_history.add_message(
         ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
     )
@@ -307,9 +282,12 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
+    assert "text" in rendered
     assert "User message" in rendered
-    assert "tool_calls=" in rendered
+    assert "function_call" in rendered
     assert "plug-test" in rendered
+    assert "function_result" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio

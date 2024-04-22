@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from xml.etree.ElementTree import Element
 
-from pydantic import field_validator
+from pydantic import model_validator
 
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -41,30 +41,26 @@ class FunctionResultContent(KernelContent):
 
     id: str
     name: str | None = None
-    result: TextContent
+    result: str
     encoding: str | None = None
 
-    @field_validator("result", mode="before")
-    def _validate_result(cls, result: "FunctionResult | TextContent | ChatMessageContent | Any") -> "TextContent":
+    @model_validator(mode="before")
+    def _validate_result(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Validate the supplied result."""
-        from semantic_kernel.contents.chat_message_content import ChatMessageContent
-        from semantic_kernel.functions.function_result import FunctionResult
-
-        if isinstance(result, FunctionResult):
-            result = result.value
-        if isinstance(result, ChatMessageContent):
-            for item in result.items:
-                if isinstance(item, TextContent):
-                    return item
-                    break
-        if isinstance(result, str):
-            return TextContent(text=result, inner_content=result)
-        if isinstance(result, TextContent):
-            return result
-        raise ValueError(f"Result is not a valid type, could not parse to one either, result was {result}")
+        if "result" not in data:
+            # let pydantic validation handle this case
+            return data
+        result = data["result"]
+        try:
+            data["result"] = str(result)
+            if "inner_content" not in data:
+                data["inner_content"] = result
+            return data
+        except Exception as e:
+            raise ValueError(f"Failed to convert result to string: {e}") from e
 
     def __str__(self) -> str:
-        return str(self.result)
+        return self.result
 
     def to_element(self) -> Element:
         """Convert the instance to an Element."""
@@ -72,7 +68,7 @@ class FunctionResultContent(KernelContent):
         element.set("id", self.id)
         if self.name:
             element.set("name", self.name)
-        element.append(self.result.to_element())
+        element.text = self.result
         return element
 
     @classmethod
@@ -80,12 +76,7 @@ class FunctionResultContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != FUNCTION_RESULT_CONTENT_TAG:
             raise ValueError(f"Element tag is not {FUNCTION_RESULT_CONTENT_TAG}")
-        result_element = element[0]
-        if result_element.tag in TAG_CONTENT_MAP:
-            result = TAG_CONTENT_MAP[result_element.tag].from_element(result_element)
-        else:
-            raise ValueError(f"Element child tag is not in {TAG_CONTENT_MAP.keys()}")
-        return cls(id=element["id"], result=result, name=element.get("name", None))  # type: ignore
+        return cls(id=element["id"], result=element.text, name=element.get("name", None))  # type: ignore
 
     @classmethod
     def from_function_call_content_and_result(
@@ -112,9 +103,9 @@ class FunctionResultContent(KernelContent):
             return ChatMessageContent(role="tool", items=[self.result])  # type: ignore
         return ChatMessageContent(role="tool", items=[self])  # type: ignore
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""
         return {
             "tool_call_id": self.id,
-            "content": self.result.to_dict(),
+            "content": self.result,
         }

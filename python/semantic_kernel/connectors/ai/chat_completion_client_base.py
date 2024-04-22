@@ -14,10 +14,6 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "ChatMessageContent"
-
     @abstractmethod
     async def complete_chat(
         self,

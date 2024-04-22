@@ -111,7 +111,7 @@ class ChatMessageContent(KernelContent):
             encoding: Optional[str] - The encoding of the text.
         """
 
-    def __init__(
+    def __init__(  # type: ignore
         self,
         role: AuthorRole,
         items: list[ITEM_TYPES] | None = None,
@@ -145,7 +145,7 @@ class ChatMessageContent(KernelContent):
                 items = [item]
         if items:
             kwargs["items"] = items
-        if not items:
+        if not items and "finish_reason" not in kwargs:
             raise ValueError("ChatMessageContent must have either items or content.")
         if inner_content:
             kwargs["inner_content"] = inner_content
@@ -230,7 +230,7 @@ class ChatMessageContent(KernelContent):
         """
         items: list[KernelContent] = []
         for child in element:
-            items.append(TAG_CONTENT_MAP[child.tag].from_element(child))
+            items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
         kwargs: dict[str, Any] = {}
         if items:
             kwargs["items"] = items
@@ -258,7 +258,7 @@ class ChatMessageContent(KernelContent):
         Returns:
             dict - The dictionary representing the ChatMessageContent.
         """
-        ret = {
+        ret: dict[str, Any] = {
             role_key: self.role.value,
         }
         if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionCallContent) for item in self.items):
@@ -266,8 +266,9 @@ class ChatMessageContent(KernelContent):
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
+            assert isinstance(self.items[0], FunctionResultContent)
             ret["tool_call_id"] = self.items[0].id or ""
-        if self.role == AuthorRole.USER and self.name:
+        if self.role != AuthorRole.TOOL and self.name:
             ret["name"] = self.name
         return ret
 
@@ -277,6 +278,6 @@ class ChatMessageContent(KernelContent):
         Returns:
             str | dict - The parsed items.
         """
-        if len(self.items) == 1:
-            return str(self.items[0])
+        if len(self.items) == 1 and isinstance(self.items[0], TextContent):
+            return self.items[0].text
         return [item.to_dict() for item in self.items]

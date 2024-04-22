@@ -86,14 +86,10 @@ def test_split_name_none():
 def test_fc_dump(function_call: FunctionCallContent):
     # Test dumping the function call to dictionary
     dumped = function_call.model_dump(exclude_none=True)
-    assert dumped == {
-        "id": "test",
-        "name": "Test-Function",
-        "arguments": '{"input": "world"}',
-    }
+    assert dumped == {"id": "test", "name": "Test-Function", "arguments": '{"input": "world"}', "metadata": {}}
 
 
 def test_fc_dump_json(function_call: FunctionCallContent):
     # Test dumping the function call to dictionary
     dumped = function_call.model_dump_json(exclude_none=True)
-    assert dumped == """{"id": "test", "name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}"""
+    assert dumped == """{"metadata":{},"id":"test","name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}"""
