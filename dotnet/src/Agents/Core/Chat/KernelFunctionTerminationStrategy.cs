@@ -29,14 +29,14 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
-    /// </summary>
-    public Kernel Kernel { get; init; } = new Kernel();
-
-    /// <summary>
     /// The <see cref="KernelFunction"/> invoked as termination criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
+
+    /// <summary>
+    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// </summary>
+    public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
     /// A <see cref="FunctionResultProcessor{TResult}"/> responsible for translating the <see cref="FunctionResult"/>

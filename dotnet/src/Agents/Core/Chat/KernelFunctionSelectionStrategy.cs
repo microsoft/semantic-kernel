@@ -29,14 +29,14 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     public KernelArguments? Arguments { get; init; }
 
     /// <summary>
-    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
-    /// </summary>
-    public Kernel Kernel { get; init; } = new Kernel();
-
-    /// <summary>
     /// The <see cref="KernelFunction"/> invoked as selection criteria.
     /// </summary>
     public KernelFunction Function { get; } = function;
+
+    /// <summary>
+    /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
+    /// </summary>
+    public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
     /// A <see cref="FunctionResultProcessor{TResult}"/> responsible for translating the <see cref="FunctionResult"/>
@@ -68,6 +68,6 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
 
         return
             agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??
-            throw new KernelException("Agent Failure - Strategy unable to select next agent.");
+            throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
     }
 }
