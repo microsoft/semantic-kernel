@@ -106,7 +106,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         int resultCount = 0;
         do
         {
-            assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, after: null, before: null, cancellationToken).ConfigureAwait(false);
+            assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, cancellationToken: cancellationToken).ConfigureAwait(false);
             foreach (Assistant assistant in assistants)
             {
                 if (resultCount >= maxResults)
