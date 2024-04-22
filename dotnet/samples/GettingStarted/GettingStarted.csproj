@@ -13,6 +13,14 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\GenerateStory.yaml" />
+    <None Remove="Resources\GenerateStoryHandlebars.yaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\GenerateStory.yaml" />
+    <EmbeddedResource Include="Resources\GenerateStoryHandlebars.yaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
