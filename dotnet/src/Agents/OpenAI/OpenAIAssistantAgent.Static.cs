@@ -51,36 +51,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             {
                 Kernel = kernel,
             };
-
-        // Local function to define assistant creation options
-        static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
-        {
-            AssistantCreationOptions assistantCreationOptions =
-                new(definition.Model)
-                {
-                    Description = definition.Description,
-                    Instructions = definition.Instructions,
-                    Name = definition.Name,
-                    Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
-                };
-
-            foreach (var fileId in definition.FileIds ?? [])
-            {
-                assistantCreationOptions.FileIds.Add(fileId);
-            }
-
-            if (definition.EnableCodeInterpreter)
-            {
-                assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
-            }
-
-            if (definition.EnableRetrieval)
-            {
-                assistantCreationOptions.Tools.Add(new RetrievalToolDefinition());
-            }
-
-            return assistantCreationOptions;
-        }
     }
 
     /// <summary>
@@ -162,6 +132,35 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             {
                 Kernel = kernel,
             };
+    }
+
+    private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
+    {
+        AssistantCreationOptions assistantCreationOptions =
+            new(definition.Model)
+            {
+                Description = definition.Description,
+                Instructions = definition.Instructions,
+                Name = definition.Name,
+                Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+            };
+
+        foreach (var fileId in definition.FileIds ?? [])
+        {
+            assistantCreationOptions.FileIds.Add(fileId);
+        }
+
+        if (definition.EnableCodeInterpreter)
+        {
+            assistantCreationOptions.Tools.Add(new CodeInterpreterToolDefinition());
+        }
+
+        if (definition.EnableRetrieval)
+        {
+            assistantCreationOptions.Tools.Add(new RetrievalToolDefinition());
+        }
+
+        return assistantCreationOptions;
     }
 
     private static AssistantsClient CreateClient(OpenAIAssistantConfiguration config)

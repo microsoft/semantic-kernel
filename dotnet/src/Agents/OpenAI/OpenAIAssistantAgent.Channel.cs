@@ -185,7 +185,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                                     foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
                                     {
-                                        messageContent.Items.Add(CreateAnnotation(annotation));
+                                        messageContent.Items.Add(GetAnnotationContent(annotation));
                                     }
 
                                     yield return messageContent;
@@ -208,7 +208,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             }
             while (RunStatus.Completed != run.Status);
 
-            AnnotationContent CreateAnnotation(MessageTextAnnotation annotation)
+            AnnotationContent GetAnnotationContent(MessageTextAnnotation annotation)
             {
                 string? fileId = null;
                 if (annotation is MessageTextFileCitationAnnotation citationAnnotation)
