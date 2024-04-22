@@ -253,7 +253,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 }
                 while (s_pollingStatuses.Contains(run.Status));
 
-                //return await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
                 return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
