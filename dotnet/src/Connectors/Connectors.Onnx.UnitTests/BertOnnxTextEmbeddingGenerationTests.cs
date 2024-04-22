@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Onnx;
 using Microsoft.SemanticKernel.Embeddings;
-using xRetry;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Onnx.UnitTests;
@@ -84,7 +83,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new BertOnnxOptions() { PoolingMode = (EmbeddingPoolingMode)4 });
     }
 
-    [RetryFact(typeof(HttpRequestException))]
+    [Fact]
     public async Task ValidateEmbeddingsAreIdempotent()
     {
         Func<Task<BertOnnxTextEmbeddingGenerationService>>[] funcs =
@@ -120,7 +119,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         }
     }
 
-    [RetryFact(typeof(HttpRequestException))]
+    [Fact]
     public async Task ValidateExpectedEmbeddingsForBgeMicroV2()
     {
         string modelPath = await GetTestFilePath(BgeMicroV2ModelUrl);
@@ -178,7 +177,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         }
     }
 
-    [RetryFact(typeof(HttpRequestException))]
+    [Fact]
     public async Task ValidateExpectedEmbeddingsForAllMiniLML6V2()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetAllMiniLML6V2Async();
@@ -203,7 +202,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         }
     }
 
-    [RetryFact(typeof(HttpRequestException))]
+    [Fact]
     public async Task ValidateSimilarityScoresOrderedForBgeMicroV2()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
@@ -265,7 +264,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         }
     }
 
-    [RetryFact(typeof(HttpRequestException))]
+    [Fact]
     public async Task ValidateServiceMayBeUsedConcurrently()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
