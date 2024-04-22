@@ -2,9 +2,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Examples;
+using Microsoft.OpenApi.Extensions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
@@ -45,6 +47,7 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         // Example 4. Invoke the kernel with a prompt and allow the AI to automatically invoke functions that use enumerations
         WriteLine(await kernel.InvokePromptAsync("Create a handy lime colored widget for me.", new(settings)));
         WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
+        WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));
     }
 
     /// <summary>
@@ -58,23 +61,27 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     }
 
     /// <summary>
-    /// A plugin that returns the current time.
+    /// A plugin that creates widgets.
     /// </summary>
     public class WidgetFactory
     {
         [KernelFunction]
-        [Description("Creates a new widget of the specified type and color")]
-        public WidgetDetails CreateWidget([Description("The type of widget to be created")] WidgetType widgetType, [Description("The color of the widget to be created")] WidgetColor widgetColor)
+        [Description("Creates a new widget of the specified type and colors")]
+        public WidgetDetails CreateWidget([Description("The type of widget to be created")] WidgetType widgetType, [Description("The colors of the widget to be created")] WidgetColor[] widgetColors)
         {
+            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).ToArray());
             return new()
             {
-                SerialNumber = $"{widgetType}-{widgetColor}-{Guid.NewGuid()}",
+                SerialNumber = $"{widgetType}-{colors}-{Guid.NewGuid()}",
                 Type = widgetType,
-                Color = widgetColor
+                Colors = widgetColors
             };
         }
     }
 
+    /// <summary>
+    /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
+    /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetType
     {
@@ -85,16 +92,19 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         Decorative
     }
 
+    /// <summary>
+    /// A <see cref="JsonConverter"/> is required to correctly convert enum values.
+    /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum WidgetColor
     {
-        [Description("Use when creating a red widget.")]
+        [Description("Use when creating a red item.")]
         Red,
 
-        [Description("Use when creating a green widget.")]
+        [Description("Use when creating a green item.")]
         Green,
 
-        [Description("Use when creating a blue widget.")]
+        [Description("Use when creating a blue item.")]
         Blue
     }
 
@@ -102,6 +112,6 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
     {
         public string SerialNumber { get; init; }
         public WidgetType Type { get; init; }
-        public WidgetColor Color { get; init; }
+        public WidgetColor[] Colors { get; init; }
     }
 }
