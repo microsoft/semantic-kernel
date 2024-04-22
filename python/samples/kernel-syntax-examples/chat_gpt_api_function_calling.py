@@ -75,7 +75,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+    function_call_behavior=FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters={"include_plugin": ["math"]}),
 )
 
 history = ChatHistory()

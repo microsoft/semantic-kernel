@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import logging
 from copy import copy
+from functools import singledispatchmethod
+from types import NoneType
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
@@ -689,9 +691,27 @@ class Kernel(KernelBaseModel):
             function_name = names[1]
         return self.get_function(plugin_name, function_name)
 
-    def get_list_of_function_metadata(
+    @singledispatchmethod
+    def get_list_of_function_metadata(self, *args: Any, **kwargs: Any) -> list["KernelFunctionMetadata"]:
+        """Get a list of all function metadata in the plugin collection."""
+        raise NotImplementedError("This method is not implemented for the provided type.")
+
+    @get_list_of_function_metadata.register(NoneType)
+    def get_list_of_function_metadata_none(self) -> list["KernelFunctionMetadata"]:
+        """
+        Get a list of all function metadata in the plugin collection
+
+        Returns:
+            A list of KernelFunctionMetadata objects in the collection.
+        """
+        if not self.plugins:
+            return []
+        return [func.metadata for plugin in self.plugins.values() for func in plugin]
+
+    @get_list_of_function_metadata.register(bool)
+    def get_list_of_function_metadata_bool(
         self, include_prompt: bool = True, include_native: bool = True
-    ) -> list[KernelFunctionMetadata]:
+    ) -> list["KernelFunctionMetadata"]:
         """
         Get a list of the function metadata in the plugin collection
 
@@ -711,65 +731,49 @@ class Kernel(KernelBaseModel):
             if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
         ]
 
-    def get_json_schema_of_functions(
+    @get_list_of_function_metadata.register(dict)
+    def get_list_of_function_metadata_filters(
         self,
         filters: dict[
-            Literal["exclude_plugin", "include_plugin", "exclude_function", "include_function"], list[str]
-        ] = {},
-    ) -> list[dict[str, Any]]:
-        """Create the object used for a tool call.
+            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+        ],
+    ) -> list["KernelFunctionMetadata"]:
+        """Get a list of Kernel Function Metadata based on filters.
 
-        args:
-            filters: a dictionary with keys
-                exclude_plugin, include_plugin, exclude_function, include_function
-                and lists of the required filter.
-                The function name should be in the format "plugin_name-function_name".
-                Using exclude_plugin and include_plugin at the same time will raise an error.
-                Using exclude_function and include_function at the same time will raise an error.
-                If using include_* implies that all other function will be excluded.
-                Example:
-                    filter = {
-                        "exclude_plugin": ["plugin1", "plugin2"],
-                        "include_function": ["plugin3-function1", "plugin4-function2"],
-                        }
-                    will return only plugin3-function1 and plugin4-function2.
-                    filter = {
-                        "exclude_function": ["plugin1-function1", "plugin2-function2"],
-                        }
-                    will return all functions except plugin1-function1 and plugin2-function2.
-            is_tool_call: if True, the function will return a list of tool calls, otherwise a list of functions.
-        returns:
-            a filtered list of jsons of the functions in the kernel that can be passed to the function calling api.
+        Args:
+            filters (dict[str, list[str]]): The filters to apply to the function list.
+                The keys are:
+                    - included_plugins: A list of plugin names to include.
+                    - excluded_plugins: A list of plugin names to exclude.
+                    - included_functions: A list of function names to include.
+                    - excluded_functions: A list of function names to exclude.
+                The included and excluded parameters are mutually exclusive.
+                The function names are checked against the fully qualified name of a function.
+
+        Returns:
+            list[KernelFunctionMetadata]: The list of Kernel Function Metadata that match the filters.
         """
-        if not filters:
-            return [function.get_json_schema() for plugin in self.plugins.values() for function in plugin]
-        include_plugin = filters.get("include_plugin", None)
-        exclude_plugin = filters.get("exclude_plugin", [])
-        include_function = filters.get("include_function", None)
-        exclude_function = filters.get("exclude_function", [])
-        if include_plugin and exclude_plugin:
-            raise ValueError("Cannot use both include_plugin and exclude_plugin at the same time.")
-        if include_function and exclude_function:
-            raise ValueError("Cannot use both include_function and exclude_function at the same time.")
-        if include_plugin:
-            include_plugin = [plugin for plugin in include_plugin]
-        if exclude_plugin:
-            exclude_plugin = [plugin for plugin in exclude_plugin]
-        if include_function:
-            include_function = [function for function in include_function]
-        if exclude_function:
-            exclude_function = [function for function in exclude_function]
+        if not self.plugins:
+            return []
+        included_plugins = filters.get("included_plugins", None)
+        excluded_plugins = filters.get("excluded_plugins", [])
+        included_functions = filters.get("included_functions", None)
+        excluded_functions = filters.get("excluded_functions", [])
+        if included_plugins and excluded_plugins:
+            raise ValueError("Cannot use both included_plugins and excluded_plugins at the same time.")
+        if included_functions and excluded_functions:
+            raise ValueError("Cannot use both included_functions and excluded_functions at the same time.")
 
-        result: list[dict[str, Any]] = []
+        result: list["KernelFunctionMetadata"] = []
         for plugin_name, plugin in self.plugins.items():
-            if plugin_name in exclude_plugin or (include_plugin and plugin_name not in include_plugin):
+            if plugin_name in excluded_plugins or (included_plugins and plugin_name not in included_plugins):
                 continue
             for function in plugin:
-                if function.fully_qualified_name in exclude_function or (
-                    include_function and function.fully_qualified_name not in include_function
+                if function.fully_qualified_name in excluded_functions or (
+                    included_functions and function.fully_qualified_name not in included_functions
                 ):
                     continue
-                result.append(function.get_json_schema())
+                result.append(function.metadata)
         return result
 
     # endregion

@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+from copy import copy
 from textwrap import dedent
 from typing import Optional
 
@@ -211,21 +212,21 @@ class ActionPlanner:
 
     @kernel_function(description="List all functions available in the kernel", name="ListOfFunctions")
     def list_of_functions(self, goal: Annotated[str, "The current goal processed by the planner"]) -> str:
-        available_functions = [
+        excluded_plugins = copy(self.config.excluded_plugins)
+        excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)
+
+        available_functions = "\n".join(
             self._create_function_string(func)
-            for func in self._kernel.get_list_of_function_metadata()
-            if (
-                func.plugin_name != self.RESTRICTED_PLUGIN_NAME
-                and func.plugin_name not in self.config.excluded_plugins
-                and func.name not in self.config.excluded_functions
+            for func in self._kernel.get_list_of_function_metadata(
+                {
+                    "excluded_plugins": excluded_plugins,
+                }
             )
-        ]
+            if (func.name not in self.config.excluded_functions)
+        )
 
-        available_functions_str = "\n".join(available_functions)
-
-        logger.info(f"List of available functions:\n{available_functions_str}")
-
-        return available_functions_str
+        logger.info(f"List of available functions:\n{available_functions}")
+        return available_functions
 
     def _create_function_string(self, function: KernelFunctionMetadata) -> str:
         """

@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.open_ai.services.utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -330,13 +331,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
 
         if settings.function_call_behavior and kernel:
-            tool_choice, tools = settings.function_call_behavior.configure(kernel=kernel)
-            if tool_choice and tools:
-                settings.tool_choice = tool_choice
-                settings.tools = tools
-        if not settings.function_call_behavior:
-            settings.function_call_behavior = FunctionCallBehavior(
-                enable_kernel_functions=False, max_auto_invoke_attempts=0
+            settings.function_call_behavior.configure(
+                kernel=kernel,
+                update_settings_callback=update_settings_from_function_call_configuration,
+                settings=settings,
             )
         return settings
 
@@ -345,7 +343,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     async def _process_tool_calls(
         self,
-        result: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent],
+        result: OpenAIChatMessageContent,
         kernel: "Kernel",
         chat_history: ChatHistory,
         arguments: "KernelArguments",

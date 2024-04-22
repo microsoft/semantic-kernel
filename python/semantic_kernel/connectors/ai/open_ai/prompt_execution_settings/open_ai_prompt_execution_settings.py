@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, List, Literal, Optional, Union
 

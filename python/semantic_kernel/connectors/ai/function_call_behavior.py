@@ -1,24 +1,53 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Callable, Literal
 
+from pydantic.dataclasses import dataclass
+
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.kernel import Kernel
 
 DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS = 5
 
 
+@dataclass
+class FunctionCallConfiguration:
+    """Class that holds the configured functions for function calling."""
+
+    available_functions: list["KernelFunctionMetadata"] | None = None
+    required_functions: list["KernelFunctionMetadata"] | None = None
+
+
 class FunctionCallBehavior(KernelBaseModel):
-    """
-    This, at its start, is a very slim class. The reason that this class is necessary
-    is because during auto invoking function calls for OpenAI streaming chat completions,
-    we need a way to toggle a boolean to kick us out of the async generator/loop that is started
-    related to the max auto invoke attempts. Booleans are immutable therefore if its state is
-    changed inside a method, we're creating a new boolean, which is not what we want. By wrapping
-    this flag inside of a class, when we do change its state, it is reflected outside of the method.
+    """Class that controls function calling behavior.
+
+    Args:
+        enable_kernel_functions (bool): Enable kernel functions.
+        max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
+
+    Attributes:
+        enable_kernel_functions (bool): Enable kernel functions.
+        max_auto_invoke_attempts (int): The maximum number of auto invoke attempts.
+
+    Properties:
+        auto_invoke_kernel_functions: Check if the kernel functions should be auto-invoked.
+            Determined as max_auto_invoke_attempts > 0.
+
+    Methods:
+        configure: Configures the settings for the function call behavior,
+            the default version in this class, does nothing, use subclasses for different behaviors.
+
+    Class methods:
+        AutoInvokeKernelFunctions: Returns KernelFunctions class with auto_invoke enabled, all functions.
+        EnableKernelFunctions: Returns KernelFunctions class with auto_invoke disabled, all functions.
+        EnableFunctions: Set the enable kernel functions flag, filtered functions, auto_invoke optional.
+        RequiredFunction: Set the required function flag, auto_invoke optional.
+
     """
 
     enable_kernel_functions: bool = True
@@ -38,8 +67,13 @@ class FunctionCallBehavior(KernelBaseModel):
             if self.max_auto_invoke_attempts == 0:
                 self.max_auto_invoke_attempts = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
 
-    def configure(self, kernel: "Kernel") -> tuple[str | None, list[dict[str, Any]] | None]:
-        """Set the options for the tool call behavior in the settings.
+    def configure(
+        self,
+        kernel: "Kernel",
+        update_settings_callback: Callable[..., None],
+        settings: "PromptExecutionSettings",
+    ) -> None:
+        """Configures the settings for the function call behavior.
 
         Using the base ToolCallBehavior means that you manually have to set tool_choice and tools.
 
@@ -48,21 +82,26 @@ class FunctionCallBehavior(KernelBaseModel):
             EnabledFunctions (filtered set of functions from the Kernel)
             RequiredFunction (a single function)
 
-        Returns:
-            tuple[str | None, dict[str, Any] | None]: The tool choice and tools.
+        By default the update_settings_callback is called with FunctionCallConfiguration,
+        which contains a list of available functions or a list of required functions, it also
+        takes the PromptExecutionSettings object.
+
+        It should update the prompt execution settings with the available functions or required functions.
+
+        Alternatively you can override this class and add your own logic in the configure method.
         """
-        return None, None
+        return
 
     @classmethod
-    def AutoInvokeKernelFunctions(cls) -> "FunctionCallBehavior":
+    def AutoInvokeKernelFunctions(cls) -> "KernelFunctions":
         """Returns KernelFunctions class with auto_invoke enabled."""
         return KernelFunctions(max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS)
 
     @classmethod
-    def EnableKernelFunctions(cls) -> "FunctionCallBehavior":
+    def EnableKernelFunctions(cls) -> "KernelFunctions":
         """Returns KernelFunctions class with auto_invoke disabled.
 
-        Tool calls are enabled in this case, just not invoked.
+        Function calls are enabled in this case, just not invoked.
         """
         return KernelFunctions(max_auto_invoke_attempts=0)
 
@@ -71,8 +110,10 @@ class FunctionCallBehavior(KernelBaseModel):
         cls,
         auto_invoke: bool = False,
         *,
-        filters: dict[Literal["exclude_plugin", "include_plugin", "exclude_function", "include_function"], list[str]],
-    ) -> "FunctionCallBehavior":
+        filters: dict[
+            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+        ],
+    ) -> "EnabledFunctions":
         """Set the enable kernel functions flag."""
         return EnabledFunctions(
             filters=filters, max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0
@@ -84,7 +125,7 @@ class FunctionCallBehavior(KernelBaseModel):
         auto_invoke: bool = False,
         *,
         function_fully_qualified_name: str,
-    ) -> "FunctionCallBehavior":
+    ) -> "RequiredFunction":
         """Set the required function flag."""
         return RequiredFunction(
             function_fully_qualified_name=function_fully_qualified_name,
@@ -93,40 +134,67 @@ class FunctionCallBehavior(KernelBaseModel):
 
 
 class KernelFunctions(FunctionCallBehavior):
-    """Tool call behavior for making all kernel functions available for tool calls."""
+    """Function call behavior for making all kernel functions available for tool calls."""
 
-    def configure(self, kernel: "Kernel") -> tuple[str | None, list[dict[str, Any]] | None]:
+    def configure(
+        self,
+        kernel: "Kernel",
+        update_settings_callback: Callable[..., None],
+        settings: "PromptExecutionSettings",
+    ) -> None:
         """Set the options for the tool call behavior in the settings."""
         if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
             return
-        return "auto", kernel.get_json_schema_of_functions()
+        update_settings_callback(
+            FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata()), settings
+        )
 
 
 class EnabledFunctions(FunctionCallBehavior):
-    """Tool call behavior for making a filtered set of functions available for tool calls."""
+    """Function call behavior for making a filtered set of functions available for tool calls."""
 
-    filters: dict[Literal["exclude_plugin", "include_plugin", "exclude_function", "include_function"], list[str]]
+    filters: dict[
+        Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+    ]
 
-    def configure(self, kernel: "Kernel") -> tuple[str | None, list[dict[str, Any]] | None]:
+    def configure(
+        self,
+        kernel: "Kernel",
+        update_settings_callback: Callable[..., None],
+        settings: "PromptExecutionSettings",
+    ) -> None:
         """Set the options for the tool call behavior in the settings."""
         if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
             return
-        return "auto", kernel.get_json_schema_of_functions(filters=self.filters)
+        update_settings_callback(
+            FunctionCallConfiguration(available_functions=kernel.get_list_of_function_metadata(self.filters)),
+            settings,
+        )
 
 
 class RequiredFunction(FunctionCallBehavior):
-    """Tool call behavior for making a single function available for tool calls."""
+    """Function call behavior for making a single function available for tool calls."""
 
     function_fully_qualified_name: str
 
-    def configure(self, kernel: "Kernel") -> tuple[str | None, list[dict[str, Any]] | None]:
+    def configure(
+        self,
+        kernel: "Kernel",
+        update_settings_callback: Callable[..., None],
+        settings: "PromptExecutionSettings",
+    ) -> None:
         """Set the options for the tool call behavior in the settings."""
         if not self.enable_kernel_functions and not self.auto_invoke_kernel_functions:
-            return None, None
+            return
         # since using this always calls this single function, we do not want to allow repeated calls
+        # TODO: reevaluate when other models support function calling then OpenAI.
         if self.max_auto_invoke_attempts > 1:
             self.max_auto_invoke_attempts = 1
-
-        return self.function_fully_qualified_name, kernel.get_json_schema_of_functions(
-            filters={"include_function": [self.function_fully_qualified_name]}
+        update_settings_callback(
+            FunctionCallConfiguration(
+                required_functions=kernel.get_list_of_function_metadata(
+                    filters={"include_functions": [self.function_fully_qualified_name]}
+                )
+            ),
+            settings,
         )

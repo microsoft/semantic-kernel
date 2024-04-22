@@ -16,6 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function_metadata_to_openai_tool_format
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -142,7 +143,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
         )
         prompt_execution_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-            auto_invoke=False, filters={"exclude_plugin": list(self.options.excluded_plugins)}
+            auto_invoke=False, filters={"excluded_plugins": list(self.options.excluded_plugins)}
         )
         for i in range(self.options.max_iterations):
             # sleep for a bit to avoid rate limiting
@@ -237,9 +238,13 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     ) -> str:
         """Generate the plan for the given question using the kernel"""
         generate_plan_function = self._create_config_from_yaml(kernel)
-        functions_manual = kernel.get_json_schema_of_functions(
-            filters={"exclude_function": [f"{self.service_id}", "sequential_planner-create_plan"]}
-        )
+        # TODO: revisit when function call behavior is finalized, and other function calling models are added
+        functions_manual = [
+            kernel_function_metadata_to_openai_tool_format(f)
+            for f in kernel.get_list_of_function_metadata(
+                {"excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]}
+            )
+        ]
         generated_plan_args = KernelArguments(
             name_delimiter="-",
             available_functions=functions_manual,

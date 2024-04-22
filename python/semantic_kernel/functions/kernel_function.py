@@ -11,7 +11,6 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.functions.utils import parse_parameter_type
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
@@ -251,25 +250,3 @@ class KernelFunction(KernelBaseModel):
         if plugin_name:
             cop.metadata.plugin_name = plugin_name
         return cop
-
-    def get_json_schema(self) -> dict[str, Any]:
-        """Create the object used for the tool call."""
-        return {
-            "type": "function",
-            "function": {
-                "name": self.metadata.fully_qualified_name,
-                "description": self.metadata.description or "",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        param.name: {
-                            "description": param.description or "",
-                            "type": parse_parameter_type(param.type_),
-                            **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
-                        }
-                        for param in self.metadata.parameters
-                    },
-                    "required": [p.name for p in self.metadata.parameters if p.is_required],
-                },
-            },
-        }
