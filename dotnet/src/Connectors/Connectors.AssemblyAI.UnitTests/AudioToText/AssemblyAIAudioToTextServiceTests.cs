@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -111,38 +110,6 @@ public sealed class AssemblyAIAudioToTextServiceTests : IDisposable
         ).ConfigureAwait(true);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.Equal(ExpectedTranscriptText, result[0].Text);
-    }
-
-    [Fact]
-    public async Task GetTextContentByStreamWorksCorrectlyAsync()
-    {
-        // Arrange
-        var service = new AssemblyAIAudioToTextService("api-key", httpClient: this._httpClient);
-        using var uploadFileResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        uploadFileResponse.Content = new StringContent(UploadFileResponseContent);
-        using var transcribeResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        transcribeResponse.Content = new StringContent(CreateTranscriptResponseContent);
-        using var transcribedResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        transcribedResponse.Content = new StringContent(TranscriptCompletedResponseContent);
-        this._messageHandlerStub.ResponsesToReturn =
-        [
-            uploadFileResponse,
-            transcribeResponse,
-            transcribedResponse
-        ];
-
-        using var ms = new MemoryStream();
-
-        // Act
-        var result = await service.GetTextContentsAsync(
-            new AudioStreamContent(ms)
-        ).ConfigureAwait(true);
-
-        // Assert
-        Assert.NotNull(result);
         Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal(ExpectedTranscriptText, result[0].Text);

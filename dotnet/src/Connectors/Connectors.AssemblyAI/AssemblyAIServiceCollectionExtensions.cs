@@ -4,6 +4,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
+using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
@@ -41,7 +42,7 @@ public static class AssemblyAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds the AssemblyAI audio-to-text service to the list.
+    /// Adds the AssemblyAI file service to the list.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
@@ -57,7 +58,7 @@ public static class AssemblyAIServiceCollectionExtensions
     {
         Verify.NotNull(services);
         services.AddKeyedSingleton(serviceId, (serviceProvider, _) =>
-            new AssemblyAIAudioToTextService(
+            new AssemblyAIFileService(
                 apiKey,
                 endpoint,
                 HttpClientProvider.GetHttpClient(serviceProvider)

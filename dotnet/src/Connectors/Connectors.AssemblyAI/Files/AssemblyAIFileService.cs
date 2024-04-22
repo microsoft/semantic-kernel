@@ -46,13 +46,10 @@ public sealed class AssemblyAIFileService
     /// <param name="stream">The file stream</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The file metadata.</returns>
-    public async Task<AssemblyAIFile> UploadAsync(Stream stream, CancellationToken cancellationToken = default)
+    public async Task<AudioContent> UploadAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(stream);
         var file = await this._client.UploadFileAsync(stream, cancellationToken).ConfigureAwait(false);
-        return new AssemblyAIFile
-        {
-            Url = new Uri(file, UriKind.Absolute)
-        };
+        return new AudioContent(new Uri(file, UriKind.Absolute));
     }
 }
