@@ -60,6 +60,8 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     def _prepare_chat_history_for_request(
         self,
         chat_history: "ChatHistory",
+        role_key: str = "role",
+        content_key: str = "content",
     ) -> list[dict[str, str | None]]:
         """
         Prepare the chat history for a request, allowing customization of the key names for role/author,
@@ -75,4 +77,4 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         Returns:
             List[Dict[str, Optional[str]]] -- The prepared chat history.
         """
-        return [message.to_dict() for message in chat_history.messages]
+        return [message.to_dict(role_key=role_key, content_key=content_key) for message in chat_history.messages]
