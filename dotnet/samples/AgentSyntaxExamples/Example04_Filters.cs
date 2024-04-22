@@ -74,7 +74,7 @@ public class Example04_Filters(ITestOutputHelper output) : BaseTest(output)
                     },
                 Filters =
                 {
-                    new ExampleChatFilter(output)
+                    new ExampleChatFilter(base.Output)
                 }
             };
 
