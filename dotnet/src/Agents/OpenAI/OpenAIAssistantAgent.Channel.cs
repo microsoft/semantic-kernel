@@ -32,14 +32,14 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
 
-        private static readonly HashSet<RunStatus> s_pollingStates =
+        private static readonly HashSet<RunStatus> s_pollingStatuses =
             [
                 RunStatus.Queued,
                 RunStatus.InProgress,
                 RunStatus.Cancelling,
             ];
 
-        private static readonly HashSet<RunStatus> s_terminalStates =
+        private static readonly HashSet<RunStatus> s_terminalStatuses =
             [
                 RunStatus.Expired,
                 RunStatus.Failed,
@@ -111,7 +111,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 var steps = await PollRunStatusAsync().ConfigureAwait(false);
 
                 // Is in terminal state?
-                if (s_terminalStates.Contains(run.Status))
+                if (s_terminalStatuses.Contains(run.Status))
                 {
                     throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
                 }
@@ -242,7 +242,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                         // Retry anyway..
                     }
                 }
-                while (s_pollingStates.Contains(run.Status));
+                while (s_pollingStatuses.Contains(run.Status));
 
                 //return await this._restContext.GetRunStepsAsync(this.ThreadId, this.Id, cancellationToken).ConfigureAwait(false);
                 return await this._client.GetRunStepsAsync(run, cancellationToken: cancellationToken).ConfigureAwait(false);

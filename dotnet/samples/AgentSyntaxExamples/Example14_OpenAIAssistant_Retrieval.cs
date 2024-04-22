@@ -32,6 +32,8 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
                 new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
+        WriteLine(this.ApiKey);
+
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
