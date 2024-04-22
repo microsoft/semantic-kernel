@@ -75,9 +75,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             return;
         }
 
-        await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false);
-
-        this.IsDeleted = true;
+        this.IsDeleted = (await this._client.DeleteAssistantAsync(this.Id, cancellationToken).ConfigureAwait(false)).Value;
     }
 
     /// <summary>
