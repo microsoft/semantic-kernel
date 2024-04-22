@@ -14,6 +14,11 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 public sealed class RestApiOperation
 {
     /// <summary>
+    /// A static empty dictionary to default to when none is provided.
+    /// </summary>
+    private static readonly Dictionary<string, object?> s_emptyDictionary = new();
+
+    /// <summary>
     /// Gets the name of an artificial parameter to be used for operation having "text/plain" payload media type.
     /// </summary>
     public static string PayloadArgumentName => "payload";
@@ -62,6 +67,11 @@ public sealed class RestApiOperation
     /// The operation payload.
     /// </summary>
     public RestApiOperationPayload? Payload { get; }
+
+    /// <summary>
+    /// Additional unstructured metadata about the operation.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Extensions { get; init; } = s_emptyDictionary;
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.

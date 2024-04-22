@@ -322,6 +322,33 @@
         },
         "summary": "Get secret"
       }
+    },
+    "/api-with-open-api-extensions": {
+      "get": {
+        "summary": "Get API with open-api specification extensions",
+        "description": "For more information on specification extensions see the specification extensions section of the open api spec: https://swagger.io/specification/v3/",
+        "operationId": "OpenApiExtensions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "default"
+          }
+        },
+        "x-boolean-extension": true,
+        "x-double-extension": 1.2345,
+        "x-integer-extension": 12345,
+        "x-string-extension": "value1",
+        "x-date-extension": "2024-04-16T00:00:00.0000000+01:00",
+        "x-datetime-extension": "2024-04-16T18:37:12.1214643+00:00",
+        "x-array-extension": [
+          "value1",
+          "value2"
+        ],
+        "x-object-extension": {
+          "key1": "value1",
+          "key2": "value2"
+        }
+      }
     }
   },
   "produces": [],
