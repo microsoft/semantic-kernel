@@ -203,7 +203,7 @@ public class ChatMessageContentTests
                 FileId = "file-id-2",
                 StartIndex = 2,
                 EndIndex = 24,
-                Quote = "the referenced content"
+                Quote = "quote-8"
             },
         };
 
@@ -314,9 +314,8 @@ public class ChatMessageContentTests
         var annotationContent = deserializedMessage.Items[9] as AnnotationContent;
         Assert.NotNull(annotationContent);
         Assert.Equal("file-id-2", annotationContent.FileId);
-        Assert.Equal("content-8", annotationContent.Quote);
+        Assert.Equal("quote-8", annotationContent.Quote);
         Assert.Equal("model-8", annotationContent.ModelId);
-        Assert.Equal("mime-type-8", annotationContent.MimeType);
         Assert.Equal(2, annotationContent.StartIndex);
         Assert.Equal(24, annotationContent.EndIndex);
         Assert.NotNull(annotationContent.Metadata);

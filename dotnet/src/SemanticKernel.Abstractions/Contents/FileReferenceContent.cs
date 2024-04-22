@@ -14,7 +14,7 @@ public class FileReferenceContent : KernelContent
     /// <summary>
     /// The file identifier.
     /// </summary>
-    public string FileId { get; } = string.Empty;
+    public string FileId { get; init; } = string.Empty;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.

@@ -158,7 +158,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
                         if (retry)
                         {
-                            await Task.Delay(s_messageSynchronizationDelay).ConfigureAwait(false);
+                            await Task.Delay(s_messageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
                         }
 
                         ++count;
