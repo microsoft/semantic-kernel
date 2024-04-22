@@ -72,7 +72,7 @@ public class AzureCosmosDBMongoDBConfig
     /// </summary>
     public AzureCosmosDBMongoDBConfig()
     {
-        this.ApplicationName = "DotNet_Semantic_Kernel";
+        this.ApplicationName = HttpHeaderConstant.Values.UserAgent;
         this.IndexName = "default_index";
         this.Kind = AzureCosmosDBVectorSearchType.VectorHNSW;
         this.NumLists = 1;

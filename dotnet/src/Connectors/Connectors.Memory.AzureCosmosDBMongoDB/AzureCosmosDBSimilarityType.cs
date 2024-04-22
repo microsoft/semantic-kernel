@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -13,18 +13,18 @@ public enum AzureCosmosDBSimilarityType
     /// <summary>
     /// Cosine similarity
     /// </summary>
-    [JsonProperty("COS")]
+    [JsonPropertyName("COS")]
     Cosine,
 
     /// <summary>
     /// Inner Product similarity
     /// </summary>
-    [JsonProperty("IP")]
+    [JsonPropertyName("IP")]
     InnerProduct,
 
     /// <summary>
     /// Eucledian similarity
     /// </summary>
-    [JsonProperty("L2")]
+    [JsonPropertyName("L2")]
     Eucledian
 }

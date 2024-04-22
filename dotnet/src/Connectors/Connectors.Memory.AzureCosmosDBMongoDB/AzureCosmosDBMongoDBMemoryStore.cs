@@ -76,11 +76,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             .Indexes.ListAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        if (
-            !indexes
-                .ToList(cancellationToken: cancellationToken)
-                .Any(index => index["name"] == this._config.IndexName)
-        )
+        if (!indexes.ToList(cancellationToken: cancellationToken).Any(index => index["name"] == this._config.IndexName))
         {
             var command = new BsonDocument();
             switch (this._config.Kind)
