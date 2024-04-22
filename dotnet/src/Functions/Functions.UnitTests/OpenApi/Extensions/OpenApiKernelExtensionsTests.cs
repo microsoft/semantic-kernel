@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
-public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
+public sealed class OpenApiKernelExtensionsTests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -38,9 +39,9 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
     private readonly Kernel _kernel;
 
     /// <summary>
-    /// Creates an instance of a <see cref="KernelOpenApiPluginExtensionsTests"/> class.
+    /// Creates an instance of a <see cref="OpenApiKernelExtensionsTests"/> class.
     /// </summary>
-    public KernelOpenApiPluginExtensionsTests()
+    public OpenApiKernelExtensionsTests()
     {
         this._kernel = new Kernel();
 
@@ -258,6 +259,44 @@ public sealed class KernelOpenApiPluginExtensionsTests : IDisposable
         Assert.Equal(4, functionsMetadata.Count);
         AssertPayloadParameters(plugin, "updateRepair");
         AssertPayloadParameters(plugin, "deleteRepair");
+    }
+
+    [Theory]
+    [InlineData("documentV2_0.json")]
+    [InlineData("documentV3_0.json")]
+    [InlineData("documentV3_1.yaml")]
+    public async Task ItShouldReplicateMetadataToOperationAsync(string documentFileName)
+    {
+        // Arrange
+        var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
+
+        // Act
+        var plugin = await this._kernel.ImportPluginFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
+
+        // Assert Metadata Keys and Values
+        Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
+        var additionalProperties = function.Metadata.AdditionalProperties;
+        Assert.Equal(2, additionalProperties.Count);
+
+        Assert.Contains("method", additionalProperties.Keys);
+        Assert.Contains("operation-extensions", additionalProperties.Keys);
+
+        Assert.Equal("GET", additionalProperties["method"]);
+
+        // Assert Operation Extension keys
+        var operationExtensions = additionalProperties["operation-extensions"] as Dictionary<string, object?>;
+        Assert.NotNull(operationExtensions);
+        Dictionary<string, object?> nonNullOperationExtensions = operationExtensions;
+
+        Assert.Equal(8, nonNullOperationExtensions.Count);
+        Assert.Contains("x-boolean-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-double-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-integer-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-string-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-date-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-datetime-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-array-extension", nonNullOperationExtensions.Keys);
+        Assert.Contains("x-object-extension", nonNullOperationExtensions.Keys);
     }
 
     public void Dispose()
