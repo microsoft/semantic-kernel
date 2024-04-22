@@ -204,6 +204,24 @@ paths:
       responses:
         '200':
           description: The OK response
+  /api-with-open-api-extensions:
+    get:
+      operationId: OpenApiExtensions
+      responses:
+        '200':
+          description: default
+      x-boolean-extension: true
+      x-double-extension: 1.2345
+      x-integer-extension: 12345
+      x-string-extension: value1
+      x-date-extension: '2024-04-16T00:00:00.0000000+01:00'
+      x-datetime-extension: '2024-04-16T18:37:12.1214643+00:00'
+      x-array-extension:
+        - value1
+        - value2
+      x-object-extension:
+        key1: value1
+        key2: value2
 components:
   securitySchemes:
     oauth2_auth:
