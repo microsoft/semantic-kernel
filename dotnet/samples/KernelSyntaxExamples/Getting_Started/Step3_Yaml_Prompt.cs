@@ -13,7 +13,7 @@ namespace GettingStarted;
 /// <summary>
 /// This example shows how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
 /// </summary>
-public sealed class Step3_Yaml_Prompt : BaseTest
+public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a prompt <see cref="KernelFunction"/> from a YAML resource.
@@ -49,9 +49,5 @@ public sealed class Step3_Yaml_Prompt : BaseTest
                 { "topic", "Cat" },
                 { "length", "3" },
             }));
-    }
-
-    public Step3_Yaml_Prompt(ITestOutputHelper output) : base(output)
-    {
     }
 }

@@ -89,11 +89,11 @@ public static class FlowSerializer
     {
         public string Goal { get; set; } = string.Empty;
 
-        public List<string> Requires { get; set; } = new();
+        public List<string> Requires { get; set; } = [];
 
-        public List<string> Provides { get; set; } = new();
+        public List<string> Provides { get; set; } = [];
 
-        public List<string> Passthrough { get; set; } = new();
+        public List<string> Passthrough { get; set; } = [];
 
         public CompletionType CompletionType { get; set; } = CompletionType.Once;
 
@@ -101,7 +101,7 @@ public static class FlowSerializer
 
         public string? TransitionMessage { get; set; }
 
-        public List<string> Plugins { get; set; } = new();
+        public List<string> Plugins { get; set; } = [];
 
         public string? FlowName { get; set; }
     }
@@ -110,6 +110,6 @@ public static class FlowSerializer
     {
         public string Name { get; set; } = string.Empty;
 
-        public List<FlowStepModel> Steps { get; set; } = new();
+        public List<FlowStepModel> Steps { get; set; } = [];
     }
 }

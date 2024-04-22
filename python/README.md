@@ -4,6 +4,14 @@ Install the latest package:
 
     python -m pip install --upgrade semantic-kernel
 
+If you want to use some of the optional dependencies (OpenAI is installed by default), you can install them with:
+
+    python -m pip install --upgrade semantic-kernel[hugging_face]
+
+or all of them:
+
+    python -m pip install --upgrade semantic-kernel[all]
+
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
@@ -26,13 +34,15 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import asyncio
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = sk.Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
@@ -44,18 +54,18 @@ kernel.add_service(
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
-#       service_id="dv",
+#       service_id=service_id,
 #       deployment_name=deployment,
-#       base_url=endpoint,
+#       endpoint=endpoint,
 #       api_key=api_key
 #   )
 # )
 
 # Define the request settings
-req_settings = kernel.get_service(service_id).get_prompt_execution_settings_class()(service_id=service_id)
+req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id)
 req_settings.max_tokens = 2000
 req_settings.temperature = 0.7
 req_settings.top_p = 0.8
@@ -72,14 +82,16 @@ does not conflict with the First or Second Law.
 
 Give me the TLDR in exactly 5 words."""
 
-prompt_template_config = sk.PromptTemplateConfig(
+prompt_template_config = PromptTemplateConfig(
     template=prompt,
     name="tldr",
     template_format="semantic-kernel",
     execution_settings=req_settings,
 )
 
-function = kernel.create_function_from_prompt(
+function = kernel.add_function(
+    function_name="tldr_function",
+    plugin_name="tldr_plugin",
     prompt_template_config=prompt_template_config,
 )
 
@@ -91,15 +103,19 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+# If running from a jupyter-notebook:
+# await main()
 ```
 
 # **Semantic Prompt Functions** are Prompts with input parameters
 
 ```python
 # Create a reusable function summarize function
-summarize = kernel.create_function_from_prompt(
-    template="{{$input}}\n\nOne line TLDR with the fewest words."
-    execution_settings=req_settings,
+summarize = kernel.add_function(
+        function_name="tldr_function",
+        plugin_name="tldr_plugin",
+        prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
+        prompt_template_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics

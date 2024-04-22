@@ -42,7 +42,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings(self, texts: List[str]) -> ndarray:
+    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
@@ -54,7 +54,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         """
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts")
-            embeddings = self.generator.encode(texts)
+            embeddings = self.generator.encode(texts, **kwargs)
             return array(embeddings)
         except Exception as e:
             raise ServiceResponseException("Hugging Face embeddings failed", e) from e

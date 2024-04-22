@@ -3,9 +3,10 @@
 import logging
 import os
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.utils.logging import setup_logging
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
@@ -14,9 +15,9 @@ async def main():
     # Set the logging level for  semantic_kernel.kernel to DEBUG.
     logging.getLogger("kernel").setLevel(logging.DEBUG)
 
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
 
     service_id = "chat-gpt"
     kernel.add_service(
@@ -24,7 +25,7 @@ async def main():
     )
 
     plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
-    plugin = kernel.import_plugin_from_prompt_directory(service_id, plugins_directory, "FunPlugin")
+    plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")
 
     joke_function = plugin["Joke"]
 

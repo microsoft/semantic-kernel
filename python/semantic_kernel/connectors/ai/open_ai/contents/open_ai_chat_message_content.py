@@ -6,7 +6,7 @@ from pydantic import field_validator
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents import ChatMessageContent
-from semantic_kernel.contents.const import OPENAI_CHAT_MESSAGE_CONTENT
+from semantic_kernel.contents.types import OPENAI_CHAT_MESSAGE_CONTENT
 
 
 class OpenAIChatMessageContent(ChatMessageContent):
@@ -41,7 +41,10 @@ class OpenAIChatMessageContent(ChatMessageContent):
         if isinstance(tool_calls, list):
             for index, call in enumerate(tool_calls):
                 if not isinstance(call, ToolCall):
-                    tool_calls[index] = ToolCall.model_validate_json(call)
+                    if isinstance(call, dict):
+                        tool_calls[index] = ToolCall.model_validate(call)
+                    else:
+                        tool_calls[index] = ToolCall.model_validate_json(call)
             return tool_calls
         if isinstance(tool_calls, str):
             return [ToolCall.model_validate_json(call) for call in tool_calls.split("|")]
@@ -53,6 +56,8 @@ class OpenAIChatMessageContent(ChatMessageContent):
             return None
         if isinstance(function_call, FunctionCall):
             return function_call
+        if isinstance(function_call, dict):
+            return FunctionCall.model_validate(function_call)
         return FunctionCall.model_validate_json(function_call)
 
     @staticmethod

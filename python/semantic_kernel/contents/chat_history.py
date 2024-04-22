@@ -2,19 +2,22 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Iterator, List
+from typing import Any, Generator
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
+from pydantic import field_validator
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_message_content_base import ChatMessageContentBase
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.const import (
-    CHAT_MESSAGE_CONTENT,
     ROOT_KEY_HISTORY,
     ROOT_KEY_MESSAGE,
-    TYPES_CHAT_MESSAGE_CONTENT,
+)
+from semantic_kernel.contents.types import (
+    CHAT_MESSAGE_CONTENT,
+    CHAT_MESSAGE_CONTENT_TYPE_NAMES,
 )
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -34,8 +37,8 @@ class ChatHistory(KernelBaseModel):
         messages (List[ChatMessageContent]): The list of chat messages in the history.
     """
 
-    messages: list["ChatMessageContent"]
-    message_type: TYPES_CHAT_MESSAGE_CONTENT = CHAT_MESSAGE_CONTENT
+    messages: list[ChatMessageContent]
+    message_type: CHAT_MESSAGE_CONTENT_TYPE_NAMES = "ChatMessageContent"
 
     def __init__(self, **data: Any):
         """
@@ -75,6 +78,19 @@ class ChatHistory(KernelBaseModel):
             data["messages"] = []
         super().__init__(**data)
 
+    @field_validator("messages", mode="before")
+    @classmethod
+    def _validate_messages(cls, messages: list[ChatMessageContent]) -> list[ChatMessageContent]:
+        if not messages:
+            return messages
+        out_msgs: list[ChatMessageContent] = []
+        for message in messages:
+            if isinstance(message, dict):
+                out_msgs.append(ChatMessageContentBase.from_dict(message))
+            else:
+                out_msgs.append(message)
+        return out_msgs
+
     def add_system_message(self, content: str, **kwargs: Any) -> None:
         """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(ChatRole.SYSTEM, content, **kwargs))
@@ -95,7 +111,7 @@ class ChatHistory(KernelBaseModel):
 
     def add_message(
         self,
-        message: "ChatMessageContent" | dict[str, Any],
+        message: ChatMessageContent | dict[str, Any],
         encoding: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
@@ -131,7 +147,7 @@ class ChatHistory(KernelBaseModel):
         kwargs["content"] = content
         return kwargs
 
-    def remove_message(self, message: "ChatMessageContent") -> bool:
+    def remove_message(self, message: ChatMessageContent) -> bool:
         """Remove a message from the history.
 
         Args:
@@ -150,7 +166,7 @@ class ChatHistory(KernelBaseModel):
         """Return the number of messages in the history."""
         return len(self.messages)
 
-    def __getitem__(self, index: int) -> "ChatMessageContent":
+    def __getitem__(self, index: int) -> ChatMessageContent:
         """Get a message from the history using the [] operator.
 
         Args:
@@ -161,7 +177,7 @@ class ChatHistory(KernelBaseModel):
         """
         return self.messages[index]
 
-    def __contains__(self, item: "ChatMessageContent") -> bool:
+    def __contains__(self, item: ChatMessageContent) -> bool:
         """Check if a message is in the history.
 
         Args:
@@ -179,9 +195,9 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element(root_key=ROOT_KEY_MESSAGE))
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
-    def __iter__(self) -> Iterator["ChatMessageContent"]:
+    def __iter__(self) -> Generator[ChatMessageContent, None, None]:  # type: ignore
         """Return an iterator over the messages in the history."""
-        return iter(self.messages)
+        yield from self.messages
 
     def __eq__(self, other: Any) -> bool:
         """Check if two ChatHistory instances are equal."""
@@ -191,7 +207,7 @@ class ChatHistory(KernelBaseModel):
         return self.messages == other.messages
 
     @classmethod
-    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = CHAT_MESSAGE_CONTENT) -> "ChatHistory":
+    def from_rendered_prompt(cls, rendered_prompt: str, message_type: str = CHAT_MESSAGE_CONTENT) -> ChatHistory:
         """
         Create a ChatHistory instance from a rendered prompt.
 
@@ -201,7 +217,7 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
-        messages: List[ChatMessageContent] = []
+        messages: list[ChatMessageContent] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<prompt>{prompt}</prompt>")
@@ -246,7 +262,7 @@ class ChatHistory(KernelBaseModel):
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod
-    def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
+    def restore_chat_history(cls, chat_history_json: str) -> ChatHistory:
         """
         Restores a ChatHistory instance from a JSON string.
 
@@ -278,7 +294,7 @@ class ChatHistory(KernelBaseModel):
             file.write(json_str)
 
     @classmethod
-    def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
+    def load_chat_history_from_file(cls, file_path: str) -> ChatHistory:
         """
         Loads the ChatHistory from a file.
 
@@ -288,6 +304,6 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The deserialized ChatHistory instance.
         """
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             json_str = file.read()
         return cls.restore_chat_history(json_str)

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example43_GetModelResult : BaseTest
+public class Example43_GetModelResult(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
@@ -77,9 +77,5 @@ public class Example43_GetModelResult : BaseTest
         {
             WriteLine(content.Metadata?.AsJson());
         }
-    }
-
-    public Example43_GetModelResult(ITestOutputHelper output) : base(output)
-    {
     }
 }

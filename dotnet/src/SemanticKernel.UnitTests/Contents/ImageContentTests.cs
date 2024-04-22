@@ -47,8 +47,11 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data) { MimeType = "text/plain" };
-        content1.Uri = new Uri("https://endpoint/");
+        var content1 = new ImageContent(data)
+        {
+            MimeType = "text/plain",
+            Uri = new Uri("https://endpoint/")
+        };
 
         // Act
         var result1 = content1.ToString();

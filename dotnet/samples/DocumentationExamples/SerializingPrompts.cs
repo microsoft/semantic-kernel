@@ -45,34 +45,32 @@ public class SerializingPrompts : BaseTest
         var prompts = kernel.CreatePluginFromPromptDirectory("./../../../Plugins/Prompts");
 
         // Load prompt from YAML
-        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources." + "getIntent.prompt.yaml")!);
+        using StreamReader reader = new(Assembly.GetExecutingAssembly().GetManifestResourceStream("Resources.getIntent.prompt.yaml")!);
         KernelFunction getIntent = kernel.CreateFunctionFromPromptYaml(
             await reader.ReadToEndAsync(),
             promptTemplateFactory: new HandlebarsPromptTemplateFactory()
         );
 
         // Create choices
-        List<string> choices = new() { "ContinueConversation", "EndConversation" };
+        List<string> choices = ["ContinueConversation", "EndConversation"];
 
         // Create few-shot examples
-        List<ChatHistory> fewShotExamples = new()
-        {
-            new ChatHistory()
-            {
+        List<ChatHistory> fewShotExamples =
+        [
+            [
                 new ChatMessageContent(AuthorRole.User, "Can you send a very quick approval to the marketing team?"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "ContinueConversation")
-            },
-            new ChatHistory()
-            {
+            ],
+            [
                 new ChatMessageContent(AuthorRole.User, "Can you send the full update to the marketing team?"),
                 new ChatMessageContent(AuthorRole.System, "Intent:"),
                 new ChatMessageContent(AuthorRole.Assistant, "EndConversation")
-            }
-        };
+            ]
+        ];
 
         // Create chat history
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Start the chat loop
         Write("User > ");

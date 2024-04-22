@@ -295,4 +295,40 @@ def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
         Dict[str, str]: the Azure AI search environment variables
     """
     api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
-    return {"key": api_key, "endpoint": url, "indexName": index_name}
+    return {"authentication": {"type": "api_key", "key": api_key}, "endpoint": url, "index_name": index_name}
+
+
+def azure_key_vault_settings_from_dot_env(
+    include_client_id: bool = True, include_client_secret: bool = True
+) -> Tuple[str, Optional[str], Optional[str]]:
+    """
+    Reads the Azure Key Vault environment variables for the .env file.
+
+    Returns:
+        Tuple[str, str, str]: Azure Key Vault endpoint, the Azure Key Vault client ID, the Azure Key Vault client secret
+    """
+    config = dotenv_values(".env")
+    endpoint = config.get("AZURE_KEY_VAULT_ENDPOINT", None)
+    client_id = config.get("AZURE_KEY_VAULT_CLIENT_ID", None)
+    client_secret = config.get("AZURE_KEY_VAULT_CLIENT_SECRET", None)
+
+    assert endpoint is not None, "Azure Key Vault endpoint not found in .env file"
+    if include_client_id:
+        assert client_id is not None, "Azure Key Vault client ID not found in .env file"
+    if include_client_secret:
+        assert client_secret is not None, "Azure Key Vault client secret not found in .env file"
+
+    if include_client_id and include_client_secret:
+        return endpoint, client_id, client_secret
+    return endpoint, client_id
+
+
+def azure_key_vault_settings_from_dot_env_as_dict() -> Dict[str, str]:
+    """
+    Reads the Azure Key Vault environment variables for the .env file.
+
+    Returns:
+        Dict[str, str]: Azure Key Vault environment variables
+    """
+    endpoint, client_id, client_secret = azure_key_vault_settings_from_dot_env()
+    return {"endpoint": endpoint, "client_id": client_id, "client_secret": client_secret}

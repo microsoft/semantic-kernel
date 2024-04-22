@@ -61,7 +61,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken))
+        await foreach (var existingCollectionName in this.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
         {
             if (existingCollectionName == collectionName)
             {
@@ -247,9 +247,10 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
             projectionDefinition = projectionDefinition.Include(e => e.Embedding);
         }
 
+        var vectorSearchOptions = new VectorSearchOptions<MongoDBMemoryEntry>() { IndexName = this._indexName };
         var aggregationPipeline = this.GetCollection(collectionName)
             .Aggregate()
-            .VectorSearch(e => e.Embedding, embedding, limit)
+            .VectorSearch(e => e.Embedding, embedding, limit, vectorSearchOptions)
             .Project<MongoDBMemoryEntry>(projectionDefinition);
 
         if (minRelevanceScore > 0)
