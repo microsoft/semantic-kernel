@@ -23,14 +23,14 @@ public abstract class BaseTest
 
     protected ILoggerFactory LoggerFactory { get; }
 
-    private bool UseOpenAIConfig => string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI;
+    private bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
     protected string ApiKey =>
         this.UseOpenAIConfig ?
             TestConfiguration.OpenAI.ApiKey :
             TestConfiguration.AzureOpenAI.ApiKey;
 
-    protected string? Endpoint => TestConfiguration.AzureOpenAI.Endpoint;
+    protected string? Endpoint => UseOpenAIConfig ? null : TestConfiguration.AzureOpenAI.Endpoint;
 
     protected string Model =>
         this.UseOpenAIConfig ?

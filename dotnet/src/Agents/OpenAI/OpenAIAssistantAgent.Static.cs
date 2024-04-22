@@ -170,11 +170,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Inspect options
         if (!string.IsNullOrWhiteSpace(config.Endpoint))
         {
-            // Create client configured for Azure Open AI, if endpoint definition is present.
+            // Create client configured for Azure OpenAI, if endpoint definition is present.
             return new AssistantsClient(new Uri(config.Endpoint), new AzureKeyCredential(config.ApiKey), clientOptions);
         }
 
-        // Otherwise, create client configured for Open AI.
+        // Otherwise, create client configured for OpenAI.
         return new AssistantsClient(config.ApiKey, clientOptions);
     }
 
