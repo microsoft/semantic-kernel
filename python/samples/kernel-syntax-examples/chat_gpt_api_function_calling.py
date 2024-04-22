@@ -6,15 +6,15 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from semantic_kernel import Kernel
+
+# from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAIChatMessageContent,
     OpenAIChatPromptExecutionSettings,
     OpenAIStreamingChatMessageContent,
 )
-
-# from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -75,7 +75,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions(),
+    function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
 )
 
 history = ChatHistory()
@@ -125,7 +125,7 @@ async def handle_streaming(
     tool_call_ids_by_index: Dict[str, Any] = {}
 
     async for message in response:
-        if not execution_settings.tool_call_behavior.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], OpenAIStreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
@@ -171,7 +171,7 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # OpenAIChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.tool_call_behavior.auto_invoke_kernel_functions and isinstance(
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
             result.value[0], OpenAIChatMessageContent
         ):
             print_tool_calls(result.value[0])

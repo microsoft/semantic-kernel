@@ -10,12 +10,12 @@ from typing import Any, Optional
 
 import yaml
 
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -141,7 +141,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         chat_history_for_steps = await self._build_chat_history_for_step(
             goal=question, initial_plan=initial_plan, kernel=cloned_kernel, arguments=arguments, service=chat_completion
         )
-        prompt_execution_settings.tool_call_behavior = ToolCallBehavior.EnableFunctions(
+        prompt_execution_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
             auto_invoke=False, filters={"exclude_plugin": list(self.options.excluded_plugins)}
         )
         for i in range(self.options.max_iterations):

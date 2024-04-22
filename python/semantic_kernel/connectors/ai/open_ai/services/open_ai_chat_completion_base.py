@@ -11,6 +11,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
@@ -18,7 +19,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -74,8 +74,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if (
-            settings.tool_call_behavior is not None
-            and settings.tool_call_behavior.auto_invoke_kernel_functions
+            settings.function_call_behavior is not None
+            and settings.function_call_behavior.auto_invoke_kernel_functions
             and (kernel is None or arguments is None)
         ):
             raise ServiceInvalidExecutionSettingsError(
@@ -83,13 +83,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
         # behavior for non-function calling or for enable, but not auto-invoke.
         settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
-        if settings.tool_call_behavior is None or (
-            settings.tool_call_behavior and not settings.tool_call_behavior.auto_invoke_kernel_functions
+        if settings.function_call_behavior is None or (
+            settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
         ):
             return await self._send_chat_request(settings)
 
         # loop for auto-invoke function calls
-        for _ in range(settings.tool_call_behavior.max_auto_invoke_attempts):
+        for _ in range(settings.function_call_behavior.max_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
             if self._should_return_completions_response(completions=completions):
                 return completions
@@ -119,8 +119,8 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if (
-            settings.tool_call_behavior is not None
-            and settings.tool_call_behavior.auto_invoke_kernel_functions
+            settings.function_call_behavior is not None
+            and settings.function_call_behavior.auto_invoke_kernel_functions
             and (kernel is None or arguments is None)
         ):
             raise ServiceInvalidExecutionSettingsError(
@@ -128,14 +128,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
         settings = self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
-        for _ in range(settings.tool_call_behavior.max_auto_invoke_attempts):
+        for _ in range(settings.function_call_behavior.max_auto_invoke_attempts):
             response = await self._send_chat_stream_request(settings)
             finish_reason = None
             async for content, finish_reason in self._process_chat_stream_response(
                 response=response,
                 chat_history=chat_history,
                 kernel=kernel,
-                tool_call_behavior=settings.tool_call_behavior,  # type: ignore
+                tool_call_behavior=settings.function_call_behavior,  # type: ignore
                 arguments=arguments,
             ):
                 yield content
@@ -193,7 +193,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         response: AsyncStream,
         chat_history: ChatHistory,
-        tool_call_behavior: ToolCallBehavior,
+        tool_call_behavior: FunctionCallBehavior,
         kernel: Optional["Kernel"] = None,
         arguments: Optional["KernelArguments"] = None,
     ) -> AsyncGenerator[Tuple[List[OpenAIStreamingChatMessageContent], Optional[FinishReason]], Any]:
@@ -329,12 +329,15 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
 
-        # If auto_invoke_kernel_functions is True and num_of_responses > 1 provide a warning
-        # that the num_of_responses will be configured to one.
-        if settings.tool_call_behavior and kernel:
-            settings.tool_call_behavior.configure_options(kernel=kernel, execution_settings=settings)
-        if not settings.tool_call_behavior:
-            settings.tool_call_behavior = ToolCallBehavior(enable_kernel_functions=False, max_auto_invoke_attempts=0)
+        if settings.function_call_behavior and kernel:
+            tool_choice, tools = settings.function_call_behavior.configure(kernel=kernel)
+            if tool_choice and tools:
+                settings.tool_choice = tool_choice
+                settings.tools = tools
+        if not settings.function_call_behavior:
+            settings.function_call_behavior = FunctionCallBehavior(
+                enable_kernel_functions=False, max_auto_invoke_attempts=0
+            )
         return settings
 
     # endregion

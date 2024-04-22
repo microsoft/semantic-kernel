@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import Field, field_validator, model_validator
 
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
@@ -61,7 +61,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
     messages: Optional[List[Dict[str, Any]]] = None
-    tool_call_behavior: Optional[ToolCallBehavior] = Field(None, exclude=True)
+    function_call_behavior: Optional[FunctionCallBehavior] = Field(None, exclude=True)
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod

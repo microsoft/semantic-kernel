@@ -10,6 +10,7 @@ from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompl
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
@@ -21,7 +22,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidExecutionSettingsError
 from semantic_kernel.exceptions.service_exceptions import ServiceResponseException
@@ -613,7 +613,7 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions()
+        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
     )
 
     mock_create.side_effect = openai.BadRequestError(

@@ -7,10 +7,10 @@ from openai import AsyncAzureOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -153,7 +153,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
         top_p=0.8,
         tool_choice="auto",
         tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["ChatBot"]}),
-        tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -215,7 +215,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         top_p=0.8,
         tool_choice="auto",
         tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["chat"]}),
-        tool_call_behavior=ToolCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
     )
     arguments = KernelArguments(input="what is 101+102?", settings=execution_settings)
 
