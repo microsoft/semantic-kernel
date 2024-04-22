@@ -5,8 +5,8 @@ from enum import Enum
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
-from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+from semantic_kernel.exceptions import ServiceInitializationError
 
 
 class CosmosDBSimilarityType(str, Enum):
