@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
+using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -105,12 +106,13 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
+        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
+        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
-
+        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
+        var audioData = await fileService.UploadAsync(audioStream);
         // Act
-        var result = await service.GetTextContentsAsync(new AudioStreamContent(audio));
+        var result = await sttService.GetTextContentsAsync(audioData);
 
         // Assert
         Console.WriteLine(result[0].Text);
@@ -169,9 +171,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
+        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
+        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
+        var audioData = await fileService.UploadAsync(audioStream);
         var textExecutionSettings = new PromptExecutionSettings
         {
             ExtensionData = new Dictionary<string, object>
@@ -181,7 +185,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         };
 
         // Act
-        var result = await service.GetTextContentsAsync(new AudioStreamContent(audio), textExecutionSettings);
+        var result = await sttService.GetTextContentsAsync(audioData, textExecutionSettings);
 
         // Assert
         Console.WriteLine(result[0].Text);
@@ -198,9 +202,11 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
+        var fileService = new AssemblyAIFileService(apiKey, httpClient: httpClient);
+        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        await using Stream audioStream = File.OpenRead($"./TestData/{Filename}");
+        var audioData = await fileService.UploadAsync(audioStream);
         var textExecutionSettings = new PromptExecutionSettings
         {
             ExtensionData = new Dictionary<string, object>
@@ -211,7 +217,7 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentsAsync(new AudioStreamContent(audio), textExecutionSettings)
+            async () => await sttService.GetTextContentsAsync(audioData, textExecutionSettings)
         );
     }
 
@@ -222,17 +228,14 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         // Arrange
         using var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("https://localhost:9999");
-        const string Filename = "test_audio.wav";
 
         var apiKey = this.GetAssemblyAIApiKey();
 
-        var service = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
-
-        await using Stream audio = File.OpenRead($"./TestData/{Filename}");
+        var sttService = new AssemblyAIAudioToTextService(apiKey, httpClient: httpClient);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<HttpOperationException>(
-            async () => await service.GetTextContentsAsync(new AudioStreamContent(audio))
+            async () => await sttService.GetTextContentsAsync(new AudioContent(new Uri("http://localhost")))
         );
         Assert.Equal(
             "Connection refused (localhost:9999)",
