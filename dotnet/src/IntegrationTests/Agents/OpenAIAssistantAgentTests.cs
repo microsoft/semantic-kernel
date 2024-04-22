@@ -98,7 +98,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 new()
                 {
                     Instructions = "Answer questions about the menu.",
-                    Model = modelName,
+                    ModelId = modelName,
                 });
 
         AgentGroupChat chat = new();

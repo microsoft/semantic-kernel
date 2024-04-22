@@ -57,7 +57,7 @@ public class Example16_MixedChat(ITestOutputHelper output) : BaseTest(output)
                 {
                     Instructions = CopyWriterInstructions,
                     Name = CopyWriterName,
-                    Model = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a nexus for agent interaction.

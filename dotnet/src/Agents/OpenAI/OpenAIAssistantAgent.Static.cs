@@ -97,7 +97,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                         EnableRetrieval = assistant.Tools.Any(t => t is RetrievalToolDefinition),
                         FileIds = assistant.FileIds,
                         Metadata = assistant.Metadata,
-                        Model = assistant.Model,
+                        ModelId = assistant.Model,
                     };
 
                 lastId = assistant.Id;
@@ -137,7 +137,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     private static AssistantCreationOptions CreateAssistantCreationOptions(OpenAIAssistantDefinition definition)
     {
         AssistantCreationOptions assistantCreationOptions =
-            new(definition.Model)
+            new(definition.ModelId)
             {
                 Description = definition.Description,
                 Instructions = definition.Instructions,

@@ -37,7 +37,7 @@ public class Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output) : Ba
                     Instructions = AgentInstructions,
                     Name = AgentName,
                     EnableCodeInterpreter = true,
-                    Model = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a chat for agent interaction.

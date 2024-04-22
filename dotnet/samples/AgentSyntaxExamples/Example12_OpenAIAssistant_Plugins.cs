@@ -35,7 +35,7 @@ public class Example12_OpenAIAssistant_Plugins(ITestOutputHelper output) : BaseT
                 {
                     Instructions = HostInstructions,
                     Name = HostName,
-                    Model = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).

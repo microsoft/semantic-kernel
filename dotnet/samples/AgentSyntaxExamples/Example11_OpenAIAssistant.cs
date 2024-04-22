@@ -34,7 +34,7 @@ public class Example11_OpenAIAssistant(ITestOutputHelper output) : BaseTest(outp
                 {
                     Instructions = ParrotInstructions,
                     Name = ParrotName,
-                    Model = this.Model,
+                    ModelId = this.Model,
                 });
 
         // Create a chat for agent interaction.

@@ -42,7 +42,7 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
                 new()
                 {
                     EnableRetrieval = true, // Enable retrieval
-                    Model = this.Model,
+                    ModelId = this.Model,
                     FileIds = [uploadFile.Id] // Associate uploaded file
                 });
 

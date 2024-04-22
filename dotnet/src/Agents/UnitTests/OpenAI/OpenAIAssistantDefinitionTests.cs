@@ -20,7 +20,7 @@ public class OpenAIAssistantDefinitionTests
 
         Assert.Null(definition.Id);
         Assert.Null(definition.Name);
-        Assert.Null(definition.Model);
+        Assert.Null(definition.ModelId);
         Assert.Null(definition.Instructions);
         Assert.Null(definition.Description);
         Assert.Null(definition.Metadata);
@@ -40,7 +40,7 @@ public class OpenAIAssistantDefinitionTests
             {
                 Id = "testid",
                 Name = "testname",
-                Model = "testmodel",
+                ModelId = "testmodel",
                 Instructions = "testinstructions",
                 Description = "testdescription",
                 FileIds = new[] { "id" },
@@ -51,7 +51,7 @@ public class OpenAIAssistantDefinitionTests
 
         Assert.Equal("testid", definition.Id);
         Assert.Equal("testname", definition.Name);
-        Assert.Equal("testmodel", definition.Model);
+        Assert.Equal("testmodel", definition.ModelId);
         Assert.Equal("testinstructions", definition.Instructions);
         Assert.Equal("testdescription", definition.Description);
         Assert.Single(definition.Metadata);
