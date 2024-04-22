@@ -56,7 +56,7 @@ public class AutoFunctionInvocationContext
     public int FunctionCount { get; init; }
 
     /// <summary>
-    /// The chat history associated with automatic function invocation.
+    /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
     public ChatHistory ChatHistory { get; }
 
@@ -77,6 +77,8 @@ public class AutoFunctionInvocationContext
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with the filter should be canceled.
+    /// By default it's <see langword="false"/>, in this case all functions will be executed.
+    /// As soon as it's set to <see langword="true"/>, the remaining functions won't be executed and last request to LLM won't be performed.
     /// </summary>
     public bool Cancel { get; set; }
 }
