@@ -1,90 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Numerics.Tensors;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Onnx;
-using Microsoft.SemanticKernel.Embeddings;
+using System;
 using Xunit;
+using System.Numerics.Tensors;
+using Microsoft.SemanticKernel.Connectors.Onnx;
+using System.Text;
+using System.Net.Http;
+using System.Security.Cryptography;
 
-namespace SemanticKernel.Connectors.Onnx.UnitTests;
+namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 
 public class BertOnnxTextEmbeddingGenerationServiceTests
 {
     private static readonly HttpClient s_client = new();
 
     [Fact]
-    public void VerifyOptionsDefaults()
-    {
-        var options = new BertOnnxOptions();
-        Assert.False(options.CaseSensitive);
-        Assert.Equal(512, options.MaximumTokens);
-        Assert.Equal("[CLS]", options.ClsToken);
-        Assert.Equal("[UNK]", options.UnknownToken);
-        Assert.Equal("[SEP]", options.SepToken);
-        Assert.Equal("[PAD]", options.PadToken);
-        Assert.Equal(NormalizationForm.FormD, options.UnicodeNormalization);
-        Assert.Equal(EmbeddingPoolingMode.Mean, options.PoolingMode);
-        Assert.False(options.NormalizeEmbeddings);
-    }
-
-    [Fact]
-    public void RoundtripOptionsProperties()
-    {
-        var options = new BertOnnxOptions()
-        {
-            CaseSensitive = true,
-            MaximumTokens = 128,
-            ClsToken = "<A>",
-            UnknownToken = "<B>",
-            SepToken = "<C>",
-            PadToken = "<D>",
-            UnicodeNormalization = NormalizationForm.FormKC,
-            PoolingMode = EmbeddingPoolingMode.MeanSquareRootTokensLength,
-            NormalizeEmbeddings = true,
-        };
-
-        Assert.True(options.CaseSensitive);
-        Assert.Equal(128, options.MaximumTokens);
-        Assert.Equal("<A>", options.ClsToken);
-        Assert.Equal("<B>", options.UnknownToken);
-        Assert.Equal("<C>", options.SepToken);
-        Assert.Equal("<D>", options.PadToken);
-        Assert.Equal(NormalizationForm.FormKC, options.UnicodeNormalization);
-        Assert.Equal(EmbeddingPoolingMode.MeanSquareRootTokensLength, options.PoolingMode);
-        Assert.True(options.NormalizeEmbeddings);
-    }
-
-    [Fact]
-    public void ValidateInvalidOptionsPropertiesThrow()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new BertOnnxOptions() { MaximumTokens = 0 });
-        Assert.Throws<ArgumentOutOfRangeException>(() => new BertOnnxOptions() { MaximumTokens = -1 });
-
-        Assert.Throws<ArgumentNullException>(() => new BertOnnxOptions() { ClsToken = null! });
-        Assert.Throws<ArgumentException>(() => new BertOnnxOptions() { ClsToken = "   " });
-
-        Assert.Throws<ArgumentNullException>(() => new BertOnnxOptions() { UnknownToken = null! });
-        Assert.Throws<ArgumentException>(() => new BertOnnxOptions() { UnknownToken = "   " });
-
-        Assert.Throws<ArgumentNullException>(() => new BertOnnxOptions() { SepToken = null! });
-        Assert.Throws<ArgumentException>(() => new BertOnnxOptions() { SepToken = "   " });
-
-        Assert.Throws<ArgumentNullException>(() => new BertOnnxOptions() { PadToken = null! });
-        Assert.Throws<ArgumentException>(() => new BertOnnxOptions() { PadToken = "   " });
-
-        Assert.Throws<ArgumentOutOfRangeException>(() => new BertOnnxOptions() { PoolingMode = (EmbeddingPoolingMode)4 });
-    }
-
-    [Fact]
-    public async Task ValidateEmbeddingsAreIdempotent()
+    public async Task ValidateEmbeddingsAreIdempotentAsync()
     {
         Func<Task<BertOnnxTextEmbeddingGenerationService>>[] funcs =
         [
@@ -110,7 +47,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
             foreach (string input in inputs)
             {
+#pragma warning disable CA1308 // Normalize strings to uppercase
                 IList<ReadOnlyMemory<float>> results = await service.GenerateEmbeddingsAsync([input, input.ToUpperInvariant(), input.ToLowerInvariant()]);
+#pragma warning restore CA1308 // Normalize strings to uppercase
                 for (int i = 1; i < results.Count; i++)
                 {
                     AssertEqualTolerance(results[0].Span, results[i].Span);
@@ -120,10 +59,10 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     }
 
     [Fact]
-    public async Task ValidateExpectedEmbeddingsForBgeMicroV2()
+    public async Task ValidateExpectedEmbeddingsForBgeMicroV2Async()
     {
-        string modelPath = await GetTestFilePath(BgeMicroV2ModelUrl);
-        string vocabPath = await GetTestFilePath(BgeMicroV2VocabUrl);
+        string modelPath = await GetTestFilePathAsync(BgeMicroV2ModelUrl);
+        string vocabPath = await GetTestFilePathAsync(BgeMicroV2VocabUrl);
 
         using Stream modelStream = File.OpenRead(modelPath);
         using Stream vocabStream = File.OpenRead(vocabPath);
@@ -178,7 +117,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     }
 
     [Fact]
-    public async Task ValidateExpectedEmbeddingsForAllMiniLML6V2()
+    public async Task ValidateExpectedEmbeddingsForAllMiniLML6V2Async()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetAllMiniLML6V2Async();
 
@@ -203,7 +142,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     }
 
     [Fact]
-    public async Task ValidateSimilarityScoresOrderedForBgeMicroV2()
+    public async Task ValidateSimilarityScoresOrderedForBgeMicroV2Async()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
 
@@ -265,7 +204,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     }
 
     [Fact]
-    public async Task ValidateServiceMayBeUsedConcurrently()
+    public async Task ValidateServiceMayBeUsedConcurrentlyAsync()
     {
         using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
 
@@ -340,7 +279,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
             diff <= MathF.Max(MathF.Abs(expected), MathF.Abs(actual)) * Tolerance;
     }
 
-    private static async Task<string> GetTestFilePath(string url)
+    private static async Task<string> GetTestFilePathAsync(string url)
     {
         // Rather than downloading each model on each use, try to cache it into a temporary file.
         // The file's name is computed as a hash of the url.
@@ -350,15 +289,17 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
         if (!File.Exists(path))
         {
-            using Stream responseStream = await s_client.GetStreamAsync(url);
+            await using Stream responseStream = await s_client.GetStreamAsync(new Uri(url));
             try
             {
-                using FileStream dest = File.OpenWrite(path);
+                await using FileStream dest = File.OpenWrite(path);
                 await responseStream.CopyToAsync(dest);
             }
             catch
             {
+#pragma warning disable CA1031
                 try { File.Delete(path); } catch { } // if something goes wrong, try not to leave a bad file in place
+#pragma warning restore CA1031
                 throw;
             }
         }
@@ -371,12 +312,12 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetBgeMicroV2ServiceAsync() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
-            await GetTestFilePath(BgeMicroV2ModelUrl),
-            await GetTestFilePath(BgeMicroV2VocabUrl));
+            await GetTestFilePathAsync(BgeMicroV2ModelUrl),
+            await GetTestFilePathAsync(BgeMicroV2VocabUrl));
 
     private static async Task<BertOnnxTextEmbeddingGenerationService> GetAllMiniLML6V2Async() =>
         await BertOnnxTextEmbeddingGenerationService.CreateAsync(
-            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/1024484/model.onnx"),
-            await GetTestFilePath("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/1024484/vocab.txt"),
+            await GetTestFilePathAsync("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/1024484/model.onnx"),
+            await GetTestFilePathAsync("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/1024484/vocab.txt"),
             new BertOnnxOptions { NormalizeEmbeddings = true });
 }
