@@ -57,9 +57,9 @@ internal sealed class HuggingFaceClient
 
     internal static void ValidateMaxNewTokens(int? maxNewTokens)
     {
-        if (maxNewTokens is < 0 || maxNewTokens is > 250)
+        if (maxNewTokens is < 0)
         {
-            throw new ArgumentException($"MaxNewTokens {maxNewTokens} is not valid, the value must be between 0-250");
+            throw new ArgumentException($"MaxNewTokens {maxNewTokens} is not valid, the value must be greater than or equal to zero");
         }
     }
 
