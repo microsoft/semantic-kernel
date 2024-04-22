@@ -240,14 +240,16 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
                     ++count;
 
+#pragma warning disable CA1031 // Do not catch general exception types
                     try
                     {
                         run = await agent._client.GetRunAsync(this._threadId, run.Id, cancellationToken).ConfigureAwait(false);
                     }
-                    catch (Exception exception) when (!exception.IsCriticalException())
+                    catch
                     {
                         // Retry anyway..
                     }
+#pragma warning restore CA1031 // Do not catch general exception types
                 }
                 while (s_pollingStatuses.Contains(run.Status));
 
