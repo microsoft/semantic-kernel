@@ -18,13 +18,13 @@ informed:
 
 ### Current identified types of samples
 
-| Type              | Description                                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------------------- |
-| `Getting started` | A single step-by-step tutorial to get started                                                            |
-| `Concepts`        | A concept by feature specific code snippets                                                              |
-| `LearnResources`  | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others |
-| `Tutorials`       | More in depth step-by-step tutorials                                                                     |
-| `Demos`           | Demonstration applications that leverage the usage of one or many features                                |
+| Type             | Description                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| `GettingStarted` | A single step-by-step tutorial to get started                                                            |
+| `Concepts`       | A concept by feature specific code snippets                                                              |
+| `LearnResources` | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others |
+| `Tutorials`      | More in depth step-by-step tutorials                                                                     |
+| `Demos`          | Demonstration applications that leverage the usage of one or many features                               |
 
 ## Decision Drivers and Principles
 
@@ -35,16 +35,16 @@ informed:
 
 ## Strategy on the current existing folders
 
-| Current Folder                       | Proposal                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                               |
-| KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders               |
-| AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.                |
-| DocumentationExamples                | Move into `LearnResources` subfolder and rename to `MicrosoftLearn`       |
-| CreateChatGptPlugin                  | Move into `Demo` subfolder                                                |
-| HomeAutomation                       | Move into `Demo` subfolder                                                |
-| TelemetryExample                     | Move into `Demo` subfolder and rename to `TelemetryWithAppInsights`       |
-| HuggingFaceImageTextExample          | Move into `Demo` subfolder and rename to `HuggingFaceImageToText`         |
+| Current Folder                       | Proposal                                                            |
+| ------------------------------------ | ------------------------------------------------------------------- |
+| KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                         |
+| KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders         |
+| AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.          |
+| DocumentationExamples                | Move into `LearnResources` subfolder and rename to `MicrosoftLearn` |
+| CreateChatGptPlugin                  | Move into `Demo` subfolder                                          |
+| HomeAutomation                       | Move into `Demo` subfolder                                          |
+| TelemetryExample                     | Move into `Demo` subfolder and rename to `TelemetryWithAppInsights` |
+| HuggingFaceImageTextExample          | Move into `Demo` subfolder and rename to `HuggingFaceImageToText`   |
 
 ## Considered Root Structure Options
 
