@@ -54,9 +54,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 continue;
             }
 
+            // History is only be user or assistant (never system)
+            MessageRole role = message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant;
+
             await this._client.CreateMessageAsync(
                 this._threadId,
-                MessageRole.User,
+                role,
                 message.Content,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }

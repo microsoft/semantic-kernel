@@ -111,7 +111,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
         this._testOutputHelper.Dispose();
     }
 
-    private sealed class MenuPlugin
+    public sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
