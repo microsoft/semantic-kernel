@@ -11,7 +11,7 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
     num_return_sequences: int = 1
     stop_sequences: Any = None
     pad_token_id: int = 50256
-    temperature: float = 0.0
+    temperature: float = 1.0
     top_p: float = 1.0
 
     def get_generation_config(self) -> GenerationConfig:
