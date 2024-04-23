@@ -32,8 +32,9 @@ aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=T
 
 azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 
-# Our example index has fields "source_title", "source_text", "source_url", and "source_file".
-# Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
+# Depending on the index that you use, you might need to enable the below
+# and adapt it so that it accurately reflects your index.
+
 # azure_ai_search_settings["fieldsMapping"] = {
 #     "titleField": "source_title",
 #     "urlField": "source_url",
@@ -88,25 +89,26 @@ async def chat() -> bool:
     arguments = KernelArguments(chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
 
     stream = False
-    if not stream:
-        # Non streaming
-        answer = await kernel.invoke(chat_function, arguments=arguments)
-        print(f"Assistant:> {answer}")
+    if stream:
+        # streaming
+        full_message = None
+        print("Assistant:> ", end="")
+        async for message in kernel.invoke_stream(chat_function, arguments=arguments):
+            print(str(message[0]), end="")
+            full_message = message[0] if not full_message else full_message + message[0]
+        print("\n")
+
+        # The tool message containing cited sources is available in the context
         chat_history.add_user_message(user_input)
-        for message in AzureChatCompletion.split_message(answer.value[0]):
+        for message in AzureChatCompletion.split_message(full_message):
             chat_history.add_message(message)
         return True
 
-    full_message = None
-    print("Assistant:> ", end="")
-    async for message in kernel.invoke_stream(chat_function, arguments=arguments):
-        print(str(message[0]), end="")
-        full_message = message[0] if not full_message else full_message + message[0]
-    print("\n")
-
-    # The tool message containing cited sources is available in the context
+    # Non streaming
+    answer = await kernel.invoke(chat_function, arguments=arguments)
+    print(f"Assistant:> {answer}")
     chat_history.add_user_message(user_input)
-    for message in AzureChatCompletion.split_message(full_message):
+    for message in AzureChatCompletion.split_message(answer.value[0]):
         chat_history.add_message(message)
     return True
 
