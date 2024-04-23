@@ -2,10 +2,10 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Text;
 using RepoUtils;
-using SharpToken;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,6 +13,9 @@ namespace Examples;
 
 public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
+    private const string EmbeddingModelName = "text-embedding-ada-002";
+    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel(EmbeddingModelName);
+
     [Fact]
     public async Task RunAsync()
     {
@@ -22,7 +25,6 @@ public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output
 
     private async Task RunExampleAsync()
     {
-        const string EmbeddingModelName = "text-embedding-ada-002";
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
             deploymentName: EmbeddingModelName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
@@ -39,7 +41,7 @@ public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output
         var chunks = paragraphs
             .ChunkByAggregate(
                 seed: 0,
-                aggregator: (tokenCount, paragraph) => tokenCount + GetTokenCount(EmbeddingModelName, paragraph),
+                aggregator: (tokenCount, paragraph) => tokenCount + s_tokenizer.CountTokens(paragraph),
                 predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
             .ToList();
 
@@ -53,15 +55,6 @@ public class Example81_TextEmbedding(ITestOutputHelper output) : BaseTest(output
 
             this.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
         }
-    }
-
-    // See Example55_TextChunker for more examples of how to count tokens.
-    private int GetTokenCount(string modelName, string text)
-    {
-        var encoding = GptEncoding.GetEncodingForModel(modelName);
-        var tokens = encoding.Encode(text);
-
-        return tokens.Count;
     }
 
     #region Transcript
