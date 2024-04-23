@@ -199,7 +199,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        return new OpenAIAssistantChannel(this._client, thread.Id);
+        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
     }
 
     /// <summary>

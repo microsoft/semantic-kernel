@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,13 +15,10 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId) : AgentChannel<OpenAIAssistantAgent>
+internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+    : AgentChannel<OpenAIAssistantAgent>
 {
     private const char FunctionDelimiter = '-';
-
-    private static readonly TimeSpan s_pollingInterval = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan s_pollingBackoff = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan s_messageSynchronizationDelay = TimeSpan.FromMilliseconds(500);
 
     private static readonly HashSet<RunStatus> s_pollingStatuses =
         [
@@ -174,7 +170,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             do
             {
                 // Reduce polling frequency after a couple attempts
-                await Task.Delay(count >= 2 ? s_pollingInterval : s_pollingBackoff, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(count >= 2 ? pollingConfiguration.RunPollingInterval : pollingConfiguration.RunPollingBackoff, cancellationToken).ConfigureAwait(false);
                 ++count;
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -365,7 +361,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
             if (retry)
             {
-                await Task.Delay(s_messageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(pollingConfiguration.MessageSynchronizationDelay, cancellationToken).ConfigureAwait(false);
             }
 
             ++count;

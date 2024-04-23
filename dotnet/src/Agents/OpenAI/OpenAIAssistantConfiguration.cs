@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Net.Http;
 using Azure.AI.OpenAI.Assistants;
 
@@ -30,6 +31,11 @@ public sealed class OpenAIAssistantConfiguration
     public HttpClient? HttpClient { get; init; }
 
     /// <summary>
+    /// %%%
+    /// </summary>
+    public PollingConfiguration Polling { get; } = new PollingConfiguration();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantConfiguration"/> class.
     /// </summary>
     /// <param name="apiKey">The Assistants API Key</param>
@@ -45,5 +51,41 @@ public sealed class OpenAIAssistantConfiguration
 
         this.ApiKey = apiKey;
         this.Endpoint = endpoint;
+    }
+
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public sealed class PollingConfiguration
+    {
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public static TimeSpan DefaultPollingInterval { get; } = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public static TimeSpan DefaultPollingBackoff { get; } = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public static TimeSpan DefaultMessageSynchronizationDelay { get; } = TimeSpan.FromMilliseconds(500);
+
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public TimeSpan RunPollingInterval { get; set; } = DefaultPollingInterval;
+
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public TimeSpan RunPollingBackoff { get; set; } = DefaultPollingBackoff;
+
+        /// <summary>
+        /// %%%
+        /// </summary>
+        public TimeSpan MessageSynchronizationDelay { get; set; } = DefaultMessageSynchronizationDelay;
     }
 }
