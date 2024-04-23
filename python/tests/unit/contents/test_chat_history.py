@@ -238,7 +238,7 @@ def test_chat_history_from_rendered_prompt_empty():
 
 
 def test_chat_history_from_rendered_prompt():
-    rendered = '<message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message>'
+    rendered = '<message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message>'  # noqa: E501
 
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "I am an AI assistant"
@@ -371,16 +371,6 @@ async def test_handwritten_xml():
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == AuthorRole.USER
-
-
-@pytest.mark.asyncio
-async def test_no_content_message():
-    template = '<message role="assistant"></message><message role="user">test content</message>'
-    rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
-    ).render(kernel=Kernel(), arguments=KernelArguments())
-    with pytest.raises(ValueError):
-        ChatHistory.from_rendered_prompt(rendered)
 
 
 @pytest.mark.asyncio

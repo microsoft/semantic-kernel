@@ -6,12 +6,7 @@ from functools import reduce
 from typing import TYPE_CHECKING, List
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import (  # OpenAIChatMessageContent,
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-)
-
-# OpenAIStreamingChatMessageContent,
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

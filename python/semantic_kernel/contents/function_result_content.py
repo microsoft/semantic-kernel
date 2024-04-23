@@ -76,7 +76,7 @@ class FunctionResultContent(KernelContent):
         """Create an instance from an Element."""
         if element.tag != FUNCTION_RESULT_CONTENT_TAG:
             raise ValueError(f"Element tag is not {FUNCTION_RESULT_CONTENT_TAG}")
-        return cls(id=element["id"], result=element.text, name=element.get("name", None))  # type: ignore
+        return cls(id=element.get("id", ""), result=element.text, name=element.get("name", None))  # type: ignore
 
     @classmethod
     def from_function_call_content_and_result(

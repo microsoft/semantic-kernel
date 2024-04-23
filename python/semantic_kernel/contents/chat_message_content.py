@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
+import logging
 from enum import Enum
 from typing import Any, Union, overload
 from xml.etree.ElementTree import Element
@@ -19,8 +20,8 @@ from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.kernel_content import KernelContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 TAG_CONTENT_MAP = {
     TEXT_CONTENT_TAG: TextContent,
@@ -28,7 +29,9 @@ TAG_CONTENT_MAP = {
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
 }
 
-ITEM_TYPES = Union[TextContent, FunctionCallContent, FunctionResultContent]
+ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent]
+
+logger = logging.getLogger(__name__)
 
 
 class ChatMessageContent(KernelContent):
@@ -145,8 +148,6 @@ class ChatMessageContent(KernelContent):
                 items = [item]
         if items:
             kwargs["items"] = items
-        if not items and "finish_reason" not in kwargs:
-            raise ValueError("ChatMessageContent must have either items or content.")
         if inner_content:
             kwargs["inner_content"] = inner_content
         if metadata:
@@ -159,7 +160,7 @@ class ChatMessageContent(KernelContent):
 
     @property
     def content(self) -> str:
-        """Get the content of the response."""
+        """Get the content of the response, will find the first TextContent's text."""
         for item in self.items:
             if isinstance(item, TextContent):
                 return item.text
@@ -169,6 +170,10 @@ class ChatMessageContent(KernelContent):
     def content(self, value: str):
         """Set the content of the response."""
         if not value:
+            logger.warning(
+                "Setting empty content on ChatMessageContent does not work, "
+                "you can do this through the underlying items if needed, ignoring."
+            )
             return
         for item in self.items:
             if isinstance(item, TextContent):
@@ -199,20 +204,11 @@ class ChatMessageContent(KernelContent):
         """
         root = Element(CHAT_MESSAGE_CONTENT_TAG)
         for field in self.model_fields_set:
-            if field in ["items", "metadata", "inner_content"]:
+            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id"]:
                 continue
             value = getattr(self, field)
-            if value is None:
-                continue
             if isinstance(value, Enum):
                 value = value.value
-            if isinstance(value, KernelBaseModel):
-                value = value.model_dump_json(exclude_none=True)
-            if isinstance(value, list):
-                if isinstance(value[0], KernelBaseModel):
-                    value = "|".join([val.model_dump_json(exclude_none=True) for val in value])
-                else:
-                    value = "|".join(value)
             root.set(field, value)
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
@@ -228,18 +224,26 @@ class ChatMessageContent(KernelContent):
         Returns:
             ChatMessageContent - The new instance of ChatMessageContent or a subclass.
         """
+        kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
         for child in element:
-            items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
-        kwargs: dict[str, Any] = {}
+            if child.tag not in TAG_CONTENT_MAP:
+                logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
+                text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
+                items.append(TextContent(text=text or ""))
+            else:
+                items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
         if items:
             kwargs["items"] = items
         if element.text:
             kwargs["content"] = element.text
-        if not kwargs:
-            raise ValueError("ChatMessageContent must have either items or content.")
-        for key, value in element.items():
-            kwargs[key] = value
+        if "choice_index" in kwargs and cls is ChatMessageContent:
+            logger.warning(
+                "Seems like you are trying to create a StreamingChatMessageContent, "
+                "use StreamingChatMessageContent.from_element instead, ignoring that field "
+                " and creating a ChatMessageContent instance."
+            )
+            kwargs.pop("choice_index")
         return cls(**kwargs)
 
     def to_prompt(self) -> str:
@@ -280,4 +284,6 @@ class ChatMessageContent(KernelContent):
         """
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
+        if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
+            return self.items[0].result
         return [item.to_dict() for item in self.items]

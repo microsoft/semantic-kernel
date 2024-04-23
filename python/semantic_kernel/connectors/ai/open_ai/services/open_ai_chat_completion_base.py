@@ -24,6 +24,7 @@ from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
@@ -251,7 +252,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         items: list[Any] = self._get_tool_calls_from_chat_choice(choice)
         items.extend(self._get_function_call_from_chat_choice(choice))
         if choice.delta.content is not None:
-            items.append(TextContent(text=choice.delta.content))
+            items.append(StreamingTextContent(choice_index=choice.index, text=choice.delta.content))
         return StreamingChatMessageContent(
             choice_index=choice.index,
             inner_content=chunk,

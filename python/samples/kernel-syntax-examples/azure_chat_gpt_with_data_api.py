@@ -9,10 +9,8 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
     ExtraBody,
-    FunctionCallContent,
-    ToolCall,
 )
-from semantic_kernel.contents import AuthorRole, ChatHistory
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 from semantic_kernel.utils.settings import (
@@ -21,7 +19,7 @@ from semantic_kernel.utils.settings import (
 )
 
 kernel = Kernel()
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Load Azure OpenAI Settings
 aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
@@ -36,12 +34,12 @@ azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 
 # Our example index has fields "source_title", "source_text", "source_url", and "source_file".
 # Add fields mapping to the settings to indicate which fields to use for the title, content, URL, and file path.
-azure_ai_search_settings["fieldsMapping"] = {
-    "titleField": "source_title",
-    "urlField": "source_url",
-    "contentFields": ["source_text"],
-    "filepathField": "source_file",
-}
+# azure_ai_search_settings["fieldsMapping"] = {
+#     "titleField": "source_title",
+#     "urlField": "source_url",
+#     "contentFields": ["source_text"],
+#     "filepathField": "source_file",
+# }
 
 # Create the data source settings
 
@@ -87,11 +85,17 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
-
-    # Non streaming
-    # answer = await kernel.run(chat_function, input_vars=context_vars)
-    # print(f"Assistant:> {answer}")
     arguments = KernelArguments(chat_history=chat_history, user_input=user_input, execution_settings=req_settings)
+
+    stream = False
+    if not stream:
+        # Non streaming
+        answer = await kernel.invoke(chat_function, arguments=arguments)
+        print(f"Assistant:> {answer}")
+        chat_history.add_user_message(user_input)
+        for message in AzureChatCompletion.split_message(answer.value[0]):
+            chat_history.add_message(message)
+        return True
 
     full_message = None
     print("Assistant:> ", end="")
@@ -101,24 +105,9 @@ async def chat() -> bool:
     print("\n")
 
     # The tool message containing cited sources is available in the context
-    if full_message:
-        chat_history.add_user_message(user_input)
-        if hasattr(full_message, "tool_message"):
-            chat_history.add_message(
-                ChatMessageContent(
-                    role="assistant",
-                    tool_calls=[
-                        ToolCall(
-                            id="chat_with_your_data",
-                            function=FunctionCallContent(name="chat_with_your_data", arguments=""),
-                        )
-                    ],
-                )
-            )
-            chat_history.add_tool_message(full_message.tool_message, {"tool_call_id": "chat_with_your_data"})
-        if full_message.role is None:
-            full_message.role = AuthorRole.ASSISTANT
-        chat_history.add_assistant_message(full_message.content)
+    chat_history.add_user_message(user_input)
+    for message in AzureChatCompletion.split_message(full_message):
+        chat_history.add_message(message)
     return True
 
 

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+from copy import deepcopy
 from typing import Any, Dict, Mapping, Optional, Union, overload
 from uuid import uuid4
 
@@ -20,9 +21,11 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -265,9 +268,19 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         self, content: ChatMessageContent | StreamingChatMessageContent, choice: Choice
     ) -> "ChatMessageContent | StreamingChatMessageContent":
         if tool_message := self._get_tool_message_from_chat_choice(choice=choice):
-            function_call = FunctionCallContent(id=uuid4(), name="Azure-OnYourData")
+            try:
+                tool_message_dict = json.loads(tool_message)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse tool message JSON: %s", tool_message)
+                tool_message_dict = {"citations": tool_message}
+
+            function_call = FunctionCallContent(
+                id=str(uuid4()),
+                name="Azure-OnYourData",
+                arguments=json.dumps({"query": tool_message_dict.get("intent", [])}),
+            )
             result = FunctionResultContent.from_function_call_content_and_result(
-                result=tool_message, function_call_content=function_call
+                result=tool_message_dict["citations"], function_call_content=function_call
             )
             content.items.insert(0, function_call)
             content.items.insert(1, result)
@@ -283,3 +296,26 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             return json.dumps(content.model_extra["context"])
 
         return None
+
+    @staticmethod
+    def split_message(message: "ChatMessageContent") -> list["ChatMessageContent"]:
+        """Split a Azure On Your Data response into separate ChatMessageContents.
+
+        If the message does not have three contents, and those three are one each of:
+        FunctionCallContent, FunctionResultContent, and TextContent,
+        it will not return three messages, potentially only one or two.
+
+        The order of the returned messages is as expected by OpenAI.
+        """
+        if len(message.items) != 3:
+            return [message]
+        messages = {"tool_call": deepcopy(message), "tool_result": deepcopy(message), "assistant": deepcopy(message)}
+        for key, msg in messages.items():
+            if key == "tool_call":
+                msg.items = [item for item in msg.items if isinstance(item, FunctionCallContent)]
+                msg.finish_reason = FinishReason.FUNCTION_CALL
+            if key == "tool_result":
+                msg.items = [item for item in msg.items if isinstance(item, FunctionResultContent)]
+            if key == "assistant":
+                msg.items = [item for item in msg.items if isinstance(item, TextContent)]
+        return [messages["tool_call"], messages["tool_result"], messages["assistant"]]

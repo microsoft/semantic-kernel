@@ -1,14 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from typing import Any, overload
+from enum import Enum
+from typing import Any, Union, overload
+from xml.etree.ElementTree import Element
 
 from semantic_kernel.contents.author_role import AuthorRole
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.finish_reason import FinishReason
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions import ContentAdditionException
+
+ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultContent]
 
 
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
@@ -114,7 +121,8 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         if name:
             kwargs["name"] = name
         if content:
-            item = TextContent(
+            item = StreamingTextContent(
+                choice_index=choice_index,
                 ai_model_id=ai_model_id,
                 inner_content=inner_content,
                 metadata=metadata or {},
@@ -127,8 +135,6 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 items = [item]
         if items:
             kwargs["items"] = items
-        if not items and "finish_reason" not in kwargs:
-            raise ValueError("StreamingChatMessageContent must have either items or content.")
         if inner_content:
             kwargs["inner_content"] = inner_content
         if metadata:
@@ -148,6 +154,10 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         The inner_content of the first one is used, ai_model_id and encoding should be the same,
         if role is set, they should be the same.
         """
+        if not isinstance(other, StreamingChatMessageContent):
+            raise ContentAdditionException(
+                f"Cannot add other type to StreamingChatMessageContent, type supplied: {type(other)}"
+            )
         if self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
@@ -157,8 +167,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
         if self.items and other.items:
-            for id, item in enumerate(self.items):
-                self.items[id] = item + other.items[id]  # type: ignore
+            for other_item in other.items:
+                added = False
+                for id, item in enumerate(self.items):
+                    if type(item) is type(other_item) and hasattr(item, "__add__"):
+                        self.items[id] = item + other_item  # type: ignore
+                        added = True
+                        break
+                if not added:
+                    self.items.append(other_item)
         if not isinstance(self.inner_content, list):
             self.inner_content = [self.inner_content]
             if other.inner_content:
@@ -167,12 +184,35 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             if other.inner_content:
                 self.inner_content.append(other.inner_content)
         return StreamingChatMessageContent(
+            role=self.role,
+            items=self.items,  # type: ignore
             choice_index=self.choice_index,
             inner_content=self.inner_content,
             ai_model_id=self.ai_model_id,
             metadata=self.metadata,
-            role=self.role,
-            items=self.items,
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
         )
+
+    def to_element(self) -> "Element":
+        """Convert the ChatMessageContent to an XML Element.
+
+        Args:
+            root_key: str - The key to use for the root of the XML Element.
+
+        Returns:
+            Element - The XML Element representing the ChatMessageContent.
+        """
+        root = Element(CHAT_MESSAGE_CONTENT_TAG)
+        for field in self.model_fields_set:
+            if field not in ["role", "name", "encoding", "finish_reason", "ai_model_id", "choice_index"]:
+                continue
+            value = getattr(self, field)
+            if isinstance(value, Enum):
+                value = value.value
+            if isinstance(value, int):
+                value = str(value)
+            root.set(field, value)
+        for index, item in enumerate(self.items):
+            root.insert(index, item.to_element())
+        return root
