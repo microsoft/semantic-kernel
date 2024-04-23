@@ -44,7 +44,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         AddMissingInputVariables(this._blocks, promptConfig);
 
         this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
-        this._safeBlocks = promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name).ToList();
+        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name).ToList());
     }
 
     /// <inheritdoc/>
@@ -59,7 +59,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
     private readonly bool _allowUnsafeContent;
-    private readonly List<string> _safeBlocks;
+    private readonly HashSet<string> _safeBlocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -182,7 +182,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-    private static bool ShouldEncodeTags(bool disableTagEncoding, List<string> safeBlocks, Block block)
+    private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
         {

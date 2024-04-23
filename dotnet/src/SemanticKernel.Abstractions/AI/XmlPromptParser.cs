@@ -41,6 +41,7 @@ internal static class XmlPromptParser
 
         var xmlDocument = new XmlDocument()
         {
+            // This is necessary to preserve whitespace within prompts as this may be significant.
             PreserveWhitespace = true
         };
 
