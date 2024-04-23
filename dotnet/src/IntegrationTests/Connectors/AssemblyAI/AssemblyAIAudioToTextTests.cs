@@ -33,8 +33,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
             .Build();
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextTestAsync()
     {
         // Arrange
@@ -67,8 +67,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         return apiKey;
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithPollingIntervalTestAsync()
     {
         // Arrange
@@ -96,8 +96,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithStreamTestAsync()
     {
         // Arrange
@@ -119,8 +119,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithUriTestAsync()
     {
         // Arrange
@@ -144,8 +144,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         Console.WriteLine(result[0].Text);
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithFileUriShouldThrowTestAsync()
     {
         // Arrange
@@ -161,8 +161,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLanguageParamTestAsync()
     {
         // Arrange
@@ -192,8 +192,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         Assert.Contains("The sun rises in the east and sets in the west.", result[0].Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithUnknownParamShouldThrowAsync()
     {
         // Arrange
@@ -221,8 +221,8 @@ public sealed class AssemblyAIAudioToTextTests : IDisposable
         );
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLocalhostBaseAddressShouldThrowAsync()
     {
         // Arrange
