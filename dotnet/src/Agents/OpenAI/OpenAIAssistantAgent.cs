@@ -190,7 +190,15 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Custom client receives dedicated channel.
         if (this._config.HttpClient != null)
         {
-            yield return Guid.NewGuid().ToString();
+            if (this._config.HttpClient.BaseAddress != null)
+            {
+                yield return this._config.HttpClient.BaseAddress.AbsoluteUri;
+            }
+
+            foreach (string header in this._config.HttpClient.DefaultRequestHeaders.SelectMany(h => h.Value))
+            {
+                yield return header;
+            }
         }
     }
 

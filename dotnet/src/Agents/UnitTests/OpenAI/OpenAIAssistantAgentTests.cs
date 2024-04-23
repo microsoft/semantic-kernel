@@ -157,7 +157,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
+    /// Verify complex chat interaction across multiple states.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatAsync()
@@ -187,10 +187,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.ListDefinitionsAsync"/>.
+    /// Verify ability to list agent definitions.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentListAsync()
+    public async Task VerifyOpenAIAssistantAgentListDefinitionAsync()
     {
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
