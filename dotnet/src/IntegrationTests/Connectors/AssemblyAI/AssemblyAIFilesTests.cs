@@ -31,8 +31,8 @@ public sealed class AssemblyAIFilesTests : IDisposable
             .Build();
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextTestAsync()
     {
         // Arrange
@@ -65,8 +65,8 @@ public sealed class AssemblyAIFilesTests : IDisposable
         return apiKey;
     }
 
-    [Fact]
-    // [Fact(Skip = "This test is for manual verification.")]
+    // [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task AssemblyAIAudioToTextWithLocalhostBaseAddressShouldThrowAsync()
     {
         // Arrange
