@@ -59,7 +59,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
 
         await this.ExecuteAgentAsync(
             new(azureOpenAIConfiguration.ApiKey, azureOpenAIConfiguration.Endpoint),
-            azureOpenAIConfiguration.DeploymentName,
+            azureOpenAIConfiguration.ChatDeploymentName!,
             input,
             expectedAnswerContains);
     }
