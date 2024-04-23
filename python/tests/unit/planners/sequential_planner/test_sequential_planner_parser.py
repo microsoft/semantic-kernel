@@ -22,6 +22,7 @@ def create_mock_function(kernel_function_metadata: KernelFunctionMetadata) -> Ke
     mock_function.description = kernel_function_metadata.description
     mock_function.is_prompt = kernel_function_metadata.is_prompt
     mock_function.prompt_execution_settings = PromptExecutionSettings()
+    mock_function.function_copy.return_value = mock_function
     return mock_function
 
 
@@ -43,7 +44,7 @@ def create_kernel_and_functions_mock(functions) -> Kernel:
         mock_function.invoke.return_value = FunctionResult(
             function=kernel_function_metadata, value=result_string, metadata={}
         )
-        kernel.plugins.add(KernelPlugin(name=plugin_name, functions=[mock_function]))
+        kernel.add_plugin(KernelPlugin(name=plugin_name, functions=[mock_function]))
 
     return kernel
 

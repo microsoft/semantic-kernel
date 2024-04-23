@@ -27,6 +27,11 @@ In our current software development process, managing changes in the main branch
 - **Timely Feature Integration**: Small, incremental pull requests allow for quicker reviews and faster integration of features into the feature branch and make it easier to merge down into main as the code was already previously reviewed. This timeliness ensures that features are merged and ready for deployment sooner, improving the responsiveness to changes.
 - **Code Testing, Coverage and Quality**: To keep a good code quality is imperative that any new code or feature introduced to the codebase is properly tested and validated. Any new feature or code should be covered by unit tests and integration tests. The code should also be validated by our CI/CD pipeline and follow our code quality standards and guidelines.
 - **Examples**: Any new feature or code should be accompanied by examples that demonstrate how to use the new feature or code. This is important to ensure that the new feature or code is properly documented and that the community can easily understand and use it.
+- **Signing**: Any connector that will eventually become a package needs to have the package and the assembly signing enabled (Set to Publish = Publish) in the `SK-dotnet.sln` file.
+  ```
+  {Project GUID}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+  {Project GUID}.Publish|Any CPU.Build.0 = Publish|Any CPU
+  ```
 
 ### Community Feature Branch Strategy
 

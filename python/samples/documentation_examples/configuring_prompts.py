@@ -32,7 +32,7 @@ async def main():
     )
 
     # Import the ConversationSummaryPlugin
-    kernel.import_plugin_from_object(
+    kernel.add_plugin(
         ConversationSummaryPlugin(kernel=kernel, prompt_template_config=prompt_template_config),
         plugin_name="ConversationSummaryPlugin",
     )
@@ -58,7 +58,7 @@ async def main():
     )
 
     # Create the function
-    chat_function = kernel.create_function_from_prompt(
+    chat_function = kernel.add_function(
         prompt=prompt,
         plugin_name="Summarize_Conversation",
         function_name="Chat",
