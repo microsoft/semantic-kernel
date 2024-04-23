@@ -8,31 +8,30 @@ namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 
 internal class Prompty()
 {
-    // PromptyModelConfig model, string prompt, bool isFromSettings = true
-    // TODO: validate  the prompty attributes needed, what did I miss that should be included?
     [YamlMember(Alias = "name")]
-    public string? Name;
+    public string Name;
 
     [YamlMember(Alias = "description")]
-    public string? Description;
+    public string Description;
+
+    [YamlMember(Alias = "version")]
+    public string Version;
 
     [YamlMember(Alias = "tags")]
-    public List<string>? Tags;
+    public List<string> Tags;
 
     [YamlMember(Alias = "authors")]
-    public List<string>? Authors;
+    public List<string> Authors;
 
     [YamlMember(Alias = "inputs")]
     public Dictionary<string, dynamic> Inputs;
 
-    [YamlMember(Alias = "parameters")]
-    public Dictionary<string, dynamic> Parameters;
+    [YamlMember(Alias = "outputs")]
+    public Dictionary<string, dynamic>? Outputs;
+
 
     [YamlMember(Alias = "model")]
-    public PromptyModelConfig Model;
-
-    [YamlMember(Alias = "api")]
-    public ApiType? modelApiType;
+    public PromptyModel Model;
 
     public string? Prompt { get; set; }
     public List<Dictionary<string, string>> Messages { get; set; }
@@ -43,9 +42,6 @@ internal class Prompty()
     // If sending a Prompty Object, this will not be used in execute.
     public Prompty Load(string promptyFileName, Prompty prompty)
     {
-        //Check for appsettings.json config and set to that first
-        prompty = Helpers.GetPromptyModelConfigFromSettings(prompty);
-
         //Then load settings from prompty file and override if not null
         var promptyFileInfo = new FileInfo(promptyFileName);
 
