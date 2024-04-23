@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
-using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -149,9 +148,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         {
                             content = GenerateTextMessageContent(agent, role, contentMessage);
                         }
-
                         // Process image content
-                        if (itemContent is MessageImageFileContent contentImage)
+                        else if (itemContent is MessageImageFileContent contentImage)
                         {
                             content = GenerateImageFileContent(agent, role, contentImage);
                         }

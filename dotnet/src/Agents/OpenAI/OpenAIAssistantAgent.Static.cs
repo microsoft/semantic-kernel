@@ -61,7 +61,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="lastId">The identifier of the assistant beyond which to begin selection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
-    public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListAsync(
+    public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
         OpenAIAssistantConfiguration config,
         int maxResults = 100,
         string? lastId = null,
@@ -76,7 +76,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         int resultCount = 0;
         do
         {
-            assistants = await client.GetAssistantsAsync(limit: 100, ListSortOrder.Descending, cancellationToken: cancellationToken).ConfigureAwait(false);
+            assistants = await client.GetAssistantsAsync(limit: Math.Min(maxResults, 100), ListSortOrder.Descending, after: lastId, cancellationToken: cancellationToken).ConfigureAwait(false);
             foreach (Assistant assistant in assistants)
             {
                 if (resultCount >= maxResults)
@@ -145,10 +145,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 Metadata = definition.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
             };
 
-        foreach (var fileId in definition.FileIds ?? [])
-        {
-            assistantCreationOptions.FileIds.Add(fileId);
-        }
+        assistantCreationOptions.FileIds.AddRange(definition.FileIds ?? []);
 
         if (definition.EnableCodeInterpreter)
         {

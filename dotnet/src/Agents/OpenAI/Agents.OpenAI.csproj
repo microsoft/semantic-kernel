@@ -23,6 +23,7 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/*" Link="%(RecursiveDir)Http/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/*" Link="%(RecursiveDir)Text/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IListExtensions.cs" Link="%(RecursiveDir)System/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

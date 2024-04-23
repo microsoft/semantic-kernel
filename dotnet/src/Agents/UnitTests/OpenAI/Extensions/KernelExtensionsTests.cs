@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
-using KernelExtensions = Microsoft.SemanticKernel.Agents.OpenAI.Extensions;
+using KernelExtensions = Microsoft.SemanticKernel.Agents.OpenAI;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 

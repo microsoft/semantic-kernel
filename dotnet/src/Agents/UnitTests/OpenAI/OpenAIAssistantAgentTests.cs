@@ -187,7 +187,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.ListAsync"/>.
+    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.ListDefinitionsAsync"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentListAsync()
@@ -201,7 +201,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageFinal);
 
         var messages =
-            await OpenAIAssistantAgent.ListAsync(
+            await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration()).ToArrayAsync();
         Assert.Equal(7, messages.Length);
 
@@ -211,7 +211,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageMore);
 
         messages =
-            await OpenAIAssistantAgent.ListAsync(
+            await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration(),
                 maxResults: 4).ToArrayAsync();
         Assert.Equal(4, messages.Length);
