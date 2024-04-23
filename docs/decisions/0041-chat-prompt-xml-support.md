@@ -88,10 +88,9 @@ This ADR details the options for developers to control message tag injection.
 ## Decision Drivers
 
 - By default input variables and function return values should be treated as being unsafe and must be encoded.
-- Developers must be able to provide custom encoding strategies for input variables and function return values.
 - Developers must be able to "opt in" if they trust the content in input variables and function return values.
 - Developers must be able to "opt in" for specific input variables.
-- Developers must be able to integrate with tools that defend against prompt injection attacks e.g. Prompt Shield.
+- Developers must be able to integrate with tools that defend against prompt injection attacks e.g. [Prompt Shields](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/jailbreak-detection).
 
 ***Note: For the remainder of this ADR input variables and function return values are referred to as "inserted content".***
 
