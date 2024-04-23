@@ -181,13 +181,12 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                 }
 
                 return mono
-                    .map(it -> {
-                        if (it instanceof Iterable) {
-                            // Handle return from things like Mono<List<?>>
-                            // from {{function 'input'}} as part of the prompt.
-                            return (T) ((Iterable<?>) it).iterator().next();
-                        } else {
-                            return (T) it;
+                    .flatMap(it -> {
+                        try {
+                            return Mono.just((T) it);
+                        } catch (ClassCastException e) {
+                            return Mono.error(
+                                new SKException("Return type does not match the expected type", e));
                         }
                     })
                     .map(it -> {

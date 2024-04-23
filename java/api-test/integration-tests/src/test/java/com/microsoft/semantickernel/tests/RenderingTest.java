@@ -10,15 +10,19 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 @WireMockTest
 public class RenderingTest {
@@ -150,6 +154,58 @@ public class RenderingTest {
             wm.getAllServeEvents().get(0).getRequest().getBodyAsString().contains("{{$ignore}}"));
     }
 
+    @DefineKernelFunction(name = "WithEmptyListReturn")
+    public List<Integer> WithEmptyListReturn() {
+        return List.of();
+    }
+
+    @DefineKernelFunction(name = "WithListReturn")
+    public List<Integer> WithListReturn() {
+        return List.of(1, 2, 3);
+    }
+
+    @DefineKernelFunction(name = "WithListReturn2", returnType = "java.util.List")
+    public List<Integer> WithListReturn2() {
+        return List.of(1, 2, 3);
+    }
+
+    @DefineKernelFunction(name = "WithListReturn3", returnType = "java.util.List")
+    public Mono<List<Integer>> WithListReturn3() {
+        return Mono.just(List.of(1, 2, 3));
+    }
+
+    @DefineKernelFunction(name = "WithListReturn4", returnType = "java.util.List")
+    public Mono<List<Integer>> WithListReturn4() {
+        return Mono.just(List.of());
+    }
+
+    @Test
+    public void canHandleIterableReturnFromFunction() {
+        buildChatKernel()
+            .invokeAsync(
+                KernelFunction
+                    .createFromPrompt("""
+                        <message role="user">{{RenderingTest-WithEmptyListReturn}}</message>
+                        <message role="user">{{RenderingTest-WithListReturn}}</message>
+                        <message role="user">{{RenderingTest-WithListReturn2}}</message>
+                        <message role="user">{{RenderingTest-WithListReturn3}}</message>
+                        <message role="user">{{RenderingTest-WithListReturn4}}</message>
+                        """)
+                    .withTemplateFormat("handlebars")
+                    .build())
+            .block();
+
+        Assertions.assertTrue(
+            wm.getAllServeEvents().get(0).getRequest().getBodyAsString().equals(
+                "{\"messages\":["
+                    + "{\"role\":\"user\",\"content\":\"[]\"},"
+                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
+                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
+                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
+                    + "{\"role\":\"user\",\"content\":\"[]\"}"
+                    + "],\"model\":\"gpt-35-turbo-2\"}"));
+    }
+
     private Kernel buildTextKernel() {
         wm.addStubMapping(
             stubFor(
@@ -205,6 +261,7 @@ public class RenderingTest {
 
         Kernel kernel = Kernel.builder()
             .withAIService(ChatCompletionService.class, textGenerationService)
+            .withPlugin(KernelPluginFactory.createFromObject(this, "RenderingTest"))
             .build();
         return kernel;
     }

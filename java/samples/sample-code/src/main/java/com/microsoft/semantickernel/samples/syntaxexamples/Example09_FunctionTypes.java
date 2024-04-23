@@ -277,6 +277,27 @@ public class Example09_FunctionTypes {
             .invokeAsync(plugin.get("AsyncWithBoxedPrimativeReturnType"))
             .block();
         System.out.println(result12.getResult());
+
+        var result13 = kernel
+            .invokeAsync(plugin.get("WithEmptyListReturn"))
+            .block();
+        System.out.println(result13.getResult());
+
+        var result14 = kernel
+            .invokeAsync(plugin.get("WithListReturn"))
+            .block();
+        System.out.println(result14.getResult());
+
+        var result15 = kernel
+            .invokeAsync(plugin.get("WithListReturn2"))
+            .block();
+        System.out.println(result15.getResult());
+
+        var result16 = kernel
+            .invokeAsync(plugin.get("WithListReturn3"))
+            .block();
+        System.out.println(result16.getResult());
+
         /*
          * TODO: support FunctionResult
          * kernel
@@ -512,6 +533,26 @@ public class Example09_FunctionTypes {
         @DefineKernelFunction(name = "AsyncWithBoxedPrimativeReturnType", returnType = "int")
         public Mono<Integer> AsyncWithBoxedPrimativeReturnType() {
             return Mono.just(Integer.valueOf(1));
+        }
+
+        @DefineKernelFunction(name = "WithEmptyListReturn")
+        public List<Integer> WithEmptyListReturn() {
+            return List.of();
+        }
+
+        @DefineKernelFunction(name = "WithListReturn")
+        public List<Integer> WithListReturn() {
+            return List.of(1, 2, 3);
+        }
+
+        @DefineKernelFunction(name = "WithListReturn2", returnType = "java.util.List")
+        public List<Integer> WithListReturn2() {
+            return List.of(1, 2, 3);
+        }
+
+        @DefineKernelFunction(name = "WithListReturn3", returnType = "java.util.List")
+        public Mono<List<Integer>> WithListReturn3() {
+            return Mono.just(List.of(1, 2, 3));
         }
 
         /*
