@@ -50,7 +50,7 @@ public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDispo
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
     /// and targeting Azure OpenAI services.
     /// </summary>
-    [Theory]
+    [Theory(Skip = "No supported endpoint configured.")]
     [InlineData("What is the special soup?", "Clam Chowder")]
     public async Task AzureOpenAIAssistantAgentAsync(string input, string expectedAnswerContains)
     {
