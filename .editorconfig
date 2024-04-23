@@ -368,6 +368,39 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
+###############################
+# Resharper Rules             #
+###############################
+
+# Resharper disabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
+resharper_redundant_linebreak_highlighting = none # Disable Resharper's "Redundant line break" highlighting
+resharper_missing_linebreak_highlighting = none # Disable Resharper's "Missing line break" highlighting
+resharper_bad_empty_braces_line_breaks_highlighting = none # Disable Resharper's "Bad empty braces line breaks" highlighting
+resharper_missing_indent_highlighting = none # Disable Resharper's "Missing indent" highlighting
+resharper_missing_blank_lines_highlighting = none # Disable Resharper's "Missing blank lines" highlighting
+resharper_wrong_indent_size_highlighting = none # Disable Resharper's "Wrong indent size" highlighting
+resharper_bad_indent_highlighting = none # Disable Resharper's "Bad indent" highlighting
+resharper_bad_expression_braces_line_breaks_highlighting = none # Disable Resharper's "Bad expression braces line breaks" highlighting
+resharper_multiple_spaces_highlighting = none # Disable Resharper's "Multiple spaces" highlighting
+resharper_bad_expression_braces_indent_highlighting = none # Disable Resharper's "Bad expression braces indent" highlighting
+resharper_bad_control_braces_indent_highlighting = none # Disable Resharper's "Bad control braces indent" highlighting
+resharper_bad_preprocessor_indent_highlighting = none # Disable Resharper's "Bad preprocessor indent" highlighting
+resharper_redundant_blank_lines_highlighting = none # Disable Resharper's "Redundant blank lines" highlighting
+resharper_multiple_statements_on_one_line_highlighting = none # Disable Resharper's "Multiple statements on one line" highlighting
+resharper_bad_braces_spaces_highlighting = none # Disable Resharper's "Bad braces spaces" highlighting
+resharper_outdent_is_off_prev_level_highlighting = none # Disable Resharper's "Outdent is off previous level" highlighting
+resharper_bad_symbol_spaces_highlighting = none # Disable Resharper's "Bad symbol spaces" highlighting
+resharper_bad_colon_spaces_highlighting = none # Disable Resharper's "Bad colon spaces" highlighting
+resharper_bad_semicolon_spaces_highlighting = none # Disable Resharper's "Bad semicolon spaces" highlighting
+resharper_bad_square_brackets_spaces_highlighting = none # Disable Resharper's "Bad square brackets spaces" highlighting
+resharper_bad_parens_spaces_highlighting = none # Disable Resharper's "Bad parens spaces" highlighting
+
+# Resharper enabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
+resharper_comment_typo_highlighting = suggestion # Resharper's "Comment typo" highlighting
+resharper_redundant_using_directive_highlighting = warning # Resharper's "Redundant using directive" highlighting
+resharper_inconsistent_naming_highlighting = warning # Resharper's "Inconsistent naming" highlighting
+resharper_redundant_this_qualifier_highlighting = warning # Resharper's "Redundant 'this' qualifier" highlighting
+resharper_arrange_this_qualifier_highlighting = warning # Resharper's "Arrange 'this' qualifier" highlighting
 
 ###############################
 # Java Coding Conventions     #
