@@ -33,12 +33,10 @@ public class AggregatorAgentTests
                 ExecutionSettings =
                     new()
                     {
-                        SelectionStrategy = new SequentialSelectionStrategy(),
                         TerminationStrategy =
-                            new DefaultTerminationStrategy()
-                            {
-                                MaximumIterations = 3
-                            }
+                        {
+                            MaximumIterations = 3
+                        }
                     }
             };
 
