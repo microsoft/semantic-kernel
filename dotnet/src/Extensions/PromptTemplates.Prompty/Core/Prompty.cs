@@ -9,22 +9,22 @@ namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 internal class Prompty()
 {
     [YamlMember(Alias = "name")]
-    public string Name;
+    public string? Name;
 
     [YamlMember(Alias = "description")]
-    public string Description;
+    public string? Description;
 
     [YamlMember(Alias = "version")]
-    public string Version;
+    public string? Version;
 
     [YamlMember(Alias = "tags")]
-    public List<string> Tags;
+    public List<string>? Tags;
 
     [YamlMember(Alias = "authors")]
-    public List<string> Authors;
+    public List<string>? Authors;
 
     [YamlMember(Alias = "inputs")]
-    public Dictionary<string, dynamic> Inputs;
+    public Dictionary<string, dynamic>? Inputs;
 
     [YamlMember(Alias = "outputs")]
     public Dictionary<string, dynamic>? Outputs;
@@ -36,7 +36,7 @@ internal class Prompty()
     public string? Prompt { get; set; }
     public List<Dictionary<string, string>> Messages { get; set; }
 
-    public string FilePath;
+    public string? FilePath;
 
     // This is called from Execute to load a prompty file from location to create a Prompty object.
     // If sending a Prompty Object, this will not be used in execute.

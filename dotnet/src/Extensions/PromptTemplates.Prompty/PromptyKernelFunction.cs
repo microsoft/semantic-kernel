@@ -113,8 +113,8 @@ public class PromptyKernelFunction : KernelFunction
         // step 4
         // construct chat completion request settings
         // because prompty only work with openai model, we can use OpenAIChatCompletionSettings here
-        var modelName = prompty.Model.AzureDeployment;
-        var key = prompty.Model.ApiKey;
+        var modelName = prompty.Model.ModelConfiguration.AzureDeployment;
+        var key = prompty.Model.ModelConfiguration.ApiKey;
         var settings = new PromptExecutionSettings()
         {
             ModelId = modelName,

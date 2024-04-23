@@ -24,8 +24,6 @@ internal class Function
     public Parameters? Parameters { get; set; }
     [YamlMember(Alias = "description")]
     public string? Description { get; set; }
-
-
 }
 internal class Parameters
 {
