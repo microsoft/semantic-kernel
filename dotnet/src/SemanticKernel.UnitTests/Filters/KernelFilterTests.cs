@@ -289,6 +289,31 @@ public class KernelFilterTests
     }
 
     [Fact]
+    public async Task PromptFilterCanOverrideArgumentsAsync()
+    {
+        // Arrange
+        const string OriginalInput = "OriginalInput";
+        const string NewInput = "NewInput";
+
+        var mockTextGeneration = this.GetMockTextGeneration();
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRender: async (context, next) =>
+        {
+            context.Arguments["originalInput"] = NewInput;
+            await next(context);
+        });
+
+        var function = KernelFunctionFactory.CreateFromPrompt("Prompt: {{$originalInput}}");
+
+        // Act
+        var result = await kernel.InvokeAsync(function, new() { ["originalInput"] = OriginalInput });
+
+        // Assert
+        mockTextGeneration.Verify(m => m.GetTextContentsAsync("Prompt: NewInput", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
     public async Task FunctionAndPromptFiltersAreExecutedInCorrectOrderAsync()
     {
         // Arrange

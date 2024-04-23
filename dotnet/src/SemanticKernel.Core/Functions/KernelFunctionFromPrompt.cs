@@ -334,7 +334,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, async (context) =>
         {
-            renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
 
             if (this._logger.IsEnabled(LogLevel.Trace))
             {

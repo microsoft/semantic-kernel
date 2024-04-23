@@ -264,8 +264,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Assert
         Assert.Equal(1, firstFunctionInvocations);
         Assert.Equal(0, secondFunctionInvocations);
-        Assert.Equal([0, 0], requestSequenceNumbers);
-        Assert.Equal([0, 1], functionSequenceNumbers);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
     }
 
     [Fact]
@@ -304,8 +304,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Assert
         Assert.Equal(1, firstFunctionInvocations);
         Assert.Equal(0, secondFunctionInvocations);
-        Assert.Equal([0, 0], requestSequenceNumbers);
-        Assert.Equal([0, 1], functionSequenceNumbers);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
     }
 
     [Fact]
@@ -383,6 +383,36 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         // Assert
         Assert.Equal("Result from filter", firstFunctionResult);
         Assert.Equal("Result from Function2", secondFunctionResult);
+    }
+
+    [Fact]
+    public async Task FilterCanOverrideArgumentsAsync()
+    {
+        // Arrange
+        const string NewValue = "NewValue";
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            context.Arguments!["parameter"] = NewValue;
+            await next(context);
+            context.Cancel = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal("NewValue", result.ToString());
     }
 
     public void Dispose()

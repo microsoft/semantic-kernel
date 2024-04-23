@@ -313,8 +313,6 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        AutoFunctionInvocationContext? invocationContext = null;
-
         for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
@@ -406,13 +404,12 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = result.ToolCalls.Count,
-                    Cancel = invocationContext?.Cancel ?? false
+                    FunctionCount = result.ToolCalls.Count
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -429,7 +426,7 @@ internal abstract class ClientCore
                         // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                         // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                         // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                        context.Result = await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
                     }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -451,6 +448,17 @@ internal abstract class ClientCore
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
+
+                // If filter requested cancellation, returning latest function result.
+                if (invocationContext.Cancel)
+                {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug("Filter requested cancellation.");
+                    }
+
+                    return [chat.Last()];
+                }
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, ChatCompletionsToolCall toolCall, ILogger logger)
                 {
@@ -519,17 +527,6 @@ internal abstract class ClientCore
                     this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
                 }
             }
-
-            // If filter requested cancellation, returning latest function result.
-            if (invocationContext is not null && invocationContext.Cancel)
-            {
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Filter requested cancellation.");
-                }
-
-                return [chat.Last()];
-            }
         }
     }
 
@@ -554,7 +551,6 @@ internal abstract class ClientCore
         Dictionary<int, string>? toolCallIdsByIndex = null;
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
-        AutoFunctionInvocationContext? invocationContext = null;
 
         for (int requestIndex = 1; ; requestIndex++)
         {
@@ -668,13 +664,12 @@ internal abstract class ClientCore
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
                 FunctionResult functionResult = new(function) { Culture = kernel.Culture };
-                invocationContext = new(kernel, function, functionResult, chat)
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
                 {
                     Arguments = functionArgs,
                     RequestSequenceIndex = requestIndex - 1,
                     FunctionSequenceIndex = toolCallIndex,
-                    FunctionCount = toolCalls.Length,
-                    Cancel = invocationContext?.Cancel ?? false,
+                    FunctionCount = toolCalls.Length
                 };
 
                 s_inflightAutoInvokes.Value++;
@@ -691,7 +686,7 @@ internal abstract class ClientCore
                         // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                         // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                         // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                        context.Result = await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false);
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
                     }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -713,6 +708,17 @@ internal abstract class ClientCore
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
+
+                // If filter requested cancellation, breaking request iteration loop.
+                if (invocationContext.Cancel)
+                {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug("Filter requested cancellation.");
+                    }
+
+                    yield break;
+                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
@@ -769,17 +775,6 @@ internal abstract class ClientCore
                 {
                     this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.", chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
                 }
-            }
-
-            // If filter requested cancellation, breaking request iteration loop.
-            if (invocationContext is not null && invocationContext.Cancel)
-            {
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Filter requested cancellation.");
-                }
-
-                yield break;
             }
         }
     }
