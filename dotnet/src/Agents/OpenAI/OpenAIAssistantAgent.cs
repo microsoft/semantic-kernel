@@ -48,11 +48,13 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Distinguish between different Azure OpenAI endpoints or OpenAI services.
         yield return this._config.Endpoint ?? "openai";
 
+        // Distinguish between different API versioning.
         if (this._config.Version.HasValue)
         {
             yield return this._config.Version!.ToString();
         }
 
+        // Custom client receives dedicated channel.
         if (this._config.HttpClient != null)
         {
             yield return Guid.NewGuid().ToString();
@@ -64,7 +66,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        return new Channel(this._client, thread.Id);
+        return new OpenAIAssistantChannel(this._client, thread.Id);
     }
 
     /// <inheritdoc/>
