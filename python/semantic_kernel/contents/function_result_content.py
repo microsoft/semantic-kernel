@@ -4,8 +4,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from xml.etree.ElementTree import Element
 
-from pydantic import model_validator
-
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
@@ -43,21 +41,6 @@ class FunctionResultContent(KernelContent):
     name: str | None = None
     result: str
     encoding: str | None = None
-
-    @model_validator(mode="before")
-    def _validate_result(cls, data: dict[str, Any]) -> dict[str, Any]:
-        """Validate the supplied result."""
-        if "result" not in data:
-            # let pydantic validation handle this case
-            return data
-        result = data["result"]
-        try:
-            data["result"] = str(result)
-            if "inner_content" not in data:
-                data["inner_content"] = result
-            return data
-        except Exception as e:
-            raise ValueError(f"Failed to convert result to string: {e}") from e
 
     def __str__(self) -> str:
         return self.result

@@ -6,6 +6,9 @@ import pytest
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -46,6 +49,13 @@ def test_add_system_message(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == AuthorRole.SYSTEM
 
 
+def test_add_system_message_item(chat_history: ChatHistory):
+    content = [TextContent(text="System message")]
+    chat_history.add_system_message(content)
+    assert chat_history.messages[-1].content == str(content[0])
+    assert chat_history.messages[-1].role == AuthorRole.SYSTEM
+
+
 def test_add_system_message_at_init():
     content = "System message"
     chat_history = ChatHistory(system_message=content)
@@ -60,6 +70,13 @@ def test_add_user_message(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == AuthorRole.USER
 
 
+def test_add_user_message_list(chat_history: ChatHistory):
+    content = [TextContent(text="User message")]
+    chat_history.add_user_message(content)
+    assert chat_history.messages[-1].content == content[0].text
+    assert chat_history.messages[-1].role == AuthorRole.USER
+
+
 def test_add_assistant_message(chat_history: ChatHistory):
     content = "Assistant message"
     chat_history.add_assistant_message(content)
@@ -67,10 +84,24 @@ def test_add_assistant_message(chat_history: ChatHistory):
     assert chat_history.messages[-1].role == AuthorRole.ASSISTANT
 
 
+def test_add_assistant_message_list(chat_history: ChatHistory):
+    content = [TextContent(text="Assistant message")]
+    chat_history.add_assistant_message(content)
+    assert chat_history.messages[-1].content == content[0].text
+    assert chat_history.messages[-1].role == AuthorRole.ASSISTANT
+
+
 def test_add_tool_message(chat_history: ChatHistory):
     content = "Tool message"
     chat_history.add_tool_message(content)
     assert chat_history.messages[-1].content == content
+    assert chat_history.messages[-1].role == AuthorRole.TOOL
+
+
+def test_add_tool_message_list(chat_history: ChatHistory):
+    content = [FunctionResultContent(id="test", result="Tool message")]
+    chat_history.add_tool_message(content)
+    assert chat_history.messages[-1].items[0].result == content[0].result
     assert chat_history.messages[-1].role == AuthorRole.TOOL
 
 
@@ -410,28 +441,6 @@ async def test_handwritten_xml_as_arg():
     assert chat_history.messages[0].role == AuthorRole.USER
 
 
-# @pytest.mark.asyncio
-# async def test_history_openai_cmc(chat_history: ChatHistory):
-#     chat_history.add_message(
-#         message=OpenAIChatMessageContent(
-#             inner_content=None,
-#             role=AuthorRole.ASSISTANT,
-#             function_call=FunctionCall(name="test-test", arguments='{"input": "test"}'),
-#         )
-#     )
-#     template = "{{$chat_history}}"
-#     rendered = await KernelPromptTemplate(
-#         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
-#     ).render(
-#         kernel=Kernel(),
-#         arguments=KernelArguments(chat_history=chat_history),
-#     )
-#     chat_history1 = ChatHistory.from_rendered_prompt(rendered)
-
-#     assert chat_history1.messages[0].role == AuthorRole.ASSISTANT
-#     assert chat_history1.messages[0].function_call.name == "test-test"
-
-
 @pytest.mark.asyncio
 async def test_template_empty_history(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
@@ -447,3 +456,23 @@ async def test_template_empty_history(chat_history: ChatHistory):
     assert chat_history_2.messages[0].role == AuthorRole.SYSTEM
     assert chat_history_2.messages[1].content == "What can you do?"
     assert chat_history_2.messages[1].role == AuthorRole.USER
+
+
+def test_to_from_file(chat_history: ChatHistory, tmp_path):
+    chat_history.add_system_message("You are an AI assistant")
+    chat_history.add_user_message("What is the weather in Seattle?")
+    chat_history.add_assistant_message(
+        [FunctionCallContent(id="test1", name="WeatherPlugin-GetWeather", arguments='{{ "location": "Seattle" }}')]
+    )
+    chat_history.add_tool_message([FunctionResultContent(id="test1", result="It is raining")])
+    chat_history.add_assistant_message("It is raining in Seattle, what else can I help you with?")
+
+    file_path = tmp_path / "chat_history.json"
+    chat_history.store_chat_history_to_file(file_path)
+    chat_history_2 = ChatHistory.load_chat_history_from_file(file_path)
+    assert len(chat_history_2.messages) == len(chat_history.messages)
+    assert chat_history_2.messages[0] == chat_history.messages[0]
+    assert chat_history_2.messages[1] == chat_history.messages[1]
+    assert chat_history_2.messages[2] == chat_history.messages[2]
+    assert chat_history_2.messages[3] == chat_history.messages[3]
+    assert chat_history_2.messages[4] == chat_history.messages[4]

@@ -19,7 +19,7 @@ ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultCont
 
 
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
-    """This is the base class for streaming chat message response content.
+    """This is the class for streaming chat message response content.
 
     All Chat Completion Services should return a instance of this class as streaming response,
     where each part of the response as it is streamed is converted to a instance of this class,
@@ -56,7 +56,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
+        """All Chat Completion Services should return a instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -66,7 +66,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             ai_model_id: Optional[str] - The id of the AI model that generated this response.
             metadata: Dict[str, Any] - Any metadata that should be attached to the response.
             role: ChatRole - The role of the chat message.
-            items: list[KernelContent] - The inner content.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
             encoding: Optional[str] - The encoding of the text.
         """
 
@@ -83,7 +83,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
+        """All Chat Completion Services should return a instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -110,6 +110,20 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
+        """All Chat Completion Services should return a instance of this class as response for streaming.
+        Or they can implement their own subclass of this class and return an instance.
+
+        Args:
+            inner_content: Optional[Any] - The inner content of the response,
+                this should hold all the information from the response so even
+                when not creating a subclass a developer can leverage the full thing.
+            ai_model_id: Optional[str] - The id of the AI model that generated this response.
+            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
+            role: ChatRole - The role of the chat message.
+            content: str - The text of the response.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            encoding: Optional[str] - The encoding of the text.
+        """
         kwargs: dict[str, Any] = {
             "role": role,
             "choice_index": choice_index,
@@ -146,6 +160,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         )
 
     def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
     def __add__(self, other: StreamingChatMessageContent) -> StreamingChatMessageContent:
@@ -195,13 +210,13 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         )
 
     def to_element(self) -> "Element":
-        """Convert the ChatMessageContent to an XML Element.
+        """Convert the StreamingChatMessageContent to an XML Element.
 
         Args:
             root_key: str - The key to use for the root of the XML Element.
 
         Returns:
-            Element - The XML Element representing the ChatMessageContent.
+            Element - The XML Element representing the StreamingChatMessageContent.
         """
         root = Element(CHAT_MESSAGE_CONTENT_TAG)
         for field in self.model_fields_set:

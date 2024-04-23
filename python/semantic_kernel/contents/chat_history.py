@@ -276,7 +276,7 @@ class ChatHistory(KernelBaseModel):
         """
         try:
             return self.model_dump_json(indent=2, exclude_none=True)
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod

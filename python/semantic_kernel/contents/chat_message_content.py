@@ -29,13 +29,13 @@ TAG_CONTENT_MAP = {
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
 }
 
-ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent]
+ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent]
 
 logger = logging.getLogger(__name__)
 
 
 class ChatMessageContent(KernelContent):
-    """This is the base class for chat message response content.
+    """This is the class for chat message response content.
 
     All Chat Completion Services should return a instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
@@ -83,7 +83,7 @@ class ChatMessageContent(KernelContent):
             ai_model_id: Optional[str] - The id of the AI model that generated this response.
             metadata: Dict[str, Any] - Any metadata that should be attached to the response.
             role: ChatRole - The role of the chat message.
-            items: list[KernelContent] - The inner content.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
             encoding: Optional[str] - The encoding of the text.
         """
 
@@ -127,6 +127,20 @@ class ChatMessageContent(KernelContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ):
+        """All Chat Completion Services should return a instance of this class as response.
+        Or they can implement their own subclass of this class and return an instance.
+
+        Args:
+            inner_content: Optional[Any] - The inner content of the response,
+                this should hold all the information from the response so even
+                when not creating a subclass a developer can leverage the full thing.
+            ai_model_id: Optional[str] - The id of the AI model that generated this response.
+            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
+            role: ChatRole - The role of the chat message.
+            content: str - The text of the response.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            encoding: Optional[str] - The encoding of the text.
+        """
         kwargs["role"] = role
         if encoding:
             kwargs["encoding"] = encoding
@@ -191,6 +205,7 @@ class ChatMessageContent(KernelContent):
         )
 
     def __str__(self) -> str:
+        """Get the content of the response as a string."""
         return self.content or ""
 
     def to_element(self) -> "Element":
