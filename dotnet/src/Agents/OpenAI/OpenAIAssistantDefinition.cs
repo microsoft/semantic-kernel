@@ -9,9 +9,9 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantDefinition
 {
     /// <summary>
-    /// The ID of the model to use.
+    /// Identifies the AI model (OpenAI) or deployment (AzureOAI) this agent targets.
     /// </summary>
-    public string? Model { get; init; }
+    public string? ModelId { get; init; }
 
     /// <summary>
     /// The description of the assistant.

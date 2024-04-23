@@ -29,7 +29,7 @@ async def test_gp_embedding_service(kernel: Kernel, get_gp_config):
     kernel.add_service(palm_text_embed)
 
     memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=palm_text_embed)
-    kernel.import_plugin_from_object(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
+    kernel.add_plugin(sk.core_plugins.TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
     await memory.save_reference(

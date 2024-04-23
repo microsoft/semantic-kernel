@@ -23,46 +23,27 @@ public abstract class BaseTest
 
     protected ILoggerFactory LoggerFactory { get; }
 
-    protected string GetApiKey()
-    {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
-        {
-            return TestConfiguration.OpenAI.ApiKey;
-        }
+    private bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
-        return TestConfiguration.AzureOpenAI.ApiKey;
-    }
+    protected string ApiKey =>
+        this.UseOpenAIConfig ?
+            TestConfiguration.OpenAI.ApiKey :
+            TestConfiguration.AzureOpenAI.ApiKey;
 
-    protected string? GetEndpoint()
-    {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
-        {
-            return null;
-        }
+    protected string? Endpoint => UseOpenAIConfig ? null : TestConfiguration.AzureOpenAI.Endpoint;
 
-        return TestConfiguration.AzureOpenAI.Endpoint;
-    }
+    protected string Model =>
+        this.UseOpenAIConfig ?
+            TestConfiguration.OpenAI.ChatModelId :
+            TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
-    protected string GetModel()
-    {
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
-        {
-            return TestConfiguration.OpenAI.ChatModelId;
-        }
-
-        return TestConfiguration.AzureOpenAI.ChatDeploymentName;
-    }
-
-    protected Kernel CreateEmptyKernel()
-    {
-        return Kernel.CreateBuilder().Build();
-    }
+    protected Kernel CreateEmptyKernel() => Kernel.CreateBuilder().Build();
 
     protected Kernel CreateKernelWithChatCompletion()
     {
         var builder = Kernel.CreateBuilder();
 
-        if (string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint) || this.ForceOpenAI)
+        if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
                 TestConfiguration.OpenAI.ChatModelId,

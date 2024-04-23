@@ -3,24 +3,23 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatMessageContent,
+    OpenAIChatPromptExecutionSettings,
     OpenAIStreamingChatMessageContent,
 )
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions import KernelFunction
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -35,12 +34,12 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 kernel.add_service(
-    sk_oai.OpenAIChatCompletion(
+    OpenAIChatCompletion(
         service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
@@ -52,10 +51,10 @@ plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.import_plugin_from_object(MathPlugin(), plugin_name="math")
-kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
+kernel.add_plugin(MathPlugin(), plugin_name="math")
+kernel.add_plugin(TimePlugin(), plugin_name="time")
 
-chat_function = kernel.create_function_from_prompt(
+chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
     plugin_name="ChatBot",
     function_name="Chat",
@@ -68,7 +67,7 @@ chat_function = kernel.create_function_from_prompt(
 
 # Note: the number of responses for auto inoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
-execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
+execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
     ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
@@ -89,10 +88,10 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingChatMessageContent]) -> None:
+def print_tool_calls(message: OpenAIChatMessageContent) -> None:
     # A helper method to pretty print the tool calls from the message.
     # This is only triggered if auto invoke tool calls is disabled.
-    if isinstance(message, (OpenAIChatMessageContent, OpenAIStreamingChatMessageContent)):
+    if isinstance(message, OpenAIChatMessageContent):
         tool_calls = message.tool_calls
         formatted_tool_calls = []
         for i, tool_call in enumerate(tool_calls, start=1):
@@ -109,11 +108,11 @@ def print_tool_calls(message: Union[OpenAIChatMessageContent, OpenAIStreamingCha
 
 
 async def handle_streaming(
-    kernel: sk.Kernel,
+    kernel: Kernel,
     chat_function: "KernelFunction",
     user_input: str,
     history: ChatHistory,
-    execution_settings: OpenAIPromptExecutionSettings,
+    execution_settings: OpenAIChatPromptExecutionSettings,
 ) -> None:
     response = kernel.invoke_stream(
         chat_function,

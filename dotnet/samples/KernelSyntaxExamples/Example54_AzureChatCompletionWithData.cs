@@ -28,7 +28,7 @@ namespace Examples;
 /// <para> dotnet user-secrets set "AzureAISearch:ApiKey" "{Key from your Search service resource}"</para>
 /// <para> dotnet user-secrets set "AzureAISearch:IndexName" "..."</para>
 /// </value>
-public class Example54_AzureChatCompletionWithData : BaseTest
+public class Example54_AzureChatCompletionWithData(ITestOutputHelper output) : BaseTest(output)
 {
     [RetryFact(typeof(HttpOperationException))]
     public async Task ExampleWithChatCompletionAsync()
@@ -131,9 +131,5 @@ public class Example54_AzureChatCompletionWithData : BaseTest
             DataSourceApiKey = TestConfiguration.AzureAISearch.ApiKey,
             DataSourceIndex = TestConfiguration.AzureAISearch.IndexName
         };
-    }
-
-    public Example54_AzureChatCompletionWithData(ITestOutputHelper output) : base(output)
-    {
     }
 }

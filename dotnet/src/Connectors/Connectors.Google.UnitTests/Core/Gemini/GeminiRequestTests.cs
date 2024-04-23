@@ -325,9 +325,6 @@ public sealed class GeminiRequestTests
             c => Equals(message.Role, c.Role));
     }
 
-    private sealed class DummyContent : KernelContent
-    {
-        public DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null)
-            : base(innerContent, modelId, metadata) { }
-    }
+    private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
+        KernelContent(innerContent, modelId, metadata);
 }

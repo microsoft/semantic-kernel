@@ -958,7 +958,7 @@ public sealed class KernelFunctionFromMethodTests1
     [Fact]
     public async Task ItSupportsGenericArgumentsAndReturnTypesAsync()
     {
-        List<string> expected = new() { "1", "2", "3" };
+        List<string> expected = ["1", "2", "3"];
         KernelArguments input = new() { ["val"] = expected };
         KernelFunction func;
         FunctionResult result;
@@ -1187,7 +1187,7 @@ public sealed class KernelFunctionFromMethodTests1
             assertResult.Add(value);
         }
 
-        Assert.True(assertResult.SequenceEqual(new List<int> { 1, 2, 3 }));
+        Assert.True(assertResult.SequenceEqual([1, 2, 3]));
     }
 
     [Fact]
@@ -1383,18 +1383,8 @@ public sealed class KernelFunctionFromMethodTests1
         public int Id { get; set; }
     }
 
-    private sealed class ThirdPartyJsonPrimitive
+    private sealed class ThirdPartyJsonPrimitive(string jsonToReturn)
     {
-        private readonly string _jsonToReturn;
-
-        public ThirdPartyJsonPrimitive(string jsonToReturn)
-        {
-            this._jsonToReturn = jsonToReturn;
-        }
-
-        public override string ToString()
-        {
-            return this._jsonToReturn;
-        }
+        public override string ToString() => jsonToReturn;
     }
 }

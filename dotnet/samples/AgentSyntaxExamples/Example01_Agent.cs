@@ -12,7 +12,7 @@ namespace Examples;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Example01_Agent : BaseTest
+public class Example01_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ParrotName = "Parrot";
     private const string ParrotInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
@@ -50,8 +50,4 @@ public class Example01_Agent : BaseTest
             }
         }
     }
-
-    public Example01_Agent(ITestOutputHelper output)
-        : base(output)
-    { }
 }

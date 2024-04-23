@@ -20,6 +20,7 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// The citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Quote { get; init; }
 
     /// <summary>

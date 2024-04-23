@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -48,7 +50,7 @@ public sealed class KernelFunctionFromMethodTests2
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
     }
 
     [Fact]
@@ -201,13 +203,47 @@ public sealed class KernelFunctionFromMethodTests2
         await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
     }
 
-    private interface IExampleService
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromDelegate()
     {
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(() => { return "Value1"; }, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
 
-    private sealed class ExampleService : IExampleService
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromMethodInfo()
     {
+        // Arrange.
+        var target = new LocalExamplePlugin();
+        var methodInfo = target.GetType().GetMethod(nameof(LocalExamplePlugin.Type02))!;
+
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(methodInfo, target, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
+
+    private interface IExampleService;
+
+    private sealed class ExampleService : IExampleService;
 
     private sealed class LocalExamplePlugin
     {

@@ -14,7 +14,7 @@ namespace Examples;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> with a <see cref="KernelPlugin"/>,
 /// and then eliciting its response to explicit user messages.
 /// </summary>
-public class Example02_Plugins : BaseTest
+public class Example02_Plugins(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -57,8 +57,4 @@ public class Example02_Plugins : BaseTest
             }
         }
     }
-
-    public Example02_Plugins(ITestOutputHelper output)
-        : base(output)
-    { }
 }

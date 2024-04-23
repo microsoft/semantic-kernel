@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example24_OpenApiPlugin_Jira : BaseTest
+public class Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : BaseTest(output)
 {
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
@@ -120,18 +120,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// Retrieves authentication content (e.g. username/password, API key) via the provided delegate and
     /// applies it to HTTP requests using the "basic" authentication scheme.
     /// </summary>
-    public class BasicAuthenticationProvider
+    public class BasicAuthenticationProvider(Func<Task<string>> credentials)
     {
-        private readonly Func<Task<string>> _credentials;
-
-        /// <summary>
-        /// Creates an instance of the <see cref="BasicAuthenticationProvider"/> class.
-        /// </summary>
-        /// <param name="credentials">Delegate for retrieving credentials.</param>
-        public BasicAuthenticationProvider(Func<Task<string>> credentials)
-        {
-            this._credentials = credentials;
-        }
+        private readonly Func<Task<string>> _credentials = credentials;
 
         /// <summary>
         /// Applies the authentication content to the provided HTTP request message.
@@ -150,18 +141,9 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// Retrieves a token via the provided delegate and applies it to HTTP requests using the
     /// "bearer" authentication scheme.
     /// </summary>
-    public class BearerAuthenticationProvider
+    public class BearerAuthenticationProvider(Func<Task<string>> bearerToken)
     {
-        private readonly Func<Task<string>> _bearerToken;
-
-        /// <summary>
-        /// Creates an instance of the <see cref="BearerAuthenticationProvider"/> class.
-        /// </summary>
-        /// <param name="bearerToken">Delegate to retrieve the bearer token.</param>
-        public BearerAuthenticationProvider(Func<Task<string>> bearerToken)
-        {
-            this._bearerToken = bearerToken;
-        }
+        private readonly Func<Task<string>> _bearerToken = bearerToken;
 
         /// <summary>
         /// Applies the token to the provided HTTP request message.
@@ -177,20 +159,8 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// <summary>
     /// Uses the Microsoft Authentication Library (MSAL) to authenticate HTTP requests.
     /// </summary>
-    public class InteractiveMsalAuthenticationProvider : BearerAuthenticationProvider
+    public class InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri) : BearerAuthenticationProvider(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
     {
-        /// <summary>
-        /// Creates an instance of the <see cref="InteractiveMsalAuthenticationProvider"/> class.
-        /// </summary>
-        /// <param name="clientId">Client ID of the caller.</param>
-        /// <param name="tenantId">Tenant ID of the target resource.</param>
-        /// <param name="scopes">Requested scopes.</param>
-        /// <param name="redirectUri">Redirect URI.</param>
-        public InteractiveMsalAuthenticationProvider(string clientId, string tenantId, string[] scopes, Uri redirectUri)
-            : base(() => GetTokenAsync(clientId, tenantId, scopes, redirectUri))
-        {
-        }
-
         /// <summary>
         /// Gets an access token using the Microsoft Authentication Library (MSAL).
         /// </summary>
@@ -228,21 +198,10 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     /// <summary>
     /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.
     /// </summary>
-    public sealed class CustomAuthenticationProvider
+    public sealed class CustomAuthenticationProvider(Func<Task<string>> header, Func<Task<string>> value)
     {
-        private readonly Func<Task<string>> _header;
-        private readonly Func<Task<string>> _value;
-
-        /// <summary>
-        /// Creates an instance of the <see cref="CustomAuthenticationProvider"/> class.
-        /// </summary>
-        /// <param name="header">Delegate for retrieving the header name.</param>
-        /// <param name="value">Delegate for retrieving the value.</param>
-        public CustomAuthenticationProvider(Func<Task<string>> header, Func<Task<string>> value)
-        {
-            this._header = header;
-            this._value = value;
-        }
+        private readonly Func<Task<string>> _header = header;
+        private readonly Func<Task<string>> _value = value;
 
         /// <summary>
         /// Applies the header and value to the provided HTTP request message.
@@ -257,8 +216,4 @@ public class Example24_OpenApiPlugin_Jira : BaseTest
     }
 
     #endregion
-
-    public Example24_OpenApiPlugin_Jira(ITestOutputHelper output) : base(output)
-    {
-    }
 }

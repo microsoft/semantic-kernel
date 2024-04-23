@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -25,7 +26,7 @@ public sealed class AgentGroupChat : AgentChat
     /// <summary>
     /// Settings for defining chat behavior.
     /// </summary>
-    public ChatExecutionSettings ExecutionSettings { get; set; } = new ChatExecutionSettings();
+    public AgentGroupChatSettings ExecutionSettings { get; set; } = new AgentGroupChatSettings();
 
     /// <summary>
     /// The agents participating in the chat.
@@ -48,12 +49,12 @@ public sealed class AgentGroupChat : AgentChat
     /// Process a series of interactions between the <see cref="AgentGroupChat.Agents"/> that have joined this <see cref="AgentGroupChat"/>.
     /// The interactions will proceed according to the <see cref="SelectionStrategy"/> and the <see cref="TerminationStrategy"/>
     /// defined via <see cref="AgentGroupChat.ExecutionSettings"/>.
-    /// In the absence of an <see cref="ChatExecutionSettings.SelectionStrategy"/>, this method will not invoke any agents.
+    /// In the absence of an <see cref="AgentGroupChatSettings.SelectionStrategy"/>, this method will not invoke any agents.
     /// Any agent may be explicitly selected by calling <see cref="AgentGroupChat.InvokeAsync(Agent, bool, CancellationToken)"/>.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (this.IsComplete)
         {
@@ -66,33 +67,21 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
-        // Unable to assume selection in the absence of a strategy.  This is the default.
-        // For explicit selection, AgentGroupChat.InvokeAsync(Agent, CancellationToken) is available.
-        if (this.ExecutionSettings.SelectionStrategy == null)
-        {
-            throw new KernelException($"Agent Failure - No {nameof(ChatExecutionSettings.SelectionStrategy)} defined on {nameof(AgentGroupChat.ExecutionSettings)} for this chat.");
-        }
-
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
             Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
 
             // Invoke agent and process messages along with termination
-            await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
+            await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                yield return message;
-
                 if (message.Role == AuthorRole.Assistant)
                 {
                     var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
                     this.IsComplete = await task.ConfigureAwait(false);
                 }
 
-                if (this.IsComplete)
-                {
-                    break;
-                }
+                yield return message;
             }
 
             if (this.IsComplete)
@@ -135,20 +124,15 @@ public sealed class AgentGroupChat : AgentChat
             this.AddAgent(agent);
         }
 
-        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken))
+        await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
         {
-            yield return message;
-
             if (message.Role == AuthorRole.Assistant)
             {
                 var task = this.ExecutionSettings.TerminationStrategy.ShouldTerminateAsync(agent, this.History, cancellationToken);
                 this.IsComplete = await task.ConfigureAwait(false);
             }
 
-            if (this.IsComplete)
-            {
-                break;
-            }
+            yield return message;
         }
     }
 

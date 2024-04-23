@@ -32,7 +32,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelId = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
@@ -61,7 +61,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelId = "testmodel",
                 Name = "testname",
                 Description = "testdescription",
                 Instructions = "testinstructions",
@@ -93,10 +93,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelId = "testmodel",
                 EnableCodeInterpreter = true,
                 EnableRetrieval = true,
-                FileIds = new[] { "#1", "#2" },
+                FileIds = ["#1", "#2"],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
             };
 
@@ -117,15 +117,15 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RestoreAsync"/>.
+    /// Verify the invocation and response of <see cref="OpenAIAssistantAgent.RetrieveAsync"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentRestoreAsync()
+    public async Task VerifyOpenAIAssistantAgentRetrieveAsync()
     {
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);
 
         OpenAIAssistantAgent agent =
-            await OpenAIAssistantAgent.RestoreAsync(
+            await OpenAIAssistantAgent.RetrieveAsync(
                 this._emptyKernel,
                 this.CreateTestConfiguration(),
                 "#id");
@@ -157,7 +157,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.DeleteAsync"/>.
+    /// Verify complex chat interaction across multiple states.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentChatAsync()
@@ -187,10 +187,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deletion of agent via <see cref="OpenAIAssistantAgent.ListAsync"/>.
+    /// Verify ability to list agent definitions.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentListAsync()
+    public async Task VerifyOpenAIAssistantAgentListDefinitionAsync()
     {
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
@@ -201,7 +201,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageFinal);
 
         var messages =
-            await OpenAIAssistantAgent.ListAsync(
+            await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration()).ToArrayAsync();
         Assert.Equal(7, messages.Length);
 
@@ -211,7 +211,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.ListAgentsPageMore);
 
         messages =
-            await OpenAIAssistantAgent.ListAsync(
+            await OpenAIAssistantAgent.ListDefinitionsAsync(
                 this.CreateTestConfiguration(),
                 maxResults: 4).ToArrayAsync();
         Assert.Equal(4, messages.Length);
@@ -239,7 +239,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantDefinition definition =
             new()
             {
-                Model = "testmodel",
+                ModelId = "testmodel",
             };
 
         this.SetupResponse(HttpStatusCode.OK, ResponseContent.CreateAgentSimple);

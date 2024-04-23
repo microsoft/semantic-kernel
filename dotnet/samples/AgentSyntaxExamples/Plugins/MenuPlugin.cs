@@ -21,7 +21,7 @@ Special Drink: Chai Tea
     [KernelFunction, Description("Provides the price of the requested menu item.")]
     public string GetItemPrice(
         [Description("The name of the menu item.")]
-            string menuItem)
+        string menuItem)
     {
         return "$9.99";
     }
