@@ -71,6 +71,8 @@ public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
+                                // Limit total number of turns
+                                MaximumIterations = 10,
                             }
                     }
             };
