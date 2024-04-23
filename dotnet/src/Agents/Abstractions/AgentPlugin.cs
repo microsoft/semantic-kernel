@@ -70,7 +70,7 @@ internal sealed class AgentPlugin : KernelPlugin
     /// <returns>The agent response</returns>
     private async Task<IReadOnlyList<ChatMessageContent>> InvokeAsync(
         string? input,
-        KernelArguments arguments,
+        KernelArguments arguments, // $$$ THREAD ???
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
@@ -80,6 +80,8 @@ internal sealed class AgentPlugin : KernelPlugin
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
         }
+
+        // %%% NEEDED ??? / HISTORY DCR ???
 
         return await chat.InvokeAsync(cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
     }
