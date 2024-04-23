@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
 using Xunit;
@@ -124,6 +125,7 @@ public sealed class GeminiCountingTokensTests : IDisposable
                 httpClient: this._httpClient,
                 modelId: modelId,
                 bearerTokenProvider: () => Task.FromResult(bearerKey),
+                apiVersion: VertexAIVersion.V1,
                 location: "fake-location",
                 projectId: "fake-project-id");
         }
@@ -131,6 +133,7 @@ public sealed class GeminiCountingTokensTests : IDisposable
         return new GeminiTokenCounterClient(
             httpClient: this._httpClient,
             modelId: modelId,
+            apiVersion: GoogleAIVersion.V1,
             apiKey: "fake-key");
     }
 
