@@ -10,7 +10,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
-/// A MongoDB memory record .
+/// A MongoDB memory record.
 /// </summary>
 internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {

@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver"/>
-    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
