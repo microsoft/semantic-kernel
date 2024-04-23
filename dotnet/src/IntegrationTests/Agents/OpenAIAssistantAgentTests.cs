@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.ComponentModel;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,26 +18,15 @@ namespace SemanticKernel.IntegrationTests.Agents.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAIAssistantAgentTests : IDisposable
+public sealed class OpenAIAssistantAgentTests(ITestOutputHelper output) : IDisposable
 {
-    private readonly IKernelBuilder _kernelBuilder;
-    private readonly IConfigurationRoot _configuration;
-
-    public OpenAIAssistantAgentTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
+    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAIAssistantAgentTests>()
             .Build();
-
-        this._kernelBuilder = Kernel.CreateBuilder();
-    }
 
     /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> using function calling
@@ -115,8 +102,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Contains(expected, builder.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
+    private readonly XunitLogger<Kernel> _logger = new(output);
+    private readonly RedirectOutput _testOutputHelper = new(output);
 
     public void Dispose()
     {
@@ -124,7 +111,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         this._testOutputHelper.Dispose();
     }
 
-    public sealed class MenuPlugin
+    private sealed class MenuPlugin
     {
         [KernelFunction, Description("Provides a list of specials from the menu.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]

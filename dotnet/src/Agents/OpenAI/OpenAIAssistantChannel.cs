@@ -128,7 +128,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     .OfType<RunStepMessageCreationDetails>()
                     .Where(d => !processedMessageIds.Contains(d.MessageCreation.MessageId));
 
-            foreach (var detail in messageDetails)
+            foreach (RunStepMessageCreationDetails detail in messageDetails)
             {
                 // Retrieve the message
                 ThreadMessage? message = await this.RetrieveMessageAsync(detail, cancellationToken).ConfigureAwait(false);
@@ -342,7 +342,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         }
     }
 
-    private async Task<ThreadMessage?> RetrieveMessageAsync(RunStepMessageCreationDetails? detail, CancellationToken cancellationToken)
+    private async Task<ThreadMessage?> RetrieveMessageAsync(RunStepMessageCreationDetails detail, CancellationToken cancellationToken)
     {
         ThreadMessage? message = null;
 

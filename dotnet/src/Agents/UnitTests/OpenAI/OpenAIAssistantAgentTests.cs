@@ -96,7 +96,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 ModelId = "testmodel",
                 EnableCodeInterpreter = true,
                 EnableRetrieval = true,
-                FileIds = new[] { "#1", "#2" },
+                FileIds = ["#1", "#2"],
                 Metadata = new Dictionary<string, string>() { { "a", "1" } },
             };
 
