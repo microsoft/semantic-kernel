@@ -5,7 +5,5 @@ namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 internal enum ApiType
 {
     Chat,
-    Completion,
-    Image,
-    Embedding
+    Completion
 }

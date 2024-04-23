@@ -4,5 +4,6 @@ namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
 
 internal enum ModelType
 {
-    azure
+    azure_openai,
+    openai
 }
