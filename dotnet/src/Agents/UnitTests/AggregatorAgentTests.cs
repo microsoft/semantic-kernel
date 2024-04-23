@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
