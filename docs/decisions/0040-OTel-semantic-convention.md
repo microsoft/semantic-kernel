@@ -95,6 +95,7 @@ These services will be discuss in the future:
 
 - Instrumentation implementations
   - Static class
+  - Static member
   - Dependency injection
 - Where do we create the activities
   - Add instrumentations at the connector/service level
@@ -104,18 +105,16 @@ These services will be discuss in the future:
 
 #### Static class `ModelDiagnostics`
 
-This class will live under `SemanticKernel.Abstractions/AI`.
-
-`ModelDiagnostics`
+This class will live under `dotnet\src\InternalUtilities\src\Diagnostics`.
 
 ```C#
 // Example
-public static class ModelDiagnostics
+namespace Microsoft.SemanticKernel;
+
+internal static class ModelDiagnostics
 {
-    public static Activity? StartCompletionActivity(string name, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
-    {
-        ...
-    }
+    private static string s_namespace = typeof(ModelDiagnostics).Namespace;
+    private static ActivitySource s_activitySource = new ActivitySource(s_namespace);
 
     public static Activity? StartCompletionActivity(string name, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
     {
@@ -129,12 +128,7 @@ public static class ModelDiagnostics
         ...
     }
 
-    // Can be used for both non-streaming endpoints and streaming endpoints.
-    // For streaming, collect a list of `StreamingChatMessageContent` and concatenate them into a single `ChatMessageContent` at the end of the streaming.
-    void SetCompletionResponses(Activity? activity, IReadOnlyList<ChatMessageContent> completions, CompletionUsage? usage, PromptExecutionSettings? executionSettings)
-    {
-        ...
-    }
+    ...
 }
 ```
 
@@ -190,33 +184,32 @@ public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, Prom
 }
 ```
 
-#### Dependency injection
+#### Static member of type `ModelDiagnostics` (this is not the static class shown above)
 
-The interface and the implementation will live under `SemanticKernel.Abstractions/AI`.
-
-`DefaultModelInstrumentation : IModelInstrumentation`
+This class will live under `dotnet\src\InternalUtilities\src\Diagnostics`.
 
 ```C#
-public interface IModelInstrumentation
+// Example
+internal sealed class ModelDiagnostics
 {
-    Activity? StartCompletionActivity(string name, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings);
+    private ActivitySource _source;
 
-    Activity? StartCompletionActivity(string name, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings);
-
-    void SetCompletionResponses(Activity? activity, IReadOnlyList<TextContent> completions, CompletionUsage? usage);
-
-    void SetCompletionResponses(Activity activity, IReadOnlyList<ChatMessageContent> completions, CompletionUsage? usage);
-}
-
-public class DefaultModelInstrumentation : IModelInstrumentation
-{
-    private readonly bool _isEventCollectionEnabled;
-
-    private readonly ActivitySource s_activitySource = new ActivitySource("model-service");
-
-    public DefaultModelInstrumentation(bool isEventCollectionEnabled)
+    // Source name must be unique
+    public ModelDiagnostics(string sourceName)
     {
-        _isEventCollectionEnabled = isEventCollectionEnabled;
+        this._source = new ActivitySource(sourceName);
+    }
+
+    public Activity? StartCompletionActivity(string name, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+    {
+        ...
+    }
+
+    ...
+
+    public void SetCompletionResponses(Activity? activity, IReadOnlyList<TextContent> completions, CompletionUsage? usage, PromptExecutionSettings? executionSettings)
+    {
+        ...
     }
 
     ...
@@ -230,28 +223,16 @@ Example usage
 internal sealed class HuggingFaceClient
 {
     ...
-    private readonly IModelInstrumentation? _modelInstrumentation;
+    private static readonly string s_namespace = typeof(HuggingFaceClient).Namespace;
+    private static readonly ModelDiagnostics s_modelDiagnostics = new ModelDiagnostics(s_namespace);
     ...
-
-    internal HuggingFaceClient(
-        string modelId,
-        HttpClient httpClient,
-        Uri? endpoint = null,
-        string? apiKey = null,
-        StreamJsonParser? streamJsonParser = null,
-        IModelInstrumentation? modelInstrumentation = null,
-        ILogger? logger = null)
-    {
-        ...
-        this._modelInstrumentation = modelInstrumentation;
-    }
 
     public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
         string prompt,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        using var activity = this._modelInstrumentation.StartCompletionActivity(
+        using var activity = s_modelDiagnostics.StartCompletionActivity(
             $"HuggingFace {this._modelId}",
             this._modelId,
             "HuggingFace",
@@ -262,7 +243,7 @@ internal sealed class HuggingFaceClient
         // Usage can be estimated.
         var usage = ...;
 
-        this._modelInstrumentation.SetCompletionResponses(
+        s_modelDiagnostics.SetCompletionResponses(
             activity,
             completions,
             usage);
@@ -271,28 +252,158 @@ internal sealed class HuggingFaceClient
     }
 }
 
+// In service
+public sealed class HuggingFaceTextGenerationService : ITextGenerationService
+{
+    ...
+    private static readonly string s_namespace = typeof(HuggingFaceTextGenerationService).Namespace;
+    private static readonly ModelDiagnostics s_modelDiagnostics = new ModelDiagnostics(s_namespace);
+    ...
+
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        using var activity = s_modelDiagnostics.StartCompletionActivity(
+            $"HuggingFace {this.AttributesInternal[AIServiceExtensions.ModelIdKey]}",
+            this.AttributesInternal[AIServiceExtensions.ModelIdKey],
+            "HuggingFace",
+            prompt,
+            executionSettings);
+
+        var completions = ...;
+
+        // Usage is usually not returned from the clients.
+        s_modelDiagnostics.SetCompletionResponses(
+            activity,
+            completions,
+            null,
+            executionSettings);
+
+        return completions;
+    }
+}
+```
+
+#### Dependency injection
+
+This class will live under `dotnet\src\InternalUtilities\src\Diagnostics`.
+
+```C#
+namespace Microsoft.SemanticKernel;
+
+internal class ModelDiagnostics
+{
+    private readonly bool _isEventCollectionEnabled;
+
+    private readonly ActivitySource s_activitySource = new ActivitySource(typeof(ModelDiagnostics).Namespace);
+
+    public ModelDiagnostics(bool isEventCollectionEnabled)
+    {
+        _isEventCollectionEnabled = isEventCollectionEnabled;
+    }
+
+    public Activity? StartCompletionActivity(string name, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+    {
+        ...
+    }
+
+    ...
+
+    public void SetCompletionResponses(Activity? activity, IReadOnlyList<TextContent> completions, CompletionUsage? usage, PromptExecutionSettings? executionSettings)
+    {
+        ...
+    }
+
+    ...
+}
+```
+
+Example usage
+
+```C#
+// In client
+internal sealed class HuggingFaceClient
+{
+    ...
+    private readonly ModelDiagnostics? _modelDiagnostics;
+    ...
+
+    internal HuggingFaceClient(
+        string modelId,
+        HttpClient httpClient,
+        Uri? endpoint = null,
+        string? apiKey = null,
+        StreamJsonParser? streamJsonParser = null,
+        ModelDiagnostics? modelDiagnostics = null,
+        ILogger? logger = null)
+    {
+        ...
+        this._modelDiagnostics = modelDiagnostics;
+    }
+
+    public async Task<IReadOnlyList<TextContent>> GenerateTextAsync(
+        string prompt,
+        PromptExecutionSettings? executionSettings,
+        CancellationToken cancellationToken)
+    {
+        using var activity = this._modelDiagnostics.StartCompletionActivity(
+            $"HuggingFace {this._modelId}",
+            this._modelId,
+            "HuggingFace",
+            prompt,
+            executionSettings);
+
+        var completions = ...;
+        // Usage can be estimated.
+        var usage = ...;
+
+        this._modelDiagnostics.SetCompletionResponses(
+            activity,
+            completions,
+            usage);
+
+        return completions;
+    }
+}
 
 // In service
 public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 {
+    ...
+    private readonly ModelDiagnostics? _modelDiagnostics;
+    ...
+
     public HuggingFaceTextGenerationService(
         string model,
         Uri? endpoint = null,
         string? apiKey = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null,
-        IModelInstrumentation? modelInstrumentation = null)
+        ModelDiagnostics? modelDiagnostics = null)
     {
         ...
-        this.Client = new HuggingFaceClient(
-            modelId: model,
-            endpoint: endpoint ?? httpClient?.BaseAddress,
-            apiKey: apiKey,
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-            modelInstrumentation: modelInstrumentation,
-            logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
-        );
+        this._modelDiagnostics = modelDiagnostics;
         ...
+    }
+
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        using var activity = this._modelDiagnostics.StartCompletionActivity(
+            $"HuggingFace {this.AttributesInternal[AIServiceExtensions.ModelIdKey]}",
+            this.AttributesInternal[AIServiceExtensions.ModelIdKey],
+            "HuggingFace",
+            prompt,
+            executionSettings);
+
+        var completions = ...;
+
+        // Usage is usually not returned from the clients.
+        this._modelDiagnostics.SetCompletionResponses(
+            activity,
+            completions,
+            null,
+            executionSettings);
+
+        return completions;
     }
 }
 ```
@@ -300,7 +411,14 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
 Dependency injection example
 
 ```C#
-builder.Services.AddSingleton<IModelInstrumentation, DefaultModelInstrumentation>();
+// This is the way to opt in to include LLM request activities.
+public static IKernelBuilder AddModelDiagnostics(this IKernelBuilder builder, bool isEventCollectionEnabled = false)
+{
+    builder.Services.AddSingleton<ModelDiagnostics>(new ModelDiagnostics(isEventCollectionEnabled));
+
+    return builder;
+}
+
 // In HuggingFaceKernelBuilderExtensions
 public static IKernelBuilder AddHuggingFaceTextGeneration(
     this IKernelBuilder builder,
@@ -319,7 +437,7 @@ public static IKernelBuilder AddHuggingFaceTextGeneration(
             apiKey,
             HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
             null,
-            serviceProvider.GetService<IModelInstrumentation>()
+            serviceProvider.GetService<ModelDiagnostics>()
         )
     );
 
@@ -329,7 +447,7 @@ public static IKernelBuilder AddHuggingFaceTextGeneration(
 
 #### Comparison
 
-Both the static class implementation and the interface approach offer consistent APIs for instrumenting LLM requests. The static class implementation has the advantage of not necessitating modifications to the constructors of services and clients. However, it poses challenges in terms of configuration (through `PromptExecutionSettings`) and future extensibility. On the other hand, the interface approach facilitates convenient configuration and greater expandability, but it necessitates alterations to the constructors.
+All three approaches provide uniform APIs for instrumenting LLM requests. The static class implementation holds the benefit of not requiring changes to the constructors of services and clients. However, it presents difficulties concerning configuration (via `PromptExecutionSettings` which is configured per prompt). The static member approach shares similar challenges, but it permits connectors to generate activities under distinct namespaces, which allows more granular control over Activity telemetry. Conversely, the dependency injection approach enables convenient configuration, albeit necessitating modifications to the constructors, and users must explicitly inject the dependency to activate LLM request tracing even when there are registered listeners.
 
 ### Where do we create the activities
 
@@ -343,7 +461,7 @@ Client implementations may exhibit variations; however, they generally encompass
 
 #### Comparison
 
-Clients represent the final layer in the stack through which all kernel operations reach the models. As such, it would be more intuitive to incorporate instrumentation for all LLM requests at the client level. Furthermore, some clients already generate metrics. However, due to the lack of shared interfaces among clients, their instrumentations would need to be implemented individually.
+Clients represent the final layer in the stack through which all kernel operations reach the models. As such, it would be more intuitive to incorporate instrumentation for all LLM requests at the client level. Furthermore, some clients already generate metrics. However, due to the lack of shared interfaces among clients, there will be additional implementation and maintenance overhead.
 
 In contrast, connectors (or AI services) share common interfaces, specifically the `IChatCompletionService` and `ITextGenerationService`. Nevertheless, AI services rely on their underlying clients to execute LLM requests, which could potentially result in inconsistencies where telemetry data originates from different layers in the stack if a client is instrumented (e.g., Azure OpenAI vs. `HuggingFaceTextGenerationService`).
 
@@ -358,14 +476,34 @@ TBD
 
 ## Appendix
 
-### `ModelDiagnostics`
+### `PromptExecutionSettings`
 
 ```C#
-public static class ModelDiagnostics
+public class PromptExecutionSettings
 {
-    private static string SourceName = "...";
-    private static ActivitySource Source = new ActivitySource(SourceName);
+    ...
+    [JsonPropertyName("is_event_collection_enable")]
+    public bool IsEventCollectionEnabled
+    {
+        get => this._isEventCollectionEnabled;
 
+        set
+        {
+            this.ThrowIfFrozen();
+            this._isEventCollectionEnabled = value;
+        }
+    }
+    ...
+    private bool _isEventCollectionEnabled = false;
+}
+```
+
+### `ModelDiagnostics` (static class)
+
+```C#
+private static class ModelDiagnostics
+{
+    ...
     public static Activity? StartCompletionActivity(string name, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
     {
         var activity = s_activitySource.StartActivityWithTags(
@@ -384,23 +522,53 @@ public static class ModelDiagnostics
 
         return activity;
     }
+    ...
 }
 ```
 
-### `DefaultModelInstrumentation : IModelInstrumentation`
+### `ModelDiagnostics` (static member)
+
+```C#
+internal sealed class ModelDiagnostics
+{
+    private readonly ActivitySource _source;
+
+    // Source name must be unique
+    public ModelDiagnostics(string sourceName)
+    {
+        this._source = new ActivitySource(sourceName);
+    }
+
+    public Activity? StartCompletionActivity(string name, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+    {
+        var activity = this._source.StartActivityWithTags(
+            name,
+            new() {
+                new("gen_ai.request.model", modelName),
+                new("gen_ai.system", modelProvider),
+                ...
+            });
+
+        // Chat history is optional as it may contain sensitive data.
+        if (executionSettings.IsEventCollectionEnabled)
+        {
+            activity?.AttachSensitiveDataAsEvent("gen_ai.content.prompt", new() { new("gen_ai.prompt", prompt) });
+        }
+
+        return activity;
+    }
+
+    ...
+}
+```
+
+### `ModelDiagnostics` (dependency injection)
 
 ```C#
 // Example implementation
-public class DefaultModelInstrumentation : IModelInstrumentation
+internal class ModelDiagnostics
 {
-    private readonly bool _isEventCollectionEnabled;
-
-    private readonly ActivitySource s_activitySource = new ActivitySource("model-service");
-
-    public DefaultModelInstrumentation(bool isEventCollectionEnabled)
-    {
-        _isEventCollectionEnabled = isEventCollectionEnabled;
-    }
+    ...
 
     public Activity? StartCompletionActivity(string name, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
     {
