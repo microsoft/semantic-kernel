@@ -23,11 +23,13 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model to use to counting tokens</param>
     /// <param name="apiKey">Api key for GoogleAI endpoint</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
+        GoogleAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -36,8 +38,10 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._modelId = modelId;
-        this._tokenCountingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:countTokens?key={apiKey}");
+        this._tokenCountingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:countTokens?key={apiKey}");
     }
 
     /// <summary>
@@ -48,6 +52,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
+    /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiTokenCounterClient(
         HttpClient httpClient,
@@ -55,6 +60,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        VertexAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -65,8 +71,10 @@ internal sealed class GeminiTokenCounterClient : ClientBase
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._modelId = modelId;
-        this._tokenCountingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:countTokens");
+        this._tokenCountingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:countTokens");
     }
 
     /// <summary>
