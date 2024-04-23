@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -50,21 +51,48 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
+        return Create(
+            method,
+            target,
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory
+            });
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction Create(
+        MethodInfo method,
+        object? target = null,
+        KernelFunctionFromMethodOptions? options = default)
+    {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
         {
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        MethodDetails methodDetails = GetMethodDetails(functionName, method, target);
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, target);
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
-            description ?? methodDetails.Description,
-            parameters?.ToList() ?? methodDetails.Parameters,
-            returnParameter ?? methodDetails.ReturnParameter);
+            options?.Description ?? methodDetails.Description,
+            options?.Parameters?.ToList() ?? methodDetails.Parameters,
+            options?.ReturnParameter ?? methodDetails.ReturnParameter,
+            options?.AdditionalMetadata);
 
-        if (loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunction '{Name}' for '{MethodName}'", result.Name, method.Name);
@@ -136,7 +164,8 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             pluginName,
             this.Description,
             this.Metadata.Parameters,
-            this.Metadata.ReturnParameter);
+            this.Metadata.ReturnParameter,
+            this.Metadata.AdditionalProperties);
     }
 
     /// <summary>
@@ -163,8 +192,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string functionName,
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter)
+        KernelReturnParameterMetadata returnParameter,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        this(implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
     {
     }
 
@@ -174,8 +204,9 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string? pluginName,
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) :
-        base(functionName, pluginName, description, parameters, returnParameter)
+        KernelReturnParameterMetadata returnParameter,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
         Verify.ValidFunctionName(functionName);
 

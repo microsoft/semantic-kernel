@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
-    /// Default max tokens for a text generation.
-    /// </summary>
-    public static int DefaultTextMaxTokens { get; } = 256;
-
-    /// <summary>
     /// Gets the specialization for the HuggingFace execution settings.
     /// </summary>
     /// <param name="executionSettings">Generic prompt execution settings.</param>
@@ -27,7 +22,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         switch (executionSettings)
         {
             case null:
-                return new HuggingFacePromptExecutionSettings() { MaxTokens = DefaultTextMaxTokens };
+                return new HuggingFacePromptExecutionSettings();
             case HuggingFacePromptExecutionSettings settings:
                 return settings;
         }
@@ -84,6 +79,22 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._maxTokens = value;
+        }
+    }
+
+    /// <summary>
+    /// Int (0-250). The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want.
+    /// Each new tokens slows down the request, so look for balance between response times and length of text generated.
+    /// </summary>
+    [JsonPropertyName("max_new_tokens")]
+    public int? MaxNewTokens
+    {
+        get => this._maxNewTokens;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._maxNewTokens = value;
         }
     }
 
@@ -281,7 +292,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Show details of the generation. Including usage.
     /// </summary>
-    public bool Details
+    public bool? Details
     {
         get => this._details;
 
@@ -303,6 +314,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
             TopP = this.TopP,
             TopK = this.TopK,
             MaxTokens = this.MaxTokens,
+            MaxNewTokens = this.MaxNewTokens,
             MaxTime = this.MaxTime,
             RepetitionPenalty = this.RepetitionPenalty,
             UseCache = this.UseCache,
@@ -326,9 +338,10 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     private float? _topP;
     private float? _repetitionPenalty;
     private int? _maxTokens;
+    private int? _maxNewTokens;
     private float? _maxTime;
     private int? _topK;
     private bool _useCache = true;
     private bool _waitForModel = false;
-    private bool _details = true;
+    private bool? _details;
 }
