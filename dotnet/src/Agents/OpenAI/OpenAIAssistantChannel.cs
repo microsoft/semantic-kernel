@@ -295,6 +295,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         return messageContent;
     }
+
     private static IEnumerable<Task<ToolOutput>> ExecuteStep(OpenAIAssistantAgent agent, RunStep step, CancellationToken cancellationToken)
     {
         // Process all of the steps that require action
