@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
 /**
  * Plugin for making HTTP requests specifically to endpoints discovered via OpenAPI.
  */
-class OpenAPIHttpRequestPlugin {
+public class OpenAPIHttpRequestPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAPIHttpRequestPlugin.class);
 
@@ -41,6 +41,7 @@ class OpenAPIHttpRequestPlugin {
     private final HttpClient client;
     private final HttpMethod method;
     private final Operation operation;
+    private final HttpHeaders httpHeaders;
 
     public OpenAPIHttpRequestPlugin(
         HttpMethod method,
@@ -48,12 +49,14 @@ class OpenAPIHttpRequestPlugin {
         String path,
         PathItem pathItem,
         HttpClient client,
+        HttpHeaders httpHeaders,
         Operation operation) {
         this.method = method;
         this.serverUrl = serverUrl;
         this.path = path;
         this.pathItem = pathItem;
         this.client = client;
+        this.httpHeaders = httpHeaders;
         this.operation = operation;
     }
 
@@ -77,11 +80,18 @@ class OpenAPIHttpRequestPlugin {
 
         HttpRequest request = new HttpRequest(method, url);
 
+        HttpHeaders headers = new HttpHeaders();
+        if (httpHeaders != null) {
+            headers = headers.setAllHttpHeaders(httpHeaders);
+        }
+
         if (body != null) {
-            request = request
-                .setHeaders(new HttpHeaders()
-                    .set(HttpHeaderName.CONTENT_TYPE, ContentType.APPLICATION_JSON))
-                .setBody(body);
+            headers = headers.add(HttpHeaderName.CONTENT_TYPE, ContentType.APPLICATION_JSON);
+            request = request.setBody(body);
+        }
+
+        if (headers.getSize() > 0) {
+            request.setHeaders(headers);
         }
 
         LOGGER.debug("Executing {} {}", method.name(), url);

@@ -131,7 +131,8 @@ public class SemanticKernelOpenAPIImporter {
             client,
             pluginName,
             paths,
-            serverUrl);
+            serverUrl,
+            httpHeaders);
 
         return new KernelPlugin(
             pluginName,
@@ -143,6 +144,8 @@ public class SemanticKernelOpenAPIImporter {
         @Nullable HttpHeaders httpHeaders,
         @Nullable HttpClient client) {
 
+        // Currently this does not apply as the Netty client does not obay the headers provided in the
+        // HttpClientOptions, however they may do one day
         if (httpHeaders != null && client != null) {
             throw new IllegalArgumentException(
                 "Both httpHeaders and client cannot be provided at the same time");
@@ -165,28 +168,31 @@ public class SemanticKernelOpenAPIImporter {
         HttpClient client,
         String pluginName,
         Paths paths,
-        String serverUrl) {
+        String serverUrl,
+        HttpHeaders headers) {
         return paths
             .entrySet()
             .stream()
             .flatMap((entry) -> {
-                return formGetOperation(
+                return formOperation(
                     client,
                     pluginName,
                     serverUrl,
                     entry.getKey(),
-                    entry.getValue())
+                    entry.getValue(),
+                    headers)
                     .stream();
             })
             .collect(Collectors.toMap(KernelFunction::getName, (func) -> func));
     }
 
-    private static List<KernelFunction<?>> formGetOperation(
+    private static List<KernelFunction<?>> formOperation(
         HttpClient client,
         String pluginName,
         String serverUrl,
         String path,
-        PathItem pathItem) {
+        PathItem pathItem,
+        HttpHeaders headers) {
 
         List<KernelFunction<?>> plugins = new ArrayList<>();
 
@@ -198,6 +204,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getGet(),
+                headers,
                 HttpMethod.GET);
 
             plugins.add(function);
@@ -210,6 +217,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getDelete(),
+                headers,
                 HttpMethod.DELETE);
 
             plugins.add(function);
@@ -222,6 +230,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getPost(),
+                headers,
                 HttpMethod.POST);
 
             plugins.add(function);
@@ -234,6 +243,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getPut(),
+                headers,
                 HttpMethod.PUT);
 
             plugins.add(function);
@@ -246,6 +256,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getPatch(),
+                headers,
                 HttpMethod.PATCH);
 
             plugins.add(function);
@@ -258,6 +269,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getOptions(),
+                headers,
                 HttpMethod.OPTIONS);
 
             plugins.add(function);
@@ -270,6 +282,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getHead(),
+                headers,
                 HttpMethod.HEAD);
 
             plugins.add(function);
@@ -282,6 +295,7 @@ public class SemanticKernelOpenAPIImporter {
                 path,
                 pathItem,
                 pathItem.getTrace(),
+                headers,
                 HttpMethod.TRACE);
 
             plugins.add(function);
@@ -290,17 +304,27 @@ public class SemanticKernelOpenAPIImporter {
         return plugins;
     }
 
-    private static @Nullable KernelFunction<Object> getKernelFunctionFromRequest(HttpClient client,
-        String pluginName, String serverUrl, String path, PathItem pathItem,
+    private static @Nullable KernelFunction<Object> getKernelFunctionFromRequest(
+        HttpClient client,
+        String pluginName,
+        String serverUrl,
+        String path,
+        PathItem pathItem,
         Operation operation,
+        HttpHeaders headers,
         HttpMethod method) {
 
         List<InputVariable> variableList = getInputVariables(operation);
         OutputVariable<String> ov = getOutputVariable(operation);
         String description = getDescription(operation.getDescription());
 
-        OpenAPIHttpRequestPlugin plugin = new OpenAPIHttpRequestPlugin(method, serverUrl, path,
-            pathItem, client,
+        OpenAPIHttpRequestPlugin plugin = new OpenAPIHttpRequestPlugin(
+            method,
+            serverUrl,
+            path,
+            pathItem,
+            client,
+            headers,
             operation);
 
         RequestBody requestBody = operation.getRequestBody();

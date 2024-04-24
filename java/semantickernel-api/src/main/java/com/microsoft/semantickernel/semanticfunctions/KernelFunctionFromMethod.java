@@ -25,6 +25,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,10 +175,15 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                     .collect(Collectors.toList());
 
                 Mono<?> mono;
-                if (method.getReturnType().isAssignableFrom(Mono.class)) {
-                    mono = (Mono<?>) method.invoke(instance, args.toArray());
-                } else {
-                    mono = invokeAsyncFunction(method, instance, args);
+                try {
+                    if (method.getReturnType().isAssignableFrom(Mono.class)) {
+                        mono = (Mono<?>) method.invoke(instance, args.toArray());
+                    } else {
+                        mono = invokeAsyncFunction(method, instance, args);
+                    }
+                } catch (Exception e) {
+                    return Mono.error(
+                        new SKException("Function threw an exception: " + method.getName(), e));
                 }
 
                 return mono
@@ -333,6 +339,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         return parameter -> {
             if (KernelFunctionArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
+            } else if (Kernel.class.isAssignableFrom(parameter.getType())) {
+                return kernel;
             } else {
                 return getArgumentValue(method, context, parameter, kernel, invocationContext);
             }
@@ -542,6 +550,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         return Arrays.stream(method
             .getParameters())
             .map(KernelFunctionFromMethod::toKernelParameterMetadata)
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 
@@ -555,6 +564,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         boolean isRequired = true;
         Class<?> type = parameter.getType();
 
+        if (Kernel.class.isAssignableFrom(type) || KernelFunctionArguments.class.isAssignableFrom(
+            type)) {
+            return null;
+        }
         if (annotation != null) {
             name = annotation.name();
             description = annotation.description();

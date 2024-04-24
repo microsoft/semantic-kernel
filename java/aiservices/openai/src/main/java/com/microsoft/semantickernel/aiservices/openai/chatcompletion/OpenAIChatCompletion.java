@@ -210,6 +210,9 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                             invocationContext, autoInvokeAttempts - 1);
                     })
                     .onErrorResume(e -> {
+
+                        LOGGER.warn("Tool invocation attempt failed: ", e);
+
                         // If FunctionInvocationError occurred and there are still attempts left, retry, else exit
                         if (autoInvokeAttempts > 0) {
                             List<ChatRequestMessage> currentMessages = messages;
