@@ -35,7 +35,7 @@ public class ExampleOpenAPIParent {
                 .buildAsyncClient();
         }
 
-        ChatCompletionService openAIChatCompletion = ChatCompletionService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();

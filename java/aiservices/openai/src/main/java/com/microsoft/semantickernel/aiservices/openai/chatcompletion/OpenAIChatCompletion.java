@@ -53,6 +53,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -668,7 +670,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
     /**
      * Builder for creating a new instance of {@link OpenAIChatCompletion}.
      */
-    public static class Builder extends ChatCompletionService.Builder {
+    public static class Builder extends OpenAiServiceBuilder<OpenAIChatCompletion, Builder> {
 
         @Override
         public OpenAIChatCompletion build() {

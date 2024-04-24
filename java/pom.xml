@@ -70,6 +70,7 @@
         <module>aiservices/openai</module>
 
         <module>semantickernel-api</module>
+        <module>aiservices/gemini</module>
     </modules>
 
     <dependencyManagement>

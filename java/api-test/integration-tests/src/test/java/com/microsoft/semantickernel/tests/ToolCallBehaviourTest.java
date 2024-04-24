@@ -213,7 +213,7 @@ public class ToolCallBehaviourTest {
             .endpoint("http://localhost:" + wm.port() + "/")
             .buildAsyncClient();
 
-        return ChatCompletionService.builder()
+        return OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId("gpt-35-turbo-2")
             .build();

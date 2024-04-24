@@ -158,6 +158,12 @@
                 <artifactId>commons-text</artifactId>
                 <version>1.11.0</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-vertexai</artifactId>
+                <version>1.1.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

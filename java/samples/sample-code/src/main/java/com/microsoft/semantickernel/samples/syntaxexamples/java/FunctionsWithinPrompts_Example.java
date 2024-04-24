@@ -51,7 +51,7 @@ public class FunctionsWithinPrompts_Example {
                 .buildAsyncClient();
         }
 
-        ChatCompletionService chatCompletionService = ChatCompletionService.builder()
+        ChatCompletionService chatCompletionService = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
