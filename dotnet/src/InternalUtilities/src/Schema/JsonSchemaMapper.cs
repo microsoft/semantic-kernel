@@ -321,12 +321,8 @@ static partial class JsonSchemaMapper
                 {
                     if (TryGetStringEnumConverterValues(typeInfo, effectiveConverter, out JsonArray? values))
                     {
-                        if (values is null)
-                        {
-                            // enum declared with the flags attribute -- do not surface enum values in the JSON schema.
-                            schemaType = JsonSchemaType.String;
-                        }
-                        else
+                        schemaType = JsonSchemaType.String;
+                        if (values != null)
                         {
                             if (parentNullableOfT != null)
                             {
