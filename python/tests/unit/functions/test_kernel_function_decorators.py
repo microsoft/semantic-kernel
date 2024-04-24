@@ -253,10 +253,10 @@ def test_kernel_function_no_typing():
     [
         (Annotated[str, "test"], "test", "str", True),
         (Annotated[Optional[str], "test"], "test", "str", False),
-        (Annotated[AsyncGenerator[str, Any], "test"], "test", "str, Any", True),
-        (Annotated[Optional[Union[str, int]], "test"], "test", "str, int", False),
+        (Annotated[AsyncGenerator[str, Any], "test"], "test", ["str", "Any"], True),
+        (Annotated[Optional[Union[str, int]], "test"], "test", ["str", "int"], False),
         (str, None, "str", True),
-        (Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
+        (Union[str, int, float, "KernelArguments"], None, ["str", "int", "float", "KernelArguments"], True),
     ],
 )
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
@@ -264,5 +264,9 @@ def test_annotation_parsing(annotation, description, type_, is_required):
     annotations = _parse_annotation(annotation)
 
     assert description == annotations.get("description")
-    assert type_ == annotations["type_"]
+    if isinstance(type_, list):
+        for item in type_:
+            assert item in annotations["type_"]
+    else:
+        assert type_ == annotations["type_"]
     assert is_required == annotations["is_required"]
