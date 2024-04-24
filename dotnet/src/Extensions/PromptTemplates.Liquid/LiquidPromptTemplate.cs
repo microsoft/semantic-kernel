@@ -50,7 +50,7 @@ internal class LiquidPromptTemplate : IPromptTemplate
             return Task.FromResult(renderedResult);
         }
 
-        // otherwise, the splitted text chunks will be in the following format
+        // otherwise, the split text chunks will be in the following format
         // [0] = ""
         // [1] = role information
         // [2] = message content
