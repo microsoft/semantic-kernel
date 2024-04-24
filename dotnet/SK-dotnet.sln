@@ -260,13 +260,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.OpenAI", "src\Agents\OpenAI\Agents.OpenAI.csproj", "{644A2F10-324D-429E-A1A3-887EAE64207F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Prompty", "src\Functions\Functions.Prompty\Functions.Prompty.csproj", "{12B06019-740B-466D-A9E0-F05BC123A47D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Prompty", "src\Functions\Functions.Prompty\Functions.Prompty.csproj", "{12B06019-740B-466D-A9E0-F05BC123A47D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PromptTemplates.Liquid", "src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj", "{66D94E25-9B63-4C29-B7A1-3DFA17A90745}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Liquid", "src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj", "{66D94E25-9B63-4C29-B7A1-3DFA17A90745}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PromptTemplates.Liquid.UnitTests", "src\Extensions\PromptTemplates.Liquid.UnitTests\PromptTemplates.Liquid.UnitTests.csproj", "{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Liquid.UnitTests", "src\Extensions\PromptTemplates.Liquid.UnitTests\PromptTemplates.Liquid.UnitTests.csproj", "{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Functions.Prompty.UnitTests", "src\Functions\Functions.Prompty.UnitTests\Functions.Prompty.UnitTests.csproj", "{AD787471-5E43-44DF-BF3E-5CD26C765B4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Prompty.UnitTests", "src\Functions\Functions.Prompty.UnitTests\Functions.Prompty.UnitTests.csproj", "{AD787471-5E43-44DF-BF3E-5CD26C765B4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Prompty", "src\Extensions\PromptTemplates.Prompty\Experimental.Prompty.csproj", "{1D72540D-2635-4069-B43B-E84AA981E198}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Experimental.Prompty.UnitTests", "src\Experimental\Experimental.Prompty.UnitTests\Experimental.Prompty.UnitTests.csproj", "{DD5271B0-4A94-46A0-A9A5-66F550CE6302}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -651,6 +655,18 @@ Global
 		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD787471-5E43-44DF-BF3E-5CD26C765B4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D72540D-2635-4069-B43B-E84AA981E198}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -743,6 +759,8 @@ Global
 		{66D94E25-9B63-4C29-B7A1-3DFA17A90745} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{CC6DEE89-57AA-494D-B40D-B09E1CCC6FAD} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{AD787471-5E43-44DF-BF3E-5CD26C765B4E} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
+		{1D72540D-2635-4069-B43B-E84AA981E198} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{DD5271B0-4A94-46A0-A9A5-66F550CE6302} = {A2357CF8-3BB9-45A1-93F1-B366C9B63658}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

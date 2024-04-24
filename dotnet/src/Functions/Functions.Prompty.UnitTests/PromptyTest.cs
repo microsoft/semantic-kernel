@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Experimental.Prompty.Extension;
+using Microsoft.SemanticKernel.Prompty.Extension;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Prompty;
+namespace SemanticKernel.Functions.Prompty.UnitTests;
 public sealed class PromptyTest
 {
     [Fact]
@@ -23,7 +23,7 @@ public sealed class PromptyTest
             .Build();
 
         var cwd = Directory.GetCurrentDirectory();
-        var chatPromptyPath = Path.Combine(cwd, "TestData", "prompties", "chat.prompty");
+        var chatPromptyPath = Path.Combine(cwd, "TestData", "chat.prompty");
         var function = kernel.CreateFunctionFromPrompty(chatPromptyPath);
         // create a dynamic customer object
         // customer contains the following properties
@@ -65,20 +65,20 @@ public sealed class PromptyTest
 
         var chatHistory = new[]
         {
-            new { role = "user", content = "When is the last time I bought apple?" },
+            new { role = "user", content = "When is the last time I bought apple? Give me specific date and year" },
         };
 
         // create
         var result = await kernel.InvokeAsync(function, arguments: new()
         {
             { "customer", customer },
-            { "documents", documents },
+            { "documentation", documents },
             { "history", chatHistory },
         });
 
         Assert.IsType<OpenAIChatMessageContent>(result.GetValue<OpenAIChatMessageContent>());
 
-        if (result.GetValue<OpenAIChatMessageContent>() is OpenAIChatMessageContent openAIChatMessageContent)
+        if (result.GetValue< OpenAIChatMessageContent>() is OpenAIChatMessageContent openAIChatMessageContent)
         {
             Assert.Equal(AuthorRole.Assistant, openAIChatMessageContent.Role);
             Assert.Contains("2024", openAIChatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);

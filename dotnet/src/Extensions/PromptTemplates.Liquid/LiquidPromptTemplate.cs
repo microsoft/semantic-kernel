@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Scriban;
@@ -27,7 +26,8 @@ internal class LiquidPromptTemplate : IPromptTemplate
         Verify.NotNull(kernel);
         var template = this._config.Template;
         var liquidTemplate = Template.ParseLiquid(template);
-        var renderedResult = liquidTemplate.Render(arguments);
+        var nonEmptyArguments = arguments.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
+        var renderedResult = liquidTemplate.Render(nonEmptyArguments);
 
         // post processing
         // for every system: | assistant: | user: | function:
