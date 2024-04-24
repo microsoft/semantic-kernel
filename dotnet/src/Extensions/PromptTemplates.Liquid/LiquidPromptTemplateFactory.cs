@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
 /// <summary>
-/// Porvides an <see cref="IPromptTemplateFactory"/> for liquid template format.
+/// Provides an <see cref="IPromptTemplateFactory"/> for liquid template format.
 /// </summary>
 public sealed class LiquidPromptTemplateFactory : IPromptTemplateFactory
 {

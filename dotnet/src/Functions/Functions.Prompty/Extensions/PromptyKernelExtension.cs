@@ -44,7 +44,7 @@ public static class PromptyKernelExtension
         // file: chat.prompty
         // ---
         // name: Contoso Chat Prompt
-        // description: A retail assistent for Contoso Outdoors products retailer.
+        // description: A retail assistant for Contoso Outdoors products retailer.
         // authors:
         //   - XXXX
         // model:

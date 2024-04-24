@@ -21,7 +21,7 @@ public sealed class PromptyTest
         var kernelFunction = kernel.CreateFunctionFromPrompty(chatPromptyPath);
 
         Assert.Equal("Contoso_Chat_Prompt", kernelFunction.Name);
-        Assert.Equal("A retail assistent for Contoso Outdoors products retailer.", kernelFunction.Description);
+        Assert.Equal("A retail assistant for Contoso Outdoors products retailer.", kernelFunction.Description);
 
         // chat prompty doesn't contain input parameters
         Assert.Empty(kernelFunction.Metadata.Parameters);
