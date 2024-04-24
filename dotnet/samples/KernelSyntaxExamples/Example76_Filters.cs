@@ -48,6 +48,28 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
     }
 
     [Fact]
+    public async Task PromptFilterRenderedPromptOverrideAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAI.ApiKey);
+
+        builder.Services.AddSingleton<IPromptRenderFilter, PromptFilterExample>();
+
+        var kernel = builder.Build();
+
+        var result = await kernel.InvokePromptAsync("Hi, how can you help me?");
+
+        WriteLine(result);
+
+        // Output:
+        // Prompt from filter
+    }
+
+    [Fact]
     public async Task FunctionFilterResultOverrideAsync()
     {
         var builder = Kernel.CreateBuilder();
@@ -150,7 +172,7 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
         builder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);
 
         // This filter outputs information about auto function invocation and returns overridden result.
-        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilter(this.Output));
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoFunctionInvocationFilterExample(this.Output));
 
         var kernel = builder.Build();
 
@@ -216,12 +238,12 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             await next(context);
 
             // Example: override rendered prompt before sending it to AI
-            context.RenderedPrompt = "Safe prompt";
+            context.RenderedPrompt = "Respond with following text: Prompt from filter.";
         }
     }
 
     /// <summary>Shows syntax for auto function invocation filter.</summary>
-    private sealed class AutoFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+    private sealed class AutoFunctionInvocationFilterExample(ITestOutputHelper output) : IAutoFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
