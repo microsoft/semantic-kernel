@@ -2,6 +2,8 @@
 
 using System;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Scriban;
@@ -29,9 +31,45 @@ internal class LiquidPromptTemplate : IPromptTemplate
         var nonEmptyArguments = arguments.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
         var renderedResult = liquidTemplate.Render(nonEmptyArguments);
 
-        // post processing
-        // for every system: | assistant: | user: | function:
-        // replacing it with <Message role="system">, <Message role="assistant">, <Message role="user">, <Message role="function">
+        // parse chat history
+        // for every text like below
+        // (system|assistant|user|function):
+        // xxxx
+        //
+        // turn it into
+        // <Message role="system|assistant|user|function">
+        // xxxx
+        // </Message>
+
+        var roleRegex = new Regex(@"(?<role>system|assistant|user|function):[\s]+");
+        var splits = roleRegex.Split(renderedResult);
+
+        // if no role is found, return the entire text
+        if (splits.Length == 1)
+        {
+            return Task.FromResult(renderedResult);
+        }
+
+        // otherwise, the splitted text chunks will be in the following format
+        // [0] = ""
+        // [1] = role information
+        // [2] = message content
+        // [3] = role information
+        // [4] = message content
+        // ...
+        // we will iterate through the array and create a new string with the following format
+        var sb = new StringBuilder();
+        for (var i = 1; i < splits.Length; i += 2)
+        {
+            var role = splits[i];
+            var content = splits[i + 1];
+            sb.AppendLine($"<Message role=\"{role}\">");
+            sb.AppendLine(content);
+            sb.AppendLine("</Message>");
+        }
+
+        renderedResult = sb.ToString();
+
         return Task.FromResult(renderedResult);
     }
 }

@@ -78,7 +78,7 @@ public sealed class PromptyTest
 
         Assert.IsType<OpenAIChatMessageContent>(result.GetValue<OpenAIChatMessageContent>());
 
-        if (result.GetValue< OpenAIChatMessageContent>() is OpenAIChatMessageContent openAIChatMessageContent)
+        if (result.GetValue<OpenAIChatMessageContent>() is OpenAIChatMessageContent openAIChatMessageContent)
         {
             Assert.Equal(AuthorRole.Assistant, openAIChatMessageContent.Role);
             Assert.Contains("2024", openAIChatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);
