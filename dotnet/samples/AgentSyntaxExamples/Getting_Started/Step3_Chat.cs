@@ -3,21 +3,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace GettingStarted;
 
 /// <summary>
-/// Demonstrate that two different agent types are able to participate in the same conversation.
-/// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
+/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
+/// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
+/// number of agent interactions.
 /// </summary>
-public class Example16_MixedChat(ITestOutputHelper output) : BaseTest(output)
+public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -40,7 +41,7 @@ public class Example16_MixedChat(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        // Define the agents: one of each type
+        // Define the agents
         ChatCompletionAgent agentReviewer =
             new()
             {
@@ -49,20 +50,17 @@ public class Example16_MixedChat(ITestOutputHelper output) : BaseTest(output)
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        OpenAIAssistantAgent agentWriter =
-            await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateEmptyKernel(),
-                config: new(this.ApiKey, this.Endpoint),
-                new()
-                {
-                    Instructions = CopyWriterInstructions,
-                    Name = CopyWriterName,
-                    ModelId = this.Model,
-                });
+        ChatCompletionAgent agentWriter =
+            new()
+            {
+                Instructions = CopyWriterInstructions,
+                Name = CopyWriterName,
+                Kernel = this.CreateKernelWithChatCompletion(),
+            };
 
-        // Create a nexus for agent interaction.
-        var chat =
-            new AgentGroupChat(agentWriter, agentReviewer)
+        // Create a chat for agent interaction.
+        AgentGroupChat chat =
+            new(agentWriter, agentReviewer)
             {
                 ExecutionSettings =
                     new()

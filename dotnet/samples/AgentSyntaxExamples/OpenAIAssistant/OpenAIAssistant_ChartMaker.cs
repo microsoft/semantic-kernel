@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Linq;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -8,13 +9,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace OpenAIAssistant;
 
 /// <summary>
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
 /// </summary>
-public class Example15_OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Target Open AI services.

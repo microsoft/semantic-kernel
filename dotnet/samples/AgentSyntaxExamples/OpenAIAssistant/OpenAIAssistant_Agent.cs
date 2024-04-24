@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -8,17 +9,18 @@ using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace OpenAIAssistant;
 
 /// <summary>
-/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> with a <see cref="KernelPlugin"/>,
-/// and then eliciting its response to explicit user messages.
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
+/// eliciting its response to three explicit user messages.
 /// </summary>
 /// <remarks>
-/// This example demonstrates that outside of initialization (and cleanup), plugin
-/// usage for <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>.
+/// This example demonstrates that outside of initialization (and cleanup), using
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
+/// even with with a <see cref="KernelPlugin"/>.
 /// </remarks>
-public class Example12_OpenAIAssistant_Plugins(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";

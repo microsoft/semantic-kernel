@@ -1,39 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
-using Configuration;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace OpenAIAssistant;
 
 /// <summary>
-/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
-public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(output)
+public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Retrieval tool not supported on Azure OpenAI.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
-
     [Fact]
     public async Task RunAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
-                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
-
-        WriteLine(this.ApiKey);
-
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
@@ -41,9 +25,8 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
-                    EnableRetrieval = true, // Enable retrieval
+                    EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file
                 });
 
         // Create a chat for agent interaction.
@@ -52,9 +35,8 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Where did sam go?");
-            await InvokeAgentAsync("When does the flight leave Seattle?");
-            await InvokeAgentAsync("What is the hotel contact info at the destination?");
+            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
+            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
         }
         finally
         {
