@@ -1,7 +1,9 @@
-﻿using System.ComponentModel;
-using Microsoft.SemanticKernel;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.ComponentModel;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Microsoft.SemanticKernel;
 
 namespace Plugins;
 
@@ -44,7 +46,6 @@ internal sealed class BookingsPlugin
         var response = Console.ReadLine()?.Trim();
         if (string.Equals(response, "yes", StringComparison.OrdinalIgnoreCase))
         {
-
             var requestBody = new BookingAppointment
             {
                 OdataType = "#microsoft.graph.bookingAppointment",

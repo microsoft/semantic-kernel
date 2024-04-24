@@ -1,11 +1,13 @@
-﻿using Microsoft.Graph.Models;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Graph.Models;
 
 namespace Plugins;
 
 /// <summary>
 /// This class represents an appointment model for the booking plugin.
 /// </summary>
-internal class Appointment
+internal sealed class Appointment
 {
     internal Appointment(BookingAppointment bookingAppointment)
     {

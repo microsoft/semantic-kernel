@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
-internal class AppConfig
+internal sealed class AppConfig
 {
     public string? BookingBusinessId { get; set; }
 
@@ -46,7 +45,7 @@ internal class AppConfig
         }
     }
 
-    internal class OpenAIConfig
+    internal sealed class OpenAIConfig
     {
         /// <summary>
         /// The model ID to use for the OpenAI chat completion.
@@ -57,14 +56,14 @@ internal class AppConfig
         public string? OrgId { get; set; }
     }
 
-    internal class AzureOpenAIConfig
+    internal sealed class AzureOpenAIConfig
     {
         public string? DeploymentName { get; set; }
         public string? Endpoint { get; set; }
         public string? ApiKey { get; set; }
     }
 
-    internal class AzureAdConfig
+    internal sealed class AzureAdConfig
     {
         public string? ClientId { get; set; }
         public string? TenantId { get; set; }
