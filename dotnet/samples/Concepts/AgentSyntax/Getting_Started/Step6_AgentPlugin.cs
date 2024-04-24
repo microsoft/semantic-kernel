@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -8,12 +9,12 @@ using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate one agent calling another as a plug-in.
 /// </summary>
-public class Example10_AgentPlugin : BaseTest
+public class Step6_AgentPlugin : BaseTest
 {
     private const string TopName = "TopDog";
     private const string HostName = "Host";
@@ -74,7 +75,7 @@ public class Example10_AgentPlugin : BaseTest
         }
     }
 
-    public Example10_AgentPlugin(ITestOutputHelper output)
+    public Step6_AgentPlugin(ITestOutputHelper output)
         : base(output)
     { }
 }
