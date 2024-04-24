@@ -93,7 +93,7 @@ internal static class KernelFunctionExtensions
 
         return "object";
     }
-    
+
     /// <summary>
     /// Produce a fully qualified toolname.
     /// </summary>
