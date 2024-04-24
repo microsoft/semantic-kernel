@@ -188,7 +188,7 @@ public abstract class KernelFunction
             }).ConfigureAwait(false);
 
             // Apply any changes from the function filters context to final result.
-            functionResult = new FunctionResult(invocationContext.Result);
+            functionResult = invocationContext.Result;
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
 #pragma warning disable CS0618 // Events are deprecated

@@ -442,7 +442,7 @@ internal abstract class ClientCore
                 }
 
                 // Apply any changes from the auto function invocation filters context to final result.
-                functionResult = new FunctionResult(invocationContext.Result);
+                functionResult = invocationContext.Result;
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
@@ -702,7 +702,7 @@ internal abstract class ClientCore
                 }
 
                 // Apply any changes from the auto function invocation filters context to final result.
-                functionResult = new FunctionResult(invocationContext.Result);
+                functionResult = invocationContext.Result;
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
                 var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
