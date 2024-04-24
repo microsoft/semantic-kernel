@@ -122,33 +122,158 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task FiltersCanSkipFunctionExecutionAsync()
+    public async Task DifferentWaysOfAddingFiltersWorkCorrectlyAsync()
     {
         // Arrange
-        int filterInvocations = 0;
-        int firstFunctionInvocations = 0;
-        int secondFunctionInvocations = 0;
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+        var executionOrder = new List<string>();
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var filter1 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter1-Invoking");
+            await next(context);
+        });
+
+        var filter2 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter2-Invoking");
+            await next(context);
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Plugins.Add(plugin);
+
+        builder.AddOpenAIChatCompletion(
+            modelId: "test-model-id",
+            apiKey: "test-api-key",
+            httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+
+        // Case #1 - Add filter to services
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter1);
+
+        var kernel = builder.Build();
+
+        // Case #2 - Add filter to kernel
+        kernel.AutoFunctionInvocationFilters.Add(filter2);
+
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal("Filter1-Invoking", executionOrder[0]);
+        Assert.Equal("Filter2-Invoking", executionOrder[1]);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MultipleFiltersAreExecutedInOrderAsync(bool isStreaming)
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Result");
+        var executionOrder = new List<string>();
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => parameter, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var filter1 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter1-Invoking");
+            await next(context);
+            executionOrder.Add("Filter1-Invoked");
+        });
+
+        var filter2 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter2-Invoking");
+            await next(context);
+            executionOrder.Add("Filter2-Invoked");
+        });
+
+        var filter3 = new AutoFunctionInvocationFilter(async (context, next) =>
+        {
+            executionOrder.Add("Filter3-Invoking");
+            await next(context);
+            executionOrder.Add("Filter3-Invoked");
+        });
+
+        var builder = Kernel.CreateBuilder();
+
+        builder.Plugins.Add(plugin);
+
+        builder.AddOpenAIChatCompletion(
+            modelId: "test-model-id",
+            apiKey: "test-api-key",
+            httpClient: this._httpClient);
+
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter1);
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter2);
+        builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter3);
+
+        var kernel = builder.Build();
+
+        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        });
+
+        // Act
+        if (isStreaming)
+        {
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+            await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", arguments))
+            { }
+        }
+        else
+        {
+            this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+            await kernel.InvokePromptAsync("Test prompt", arguments);
+        }
+
+        // Assert
+        Assert.Equal("Filter1-Invoking", executionOrder[0]);
+        Assert.Equal("Filter2-Invoking", executionOrder[1]);
+        Assert.Equal("Filter3-Invoking", executionOrder[2]);
+        Assert.Equal("Filter3-Invoked", executionOrder[3]);
+        Assert.Equal("Filter2-Invoked", executionOrder[4]);
+        Assert.Equal("Filter1-Invoked", executionOrder[5]);
+    }
+
+    [Fact]
+    public async Task FilterCanOverrideArgumentsAsync()
+    {
+        // Arrange
+        const string NewValue = "NewValue";
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            // Filter delegate is invoked only for second function, the first one should be skipped.
-            if (context.Function.Name == "Function2")
-            {
-                await next(context);
-            }
-
-            filterInvocations++;
+            context.Arguments!["parameter"] = NewValue;
+            await next(context);
+            context.Terminate = true;
         });
 
-        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
-        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
-
-        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
@@ -157,155 +282,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal(2, filterInvocations);
-        Assert.Equal(0, firstFunctionInvocations);
-        Assert.Equal(1, secondFunctionInvocations);
-    }
-
-    [Fact]
-    public async Task PreFilterCanCancelOperationAsync()
-    {
-        // Arrange
-        int firstFunctionInvocations = 0;
-        int secondFunctionInvocations = 0;
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            // Terminating before first function, so all functions won't be invoked.
-            context.Terminate = true;
-
-            await next(context);
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
-
-        // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        }));
-
-        // Assert
-        Assert.Equal(0, firstFunctionInvocations);
-        Assert.Equal(0, secondFunctionInvocations);
-    }
-
-    [Fact]
-    public async Task PreFilterCanCancelOperationOnStreamingAsync()
-    {
-        // Arrange
-        int firstFunctionInvocations = 0;
-        int secondFunctionInvocations = 0;
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            // Terminating before first function, so all functions won't be invoked.
-            context.Terminate = true;
-
-            await next(context);
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        // Act
-        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
-        { }
-
-        // Assert
-        Assert.Equal(0, firstFunctionInvocations);
-        Assert.Equal(0, secondFunctionInvocations);
-    }
-
-    [Fact]
-    public async Task PostFilterCanCancelOperationAsync()
-    {
-        // Arrange
-        int firstFunctionInvocations = 0;
-        int secondFunctionInvocations = 0;
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            requestSequenceNumbers.Add(context.RequestSequenceIndex);
-            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
-
-            await next(context);
-
-            // Terminating after first function, so second function won't be invoked.
-            context.Terminate = true;
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
-
-        // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        }));
-
-        // Assert
-        Assert.Equal(1, firstFunctionInvocations);
-        Assert.Equal(0, secondFunctionInvocations);
-        Assert.Equal([0], requestSequenceNumbers);
-        Assert.Equal([0], functionSequenceNumbers);
-    }
-
-    [Fact]
-    public async Task PostFilterCanCancelOperationOnStreamingAsync()
-    {
-        // Arrange
-        int firstFunctionInvocations = 0;
-        int secondFunctionInvocations = 0;
-        List<int> requestSequenceNumbers = [];
-        List<int> functionSequenceNumbers = [];
-
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
-
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
-
-        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
-        {
-            requestSequenceNumbers.Add(context.RequestSequenceIndex);
-            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
-
-            await next(context);
-
-            // Terminating after first function, so second function won't be invoked.
-            context.Terminate = true;
-        });
-
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
-
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-
-        // Act
-        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
-        { }
-
-        // Assert
-        Assert.Equal(1, firstFunctionInvocations);
-        Assert.Equal(0, secondFunctionInvocations);
-        Assert.Equal([0], requestSequenceNumbers);
-        Assert.Equal([0], functionSequenceNumbers);
+        Assert.Equal("NewValue", result.ToString());
     }
 
     [Fact]
@@ -386,24 +363,33 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
     }
 
     [Fact]
-    public async Task FilterCanOverrideArgumentsAsync()
+    public async Task FiltersCanSkipFunctionExecutionAsync()
     {
         // Arrange
-        const string NewValue = "NewValue";
+        int filterInvocations = 0;
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
 
-        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function1");
-        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { return parameter; }, "Function2");
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
 
         var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            context.Arguments!["parameter"] = NewValue;
-            await next(context);
-            context.Terminate = true;
+            // Filter delegate is invoked only for second function, the first one should be skipped.
+            if (context.Function.Name == "Function2")
+            {
+                await next(context);
+            }
+
+            filterInvocations++;
         });
 
-        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("filters_multiple_function_calls_test_response.json")) };
+        using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json")) };
+
+        this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
@@ -412,7 +398,155 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal("NewValue", result.ToString());
+        Assert.Equal(2, filterInvocations);
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(1, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PreFilterCanTerminateOperationAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PreFilterCanTerminateOperationOnStreamingAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
+
+            await next(context);
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        { }
+
+        // Assert
+        Assert.Equal(0, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+    }
+
+    [Fact]
+    public async Task PostFilterCanTerminateOperationAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
+
+        // Act
+        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+        }));
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
+    }
+
+    [Fact]
+    public async Task PostFilterCanTerminateOperationOnStreamingAsync()
+    {
+        // Arrange
+        int firstFunctionInvocations = 0;
+        int secondFunctionInvocations = 0;
+        List<int> requestSequenceNumbers = [];
+        List<int> functionSequenceNumbers = [];
+
+        var function1 = KernelFunctionFactory.CreateFromMethod((string parameter) => { firstFunctionInvocations++; return parameter; }, "Function1");
+        var function2 = KernelFunctionFactory.CreateFromMethod((string parameter) => { secondFunctionInvocations++; return parameter; }, "Function2");
+
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [function1, function2]);
+
+        var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
+        {
+            requestSequenceNumbers.Add(context.RequestSequenceIndex);
+            functionSequenceNumbers.Add(context.FunctionSequenceIndex);
+
+            await next(context);
+
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
+        });
+
+        this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
+
+        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        // Act
+        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        { }
+
+        // Assert
+        Assert.Equal(1, firstFunctionInvocations);
+        Assert.Equal(0, secondFunctionInvocations);
+        Assert.Equal([0], requestSequenceNumbers);
+        Assert.Equal([0], functionSequenceNumbers);
     }
 
     public void Dispose()
