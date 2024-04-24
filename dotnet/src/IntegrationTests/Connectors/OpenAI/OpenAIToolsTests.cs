@@ -267,6 +267,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var kernel = this.InitializeKernel(importHelperPlugin: true);
 
         var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("If you are unable to answer the question for whatever reason, please add the 'error' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
@@ -300,8 +301,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(messageContent.Content);
 
-        var failureWords = new List<string>() { "error", "unable", "couldn", "issue", "trouble", "difficulties" };
-        Assert.Contains(failureWords, word => messageContent.Content.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+        Assert.Contains("error", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Fact]
@@ -311,6 +311,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var kernel = this.InitializeKernel(importHelperPlugin: true);
 
         var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
