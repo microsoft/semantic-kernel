@@ -59,6 +59,7 @@ public class XmlPromptParserTests
             new("message")
             {
                 Attributes = { { "role", "user" } },
+                Content = "<audio src=\"https://fake-link-to-audio\" />",
                 ChildNodes = [new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } }]
             },
         };
