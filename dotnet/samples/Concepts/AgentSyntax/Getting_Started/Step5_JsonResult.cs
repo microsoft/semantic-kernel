@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -9,12 +10,12 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate parsing JSON response using <see cref="JsonResultTranslator"/>.
 /// </summary>
-public class Example05_JsonResult(ITestOutputHelper output) : BaseTest(output)
+public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 {
     private const string TutorName = "Tutor";
     private const string TutorInstructions =
