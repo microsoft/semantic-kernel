@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -10,14 +11,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Examples;
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
 /// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
 /// number of agent interactions.
 /// </summary>
-public class Example03_Chat(ITestOutputHelper output) : BaseTest(output)
+public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =

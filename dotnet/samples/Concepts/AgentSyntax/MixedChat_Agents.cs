@@ -12,12 +12,11 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
-
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
 /// </summary>
-public class Example16_MixedChat(ITestOutputHelper output) : BaseTest(output)
+public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
