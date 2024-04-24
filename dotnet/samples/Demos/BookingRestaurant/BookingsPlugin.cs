@@ -43,6 +43,7 @@ internal sealed class BookingsPlugin
     {
         Console.WriteLine($"System > Do you want to book a table at {restaurant} on {dateTime} for {partySize} people?");
         Console.WriteLine("System > Please confirm by typing 'yes' or 'no'.");
+        Console.Write("User > ");
         var response = Console.ReadLine()?.Trim();
         if (string.Equals(response, "yes", StringComparison.OrdinalIgnoreCase))
         {
@@ -129,7 +130,7 @@ internal sealed class BookingsPlugin
     {
         // Print the booking details to the console
         Console.ForegroundColor = ConsoleColor.DarkBlue;
-        Console.WriteLine($"[Cancelling a reservation for {partySize} at {restaurant} on {date} at {time}]");
+        Console.WriteLine($"System > [Cancelling a reservation for {partySize} at {restaurant} on {date} at {time}]");
         Console.ResetColor();
 
         await this._graphClient.Solutions.BookingBusinesses[this._businessId].Appointments[appointmentId].DeleteAsync();

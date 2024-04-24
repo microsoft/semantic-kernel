@@ -121,39 +121,44 @@ dotnet run
 > **User** > Please book a restaurant for me.
 
 > **Assistant** > Sure, I can help you with that. Could you please provide me with the following information:
+>
+> 1.  Name of the restaurant you would like to book.
+> 2.  Date and time of the reservation.
+> 3.  Number of people in your party.
+> 4.  Your name.
+> 5.  Your email address.
+> 6.  Your phone number.
+>
+> Once I have all this information, I will proceed with the booking.
 
-1.  Name of the restaurant you would like to book.
-2.  Date and time of the reservation.
-3.  Number of people in your party.
-4.  Your name.
-5.  Your email address.
-6.  Your phone number.
+> **User** > I would like to book a table at the restaurant "The French Laundry" on the 15th of March at 7:00 PM for 4 people. My name is John Doe, my email address is john@internet.com, and my phone number is 123-456-7890.
 
-        Once I have all this information, I will proceed with the booking.
+> **System** > Do you want to book a table at The French Laundry on 15/03/2023 19:00:00 for 4 people?
 
-    > **User** > I would like to book a table at the restaurant "The French Laundry" on the 15th of March at 7:00 PM for 4 people. My name is John Doe, my email address is john@internet.com, and my phone number is 123-456-7890.
-    > System > Do you want to book a table at The French Laundry on 15/03/2023 19:00:00 for 4 people?
-    > System > Please confirm by typing 'yes' or 'no'.
-    > yes
+> **System** > Please confirm by typing 'yes' or 'no'.
 
-> **Assistant** > Great! I have successfully booked a table for you at "The French Laundry" on the 15th of March at 7:00 PM for 4 people. Your reservation has been made under the name John Doe.
+> **User** > yes
 
-If you have any further questions or need to make any changes to your reservation, please let me know.
+> **Assistant** > Great! I have successfully booked a table for you at "The French Laundry" on the 15th of March at 7:00 PM for 4 people.
+>
+> Your reservation has been made under the name John Doe.
+>
+> If you have any further questions or need to make any changes to your reservation, please let me know.
 
 > **User** > List my current bookings
 
 > **Assistant** > You currently have one booking:
-
-- Restaurant: The French Laundry
-- Date and Time: 15th of March at 7:00 PM
-- Party Size: 4 people
-
-If you need any further assistance or if there's anything else I can help you with, please let me know.
+>
+> - Restaurant: The French Laundry
+> - Date and Time: 15th of March at 7:00 PM
+> - Party Size: 4 people
+>
+> If you need any further assistance or if there's anything else I can help you with, please let me know.
 
 > **User** > Cancel my booking
 
-[Cancelling a reservation for 4 at The French Laundry on 2023-03-15 at 19:00:00]
+> **System** > `[Cancelling a reservation for 4 at The French Laundry on 2023-03-15 at 19:00:00]`
 
 > **Assistant** > I have successfully canceled your booking at "The French Laundry" on the 15th of March at 7:00 PM for 4 people.
-
-If you have any other questions or need further assistance, please let me know.
+>
+> If you have any other questions or need further assistance, please let me know.
