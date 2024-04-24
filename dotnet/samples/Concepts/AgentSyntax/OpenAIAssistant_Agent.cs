@@ -1,20 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace OpenAIAssistant;
-
+namespace Examples;
 /// <summary>
-/// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
+/// eliciting its response to three explicit user messages.
 /// </summary>
-public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
+/// <remarks>
+/// This example demonstrates that outside of initialization (and cleanup), using
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
+/// even with with a <see cref="KernelPlugin"/>.
+/// </remarks>
+public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
+    private const string HostName = "Host";
+    private const string HostInstructions = "Answer questions about the menu.";
+
     [Fact]
     public async Task RunAsync()
     {
@@ -25,9 +33,14 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
-                    EnableCodeInterpreter = true, // Enable code-interpreter
+                    Instructions = HostInstructions,
+                    Name = HostName,
                     ModelId = this.Model,
                 });
+
+        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
@@ -35,8 +48,10 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
-            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
+            await InvokeAgentAsync("Hello");
+            await InvokeAgentAsync("What is the special soup?");
+            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("Thank you");
         }
         finally
         {
