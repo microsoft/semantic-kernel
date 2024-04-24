@@ -1,4 +1,4 @@
-#Semantic Kernel: Agent syntax examples
+# Semantic Kernel: Agent syntax examples
 
 This project contains a collection of examples on how to use SK Agents.
 
