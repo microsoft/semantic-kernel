@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
-/// Round-robin turn-taking strategy.  Agent order is based on the order
-/// in which they joined <see cref="AgentGroupChat"/>.
+/// Determines agent selection based on the evaluation of a <see cref="KernelFunction"/>.
 /// </summary>
 public class KernelFunctionSelectionStrategy(KernelFunction function) : SelectionStrategy
 {
