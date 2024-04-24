@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -106,6 +107,8 @@ public class OpenAITextGenerationService extends OpenAiService implements TextGe
     private CompletionsOptions getCompletionsOptions(
         String text,
         @Nullable PromptExecutionSettings requestSettings) {
+        text = StringEscapeUtils.unescapeXml(text);
+
         if (requestSettings == null) {
             return new CompletionsOptions(Collections.singletonList(text))
                 .setMaxTokens(PromptExecutionSettings.DEFAULT_MAX_TOKENS);

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.templateengine.handlebars;
 import static com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.MAIN_KEY;
 
 import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import reactor.core.publisher.Mono;
 
 /**
@@ -180,7 +182,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             this.handlebars = new Handlebars();
             this.handlebars
                 .registerHelper("message", HandleBarsPromptTemplateHandler::handleMessage)
-                .registerHelper("each", handleEach(context));
+                .registerHelper("each", handleEach(context))
+                .with(EscapingStrategy.XML);
 
             addFunctionHelpers(kernel, this.handlebars, context);
 

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -98,8 +99,6 @@ public final class CodeBlock extends Block implements CodeRendering {
             context = InvocationContext.builder().build();
         }
 
-        // this.Log.LogTrace("Rendering code: `{0}`", this.Content);
-
         switch (this.tokens.get(0).getType()) {
             case VALUE:
             case VARIABLE:
@@ -115,9 +114,8 @@ public final class CodeBlock extends Block implements CodeRendering {
                         arguments,
                         context,
                         context.getContextVariableTypes().getVariableTypeForClass(String.class))
-                    .map(it -> {
-                        return it.getValue();
-                    });
+                    .map(ContextVariable::getValue)
+                    .map(StringEscapeUtils::escapeXml11);
 
             case UNDEFINED:
             case TEXT:

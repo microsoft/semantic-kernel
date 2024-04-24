@@ -54,6 +54,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -146,8 +147,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                     this,
                     messages,
                     functions,
-                    invocationContext,
-                    autoInvokeAttempts)))
+                    invocationContext)))
             .getOptions();
 
         Mono<List<? extends ChatMessageContent>> result = getClient()
@@ -449,8 +449,12 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
         @Nullable List<OpenAIFunction> functions,
-        @Nullable InvocationContext invocationContext,
-        int autoInvokeAttempts) {
+        @Nullable InvocationContext invocationContext) {
+
+        chatRequestMessages = chatRequestMessages
+            .stream()
+            .map(XMLPromptParser::unescapeRequest)
+            .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
@@ -633,7 +637,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             return new ArrayList<>();
         }
         return messages.stream()
-            .map(message -> getChatRequestMessage(message))
+            .map(OpenAIChatCompletion::getChatRequestMessage)
             .collect(Collectors.toList());
     }
 
@@ -642,31 +646,10 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         AuthorRole authorRole = message.getAuthorRole();
         String content = message.getContent();
+
         switch (authorRole) {
             case ASSISTANT:
-                // TODO: break this out into a separate method and handle tools other than function calls
-                ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
-                List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) message)
-                    .getToolCall();
-                if (toolCalls != null) {
-                    asstMessage.setToolCalls(
-                        toolCalls.stream()
-                            .map(toolCall -> {
-                                KernelFunctionArguments arguments = toolCall.getArguments();
-                                String args = arguments != null && !arguments.isEmpty()
-                                    ? arguments.entrySet().stream()
-                                        .map(entry -> String.format("\"%s\": \"%s\"",
-                                            entry.getKey(), entry.getValue()))
-                                        .collect(Collectors.joining("{", "}", ","))
-                                    : "{}";
-                                FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(),
-                                    args);
-                                return new ChatCompletionsFunctionToolCall(toolCall.getId(),
-                                    fnCall);
-                            })
-                            .collect(Collectors.toList()));
-                }
-                return asstMessage;
+                return formAssistantMessage(message, content);
             case SYSTEM:
                 return new ChatRequestSystemMessage(content);
             case USER:
@@ -684,10 +667,44 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 }
                 return new ChatRequestToolMessage(content, id);
             default:
-                LOGGER.debug("Unexpected author role: " + authorRole);
+                LOGGER.debug("Unexpected author role: {}", authorRole);
                 throw new SKException("Unexpected author role: " + authorRole);
         }
 
+    }
+
+    private static ChatRequestAssistantMessage formAssistantMessage(
+        ChatMessageContent<?> message, String content) {
+        // TODO: handle tools other than function calls
+        ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
+
+        List<OpenAIFunctionToolCall> toolCalls = null;
+        if (message instanceof OpenAIChatMessageContent) {
+            toolCalls = ((OpenAIChatMessageContent<?>) message).getToolCall();
+        }
+
+        if (toolCalls != null) {
+            asstMessage.setToolCalls(
+                toolCalls.stream()
+                    .map(toolCall -> {
+                        KernelFunctionArguments arguments = toolCall.getArguments();
+
+                        String args = arguments != null && !arguments.isEmpty()
+                            ? arguments.entrySet().stream()
+                                .map(entry -> String.format("\"%s\": \"%s\"",
+                                    StringEscapeUtils.escapeJson(entry.getKey()),
+                                    StringEscapeUtils.escapeJson(
+                                        entry.getValue().toPromptString())))
+                                .collect(Collectors.joining("{", "}", ","))
+                            : "{}";
+                        FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(),
+                            args);
+                        return new ChatCompletionsFunctionToolCall(toolCall.getId(),
+                            fnCall);
+                    })
+                    .collect(Collectors.toList()));
+        }
+        return asstMessage;
     }
 
     static ChatRequestMessage getChatRequestMessage(
