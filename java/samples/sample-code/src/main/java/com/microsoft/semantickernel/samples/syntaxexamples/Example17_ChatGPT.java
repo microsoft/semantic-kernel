@@ -37,10 +37,6 @@ public class Example17_ChatGPT {
                 .buildAsyncClient();
         }
 
-        client = new OpenAIClientBuilder()
-            .endpoint("http://localhost:8123")
-            .buildAsyncClient();
-
         ChatCompletionService chatGPT = OpenAIChatCompletion.builder()
             .withModelId(MODEL_ID)
             .withOpenAIAsyncClient(client)

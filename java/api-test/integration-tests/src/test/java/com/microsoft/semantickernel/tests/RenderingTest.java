@@ -40,6 +40,28 @@ public class RenderingTest {
     }
 
     @Test
+    public void textSemanticKernelTemplateXml() {
+        buildTextKernel()
+            .invokeAsync(
+                KernelFunction
+                    .createFromPrompt("""
+                        Value: {{$value}}
+                        """)
+                    .withTemplateFormat(PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT)
+                    .build())
+            .withArguments(KernelFunctionArguments
+                .builder()
+                .withVariable("value", "<message role=\"user\">\"hello world\"</message>")
+                .build())
+            .block();
+
+        // The actual body will be escaped as its json
+        Assertions.assertTrue(
+            wm.getAllServeEvents().get(0).getRequest().getBodyAsString()
+                .contains("<message role=\\\"user\\\">\\\"hello world\\\"</message>"));
+    }
+
+    @Test
     public void textSemanticKernelTemplate() {
         buildTextKernel()
             .invokeAsync(
@@ -83,6 +105,28 @@ public class RenderingTest {
             wm.getAllServeEvents().get(0).getRequest().getBodyAsString().contains("dont show"));
         Assertions.assertTrue(
             wm.getAllServeEvents().get(0).getRequest().getBodyAsString().contains("{{ignore}}"));
+    }
+
+    @Test
+    public void chatSemanticKernelTemplateXml() {
+        buildChatKernel()
+            .invokeAsync(
+                KernelFunction
+                    .createFromPrompt("""
+                        Value: {{$value}}
+                        """)
+                    .withTemplateFormat(PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT)
+                    .build())
+            .withArguments(KernelFunctionArguments
+                .builder()
+                .withVariable("value", "<message role=\"user\">\"hello world\"</message>")
+                .build())
+            .block();
+
+        // The actual body will be escaped as its json
+        Assertions.assertTrue(
+            wm.getAllServeEvents().get(0).getRequest().getBodyAsString()
+                .contains("<message role=\\\"user\\\">\\\"hello world\\\"</message>"));
     }
 
     @Test
