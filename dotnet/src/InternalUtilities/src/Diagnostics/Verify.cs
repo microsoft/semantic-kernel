@@ -107,7 +107,7 @@ internal static class Verify
         }
     }
 
-    internal static void StartsWith(string text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
+    internal static void StartsWith([NotNull] string? text, string prefix, string message, [CallerArgumentExpression(nameof(text))] string? textParamName = null)
     {
         Debug.Assert(prefix is not null);
 
