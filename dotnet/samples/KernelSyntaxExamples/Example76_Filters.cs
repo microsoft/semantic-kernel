@@ -277,8 +277,8 @@ public class Example76_Filters(ITestOutputHelper output) : BaseTest(output)
             // Example: override function result value
             context.Result = new FunctionResult(context.Result, "Result from auto function invocation filter");
 
-            // Example: cancel function invocation
-            context.Cancel = true;
+            // Example: Terminate function invocation
+            context.Terminate = true;
         }
     }
 

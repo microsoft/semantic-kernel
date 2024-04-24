@@ -176,8 +176,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            // Cancelling before first function, so all functions won't be invoked.
-            context.Cancel = true;
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
 
             await next(context);
         });
@@ -209,8 +209,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
-            // Cancelling before first function, so all functions won't be invoked.
-            context.Cancel = true;
+            // Terminating before first function, so all functions won't be invoked.
+            context.Terminate = true;
 
             await next(context);
         });
@@ -249,8 +249,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
             await next(context);
 
-            // Cancelling after first function, so second function won't be invoked.
-            context.Cancel = true;
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
         });
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
@@ -289,8 +289,8 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
 
             await next(context);
 
-            // Cancelling after first function, so second function won't be invoked.
-            context.Cancel = true;
+            // Terminating after first function, so second function won't be invoked.
+            context.Terminate = true;
         });
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
@@ -400,7 +400,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         {
             context.Arguments!["parameter"] = NewValue;
             await next(context);
-            context.Cancel = true;
+            context.Terminate = true;
         });
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();

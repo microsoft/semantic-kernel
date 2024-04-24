@@ -417,8 +417,8 @@ internal abstract class ClientCore
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
-                        // Check if filter requested cancellation.
-                        if (context.Cancel)
+                        // Check if filter requested termination.
+                        if (context.Terminate)
                         {
                             return;
                         }
@@ -449,12 +449,12 @@ internal abstract class ClientCore
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
 
-                // If filter requested cancellation, returning latest function result.
-                if (invocationContext.Cancel)
+                // If filter requested termination, returning latest function result.
+                if (invocationContext.Terminate)
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
-                        this.Logger.LogDebug("Filter requested cancellation.");
+                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
                     return [chat.Last()];
@@ -677,8 +677,8 @@ internal abstract class ClientCore
                 {
                     invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
                     {
-                        // Check if filter requested cancellation.
-                        if (context.Cancel)
+                        // Check if filter requested termination.
+                        if (context.Terminate)
                         {
                             return;
                         }
@@ -709,12 +709,12 @@ internal abstract class ClientCore
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
-                // If filter requested cancellation, breaking request iteration loop.
-                if (invocationContext.Cancel)
+                // If filter requested termination, breaking request iteration loop.
+                if (invocationContext.Terminate)
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
                     {
-                        this.Logger.LogDebug("Filter requested cancellation.");
+                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
                     yield break;

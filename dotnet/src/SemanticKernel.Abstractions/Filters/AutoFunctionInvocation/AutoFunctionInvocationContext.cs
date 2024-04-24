@@ -76,9 +76,10 @@ public class AutoFunctionInvocationContext
     public FunctionResult Result { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the operation associated with the filter should be canceled.
+    /// Gets or sets a value indicating whether the operation associated with the filter should be terminated.
     /// By default it's <see langword="false"/>, in this case all functions will be executed.
     /// As soon as it's set to <see langword="true"/>, the remaining functions won't be executed and last request to LLM won't be performed.
+    /// Automatic function invocation process will be terminated and result of last executed function will be returned to the caller.
     /// </summary>
-    public bool Cancel { get; set; }
+    public bool Terminate { get; set; }
 }
