@@ -25,6 +25,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
-    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
   </ItemGroup>
 </Project>
