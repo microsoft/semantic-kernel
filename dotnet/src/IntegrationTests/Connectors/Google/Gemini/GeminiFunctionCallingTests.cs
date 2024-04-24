@@ -11,7 +11,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
+namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : TestsBase(output)
 {
