@@ -131,7 +131,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
 		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
 		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
-		src\InternalUtilities\src\System\EnumerableExtensions.cs = src\InternalUtilities\src\System\EnumerableExtensions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"

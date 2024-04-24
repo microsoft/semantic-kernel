@@ -70,7 +70,7 @@ public sealed class Kernel
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
-            if (registeredPlugins.IsNotEmpty())
+            if (IsNotEmpty(registeredPlugins))
             {
                 this._plugins = new(registeredPlugins);
             }
@@ -284,7 +284,7 @@ public sealed class Kernel
         // Enumerate any function filters that may have been registered.
         IEnumerable<IFunctionInvocationFilter> functionInvocationFilters = this.Services.GetServices<IFunctionInvocationFilter>();
 
-        if (functionInvocationFilters.IsNotEmpty())
+        if (IsNotEmpty(functionInvocationFilters))
         {
             this._functionInvocationFilters = new(functionInvocationFilters);
         }
@@ -292,7 +292,7 @@ public sealed class Kernel
         // Enumerate any prompt filters that may have been registered.
         IEnumerable<IPromptRenderFilter> promptRenderFilters = this.Services.GetServices<IPromptRenderFilter>();
 
-        if (promptRenderFilters.IsNotEmpty())
+        if (IsNotEmpty(promptRenderFilters))
         {
             this._promptRenderFilters = new(promptRenderFilters);
         }
@@ -300,7 +300,7 @@ public sealed class Kernel
         // Enumerate any automatic function invocation filters that may have been registered.
         IEnumerable<IAutoFunctionInvocationFilter> autoFunctionInvocationFilters = this.Services.GetServices<IAutoFunctionInvocationFilter>();
 
-        if (autoFunctionInvocationFilters.IsNotEmpty())
+        if (IsNotEmpty(autoFunctionInvocationFilters))
         {
             this._autoFunctionInvocationFilters = new(autoFunctionInvocationFilters);
         }
@@ -587,6 +587,13 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
+    #endregion
+
+    #region Private
+
+    private static bool IsNotEmpty<T>(IEnumerable<T> enumerable) =>
+        enumerable is not ICollection<T> collection || collection.Count != 0;
+
     #endregion
 
     #region Obsolete
