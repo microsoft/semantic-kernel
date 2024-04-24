@@ -1,39 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
-using Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Resources;
+using Plugins;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Examples;
-
 /// <summary>
-/// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
+/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
+/// eliciting its response to three explicit user messages.
 /// </summary>
-public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(output)
+/// <remarks>
+/// This example demonstrates that outside of initialization (and cleanup), using
+/// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
+/// even with with a <see cref="KernelPlugin"/>.
+/// </remarks>
+public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Retrieval tool not supported on Azure OpenAI.
-    /// </summary>
-    protected override bool ForceOpenAI => true;
+    private const string HostName = "Host";
+    private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
     public async Task RunAsync()
     {
-        OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
-
-        OpenAIFileReference uploadFile =
-            await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
-                new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
-
-        WriteLine(this.ApiKey);
-
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
@@ -41,10 +33,14 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
-                    EnableRetrieval = true, // Enable retrieval
+                    Instructions = HostInstructions,
+                    Name = HostName,
                     ModelId = this.Model,
-                    FileIds = [uploadFile.Id] // Associate uploaded file
                 });
+
+        // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
         var chat = new AgentGroupChat();
@@ -52,9 +48,10 @@ public class Example14_OpenAIAssistant_Retrieval(ITestOutputHelper output) : Bas
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("Where did sam go?");
-            await InvokeAgentAsync("When does the flight leave Seattle?");
-            await InvokeAgentAsync("What is the hotel contact info at the destination?");
+            await InvokeAgentAsync("Hello");
+            await InvokeAgentAsync("What is the special soup?");
+            await InvokeAgentAsync("What is the special drink?");
+            await InvokeAgentAsync("Thank you");
         }
         finally
         {
