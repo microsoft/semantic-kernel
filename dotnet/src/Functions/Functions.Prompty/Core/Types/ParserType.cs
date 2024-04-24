@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Experimental.Prompty.Prompty;
+namespace Microsoft.SemanticKernel.Prompty.Core;
 
 internal enum ParserType
 {

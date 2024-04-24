@@ -1,21 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.Metrics;
 using System;
 using System.IO;
-using System.Reflection;
-using Microsoft.SemanticKernel.Experimental.Prompty.Core;
-using Microsoft.SemanticKernel.PromptTemplates.Liquid;
-using static System.Net.Mime.MediaTypeNames;
-using YamlDotNet.Serialization;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Liquid;
+using Microsoft.SemanticKernel.Prompty.Core;
+using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Extension;
 
+/// <summary>
+/// extension methods for <see cref="Kernel"/> to create a <see cref="KernelFunction"/> from a prompty file.
+/// </summary>
 public static class PromptyKernelExtension
 {
+    /// <summary>
+    /// Create a <see cref="KernelFunction"/> from a prompty file.
+    /// </summary>
+    /// <param name="_">kernel</param>
+    /// <param name="promptyPath">path to prompty file.</param>
+    /// <param name="promptTemplateFactory">prompty template factory, if not provided, a <see cref="LiquidPromptTemplateFactory"/> will be used.</param>
+    /// <param name="loggerFactory">logger factory</param>
+    /// <returns><see cref="KernelFunction"/></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="NotSupportedException"></exception>
     public static KernelFunction CreateFunctionFromPrompty(
         this Kernel _,
         string promptyPath,
@@ -36,7 +46,7 @@ public static class PromptyKernelExtension
         // name: Contoso Chat Prompt
         // description: A retail assistent for Contoso Outdoors products retailer.
         // authors:
-        //   -Cassie Breviu
+        //   - XXXX
         // model:
         //   api: chat
         //   configuration:
@@ -63,7 +73,7 @@ public static class PromptyKernelExtension
         var content = splits[1];
 
         var deserializer = new DeserializerBuilder().Build();
-        var prompty = deserializer.Deserialize<Experimental.Prompty.Core.Prompty>(yaml);
+        var prompty = deserializer.Deserialize<PromptyYaml>(yaml);
 
         // step 2
         // create a prompt template config from the prompty object
@@ -78,7 +88,7 @@ public static class PromptyKernelExtension
         {
             ModelType.azure_openai or ModelType.openai => new OpenAIPromptExecutionSettings()
             {
-                ResponseFormat = prompty.Model?.Response == "json_object" ? ChatCompletionsResponseFormat.JsonObject : null,
+                ResponseFormat = prompty.Model?.Parameters?.ResponseFormat == "json_object" ? ChatCompletionsResponseFormat.JsonObject : null,
                 Temperature = prompty.Model?.Parameters?.Temperature ?? 1.0,
                 TopP = prompty.Model?.Parameters?.TopP ?? 1.0,
                 MaxTokens = prompty.Model?.Parameters?.MaxTokens,
@@ -109,9 +119,7 @@ public static class PromptyKernelExtension
         }
 
         // step 4. update template format
-        // Note: liquid template format is the only supported format for now
-        // Once other template formats are supported, this should be updated to be dynamically retrieved from prompty object
-        var templateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat;
+        var templateFormat = prompty.Template ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
         promptTemplateConfig.TemplateFormat = templateFormat;
 
         return KernelFunctionFactory.CreateFromPrompt(promptTemplateConfig, promptTemplateFactory, loggerFactory);

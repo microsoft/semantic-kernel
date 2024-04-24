@@ -3,7 +3,7 @@
 using YamlDotNet.Serialization;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
+namespace Microsoft.SemanticKernel.Prompty.Core;
 
 internal class PromptyModelParameters
 {
@@ -24,7 +24,7 @@ internal class PromptyModelParameters
     public string? ToolsChoice { get; set; } // Controls which function the model calls (e.g., "none" or "auto")
 
     [YamlMember(Alias = "tools")]
-    public List<Tool>? Tools { get; set; } // Array of tools (if applicable)
+    public List<PromptyTool>? Tools { get; set; } // Array of tools (if applicable)
 
     [YamlMember(Alias = "frequency_penalty")]
     public double FrequencyPenalty { get; set; } // Frequency penalty for sampling

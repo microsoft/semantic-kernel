@@ -2,15 +2,18 @@
 
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Experimental.Prompty.Core;
+namespace Microsoft.SemanticKernel.Prompty.Core;
 internal class PromptyModel
 {
     [YamlMember(Alias = "api")]
-    public ApiType Api { get; set; }
+    public ApiType Api { get; set; } = ApiType.Chat;
+
     [YamlMember(Alias = "configuration")]
-    public PromptyModelConfig? ModelConfiguration;
+    public PromptyModelConfig? ModelConfiguration { get; set; }
+
     [YamlMember(Alias = "parameters")]
-    public PromptyModelParameters? Parameters;
+    public PromptyModelParameters? Parameters { get; set; }
+
     [YamlMember(Alias = "response")]
     public string? Response { get; set; }
 }

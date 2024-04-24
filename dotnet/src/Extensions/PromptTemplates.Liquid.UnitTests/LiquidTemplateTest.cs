@@ -35,7 +35,7 @@ public class LiquidTemplateTest
             lastName = "Doe",
             age = 30,
             membership = "Gold",
-            orders = new []
+            orders = new[]
             {
                 new { name = "apple", description = "2 fuji apples", date = "2024/04/01" },
                 new { name = "banana", description = "1 free banana from amazon banana hub", date = "2024/04/03" },
@@ -47,7 +47,7 @@ public class LiquidTemplateTest
         // - id
         // - title
         // - content
-        var documents = new []
+        var documents = new[]
         {
             new { id = "1", title = "apple", content = "2 apples"},
             new { id = "2", title = "banana", content = "3 bananas"},
