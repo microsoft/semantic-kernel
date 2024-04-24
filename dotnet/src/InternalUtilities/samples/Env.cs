@@ -3,8 +3,6 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace RepoUtils;
-
 internal sealed class Env
 {
     /// <summary>

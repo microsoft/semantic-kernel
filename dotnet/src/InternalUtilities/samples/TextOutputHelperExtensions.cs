@@ -2,8 +2,6 @@
 
 using Xunit.Abstractions;
 
-namespace Examples;
-
 public static class TextOutputHelperExtensions
 {
     public static void WriteLine(this ITestOutputHelper testOutputHelper, object target)

@@ -2,8 +2,6 @@
 
 using Microsoft.SemanticKernel.Planning;
 
-namespace RepoUtils;
-
 internal static class PlanExtensions
 {
     internal static string ToPlanWithGoalString(this Plan plan, string indent = " ")

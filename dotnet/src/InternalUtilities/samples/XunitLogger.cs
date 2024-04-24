@@ -4,8 +4,6 @@ using System;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace RepoUtils;
-
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>

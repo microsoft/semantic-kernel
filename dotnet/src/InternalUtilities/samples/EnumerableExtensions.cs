@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 
-namespace RepoUtils;
-
 public static class EnumerableExtensions
 {
     public static IEnumerable<List<TSource>> ChunkByAggregate<TSource, TAccumulate>(

@@ -3,8 +3,6 @@
 using System.IO;
 using System.Reflection;
 
-namespace RepoUtils;
-
 public static class RepoFiles
 {
     /// <summary>

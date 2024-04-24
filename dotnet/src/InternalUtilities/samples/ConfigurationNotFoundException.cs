@@ -2,8 +2,6 @@
 
 using System;
 
-namespace Reliability;
-
 public sealed class ConfigurationNotFoundException : Exception
 {
     public string? Section { get; }

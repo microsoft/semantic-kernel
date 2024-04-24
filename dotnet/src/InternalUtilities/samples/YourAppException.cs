@@ -2,8 +2,6 @@
 
 using System;
 
-namespace RepoUtils;
-
 public class YourAppException : Exception
 {
     public YourAppException() : base()
