@@ -42,6 +42,7 @@ internal static class XmlPromptParser
         var xmlDocument = new XmlDocument()
         {
             // This is necessary to preserve whitespace within prompts as this may be significant.
+            // E.g. if the prompt contains well formatted code and we want the LLM to return well formatted code.
             PreserveWhitespace = true
         };
 
