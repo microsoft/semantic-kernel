@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests;
@@ -107,6 +109,36 @@ public class AgentChatTests
             // Rush invocation
             await chat.InvokeAsync().ToArrayAsync().AsTask();
         }
+    }
+
+    /// <summary>
+    /// Verify behavior of <see cref="AgentChat"/> usage of <see cref="IAgentChatFilter"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAgentChatFiltersAsync()
+    {
+        // Create a filter
+        Mock<IAgentChatFilter> mockFilter = new();
+
+        // Create chat
+        TestChat chat = new()
+        {
+            Filters =
+            {
+                mockFilter.Object
+            }
+        };
+
+        // Verify initial state
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Never);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Never);
+
+        // Invoke with input & verify (agent joins chat)
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+        await chat.InvokeAsync().ToArrayAsync();
+        Assert.Equal(1, chat.Agent.InvokeCount);
+        mockFilter.Verify(f => f.OnAgentInvoking(It.IsAny<AgentChatFilterInvokingContext>()), Times.Once);
+        mockFilter.Verify(f => f.OnAgentInvoked(It.IsAny<AgentChatFilterInvokedContext>()), Times.Once);
     }
 
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
