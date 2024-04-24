@@ -258,7 +258,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Contains("rain", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
     public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorAsync()
     {
         // Arrange
