@@ -30,6 +30,7 @@ internal sealed class PromptyFunction
     [YamlMember(Alias = "description")]
     public string? Description { get; set; }
 }
+
 internal sealed class PromptyParameters
 {
     [YamlMember(Alias = "description")]
