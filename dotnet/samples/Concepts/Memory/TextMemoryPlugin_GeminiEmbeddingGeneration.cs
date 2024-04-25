@@ -11,7 +11,7 @@ namespace Examples;
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.
 /// </summary>
-public sealed class Gemini_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
+public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
 {
     private const string MemoryCollectionName = "aboutMe";
 

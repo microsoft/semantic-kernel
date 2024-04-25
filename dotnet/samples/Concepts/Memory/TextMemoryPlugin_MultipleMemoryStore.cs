@@ -21,7 +21,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Plugin_TextMemoryPlugin(ITestOutputHelper output) : BaseTest(output)
+public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {
     private const string MemoryCollectionName = "aboutMe";
 

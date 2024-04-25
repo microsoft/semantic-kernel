@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class TextEmbedding(ITestOutputHelper output) : BaseTest(output)
+public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(output)
 {
     private const string EmbeddingModelName = "text-embedding-ada-002";
     private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel(EmbeddingModelName);

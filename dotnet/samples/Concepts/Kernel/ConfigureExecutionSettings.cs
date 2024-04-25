@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public sealed class ExecutionSettings(ITestOutputHelper output) : BaseTest(output)
+public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to configure model execution settings
@@ -15,7 +15,7 @@ public sealed class ExecutionSettings(ITestOutputHelper output) : BaseTest(outpu
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Example58_ConfigureExecutionSettings ========");
+        this.WriteLine("======== ConfigureExecutionSettings ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;

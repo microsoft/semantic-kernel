@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
-public class UsingChatGPT(ITestOutputHelper output) : BaseTest(output)
+public class OpenAI_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task OpenAIChatSampleAsync()

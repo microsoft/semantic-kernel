@@ -16,7 +16,7 @@ namespace Examples;
 ///     of <see cref="IMemoryStore"/> has a single collection, and thus does not need to be named.
 ///     It also assumes that the JSON formatted data can be deserialized into <see cref="MemoryRecord"/> objects.
 /// </summary>
-public class MemoryStore_ReadOnly(ITestOutputHelper output) : BaseTest(output)
+public class MemoryStore_CustomReadOnly(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
