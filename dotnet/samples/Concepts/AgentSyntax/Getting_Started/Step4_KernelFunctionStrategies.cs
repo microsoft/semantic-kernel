@@ -21,9 +21,9 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
     private const string ReviewerInstructions =
         """
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
-        The goal is to determine is the given copy is acceptable to print.
+        The goal is to determine if the given copy is acceptable to print.
         If so, state that it is approved.
-        If not, provide insight on how to refine suggested copy without example.
+        If not, provide insight on how to refine suggested copy without examples.
         """;
 
     private const string CopyWriterName = "Writer";
