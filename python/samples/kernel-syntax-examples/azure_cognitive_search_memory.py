@@ -6,7 +6,7 @@ from dotenv import dotenv_values
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
-from semantic_kernel.connectors.memory import AzureCognitiveSearchMemoryStore
+from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.memory import SemanticTextMemory
 
@@ -62,7 +62,7 @@ async def main() -> None:
             api_key=AZURE_OPENAI_API_KEY,
         ),
     )
-    embedding_service_id = ("ada",)
+    embedding_service_id = "ada"
     embedding_gen = AzureTextEmbedding(
         service_id=embedding_service_id,
         deployment_name="text-embedding-ada-002",
@@ -81,10 +81,10 @@ async def main() -> None:
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     print("Populating memory...")
-    await populate_memory(kernel)
+    await populate_memory(memory)
 
     print("Asking questions... (manually)")
-    await search_acs_memory_questions(kernel)
+    await search_acs_memory_questions(memory)
 
     await acs_connector.close()
 
