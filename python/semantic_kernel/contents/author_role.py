@@ -2,8 +2,8 @@
 from enum import Enum
 
 
-class ChatRole(str, Enum):
-    """Chat role enum"""
+class AuthorRole(str, Enum):
+    """Author role enum"""
 
     SYSTEM = "system"
     USER = "user"

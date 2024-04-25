@@ -102,11 +102,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                         break
                     yield [
                         StreamingChatMessageContent(
+                            role="assistant",
                             choice_index=0,
                             inner_content=body,
                             ai_model_id=self.ai_model_id,
                             content=body.get("message", {"content": None}).get("content", None),
-                            role="assistant",
                         )
                     ]
                     if body.get("done"):
