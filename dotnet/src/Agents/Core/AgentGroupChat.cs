@@ -14,8 +14,8 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public sealed class AgentGroupChat : AgentChat
 {
-    private readonly HashSet<string> _agentIds; // Efficient existence test
-    private readonly List<Agent> _agents; // Maintain order
+    private readonly HashSet<string> _agentIds; // Efficient existence test O(1) vs O(n) for list.
+    private readonly List<Agent> _agents; // Maintain order the agents joined the chat
 
     /// <summary>
     /// Indicates if completion criteria has been met.  If set, no further

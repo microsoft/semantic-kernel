@@ -17,6 +17,7 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.utils import get_function_calling_object, get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -159,13 +160,17 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             chat_result = chat_result[0]
             chat_history_for_steps.add_message(chat_result)
 
-            if not chat_result.tool_calls:
+            if not any(isinstance(item, FunctionCallContent) for item in chat_result.items):
                 chat_history_for_steps.add_user_message("That function call is invalid. Try something else!")
                 continue
 
             # Try to get the final answer out
-            if chat_result.tool_calls[0].function.name == USER_INTERACTION_SEND_FINAL_ANSWER:
-                args = chat_result.tool_calls[0].function.parse_arguments()
+            if (
+                chat_result.items[0]
+                and isinstance(chat_result.items[0], FunctionCallContent)
+                and chat_result.items[0].name == USER_INTERACTION_SEND_FINAL_ANSWER
+            ):
+                args = chat_result.items[0].parse_arguments()
                 answer = args["answer"]
                 return FunctionCallingStepwisePlannerResult(
                     final_answer=answer,
@@ -209,7 +214,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             )
         )
         prompt = await kernel_prompt_template.render(kernel, arguments)
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
+        chat_history = ChatHistory.from_rendered_prompt(prompt)
         return chat_history
 
     def _create_config_from_yaml(self, kernel: Kernel) -> "KernelFunction":
