@@ -57,24 +57,24 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
 
         KernelFunction terminationFunction =
             KernelFunctionFactory.CreateFromPrompt(
-                $$$"""
+                """
                 Determine if the copy has been approved.  If so, respond with a single word: yes
 
                 History:
-                {{${{{KernelFunctionTerminationStrategy.HistoryArgumentName}}}}}
+                {{$history}}
                 """);
 
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
-                $$$"""
+                """
                 You are in a role playing game.
                 Carefully read the conversation history and carry on the conversation by specifying only the name of player to take the next turn.
 
                 The available names are:
-                {{${{{KernelFunctionSelectionStrategy.AgentsArgumentName}}}}}
+                {{$agents}}
 
                 History:
-                {{${{{KernelFunctionSelectionStrategy.HistoryArgumentName}}}}}
+                {{$history}}
                 """);
 
         // Create a chat for agent interaction.
@@ -95,14 +95,21 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                                 Kernel = CreateKernelWithChatCompletion(),
                                 // Customer result parser to determine if the response is "yes"
                                 ResultParser = new AffirmativeFunctionResultParser(),
+                                // %%%
+                                AgentVariableName = "agent",
+                                // %%%
+                                HistoryVariableName = "history",
                             },
-                        // Here a KernelFunctionSelectionStrategy selects agents based
-                        // on a prompt function.
+                        // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
                             new KernelFunctionSelectionStrategy(selectionFunction)
                             {
                                 // Kernel utilized when invoking the kernel-function.
-                                Kernel = CreateKernelWithChatCompletion()
+                                Kernel = CreateKernelWithChatCompletion(),
+                                // %%%
+                                AgentsVariableName = "agents",
+                                // %%%
+                                HistoryVariableName = "history",
                             },
                     }
             };

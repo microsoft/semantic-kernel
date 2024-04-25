@@ -23,11 +23,8 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         """
         Think step-by-step and rate the user input on creativity and expressivness from 1-100.
 
-        Respond in JSON format.
-        
-        Leave JSON properties empty if no associated information is available.
-                
-        The JSON schema can include only:
+        Respond in JSON format with the following JSON schema:
+
         {
             "score": "integer (1-100)",
             "notes": "the reason for your score"

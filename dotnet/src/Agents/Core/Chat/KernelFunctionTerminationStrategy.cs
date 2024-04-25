@@ -14,14 +14,26 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 public class KernelFunctionTerminationStrategy(KernelFunction function) : TerminationStrategy
 {
     /// <summary>
-    /// A well-known <see cref="KernelArguments"/> key associated with the agent name.
+    /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
     /// </summary>
-    public const string AgentArgumentName = "_agent_";
+    public const string DefaultAgentVariableName = "_agent_";
 
     /// <summary>
-    /// A well-known <see cref="KernelArguments"/> key associated with the chat history.
+    /// The default value for <see cref="KernelFunctionTerminationStrategy.HistoryVariableName"/>.
     /// </summary>
-    public const string HistoryArgumentName = "_history_";
+    public const string DefaultHistoryVariableName = "_history_";
+
+    /// <summary>
+    /// The <see cref="KernelArguments"/> key associated with the agent name when
+    /// invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
+    /// </summary>
+    public string AgentVariableName { get; init; } = DefaultAgentVariableName;
+
+    /// <summary>
+    /// The <see cref="KernelArguments"/> key associated with the chat history when
+    /// invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
+    /// </summary>
+    public string HistoryVariableName { get; init; } = DefaultHistoryVariableName;
 
     /// <summary>
     /// Optional arguments used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
@@ -56,8 +68,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { AgentArgumentName, agent.Name ?? agent.Id },
-                { HistoryArgumentName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { AgentVariableName, agent.Name ?? agent.Id },
+                { HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
