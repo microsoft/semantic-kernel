@@ -5,6 +5,7 @@ using System.IO;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Microsoft.SemanticKernel.Prompty.Core;
 using YamlDotNet.Serialization;
@@ -14,12 +15,12 @@ namespace Microsoft.SemanticKernel.Prompty.Extension;
 /// <summary>
 /// Extension methods for <see cref="Kernel"/> to create a <see cref="KernelFunction"/> from a prompty file.
 /// </summary>
-public static class PromptyKernelExtension
+public static class PromptyKernelExtensions
 {
     /// <summary>
     /// Create a <see cref="KernelFunction"/> from a prompty file.
     /// </summary>
-    /// <param name="_">kernel</param>
+    /// <param name="kernel">kernel</param>
     /// <param name="promptyPath">path to prompty file.</param>
     /// <param name="promptTemplateFactory">prompty template factory, if not provided, a <see cref="LiquidPromptTemplateFactory"/> will be used.</param>
     /// <param name="loggerFactory">logger factory</param>
@@ -27,7 +28,7 @@ public static class PromptyKernelExtension
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="NotSupportedException"></exception>
     public static KernelFunction CreateFunctionFromPrompty(
-        this Kernel _,
+        this Kernel kernel,
         string promptyPath,
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
@@ -36,7 +37,7 @@ public static class PromptyKernelExtension
 
         var text = File.ReadAllText(promptyPath);
 
-        promptTemplateFactory ??= new LiquidPromptTemplateFactory(); // use liquid template factory by default
+        promptTemplateFactory ??= new AggregatorPromptTemplateFactory(new HandlebarsPromptTemplateFactory(), new LiquidPromptTemplateFactory());
 
         // create PromptTemplateConfig from text
         // step 1
@@ -120,7 +121,7 @@ public static class PromptyKernelExtension
             }
         }
 
-        // step 4. update template format
+        // step 4. update template format, if not provided, use Liquid as default
         var templateFormat = prompty.Template ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
         promptTemplateConfig.TemplateFormat = templateFormat;
 

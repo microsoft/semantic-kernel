@@ -13,6 +13,7 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
     private readonly PromptTemplateConfig _config;
+    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):[\s]+");
 
     public LiquidPromptTemplate(PromptTemplateConfig config)
     {
@@ -30,7 +31,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         var template = this._config.Template;
         var liquidTemplate = Template.ParseLiquid(template);
-        var nonEmptyArguments = arguments.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
+        var nonEmptyArguments = arguments?.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
         var renderedResult = liquidTemplate.Render(nonEmptyArguments);
 
         // parse chat history
@@ -39,12 +40,11 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         // xxxx
         //
         // turn it into
-        // <Message role="system|assistant|user|function">
+        // <message role="system|assistant|user|function">
         // xxxx
-        // </Message>
+        // </message>
 
-        var roleRegex = new Regex(@"(?<role>system|assistant|user|function):[\s]+");
-        var splits = roleRegex.Split(renderedResult);
+        var splits = s_roleRegex.Split(renderedResult);
 
         // if no role is found, return the entire text
         if (splits.Length == 1)
@@ -65,9 +65,9 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         {
             var role = splits[i];
             var content = splits[i + 1];
-            sb.Append("<Message role=\"").Append(role).AppendLine("\">");
+            sb.Append("<message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
-            sb.AppendLine("</Message>");
+            sb.AppendLine("</message>");
         }
 
         renderedResult = sb.ToString();
