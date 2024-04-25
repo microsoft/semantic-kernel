@@ -46,14 +46,6 @@
     <EmbeddedResource Include="Resources\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Compile Remove="MixedAgents\**" />
-    <Compile Remove="OpenAIAssistant\**" />
-    <Content Remove="MixedAgents\**" />
-    <Content Remove="OpenAIAssistant\**" />
-    <EmbeddedResource Remove="MixedAgents\**" />
-    <EmbeddedResource Remove="OpenAIAssistant\**" />
-    <None Remove="MixedAgents\**" />
-    <None Remove="OpenAIAssistant\**" />
     <None Remove="Resources\*" />
   </ItemGroup>
 </Project>
