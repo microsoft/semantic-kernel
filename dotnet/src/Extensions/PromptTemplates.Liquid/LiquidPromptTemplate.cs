@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Scriban;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
-internal class LiquidPromptTemplate : IPromptTemplate
+internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
     private readonly PromptTemplateConfig _config;
 
