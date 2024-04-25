@@ -3,7 +3,7 @@
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
-internal class PromptyModel
+internal sealed class PromptyModel
 {
     [YamlMember(Alias = "api")]
     public ApiType Api { get; set; } = ApiType.Chat;

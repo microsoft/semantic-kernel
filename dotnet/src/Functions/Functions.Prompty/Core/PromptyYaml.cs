@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Prompty.Core;
 /// <summary>
 /// Schema: https://github.com/Azure/azureml_run_specification/blob/master/schemas/Prompty.yaml
 /// </summary>
-internal class PromptyYaml()
+internal sealed class PromptyYaml()
 {
     [YamlMember(Alias = "name")]
     public string? Name { get; set; }

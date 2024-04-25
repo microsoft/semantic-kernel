@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Prompty.Extension;
@@ -11,7 +10,7 @@ namespace SemanticKernel.Functions.Prompty.UnitTests;
 public sealed class PromptyTest
 {
     [Fact]
-    public async Task ChatPromptyTestAsync()
+    public void ChatPromptyTest()
     {
         var kernel = Kernel.CreateBuilder()
             .Build();

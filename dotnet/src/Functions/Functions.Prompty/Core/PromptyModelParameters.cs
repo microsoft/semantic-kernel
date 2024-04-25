@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
 
-internal class PromptyModelParameters
+internal sealed class PromptyModelParameters
 {
     // Parameters to be sent to the model
     [YamlMember(Alias = "response_format")]

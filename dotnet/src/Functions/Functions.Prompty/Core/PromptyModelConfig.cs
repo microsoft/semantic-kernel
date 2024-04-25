@@ -4,7 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
 
-internal class PromptyModelConfig
+internal sealed class PromptyModelConfig
 {
     // azure open ai
     [YamlMember(Alias = "type")]

@@ -4,7 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
 
-internal class PromptyTool
+internal sealed class PromptyTool
 {
     [YamlMember(Alias = "id")]
     public string? id { get; set; }
@@ -16,7 +16,7 @@ internal class PromptyTool
     public PromptyFunction? Function { get; set; }
 }
 
-internal class PromptyFunction
+internal sealed class PromptyFunction
 {
     [YamlMember(Alias = "arguments")]
     public string? Arguments { get; set; }
@@ -30,7 +30,7 @@ internal class PromptyFunction
     [YamlMember(Alias = "description")]
     public string? Description { get; set; }
 }
-internal class PromptyParameters
+internal sealed class PromptyParameters
 {
     [YamlMember(Alias = "description")]
     public string? Description { get; set; }

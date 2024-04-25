@@ -93,7 +93,7 @@ public static class PromptyKernelExtension
                 TopP = prompty.Model?.Parameters?.TopP ?? 1.0,
                 MaxTokens = prompty.Model?.Parameters?.MaxTokens,
                 Seed = prompty.Model?.Parameters?.Seed,
-                ModelId = prompty.Model?.ModelConfiguration?.AzureDeployment ?? throw new ArgumentNullException($"{nameof(prompty.Model.ModelConfiguration.AzureDeployment)} is null"),
+                ModelId = prompty.Model?.ModelConfiguration?.AzureDeployment,
             },
             _ => throw new NotSupportedException($"Model type '{prompty.Model?.ModelConfiguration?.ModelType}' is not supported."),
         };
