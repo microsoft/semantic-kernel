@@ -3,11 +3,10 @@
 import pytest
 from pytest import mark
 
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.exceptions.template_engine_exceptions import Jinja2TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -267,32 +266,6 @@ async def test_helpers_message(kernel: Kernel):
 
 
 @mark.asyncio
-async def test_helpers_openai_message_tool_call(kernel: Kernel):
-    template = """
-    {% for chat in chat_history %}
-    <message role="{{ chat.role }}" tool_calls="{{ chat.tool_calls }}" tool_call_id="{{ chat.tool_call_id }}">
-        {{ chat.content }}
-    </message>
-    {% endfor %}
-    """
-    target = create_jinja2_prompt_template(template)
-    chat_history = ChatHistory()
-    chat_history.add_message(ChatMessageContent(role="user", content="User message"))
-    chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
-        )
-    )
-    chat_history.add_message(OpenAIChatMessageContent(role="tool", content="Tool message", tool_call_id="test"))
-    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
-
-    assert "User message" in rendered
-    assert "ToolCall" in rendered
-    assert "plug-test" in rendered
-    assert "Tool message" in rendered
-
-
-@mark.asyncio
 async def test_helpers_message_to_prompt(kernel: Kernel):
     template = """
     {% for chat in chat_history %}
@@ -300,17 +273,21 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     {% endfor %}"""
     target = create_jinja2_prompt_template(template)
     chat_history = ChatHistory()
-    chat_history.add_message(OpenAIChatMessageContent(role="user", content="User message"))
+    chat_history.add_user_message("User message")
     chat_history.add_message(
-        OpenAIChatMessageContent(
-            role="assistant", tool_calls=[ToolCall(id="test", function=FunctionCall(name="plug-test"))]
-        )
+        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
+    )
+    chat_history.add_message(
+        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 
+    assert "text" in rendered
     assert "User message" in rendered
-    assert "tool_calls=" in rendered
+    assert "function_call" in rendered
     assert "plug-test" in rendered
+    assert "function_result" in rendered
+    assert "Tool message" in rendered
 
 
 @mark.asyncio
@@ -350,5 +327,5 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
     assert (
         rendered.strip()
-        == """<chat_history><message role="user">User message</message><message role="assistant">Assistant message</message></chat_history>"""  # noqa E501
+        == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )
