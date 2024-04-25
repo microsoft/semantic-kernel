@@ -12,7 +12,7 @@ using YamlDotNet.Serialization;
 namespace Microsoft.SemanticKernel.Prompty.Extension;
 
 /// <summary>
-/// extension methods for <see cref="Kernel"/> to create a <see cref="KernelFunction"/> from a prompty file.
+/// Extension methods for <see cref="Kernel"/> to create a <see cref="KernelFunction"/> from a prompty file.
 /// </summary>
 public static class PromptyKernelExtension
 {
