@@ -3,6 +3,7 @@
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
+
 internal sealed class PromptyModel
 {
     [YamlMember(Alias = "api")]
