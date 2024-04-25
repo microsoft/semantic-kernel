@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Microsoft.SemanticKernel.Prompty.Core;
@@ -87,19 +86,53 @@ public static class PromptyKernelExtensions
             Template = content,
         };
 
-        PromptExecutionSettings defaultExecutionSetting = prompty.Model?.ModelConfiguration?.ModelType switch
+        PromptExecutionSettings defaultExecutionSetting;
+        if (prompty.Model?.ModelConfiguration?.ModelType is ModelType.azure_openai || prompty.Model?.ModelConfiguration?.ModelType is ModelType.openai)
         {
-            ModelType.azure_openai or ModelType.openai => new OpenAIPromptExecutionSettings()
+            defaultExecutionSetting = new PromptExecutionSettings
             {
-                ResponseFormat = prompty.Model?.Parameters?.ResponseFormat == "json_object" ? ChatCompletionsResponseFormat.JsonObject : null,
-                Temperature = prompty.Model?.Parameters?.Temperature ?? 1.0,
-                TopP = prompty.Model?.Parameters?.TopP ?? 1.0,
-                MaxTokens = prompty.Model?.Parameters?.MaxTokens,
-                Seed = prompty.Model?.Parameters?.Seed,
                 ModelId = prompty.Model?.ModelConfiguration?.AzureDeployment,
-            },
-            _ => throw new NotSupportedException($"Model type '{prompty.Model?.ModelConfiguration?.ModelType}' is not supported."),
-        };
+            };
+
+            var extensionData = new Dictionary<string, object>();
+            extensionData.Add("temperature", prompty.Model?.Parameters?.Temperature ?? 1.0);
+            extensionData.Add("top_p", prompty.Model?.Parameters?.TopP ?? 1.0);
+            if (prompty.Model?.Parameters?.MaxTokens is int maxTokens)
+            {
+                extensionData.Add("max_tokens", maxTokens);
+            }
+
+            if (prompty.Model?.Parameters?.Seed is int seed)
+            {
+                extensionData.Add("seed", seed);
+            }
+
+            if (prompty.Model?.Parameters?.FrequencyPenalty is double frequencyPenalty)
+            {
+                extensionData.Add("frequency_penalty", frequencyPenalty);
+            }
+
+            if (prompty.Model?.Parameters?.PresencePenalty is double presencePenalty)
+            {
+                extensionData.Add("presence_penalty", presencePenalty);
+            }
+
+            if (prompty.Model?.Parameters?.Stop is List<string> stop)
+            {
+                extensionData.Add("stop_sequences", stop);
+            }
+
+            if (prompty.Model?.Parameters?.ResponseFormat == "json_object")
+            {
+                extensionData.Add("response_format", "json_object");
+            }
+
+            defaultExecutionSetting.ExtensionData = extensionData;
+        }
+        else
+        {
+            throw new NotSupportedException($"Model type {prompty.Model?.ModelConfiguration?.ModelType} is not supported.");
+        }
 
         promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
 

@@ -27,10 +27,10 @@ internal sealed class PromptyModelParameters
     public List<PromptyTool>? Tools { get; set; } // Array of tools (if applicable)
 
     [YamlMember(Alias = "frequency_penalty")]
-    public double FrequencyPenalty { get; set; } // Frequency penalty for sampling
+    public double? FrequencyPenalty { get; set; } // Frequency penalty for sampling
 
     [YamlMember(Alias = "presence_penalty")]
-    public double PresencePenalty { get; set; } // Presence penalty for sampling
+    public double? PresencePenalty { get; set; } // Presence penalty for sampling
 
     [YamlMember(Alias = "stop")]
     public List<string>? Stop { get; set; } // Sequences where model stops generating tokens
