@@ -48,4 +48,8 @@
     </EmbeddedResource>
     <None Remove="Resources\*" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MixedAgents\" />
+    <Folder Include="OpenAIAssistant\" />
+  </ItemGroup>
 </Project>
