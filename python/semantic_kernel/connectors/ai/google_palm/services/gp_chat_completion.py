@@ -2,11 +2,7 @@
 
 import logging
 import sys
-from typing import Any, Dict, List, Optional, Tuple
-
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
+from typing import Any, List, Optional, Tuple
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -24,12 +20,15 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-int_to_role = {1: ChatRole.USER, 2: ChatRole.SYSTEM, 3: ChatRole.ASSISTANT, 4: ChatRole.TOOL}
+int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT, 4: AuthorRole.TOOL}
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
@@ -77,7 +76,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Returns:
             List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
-        settings.messages = self._prepare_chat_history_for_request(chat_history)
+        settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
         response = await self._send_chat_request(settings)
@@ -228,18 +227,3 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
         return GooglePalmChatPromptExecutionSettings
-
-    def _prepare_chat_history_for_request(
-        self,
-        chat_history: ChatHistory,
-    ) -> List[Dict[str, Optional[str]]]:
-        """
-        Prepare the chat history for a request, allowing customization of the key names for role/author,
-        and optionally overriding the role.
-        """
-        standard_out = super()._prepare_chat_history_for_request(chat_history)
-        for message in standard_out:
-            message["author"] = message.pop("role")
-        # The last message should always be from the user
-        standard_out[-1]["author"] = "user"
-        return standard_out
