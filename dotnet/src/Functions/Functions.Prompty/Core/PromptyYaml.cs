@@ -32,7 +32,7 @@ internal sealed class PromptyYaml()
     public Dictionary<string, object>? Outputs { get; set; }
 
     [YamlMember(Alias = "sample")]
-    public dynamic Sample { get; set; }
+    public object? Sample { get; set; }
 
     [YamlMember(Alias = "model")]
     public PromptyModel? Model { get; set; }
