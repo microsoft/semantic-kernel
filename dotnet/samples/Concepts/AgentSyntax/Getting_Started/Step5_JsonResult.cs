@@ -7,13 +7,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Resources;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace GettingStarted;
 
 /// <summary>
-/// Demonstrate parsing JSON response using <see cref="JsonResultTranslator"/>.
+/// Demonstrate parsing JSON response.
 /// </summary>
 public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 {

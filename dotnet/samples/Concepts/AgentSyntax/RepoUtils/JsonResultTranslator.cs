@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 
-namespace Microsoft.SemanticKernel.Agents.Chat;
+namespace Resources;
 /// <summary>
 /// Supports parsing json from a text block that may contain literals delimiters:
 /// <example>
