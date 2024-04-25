@@ -94,10 +94,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                                 // Kernel utilized when invoking the kernel-function.
                                 Kernel = CreateKernelWithChatCompletion(),
                                 // Customer result parser to determine if the response is "yes"
-                                ResultParser = (result) =>
-                                {
-                                    return result.GetValue<string>()?.Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false;
-                                },
+                                ResultParser = (result) => result.GetValue<string>()?.Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false,
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
                                 // Limit total number of turns
