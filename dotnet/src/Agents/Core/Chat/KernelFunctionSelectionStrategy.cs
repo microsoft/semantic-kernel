@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -50,15 +51,10 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
-    /// A <see cref="FunctionResultProcessor{TResult}"/> responsible for translating the <see cref="FunctionResult"/>
+    /// A callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
-    public FunctionResultProcessor<string> ResultParser { get; init; } = DefaultInstance;
-
-    /// <summary>
-    /// The default selection parser that selects no agent.
-    /// </summary>
-    private static FunctionResultProcessor<string> DefaultInstance { get; } = FunctionResultProcessor<string>.CreateDefaultInstance(string.Empty);
+    public Func<FunctionResult, string> ResultParser { get; init; } = (_) => string.Empty;
 
     /// <inheritdoc/>
     public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -73,9 +69,12 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        string agentName =
-            this.ResultParser.InterpretResult(result) ??
-            throw new KernelException("Agent Failure - Strategy unable to determine selection result.");
+        string? agentName = this.ResultParser.Invoke(result);
+        if (string.IsNullOrEmpty(agentName))
+        {
+
+            throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
+        }
 
         return
             agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??

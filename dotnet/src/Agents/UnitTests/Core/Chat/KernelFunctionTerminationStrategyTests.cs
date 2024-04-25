@@ -34,7 +34,7 @@ public class KernelFunctionTerminationStrategyTests
 
         bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent.Object, []);
 
-        Assert.False(isTerminating);
+        Assert.True(isTerminating);
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class KernelFunctionTerminationStrategyTests
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
                 Kernel = new Kernel(),
-                ResultParser = new TestParser()
+                ResultParser = (result) => string.Equals("test", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase)
             };
 
         Mock<Agent> mockAgent = new();
@@ -58,14 +58,6 @@ public class KernelFunctionTerminationStrategyTests
         bool isTerminating = await strategy.ShouldTerminateAsync(mockAgent.Object, []);
 
         Assert.True(isTerminating);
-    }
-
-    private sealed class TestParser : FunctionResultProcessor<bool>
-    {
-        protected override bool ProcessTextResult(string result)
-        {
-            return result.Equals("test", StringComparison.OrdinalIgnoreCase);
-        }
     }
 
     private sealed class TestPlugin()

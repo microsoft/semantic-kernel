@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -51,15 +52,10 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     public Kernel Kernel { get; init; } = new Kernel();
 
     /// <summary>
-    /// A <see cref="FunctionResultProcessor{TResult}"/> responsible for translating the <see cref="FunctionResult"/>
+    /// A callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
-    public FunctionResultProcessor<bool> ResultParser { get; init; } = DefaultInstance;
-
-    /// <summary>
-    /// The default result parser.  Always signals termination.
-    /// </summary>
-    private static FunctionResultProcessor<bool> DefaultInstance { get; } = FunctionResultProcessor<bool>.CreateDefaultInstance(true);
+    public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
 
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
@@ -74,6 +70,6 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        return this.ResultParser.InterpretResult(result);
+        return this.ResultParser.Invoke(result);
     }
 }
