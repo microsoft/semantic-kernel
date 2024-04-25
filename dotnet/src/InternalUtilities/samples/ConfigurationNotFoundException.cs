@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 public sealed class ConfigurationNotFoundException : Exception
 {
     public string? Section { get; }

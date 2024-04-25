@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.IO;
 using System.Reflection;
 
 public static class RepoFiles

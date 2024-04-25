@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 public class YourAppException : Exception
 {
     public YourAppException() : base()
