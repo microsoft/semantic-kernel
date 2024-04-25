@@ -34,7 +34,7 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import asyncio
-from semantic_kernel import Kernel
+from semantic_kernel import Kernel as sk
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
 from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
