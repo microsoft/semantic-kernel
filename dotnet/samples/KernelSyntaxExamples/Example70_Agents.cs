@@ -66,7 +66,7 @@ public class Example70_Agent(ITestOutputHelper output) : BaseTest(output)
         await ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
-            arguments: new() { { MenuPlugin.CorrelationIdArgument, Guid.NewGuid() } },
+            arguments: new() { { MenuPlugin.CorrelationIdArgument, 3.141592653 } },
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
