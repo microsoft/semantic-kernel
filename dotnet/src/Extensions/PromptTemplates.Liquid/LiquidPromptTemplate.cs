@@ -27,6 +27,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
+
         var template = this._config.Template;
         var liquidTemplate = Template.ParseLiquid(template);
         var nonEmptyArguments = arguments.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
