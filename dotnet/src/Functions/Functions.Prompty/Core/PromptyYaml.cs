@@ -31,6 +31,9 @@ internal sealed class PromptyYaml()
     [YamlMember(Alias = "outputs")]
     public Dictionary<string, object>? Outputs { get; set; }
 
+    [YamlMember(Alias = "sample")]
+    public dynamic Sample { get; set; }
+
     [YamlMember(Alias = "model")]
     public PromptyModel? Model { get; set; }
 
