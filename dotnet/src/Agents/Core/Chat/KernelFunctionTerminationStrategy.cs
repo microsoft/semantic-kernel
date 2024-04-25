@@ -12,7 +12,8 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Signals termination based on the evaluation of a <see cref="KernelFunction"/>.
 /// </summary>
 /// <param name="function">A <see cref="KernelFunction"/> used for termination criteria</param>
-public class KernelFunctionTerminationStrategy(KernelFunction function) : TerminationStrategy
+/// <param name="kernel">A kernel instance with services for function execution.</param>
+public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel kernel) : TerminationStrategy
 {
     /// <summary>
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
@@ -49,7 +50,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; init; } = new Kernel();
+    public Kernel Kernel => kernel;
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>

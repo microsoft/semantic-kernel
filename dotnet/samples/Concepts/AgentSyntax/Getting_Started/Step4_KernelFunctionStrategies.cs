@@ -87,12 +87,10 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                         // Here KernelFunctionTerminationStrategy will terminate
                         // when the art-director has given their approval.
                         TerminationStrategy =
-                            new KernelFunctionTerminationStrategy(terminationFunction)
+                            new KernelFunctionTerminationStrategy(terminationFunction, CreateKernelWithChatCompletion())
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
-                                // Kernel utilized when invoking the kernel-function.
-                                Kernel = CreateKernelWithChatCompletion(),
                                 // Customer result parser to determine if the response is "yes"
                                 ResultParser = (result) => result.GetValue<string>()?.Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false,
                                 // The prompt variable name for the history argument.
@@ -102,10 +100,8 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
-                            new KernelFunctionSelectionStrategy(selectionFunction)
+                            new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
-                                // Kernel utilized when invoking the kernel-function.
-                                Kernel = CreateKernelWithChatCompletion(),
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
                                 // The prompt variable name for the agents argument.

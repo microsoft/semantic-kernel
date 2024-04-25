@@ -11,7 +11,9 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// <summary>
 /// Determines agent selection based on the evaluation of a <see cref="KernelFunction"/>.
 /// </summary>
-public class KernelFunctionSelectionStrategy(KernelFunction function) : SelectionStrategy
+/// <param name="function">A <see cref="KernelFunction"/> used for selection criteria</param>
+/// <param name="kernel">A kernel instance with services for function execution.</param>
+public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel kernel) : SelectionStrategy
 {
     /// <summary>
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
@@ -48,7 +50,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionSelectionStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel { get; init; } = new Kernel();
+    public Kernel Kernel => kernel;
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>

@@ -24,7 +24,7 @@ public class KernelFunctionTerminationStrategyTests
     {
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
-        KernelFunctionTerminationStrategy strategy = new(plugin.Single());
+        KernelFunctionTerminationStrategy strategy = new(plugin.Single(), new());
 
         Assert.Null(strategy.Arguments);
         Assert.NotNull(strategy.Kernel);
@@ -46,10 +46,9 @@ public class KernelFunctionTerminationStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
         KernelFunctionTerminationStrategy strategy =
-            new(plugin.Single())
+            new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
-                Kernel = new Kernel(),
                 ResultParser = (result) => string.Equals("test", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase)
             };
 

@@ -25,7 +25,7 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Object.Id));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single())
+            new(plugin.Single(), new())
             {
                 ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
             };
@@ -50,10 +50,9 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(string.Empty));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single())
+            new(plugin.Single(), new())
             {
                 Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Object.Name } },
-                Kernel = new Kernel(),
                 ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
             };
 
