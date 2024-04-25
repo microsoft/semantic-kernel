@@ -72,7 +72,6 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
         string? agentName = this.ResultParser.Invoke(result);
         if (string.IsNullOrEmpty(agentName))
         {
-
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
 
