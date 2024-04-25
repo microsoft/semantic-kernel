@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -23,8 +24,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
+        ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = [];

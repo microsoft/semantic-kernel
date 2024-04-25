@@ -38,6 +38,8 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 
         var results = await Task.WhenAll(strategyExecution).ConfigureAwait(false);

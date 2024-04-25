@@ -4,6 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -32,6 +34,11 @@ public abstract class AgentChat
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
     /// <summary>
+    /// The <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
     /// Exposes the internal history to subclasses.
     /// </summary>
     protected ChatHistory History { get; }
@@ -52,6 +59,8 @@ public abstract class AgentChat
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
+
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
 
         try
         {
@@ -125,6 +134,8 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         for (int index = 0; index < messages.Count; ++index)
         {
             if (messages[index].Role == AuthorRole.System)
@@ -165,6 +176,8 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         try
         {
             // Get or create the required channel and block until channel is synchronized.
@@ -203,6 +216,8 @@ public abstract class AgentChat
             if (channel == null)
             {
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+
                 this._agentChannels.Add(channelKey, channel);
 
                 if (this.History.Count > 0)

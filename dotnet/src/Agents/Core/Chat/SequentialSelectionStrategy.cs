@@ -22,6 +22,8 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     /// <inheritdoc/>
     public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         if (agents.Count == 0)
         {
             throw new KernelException("Agent Failure - No agents present to select.");

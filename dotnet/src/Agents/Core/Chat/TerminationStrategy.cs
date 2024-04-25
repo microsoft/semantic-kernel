@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -33,6 +35,11 @@ public abstract class TerminationStrategy
     /// any agent is evaluated.
     /// </summary>
     public IReadOnlyList<Agent>? Agents { get; set; }
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with the <see cref="TerminationStrategy"/>.
+    /// </summary>
+    protected internal ILogger Logger { get; internal set; } = NullLogger.Instance;
 
     /// <summary>
     /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaluated.

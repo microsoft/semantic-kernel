@@ -67,6 +67,8 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
@@ -119,6 +121,8 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         if (isJoining)
         {
             this.AddAgent(agent);

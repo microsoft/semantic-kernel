@@ -62,6 +62,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         OpenAIAssistantAgent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         if (agent.IsDeleted)
         {
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");

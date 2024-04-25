@@ -17,6 +17,8 @@ public sealed class RegExTerminationStrategy : TerminationStrategy
     /// <inheritdoc/>
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+
         // Most recent message
         var message = history[history.Count - 1];
 
