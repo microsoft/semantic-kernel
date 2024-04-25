@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using YamlDotNet.Serialization;
 using System.Collections.Generic;
+using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel.Prompty.Core;
 
