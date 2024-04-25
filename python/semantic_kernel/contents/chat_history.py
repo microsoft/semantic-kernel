@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from functools import singledispatchmethod
 from typing import Any, Generator
+from urllib.parse import unquote
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
@@ -220,6 +221,13 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
+    def to_prompt(self, allow_unsafe_content: bool = False) -> str:
+        """Return a string representation of the history."""
+        chat_history_xml = Element(CHAT_HISTORY_TAG)
+        for message in self.messages:
+            chat_history_xml.append(message.to_element(allow_unsafe_content=allow_unsafe_content))
+        return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
+
     def __iter__(self) -> Generator[ChatMessageContent, None, None]:  # type: ignore
         """Return an iterator over the messages in the history."""
         yield from self.messages
@@ -249,9 +257,9 @@ class ChatHistory(KernelBaseModel):
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError:
             logger.info(f"Could not parse prompt {prompt} as xml, treating as text")
-            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=prompt)])
+            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unquote(prompt))])
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=xml_prompt.text.strip()))
+            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unquote(xml_prompt.text.strip())))
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
@@ -259,7 +267,7 @@ class ChatHistory(KernelBaseModel):
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=item.tail.strip()))
+                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unquote(item.tail.strip())))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)

@@ -212,7 +212,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             finish_reason=self.finish_reason or other.finish_reason,
         )
 
-    def to_element(self) -> "Element":
+    def to_element(self, allow_unsafe_content: bool = False) -> "Element":
         """Convert the StreamingChatMessageContent to an XML Element.
 
         Args:
@@ -232,5 +232,5 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 value = str(value)
             root.set(field, value)
         for index, item in enumerate(self.items):
-            root.insert(index, item.to_element())
+            root.insert(index, item.to_element(allow_unsafe_content=allow_unsafe_content))
         return root

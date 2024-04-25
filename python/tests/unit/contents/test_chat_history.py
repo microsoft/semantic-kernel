@@ -255,7 +255,7 @@ def test_chat_history_to_prompt_empty(chat_history: ChatHistory):
 def test_chat_history_to_prompt(chat_history: ChatHistory):
     chat_history.add_system_message("I am an AI assistant")
     chat_history.add_user_message("What can you do?")
-    prompt = str(chat_history)
+    prompt = chat_history.to_prompt(allow_unsafe_content=True)
     assert (
         prompt
         == '<chat_history><message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message></chat_history>'  # noqa: E501
@@ -297,7 +297,8 @@ async def test_template(chat_history: ChatHistory):
 
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_unsafe_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -439,6 +440,36 @@ async def test_handwritten_xml_as_arg():
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "test content"
     assert chat_history.messages[0].role == AuthorRole.USER
+
+
+@pytest.mark.asyncio
+async def test_input_variable_with_code():
+    unsafe_input = """
+```csharp
+/// <summary>
+/// Example code with comment in the system prompt
+/// </summary>
+public void ReturnSomething()
+{
+    // no return
+}
+```
+        """
+    template = """
+            <message role='system'>This is the system message</message>
+            <message role='user'>{{$unsafe_input}}</message>
+            """
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(unsafe_input=unsafe_input),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "This is the system message"
+    assert chat_history.messages[0].role == AuthorRole.SYSTEM
+    assert chat_history.messages[1].content == unsafe_input
+    assert chat_history.messages[1].role == AuthorRole.USER
 
 
 @pytest.mark.asyncio

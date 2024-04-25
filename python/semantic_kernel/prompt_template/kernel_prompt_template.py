@@ -2,7 +2,7 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
-from urllib.parse import quote, unquote
+from urllib.parse import quote
 
 from pydantic import PrivateAttr, field_validator
 
@@ -13,6 +13,7 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
@@ -111,11 +112,14 @@ class KernelPromptTemplate(PromptTemplateBase):
         logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks: List[str] = []
         for block in blocks:
-            if isinstance(block, TextRenderer):
+            if isinstance(block, VarBlock):
                 if self.prompt_template_config.allow_unsafe_content:
                     rendered_blocks.append(block.render(kernel, arguments))
                 else:
                     rendered_blocks.append(quote(block.render(kernel, arguments)))
+                continue
+            if isinstance(block, TextRenderer):
+                rendered_blocks.append(block.render(kernel, arguments))
                 continue
             if isinstance(block, CodeRenderer):
                 try:
@@ -128,9 +132,7 @@ class KernelPromptTemplate(PromptTemplateBase):
                 )
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
-        if self.allow_unsafe_content:
-            return prompt
-        return unquote(prompt)
+        return prompt
 
     def render_variables(
         self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None

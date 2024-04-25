@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import os
 from typing import TYPE_CHECKING, Any, AsyncGenerator
+from urllib.parse import unquote
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -209,7 +210,7 @@ through prompt_template_config or in the prompt_template."
     ) -> FunctionResult:
         """Handles the text service call."""
         try:
-            completions = await service.complete(prompt, execution_settings)
+            completions = await service.complete(unquote(prompt), execution_settings)
             return self._create_function_result(completions=completions, arguments=arguments, prompt=prompt)
         except Exception as exc:
             raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc

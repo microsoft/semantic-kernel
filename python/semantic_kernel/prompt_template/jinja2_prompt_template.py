@@ -2,7 +2,6 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, Optional
-from urllib.parse import unquote
 
 from jinja2 import BaseLoader, Environment, TemplateError
 from pydantic import PrivateAttr, field_validator
@@ -97,11 +96,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             )
         try:
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
-            result = template.render(**self._get_checked_arguments(arguments, self.prompt_template_config))
-            if self.allow_unsafe_content:
-                if all(var.allow_unsafe_content for var in self.prompt_template_config.input_variables):
-                    return result
-            return unquote(result)
+            return template.render(**self._get_checked_arguments(arguments, self.prompt_template_config))
 
         except TemplateError as exc:
             logger.error(

@@ -16,4 +16,3 @@ class KernelParameterMetadata(KernelBaseModel):
     type_: str | None = Field(default="str", alias="type")
     is_required: bool | None = False
     type_object: Any = None
-    allow_unsafe_content: bool = False

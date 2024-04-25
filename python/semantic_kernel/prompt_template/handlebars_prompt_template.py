@@ -2,7 +2,6 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, Optional
-from urllib.parse import unquote
 
 from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
@@ -93,14 +92,10 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)
 
         try:
-            result = self._template_compiler(
+            return self._template_compiler(
                 self._get_checked_arguments(arguments, self.prompt_template_config),
                 helpers=helpers,
             )
-            if self.allow_unsafe_content:
-                if all(var.allow_unsafe_content for var in self.prompt_template_config.input_variables):
-                    return result
-            return unquote(result)
         except PybarsError as exc:
             logger.error(
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"

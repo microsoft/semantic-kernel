@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from enum import Enum
 from typing import Any, Union, overload
+from urllib.parse import unquote
 from xml.etree.ElementTree import Element
 
 from defusedxml import ElementTree
@@ -208,7 +209,7 @@ class ChatMessageContent(KernelContent):
         """Get the content of the response as a string."""
         return self.content or ""
 
-    def to_element(self) -> "Element":
+    def to_element(self, allow_unsafe_content: bool = False) -> "Element":
         """Convert the ChatMessageContent to an XML Element.
 
         Args:
@@ -226,7 +227,7 @@ class ChatMessageContent(KernelContent):
                 value = value.value
             root.set(field, value)
         for index, item in enumerate(self.items):
-            root.insert(index, item.to_element())
+            root.insert(index, item.to_element(allow_unsafe_content=allow_unsafe_content))
         return root
 
     @classmethod
@@ -245,13 +246,13 @@ class ChatMessageContent(KernelContent):
             if child.tag not in TAG_CONTENT_MAP:
                 logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
                 text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
-                items.append(TextContent(text=text or ""))
+                items.append(TextContent(text=unquote(text) or ""))
             else:
                 items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
         if items:
             kwargs["items"] = items
         if element.text:
-            kwargs["content"] = element.text
+            kwargs["content"] = unquote(element.text)
         if "choice_index" in kwargs and cls is ChatMessageContent:
             logger.warning(
                 "Seems like you are trying to create a StreamingChatMessageContent, "
@@ -261,14 +262,14 @@ class ChatMessageContent(KernelContent):
             kwargs.pop("choice_index")
         return cls(**kwargs)
 
-    def to_prompt(self) -> str:
+    def to_prompt(self, allow_unsafe_content: bool = False) -> str:
         """Convert the ChatMessageContent to a prompt.
 
         Returns:
             str - The prompt from the ChatMessageContent.
         """
 
-        root = self.to_element()
+        root = self.to_element(allow_unsafe_content=allow_unsafe_content)
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:
