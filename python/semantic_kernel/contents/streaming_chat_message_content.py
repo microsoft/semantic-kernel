@@ -181,14 +181,17 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different encoding")
         if self.role and other.role and self.role != other.role:
             raise ContentAdditionException("Cannot add StreamingChatMessageContent with different role")
-        if self.items and other.items:
+        if self.items or other.items:
             for other_item in other.items:
                 added = False
                 for id, item in enumerate(self.items):
                     if type(item) is type(other_item) and hasattr(item, "__add__"):
-                        self.items[id] = item + other_item  # type: ignore
-                        added = True
-                        break
+                        try:
+                            self.items[id] = item + other_item  # type: ignore
+                            added = True
+                            break
+                        except Exception:
+                            pass
                 if not added:
                     self.items.append(other_item)
         if not isinstance(self.inner_content, list):

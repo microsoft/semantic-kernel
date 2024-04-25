@@ -131,7 +131,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
     )
 
     result = None
-    async for message in kernel.invoke_stream(tldr_function, input="what is 1+1?"):
+    async for message in kernel.invoke_stream(tldr_function, input="what is 101+102?"):
         result = message[0] if not result else result + message[0]
     output = str(result)
 

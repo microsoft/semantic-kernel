@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from xml.etree.ElementTree import Element
 
+from pydantic import field_validator
+
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
@@ -42,6 +44,13 @@ class FunctionResultContent(KernelContent):
     result: str
     encoding: str | None = None
 
+    @field_validator("result", mode="before")
+    @classmethod
+    def _validate_result(cls, result: Any):
+        if not isinstance(result, str):
+            result = str(result)
+        return result
+
     def __str__(self) -> str:
         return self.result
 
@@ -51,7 +60,7 @@ class FunctionResultContent(KernelContent):
         element.set("id", self.id)
         if self.name:
             element.set("name", self.name)
-        element.text = self.result
+        element.text = str(self.result)
         return element
 
     @classmethod
