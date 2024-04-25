@@ -27,7 +27,7 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
             MaxIterations = 15,
             MaxTokens = 4000,
         };
-        var planner = new FunctionCallingStepwisePlanner(options);
+        var planner = new Microsoft.SemanticKernel.Planning.FunctionCallingStepwisePlanner(options);
 
         foreach (var question in questions)
         {
