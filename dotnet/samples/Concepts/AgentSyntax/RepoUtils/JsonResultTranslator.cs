@@ -5,19 +5,27 @@ using Microsoft.SemanticKernel;
 namespace Resources;
 /// <summary>
 /// Supports parsing json from a text block that may contain literals delimiters:
-/// <example>
+/// <list type="table">
+/// <item>
+/// <code>
 /// [json]
-/// </example>
-/// <example>
+/// </code>
+/// </item>
+/// <item>
+/// <code>
 /// ```
 /// [json]
 /// ```
-/// </example>
-/// <example>
+/// </code>
+/// </item>
+/// <item>
+/// <code>
 /// ```json
 /// [json]
 /// ```
-/// </example>
+/// </code>
+/// </item>
+/// </list>
 /// </summary>
 /// <remarks>
 /// Encountering json with this form of delimiters is not uncommon for agent scenarios.
