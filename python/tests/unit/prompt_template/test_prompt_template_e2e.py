@@ -57,7 +57,9 @@ class TestPromptTemplateEngine:
         arguments = KernelArguments(input=input, winner=winner)
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, arguments)
         # Assert
         expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
@@ -71,7 +73,9 @@ class TestPromptTemplateEngine:
 
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, None)
 
         # Assert
@@ -86,7 +90,9 @@ class TestPromptTemplateEngine:
         arguments = KernelArguments(call="123")
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, arguments)
 
         # Assert
@@ -100,7 +106,9 @@ class TestPromptTemplateEngine:
 
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, None)
 
         # Assert
@@ -113,7 +121,9 @@ class TestPromptTemplateEngine:
         kernel.add_plugin(MyPlugin(), "my")
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, None)
 
         # Assert
@@ -127,7 +137,9 @@ class TestPromptTemplateEngine:
 
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+            prompt_template_config=PromptTemplateConfig(
+                name="test", description="test", template=template, allow_unsafe_content=True
+            )
         ).render(kernel, None)
 
         # Assert
@@ -143,11 +155,15 @@ class TestPromptTemplateEngine:
         if expected_result.startswith("ERROR"):
             with raises(TemplateSyntaxError):
                 await KernelPromptTemplate(
-                    prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+                    prompt_template_config=PromptTemplateConfig(
+                        name="test", description="test", template=template, allow_unsafe_content=True
+                    )
                 ).render(kernel, KernelArguments())
         else:
             result = await KernelPromptTemplate(
-                prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+                prompt_template_config=PromptTemplateConfig(
+                    name="test", description="test", template=template, allow_unsafe_content=True
+                )
             ).render(kernel, KernelArguments())
 
             # Assert

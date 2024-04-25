@@ -2,6 +2,7 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, Optional
+from urllib.parse import unquote
 
 from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
@@ -36,6 +37,7 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
         HandlebarsTemplateSyntaxError: If the handlebars template has a syntax error
     """
 
+    allow_unsafe_content: bool = False
     _template_compiler: Any = PrivateAttr()
 
     @field_validator("prompt_template_config")
@@ -79,14 +81,26 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
             helpers.update(
                 {
                     function.fully_qualified_name: create_template_helper_from_function(
-                        function, kernel, arguments, self.prompt_template_config.template_format
+                        function,
+                        kernel,
+                        arguments,
+                        self.prompt_template_config.template_format,
+                        self.allow_unsafe_content,
                     )
                     for function in plugin
                 }
             )
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)
+
         try:
-            return self._template_compiler(arguments, helpers=helpers)
+            result = self._template_compiler(
+                self._get_checked_arguments(arguments, self.prompt_template_config),
+                helpers=helpers,
+            )
+            if self.allow_unsafe_content:
+                if all(var.allow_unsafe_content for var in self.prompt_template_config.input_variables):
+                    return result
+            return unquote(result)
         except PybarsError as exc:
             logger.error(
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"

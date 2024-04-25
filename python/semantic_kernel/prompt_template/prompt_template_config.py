@@ -22,6 +22,7 @@ class PromptTemplateConfig(KernelBaseModel):
     template: Optional[str] = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
     input_variables: List[InputVariable] = Field(default_factory=list)
+    allow_unsafe_content: bool = False
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     @field_validator("execution_settings", mode="before")
@@ -57,6 +58,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 default_value=variable.default,
                 type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
                 is_required=variable.is_required,
+                allow_unsafe_content=variable.allow_unsafe_content,
             )
             for variable in self.input_variables
         ]
@@ -92,6 +94,7 @@ class PromptTemplateConfig(KernelBaseModel):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         input_variables: List[InputVariable] = [],
         execution_settings: Dict[str, PromptExecutionSettings] = {},
+        allow_unsafe_content: bool = False,
     ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
 
@@ -112,4 +115,5 @@ class PromptTemplateConfig(KernelBaseModel):
             template_format=template_format,
             input_variables=input_variables,
             execution_settings=execution_settings,
+            allow_unsafe_content=allow_unsafe_content,
         )

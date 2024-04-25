@@ -2,6 +2,7 @@
 
 import logging
 from typing import TYPE_CHECKING, Any, List, Optional
+from urllib.parse import quote, unquote
 
 from pydantic import PrivateAttr, field_validator
 
@@ -111,17 +112,25 @@ class KernelPromptTemplate(PromptTemplateBase):
         rendered_blocks: List[str] = []
         for block in blocks:
             if isinstance(block, TextRenderer):
-                rendered_blocks.append(block.render(kernel, arguments))
+                if self.prompt_template_config.allow_unsafe_content:
+                    rendered_blocks.append(block.render(kernel, arguments))
+                else:
+                    rendered_blocks.append(quote(block.render(kernel, arguments)))
                 continue
             if isinstance(block, CodeRenderer):
                 try:
-                    rendered_blocks.append(await block.render_code(kernel, arguments))
+                    rendered = await block.render_code(kernel, arguments)
                 except CodeBlockRenderException as exc:
                     logger.error(f"Error rendering code block: {exc}")
                     raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
+                rendered_blocks.append(
+                    rendered if self.prompt_template_config.allow_unsafe_content else quote(rendered)
+                )
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
-        return prompt
+        if self.allow_unsafe_content:
+            return prompt
+        return unquote(prompt)
 
     def render_variables(
         self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
@@ -145,7 +154,6 @@ class KernelPromptTemplate(PromptTemplateBase):
                 rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
                 continue
             rendered_blocks.append(block)
-
         return rendered_blocks
 
     async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:

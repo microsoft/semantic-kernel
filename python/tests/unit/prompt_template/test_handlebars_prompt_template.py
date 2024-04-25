@@ -14,11 +14,15 @@ from semantic_kernel.prompt_template.handlebars_prompt_template import Handlebar
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate:
+def create_handlebars_prompt_template(template: str, allow_unsafe_content: bool = False) -> HandlebarsPromptTemplate:
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
-            name="test", description="test", template=template, template_format="handlebars"
-        )
+            name="test",
+            description="test",
+            template=template,
+            template_format="handlebars",
+        ),
+        allow_unsafe_content=allow_unsafe_content,
     )
 
 
@@ -66,7 +70,7 @@ async def test_render_without_prompt(kernel: Kernel):
 @mark.asyncio
 async def test_it_renders_variables(kernel: Kernel):
     template = "Foo {{#if bar}}{{bar}}{{else}}No Bar{{/if}}"
-    target = create_handlebars_prompt_template(template)
+    target = create_handlebars_prompt_template(template, allow_unsafe_content=True)
 
     rendered = await target.render(kernel, KernelArguments(bar="Bar"))
     assert rendered == "Foo Bar"

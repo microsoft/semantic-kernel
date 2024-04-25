@@ -11,3 +11,4 @@ class InputVariable(KernelBaseModel):
     default: Optional[Any] = ""
     is_required: Optional[bool] = True
     json_schema: Optional[str] = ""
+    allow_unsafe_content: bool = False

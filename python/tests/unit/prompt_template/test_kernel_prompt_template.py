@@ -11,9 +11,11 @@ from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 
-def create_kernel_prompt_template(template: str) -> KernelPromptTemplate:
+def create_kernel_prompt_template(template: str, allow_unsafe_content: bool = False) -> KernelPromptTemplate:
     return KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test", description="test", template=template, allow_unsafe_content=allow_unsafe_content
+        )
     )
 
 
@@ -63,7 +65,7 @@ def test_it_renders_variables(kernel: Kernel):
         "template {{foo}}{{bar $a}}{{baz $_a arg1=$arg}}{{yay $x11}}"
     )
 
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     blocks = target._blocks
     updated_blocks = target.render_variables(blocks, kernel, arguments)
 
@@ -102,7 +104,7 @@ def test_it_renders_variables(kernel: Kernel):
 
     arguments = KernelArguments(x11="x11 value", a="a value", _a="_a value")
 
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     blocks = target._blocks
     updated_blocks = target.render_variables(blocks, kernel, arguments)
 
@@ -156,7 +158,7 @@ async def test_it_renders_code(kernel: Kernel):
     arguments["arg"] = "bar"
     template = "template {{'val'}}{{test.function $_a arg1=$arg}}"
 
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     blocks = target._blocks
     result = await target.render_code(blocks, kernel, arguments)
     assert result[0] == blocks[0]
@@ -179,7 +181,7 @@ async def test_it_renders_code_using_input(kernel: Kernel):
 
     arguments["input"] = "INPUT-BAR"
     template = "foo-{{test.function}}-baz"
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     result = await target.render(kernel, arguments)
 
     assert result == "foo-F(INPUT-BAR)-baz"
@@ -199,7 +201,7 @@ async def test_it_renders_code_using_variables(kernel: Kernel):
 
     arguments["myVar"] = "BAR"
     template = "foo-{{test.function $myVar}}-baz"
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     result = await target.render(kernel, arguments)
 
     assert result == "foo-F(BAR)-baz"
@@ -221,7 +223,7 @@ async def test_it_renders_code_using_variables_async(kernel: Kernel):
 
     template = "foo-{{test.function $myVar}}-baz"
 
-    target = create_kernel_prompt_template(template)
+    target = create_kernel_prompt_template(template, allow_unsafe_content=True)
     result = await target.render(kernel, arguments)
 
     assert result == "foo-BAR-baz"
