@@ -32,6 +32,8 @@ public static class PromptyKernelExtension
         IPromptTemplateFactory? promptTemplateFactory = null,
         ILoggerFactory? loggerFactory = null)
     {
+        Verify.NotNull(kernel);
+
         var text = File.ReadAllText(promptyPath);
 
         promptTemplateFactory ??= new LiquidPromptTemplateFactory(); // use liquid template factory by default
