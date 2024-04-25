@@ -67,8 +67,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function) : Selectio
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { AgentsVariableName, string.Join(",", agents.Select(a => a.Name)) },
-                { HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { this.AgentsVariableName, string.Join(",", agents.Select(a => a.Name)) },
+                { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);

@@ -68,8 +68,8 @@ public class KernelFunctionTerminationStrategy(KernelFunction function) : Termin
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { AgentVariableName, agent.Name ?? agent.Id },
-                { HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
+                { this.AgentVariableName, agent.Name ?? agent.Id },
+                { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
