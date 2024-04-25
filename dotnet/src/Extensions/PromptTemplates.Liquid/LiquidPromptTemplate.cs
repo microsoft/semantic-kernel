@@ -65,7 +65,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         {
             var role = splits[i];
             var content = splits[i + 1];
-            sb.AppendLine($"<Message role=\"{role}\">");
+            sb.Append("<Message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
             sb.AppendLine("</Message>");
         }
