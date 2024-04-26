@@ -6,13 +6,10 @@ import logging
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
-    AzureChatMessageContent,
     AzureChatPromptExecutionSettings,
     ExtraBody,
-    FunctionCall,
-    ToolCall,
 )
-from semantic_kernel.contents import ChatHistory, ChatRole
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -114,22 +111,8 @@ async def chat() -> bool:
     # The tool message containing cited sources is available in the context
     if full_message:
         chat_history.add_user_message(user_input)
-        if hasattr(full_message, "tool_message"):
-            chat_history.add_message(
-                AzureChatMessageContent(
-                    role="assistant",
-                    tool_calls=[
-                        ToolCall(
-                            id="chat_with_your_data",
-                            function=FunctionCall(name="chat_with_your_data", arguments=""),
-                        )
-                    ],
-                )
-            )
-            chat_history.add_tool_message(full_message.tool_message, {"tool_call_id": "chat_with_your_data"})
-        if full_message.role is None:
-            full_message.role = ChatRole.ASSISTANT
-        chat_history.add_assistant_message(full_message.content)
+        for message in AzureChatCompletion.split_message(full_message):
+            chat_history.add_message(message)
     return True
 
 

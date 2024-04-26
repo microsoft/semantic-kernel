@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System.Reflection;
 using Configuration;
 using Microsoft.Extensions.Configuration;

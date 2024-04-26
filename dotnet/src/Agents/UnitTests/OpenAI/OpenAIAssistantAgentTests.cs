@@ -9,6 +9,7 @@ using Azure.AI.OpenAI.Assistants;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
@@ -160,7 +161,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     /// Verify complex chat interaction across multiple states.
     /// </summary>
     [Fact]
-    public async Task VerifyOpenAIAssistantAgentChatAsync()
+    public async Task VerifyOpenAIAssistantAgentChatTextMessageAsync()
     {
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
 
@@ -170,20 +171,121 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ResponseContent.CreateRun,
             ResponseContent.CompletedRun,
             ResponseContent.MessageSteps,
-            ResponseContent.GetMessage);
+            ResponseContent.GetTextMessage);
 
         AgentGroupChat chat = new();
-        var messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        Assert.Single(messages);
+        Assert.Single(messages[0].Items);
+        Assert.IsType<TextContent>(messages[0].Items[0]);
+    }
+
+    /// <summary>
+    /// Verify complex chat interaction across multiple states.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentChatTextMessageWithAnnotationAsync()
+    {
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            ResponseContent.CreateThread,
+            ResponseContent.CreateRun,
+            ResponseContent.CompletedRun,
+            ResponseContent.MessageSteps,
+            ResponseContent.GetTextMessageWithAnnotation);
+
+        AgentGroupChat chat = new();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        Assert.Single(messages);
+        Assert.Equal(2, messages[0].Items.Count);
+        Assert.NotNull(messages[0].Items.Where(c => c is TextContent).SingleOrDefault());
+        Assert.NotNull(messages[0].Items.Where(c => c is AnnotationContent).SingleOrDefault());
+    }
+
+    /// <summary>
+    /// Verify complex chat interaction across multiple states.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentChatImageMessageAsync()
+    {
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            ResponseContent.CreateThread,
+            ResponseContent.CreateRun,
+            ResponseContent.CompletedRun,
+            ResponseContent.MessageSteps,
+            ResponseContent.GetImageMessage);
+
+        AgentGroupChat chat = new();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        Assert.Single(messages);
+        Assert.Single(messages[0].Items);
+        Assert.IsType<FileReferenceContent>(messages[0].Items[0]);
+    }
+
+    /// <summary>
+    /// Verify complex chat interaction across multiple states.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentGetMessagesAsync()
+    {
+        // Create agent
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        // Initialize agent channel
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            ResponseContent.CreateThread,
+            ResponseContent.CreateRun,
+            ResponseContent.CompletedRun,
+            ResponseContent.MessageSteps,
+            ResponseContent.GetTextMessage);
+
+        AgentGroupChat chat = new();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
         Assert.Single(messages);
 
+        // Setup messages
         this.SetupResponses(
             HttpStatusCode.OK,
             ResponseContent.ListMessagesPageMore,
             ResponseContent.ListMessagesPageMore,
             ResponseContent.ListMessagesPageFinal);
 
+        // Get messages and verify
         messages = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
         Assert.Equal(5, messages.Length);
+    }
+
+    /// <summary>
+    /// Verify complex chat interaction across multiple states.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentAddMessagesAsync()
+    {
+        // Create agent
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        // Initialize agent channel
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            ResponseContent.CreateThread,
+            ResponseContent.CreateRun,
+            ResponseContent.CompletedRun,
+            ResponseContent.MessageSteps,
+            ResponseContent.GetTextMessage);
+        AgentGroupChat chat = new();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        Assert.Single(messages);
+
+        chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
+
+        messages = await chat.GetChatMessagesAsync().ToArrayAsync();
+        Assert.Equal(2, messages.Length);
     }
 
     /// <summary>
@@ -217,6 +319,35 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         Assert.Equal(4, messages.Length);
     }
 
+    /// <summary>
+    /// Verify ability to list agent definitions.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentWithFunctionCallAsync()
+    {
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MyPlugin>();
+        agent.Kernel.Plugins.Add(plugin);
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            ResponseContent.CreateThread,
+            ResponseContent.CreateRun,
+            ResponseContent.PendingRun,
+            ResponseContent.ToolSteps,
+            ResponseContent.ToolResponse,
+            ResponseContent.CompletedRun,
+            ResponseContent.MessageSteps,
+            ResponseContent.GetTextMessage);
+
+        AgentGroupChat chat = new();
+        ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
+        Assert.Single(messages);
+        Assert.Single(messages[0].Items);
+        Assert.IsType<TextContent>(messages[0].Items[0]);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -231,7 +362,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
-        this._emptyKernel = Kernel.CreateBuilder().Build();
+        this._emptyKernel = new Kernel();
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
@@ -281,6 +412,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                 });
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }
+    }
+
+    private sealed class MyPlugin
+    {
+        [KernelFunction]
+        public void MyFunction(int index)
+        { }
     }
 
     private static class ResponseContent
@@ -384,6 +522,31 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             }
             """;
 
+        public const string PendingRun =
+            """
+            {
+              "id": "run_abc123",
+              "object": "thread.run",
+              "created_at": 1699063290,
+              "assistant_id": "asst_abc123",
+              "thread_id": "thread_abc123",
+              "status": "requires_action",
+              "started_at": 1699063290,
+              "expires_at": null,
+              "cancelled_at": null,
+              "failed_at": null,
+              "completed_at": 1699063291,
+              "last_error": null,
+              "model": "gpt-4-turbo",
+              "instructions": null,
+              "tools": [],
+              "file_ids": [],
+              "metadata": {},
+              "usage": null,
+              "temperature": 1
+            }
+            """;
+
         public const string CompletedRun =
             """
             {
@@ -447,7 +610,76 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             }                       
             """;
 
-        public const string GetMessage =
+        public const string ToolSteps =
+            """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "id": "step_abc123",
+                  "object": "thread.run.step",
+                  "created_at": 1699063291,
+                  "run_id": "run_abc123",
+                  "assistant_id": "asst_abc123",
+                  "thread_id": "thread_abc123",
+                  "type": "message_creation",
+                  "status": "in_progress",
+                  "cancelled_at": null,
+                  "completed_at": 1699063291,
+                  "expired_at": null,
+                  "failed_at": null,
+                  "last_error": null,
+                  "step_details": {
+                    "type": "tool_calls",
+                    "tool_calls": [
+                     {
+                        "id": "tool_1",
+                        "type": "function",
+                        "function": {
+                            "name": "MyPlugin-MyFunction",
+                            "arguments": "{ \"index\": 3 }",
+                            "output": null
+                        }
+                     }
+                    ]
+                  },
+                  "usage": {
+                    "prompt_tokens": 123,
+                    "completion_tokens": 456,
+                    "total_tokens": 579
+                  }
+                }
+              ],
+              "first_id": "step_abc123",
+              "last_id": "step_abc456",
+              "has_more": false
+            }                       
+            """;
+
+        public const string ToolResponse = "{ }";
+
+        public const string GetImageMessage =
+            """
+            {
+              "id": "msg_abc123",
+              "object": "thread.message",
+              "created_at": 1699017614,
+              "thread_id": "thread_abc123",
+              "role": "user",
+              "content": [
+                {
+                  "type": "image_file",
+                  "image_file": {
+                    "file_id": "file_123"
+                  }
+                }
+              ],
+              "assistant_id": "asst_abc123",
+              "run_id": "run_abc123"
+            }
+            """;
+
+        public const string GetTextMessage =
             """
             {
               "id": "msg_abc123",
@@ -464,10 +696,41 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
                   }
                 }
               ],
-              "file_ids": [],
               "assistant_id": "asst_abc123",
-              "run_id": "run_abc123",
-              "metadata": {}
+              "run_id": "run_abc123"
+            }
+            """;
+
+        public const string GetTextMessageWithAnnotation =
+            """
+            {
+              "id": "msg_abc123",
+              "object": "thread.message",
+              "created_at": 1699017614,
+              "thread_id": "thread_abc123",
+              "role": "user",
+              "content": [
+                {
+                  "type": "text",
+                  "text": {
+                    "value": "How does AI work? Explain it in simple terms.**f1",
+                    "annotations": [
+                        {
+                            "type": "file_citation",
+                            "text": "**f1",
+                            "file_citation": {
+                                "file_id": "file_123",
+                                "quote": "does"
+                            },
+                            "start_index": 3,
+                            "end_index": 6
+                        }
+                    ]
+                  }
+                }
+              ],
+              "assistant_id": "asst_abc123",
+              "run_id": "run_abc123"
             }
             """;
 

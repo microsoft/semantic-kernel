@@ -37,7 +37,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     private readonly AssistantsClient _client = client;
     private readonly string _threadId = threadId;
     private readonly Dictionary<string, ToolDefinition[]> _agentTools = [];
-    private readonly Dictionary<string, string> _agentNames = []; // Cache agent names by their identifier for GetHistoryAsync()
+    private readonly Dictionary<string, string?> _agentNames = []; // Cache agent names by their identifier for GetHistoryAsync()
 
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -49,12 +49,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 continue;
             }
 
-            // History is only be user or assistant (never system)
-            MessageRole role = message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Assistant;
-
             await this._client.CreateMessageAsync(
                 this._threadId,
-                role,
+                message.Role.ToMessageRole(),
                 message.Content,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
@@ -78,7 +75,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         if (!this._agentNames.ContainsKey(agent.Id) && !string.IsNullOrWhiteSpace(agent.Name))
         {
-            this._agentNames.Add(agent.Id, agent.Name!);
+            this._agentNames.Add(agent.Id, agent.Name);
         }
 
         CreateRunOptions options =
@@ -142,12 +139,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         // Process text content
                         if (itemContent is MessageTextContent contentMessage)
                         {
-                            content = GenerateTextMessageContent(agent, role, contentMessage);
+                            content = GenerateTextMessageContent(agent.GetName(), role, contentMessage);
                         }
                         // Process image content
                         else if (itemContent is MessageImageFileContent contentImage)
                         {
-                            content = GenerateImageFileContent(agent, role, contentImage);
+                            content = GenerateImageFileContent(agent.GetName(), role, contentImage);
                         }
 
                         if (content != null)
@@ -210,24 +207,28 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     Assistant assistant = await this._client.GetAssistantAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(assistant.Name))
                     {
-                        this._agentNames.Add(assistant.Id, assistant.Name!);
+                        this._agentNames.Add(assistant.Id, assistant.Name);
                     }
                 }
 
-                foreach (var content in message.ContentItems)
+                assistantName ??= message.AssistantId;
+
+                foreach (var item in message.ContentItems)
                 {
-                    if (content is MessageTextContent contentMessage)
+                    ChatMessageContent? content = null;
+
+                    if (item is MessageTextContent contentMessage)
                     {
-                        yield return new ChatMessageContent(role, contentMessage.Text.Trim()) { AuthorName = assistantName ?? message.AssistantId };
+                        content = GenerateTextMessageContent(assistantName, role, contentMessage);
+                    }
+                    else if (item is MessageImageFileContent contentImage)
+                    {
+                        content = GenerateImageFileContent(assistantName, role, contentImage);
                     }
 
-                    if (content is MessageImageFileContent contentImage)
+                    if (content != null)
                     {
-                        yield return
-                            new ChatMessageContent(role, new ChatMessageContentItemCollection() { new FileReferenceContent(contentImage.FileId) })
-                            {
-                                AuthorName = assistantName ?? message.AssistantId,
-                            };
+                        yield return content;
                     }
                 }
 
@@ -259,7 +260,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             };
     }
 
-    private static ChatMessageContent GenerateImageFileContent(OpenAIAssistantAgent agent, AuthorRole role, MessageImageFileContent contentImage)
+    private static ChatMessageContent GenerateImageFileContent(string agentName, AuthorRole role, MessageImageFileContent contentImage)
     {
         return
             new ChatMessageContent(
@@ -269,11 +270,11 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     new FileReferenceContent(contentImage.FileId)
                 })
             {
-                AuthorName = agent.Name,
+                AuthorName = agentName,
             };
     }
 
-    private static ChatMessageContent? GenerateTextMessageContent(OpenAIAssistantAgent agent, AuthorRole role, MessageTextContent contentMessage)
+    private static ChatMessageContent? GenerateTextMessageContent(string agentName, AuthorRole role, MessageTextContent contentMessage)
     {
         ChatMessageContent? messageContent = null;
 
@@ -284,7 +285,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             messageContent =
                 new(role, textContent)
                 {
-                    AuthorName = agent.Name
+                    AuthorName = agentName
                 };
 
             foreach (MessageTextAnnotation annotation in contentMessage.Annotations)
@@ -295,6 +296,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         return messageContent;
     }
+
     private static IEnumerable<Task<ToolOutput>> ExecuteStep(OpenAIAssistantAgent agent, RunStep step, CancellationToken cancellationToken)
     {
         // Process all of the steps that require action
