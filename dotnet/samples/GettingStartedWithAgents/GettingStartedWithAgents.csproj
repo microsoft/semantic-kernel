@@ -30,6 +30,7 @@
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.abstractions" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   
@@ -44,6 +45,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
 </Project>
