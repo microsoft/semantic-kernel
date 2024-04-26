@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GettingStarted;
 

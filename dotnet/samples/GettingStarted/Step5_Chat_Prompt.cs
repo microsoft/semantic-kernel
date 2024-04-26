@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GettingStarted;
 
