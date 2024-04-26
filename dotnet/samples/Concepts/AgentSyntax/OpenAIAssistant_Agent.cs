@@ -22,7 +22,7 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
-
+        
     [Fact]
     public async Task RunAsync()
     {
@@ -43,7 +43,7 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat();
+        var chat = new AgentGroupChat() { LoggerFactory = this.LoggerFactory };
 
         // Respond to user input
         try

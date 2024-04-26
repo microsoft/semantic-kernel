@@ -24,7 +24,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger,
+        ILogger logger, // %%% TAO - CHANNEL TYPED LOGGER IS APPROPRIATE HERE.
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING

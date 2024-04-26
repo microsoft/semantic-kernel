@@ -190,7 +190,7 @@ public abstract class AgentChat
             {
                 // Add to primary history
                 this.History.Add(message);
-                messages.Add(message);
+                messages.Add(message); // %%% TAO - LOGGING PII (TRACE)
 
                 // Yield message to caller
                 yield return message;
@@ -215,8 +215,9 @@ public abstract class AgentChat
             AgentChannel channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
             if (channel == null)
             {
+                // %%% TAO - LOG - CHANNEL CREATED !!!
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType()); // %%% TAO - TYPED LOGGER ASSIGNMENT EXAMPLE
 
                 this._agentChannels.Add(channelKey, channel);
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -56,6 +57,8 @@ public sealed class AgentGroupChat : AgentChat
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.EnsureStrategyLoggerAssignment();
+
         if (this.IsComplete)
         {
             // Throw exception if chat is completed and automatic-reset is not enabled.
@@ -121,6 +124,9 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // %%% TAO - NOT SURE ???
+        this.EnsureStrategyLoggerAssignment();
+
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
 
         if (isJoining)
@@ -148,5 +154,12 @@ public sealed class AgentGroupChat : AgentChat
     {
         this._agents = new(agents);
         this._agentIds = new(this._agents.Select(a => a.Id));
+    }
+
+    private void EnsureStrategyLoggerAssignment()
+    {
+        // %%% TAO - NOT SURE ???
+        this.ExecutionSettings.SelectionStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
+        this.ExecutionSettings.TerminationStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
     }
 }
