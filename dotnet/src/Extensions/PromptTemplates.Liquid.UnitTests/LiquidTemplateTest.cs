@@ -11,6 +11,7 @@ public class LiquidTemplateTest
     [Fact]
     public async Task ItRenderChatTestAsync()
     {
+        // Arrange
         var liquidTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "chat.txt");
         var liquidTemplate = File.ReadAllText(liquidTemplatePath);
 
@@ -71,8 +72,11 @@ public class LiquidTemplateTest
         };
 
         var liquidTemplateInstance = new LiquidPromptTemplate(config);
+
+        // Act
         var result = await liquidTemplateInstance.RenderAsync(new Kernel(), arguments);
 
+        // Assert
         await VerifyXunit.Verifier.Verify(result);
     }
 }

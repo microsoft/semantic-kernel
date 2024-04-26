@@ -12,13 +12,17 @@ public sealed class PromptyTest
     [Fact]
     public void ChatPromptyTest()
     {
+        // Arrange
         var kernel = Kernel.CreateBuilder()
             .Build();
 
         var cwd = Directory.GetCurrentDirectory();
         var chatPromptyPath = Path.Combine(cwd, "TestData", "chat.prompty");
+
+        // Act
         var kernelFunction = kernel.CreateFunctionFromPrompty(chatPromptyPath);
 
+        // Assert
         Assert.Equal("Contoso_Chat_Prompt", kernelFunction.Name);
         Assert.Equal("A retail assistant for Contoso Outdoors products retailer.", kernelFunction.Description);
 
@@ -29,17 +33,22 @@ public sealed class PromptyTest
     [Fact]
     public void ChatPromptyShouldSupportCreatingOpenAIExecutionSettings()
     {
+        // Arrange
         var kernel = Kernel.CreateBuilder()
             .Build();
 
         var cwd = Directory.GetCurrentDirectory();
         var chatPromptyPath = Path.Combine(cwd, "TestData", "chat.prompty");
+
+        // Act
         var kernelFunction = kernel.CreateFunctionFromPrompty(chatPromptyPath);
 
+        // Assert
         // kernel function created from chat.prompty should have a single execution setting
         Assert.Single(kernelFunction.ExecutionSettings!);
         Assert.True(kernelFunction.ExecutionSettings!.ContainsKey("default"));
 
+        // Arrange
         var defaultExecutionSetting = kernelFunction.ExecutionSettings["default"];
 
         // Act

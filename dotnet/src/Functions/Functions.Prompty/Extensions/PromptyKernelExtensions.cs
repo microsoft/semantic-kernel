@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Microsoft.SemanticKernel.Prompty.Core;
 using YamlDotNet.Serialization;
 
-namespace Microsoft.SemanticKernel.Prompty.Extension;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for <see cref="Kernel"/> to create a <see cref="KernelFunction"/> from a prompty file.
