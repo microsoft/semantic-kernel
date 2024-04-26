@@ -2,6 +2,8 @@
 
 using Microsoft.Extensions.Configuration;
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+
 internal sealed class Env
 {
     /// <summary>

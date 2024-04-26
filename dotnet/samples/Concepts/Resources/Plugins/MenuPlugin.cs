@@ -7,6 +7,12 @@ namespace Plugins;
 
 public sealed class MenuPlugin
 {
+    public const string CorrelationIdArgument = "correlationId";
+
+    private readonly List<string> _correlationIds = [];
+
+    public IReadOnlyList<string> CorrelationIds => this._correlationIds;
+
     [KernelFunction, Description("Provides a list of specials from the menu.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
     public string GetSpecials()

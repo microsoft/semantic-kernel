@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit.Abstractions;
-
 public static class TextOutputHelperExtensions
 {
     public static void WriteLine(this ITestOutputHelper testOutputHelper, object target)

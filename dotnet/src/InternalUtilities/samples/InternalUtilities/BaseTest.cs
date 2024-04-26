@@ -3,7 +3,6 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 public abstract class BaseTest
 {

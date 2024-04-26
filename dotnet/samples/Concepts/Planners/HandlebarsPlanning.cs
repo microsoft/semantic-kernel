@@ -11,7 +11,7 @@ using xRetry;
 namespace Examples;
 
 // This example shows how to use the Handlebars sequential planner.
-public class Handlebars(ITestOutputHelper output) : BaseTest(output)
+public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
 {
     private static int s_sampleIndex;
 

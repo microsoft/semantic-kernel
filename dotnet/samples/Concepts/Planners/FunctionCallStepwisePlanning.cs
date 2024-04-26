@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 
 namespace Examples;
 
-public class FunctionCallingStepwisePlanner(ITestOutputHelper output) : BaseTest(output)
+public class FunctionCallStepwisePlanning(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task RunAsync()

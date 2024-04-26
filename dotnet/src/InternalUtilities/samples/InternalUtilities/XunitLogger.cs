@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
 
 /// <summary>
 /// A logger that writes to the Xunit test output

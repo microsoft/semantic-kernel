@@ -54,14 +54,14 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     {
         WriteLine("======== Run:WithMethodFunctions ========");
 
-        MenuPlugin menuApi = new();
+        LegacyMenuPlugin menuApi = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(menuApi);
 
         // Call the common chat-loop
         await ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
-            arguments: new() { { MenuPlugin.CorrelationIdArgument, 3.141592653 } },
+            arguments: new() { { LegacyMenuPlugin.CorrelationIdArgument, 3.141592653 } },
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
