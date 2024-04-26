@@ -319,19 +319,15 @@ static partial class JsonSchemaMapper
                 }
                 else if (type.IsEnum)
                 {
-                    if (TryGetStringEnumConverterValues(typeInfo, effectiveConverter, out JsonArray? values))
+                    if (TryGetStringEnumConverterValues(typeInfo, effectiveConverter, out enumValues))
                     {
                         schemaType = JsonSchemaType.String;
-                        if (values != null)
-                        {
-                            if (parentNullableOfT != null)
-                            {
-                                // We're generating the schema for a nullable
-                                // enum type. Append null to the "enum" array.
-                                values.Add(null);
-                            }
 
-                            enumValues = values;
+                        if (enumValues != null && isNullableOfTElement)
+                        {
+                            // We're generating the schema for a nullable
+                            // enum type. Append null to the "enum" array.
+                            enumValues.Add(null);
                         }
                     }
                     else
