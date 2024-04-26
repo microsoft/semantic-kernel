@@ -56,7 +56,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// A callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
-    public Func<FunctionResult, string> ResultParser { get; init; } = (_) => string.Empty;
+    public Func<FunctionResult, string> ResultParser { get; init; } = (result) => result.GetValue<string>() ?? string.Empty;
 
     /// <inheritdoc/>
     public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
