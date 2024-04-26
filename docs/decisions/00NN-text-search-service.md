@@ -3,7 +3,7 @@
 status: proposed
 contact: markwallace
 date: {YYYY-MM-DD when the decision was last updated}
-deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk
+deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey
 consulted: 
 informed: stephentoub, matthewbolanos
 ---
@@ -15,13 +15,31 @@ informed: stephentoub, matthewbolanos
 {Describe the context and problem statement, e.g., in free form using two to three sentences or in the form of an illustrative story.
 You may want to articulate the problem in form of a question and add links to collaboration boards or issue management systems.}
 
-<!-- This is an optional element. Feel free to remove. -->
-
 ## Decision Drivers
 
-- {decision driver 1, e.g., a force, facing concern, …}
-- {decision driver 2, e.g., a force, facing concern, …}
-- … <!-- numbers of drivers can vary -->
+- An AI must be able to perform searches with a search plugin and get back “results” of type `T`.
+- Application developers should be able to easily add a search plugin using a search connector with minimal lines of code (ideally one).
+- Application developers must be able to provide connector specific settings.
+- Application developers must be able to set required information e.g. `IndexName` for search providers.
+- Application developers must to be able to override the semantic descriptions of the search function(s) per instance registered via settings / inputs.
+- Application developers must be able to optionally define the execution settings of an embedding service with a default being provided by the Kernel.
+- Application developers must be able to support custom schemas for search connectors. No fields should be required.
+- Search service developers must be able to easily create a new search service that returns type `T`.
+- Search service developers must be able to easily create a new search connector return type that inherits from `SearchResultContent`.
+- Search service developers must be able to define the attributes of the search method (e.g., name, description, input names, input descriptions, return description).
+- Application developers must be ab able to import a vector DB search connection using an ML index file.
+- The design must be flexible to support future requirements and different search modalities.
+
+### Future Requirements
+
+- An AI can perform search with filters using a search plugin to get back “results” of type T. This will require a Connector Dev to implement a search interface that accepts a Filter object.
+- Connector developers can decide which search filters are given to the AI by “default”.
+- Application developers can override which filters the AI can use via search settings.
+- Application developers can set the filters when they create the connection.
+
+### Current Design
+
+<img src="./diagrams/text-search-service-v1-design.png" alt="Current Memory Design" width="400"/>
 
 ## Considered Options
 
