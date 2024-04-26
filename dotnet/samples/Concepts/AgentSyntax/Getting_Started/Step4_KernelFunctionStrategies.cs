@@ -109,7 +109,8 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                                 // The prompt variable name for the history argument.
                                 HistoryVariableName = "history",
                             },
-                    }
+                    },
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Invoke chat and display messages.

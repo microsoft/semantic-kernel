@@ -53,7 +53,8 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // the response includes a score that is greater than or equal to 70.
                         TerminationStrategy = new ThresholdTerminationStrategy()
-                    }
+                    },
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Respond to user input
