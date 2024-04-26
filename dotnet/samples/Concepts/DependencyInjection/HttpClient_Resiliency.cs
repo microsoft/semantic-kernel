@@ -12,7 +12,7 @@ namespace Examples;
 public class HttpClient_Resiliency(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Demostrates the usage of the HttpClientFactory with a custom resilience policy.
+    /// Demonstrates the usage of the HttpClientFactory with a custom resilience policy.
     /// </summary>
     [Fact]
     public async Task RunAsync()
