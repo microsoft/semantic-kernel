@@ -7,11 +7,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace GettingStarted;
 
 /// <summary>
-/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
-/// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
-/// number of agent interactions.
+/// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
+/// to manage <see cref="AgentGroupChat"/> execution.
 /// </summary>
-public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
+public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -19,7 +18,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
         The goal is to determine if the given copy is acceptable to print.
         If so, state that it is approved.
-        If not, provide insight on how to refine suggested copy without example.
+        If not, provide insight on how to refine suggested copy without examples.
         """;
 
     private const string CopyWriterName = "Writer";
@@ -51,6 +50,28 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
+        KernelFunction terminationFunction =
+            KernelFunctionFactory.CreateFromPrompt(
+                """
+                Determine if the copy has been approved.  If so, respond with a single word: yes
+
+                History:
+                {{$history}}
+                """);
+
+        KernelFunction selectionFunction =
+            KernelFunctionFactory.CreateFromPrompt(
+                """
+                You are in a role playing game.
+                Carefully read the conversation history and carry on the conversation by specifying only the name of player to take the next turn.
+
+                The available names are:
+                {{$agents}}
+
+                History:
+                {{$history}}
+                """);
+
         // Create a chat for agent interaction.
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
@@ -58,16 +79,31 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                 ExecutionSettings =
                     new()
                     {
-                        // Here a TerminationStrategy subclass is used that will terminate when
-                        // an assistant message contains the term "approve".
+                        // Here KernelFunctionTerminationStrategy will terminate
+                        // when the art-director has given their approval.
                         TerminationStrategy =
-                            new ApprovalTerminationStrategy()
+                            new KernelFunctionTerminationStrategy(terminationFunction, CreateKernelWithChatCompletion())
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
+                                // Customer result parser to determine if the response is "yes"
+                                ResultParser = (result) => result.GetValue<string>()?.Contains("yes", StringComparison.OrdinalIgnoreCase) ?? false,
+                                // The prompt variable name for the history argument.
+                                HistoryVariableName = "history",
                                 // Limit total number of turns
                                 MaximumIterations = 10,
-                            }
+                            },
+                        // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
+                        SelectionStrategy =
+                            new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
+                            {
+                                // Returns the entire result value as a string.
+                                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                                // The prompt variable name for the agents argument.
+                                AgentsVariableName = "agents",
+                                // The prompt variable name for the history argument.
+                                HistoryVariableName = "history",
+                            },
                     }
             };
 
@@ -82,12 +118,5 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         }
 
         this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
-    }
-
-    private sealed class ApprovalTerminationStrategy : TerminationStrategy
-    {
-        // Terminate when the final message contains the term "approve"
-        protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 }

@@ -31,7 +31,7 @@ public abstract class BaseTest
             TestConfiguration.OpenAI.ChatModelId :
             TestConfiguration.AzureOpenAI.ChatDeploymentName;
 
-    protected Kernel CreateEmptyKernel() => Kernel.CreateBuilder().Build();
+    protected Kernel CreateEmptyKernel() => new();
 
     protected Kernel CreateKernelWithChatCompletion()
     {
