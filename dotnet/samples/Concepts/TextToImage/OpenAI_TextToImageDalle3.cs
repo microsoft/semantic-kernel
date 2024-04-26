@@ -5,7 +5,6 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
-using Xunit.Abstractions;
 
 namespace Examples;
 

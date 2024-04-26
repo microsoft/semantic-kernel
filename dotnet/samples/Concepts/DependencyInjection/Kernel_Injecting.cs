@@ -3,7 +3,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 

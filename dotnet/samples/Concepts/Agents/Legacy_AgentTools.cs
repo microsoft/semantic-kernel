@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

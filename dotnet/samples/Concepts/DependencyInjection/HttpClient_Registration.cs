@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 

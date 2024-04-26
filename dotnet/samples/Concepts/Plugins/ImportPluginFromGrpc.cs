@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
-using Xunit.Abstractions;
 
 namespace Examples;
 

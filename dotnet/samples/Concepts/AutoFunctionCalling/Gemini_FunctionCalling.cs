@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using xRetry;
-using Xunit.Abstractions;
 
 namespace Examples;
 

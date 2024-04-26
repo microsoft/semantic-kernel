@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Plugins.DictionaryPlugin;
 using Resources;
 using xRetry;
-using Xunit.Abstractions;
 
 namespace Examples;
 

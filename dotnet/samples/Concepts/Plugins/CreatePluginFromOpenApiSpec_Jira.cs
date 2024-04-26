@@ -6,7 +6,6 @@ using System.Text.Json;
 using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using Xunit.Abstractions;
 
 namespace Examples;
 

@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

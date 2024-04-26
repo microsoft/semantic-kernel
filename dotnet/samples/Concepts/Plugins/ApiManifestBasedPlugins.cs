@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-using Xunit.Abstractions;
 namespace Examples;
 
 // This example shows how to use the ApiManifest based plugins

@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Xunit.Abstractions;
 
 #pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments

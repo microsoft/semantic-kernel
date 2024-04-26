@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using xRetry;
-using Xunit.Abstractions;
 
 namespace Examples;
 

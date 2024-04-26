@@ -3,7 +3,6 @@
 using System.Diagnostics;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
-using Xunit.Abstractions;
 
 namespace Examples;
 

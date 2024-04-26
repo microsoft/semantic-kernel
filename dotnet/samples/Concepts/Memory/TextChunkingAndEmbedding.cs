@@ -3,7 +3,6 @@
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Text;
-using Xunit.Abstractions;
 
 namespace Examples;
 

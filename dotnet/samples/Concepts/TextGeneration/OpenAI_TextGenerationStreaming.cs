@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
-using Xunit.Abstractions;
 
 namespace Examples;
 

@@ -9,7 +9,6 @@ using Azure.Search.Documents.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
-using Xunit.Abstractions;
 
 namespace Examples;
 

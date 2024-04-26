@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

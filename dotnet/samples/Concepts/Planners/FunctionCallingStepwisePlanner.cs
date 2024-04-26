@@ -3,7 +3,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Xunit.Abstractions;
 
 namespace Examples;
 

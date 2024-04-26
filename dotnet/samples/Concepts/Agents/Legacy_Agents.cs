@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 
@@ -51,22 +50,29 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     /// Tools/functions: MenuPlugin
     /// </summary>
     [Fact]
-    public Task RunWithMethodFunctionsAsync()
+    public async Task RunWithMethodFunctionsAsync()
     {
         WriteLine("======== Run:WithMethodFunctions ========");
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+        MenuPlugin menuApi = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(menuApi);
 
         // Call the common chat-loop
-        return ChatAsync(
+        await ChatAsync(
             "Agents.ToolAgent.yaml", // Defined under ./Resources/Agents
             plugin,
-            arguments: null,
+            arguments: new() { { MenuPlugin.CorrelationIdArgument, 3.141592653 } },
             "Hello",
             "What is the special soup?",
             "What is the special drink?",
             "Do you have enough soup for 5 orders?",
             "Thank you!");
+
+        this.WriteLine("\nCorrelation Ids:");
+        foreach (string correlationId in menuApi.CorrelationIds)
+        {
+            this.WriteLine($"- {correlationId}");
+        }
     }
 
     /// <summary>
@@ -153,6 +159,10 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
 
         // Create chat thread.  Note: Thread is not bound to a single agent.
         var thread = await agent.NewThreadAsync();
+
+        // Enable provided arguments to be passed to function-calling
+        thread.EnableFunctionArgumentPassThrough = true;
+
         try
         {
             // Display agent identifier.

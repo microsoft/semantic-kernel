@@ -313,7 +313,7 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        for (int iteration = 1; ; iteration++)
+        for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
@@ -362,9 +362,9 @@ internal abstract class ClientCore
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-            for (int i = 0; i < result.ToolCalls.Count; i++)
+            for (int toolCallIndex = 0; toolCallIndex < result.ToolCalls.Count; toolCallIndex++)
             {
-                ChatCompletionsToolCall toolCall = result.ToolCalls[i];
+                ChatCompletionsToolCall toolCall = result.ToolCalls[toolCallIndex];
 
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (toolCall is not ChatCompletionsFunctionToolCall functionToolCall)
@@ -403,14 +403,31 @@ internal abstract class ClientCore
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
+                FunctionResult functionResult = new(function) { Culture = kernel.Culture };
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                {
+                    Arguments = functionArgs,
+                    RequestSequenceIndex = requestIndex - 1,
+                    FunctionSequenceIndex = toolCallIndex,
+                    FunctionCount = result.ToolCalls.Count
+                };
+
                 s_inflightAutoInvokes.Value++;
-                object? functionResult;
                 try
                 {
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    {
+                        // Check if filter requested termination.
+                        if (context.Terminate)
+                        {
+                            return;
+                        }
+
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -424,9 +441,24 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+                // Apply any changes from the auto function invocation filters context to final result.
+                functionResult = invocationContext.Result;
+
+                object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
+                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
+
+                // If filter requested termination, returning latest function result.
+                if (invocationContext.Terminate)
+                {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
+                    }
+
+                    return [chat.Last()];
+                }
 
                 static void AddResponseMessage(ChatCompletionsOptions chatOptions, ChatHistory chat, string? result, string? errorMessage, ChatCompletionsToolCall toolCall, ILogger logger)
                 {
@@ -463,7 +495,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -487,7 +519,7 @@ internal abstract class ClientCore
             }
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -519,7 +551,8 @@ internal abstract class ClientCore
         Dictionary<int, string>? toolCallIdsByIndex = null;
         Dictionary<int, string>? functionNamesByIndex = null;
         Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex = null;
-        for (int iteration = 1; ; iteration++)
+
+        for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
             var response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -589,8 +622,10 @@ internal abstract class ClientCore
             chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
 
             // Respond to each tooling request.
-            foreach (ChatCompletionsFunctionToolCall toolCall in toolCalls)
+            for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
             {
+                ChatCompletionsFunctionToolCall toolCall = toolCalls[toolCallIndex];
+
                 // We currently only know about function tool calls. If it's anything else, we'll respond with an error.
                 if (string.IsNullOrEmpty(toolCall.Name))
                 {
@@ -628,14 +663,31 @@ internal abstract class ClientCore
                 }
 
                 // Now, invoke the function, and add the resulting tool call message to the chat options.
+                FunctionResult functionResult = new(function) { Culture = kernel.Culture };
+                AutoFunctionInvocationContext invocationContext = new(kernel, function, functionResult, chat)
+                {
+                    Arguments = functionArgs,
+                    RequestSequenceIndex = requestIndex - 1,
+                    FunctionSequenceIndex = toolCallIndex,
+                    FunctionCount = toolCalls.Length
+                };
+
                 s_inflightAutoInvokes.Value++;
-                object? functionResult;
                 try
                 {
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    functionResult = (await function.InvokeAsync(kernel, functionArgs, cancellationToken: cancellationToken).ConfigureAwait(false)).GetValue<object>() ?? string.Empty;
+                    invocationContext = await OnAutoFunctionInvocationAsync(kernel, invocationContext, async (context) =>
+                    {
+                        // Check if filter requested termination.
+                        if (context.Terminate)
+                        {
+                            return;
+                        }
+
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception e)
@@ -649,9 +701,24 @@ internal abstract class ClientCore
                     s_inflightAutoInvokes.Value--;
                 }
 
-                var stringResult = ProcessFunctionResult(functionResult, chatExecutionSettings.ToolCallBehavior);
+                // Apply any changes from the auto function invocation filters context to final result.
+                functionResult = invocationContext.Result;
+
+                object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
+                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
+
+                // If filter requested termination, breaking request iteration loop.
+                if (invocationContext.Terminate)
+                {
+                    if (this.Logger.IsEnabled(LogLevel.Debug))
+                    {
+                        this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
+                    }
+
+                    yield break;
+                }
 
                 static void AddResponseMessage(
                     ChatCompletionsOptions chatOptions, ChatHistory chat, ChatRole? streamedRole, ChatCompletionsToolCall tool, IReadOnlyDictionary<string, object?>? metadata,
@@ -677,7 +744,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -701,7 +768,7 @@ internal abstract class ClientCore
             }
 
             // Disable auto invocation if we've exceeded the allowed limit.
-            if (iteration >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
+            if (requestIndex >= chatExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
             {
                 autoInvoke = false;
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -1274,5 +1341,43 @@ internal abstract class ClientCore
 #pragma warning disable CS0618 // Type or member is obsolete
         return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
 #pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    /// <summary>
+    /// Executes auto function invocation filters and/or function itself.
+    /// This method can be moved to <see cref="Kernel"/> when auto function invocation logic will be extracted to common place.
+    /// </summary>
+    private static async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
+        Kernel kernel,
+        AutoFunctionInvocationContext context,
+        Func<AutoFunctionInvocationContext, Task> functionCallCallback)
+    {
+        await InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
+
+        return context;
+    }
+
+    /// <summary>
+    /// This method will execute auto function invocation filters and function recursively.
+    /// If there are no registered filters, just function will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or function if there are no remaining filters to execute.
+    /// Function will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrFunctionAsync(
+        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
+        Func<AutoFunctionInvocationContext, Task> functionCallCallback,
+        AutoFunctionInvocationContext context,
+        int index = 0)
+    {
+        if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
+        {
+            await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)).ConfigureAwait(false);
+        }
+        else
+        {
+            await functionCallCallback(context).ConfigureAwait(false);
+        }
     }
 }

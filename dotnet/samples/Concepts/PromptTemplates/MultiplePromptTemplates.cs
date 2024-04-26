@@ -3,7 +3,6 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using xRetry;
-using Xunit.Abstractions;
 
 namespace Examples;
 

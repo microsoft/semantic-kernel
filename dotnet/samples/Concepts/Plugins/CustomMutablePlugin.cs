@@ -2,7 +2,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 

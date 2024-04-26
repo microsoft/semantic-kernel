@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

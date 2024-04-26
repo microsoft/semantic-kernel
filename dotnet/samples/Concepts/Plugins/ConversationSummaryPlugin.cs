@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel;
 using xRetry;
-using Xunit.Abstractions;
 
 namespace Examples;
 

@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Xunit.Abstractions;
 
 namespace Examples;
 

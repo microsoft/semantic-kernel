@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Experimental.Agents;
-using Xunit.Abstractions;
 
 namespace Examples;
 

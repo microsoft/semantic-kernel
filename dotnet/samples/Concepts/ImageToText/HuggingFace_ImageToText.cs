@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.ImageToText;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

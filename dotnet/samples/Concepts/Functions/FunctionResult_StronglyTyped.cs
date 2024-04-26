@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 

@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 /// <summary>

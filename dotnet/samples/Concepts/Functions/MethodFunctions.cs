@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Plugins.Core;
-using Xunit.Abstractions;
 
 namespace Examples;
 

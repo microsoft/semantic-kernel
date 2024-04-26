@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using StackExchange.Redis;
-using Xunit.Abstractions;
 
 namespace Examples;
 

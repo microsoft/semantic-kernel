@@ -5,7 +5,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

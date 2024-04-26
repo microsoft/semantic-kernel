@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 // This example shows how to use kernel arguments when invoking functions.

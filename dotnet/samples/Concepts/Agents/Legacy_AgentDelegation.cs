@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Experimental.Agents;
 using Plugins;
 using Resources;
-using Xunit.Abstractions;
 
 namespace Examples;
 

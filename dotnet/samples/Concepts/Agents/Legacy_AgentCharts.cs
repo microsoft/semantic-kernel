@@ -3,7 +3,6 @@
 using System.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
-using Xunit.Abstractions;
 
 namespace Examples;
 

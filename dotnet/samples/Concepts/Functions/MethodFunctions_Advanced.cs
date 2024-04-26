@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Examples;
 

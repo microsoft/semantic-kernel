@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Xunit.Abstractions;
 
 namespace Examples;
 
