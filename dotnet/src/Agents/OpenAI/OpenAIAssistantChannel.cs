@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -15,7 +16,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
-internal sealed class OpenAIAssistantChannel(AssistantsClient client, string threadId, OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration)
+internal sealed class OpenAIAssistantChannel(
+    AssistantsClient client,
+    string threadId,
+    OpenAIAssistantConfiguration.PollingConfiguration pollingConfiguration,
+    ILogger<OpenAIAssistantChannel> logger)
     : AgentChannel<OpenAIAssistantAgent>
 {
     private const char FunctionDelimiter = '-';
@@ -38,6 +43,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     private readonly string _threadId = threadId;
     private readonly Dictionary<string, ToolDefinition[]> _agentTools = [];
     private readonly Dictionary<string, string?> _agentNames = []; // Cache agent names by their identifier for GetHistoryAsync()
+    private readonly ILogger<OpenAIAssistantChannel> _logger = logger;
 
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
@@ -63,6 +69,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Agent {AgentId} invoked.", agent.Id);
 
         if (agent.IsDeleted)
         {

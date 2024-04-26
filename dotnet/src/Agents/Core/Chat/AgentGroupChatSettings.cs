@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -27,7 +29,7 @@ public class AgentGroupChatSettings
     /// <remarks>
     /// See <see cref="SelectionStrategy"/>.
     /// </remarks>
-    public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy();
+    public SelectionStrategy SelectionStrategy { get; init; } = new SequentialSelectionStrategy(NullLogger<SequentialSelectionStrategy>.Instance);
 
     /// <summary>
     /// The termination strategy attached to the default state of <see cref="AgentGroupChatSettings.TerminationStrategy"/>.
@@ -42,7 +44,7 @@ public class AgentGroupChatSettings
             return Task.FromResult(false);
         }
 
-        public DefaultTerminationStrategy()
+        public DefaultTerminationStrategy() : base(NullLogger<DefaultTerminationStrategy>.Instance)
         {
             this.MaximumIterations = 1;
         }

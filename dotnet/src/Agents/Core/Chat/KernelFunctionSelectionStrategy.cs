@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -13,8 +14,11 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// </summary>
 /// <param name="function">A <see cref="KernelFunction"/> used for selection criteria</param>
 /// <param name="kernel">A kernel instance with services for function execution.</param>
-public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel kernel) : SelectionStrategy
+/// <param name="logger">The logger.</param>
+public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel kernel, ILogger<KernelFunctionSelectionStrategy> logger) : SelectionStrategy
 {
+    private readonly ILogger<KernelFunctionSelectionStrategy> _logger = logger;
+
     /// <summary>
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
     /// </summary>
@@ -62,6 +66,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Selecting next agent.");
 
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
@@ -78,6 +83,9 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
+
+        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Agent {AgentName} selected as the next agent.", agentName);
 
         return
             agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??

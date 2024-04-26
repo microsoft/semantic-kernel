@@ -16,6 +16,16 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </remarks>
 public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 {
+    private readonly ILogger _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
+    /// </summary>
+    public ChatCompletionAgent()
+    {
+        this._logger = this.Kernel.LoggerFactory.CreateLogger<ChatCompletionAgent>();
+    }
+
     /// <summary>
     /// Optional execution settings for the agent.
     /// </summary>
@@ -24,10 +34,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger, // %%% TAO - CHANNEL TYPED LOGGER IS APPROPRIATE HERE.
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Agent {AgentId} invoked.", this.Id);
 
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 

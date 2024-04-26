@@ -11,6 +11,18 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
 {
+    private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatHistoryKernelAgent"/> class.
+    /// </summary>
+    protected ChatHistoryKernelAgent()
+    {
+        this._loggerFactory = this.Kernel.LoggerFactory;
+        this._logger = this._loggerFactory.CreateLogger<ChatHistoryKernelAgent>();
+    }
+
     /// <inheritdoc/>
     protected internal sealed override IEnumerable<string> GetChannelKeys()
     {
@@ -20,12 +32,12 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
+        this._logger.LogDebug("Create channel for {AgentName}...", this.Name);
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
     }
 
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger,
         CancellationToken cancellationToken = default);
 }

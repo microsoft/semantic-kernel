@@ -5,16 +5,20 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Signals termination based on the evaluation of a <see cref="KernelFunction"/>.
 /// </summary>
-/// <param name="function">A <see cref="KernelFunction"/> used for termination criteria</param>
-/// <param name="kernel">A kernel instance with services for function execution.</param>
-public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel kernel) : TerminationStrategy
+/// <remarks>
+/// Initializes a new instance of the <see cref="KernelFunctionTerminationStrategy"/> class.
+/// </remarks>
+public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel kernel, ILogger<KernelFunctionTerminationStrategy> logger) : TerminationStrategy(logger)
 {
+    private readonly ILogger<KernelFunctionTerminationStrategy> _logger = logger;
+
     /// <summary>
     /// The default value for <see cref="KernelFunctionTerminationStrategy.AgentVariableName"/>.
     /// </summary>
@@ -50,7 +54,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// <summary>
     /// The <see cref="Microsoft.SemanticKernel.Kernel"/> used when invoking <see cref="KernelFunctionTerminationStrategy.Function"/>.
     /// </summary>
-    public Kernel Kernel => kernel;
+    public Kernel Kernel { get; } = kernel;
 
     /// <summary>
     /// A callback responsible for translating the <see cref="FunctionResult"/>
@@ -62,6 +66,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id);
 
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =

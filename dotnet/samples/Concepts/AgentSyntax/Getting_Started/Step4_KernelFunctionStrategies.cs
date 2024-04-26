@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Examples;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -79,7 +80,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
-            new(agentWriter, agentReviewer)
+            new([agentWriter, agentReviewer], this.LoggerFactory)
             {
                 ExecutionSettings =
                     new()
@@ -87,7 +88,10 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                         // Here KernelFunctionTerminationStrategy will terminate
                         // when the art-director has given their approval.
                         TerminationStrategy =
-                            new KernelFunctionTerminationStrategy(terminationFunction, CreateKernelWithChatCompletion())
+                            new KernelFunctionTerminationStrategy(
+                                terminationFunction,
+                                CreateKernelWithChatCompletion(),
+                                this.LoggerFactory.CreateLogger<KernelFunctionTerminationStrategy>())
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
@@ -100,7 +104,10 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                             },
                         // Here a KernelFunctionSelectionStrategy selects agents based on a prompt function.
                         SelectionStrategy =
-                            new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
+                            new KernelFunctionSelectionStrategy(
+                                selectionFunction,
+                                CreateKernelWithChatCompletion(),
+                                this.LoggerFactory.CreateLogger<KernelFunctionSelectionStrategy>())
                             {
                                 // Returns the entire result value as a string.
                                 ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
@@ -110,7 +117,6 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                                 HistoryVariableName = "history",
                             },
                     },
-                LoggerFactory = this.LoggerFactory,
             };
 
         // Invoke chat and display messages.

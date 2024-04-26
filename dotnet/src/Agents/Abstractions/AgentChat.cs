@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -19,12 +18,15 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Any <see cref="AgentChat" /> instance does not support concurrent invocation and
 /// will throw exception if concurrent activity is attempted for any public method.
 /// </remarks>
-public abstract class AgentChat
+/// <remarks>
+/// Initializes a new instance of the <see cref="AgentChat"/> class.
+/// </remarks>
+public abstract class AgentChat(ILogger logger)
 {
-    private readonly BroadcastQueue _broadcastQueue;
-    private readonly Dictionary<string, AgentChannel> _agentChannels; // Map channel hash to channel: one entry per channel.
-    private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
-
+    private readonly BroadcastQueue _broadcastQueue = new();
+    private readonly Dictionary<string, AgentChannel> _agentChannels = []; // Map channel hash to channel: one entry per channel.
+    private readonly Dictionary<Agent, string> _channelMap = []; // Map agent to its channel-hash: one entry per agent.
+    private readonly ILogger _logger = logger;
     private int _isActive;
 
     /// <summary>
@@ -34,14 +36,9 @@ public abstract class AgentChat
     public bool IsActive => Interlocked.CompareExchange(ref this._isActive, 1, 1) > 0;
 
     /// <summary>
-    /// The <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
-    /// </summary>
-    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
-
-    /// <summary>
     /// Exposes the internal history to subclasses.
     /// </summary>
-    protected ChatHistory History { get; }
+    protected ChatHistory History { get; } = [];
 
     /// <summary>
     /// Retrieve the message history, either the primary history or
@@ -61,6 +58,7 @@ public abstract class AgentChat
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("GetChatMessagesAsync: {Agent}", agent?.Id);
 
         try
         {
@@ -135,6 +133,7 @@ public abstract class AgentChat
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("AddChatMessages: {Count}", messages.Count);
 
         for (int index = 0; index < messages.Count; ++index)
         {
@@ -177,6 +176,7 @@ public abstract class AgentChat
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("InvokeAgentAsync: {Agent}", agent.Id);
 
         try
         {
@@ -188,9 +188,10 @@ public abstract class AgentChat
             List<ChatMessageContent> messages = [];
             await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
+                this._logger.LogTrace("Message received: {Message}", message);  // %%% TAO - LOGGING PII (TRACE)
                 // Add to primary history
                 this.History.Add(message);
-                messages.Add(message); // %%% TAO - LOGGING PII (TRACE)
+                messages.Add(message);
 
                 // Yield message to caller
                 yield return message;
@@ -216,8 +217,9 @@ public abstract class AgentChat
             if (channel == null)
             {
                 // %%% TAO - LOG - CHANNEL CREATED !!!
+                this._logger.LogDebug("Creating channel for agent: {Agent}...", agent.Id);
                 channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType()); // %%% TAO - TYPED LOGGER ASSIGNMENT EXAMPLE
+                this._logger.LogDebug("Channel created");
 
                 this._agentChannels.Add(channelKey, channel);
 
@@ -282,16 +284,5 @@ public abstract class AgentChat
         }
 
         return channel;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AgentChat"/> class.
-    /// </summary>
-    protected AgentChat()
-    {
-        this._agentChannels = [];
-        this._broadcastQueue = new();
-        this._channelMap = [];
-        this.History = [];
     }
 }

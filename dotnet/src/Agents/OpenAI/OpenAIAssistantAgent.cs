@@ -9,6 +9,7 @@ using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Azure.Core;
 using Azure.Core.Pipeline;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Azure;
 using Microsoft.SemanticKernel.Http;
 
@@ -207,7 +208,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 
-        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
+        return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling, this.Kernel.LoggerFactory.CreateLogger<OpenAIAssistantChannel>());
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -61,7 +62,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
 
         // Create a nexus for agent interaction.
         var chat =
-            new AgentGroupChat(agentWriter, agentReviewer)
+            new AgentGroupChat([agentWriter, agentReviewer], this.LoggerFactory)
             {
                 ExecutionSettings =
                     new()
@@ -69,7 +70,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // an assistant message contains the term "approve".
                         TerminationStrategy =
-                            new ApprovalTerminationStrategy()
+                            new ApprovalTerminationStrategy(this.LoggerFactory.CreateLogger<ApprovalTerminationStrategy>())
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
@@ -77,7 +78,6 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                                 MaximumIterations = 10,
                             }
                     },
-                LoggerFactory = this.LoggerFactory,
             };
 
         // Invoke chat and display messages.
@@ -93,7 +93,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
-    private sealed class ApprovalTerminationStrategy : TerminationStrategy
+    private sealed class ApprovalTerminationStrategy(ILogger<ApprovalTerminationStrategy> logger) : TerminationStrategy(logger)
     {
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)

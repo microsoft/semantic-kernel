@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -13,11 +11,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class AgentChannel
 {
-    /// <summary>
-    /// The <see cref="ILogger"/> associated with the <see cref="AgentChannel"/>.
-    /// </summary>
-    public ILogger Logger { get; set; } = NullLogger.Instance;
-
     /// <summary>
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction..
     /// </summary>

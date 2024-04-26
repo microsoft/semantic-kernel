@@ -43,7 +43,7 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat() { LoggerFactory = this.LoggerFactory };
+        var chat = new AgentGroupChat(this.LoggerFactory);
 
         // Respond to user input
         try

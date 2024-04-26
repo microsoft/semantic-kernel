@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -26,8 +27,13 @@ public enum AggregateTerminationCondition
 /// Aggregate a set of <see cref="TerminationStrategy"/> objects.
 /// </summary>
 /// <param name="strategies">Set of strategies upon which to aggregate.</param>
-public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] strategies) : TerminationStrategy
+/// <param name="logger">The logger.</param>
+/// <remarks>
+/// Initializes a new instance of the <see cref="AggregatorTerminationStrategy"/> class.
+/// </remarks>
+public sealed class AggregatorTerminationStrategy(TerminationStrategy[] strategies, ILogger<AggregatorTerminationStrategy> logger) : TerminationStrategy(logger)
 {
+    private readonly ILogger<AggregatorTerminationStrategy> _logger = logger;
     private readonly TerminationStrategy[] _strategies = strategies;
 
     /// <summary>
@@ -35,10 +41,17 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// </summary>
     public AggregateTerminationCondition Condition { get; init; } = AggregateTerminationCondition.All;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AggregatorTerminationStrategy"/> class.
+    /// </summary>
+    public AggregatorTerminationStrategy(ILogger<AggregatorTerminationStrategy> logger)
+        : this([], logger) { }
+
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id);
 
         var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 

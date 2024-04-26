@@ -4,15 +4,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Base strategy class for defining termination criteria for a <see cref="AgentGroupChat"/>.
 /// </summary>
-public abstract class TerminationStrategy
+public abstract class TerminationStrategy(ILogger logger)
 {
+    private readonly ILogger _logger = logger;
+
     /// <summary>
     /// Restrict number of turns to a reasonable number (99).
     /// </summary>
@@ -37,11 +38,6 @@ public abstract class TerminationStrategy
     public IReadOnlyList<Agent>? Agents { get; set; }
 
     /// <summary>
-    /// The <see cref="ILogger"/> associated with the <see cref="TerminationStrategy"/>.
-    /// </summary>
-    protected internal ILogger Logger { get; internal set; } = NullLogger.Instance;
-
-    /// <summary>
     /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaluated.
     /// </summary>
     protected abstract Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
@@ -58,6 +54,7 @@ public abstract class TerminationStrategy
         // `Agents` must contain `agent`, if `Agents` not empty.
         if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
         {
+            this._logger.LogWarning("Agent '{AgentId}' not in list of agents for termination strategy.", agent.Id);
             return Task.FromResult(false);
         }
 

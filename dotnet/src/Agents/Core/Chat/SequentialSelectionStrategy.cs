@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -9,8 +10,9 @@ namespace Microsoft.SemanticKernel.Agents.Chat;
 /// Round-robin turn-taking strategy.  Agent order is based on the order
 /// in which they joined <see cref="AgentGroupChat"/>.
 /// </summary>
-public sealed class SequentialSelectionStrategy : SelectionStrategy
+public sealed class SequentialSelectionStrategy(ILogger<SequentialSelectionStrategy> logger) : SelectionStrategy
 {
+    private readonly ILogger<SequentialSelectionStrategy> _logger = logger;
     private int _index = 0;
 
     /// <summary>
@@ -23,6 +25,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogDebug("Selecting agent {AgentId}.", agents[this._index].Id);
 
         if (agents.Count == 0)
         {
@@ -35,6 +38,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = 0;
         }
 
+        this._logger.LogDebug("Selected agent {AgentId}.", agents[this._index].Id);
         var agent = agents[this._index];
 
         this._index = (this._index + 1) % agents.Count;

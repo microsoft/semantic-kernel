@@ -40,7 +40,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat() { LoggerFactory = this.LoggerFactory };
+        var chat = new AgentGroupChat(this.LoggerFactory);
 
         // Respond to user input
         try

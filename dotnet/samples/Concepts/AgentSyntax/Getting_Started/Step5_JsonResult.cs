@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Examples;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -45,16 +47,15 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
-            new()
+            new(this.LoggerFactory)
             {
                 ExecutionSettings =
                     new()
                     {
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // the response includes a score that is greater than or equal to 70.
-                        TerminationStrategy = new ThresholdTerminationStrategy()
+                        TerminationStrategy = new ThresholdTerminationStrategy(this.LoggerFactory.CreateLogger<ThresholdTerminationStrategy>()),
                     },
-                LoggerFactory = this.LoggerFactory,
             };
 
         // Respond to user input
@@ -79,13 +80,19 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
 
     private record struct InputScore(int score, string notes);
 
-    private sealed class ThresholdTerminationStrategy : TerminationStrategy
+    private sealed class ThresholdTerminationStrategy(ILogger<ThresholdTerminationStrategy> logger) : TerminationStrategy(logger)
     {
+        private readonly ILogger<ThresholdTerminationStrategy> _logger = logger;
+
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
         {
+            this._logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id);
+
             string lastMessageContent = history[history.Count - 1].Content ?? string.Empty;
 
             InputScore? result = JsonResultTranslator.Translate<InputScore>(lastMessageContent);
+
+            this._logger.LogInformation("Score: {Score}, Notes: {Notes}", result?.score, result?.notes);
 
             return Task.FromResult((result?.score ?? 0) >= 70);
         }

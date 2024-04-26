@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -17,6 +18,7 @@ public sealed class AgentGroupChat : AgentChat
 {
     private readonly HashSet<string> _agentIds; // Efficient existence test O(1) vs O(n) for list.
     private readonly List<Agent> _agents; // Maintain order the agents joined the chat
+    private readonly ILogger<AgentGroupChat> _logger;
 
     /// <summary>
     /// Indicates if completion criteria has been met.  If set, no further
@@ -57,8 +59,6 @@ public sealed class AgentGroupChat : AgentChat
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.EnsureStrategyLoggerAssignment();
-
         if (this.IsComplete)
         {
             // Throw exception if chat is completed and automatic-reset is not enabled.
@@ -71,11 +71,13 @@ public sealed class AgentGroupChat : AgentChat
         }
 
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogInformation("Chat started with {AgentCount} agents.", this.Agents.Count);
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
             Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            this._logger.LogDebug("Agent {AgentId} selected as the next agent.", agent.Id);
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -124,10 +126,8 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // %%% TAO - NOT SURE ???
-        this.EnsureStrategyLoggerAssignment();
-
         // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this._logger.LogInformation("Process interaction with agent {AgentId}.", agent.Id);
 
         if (isJoining)
         {
@@ -150,16 +150,19 @@ public sealed class AgentGroupChat : AgentChat
     /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
     /// </summary>
     /// <param name="agents">The agents initially participating in the chat.</param>
-    public AgentGroupChat(params Agent[] agents)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to create loggers.</param>
+    public AgentGroupChat(Agent[] agents, ILoggerFactory? loggerFactory = null)
+        : base(loggerFactory?.CreateLogger(nameof(AgentGroupChat)) ?? NullLogger.Instance)
     {
         this._agents = new(agents);
         this._agentIds = new(this._agents.Select(a => a.Id));
+        this._logger = loggerFactory?.CreateLogger<AgentGroupChat>() ?? NullLogger<AgentGroupChat>.Instance;
     }
 
-    private void EnsureStrategyLoggerAssignment()
-    {
-        // %%% TAO - NOT SURE ???
-        this.ExecutionSettings.SelectionStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
-        this.ExecutionSettings.TerminationStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
-    }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AgentGroupChat"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to create loggers.</param>
+    public AgentGroupChat(ILoggerFactory? loggerFactory = null)
+        : this([], loggerFactory) { }
 }

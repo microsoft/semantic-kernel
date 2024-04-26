@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Examples;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -60,7 +61,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
-            new(agentWriter, agentReviewer)
+            new([agentWriter, agentReviewer], this.LoggerFactory)
             {
                 ExecutionSettings =
                     new()
@@ -68,7 +69,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // an assistant message contains the term "approve".
                         TerminationStrategy =
-                            new ApprovalTerminationStrategy()
+                            new ApprovalTerminationStrategy(this.LoggerFactory.CreateLogger<ApprovalTerminationStrategy>())
                             {
                                 // Only the art-director may approve.
                                 Agents = [agentReviewer],
@@ -76,7 +77,6 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
                                 MaximumIterations = 10,
                             }
                     },
-                LoggerFactory = this.LoggerFactory,
             };
 
         // Invoke chat and display messages.
@@ -94,6 +94,9 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
+        public ApprovalTerminationStrategy(ILogger<ApprovalTerminationStrategy> logger)
+            : base(logger) { }
+
         // Terminate when the final message contains the term "approve"
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
             => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
