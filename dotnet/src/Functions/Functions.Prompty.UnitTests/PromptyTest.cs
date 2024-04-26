@@ -3,7 +3,6 @@
 using System.IO;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Prompty.Extension;
 using Xunit;
 
 namespace SemanticKernel.Functions.Prompty.UnitTests;
