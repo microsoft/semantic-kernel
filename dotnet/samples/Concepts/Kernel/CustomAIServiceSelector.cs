@@ -16,7 +16,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Example62_CustomAIServiceSelector ========");
+        WriteLine($"======== {nameof(CustomAIServiceSelector)} ========");
 
         // Build a kernel with multiple chat completion services
         var builder = Kernel.CreateBuilder()

@@ -21,7 +21,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAgentAsync()
     {
-        WriteLine("======== Example73_AgentAuthoring ========");
+        WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
         try
         {
             // Initialize the agent with tools
@@ -43,7 +43,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginAsync()
     {
-        WriteLine("======== Example73_AgentAuthoring ========");
+        WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
         try
         {
             // Initialize the agent with tools

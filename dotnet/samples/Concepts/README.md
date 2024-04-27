@@ -22,4 +22,4 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | PromptTemplates | Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/PromptTemplate/IPromptTemplate.cs) with parametrization for `Prompt` rendering  |
 | RAG | Different ways of `RAG` (Retrieval-Augmented Generation) |
 | LocalModels | Using services against `LocalModels` to run models locally |
-| Agents | Different ways of using [`Agents`](./AgentSyntax/README.md)  |
+| Agents | Different ways of using [`Agents`](./Agents/README.md)  |

@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Plugins.Grpc;
 namespace Examples;
 
 // This example shows how to use gRPC plugins.
-public class Example35_GrpcPlugins(ITestOutputHelper output) : BaseTest(output)
+public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact(Skip = "Setup crendentials")]
     public async Task RunAsync()

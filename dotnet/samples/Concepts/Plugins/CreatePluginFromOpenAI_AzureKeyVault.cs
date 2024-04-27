@@ -33,7 +33,7 @@ public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : Ba
     ///   dotnet user-secrets set "KeyVault:ClientId" "your_client_id"
     ///   dotnet user-secrets set "KeyVault:ClientSecret" "your_secret"
     ///
-    ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/samples/KernelSyntaxExamples/Resources/22-ai-plugin.json
+    ///   5. Replace your tenant ID with the "TENANT_ID" placeholder in dotnet/samples/Concepts/Resources/22-ai-plugin.json
     /// </summary>
     [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()

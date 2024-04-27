@@ -17,7 +17,7 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
     [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
     public Task RunAsync(string templateFormat, string prompt)
     {
-        WriteLine("======== Example64_MultiplePromptTemplates ========");
+        WriteLine($"======== {nameof(MultiplePromptTemplates)} ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(

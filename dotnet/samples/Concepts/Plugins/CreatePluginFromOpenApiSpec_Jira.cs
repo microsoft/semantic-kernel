@@ -31,7 +31,7 @@ public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTe
     /// 3. You can find your domain under the "Products" tab in your account management page.
     ///    To go to your account management page, click on your profile picture in the top right corner of your Jira
     ///    instance then select "Manage account".
-    /// 4. Configure the secrets as described by the ReadMe.md in the dotnet/samples/KernelSyntaxExamples folder.
+    /// 4. Configure the secrets as described by the ReadMe.md in the dotnet/samples/Concepts folder.
     /// </summary>
     [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()

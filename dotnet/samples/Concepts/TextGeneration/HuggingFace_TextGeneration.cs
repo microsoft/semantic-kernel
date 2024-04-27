@@ -10,7 +10,7 @@ using xRetry;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public class Example20_HuggingFace : BaseTest
+public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(helper)
 {
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
@@ -94,9 +94,5 @@ public class Example20_HuggingFace : BaseTest
         var result = await kernel.InvokeAsync(questionAnswerFunction, new() { ["input"] = "What is New York?" });
 
         WriteLine(result.GetValue<string>());
-    }
-
-    public Example20_HuggingFace(ITestOutputHelper output) : base(output)
-    {
     }
 }
