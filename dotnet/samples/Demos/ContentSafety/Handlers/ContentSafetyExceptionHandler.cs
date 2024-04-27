@@ -10,7 +10,7 @@ public class ContentSafetyExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (exception is not TextModerationException)
+        if (exception is not TextModerationException && exception is not AttackDetectionException)
         {
             return false;
         }

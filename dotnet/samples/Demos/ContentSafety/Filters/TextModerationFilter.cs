@@ -23,7 +23,6 @@ public class TextModerationFilter(
         await next(context);
 
         var prompt = context.RenderedPrompt;
-        this._logger.LogInformation("Rendered prompt: {RenderedPrompt}", prompt);
 
         // Running Azure AI Content Safety text analysis
         var analysisResult = (await this._contentSafetyClient.AnalyzeTextAsync(new AnalyzeTextOptions(prompt))).Value;

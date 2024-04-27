@@ -6,6 +6,7 @@ using ContentSafety.Extensions;
 using ContentSafety.Filters;
 using ContentSafety.Handlers;
 using ContentSafety.Options;
+using ContentSafety.Services.PromptShield;
 using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,10 @@ var config = new ConfigurationBuilder()
 var azureOpenAIOptions = config.GetValid<AzureOpenAIOptions>(AzureOpenAIOptions.SectionName);
 var azureContentSafetyOptions = config.GetValid<AzureContentSafetyOptions>(AzureContentSafetyOptions.SectionName);
 
+builder.Services
+    .AddOptions<AzureContentSafetyOptions>()
+    .Bind(config.GetRequiredSection(AzureContentSafetyOptions.SectionName));
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
@@ -31,16 +36,19 @@ builder.Services.AddAzureOpenAIChatCompletion(
     azureOpenAIOptions.Endpoint,
     azureOpenAIOptions.ApiKey);
 
-// Add Semantic Kernel filters
+// Add Semantic Kernel prompt content safety filters
 builder.Services.AddSingleton<IPromptRenderFilter, TextModerationFilter>();
+builder.Services.AddSingleton<IPromptRenderFilter, AttackDetectionFilter>();
 
-// Add Azure AI Content Safety
+// Add Azure AI Content Safety services
 builder.Services.AddSingleton<ContentSafetyClient>((serviceProvider) =>
 {
     return new ContentSafetyClient(
         new Uri(azureContentSafetyOptions.Endpoint),
         new AzureKeyCredential(azureContentSafetyOptions.ApiKey));
 });
+
+builder.Services.AddSingleton<PromptShieldService>();
 
 // Add exception handlers
 builder.Services.AddExceptionHandler<ContentSafetyExceptionHandler>();
