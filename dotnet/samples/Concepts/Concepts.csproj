@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Concepts</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace></RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
