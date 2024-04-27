@@ -9,15 +9,11 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// Bing implementation of <see cref="KernelSearchResult{T}"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class BingKernelSearchResult<T> : KernelSearchResult<T>
+/// <remarks>
+/// Initializes a new instance of the <see cref="BingKernelSearchResult{T}"/> class.
+/// </remarks>
+public class BingKernelSearchResult<T>(WebPages<T> webPages, T webPage) : KernelSearchResult<T>(webPage, webPages, GetResultsMetadata(webPages))
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BingKernelSearchResult{T}"/> class.
-    /// </summary>
-    public BingKernelSearchResult(WebPages<T> webPages, T webPage) : base(webPage, webPages, GetResultsMetadata(webPages))
-    {
-    }
-
     static private Dictionary<string, object?>? GetResultsMetadata(WebPages<T> webPages)
     {
         return new Dictionary<string, object?>()

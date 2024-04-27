@@ -134,7 +134,5 @@ public sealed class BingTextSearchService : ITextSearchService
             { "AlteredQuery", searchResponse?.QueryContext?.AlteredQuery },
         };
     }
-
-
     #endregion
 }
