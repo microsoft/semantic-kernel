@@ -1,0 +1,25 @@
+@HostAddress = http://localhost:5231
+
+// Text moderation
+// No offensive content in request, the response will be 200 OK.
+POST {{HostAddress}}/chat/
+Accept: application/json
+Content-Type: application/json
+
+{
+    "message": "Hi, how are you today?"
+}
+
+###
+
+// Text moderation
+// Offensive content in request, the response will be 400 Bad Request.
+POST {{HostAddress}}/chat/
+Accept: application/json
+Content-Type: application/json
+
+{
+    "message": "You are a bad person!"
+}
+
+###
