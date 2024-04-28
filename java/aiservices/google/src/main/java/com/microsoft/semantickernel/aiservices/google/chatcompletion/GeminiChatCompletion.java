@@ -2,9 +2,11 @@ package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.FunctionDeclaration;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.api.Part;
+import com.google.cloud.vertexai.api.Schema;
 import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
@@ -37,6 +39,11 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         super(client, modelId);
     }
 
+    /**
+     * Create a new instance of {@link GeminiChatCompletion.Builder}.
+     *
+     * @return a new instance of {@link GeminiChatCompletion.Builder}
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -98,9 +105,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             if (invocationContext.getToolCallBehavior() != null) {
                 ToolCallBehavior toolCallBehavior = invocationContext.getToolCallBehavior();
 
-                Tool.Builder tool = Tool.newBuilder();
-
-                // TODO: Add tool call
+                // TODO: Add tool calls
             }
         }
 
