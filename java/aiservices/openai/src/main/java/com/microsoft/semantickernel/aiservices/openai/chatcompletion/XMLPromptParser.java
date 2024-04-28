@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
+import com.azure.ai.openai.models.ChatRequestAssistantMessage;
+import com.azure.ai.openai.models.ChatRequestFunctionMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
+import com.azure.ai.openai.models.ChatRequestSystemMessage;
+import com.azure.ai.openai.models.ChatRequestToolMessage;
 import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.core.util.BinaryData;
@@ -29,6 +33,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,5 +228,46 @@ class XMLPromptParser {
             LOGGER.debug("Unknown author role: " + role);
             throw new SKException("Unknown author role: " + role);
         }
+    }
+
+    public static ChatRequestMessage unescapeRequest(ChatRequestMessage message) {
+        if (message instanceof ChatRequestUserMessage) {
+            ChatRequestUserMessage chatRequestMessage = (ChatRequestUserMessage) message;
+            String content = StringEscapeUtils.unescapeXml(
+                chatRequestMessage.getContent().toString());
+
+            return new ChatRequestUserMessage(content)
+                .setName(chatRequestMessage.getName());
+        } else if (message instanceof ChatRequestSystemMessage) {
+            ChatRequestSystemMessage chatRequestMessage = (ChatRequestSystemMessage) message;
+            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+
+            return new ChatRequestSystemMessage(content)
+                .setName(chatRequestMessage.getName());
+        } else if (message instanceof ChatRequestAssistantMessage) {
+            ChatRequestAssistantMessage chatRequestMessage = (ChatRequestAssistantMessage) message;
+            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+
+            return new ChatRequestAssistantMessage(content)
+                .setToolCalls(chatRequestMessage.getToolCalls())
+                .setFunctionCall(chatRequestMessage.getFunctionCall())
+                .setName(chatRequestMessage.getName());
+        } else if (message instanceof ChatRequestFunctionMessage) {
+            ChatRequestFunctionMessage chatRequestMessage = (ChatRequestFunctionMessage) message;
+            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+
+            return new ChatRequestFunctionMessage(
+                chatRequestMessage.getName(),
+                content);
+        } else if (message instanceof ChatRequestToolMessage) {
+            ChatRequestToolMessage chatRequestMessage = (ChatRequestToolMessage) message;
+            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+
+            return new ChatRequestToolMessage(
+                content,
+                chatRequestMessage.getToolCallId());
+        }
+
+        throw new SKException("Unknown message type: " + message.getClass().getSimpleName());
     }
 }

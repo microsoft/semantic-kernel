@@ -52,9 +52,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -147,8 +149,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                     this,
                     messages,
                     functions,
-                    invocationContext,
-                    autoInvokeAttempts)))
+                    invocationContext)))
             .getOptions();
 
         Mono<List<? extends ChatMessageContent>> result = getClient()
@@ -202,19 +203,18 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                                 return performToolCall(kernel, invocationContext, requestMessages,
                                     toolCall);
                             }
+
                             return requestMessages;
                         })
                     .flatMap(it -> it)
                     .flatMap(msgs -> {
-                        ChatRequestMessage m = msgs.get(msgs.size() - 1);
-                        if (m instanceof ChatRequestAssistantMessage &&
-                            ((ChatRequestAssistantMessage) m).getToolCalls().size() > 0) {
-                            LOGGER.error("No response");
-                        }
                         return internalChatMessageContentsAsync(msgs, kernel, functions,
                             invocationContext, autoInvokeAttempts - 1);
                     })
                     .onErrorResume(e -> {
+
+                        LOGGER.warn("Tool invocation attempt failed: ", e);
+
                         // If FunctionInvocationError occurred and there are still attempts left, retry, else exit
                         if (autoInvokeAttempts > 0) {
                             List<ChatRequestMessage> currentMessages = messages;
@@ -264,9 +264,9 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                                 functionResult.getResult(),
                                 functionToolCall.getId());
 
-                            ArrayList<ChatRequestMessage> res = new ArrayList<>(
-                                msgs);
+                            ArrayList<ChatRequestMessage> res = new ArrayList<>(msgs);
                             res.add(requestToolMessage);
+
                             return res;
                         })
                         .switchIfEmpty(Mono.fromSupplier(
@@ -451,15 +451,22 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         ChatCompletionService chatCompletionService,
         List<ChatRequestMessage> chatRequestMessages,
         @Nullable List<OpenAIFunction> functions,
-        @Nullable InvocationContext invocationContext,
-        int autoInvokeAttempts) {
+        @Nullable InvocationContext invocationContext) {
+
+        chatRequestMessages = chatRequestMessages
+            .stream()
+            .map(XMLPromptParser::unescapeRequest)
+            .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)
             .setModel(chatCompletionService.getModelId());
 
         if (invocationContext != null && invocationContext.getToolCallBehavior() != null) {
-            configureToolCallBehaviorOptions(options, invocationContext.getToolCallBehavior(),
-                functions, autoInvokeAttempts);
+            configureToolCallBehaviorOptions(
+                options,
+                invocationContext.getToolCallBehavior(),
+                functions,
+                chatRequestMessages);
         }
 
         PromptExecutionSettings promptExecutionSettings = invocationContext != null
@@ -525,7 +532,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         ChatCompletionsOptions options,
         @Nullable ToolCallBehavior toolCallBehavior,
         @Nullable List<OpenAIFunction> functions,
-        int autoInvokeAttempts) {
+        List<ChatRequestMessage> chatRequestMessages) {
 
         if (toolCallBehavior == null) {
             return;
@@ -539,6 +546,18 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         if (toolCallBehavior instanceof ToolCallBehavior.RequiredKernelFunction) {
             KernelFunction<?> toolChoice = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
                 .getRequiredFunction();
+
+            String toolChoiceName = String.format("%s%s%s",
+                toolChoice.getPluginName(),
+                OpenAIFunction.getNameSeparator(),
+                toolChoice.getName());
+
+            // If required tool call has already been called dont ask for it again
+            boolean hasBeenExecuted = hasToolCallBeenExecuted(chatRequestMessages, toolChoiceName);
+            if (hasBeenExecuted) {
+                return;
+            }
+
             List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
 
             toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
@@ -549,10 +568,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             options.setTools(toolDefinitions);
             try {
                 String json = String.format(
-                    "{\"type\":\"function\",\"function\":{\"name\":\"%s%s%s\"}}",
-                    toolChoice.getPluginName(),
-                    OpenAIFunction.getNameSeparator(),
-                    toolChoice.getName());
+                    "{\"type\":\"function\",\"function\":{\"name\":\"%s\"}}", toolChoiceName);
                 options.setToolChoice(BinaryData.fromObject(new ObjectMapper().readTree(json)));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
@@ -584,13 +600,46 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         options.setToolChoice(BinaryData.fromString("auto"));
     }
 
+    private static boolean hasToolCallBeenExecuted(List<ChatRequestMessage> chatRequestMessages,
+        String toolChoiceName) {
+        return chatRequestMessages
+            .stream()
+            .flatMap(message -> {
+                // Extract tool calls
+                if (message instanceof ChatRequestAssistantMessage) {
+                    return ((ChatRequestAssistantMessage) message).getToolCalls().stream();
+                }
+                return Stream.empty();
+            })
+            .filter(toolCall -> {
+                // Filter if tool call has correct name
+                if (toolCall instanceof ChatCompletionsFunctionToolCall) {
+                    return ((ChatCompletionsFunctionToolCall) toolCall).getFunction().getName()
+                        .equals(toolChoiceName);
+                }
+                return false;
+            })
+            .allMatch(toolcall -> {
+                String id = toolcall.getId();
+                // True if tool call id has a response message
+                return chatRequestMessages
+                    .stream()
+                    .filter(
+                        chatRequestMessage -> chatRequestMessage instanceof ChatRequestToolMessage)
+                    .anyMatch(
+                        chatRequestMessage -> ((ChatRequestToolMessage) chatRequestMessage)
+                            .getToolCallId()
+                            .equals(id));
+            });
+    }
+
     private static List<ChatRequestMessage> getChatRequestMessages(ChatHistory chatHistory) {
         List<ChatMessageContent<?>> messages = chatHistory.getMessages();
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
         }
         return messages.stream()
-            .map(message -> getChatRequestMessage(message))
+            .map(OpenAIChatCompletion::getChatRequestMessage)
             .collect(Collectors.toList());
     }
 
@@ -599,31 +648,10 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         AuthorRole authorRole = message.getAuthorRole();
         String content = message.getContent();
+
         switch (authorRole) {
             case ASSISTANT:
-                // TODO: break this out into a separate method and handle tools other than function calls
-                ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
-                List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) message)
-                    .getToolCall();
-                if (toolCalls != null) {
-                    asstMessage.setToolCalls(
-                        toolCalls.stream()
-                            .map(toolCall -> {
-                                KernelFunctionArguments arguments = toolCall.getArguments();
-                                String args = arguments != null && !arguments.isEmpty()
-                                    ? arguments.entrySet().stream()
-                                        .map(entry -> String.format("\"%s\": \"%s\"",
-                                            entry.getKey(), entry.getValue()))
-                                        .collect(Collectors.joining("{", "}", ","))
-                                    : "{}";
-                                FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(),
-                                    args);
-                                return new ChatCompletionsFunctionToolCall(toolCall.getId(),
-                                    fnCall);
-                            })
-                            .collect(Collectors.toList()));
-                }
-                return asstMessage;
+                return formAssistantMessage(message, content);
             case SYSTEM:
                 return new ChatRequestSystemMessage(content);
             case USER:
@@ -641,10 +669,44 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 }
                 return new ChatRequestToolMessage(content, id);
             default:
-                LOGGER.debug("Unexpected author role: " + authorRole);
+                LOGGER.debug("Unexpected author role: {}", authorRole);
                 throw new SKException("Unexpected author role: " + authorRole);
         }
 
+    }
+
+    private static ChatRequestAssistantMessage formAssistantMessage(
+        ChatMessageContent<?> message, String content) {
+        // TODO: handle tools other than function calls
+        ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
+
+        List<OpenAIFunctionToolCall> toolCalls = null;
+        if (message instanceof OpenAIChatMessageContent) {
+            toolCalls = ((OpenAIChatMessageContent<?>) message).getToolCall();
+        }
+
+        if (toolCalls != null) {
+            asstMessage.setToolCalls(
+                toolCalls.stream()
+                    .map(toolCall -> {
+                        KernelFunctionArguments arguments = toolCall.getArguments();
+
+                        String args = arguments != null && !arguments.isEmpty()
+                            ? arguments.entrySet().stream()
+                                .map(entry -> String.format("\"%s\": \"%s\"",
+                                    StringEscapeUtils.escapeJson(entry.getKey()),
+                                    StringEscapeUtils.escapeJson(
+                                        entry.getValue().toPromptString())))
+                                .collect(Collectors.joining("{", "}", ","))
+                            : "{}";
+                        FunctionCall fnCall = new FunctionCall(toolCall.getFunctionName(),
+                            args);
+                        return new ChatCompletionsFunctionToolCall(toolCall.getId(),
+                            fnCall);
+                    })
+                    .collect(Collectors.toList()));
+        }
+        return asstMessage;
     }
 
     static ChatRequestMessage getChatRequestMessage(
