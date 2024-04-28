@@ -18,7 +18,7 @@ var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.Development.json")
     .Build();
 
-var azureOpenAIOptions = config.GetValid<AzureOpenAIOptions>(AzureOpenAIOptions.SectionName);
+var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
 var azureContentSafetyOptions = config.GetValid<AzureContentSafetyOptions>(AzureContentSafetyOptions.SectionName);
 
 builder.Services
@@ -31,10 +31,7 @@ builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
 
 // Add Semantic Kernel
 builder.Services.AddKernel();
-builder.Services.AddAzureOpenAIChatCompletion(
-    azureOpenAIOptions.DeploymentName,
-    azureOpenAIOptions.Endpoint,
-    azureOpenAIOptions.ApiKey);
+builder.Services.AddOpenAIChatCompletion(openAIOptions.ModelId, openAIOptions.ApiKey);
 
 // Add Semantic Kernel prompt content safety filters
 builder.Services.AddSingleton<IPromptRenderFilter, TextModerationFilter>();

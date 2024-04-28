@@ -4,15 +4,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ContentSafety.Options;
 
-public class AzureOpenAIOptions
+public class OpenAIOptions
 {
-    public const string SectionName = "AzureOpenAI";
+    public const string SectionName = "OpenAI";
 
     [Required]
-    public string DeploymentName { get; set; }
-
-    [Required]
-    public string Endpoint { get; set; }
+    public string ModelId { get; set; }
 
     [Required]
     public string ApiKey { get; set; }
