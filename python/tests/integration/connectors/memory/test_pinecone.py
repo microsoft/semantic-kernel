@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
+from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.utils.settings import pinecone_settings_from_dot_env
 
@@ -23,6 +24,7 @@ pytestmark = pytest.mark.skipif(not pinecone_installed, reason="pinecone is not 
 async def retry(func, retries=1):
     for i in range(retries):
         try:
+            time.sleep(3)
             return await func()
         except pinecone.core.client.exceptions.ForbiddenException as e:
             print(e)
@@ -115,7 +117,7 @@ async def test_get_collections(api_key):
 
     await retry(lambda: memory.create_collection("test-collection", 2))
     result = await retry(lambda: memory.get_collections())
-    assert "test-collection" in result
+    assert "test-collection" in result.names()
 
 
 @pytest.mark.asyncio
@@ -126,7 +128,7 @@ async def test_delete_collection(api_key):
     await retry(lambda: memory.create_collection("test-collection"))
     await retry(lambda: memory.delete_collection("test-collection"))
     result = await retry(lambda: memory.get_collections())
-    assert "test-collection" not in result
+    assert "test-collection" not in result.names()
 
 
 @pytest.mark.asyncio
@@ -192,7 +194,7 @@ async def test_remove(api_key, memory_record1):
     await retry(lambda: memory.upsert("test-collection", memory_record1))
     await retry(lambda: memory.remove("test-collection", memory_record1._id))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test-collection", memory_record1._id, with_embedding=True)
 
 
@@ -205,10 +207,10 @@ async def test_remove_batch(api_key, memory_record1, memory_record2):
     await retry(lambda: memory.upsert_batch("test-collection", [memory_record1, memory_record2]))
     await retry(lambda: memory.remove_batch("test-collection", [memory_record1._id, memory_record2._id]))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test-collection", memory_record1._id, with_embedding=True)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         _ = await memory.get("test-collection", memory_record2._id, with_embedding=True)
 
 

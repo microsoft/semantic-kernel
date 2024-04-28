@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 from numpy import ndarray
-from pinecone import FetchResponse, IndexDescription, Pinecone
+from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
 
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
@@ -36,6 +36,11 @@ class PineconeMemoryStore(MemoryStoreBase):
     _pinecone_api_key: str
     _default_dimensionality: int
 
+    DEFAULT_INDEX_SPEC: ServerlessSpec = ServerlessSpec(
+        cloud="aws",
+        region="us-east-1",
+    )
+
     def __init__(
         self,
         api_key: str,
@@ -65,15 +70,11 @@ class PineconeMemoryStore(MemoryStoreBase):
         collection_name: str,
         dimension_num: Optional[int] = None,
         distance_type: Optional[str] = "cosine",
-        num_of_pods: Optional[int] = 1,
-        replica_num: Optional[int] = 0,
-        type_of_pod: Optional[str] = "p1.x1",
-        metadata_config: Optional[dict] = None,
+        index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
             This function creates an index, by default the following index
-            settings are used: metric = cosine, pods = 1, replicas = 0,
-            pod_type = p1.x1, metadata_config = None.
+            settings are used: metric = cosine, cloud = aws, region = us-east-1.
 
         Arguments:
             collection_name {str} -- The name of the collection to create.
@@ -90,15 +91,9 @@ class PineconeMemoryStore(MemoryStoreBase):
                 f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             self.pinecone.create_index(
-                name=collection_name,
-                dimension=dimension_num,
-                metric=distance_type,
-                pods=num_of_pods,
-                replicas=replica_num,
-                pod_type=type_of_pod,
-                metadata_config=metadata_config,
+                name=collection_name, dimension=dimension_num, metric=distance_type, spec=index_spec
             )
 
     async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
@@ -108,19 +103,19 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             Optional[dict] -- The index.
         """
-        if collection_name in self.pinecone.list_indexes():
+        if await self.does_collection_exist(collection_name):
             return self.pinecone.describe_index(collection_name)
         return None
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> IndexList:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            IndexList -- The list of collections.
         """
-        return list(self.pinecone.list_indexes())
+        return self.pinecone.list_indexes()
 
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
@@ -131,7 +126,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if collection_name in self.pinecone.list_indexes():
+        if await self.does_collection_exist(collection_name):
             self.pinecone.delete_index(collection_name)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
@@ -143,7 +138,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        return collection_name in self.pinecone.list_indexes()
+        return collection_name in self.pinecone.list_indexes().names()
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
@@ -155,7 +150,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique database key of the record. In Pinecone, this is the record ID.
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
@@ -180,7 +175,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique database keys of the records.
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
@@ -212,7 +207,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord -- The record.
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
@@ -236,7 +231,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             List[MemoryRecord] -- The records.
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
@@ -252,7 +247,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
@@ -268,7 +263,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
@@ -323,7 +318,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        if collection_name not in self.pinecone.list_indexes():
+        if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         collection = self.pinecone.Index(collection_name)
