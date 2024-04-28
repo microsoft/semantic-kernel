@@ -9,21 +9,57 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.util.List;
 
 public class Example96_GeminiChatCompletion {
-
     private static final String PROJECT_ID = System.getenv("PROJECT_ID");
     private static final String LOCATION = System.getenv("LOCATION");
     private static final String MODEL_ID = System.getenv("GEMINI_MODEL_ID");
 
     public static void main(String[] args) {
+        // Authenticate with Google Cloud running:
+        // gcloud config set project PROJECT_ID
+        // gcloud auth login ACCOUNT
+        //
+        // Or if you want to use an API key follow:
+        // https://cloud.google.com/docs/authentication/api-keys#using-with-client-libs
+
         VertexAI client = new VertexAI(PROJECT_ID, LOCATION);
 
-        ChatHistory chatHistory = new ChatHistory();
-
-        ChatCompletionService chatCompletionService = VertexAIChatCompletion.builder()
+        ChatCompletionService geminiChat = VertexAIChatCompletion.builder()
                 .withVertexAIClient(client)
                 .withModelId(MODEL_ID)
                 .build();
 
-        List<ChatMessageContent<?>> result = chatCompletionService.getChatMessageContentsAsync(chatHistory, null, null).block();
+        System.out.println("Chat content:");
+        System.out.println("------------------------");
+
+        ChatHistory chatHistory = new ChatHistory();
+
+        // First user message
+        chatHistory.addUserMessage("Hi, I'm looking for book suggestions");
+        messageOutput(chatHistory);
+
+        reply(geminiChat, chatHistory);
+        messageOutput(chatHistory);
+
+        chatHistory.addUserMessage(
+                "I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
+        messageOutput(chatHistory);
+
+        reply(geminiChat, chatHistory);
+        messageOutput(chatHistory);
+    }
+
+    private static void messageOutput(ChatHistory chatHistory) {
+        var message = chatHistory.getLastMessage().get();
+        System.out.println(message.getAuthorRole() + ": " + message.getContent());
+        System.out.println("------------------------");
+    }
+
+    private static void reply(ChatCompletionService geminiChat, ChatHistory chatHistory) {
+        var reply = geminiChat.getChatMessageContentsAsync(chatHistory, null, null)
+                .block();
+
+        StringBuilder message = new StringBuilder();
+        reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));
+        chatHistory.addAssistantMessage(message.toString());
     }
 }
