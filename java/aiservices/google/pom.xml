@@ -11,8 +11,8 @@
     </parent>
 
     <groupId>com.microsoft.semantickernel</groupId>
-    <name>Semantic Kernel Gemini Service</name>
-    <description>Gemini service for Semantic Kernel</description>
+    <name>Semantic Kernel Google Services</name>
+    <description>Google services for Semantic Kernel</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

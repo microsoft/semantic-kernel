@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.aiservices.gemini.implementation;
+package com.microsoft.semantickernel.aiservices.google.implementation;
 
 public enum GeminiRole {
     /**

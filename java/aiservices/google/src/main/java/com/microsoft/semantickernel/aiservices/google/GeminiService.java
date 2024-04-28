@@ -1,15 +1,15 @@
-package com.microsoft.semantickernel.aiservices.gemini;
+package com.microsoft.semantickernel.aiservices.google;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.microsoft.semantickernel.services.AIService;
 
 import javax.annotation.Nullable;
 
-public class VertexAIService implements AIService {
+public class GeminiService implements AIService {
     private final VertexAI client;
     private final String modelId;
 
-    protected VertexAIService(VertexAI client, String modelId) {
+    protected GeminiService(VertexAI client, String modelId) {
         this.client = client;
         this.modelId = modelId;
     }

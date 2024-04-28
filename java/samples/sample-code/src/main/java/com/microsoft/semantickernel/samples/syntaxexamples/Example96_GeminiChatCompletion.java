@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.google.cloud.vertexai.VertexAI;
-import com.microsoft.semantickernel.aiservices.gemini.chatcompletion.VertexAIChatCompletion;
+import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatCompletion;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 
@@ -20,7 +20,7 @@ public class Example96_GeminiChatCompletion {
 
         VertexAI client = new VertexAI(PROJECT_ID, LOCATION);
 
-        ChatCompletionService geminiChat = VertexAIChatCompletion.builder()
+        ChatCompletionService geminiChat = GeminiChatCompletion.builder()
                 .withVertexAIClient(client)
                 .withModelId(MODEL_ID)
                 .build();

@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.aiservices.gemini.chatcompletion;
+package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
@@ -9,8 +9,8 @@ import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.gemini.implementation.GeminiRole;
-import com.microsoft.semantickernel.aiservices.gemini.VertexAIService;
+import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
+import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -29,11 +29,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VertexAIChatCompletion extends VertexAIService implements ChatCompletionService {
+public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VertexAIChatCompletion.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeminiChatCompletion.class);
 
-    public VertexAIChatCompletion(VertexAI client, String modelId) {
+    public GeminiChatCompletion(VertexAI client, String modelId) {
         super(client, modelId);
     }
 
@@ -121,8 +121,8 @@ public class VertexAIChatCompletion extends VertexAIService implements ChatCompl
         return chatMessageContents;
     }
 
-    public static class Builder extends GeminiServiceBuilder<VertexAIChatCompletion, Builder> {
-        public VertexAIChatCompletion build() {
+    public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
+        public GeminiChatCompletion build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                         "VertexAI client must be provided");
@@ -133,7 +133,7 @@ public class VertexAIChatCompletion extends VertexAIService implements ChatCompl
                         "Gemini model id must be provided");
             }
 
-            return new VertexAIChatCompletion(client, modelId);
+            return new GeminiChatCompletion(client, modelId);
         }
     }
 }
