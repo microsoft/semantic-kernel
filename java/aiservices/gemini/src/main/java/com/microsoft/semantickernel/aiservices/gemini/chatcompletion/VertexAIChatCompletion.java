@@ -1,18 +1,16 @@
-package com.microsoft.semantickernel.aiservices.google.chatcompletion;
+package com.microsoft.semantickernel.aiservices.gemini.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.FunctionDeclaration;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.api.Part;
-import com.google.cloud.vertexai.api.Schema;
 import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
-import com.microsoft.semantickernel.aiservices.google.VertexAIService;
+import com.microsoft.semantickernel.aiservices.gemini.implementation.GeminiRole;
+import com.microsoft.semantickernel.aiservices.gemini.VertexAIService;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;

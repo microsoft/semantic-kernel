@@ -1,6 +1,5 @@
-package com.microsoft.semantickernel.aiservices.google;
+package com.microsoft.semantickernel.aiservices.gemini;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
 import com.google.cloud.vertexai.VertexAI;
 import com.microsoft.semantickernel.services.AIService;
 

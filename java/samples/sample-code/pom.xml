@@ -76,6 +76,12 @@
             <version>1.0.2-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel</groupId>
+            <artifactId>gemini</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

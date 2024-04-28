@@ -1,12 +1,9 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.google.cloud.vertexai.VertexAI;
-import com.microsoft.semantickernel.aiservices.google.chatcompletion.VertexAIChatCompletion;
+import com.microsoft.semantickernel.aiservices.gemini.chatcompletion.VertexAIChatCompletion;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-
-import java.util.List;
 
 public class Example96_GeminiChatCompletion {
     private static final String PROJECT_ID = System.getenv("PROJECT_ID");
