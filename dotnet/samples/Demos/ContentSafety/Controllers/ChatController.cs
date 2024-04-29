@@ -6,6 +6,9 @@ using Microsoft.SemanticKernel;
 
 namespace ContentSafety.Controllers;
 
+/// <summary>
+/// Sample chat controller.
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class ChatController(Kernel kernel) : ControllerBase

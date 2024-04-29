@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ContentSafety.Models;
 
+/// <summary>
+/// Request model for chat endpoint.
+/// </summary>
 public class ChatModel
 {
     [Required]

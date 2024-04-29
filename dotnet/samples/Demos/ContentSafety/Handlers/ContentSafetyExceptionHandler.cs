@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ContentSafety.Handlers;
 
+/// <summary>
+/// Exception handler for content safety scenarios.
+/// It allows to return formatted content back to the client with exception details.
+/// </summary>
 public class ContentSafetyExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)

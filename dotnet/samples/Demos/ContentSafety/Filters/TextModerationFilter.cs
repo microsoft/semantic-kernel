@@ -22,11 +22,28 @@ public class TextModerationFilter(
         // Running prompt rendering operation
         await next(context);
 
+        // Getting rendered prompt
         var prompt = context.RenderedPrompt;
 
         // Running Azure AI Content Safety text analysis
         var analysisResult = (await this._contentSafetyClient.AnalyzeTextAsync(new AnalyzeTextOptions(prompt))).Value;
 
+        this.ProcessTextAnalysis(analysisResult);
+    }
+
+    /// <summary>
+    /// Processes text analysis result.
+    /// Content Safety recognizes four distinct categories of objectionable content: Hate, Sexual, Violence, Self-Harm.
+    /// Every harm category the service applies also comes with a severity level rating.
+    /// The severity level is meant to indicate the severity of the consequences of showing the flagged content.
+    /// Full severity scale: 0 to 7.
+    /// Trimmed severity scale: 0, 2, 4, 6.
+    /// More information here:
+    /// https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories#harm-categories
+    /// https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories#severity-levels
+    /// </summary>
+    private void ProcessTextAnalysis(AnalyzeTextResult analysisResult)
+    {
         var highSeverity = false;
 
         foreach (var analysis in analysisResult.CategoriesAnalysis)
@@ -41,7 +58,10 @@ public class TextModerationFilter(
 
         if (highSeverity)
         {
-            throw new TextModerationException("Offensive content detected. Operation is denied.");
+            throw new TextModerationException("Offensive content detected. Operation is denied.")
+            {
+                CategoriesAnalysis = analysisResult.CategoriesAnalysis
+            };
         }
     }
 }

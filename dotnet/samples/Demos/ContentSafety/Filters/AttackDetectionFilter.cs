@@ -19,17 +19,26 @@ public class AttackDetectionFilter(PromptShieldService promptShieldService) : IP
         // Running prompt rendering operation
         await next(context);
 
+        // Getting rendered prompt
         var prompt = context.RenderedPrompt;
 
         // Calling Prompt Shield service for attack detection
-        var attackDetected = await this._promptShieldService.DetectAttackAsync(new PromptShieldRequest
+        var response = await this._promptShieldService.DetectAttackAsync(new PromptShieldRequest
         {
             UserPrompt = prompt!
         });
 
+        var attackDetected =
+            response.UserPromptAnalysis?.AttackDetected is true ||
+            response.DocumentsAnalysis?.Any(l => l.AttackDetected) is true;
+
         if (attackDetected)
         {
-            throw new AttackDetectionException("Attack detected. Operation is denied.");
+            throw new AttackDetectionException("Attack detected. Operation is denied.")
+            {
+                UserPromptAnalysis = response.UserPromptAnalysis,
+                DocumentsAnalysis = response.DocumentsAnalysis
+            };
         }
     }
 }

@@ -8,6 +8,10 @@ using Microsoft.Extensions.Options;
 
 namespace ContentSafety.Services.PromptShield;
 
+/// <summary>
+/// Performs request to Prompt Shield service for attack detection.
+/// More information here: https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak#analyze-attacks
+/// </summary>
 public class PromptShieldService(
     ContentSafetyClient contentSafetyClient,
     IOptions<AzureContentSafetyOptions> azureContentSafetyOptions,
@@ -20,19 +24,15 @@ public class PromptShieldService(
     private Uri PromptShieldEndpoint
         => new($"{this._azureContentSafetyOptions.Endpoint}contentsafety/text:shieldPrompt?api-version={this._apiVersion}");
 
-    public async Task<bool> DetectAttackAsync(PromptShieldRequest request)
+    public async Task<PromptShieldResponse> DetectAttackAsync(PromptShieldRequest request)
     {
         var httpRequest = this.CreateHttpRequest(request);
         var httpResponse = await this._contentSafetyClient.Pipeline.SendRequestAsync(httpRequest, default);
 
         var httpResponseContent = httpResponse.Content.ToString();
 
-        var response = JsonSerializer.Deserialize<PromptShieldResponse>(httpResponseContent) ??
+        return JsonSerializer.Deserialize<PromptShieldResponse>(httpResponseContent) ??
             throw new Exception("Invalid Prompt Shield response");
-
-        return
-            response.UserPromptAnalysis?.AttackDetected is true ||
-            response.DocumentsAnalysis?.Any(l => l.AttackDetected) is true;
     }
 
     #region private
