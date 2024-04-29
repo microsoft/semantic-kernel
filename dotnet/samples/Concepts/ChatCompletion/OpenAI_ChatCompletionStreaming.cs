@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace ChatCompletion;
 
 // The following example shows how to use Semantic Kernel with streaming Chat Completion
 public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)

@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace KernelExamples;
 
 public sealed class ConfigureExecutionSettings(ITestOutputHelper output) : BaseTest(output)
 {

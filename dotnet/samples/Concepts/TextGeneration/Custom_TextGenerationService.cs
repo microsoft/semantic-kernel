@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Examples;
+namespace TextGeneration;
 
 /**
  * The following example shows how to plug a custom text generation service in SK.

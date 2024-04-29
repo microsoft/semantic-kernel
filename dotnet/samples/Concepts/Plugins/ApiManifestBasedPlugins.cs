@@ -7,7 +7,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-namespace Examples;
+
+namespace Plugins;
 
 // This example shows how to use the ApiManifest based plugins
 public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)

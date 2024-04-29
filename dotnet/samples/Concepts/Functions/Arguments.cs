@@ -4,7 +4,8 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace Functions;
+
 // This example shows how to use kernel arguments when invoking functions.
 public class Arguments(ITestOutputHelper output) : BaseTest(output)
 {

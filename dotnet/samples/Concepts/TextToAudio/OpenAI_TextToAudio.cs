@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextToAudio;
 
-namespace Examples;
+namespace TextToAudio;
 
 /// <summary>
 /// Represents a class that demonstrates audio processing functionality.
