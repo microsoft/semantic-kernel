@@ -17,8 +17,23 @@ internal sealed class Appointment
         this.ReservationId = bookingAppointment.Id;
     }
 
+    /// <summary>
+    /// Start date and time of the appointment.
+    /// </summary>
     public DateTime Start { get; set; }
+
+    /// <summary>
+    /// The restaurant name.
+    /// </summary>
     public string? Restaurant { get; set; }
+
+    /// <summary>
+    /// Number of people in the party.
+    /// </summary>
     public int PartySize { get; set; }
+
+    /// <summary>
+    /// The reservation id.
+    /// </summary>
     public string? ReservationId { get; set; }
 }

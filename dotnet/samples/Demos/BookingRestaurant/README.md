@@ -85,14 +85,14 @@ The sample can be configured by using the command line with .NET [Secret Manager
 dotnet user-secrets set "BookingServiceId" " .. your Booking Service Id .. "
 dotnet user-secrets set "BookingBusinessId" " .. your Booking Business Id ..  "
 
-dotnet user-secrets set "AzureAd:TenantId" " ... your tenant id ... "
-dotnet user-secrets set "AzureAd:ClientId" " ... your client id ... "
+dotnet user-secrets set "AzureEntraId:TenantId" " ... your tenant id ... "
+dotnet user-secrets set "AzureEntraId:ClientId" " ... your client id ... "
 
 # App Registration Authentication
-dotnet user-secrets set "AzureAd:ClientSecret" " ... your client secret ... "
+dotnet user-secrets set "AzureEntraId:ClientSecret" " ... your client secret ... "
 # OR User Authentication (Interactive)
-dotnet user-secrets set "AzureAd:InteractiveBrowserAuthentication" "true"
-dotnet user-secrets set "AzureAd:RedirectUri" " ... your redirect uri ... "
+dotnet user-secrets set "AzureEntraId:InteractiveBrowserAuthentication" "true"
+dotnet user-secrets set "AzureEntraId:RedirectUri" " ... your redirect uri ... "
 
 # OpenAI (Not required if using Azure OpenAI)
 dotnet user-secrets set "OpenAI:ModelId" "gpt-3.5-turbo"

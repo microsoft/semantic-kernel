@@ -2,17 +2,38 @@
 
 internal sealed class AppConfig
 {
+    /// <summary>
+    /// The business id of the booking service.
+    /// </summary>
     public string? BookingBusinessId { get; set; }
 
+    /// <summary>
+    /// The service id of the booking service defined for the provided booking business.
+    /// </summary>
     public string? BookingServiceId { get; set; }
 
+    /// <summary>
+    /// The configuration for the OpenAI chat completion.
+    /// </summary>
+    /// <remarks>
+    /// This is ignored if using Azure OpenAI configuration.
+    /// </remarks>
     public OpenAIConfig? OpenAI { get; set; }
 
-    public AzureAdConfig? AzureAd { get; set; }
-
+    /// <summary>
+    /// The configuration for the Azure OpenAI chat completion.
+    /// </summary>
+    /// <remarks>
+    /// This is not required when OpenAI configuration is provided.
+    /// </remarks>
     public AzureOpenAIConfig? AzureOpenAI { get; set; }
 
-    public bool IsAzureOpenAIConfigured => this.AzureOpenAI?.DeploymentName is not null;
+    /// <summary>
+    /// The configuration for the Azure EntraId authentication.
+    /// </summary>
+    public AzureEntraIdConfig? AzureEntraId { get; set; }
+
+    internal bool IsAzureOpenAIConfigured => this.AzureOpenAI?.DeploymentName is not null;
 
     /// <summary>
     /// Ensures that the configuration is valid.
@@ -32,16 +53,16 @@ internal sealed class AppConfig
             ArgumentNullException.ThrowIfNull(this.OpenAI?.ModelId, nameof(this.OpenAI.ModelId));
             ArgumentNullException.ThrowIfNull(this.OpenAI?.ApiKey, nameof(this.OpenAI.ApiKey));
         }
-        ArgumentNullException.ThrowIfNull(this.AzureAd?.ClientId, nameof(this.AzureAd.ClientId));
-        ArgumentNullException.ThrowIfNull(this.AzureAd?.TenantId, nameof(this.AzureAd.TenantId));
+        ArgumentNullException.ThrowIfNull(this.AzureEntraId?.ClientId, nameof(this.AzureEntraId.ClientId));
+        ArgumentNullException.ThrowIfNull(this.AzureEntraId?.TenantId, nameof(this.AzureEntraId.TenantId));
 
-        if (this.AzureAd.InteractiveBrowserAuthentication)
+        if (this.AzureEntraId.InteractiveBrowserAuthentication)
         {
-            ArgumentNullException.ThrowIfNull(this.AzureAd.InteractiveBrowserRedirectUri, nameof(this.AzureAd.InteractiveBrowserRedirectUri));
+            ArgumentNullException.ThrowIfNull(this.AzureEntraId.InteractiveBrowserRedirectUri, nameof(this.AzureEntraId.InteractiveBrowserRedirectUri));
         }
         else
         {
-            ArgumentNullException.ThrowIfNull(this.AzureAd?.ClientSecret, nameof(this.AzureAd.ClientSecret));
+            ArgumentNullException.ThrowIfNull(this.AzureEntraId?.ClientSecret, nameof(this.AzureEntraId.ClientSecret));
         }
     }
 
@@ -52,23 +73,64 @@ internal sealed class AppConfig
         /// Available Chat Completion models can be found at https://platform.openai.com/docs/models.
         /// </summary>
         public string? ModelId { get; set; }
+
+        /// <summary>
+        /// ApiKey to use for the OpenAI chat completion.
+        /// </summary>
         public string? ApiKey { get; set; }
+
+        /// <summary>
+        /// Optional organization ID to use for the OpenAI chat completion.
+        /// </summary>
         public string? OrgId { get; set; }
     }
 
     internal sealed class AzureOpenAIConfig
     {
+        /// <summary>
+        /// Deployment name of the Azure OpenAI resource.
+        /// </summary>
         public string? DeploymentName { get; set; }
+
+        /// <summary>
+        /// Endpoint of the Azure OpenAI resource.
+        /// </summary>
         public string? Endpoint { get; set; }
+
+        /// <summary>
+        /// ApiKey to use for the Azure OpenAI chat completion.
+        /// </summary>
         public string? ApiKey { get; set; }
     }
 
-    internal sealed class AzureAdConfig
+    internal sealed class AzureEntraIdConfig
     {
+        /// <summary>
+        /// App Registration Client Id
+        /// </summary>
         public string? ClientId { get; set; }
+
+        /// <summary>
+        /// App Registration Tenant Id
+        /// </summary>
         public string? TenantId { get; set; }
+
+        /// <summary>
+        /// The client secret to use for the Azure EntraId authentication.
+        /// </summary>
+        /// <remarks>
+        /// This is required if InteractiveBrowserAuthentication is false. (App Authentication)
+        /// </remarks>
         public string? ClientSecret { get; set; }
+
+        /// <summary>
+        /// Specifies whether to use interactive browser authentication (Delegated User Authentication) or App authentication.
+        /// </summary>
         public bool InteractiveBrowserAuthentication { get; set; }
-        public string? InteractiveBrowserRedirectUri { get; set; }
+
+        /// <summary>
+        /// When using interactive browser authentication, the redirect URI to use.
+        /// </summary>
+        public string? InteractiveBrowserRedirectUri { get; set; } = "http://localhost";
     }
 }

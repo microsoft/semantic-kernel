@@ -17,6 +17,9 @@ internal sealed class BookingsPlugin
     private readonly string _customerTimeZone;
     private readonly string _serviceId;
 
+    private const int PostBufferMinutes = 10;
+    private const int PreBufferMinutes = 5;
+
     internal BookingsPlugin(
         GraphServiceClient graphClient,
         string businessId,
@@ -33,12 +36,12 @@ internal sealed class BookingsPlugin
     [KernelFunction("BookTable")]
     [Description("Books a new table at a restaurant")]
     public async Task<string> BookTableAsync(
-        string restaurant,
+        [Description("Name of the restaurant")] string restaurant,
         [Description("The time in UTC")] DateTime dateTime,
-        int partySize,
-        string customerName,
-        string customerEmail,
-        string customerPhone
+        [Description("Number of people in your party")] int partySize,
+        [Description("Customer name")] string customerName,
+        [Description("Customer email")] string customerEmail,
+        [Description("Customer phone number")] string customerPhone
     )
     {
         Console.WriteLine($"System > Do you want to book a table at {restaurant} on {dateTime} for {partySize} people?");
@@ -61,8 +64,8 @@ internal sealed class BookingsPlugin
                 IsLocationOnline = false,
                 OptOutOfCustomerEmail = false,
                 AnonymousJoinWebUrl = null,
-                PostBuffer = TimeSpan.FromMinutes(10),
-                PreBuffer = TimeSpan.FromMinutes(5),
+                PostBuffer = TimeSpan.FromMinutes(PostBufferMinutes),
+                PreBuffer = TimeSpan.FromMinutes(PreBufferMinutes),
                 ServiceId = this._serviceId,
                 ServiceLocation = new Location
                 {
@@ -126,7 +129,12 @@ internal sealed class BookingsPlugin
 
     [KernelFunction]
     [Description("Cancels a reservation at a restaurant.")]
-    public async Task<string> CancelReservationAsync(string appointmentId, string restaurant, string date, string time, int partySize)
+    public async Task<string> CancelReservationAsync(
+        [Description("The appointment ID to cancel")] string appointmentId,
+        [Description("Name of the restaurant")] string restaurant,
+        [Description("The date of the reservation")] string date,
+        [Description("The time of the reservation")] string time,
+        [Description("Number of people in your party")] int partySize)
     {
         // Print the booking details to the console
         Console.ForegroundColor = ConsoleColor.DarkBlue;

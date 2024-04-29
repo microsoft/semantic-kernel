@@ -32,7 +32,7 @@ if (config is null)
 config.Validate();
 
 TokenCredential credential = null!;
-if (config.AzureAd!.InteractiveBrowserAuthentication) // Authentication As User
+if (config.AzureEntraId!.InteractiveBrowserAuthentication) // Authentication As User
 {
     /// Use this if using user delegated permissions
     scopes = ["User.Read", "BookingsAppointment.ReadWrite.All"];
@@ -40,10 +40,10 @@ if (config.AzureAd!.InteractiveBrowserAuthentication) // Authentication As User
     credential = new InteractiveBrowserCredential(
         new InteractiveBrowserCredentialOptions
         {
-            TenantId = config.AzureAd.TenantId,
-            ClientId = config.AzureAd.ClientId,
+            TenantId = config.AzureEntraId.TenantId,
+            ClientId = config.AzureEntraId.ClientId,
             AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
-            RedirectUri = new Uri(config.AzureAd.InteractiveBrowserRedirectUri!)
+            RedirectUri = new Uri(config.AzureEntraId.InteractiveBrowserRedirectUri!)
         });
 }
 else // Authentication As Application
@@ -51,9 +51,9 @@ else // Authentication As Application
     scopes = ["https://graph.microsoft.com/.default"];
 
     credential = new ClientSecretCredential(
-        config.AzureAd.TenantId,
-        config.AzureAd.ClientId,
-        config.AzureAd.ClientSecret);
+        config.AzureEntraId.TenantId,
+        config.AzureEntraId.ClientId,
+        config.AzureEntraId.ClientSecret);
 }
 
 var graphClient = new GraphServiceClient(credential, scopes);
