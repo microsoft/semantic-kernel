@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +52,31 @@ public sealed class KernelFunctionFromMethodTests2
         // Act
         Assert.Equal(methods.Length, functions.Length);
         Assert.All(functions, Assert.NotNull);
+    }
+
+    [Fact]
+    public void ItKeepsDefaultValueNullWhenNotProvided()
+    {
+        // Arrange & Act
+        var pluginInstance = new LocalExamplePlugin();
+        var plugin = KernelPluginFactory.CreateFromObject(pluginInstance);
+
+        // Assert
+        this.AssertDefaultValueIsNull(plugin, "Type04Nullable", "input", true);
+        this.AssertDefaultValueIsNull(plugin, "Type05", "input", true);
+        this.AssertDefaultValueIsNull(plugin, "Type05Nullable", "input", false);
+    }
+
+    internal void AssertDefaultValueIsNull(KernelPlugin plugin, string functionName, string parameterName, bool parameterIsRequired)
+    {
+        var functionExists = plugin.TryGetFunction(functionName, out var function);
+        Assert.True(functionExists);
+        Assert.NotNull(function);
+
+        var parameter = function.Metadata.Parameters.First(p => p.Name == parameterName);
+        Assert.NotNull(parameter);
+        Assert.Null(parameter.DefaultValue);
+        Assert.Equal(parameterIsRequired, parameter.IsRequired);
     }
 
     [Fact]
