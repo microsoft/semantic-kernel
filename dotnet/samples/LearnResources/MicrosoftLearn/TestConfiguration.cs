@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 
