@@ -7,6 +7,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
+namespace Agents;
+
 /// <summary>
 /// Demonstrate usage of <see cref="KernelFunctionTerminationStrategy"/> and <see cref="KernelFunctionSelectionStrategy"/>
 /// to manage <see cref="AgentGroupChat"/> execution.
@@ -106,7 +108,12 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         KernelFunction innerSelectionFunction = KernelFunctionFactory.CreateFromPrompt(InnerSelectionInstructions, jsonSettings);
         KernelFunction outerTerminationFunction = KernelFunctionFactory.CreateFromPrompt(OuterTerminationInstructions, jsonSettings);
 
-        AggregatorAgent agentShopperGroup = new(CreateChat) { Name = "Shopper" };
+        AggregatorAgent agentShopperGroup =
+            new(CreateChat)
+            {
+                Name = "Shopper",
+                Mode = AggregatorMode.Hiearchical,
+            };
 
         AgentGroupChat chat =
             new(agentShopperGroup)
@@ -143,28 +150,23 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             await InvokeChatAsync("He likes photography.");
         }
 
-        await using StreamWriter writer = File.CreateText($"C:/agents/{this.GetType().Name}-Inner.txt");
-
-        writer.WriteLine("\n\n######################################");
-        writer.WriteLine($"# {chat.GetType().Name}");
-        writer.WriteLine("######################################");
+        this.WriteLine("\n\n######################################");
+        this.WriteLine("# AGGREGATED CHAT");
+        this.WriteLine("######################################");
 
         await foreach (var content in chat.GetChatMessagesAsync(agentShopperGroup).Reverse())
         {
-            writer.WriteLine("\n#######");
-            writer.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
         async Task InvokeChatAsync(string input)
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine("\n#######");
             this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agentShopperGroup))
             {
-                this.WriteLine("\n#######");
                 this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
 
@@ -195,8 +197,6 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
 
                                             string? agentName = string.IsNullOrWhiteSpace(jsonResult?.name) ? null : jsonResult?.name;
                                             agentName ??= ShopperName;
-
-                                            this.WriteLine($"\n? NEXT: {agentName} - {jsonResult?.reason ?? "0"}");
 
                                             return agentName;
                                         }
