@@ -1,0 +1,7 @@
+﻿<message role="system">
+This is a system message
+
+</message>
+<message role="user">
+First user message
+</message>

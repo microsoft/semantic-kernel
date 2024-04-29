@@ -120,7 +120,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
+    private KernelArguments GetVariables(Kernel _, KernelArguments? arguments)
     {
         KernelArguments result = [];
 

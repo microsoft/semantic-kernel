@@ -490,3 +490,6 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+
+# dotnet Verify
+**/*.received.txt

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
@@ -38,4 +39,5 @@ public sealed class HandlebarsPromptTemplateFactoryTests
         // Assert
         Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
+
 }
