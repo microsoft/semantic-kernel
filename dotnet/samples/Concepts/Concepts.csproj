@@ -79,18 +79,11 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />
-    <Using Include="Microsoft.Extensions.DependencyInjection" />
-    <Using Include="Microsoft.Extensions.Http" />
-    <Using Include="Microsoft.Extensions.Http.Resilience" />
-    <Using Include="Microsoft.Extensions.Logging" />
-    <Using Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Using Include="Microsoft.Extensions.Logging.Console" />
     <Using Include="System.Collections.Generic"/>
     <Using Include="System.Threading"/>
     <Using Include="System.Threading.Tasks"/>
     <Using Include="System" />
     <Using Include="System.Linq" />
-    <Using Include="System.Text.Json" />
     <Using Include="System.Net.Http" />
     <Using Include="System.IO" />
   </ItemGroup>
