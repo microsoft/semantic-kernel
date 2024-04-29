@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -333,7 +332,6 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return "";
         }
-
 
         [KernelFunction]
         public string? Type05DefaultProvided(string? input = "someDefault")
