@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace ChatCompletion;
 
 // These examples show how to use a custom HttpClient with SK connectors.
 public class Connectors_CustomHttpClient(ITestOutputHelper output) : BaseTest(output)

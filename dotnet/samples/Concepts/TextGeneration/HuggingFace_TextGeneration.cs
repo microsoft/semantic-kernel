@@ -7,12 +7,13 @@ using xRetry;
 #pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 
-namespace Examples;
+namespace TextGeneration;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
 public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(helper)
 {
     private const string DefaultModel = "HuggingFaceH4/zephyr-7b-beta";
+
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>

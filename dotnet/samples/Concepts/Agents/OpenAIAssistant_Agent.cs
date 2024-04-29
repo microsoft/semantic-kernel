@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
 
-namespace Examples;
+namespace Agents;
 /// <summary>
 /// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
 /// eliciting its response to three explicit user messages.

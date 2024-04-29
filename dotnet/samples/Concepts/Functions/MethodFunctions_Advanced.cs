@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace Functions;
 
 // This example shows different ways how to define and execute method functions using custom and primitive types.
 public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(output)

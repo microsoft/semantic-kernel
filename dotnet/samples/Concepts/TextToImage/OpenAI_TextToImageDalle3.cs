@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextToImage;
 
-namespace Examples;
+namespace TextToImage;
 
 // The following example shows how to use Semantic Kernel with OpenAI DALL-E 2 to create images
 public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(output)

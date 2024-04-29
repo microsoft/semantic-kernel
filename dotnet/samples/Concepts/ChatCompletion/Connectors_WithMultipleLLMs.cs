@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using xRetry;
 
-namespace Examples;
+namespace ChatCompletion;
 
 public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(output)
 {

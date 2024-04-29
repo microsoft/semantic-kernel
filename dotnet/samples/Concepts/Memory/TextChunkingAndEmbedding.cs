@@ -4,7 +4,7 @@ using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Text;
 
-namespace Examples;
+namespace Memory;
 
 public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(output)
 {

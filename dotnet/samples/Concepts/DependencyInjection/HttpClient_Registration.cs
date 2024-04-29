@@ -3,7 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace DependencyInjection;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
 public class HttpClient_Registration(ITestOutputHelper output) : BaseTest(output)

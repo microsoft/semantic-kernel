@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace ChatCompletion;
 
 // This example shows how to use GPT Vision model with different content types (text and image).
 public class OpenAI_ChatCompletionWithVision(ITestOutputHelper output) : BaseTest(output)

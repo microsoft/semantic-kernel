@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
+namespace DependencyInjection;
 
 public class Kernel_Building(ITestOutputHelper output) : BaseTest(output)
 {

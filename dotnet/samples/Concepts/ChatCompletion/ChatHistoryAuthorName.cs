@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace ChatCompletion;
 
 // The following example shows how to use Chat History with Author identity associated with each chat message.
 public class ChatHistoryAuthorName(ITestOutputHelper output) : BaseTest(output)
