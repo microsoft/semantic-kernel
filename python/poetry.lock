@@ -1282,13 +1282,13 @@ tqdm = ["tqdm"]
 
 [[package]]
 name = "google-ai-generativelanguage"
-version = "0.6.1"
+version = "0.6.2"
 description = "Google Ai Generativelanguage API client library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google-ai-generativelanguage-0.6.1.tar.gz", hash = "sha256:4abf37000718b20c43f4b90672b3ab8850738b02457efffd11f3184e03272ed2"},
-    {file = "google_ai_generativelanguage-0.6.1-py3-none-any.whl", hash = "sha256:d2afc991c47663bdf65bd4aabcd89723550b81ad0a6d0be8bfb0160755da4cf0"},
+    {file = "google-ai-generativelanguage-0.6.2.tar.gz", hash = "sha256:308791ac3b9dad015b359172970739aa3753dd542142a416d07f9fa047e22386"},
+    {file = "google_ai_generativelanguage-0.6.2-py3-none-any.whl", hash = "sha256:bf84c34c641570d7e8a1f2e6901e6771af1438f2ee8307d1801fd43585f9b1c6"},
 ]
 
 [package.dependencies]
@@ -1385,16 +1385,16 @@ httplib2 = ">=0.19.0"
 
 [[package]]
 name = "google-generativeai"
-version = "0.5.0"
+version = "0.5.2"
 description = "Google Generative AI High level API client library and tools."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "google_generativeai-0.5.0-py3-none-any.whl", hash = "sha256:207ed12c6a2eeab549a45abbf5373c82077f62b16030bdb502556c78f6d1b5d2"},
+    {file = "google_generativeai-0.5.2-py3-none-any.whl", hash = "sha256:56f39485a0a673c93c21ec31c17809cc6a964193fb77b7ce809ad15d0dd72d7b"},
 ]
 
 [package.dependencies]
-google-ai-generativelanguage = "0.6.1"
+google-ai-generativelanguage = "0.6.2"
 google-api-core = "*"
 google-api-python-client = "*"
 google-auth = ">=2.15.0"
@@ -6163,4 +6163,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f19880fb09d723f082ba46f920ad39ff289cf152975314b154d711b580dbab8e"
+content-hash = "550a987ce4cf26f9ba9941cec6fa1aab4ff64249fc0611bb4b49ae8f4443db2e"
