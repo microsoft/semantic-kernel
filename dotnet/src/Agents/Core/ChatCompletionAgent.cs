@@ -34,7 +34,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         }
         chat.AddRange(history);
 
-
         int messageCount = chat.Count;
 
         IReadOnlyList<ChatMessageContent> messages =
@@ -43,7 +42,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.ExecutionSettings,
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
-
 
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
         {
