@@ -59,7 +59,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings searchSettings, CancellationToken cancellationToken = default) where T : class
+    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings, CancellationToken cancellationToken = default) where T : class
     {
         Verify.NotNullOrWhiteSpace(query);
         Verify.NotNull(searchSettings);
@@ -74,7 +74,9 @@ public sealed class AzureAITextSearchService : ITextSearchService
         {
             if (typeof(T) == typeof(string))
             {
-                var searchDocuments = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+                var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+                SearchResults<SearchDocument>? searchResults = response.Value;
+                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.SnippetField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
             else
             {
@@ -112,6 +114,24 @@ public sealed class AzureAITextSearchService : ITextSearchService
         await foreach (SearchResult<T> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
         {
             yield return searchResult.Document;
+        }
+    }
+
+    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<SearchDocument>? searchResults, string? snippetField, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    {
+        Verify.NotNull(snippetField);
+
+        if (searchResults is null)
+        {
+            yield break;
+        }
+
+        await foreach (SearchResult<SearchDocument> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
+        {
+            if (searchResult.Document.GetString(snippetField!) is T snippetValue)
+            {
+                yield return snippetValue;
+            }
         }
     }
 

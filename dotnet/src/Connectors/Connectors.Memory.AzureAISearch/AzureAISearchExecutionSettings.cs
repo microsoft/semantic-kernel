@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.Search;
@@ -14,6 +15,12 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 public class AzureAISearchExecutionSettings : SearchExecutionSettings
 {
+    /// <summary>
+    /// Name of the field that contains the snippet of text to return.
+    /// </summary>
+    [JsonPropertyName("snippet_field")]
+    public string? SnippetField { get; set; }
+
     /// <summary>
     /// Parameters for filtering, sorting, faceting, paging, and other search query behaviors.
     /// </summary>

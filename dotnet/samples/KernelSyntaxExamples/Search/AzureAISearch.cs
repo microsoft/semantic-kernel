@@ -2,6 +2,7 @@
 
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Azure.Search.Documents.Models;
 using Examples;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Search;
@@ -13,7 +14,7 @@ namespace Search;
 /// <summary>
 /// This example shows how to create and use a <see cref="AzureAITextSearchService"/>.
 /// </summary>
-public sealed class AzureAISearch : BaseTest
+public sealed class AzureAISearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="AzureAITextSearchService"/> and use it to perform a text search.
@@ -34,25 +35,31 @@ public sealed class AzureAISearch : BaseTest
         await foreach (CustomSearchResult result in searchResults.Results)
         {
             WriteLine($"Title: {result.Title}");
-            //WriteLine($"Score: {result.Metadata?["Score"]}");
+            WriteLine($"Chunk Id: {result.ChunkId}");
             WriteLine("------------------------------------------------------------------------------------------------------------------");
             WriteLine(result.Chunk);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search for just the summaries
-        /*
-        KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, new() { Index = IndexName, Count = 2, Offset = 2 });
-        await foreach (KernelSearchResult<string> result in summaryResults.Results)
+        AzureAISearchExecutionSettings settings = new() { Index = IndexName, Count = 2, Offset = 2, SnippetField = "chunk" };
+        KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, settings);
+        await foreach (string result in summaryResults.Results)
         {
-            WriteLine(result.Value);
+            WriteLine(result);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
-        */
-    }
 
-    public AzureAISearch(ITestOutputHelper output) : base(output)
-    {
+        // Search with a the default result type
+        KernelSearchResults<SearchDocument> fullResults = await searchService.SearchAsync<SearchDocument>(query, new() { Index = IndexName, Count = 2, Offset = 4 });
+        await foreach (SearchDocument result in fullResults.Results)
+        {
+            WriteLine($"Title: {result.GetString("title")}");
+            WriteLine($"Chunk Id: {result.GetString("chunk_id")}");
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            WriteLine(result.GetString("chunk"));
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
     }
 
     /// <summary>

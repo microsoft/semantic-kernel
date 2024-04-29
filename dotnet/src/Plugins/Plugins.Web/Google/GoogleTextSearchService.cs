@@ -24,12 +24,12 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleTextSearchService"/> class.
     /// </summary>
-    /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
     /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
+    /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public GoogleTextSearchService(
-        string apiKey,
         string searchEngineId,
+        string apiKey,
         ILoggerFactory? loggerFactory = null) : this(new BaseClientService.Initializer { ApiKey = apiKey }, searchEngineId, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(apiKey);

@@ -13,7 +13,7 @@ namespace Search;
 /// <summary>
 /// This example shows how to create and use a <see cref="ITextSearchService"/>.
 /// </summary>
-public sealed class BingSearch : BaseTest
+public sealed class BingSearch(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="BingTextSearchService"/> and use it to perform a text search.
@@ -59,10 +59,6 @@ public sealed class BingSearch : BaseTest
             WriteLine(result.DateLastCrawled);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
-    }
-
-    public BingSearch(ITestOutputHelper output) : base(output)
-    {
     }
 
     /// <summary>
