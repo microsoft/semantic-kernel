@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace LocalModels;
 
 /// <summary>
 /// This example shows a way of using OpenAI connector with other APIs that supports the same ChatCompletion Message API standard from OpenAI.

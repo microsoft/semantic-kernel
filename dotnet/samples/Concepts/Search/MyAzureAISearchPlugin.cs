@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
-namespace Examples;
+namespace Search;
 
 public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
 {
@@ -161,7 +161,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     private sealed class MyAzureAISearchPlugin(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        Examples.AzureAISearchPlugin.IAzureAISearchService searchService)
+        AzureAISearchPlugin.IAzureAISearchService searchService)
     {
         private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService = textEmbeddingGenerationService;
         private readonly IAzureAISearchService _searchService = searchService;

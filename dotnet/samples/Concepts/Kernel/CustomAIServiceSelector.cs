@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Services;
 
-namespace Examples;
+namespace KernelExamples;
 
 public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output)
 {

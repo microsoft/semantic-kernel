@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
 
-namespace Examples;
+namespace Plugins;
 
 // This example shows how to use gRPC plugins.
 public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)

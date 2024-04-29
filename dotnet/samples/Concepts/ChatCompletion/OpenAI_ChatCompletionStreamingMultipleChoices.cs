@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace ChatCompletion;
 
 // The following example shows how to use Semantic Kernel with multiple streaming chat completion results.
 public class OpenAI_ChatCompletionStreamingMultipleChoices(ITestOutputHelper output) : BaseTest(output)

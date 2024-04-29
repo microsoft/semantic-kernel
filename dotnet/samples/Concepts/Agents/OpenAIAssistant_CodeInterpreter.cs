@@ -4,7 +4,8 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace Agents;
+
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>

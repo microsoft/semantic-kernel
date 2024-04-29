@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
-namespace Examples;
+namespace RAG;
 
 public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 {

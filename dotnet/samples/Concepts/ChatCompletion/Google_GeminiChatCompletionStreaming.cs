@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace ChatCompletion;
 
 public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper output) : BaseTest(output)
 {

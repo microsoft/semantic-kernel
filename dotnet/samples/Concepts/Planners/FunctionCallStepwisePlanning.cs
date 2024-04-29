@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
+namespace Planners;
 
 public class FunctionCallStepwisePlanning(ITestOutputHelper output) : BaseTest(output)
 {

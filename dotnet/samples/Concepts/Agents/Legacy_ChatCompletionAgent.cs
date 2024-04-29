@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-namespace Examples;
+namespace Agents;
 
 public class Legacy_ChatCompletionAgent(ITestOutputHelper output) : BaseTest(output)
 {

@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace Functions;
 
 public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output)
 {
