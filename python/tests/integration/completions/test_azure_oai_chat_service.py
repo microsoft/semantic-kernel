@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 )
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -192,7 +193,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -221,7 +222,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     )
     arguments = KernelArguments(input="what is 101+102?", settings=execution_settings)
 
-    result = None
+    result: StreamingChatMessageContent | None = None
     async for message in kernel.invoke_stream(function_name="chat", plugin_name="chat", arguments=arguments):
         result = message[0] if not result else result + message[0]
     output = str(result)
