@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-using Xunit.Abstractions;
 
 namespace Examples;
 

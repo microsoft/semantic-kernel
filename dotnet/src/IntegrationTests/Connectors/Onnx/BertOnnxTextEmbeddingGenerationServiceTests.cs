@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System;
-using Xunit;
-using System.Numerics.Tensors;
-using Microsoft.SemanticKernel.Connectors.Onnx;
-using System.Text;
 using System.Net.Http;
+using System.Numerics.Tensors;
 using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Onnx;
+using Microsoft.SemanticKernel.Embeddings;
+using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 
