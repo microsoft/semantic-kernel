@@ -12,6 +12,7 @@ namespace Examples;
 // The following example shows how to use Semantic Kernel with HuggingFace API.
 public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(helper)
 {
+    private const string DefaultModel = "HuggingFaceH4/zephyr-7b-beta";
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>
@@ -23,7 +24,7 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
-                model: TestConfiguration.HuggingFace.ModelId,
+                model: TestConfiguration.HuggingFace.ModelId ?? DefaultModel,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
@@ -34,16 +35,22 @@ public class HuggingFace_TextGeneration(ITestOutputHelper helper) : BaseTest(hel
         WriteLine(result.GetValue<string>());
     }
 
+    /// <summary>
+    /// Some Hugging Face models support streaming responses, configure using the HuggingFace ModelId setting.
+    /// </summary>
+    /// <remarks>
+    /// Tested with HuggingFaceH4/zephyr-7b-beta model.
+    /// </remarks>
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunStreamingExampleAsync()
     {
-        WriteLine("\n======== HuggingFace zephyr-7b-beta streaming example ========\n");
+        string model = TestConfiguration.HuggingFace.ModelId ?? DefaultModel;
 
-        const string Model = "HuggingFaceH4/zephyr-7b-beta";
+        WriteLine($"\n======== HuggingFace {model} streaming example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextGeneration(
-                model: Model,
+                model: model,
                 apiKey: TestConfiguration.HuggingFace.ApiKey)
             .Build();
 
