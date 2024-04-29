@@ -3,11 +3,11 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "java-development" ]
+    branches: ["main", "java-development"]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "main", "java-development" ]
+    branches: ["main", "java-development"]
     paths:
       - 'java/**'
 
@@ -16,12 +16,15 @@ permissions:
 
 jobs:
   paths-filter:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 1
     outputs:
       javaChanges: ${{ steps.filter.outputs.java }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - name: Checkout repository
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - name: Check if java files changed
+        uses: dorny/paths-filter@affb29871ab1f927ecad0ee68c0989584101408f # v2.0.0
         id: filter
         with:
           filters: |
@@ -37,48 +40,43 @@ jobs:
         if: steps.filter.outputs.java != 'true'
         run: echo "NOT java file"
   java-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: paths-filter
     if: needs.paths-filter.outputs.javaChanges == 'true'
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
-        java-versions: [8, 17]
+        include:
+          - java-version: 8
+            jdk-version: 11
+          - java-version: 17
+            jdk-version: 17
 
-    name: Java CI on JDK${{ matrix.java-versions }}
+    name: Java CI on JDK${{ matrix.java-version }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      # Need to use JDK 11 to build for JDK 8
-      - name: Set JDK
-        id: set-jdk
-        shell: bash
-        run: |
-          if [[ ${{ matrix.java-versions }} == 8 ]]; then
-            echo "JDK_VERSION=11" >> $GITHUB_OUTPUT
-          else
-            version=${{ matrix.java-versions }}
-            echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: actions/setup-java@v4
+      - name: Setup java ${{matrix.jdk-version}}
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
         with:
-          java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
+          java-version: ${{ matrix.jdk-version }}
           distribution: microsoft
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
+        run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-version }} clean install --file pom.xml
         working-directory: java
 
       - name: Run tests
-        run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
+        run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-version }} test --file pom.xml
         working-directory: java
 
-      - uses: actions/upload-artifact@v2
-        if: always()
+      - name: Upload test results
+        uses: actions/upload-artifact@da838ae9595ac94171fa2d4de5a2f117b3e7ac32
+        if: always() && github.repository == 'microsoft/semantic-kernel'
         with:
-          name: test_output_sk_jdk${{ matrix.java-versions }}u
+          name: test_output_sk_jdk${{ matrix.java-version }}u
           path: java/**/target/surefire-reports/*Test.txt
