@@ -23,6 +23,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.17.1" />
     <PackageVersion Include="FastBertTokenizer" Version="0.4.67" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
@@ -59,6 +60,7 @@
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
     <PackageVersion Include="xunit" Version="2.7.0" />
+    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
