@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace AutoFunctionCalling;
 
 // This example shows how to use OpenAI's tool calling capability via the chat completions interface.
 public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)

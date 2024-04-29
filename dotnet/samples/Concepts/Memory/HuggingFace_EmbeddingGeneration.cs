@@ -7,7 +7,7 @@ using xRetry;
 #pragma warning disable format // Format item can be simplified
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 
-namespace Examples;
+namespace Memory;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
 public class HuggingFace_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)

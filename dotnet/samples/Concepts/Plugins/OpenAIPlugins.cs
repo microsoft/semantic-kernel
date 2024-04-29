@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
+namespace Plugins;
 
 public class OpenAIPlugins(ITestOutputHelper output) : BaseTest(output)
 {

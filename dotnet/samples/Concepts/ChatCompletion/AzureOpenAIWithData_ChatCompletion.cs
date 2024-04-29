@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using xRetry;
 
-namespace Examples;
+namespace ChatCompletion;
 
 /// <summary>
 /// This example demonstrates how to use Azure OpenAI Chat Completion with data.

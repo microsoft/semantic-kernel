@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace Filtering;
 
 #pragma warning disable CS0618 // Events are deprecated
 

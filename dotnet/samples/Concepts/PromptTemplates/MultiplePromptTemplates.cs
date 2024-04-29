@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using xRetry;
 
-namespace Examples;
+namespace PromptTemplates;
 
 // This example shows how to use multiple prompt template formats.
 public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output)

@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Resources;
 
-namespace Examples;
+namespace Plugins;
 
 public class CreatePluginFromOpenAI_AzureKeyVault(ITestOutputHelper output) : BaseTest(output)
 {

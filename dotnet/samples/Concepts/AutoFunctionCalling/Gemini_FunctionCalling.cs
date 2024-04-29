@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using xRetry;
 
-namespace Examples;
+namespace AutoFunctionCalling;
 
 public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {

@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace PromptTemplates;
 
 // This example shows how to use chat completion standardized prompts.
 public class ChatCompletionPrompts(ITestOutputHelper output) : BaseTest(output)

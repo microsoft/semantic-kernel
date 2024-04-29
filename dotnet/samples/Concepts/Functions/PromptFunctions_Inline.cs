@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace Functions;
 
 public class PromptFunctions_Inline(ITestOutputHelper output) : BaseTest(output)
 {

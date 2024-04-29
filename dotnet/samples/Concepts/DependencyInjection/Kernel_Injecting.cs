@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace DependencyInjection;
 
 // The following examples show how to use SK SDK in applications using DI/IoC containers.
 public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)

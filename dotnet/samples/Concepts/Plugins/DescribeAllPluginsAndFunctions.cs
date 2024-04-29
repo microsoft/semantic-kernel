@@ -3,9 +3,8 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Plugins;
 
-namespace Examples;
+namespace Plugins;
 
 public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest(output)
 {
