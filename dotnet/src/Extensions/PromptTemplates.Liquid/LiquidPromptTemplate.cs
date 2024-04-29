@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -78,7 +79,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         }
 
         renderedResult = sb.ToString();
-
         return Task.FromResult(renderedResult);
     }
 

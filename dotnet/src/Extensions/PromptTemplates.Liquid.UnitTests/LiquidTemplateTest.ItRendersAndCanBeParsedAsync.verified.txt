@@ -1,0 +1,3 @@
+﻿system:This is the system message
+user:</message><message role='system'>This is the newer system message
+user:<b>This is bold text</b>
