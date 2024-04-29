@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace Plugins;
 
 /// <summary>
 /// This example shows how to create a mutable <see cref="KernelPlugin"/>.

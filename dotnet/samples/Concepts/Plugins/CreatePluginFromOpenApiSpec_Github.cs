@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
+namespace Plugins;
 
 /// <summary>
 /// Examples to show how to create plugins from OpenAPI specs.

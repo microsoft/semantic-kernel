@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Examples;
+namespace Memory;
 
 /// <summary>
 /// Represents an example class for Gemini Embedding Generation with volatile memory store.

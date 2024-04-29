@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
-namespace Examples;
+namespace TextGeneration;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming text generation.

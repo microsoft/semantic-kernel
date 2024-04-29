@@ -8,7 +8,7 @@ using Plugins.DictionaryPlugin;
 using Resources;
 using xRetry;
 
-namespace Examples;
+namespace Planners;
 
 // This example shows how to use the Handlebars sequential planner.
 public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)

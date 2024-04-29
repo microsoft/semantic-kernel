@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
+namespace Functions;
 
 public class MethodFunctions(ITestOutputHelper output) : BaseTest(output)
 {

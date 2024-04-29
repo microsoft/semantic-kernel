@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 
-namespace Examples;
+namespace Memory;
 
 public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
 {

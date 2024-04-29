@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.ImageToText;
 using Resources;
 
-namespace Examples;
+namespace ImageToText;
 
 /// <summary>
 /// Represents a class that demonstrates image-to-text functionality.
