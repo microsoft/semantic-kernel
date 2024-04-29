@@ -1,15 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using RepoUtils;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GettingStarted;
 
