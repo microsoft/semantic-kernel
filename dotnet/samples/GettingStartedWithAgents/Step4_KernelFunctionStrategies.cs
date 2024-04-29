@@ -64,7 +64,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
                 $$$"""
-                Your job is to determine which participant takes the next turn in a converation according to the action of the most recent participant.
+                Your job is to determine which participant takes the next turn in a conversation according to the action of the most recent participant.
                 State only the name of the participant to take the next turn.
                 
                 Choose only from these participants:
