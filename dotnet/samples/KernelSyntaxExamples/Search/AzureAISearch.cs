@@ -31,12 +31,12 @@ public sealed class AzureAISearch : BaseTest
 
         // Search with a custom search result type
         KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Index = IndexName, Count = 2, Offset = 2 });
-        await foreach (KernelSearchResult<CustomSearchResult> result in searchResults.Results)
+        await foreach (CustomSearchResult result in searchResults.Results)
         {
-            WriteLine($"Title: {result.Value.Title}");
-            WriteLine($"Score: {result.Metadata?["Score"]}");
+            WriteLine($"Title: {result.Title}");
+            //WriteLine($"Score: {result.Metadata?["Score"]}");
             WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Value.Chunk);
+            WriteLine(result.Chunk);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 

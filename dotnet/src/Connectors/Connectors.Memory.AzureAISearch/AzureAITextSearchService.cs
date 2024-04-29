@@ -87,7 +87,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
             // index not found, no data to return
         }
 
-        return new KernelSearchResults<T>(null, AsyncEnumerable.Empty<KernelSearchResult<T>>(), 0, null);
+        return new KernelSearchResults<T>(null, AsyncEnumerable.Empty<T>(), 0, null);
     }
 
     #region private
@@ -102,7 +102,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResults">Response containing the documents matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<KernelSearchResult<T>> GetResultsAsync<T>(SearchResults<T>? searchResults, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<T>? searchResults, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
     {
         if (searchResults == null)
         {
@@ -111,7 +111,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
 
         await foreach (SearchResult<T> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
         {
-            yield return new AzureAIKernelSearchResult<T>(searchResult);
+            yield return searchResult.Document;
         }
     }
 

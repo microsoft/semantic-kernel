@@ -134,7 +134,7 @@ public sealed class BingTextSearchService : ITextSearchService
     /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<KernelSearchResult<T>> GetResultsAsync<T>(BingSearchResponse<T>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    private async IAsyncEnumerable<T> GetResultsAsync<T>(BingSearchResponse<T>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
     {
         if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
         {
@@ -143,7 +143,7 @@ public sealed class BingTextSearchService : ITextSearchService
 
         foreach (var webPage in searchResponse.WebPages.Value)
         {
-            yield return new BingKernelSearchResult<T>(searchResponse.WebPages, webPage);
+            yield return webPage;
             await Task.Yield();
         }
     }

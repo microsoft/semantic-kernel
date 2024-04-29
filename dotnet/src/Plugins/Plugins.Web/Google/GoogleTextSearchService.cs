@@ -117,7 +117,7 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
     /// </summary>
     /// <param name="searchResponse">Google search response</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<KernelSearchResult<T>> GetResultsAsync<T>(global::Google.Apis.CustomSearchAPI.v1.Data.Search searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<T> GetResultsAsync<T>(global::Google.Apis.CustomSearchAPI.v1.Data.Search searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.Items is null)
         {
@@ -128,7 +128,7 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
         {
             if (item is T itemT)
             {
-                yield return new GoogleKernelSearchResult<T>(itemT, searchResponse);
+                yield return itemT;
             }
             else
             {

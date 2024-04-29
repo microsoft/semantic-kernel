@@ -33,7 +33,7 @@ public class KernelSearchResults<T>
     /// <summary>
     /// The search results.
     /// </summary>
-    public IAsyncEnumerable<KernelSearchResult<T>> Results { get; }
+    public IAsyncEnumerable<T> Results { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelSearchResults{T}"/> class.
@@ -42,7 +42,7 @@ public class KernelSearchResults<T>
     /// <param name="results">The search results</param>
     /// <param name="totalCount">The total count of results found by the search operation, or null if the count was not requested</param>
     /// <param name="metadata">Metadata associated with the search results</param>
-    public KernelSearchResults(object? innerContent, IAsyncEnumerable<KernelSearchResult<T>> results, long? totalCount = null, IReadOnlyDictionary<string, object?>? metadata = null)
+    public KernelSearchResults(object? innerContent, IAsyncEnumerable<T> results, long? totalCount = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         this.InnerContent = innerContent;
         this.Results = results;

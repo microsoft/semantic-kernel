@@ -30,33 +30,33 @@ public sealed class BingSearch : BaseTest
 
         // Search with a custom search result type
         KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Count = 2 });
-        await foreach (KernelSearchResult<CustomSearchResult> result in searchResults.Results)
+        await foreach (CustomSearchResult result in searchResults.Results)
         {
-            WriteLine($"Title: {result.Value.Name}");
+            WriteLine($"Title: {result.Name}");
             WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Value.Snippet);
-            WriteLine(result.Value.Url);
+            WriteLine(result.Snippet);
+            WriteLine(result.Url);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search for just the summaries
         KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, new() { Count = 2, Offset = 2 });
-        await foreach (KernelSearchResult<string> result in summaryResults.Results)
+        await foreach (string result in summaryResults.Results)
         {
-            WriteLine(result.Value);
+            WriteLine(result);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search with a the default result type
         KernelSearchResults<BingWebPage> fullResults = await searchService.SearchAsync<BingWebPage>(query, new() { Count = 2, Offset = 4 });
-        await foreach (KernelSearchResult<BingWebPage> result in fullResults.Results)
+        await foreach (BingWebPage result in fullResults.Results)
         {
-            WriteLine($"Name: {result.Value.Name}");
+            WriteLine($"Name: {result.Name}");
             WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Value.Snippet);
-            WriteLine(result.Value.Url);
-            WriteLine(result.Value.DisplayUrl);
-            WriteLine(result.Value.DateLastCrawled);
+            WriteLine(result.Snippet);
+            WriteLine(result.Url);
+            WriteLine(result.DisplayUrl);
+            WriteLine(result.DateLastCrawled);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
     }
