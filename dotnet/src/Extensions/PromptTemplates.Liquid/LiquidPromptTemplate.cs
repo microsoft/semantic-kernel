@@ -6,22 +6,27 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Scriban;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
+    private const char ReservedChar = 'Ġ';
+    private const char ColonChar = ':';
     private readonly PromptTemplateConfig _config;
+    private readonly bool _allowUnsafeContent;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):[\s]+");
 
-    public LiquidPromptTemplate(PromptTemplateConfig config)
+    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
     {
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
         {
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
         }
 
+        this._allowUnsafeContent = allowUnsafeContent;
         this._config = config;
     }
 
@@ -30,9 +35,10 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         Verify.NotNull(kernel);
 
         var template = this._config.Template;
+        template = this.PreProcessTemplate(template);
         var liquidTemplate = Template.ParseLiquid(template);
-        var nonEmptyArguments = arguments?.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
-        var renderedResult = liquidTemplate.Render(nonEmptyArguments);
+        arguments = this.GetVariables(kernel, arguments);
+        var renderedResult = liquidTemplate.Render(arguments.ToDictionary(x => x.Key, x => x.Value));
 
         // parse chat history
         // for every text like below
@@ -65,6 +71,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         {
             var role = splits[i];
             var content = splits[i + 1];
+            content = this.DecodeReservedCharIfNeeded(content);
             sb.Append("<message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
             sb.AppendLine("</message>");
@@ -73,5 +80,98 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         renderedResult = sb.ToString();
 
         return Task.FromResult(renderedResult);
+    }
+
+    /// <summary>
+    /// pre-process the template before rendering.
+    /// If the template contains any reserved characters and <see cref="_allowUnsafeContent"/> is false,
+    /// throw an exception.
+    ///
+    /// Otherwise, no pre-processing is needed.
+    /// </summary>
+    /// <param name="template"></param>
+    /// <returns></returns>
+    private string PreProcessTemplate(string template)
+    {
+        if (this._allowUnsafeContent)
+        {
+            return template;
+        }
+
+        if (template.Contains(ReservedChar))
+        {
+            var errorMessage = $"Template contains reserved character: {ReservedChar}, either remove the character or set {nameof(this._allowUnsafeContent)} to true.";
+            throw new ArgumentException(errorMessage);
+        }
+
+        return template;
+    }
+
+    private string DecodeReservedCharIfNeeded(string text)
+    {
+        if (this._allowUnsafeContent)
+        {
+            return text;
+        }
+
+        return text.Replace(ReservedChar, ColonChar);
+    }
+
+    /// <summary>
+    /// Gets the variables for the prompt template, including setting any default values from the prompt config.
+    /// </summary>
+    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
+    {
+        KernelArguments result = [];
+
+        foreach (var p in this._config.InputVariables)
+        {
+            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            {
+                continue;
+            }
+
+            result[p.Name] = p.Default;
+        }
+
+        if (arguments is not null)
+        {
+            foreach (var kvp in arguments)
+            {
+                if (kvp.Value is not null)
+                {
+                    var value = (object)kvp.Value;
+
+                    if (this.ShouldEncodeTags(this._config, kvp.Key, kvp.Value))
+                    {
+                        var valueString = value.ToString();
+                        valueString = valueString.Replace(ColonChar, ReservedChar);
+                        value = HttpUtility.HtmlEncode(valueString);
+                    }
+
+                    result[kvp.Key] = value;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        {
+            return false;
+        }
+
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Name == propertyName)
+            {
+                return !inputVariable.AllowUnsafeContent;
+            }
+        }
+
+        return true;
     }
 }
