@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using Azure.AI.ContentSafety;
 
 namespace ContentSafety.Exceptions;
@@ -14,7 +15,15 @@ public class TextModerationException : Exception
     /// Analysis result for categories.
     /// More information here: https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories
     /// </summary>
-    public IReadOnlyList<TextCategoriesAnalysis> CategoriesAnalysis { get; init; }
+    public Dictionary<TextCategory, int> CategoriesAnalysis { get; init; }
+
+    /// <summary>
+    /// Dictionary with additional details of exception.
+    /// </summary>
+    public override IDictionary Data => new Dictionary<string, object?>()
+    {
+        ["categoriesAnalysis"] = this.CategoriesAnalysis.ToDictionary(k => k.Key.ToString(), v => v.Value),
+    };
 
     public TextModerationException()
     {

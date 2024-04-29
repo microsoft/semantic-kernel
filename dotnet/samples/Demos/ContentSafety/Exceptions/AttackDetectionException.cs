@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
 using ContentSafety.Services.PromptShield;
 
 namespace ContentSafety.Exceptions;
@@ -19,6 +20,15 @@ public class AttackDetectionException : Exception
     /// Contains a list of analysis results for each document provided.
     /// </summary>
     public IReadOnlyList<PromptShieldAnalysis>? DocumentsAnalysis { get; init; }
+
+    /// <summary>
+    /// Dictionary with additional details of exception.
+    /// </summary>
+    public override IDictionary Data => new Dictionary<string, object?>()
+    {
+        ["userPrompt"] = this.UserPromptAnalysis,
+        ["documents"] = this.DocumentsAnalysis,
+    };
 
     public AttackDetectionException()
     {

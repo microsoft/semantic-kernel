@@ -17,5 +17,9 @@ public class ChatController(Kernel kernel) : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> PostAsync(ChatModel chat)
-        => this.Ok((await this._kernel.InvokePromptAsync(chat.Message)).ToString());
+    {
+        this._kernel.Data["documents"] = chat.Documents;
+
+        return this.Ok((await this._kernel.InvokePromptAsync(chat.Message)).ToString());
+    }
 }

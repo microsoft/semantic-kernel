@@ -20,5 +20,5 @@ public class PromptShieldRequest
     /// Represents a list or collection of textual documents, articles, or other string-based content.
     /// </summary>
     [JsonPropertyName("documents")]
-    public List<string> Documents { get; set; } = [];
+    public List<string>? Documents { get; set; } = [];
 }

@@ -11,4 +11,6 @@ public class ChatModel
 {
     [Required]
     public string Message { get; set; }
+
+    public List<string>? Documents { get; set; }
 }

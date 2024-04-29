@@ -23,7 +23,8 @@ public class ContentSafetyExceptionHandler : IExceptionHandler
         {
             Status = StatusCodes.Status400BadRequest,
             Title = "Bad Request",
-            Detail = exception.Message
+            Detail = exception.Message,
+            Extensions = (IDictionary<string, object?>)exception.Data
         };
 
         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;

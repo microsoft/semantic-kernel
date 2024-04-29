@@ -45,6 +45,7 @@ public class TextModerationFilter(
     private void ProcessTextAnalysis(AnalyzeTextResult analysisResult)
     {
         var highSeverity = false;
+        var analysisDetails = new Dictionary<TextCategory, int>();
 
         foreach (var analysis in analysisResult.CategoriesAnalysis)
         {
@@ -54,13 +55,15 @@ public class TextModerationFilter(
             {
                 highSeverity = true;
             }
+
+            analysisDetails.Add(analysis.Category, analysis.Severity ?? 0);
         }
 
         if (highSeverity)
         {
             throw new TextModerationException("Offensive content detected. Operation is denied.")
             {
-                CategoriesAnalysis = analysisResult.CategoriesAnalysis
+                CategoriesAnalysis = analysisDetails
             };
         }
     }
