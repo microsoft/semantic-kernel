@@ -101,7 +101,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         String prompt,
         @Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext) {
-        ParsedPrompt parsedPrompt = XMLPromptParser.parse(prompt);
+        ParsedPrompt parsedPrompt = OpenAiXMLPromptParser.parse(prompt);
 
         return internalChatMessageContentsAsync(
             parsedPrompt.getChatRequestMessages(),
@@ -453,7 +453,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         chatRequestMessages = chatRequestMessages
             .stream()
-            .map(XMLPromptParser::unescapeRequest)
+            .map(OpenAiXMLPromptParser::unescapeRequest)
             .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatRequestMessages)

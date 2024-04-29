@@ -68,6 +68,7 @@
         <module>semantickernel-bom</module>
 
         <module>aiservices/openai</module>
+        <module>aiservices/semantickernel-aiservices-huggingface</module>
 
         <module>semantickernel-api</module>
     </modules>
