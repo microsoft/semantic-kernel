@@ -5,6 +5,7 @@
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>CA1812</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
@@ -14,6 +15,9 @@
     <Description>Semantic Kernel Prompty format support</Description>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 </Project>
