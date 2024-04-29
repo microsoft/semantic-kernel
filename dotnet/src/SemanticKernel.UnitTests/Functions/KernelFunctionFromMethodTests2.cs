@@ -62,12 +62,14 @@ public sealed class KernelFunctionFromMethodTests2
         var plugin = KernelPluginFactory.CreateFromObject(pluginInstance);
 
         // Assert
-        this.AssertDefaultValueIsNull(plugin, "Type04Nullable", "input", true);
-        this.AssertDefaultValueIsNull(plugin, "Type05", "input", true);
-        this.AssertDefaultValueIsNull(plugin, "Type05Nullable", "input", false);
+        this.AssertDefaultValue(plugin, "Type04Nullable", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type05", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type05Nullable", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05EmptyDefault", "input", string.Empty, false);
+        this.AssertDefaultValue(plugin, "Type05DefaultProvided", "input", "someDefault", false);
     }
 
-    internal void AssertDefaultValueIsNull(KernelPlugin plugin, string functionName, string parameterName, bool parameterIsRequired)
+    internal void AssertDefaultValue(KernelPlugin plugin, string functionName, string parameterName, object? expectedDefaultValue, bool expectedIsRequired)
     {
         var functionExists = plugin.TryGetFunction(functionName, out var function);
         Assert.True(functionExists);
@@ -75,8 +77,8 @@ public sealed class KernelFunctionFromMethodTests2
 
         var parameter = function.Metadata.Parameters.First(p => p.Name == parameterName);
         Assert.NotNull(parameter);
-        Assert.Null(parameter.DefaultValue);
-        Assert.Equal(parameterIsRequired, parameter.IsRequired);
+        Assert.Equal(expectedDefaultValue, parameter.DefaultValue);
+        Assert.Equal(expectedIsRequired, parameter.IsRequired);
     }
 
     [Fact]
@@ -322,6 +324,19 @@ public sealed class KernelFunctionFromMethodTests2
 
         [KernelFunction]
         public string? Type05Nullable(string? input = null)
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05EmptyDefault(string? input = "")
+        {
+            return "";
+        }
+
+
+        [KernelFunction]
+        public string? Type05DefaultProvided(string? input = "someDefault")
         {
             return "";
         }
