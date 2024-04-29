@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-namespace Examples;
+namespace ChatCompletion;
 
 /**
  * Logit_bias is an optional parameter that modifies the likelihood of specified tokens appearing in a Completion.

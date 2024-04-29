@@ -7,7 +7,7 @@ using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 
-namespace Examples;
+namespace Plugins;
 
 public class CreatePluginFromOpenApiSpec_Jira(ITestOutputHelper output) : BaseTest(output)
 {

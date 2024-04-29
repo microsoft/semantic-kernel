@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Planning.Handlebars;
 using Microsoft.SemanticKernel.Plugins.Core;
 using xRetry;
 
-namespace Examples;
+namespace Plugins;
 
 public class GroundednessChecks(ITestOutputHelper output) : BaseTest(output)
 {

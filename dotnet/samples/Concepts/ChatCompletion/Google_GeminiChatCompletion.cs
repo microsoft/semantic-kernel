@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace ChatCompletion;
 
 public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {

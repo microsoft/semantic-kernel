@@ -6,7 +6,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace DependencyInjection;
 
 // These examples show how to use HttpClient and HttpClientFactory within SK SDK.
 public class HttpClient_Resiliency(ITestOutputHelper output) : BaseTest(output)

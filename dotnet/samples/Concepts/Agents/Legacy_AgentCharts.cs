@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-namespace Examples;
+namespace Agents;
 
 // ReSharper disable once InconsistentNaming
 /// <summary>

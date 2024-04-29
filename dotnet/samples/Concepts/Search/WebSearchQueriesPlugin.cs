@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 
-namespace Examples;
+namespace Search;
 
 public class WebSearchQueriesPlugin(ITestOutputHelper output) : BaseTest(output)
 {

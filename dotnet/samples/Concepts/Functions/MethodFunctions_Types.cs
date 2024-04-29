@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace Functions;
 
 public class MethodFunctions_Types(ITestOutputHelper output) : BaseTest(output)
 {

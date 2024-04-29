@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Resources;
 
-namespace Examples;
+namespace PromptTemplates;
 
 /// <summary>
 /// Scenario:

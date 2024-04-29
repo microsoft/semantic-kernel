@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
 
-namespace Examples;
+namespace Search;
 
 /// <summary>
 /// The example shows how to use Bing and Google to search for current data

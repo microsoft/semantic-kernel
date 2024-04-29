@@ -5,7 +5,7 @@ using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace Functions;
 
 // The following example shows how to receive the results from the kernel in a strongly typed object
 // which stores the usage in tokens and converts the JSON result to a strongly typed object, where a validation can also
