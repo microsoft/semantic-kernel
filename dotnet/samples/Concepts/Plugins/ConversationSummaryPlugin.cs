@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using xRetry;
 
-namespace Examples;
+namespace Plugins;
 
 public class ConversationSummaryPlugin(ITestOutputHelper output) : BaseTest(output)
 {

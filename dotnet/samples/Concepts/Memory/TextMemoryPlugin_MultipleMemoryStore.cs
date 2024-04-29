@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Plugins.Memory;
 using Npgsql;
 using StackExchange.Redis;
 
-namespace Examples;
+namespace Memory;
 
 public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {

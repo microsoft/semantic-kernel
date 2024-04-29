@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace PromptTemplates;
 
 /// <summary>
 /// This example shows how to use GPT3.5 Chat model for prompts and prompt functions.

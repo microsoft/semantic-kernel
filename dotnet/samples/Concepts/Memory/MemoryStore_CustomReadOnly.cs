@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Examples;
+namespace Memory;
 
 /// <summary>
 /// This sample provides a custom implementation of <see cref="IMemoryStore"/> that is read only.

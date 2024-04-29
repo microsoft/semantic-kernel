@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
+namespace PromptTemplates;
 
 public class TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
 {

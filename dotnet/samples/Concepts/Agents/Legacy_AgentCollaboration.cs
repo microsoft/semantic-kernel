@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Experimental.Agents;
 
-namespace Examples;
+namespace Agents;
 
 /// <summary>
 /// Showcase complex Open AI Agent collaboration using semantic kernel.

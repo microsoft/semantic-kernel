@@ -5,7 +5,7 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel;
 
-namespace Examples;
+namespace ChatCompletion;
 
 public sealed class OpenAI_CustomAzureOpenAIClient(ITestOutputHelper output) : BaseTest(output)
 {

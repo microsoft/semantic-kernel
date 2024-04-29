@@ -6,7 +6,7 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace ChatCompletion;
 
 public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(output)
 {

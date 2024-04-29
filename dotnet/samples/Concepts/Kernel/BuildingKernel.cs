@@ -7,7 +7,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 
-namespace Examples;
+namespace KernelExamples;
 
 public class BuildingKernel(ITestOutputHelper output) : BaseTest(output)
 {

@@ -21,12 +21,14 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
         If not, provide insight on how to refine suggested copy without examples.
         """;
 
-    private const string CopyWriterName = "Writer";
+    private const string CopyWriterName = "CopyWriter";
     private const string CopyWriterInstructions =
         """
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-        You're laser focused on the goal at hand. Don't waste time with chit chat.
         The goal is to refine and decide on the single best copy as an expert in the field.
+        Only provide a single proposal per response.
+        You're laser focused on the goal at hand.
+        Don't waste time with chit chat.
         Consider suggestions when refining an idea.
         """;
 
@@ -61,12 +63,18 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
 
         KernelFunction selectionFunction =
             KernelFunctionFactory.CreateFromPrompt(
-                """
-                You are in a role playing game.
-                Carefully read the conversation history and carry on the conversation by specifying only the name of player to take the next turn.
-
-                The available names are:
-                {{$agents}}
+                $$$"""
+                Your job is to determine which participant takes the next turn in a conversation according to the action of the most recent participant.
+                State only the name of the participant to take the next turn.
+                
+                Choose only from these participants:
+                - {{{ReviewerName}}}
+                - {{{CopyWriterName}}}
+                
+                Always follow these rules when selecting the next participant:
+                - After user input, it is {{{CopyWriterName}}}'a turn.
+                - After {{{CopyWriterName}}} replies, it is {{{ReviewerName}}}'s turn.
+                - After {{{ReviewerName}}} provides feedback, it is {{{CopyWriterName}}}'s turn.
 
                 History:
                 {{$history}}
@@ -98,7 +106,7 @@ public class Step4_KernelFunctionStrategies(ITestOutputHelper output) : BaseTest
                             new KernelFunctionSelectionStrategy(selectionFunction, CreateKernelWithChatCompletion())
                             {
                                 // Returns the entire result value as a string.
-                                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                                ResultParser = (result) => result.GetValue<string>() ?? CopyWriterName,
                                 // The prompt variable name for the agents argument.
                                 AgentsVariableName = "agents",
                                 // The prompt variable name for the history argument.
