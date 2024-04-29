@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public class HuggingFace_ChatCompletionWithTGI : BaseTest
+public class HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Follow steps in <see href="https://huggingface.co/docs/text-generation-inference/main/en/quicktour"/> to setup HuggingFace local Text Generation Inference HTTP server.
@@ -85,9 +85,5 @@ public class HuggingFace_ChatCompletionWithTGI : BaseTest
             }
             Write(chatMessageChunk.Content);
         }
-    }
-
-    public HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : base(output)
-    {
     }
 }

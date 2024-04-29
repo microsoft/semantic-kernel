@@ -10,7 +10,7 @@ using xRetry;
 namespace Examples;
 
 // The following example shows how to use Semantic Kernel with HuggingFace API.
-public class HuggingFace_EmbeddingGeneration : BaseTest
+public class HuggingFace_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(output)
 {
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunInferenceApiEmbeddingAsync()
@@ -29,9 +29,5 @@ public class HuggingFace_EmbeddingGeneration : BaseTest
         var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
         this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
-    }
-
-    public HuggingFace_EmbeddingGeneration(ITestOutputHelper output) : base(output)
-    {
     }
 }

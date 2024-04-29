@@ -28,7 +28,7 @@ namespace Examples;
 /// 2. docker run -ti -p 8080:8080 localai/localai:v2.12.3-ffmpeg-core phi-2 <see href="https://localai.io/docs/getting-started/run-other-models/" />
 /// 3. Run the LocalAI examples.
 /// </summary>
-public class MultipleProviders_ChatCompletion : BaseTest
+public class MultipleProviders_ChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Theory(Skip = "Manual configuration needed")]
     [InlineData("LMStudio", "http://localhost:1234", "llama2")] // Setup Llama2 as the model in LM Studio UI and start the Message API Server on http://localhost:1234
@@ -91,9 +91,5 @@ public class MultipleProviders_ChatCompletion : BaseTest
         {
             this.WriteLine(word);
         };
-    }
-
-    public MultipleProviders_ChatCompletion(ITestOutputHelper output) : base(output)
-    {
     }
 }
