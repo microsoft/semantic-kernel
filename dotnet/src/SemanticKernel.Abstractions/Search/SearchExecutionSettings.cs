@@ -21,6 +21,18 @@ public class SearchExecutionSettings
     public string Index { get; set; } = string.Empty;
 
     /// <summary>
+    /// Number of search results to return.
+    /// </summary>
+    [JsonPropertyName("count")]
+    public int Count { get; set; } = 1;
+
+    /// <summary>
+    /// The index of the first result to return.
+    /// </summary>
+    [JsonPropertyName("offset")]
+    public int Offset { get; set; } = 0;
+
+    /// <summary>
     /// Extra properties that may be included in the serialized execution settings.
     /// </summary>
     /// <remarks>

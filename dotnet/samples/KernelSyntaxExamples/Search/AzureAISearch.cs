@@ -22,21 +22,15 @@ public sealed class AzureAISearch : BaseTest
     public async Task RunAsync()
     {
         var query = "What is the Semantic Kernel?";
+        var IndexName = TestConfiguration.AzureAISearch.IndexName;
 
         // Create a search service with Azure AI search
         var searchService = new AzureAITextSearchService(
             endpoint: TestConfiguration.AzureAISearch.Endpoint,
             adminKey: TestConfiguration.AzureAISearch.ApiKey);
 
-        // Create search settings for a semantic search with Azure AI search
-        var searchSettings = new AzureAISearchExecutionSettings
-        {
-            Index = TestConfiguration.AzureAISearch.IndexName
-        };
-
-        KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, searchSettings);
-
-        // Show using the search results
+        // Search with a custom search result type
+        KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Index = IndexName, Count = 2, Offset = 2 });
         await foreach (KernelSearchResult<CustomSearchResult> result in searchResults.Results)
         {
             WriteLine($"Title: {result.Value.Title}");
@@ -45,6 +39,16 @@ public sealed class AzureAISearch : BaseTest
             WriteLine(result.Value.Chunk);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
+
+        // Search for just the summaries
+        /*
+        KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, new() { Index = IndexName, Count = 2, Offset = 2 });
+        await foreach (KernelSearchResult<string> result in summaryResults.Results)
+        {
+            WriteLine(result.Value);
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+        */
     }
 
     public AzureAISearch(ITestOutputHelper output) : base(output)

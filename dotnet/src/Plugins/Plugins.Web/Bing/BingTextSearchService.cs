@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -47,9 +48,12 @@ public sealed class BingTextSearchService : ITextSearchService
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings searchSettings, CancellationToken cancellationToken = default) where T : class
+    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default) where T : class
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, 1, 0, cancellationToken).ConfigureAwait(false);
+        searchSettings ??= new SearchExecutionSettings();
+        var count = searchSettings.Count;
+        var offset = searchSettings.Offset;
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -58,7 +62,30 @@ public sealed class BingTextSearchService : ITextSearchService
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        var searchResponse = JsonSerializer.Deserialize<TextSearchResponse<T>>(json);
+        BingSearchResponse<T>? searchResponse = null;
+        if (typeof(T) == typeof(string))
+        {
+            var webPages = JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
+            if (webPages is not null && webPages.WebPages is not null)
+            {
+                searchResponse = new BingSearchResponse<T>()
+                {
+                    Type = webPages.Type,
+                    QueryContext = webPages.QueryContext,
+                    WebPages = new BingWebPages<T>()
+                    {
+                        Id = webPages.WebPages.Id,
+                        SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
+                        TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
+                        Value = webPages?.WebPages?.Value.Select(x => x.Snippet).ToList() as List<T>
+                    },
+                };
+            }
+        }
+        else
+        {
+            searchResponse = JsonSerializer.Deserialize<BingSearchResponse<T>>(json);
+        }
 
         return new KernelSearchResults<T>(searchResponse, this.GetResultsAsync(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }
@@ -107,7 +134,7 @@ public sealed class BingTextSearchService : ITextSearchService
     /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<KernelSearchResult<T>> GetResultsAsync<T>(TextSearchResponse<T>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    private async IAsyncEnumerable<KernelSearchResult<T>> GetResultsAsync<T>(BingSearchResponse<T>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
     {
         if (searchResponse is null || searchResponse.WebPages is null || searchResponse.WebPages.Value is null)
         {
@@ -127,7 +154,7 @@ public sealed class BingTextSearchService : ITextSearchService
     /// <typeparam name="T">The .NET type that maps to the index schema. Instances of this type
     /// can be retrieved as documents from the index.</typeparam>
     /// <param name="searchResponse">Response containing the documents matching the query.</param>
-    private static Dictionary<string, object?>? GetResultsMetadata<T>(TextSearchResponse<T>? searchResponse) where T : class
+    private static Dictionary<string, object?>? GetResultsMetadata<T>(BingSearchResponse<T>? searchResponse) where T : class
     {
         return new Dictionary<string, object?>()
         {

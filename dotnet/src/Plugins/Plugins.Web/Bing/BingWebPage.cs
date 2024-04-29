@@ -8,7 +8,8 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// Defines a webpage that is relevant to the query.
 /// </summary>
 /// TODO: Update this class to match the response from the Bing Web Search API.
-public class BingWebPage
+/// https://learn.microsoft.com/en-us/bing/search-apis/bing-custom-search/reference/response-objects#webpage
+public sealed class BingWebPage
 {
     /// <summary>
     /// The last time that Bing crawled the webpage. The date is in the form, YYYY-MM-DDTHH:MM:SS. For example, 2015-04-13T05:23:39.
@@ -36,14 +37,14 @@ public class BingWebPage
     /// A Boolean value that indicates whether the webpage contains adult content. If the webpage doesn't contain adult content, isFamilyFriendly is set to true.
     /// </summary>
     [JsonPropertyName("isFamilyFriendly")]
-    public string? IsFamilyFriendly { get; set; }
+    public bool? IsFamilyFriendly { get; set; }
 
     /// <summary>
     /// A Boolean value that indicates whether the user’s query is frequently used for navigation to different parts of the webpage’s domain.
     /// Is true if users navigate from this page to other parts of the website.
     /// </summary>
     [JsonPropertyName("isNavigational")]
-    public string? IsNavigational { get; set; }
+    public bool? IsNavigational { get; set; }
 
     /// <summary>
     /// The name of the webpage.
@@ -61,7 +62,20 @@ public class BingWebPage
     /// Use this URL along with name to create a hyperlink that when clicked takes the user to the webpage.
     /// </remarks>
     [JsonPropertyName("url")]
+#pragma warning disable CA1056 // URI-like properties should not be strings
     public string? Url { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
+
+    /// <summary>
+    /// The display URL of the webpage.
+    /// </summary>
+    /// <remarks>
+    /// The URL is meant for display purposes only and is not well formed.
+    /// </remarks>
+    [JsonPropertyName("displayUrl")]
+#pragma warning disable CA1056 // URI-like properties should not be strings
+    public string? DisplayUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
     /// <summary>
     /// A snippet of text from the webpage that describes its contents.

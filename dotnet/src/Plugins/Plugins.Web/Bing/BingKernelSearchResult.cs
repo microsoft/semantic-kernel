@@ -12,9 +12,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <remarks>
 /// Initializes a new instance of the <see cref="BingKernelSearchResult{T}"/> class.
 /// </remarks>
-public class BingKernelSearchResult<T>(WebPages<T> webPages, T webPage) : KernelSearchResult<T>(webPage, webPages, GetResultsMetadata(webPages))
+internal class BingKernelSearchResult<T>(BingWebPages<T> webPages, T webPage) : KernelSearchResult<T>(webPage, webPages, GetResultsMetadata(webPages))
 {
-    static private Dictionary<string, object?>? GetResultsMetadata(WebPages<T> webPages)
+    static private Dictionary<string, object?>? GetResultsMetadata(BingWebPages<T> webPages)
     {
         return new Dictionary<string, object?>()
         {

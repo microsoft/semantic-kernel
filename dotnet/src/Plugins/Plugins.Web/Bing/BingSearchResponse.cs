@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -8,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// Bing search response.
 /// </summary>
-internal class TextSearchResponse<T>
+internal class BingSearchResponse<T>
 {
     /// <summary>
     /// Type hint, which is set to SearchResponse.
@@ -20,19 +21,19 @@ internal class TextSearchResponse<T>
     /// The query string that Bing used for the request.
     /// </summary>
     [JsonPropertyName("queryContext")]
-    public QueryContext? QueryContext { get; set; }
+    public BingQueryContext? QueryContext { get; set; }
 
     /// <summary>
     /// A nullable WebAnswer object containing the Web Search API response data.
     /// </summary>
     [JsonPropertyName("webPages")]
-    public WebPages<T>? WebPages { get; set; }
+    public BingWebPages<T>? WebPages { get; set; }
 }
 
 /// <summary>
 /// The query string that Bing used for the request.
 /// </summary>
-internal class QueryContext
+internal class BingQueryContext
 {
     /// <summary>
     /// The query string as specified in the request.
@@ -54,7 +55,9 @@ internal class QueryContext
 /// <summary>
 /// A list of webpages that are relevant to the search query.
 /// </summary>
-public sealed class WebPages<T>
+[SuppressMessage("Performance", "CA1056:Change the type of parameter 'uri'...",
+Justification = "A constant Uri cannot be defined, as required by this class")]
+internal sealed class BingWebPages<T>
 {
     /// <summary>
     /// An ID that uniquely identifies the web answer.

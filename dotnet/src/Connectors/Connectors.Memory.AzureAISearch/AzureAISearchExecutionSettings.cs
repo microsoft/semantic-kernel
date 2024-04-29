@@ -25,7 +25,8 @@ public class AzureAISearchExecutionSettings : SearchExecutionSettings
             {
                 QueryType = SearchQueryType.Simple,
                 IncludeTotalCount = true,
-                Size = 10,
+                Size = this.Count,
+                Skip = this.Offset,
             };
             return this._searchOptions;
         }

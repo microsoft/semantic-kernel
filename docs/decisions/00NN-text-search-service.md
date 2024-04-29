@@ -39,11 +39,38 @@ You may want to articulate the problem in form of a question and add links to co
 
 ### Current Design
 
-<img src="./diagrams/text-search-service-v1-design.png" alt="Current Memory Design" width="400"/>
+The current design for search is divided into two implementations:
+
+1. Search using a Memory Store i.e. Vector Database
+1. Search using a Web Search Engine
+
+In each case a plugin implementation is provided which allows the search to be integrated into prompts e.g. to provide additional context or to be called from a planner or using auto function calling with a LLM.
+
+#### Memory Store Search
+
+The diagram below shows the layers in the current design of the Memory Store search functionality.
+
+<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="80%"/>
+
+#### Web Search Engine Integration
+
+The diagram below shows the layers in the current design of the Web Search Engine integration.
+
+<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="80%"/>
+
+The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
+
+- The `string` values returned from the plugin represent a snippet of the search result in plain text.
+- The `WebPage` instances returned from the plugin are a normalized subset of a complete search result. Each `WebPage` incudes:
+  - `name` The name of the search result web page
+  - `url` The url of the search result web page
+  - `snippet` A snippet of the search result in plain text
+
+The current design doesn't support break glass scenario's or using custom types for the response values.
 
 ## Considered Options
 
-- {title of option 1}
+- Option 1
 - {title of option 2}
 - {title of option 3}
 - … <!-- numbers of options can vary -->
@@ -71,11 +98,19 @@ Chosen option: "{title of option 1}", because
 
 ## Pros and Cons of the Options
 
-### {title of option 1}
+### Option 1
 
-<!-- This is an optional element. Feel free to remove. -->
+The class diagram below shows the first option.
+<img src="./diagrams/text-search-service-option-1.png" alt="Current Memory Design" width="80%"/>
 
-{example | description | pointer to more information | …}
+- `IISearchService` is the base interface for all search services and just stores attributes for the service
+- `ITextSearchService` is the interface for text based search services. This cna be invoked with a text query to return a collection of search results.
+- `SearchExecutionSettings` provides execution settings for a search service. Some common settings e.g. `IndexName`, `Count`, `Offset` are defined.
+- `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations will support `string`, `KernelSearchResult` and whatever native types the connector implementation supports.
+
+
+
+Evaluation
 
 - Good, because {argument a}
 - Good, because {argument b}

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -68,17 +69,25 @@ public sealed class AzureAITextSearchService : ITextSearchService
 
         var azureSearchSettings = AzureAISearchExecutionSettings.FromExecutionSettings(searchSettings);
 
-        SearchResults<T>? searchResults = null;
+        //SearchResults<T>? searchResults = null;
         try
         {
-            searchResults = await searchClient.SearchAsync<T>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+            if (typeof(T) == typeof(string))
+            {
+                var searchDocuments = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+            }
+            else
+            {
+                SearchResults<T>? searchResults = await searchClient.SearchAsync<T>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync(searchResults, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+            }
         }
         catch (HttpOperationException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             // index not found, no data to return
         }
 
-        return new KernelSearchResults<T>(searchResults, this.GetResultsAsync(searchResults, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+        return new KernelSearchResults<T>(null, AsyncEnumerable.Empty<KernelSearchResult<T>>(), 0, null);
     }
 
     #region private

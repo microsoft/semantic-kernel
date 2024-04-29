@@ -1,0 +1,60 @@
+---
+title: ITextSearchService
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction TB
+
+    namespace Connectors_Memory_AzureAISearch {
+        class AzureAISearchService~T~ {
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+
+        class AzureAISearchExecutionSettings {
+        }
+    }
+
+    namespace Plugins_Web {
+        class BingTextSearchService~T~ {
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+
+        class GoogleTextSearchService~T~ {
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+    }
+
+    namespace Search {
+        class KernelSearchResults~T~ {
+            +long? TotalCount
+            +object? InnerContent
+            +IReadOnlyDictionary? Metadata
+            +IAsyncEnumerable~T~ Results
+        }
+
+        class ITextSearchService~T~ {
+            <<interface>>
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+
+        class ISearchService {
+            <<interface>>
+            +IReadOnlyDictionary Attributes 
+        }
+
+        class SearchExecutionSettings {
+            +string Index
+            +int Count
+            +int Offset
+            +IDictionary ExtensionData
+        }
+    }
+
+    ITextSearchService ..> SearchExecutionSettings
+    ITextSearchService ..> KernelSearchResults
+    ITextSearchService --|> ISearchService
+    BingTextSearchService --|> ITextSearchService
+    GoogleTextSearchService --|> ITextSearchService
+    AzureAISearchService --|> ITextSearchService
+    AzureAISearchExecutionSettings --|> SearchExecutionSettings
+

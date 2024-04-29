@@ -59,9 +59,12 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings searchSettings, CancellationToken cancellationToken = default) where T : class
+    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default) where T : class
     {
-        var searchResponse = await this.ExecuteSearchAsync(query, 1, 0, cancellationToken).ConfigureAwait(false);
+        searchSettings ??= new SearchExecutionSettings();
+        var count = searchSettings.Count;
+        var offset = searchSettings.Offset;
+        var searchResponse = await this.ExecuteSearchAsync(query, count, offset, cancellationToken).ConfigureAwait(false);
 
         return new KernelSearchResults<T>(searchResponse, this.GetResultsAsync<T>(searchResponse, cancellationToken), 1, GetResultsMetadata(searchResponse));
     }

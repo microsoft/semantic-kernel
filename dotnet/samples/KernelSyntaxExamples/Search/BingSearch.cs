@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Examples;
@@ -27,19 +28,35 @@ public sealed class BingSearch : BaseTest
             endpoint: TestConfiguration.Bing.Endpoint,
             apiKey: TestConfiguration.Bing.ApiKey);
 
-        // Create search settings for a semantic search with Bing search
-        var searchSettings = new SearchExecutionSettings
-        {
-        };
-
-        KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, searchSettings);
-
-        // Show using the search results
+        // Search with a custom search result type
+        KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Count = 2 });
         await foreach (KernelSearchResult<CustomSearchResult> result in searchResults.Results)
         {
             WriteLine($"Title: {result.Value.Name}");
             WriteLine("------------------------------------------------------------------------------------------------------------------");
             WriteLine(result.Value.Snippet);
+            WriteLine(result.Value.Url);
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+
+        // Search for just the summaries
+        KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, new() { Count = 2, Offset = 2 });
+        await foreach (KernelSearchResult<string> result in summaryResults.Results)
+        {
+            WriteLine(result.Value);
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+
+        // Search with a the default result type
+        KernelSearchResults<BingWebPage> fullResults = await searchService.SearchAsync<BingWebPage>(query, new() { Count = 2, Offset = 4 });
+        await foreach (KernelSearchResult<BingWebPage> result in fullResults.Results)
+        {
+            WriteLine($"Name: {result.Value.Name}");
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            WriteLine(result.Value.Snippet);
+            WriteLine(result.Value.Url);
+            WriteLine(result.Value.DisplayUrl);
+            WriteLine(result.Value.DateLastCrawled);
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
     }
@@ -56,7 +73,7 @@ public sealed class BingSearch : BaseTest
         [JsonPropertyName("name")]
         public string? Name { get; set; }
         [JsonPropertyName("url")]
-        public string? Url { get; set; }
+        public Uri? Url { get; set; }
         [JsonPropertyName("snippet")]
         public string? Snippet { get; set; }
     }
