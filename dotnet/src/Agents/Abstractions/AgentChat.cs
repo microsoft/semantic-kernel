@@ -181,7 +181,7 @@ public abstract class AgentChat
 
                 if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
                 {
-                    // Don't explore internal messages to caller.
+                    // Don't expose internal messages to caller.
                     continue;
                 }
 
