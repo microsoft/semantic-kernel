@@ -21,7 +21,7 @@ dotnet user-secrets set "AzureContentSafety:Endpoint" "... your endpoint ..."
 dotnet user-secrets set "AzureContentSafety:ApiKey" "... your api key ... "
 
 # OpenAI
-dotnet user-secrets set "OpenAI:ModelId" "... your model ..."
+dotnet user-secrets set "OpenAI:ChatModelId" "... your model ..."
 dotnet user-secrets set "OpenAI:ApiKey" "... your api key ... "
 ```
 
