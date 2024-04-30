@@ -674,7 +674,8 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
     }
 
     private static ChatRequestAssistantMessage formAssistantMessage(
-        ChatMessageContent<?> message, String content) {
+        ChatMessageContent<?> message,
+        @Nullable String content) {
         // TODO: handle tools other than function calls
         ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
 
