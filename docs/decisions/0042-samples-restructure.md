@@ -37,7 +37,7 @@ informed:
 
 | Current Folder                       | Proposal                                                            |
 | ------------------------------------ | ------------------------------------------------------------------- |
-| KernelSyntaxExamples/Getting_Started | Move into `Getting Started`                                         |
+| KernelSyntaxExamples/Getting_Started | Move into `GettingStarted`                                          |
 | KernelSyntaxExamples/`Examples??_*`  | Decompose into `Concepts` on multiple conceptual subfolders         |
 | AgentSyntaxExamples                  | Decompose into `Concepts` on `Agents` specific subfolders.          |
 | DocumentationExamples                | Move into `LearnResources` subfolder and rename to `MicrosoftLearn` |
