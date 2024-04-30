@@ -14,7 +14,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Text Embedding ========");
+        Console.WriteLine("======== Text Embedding ========");
         await RunExampleAsync();
     }
 
@@ -29,7 +29,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
         var lines = TextChunker.SplitPlainTextLines(ChatTranscript, maxTokensPerLine: 10);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: 25);
 
-        this.WriteLine($"Split transcript into {paragraphs.Count} paragraphs");
+        Console.WriteLine($"Split transcript into {paragraphs.Count} paragraphs");
 
         // Azure OpenAI currently supports input arrays up to 16 for text-embedding-ada-002 (Version 2).
         // Both require the max input token limit per API request to remain under 8191 for this model.
@@ -40,7 +40,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
                 predicate: (tokenCount, index) => tokenCount < 8191 && index < 16)
             .ToList();
 
-        this.WriteLine($"Consolidated paragraphs into {chunks.Count}");
+        Console.WriteLine($"Consolidated paragraphs into {chunks.Count}");
 
         // Generate embeddings for each chunk.
         for (var i = 0; i < chunks.Count; i++)
@@ -48,7 +48,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
             var chunk = chunks[i];
             var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(chunk);
 
-            this.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
+            Console.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
         }
     }
 

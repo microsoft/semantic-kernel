@@ -28,7 +28,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
                 new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
-        WriteLine(this.ApiKey);
+        Console.WriteLine(this.ApiKey);
 
         // Define the agent
         OpenAIAssistantAgent agent =
@@ -62,11 +62,11 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }

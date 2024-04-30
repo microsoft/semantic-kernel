@@ -17,7 +17,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
     [Fact]
     public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Google AI - Gemini Embedding Generation =============");
+        Console.WriteLine("============= Google AI - Gemini Embedding Generation =============");
 
         string googleAIApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
@@ -25,7 +25,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
 
         if (googleAIApiKey is null || geminiModelId is null || embeddingModelId is null)
         {
-            this.WriteLine("GoogleAI credentials not found. Skipping example.");
+            Console.WriteLine("GoogleAI credentials not found. Skipping example.");
             return;
         }
 
@@ -45,7 +45,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
     [Fact]
     public async Task VertexAIAsync()
     {
-        this.WriteLine("============= Vertex AI - Gemini Embedding Generation =============");
+        Console.WriteLine("============= Vertex AI - Gemini Embedding Generation =============");
 
         string vertexBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -56,7 +56,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         if (vertexBearerKey is null || geminiModelId is null || geminiLocation is null
             || geminiProject is null || embeddingModelId is null)
         {
-            this.WriteLine("VertexAI credentials not found. Skipping example.");
+            Console.WriteLine("VertexAI credentials not found. Skipping example.");
             return;
         }
 
@@ -113,20 +113,20 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
 
     private async Task RunSimpleSampleAsync(Kernel kernel)
     {
-        this.WriteLine("== Simple Sample: Generating Embeddings ==");
+        Console.WriteLine("== Simple Sample: Generating Embeddings ==");
 
         // Obtain an embedding generator.
         var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         var generatedEmbeddings = await embeddingGenerator.GenerateEmbeddingAsync("My name is Andrea");
-        this.WriteLine($"Generated Embeddings count: {generatedEmbeddings.Length}, " +
+        Console.WriteLine($"Generated Embeddings count: {generatedEmbeddings.Length}, " +
                        $"First five: {string.Join(", ", generatedEmbeddings[..5])}...");
-        this.WriteLine();
+        Console.WriteLine();
     }
 
     private async Task RunTextMemoryPluginSampleAsync(Kernel kernel)
     {
-        this.WriteLine("== Complex Sample: TextMemoryPlugin ==");
+        Console.WriteLine("== Complex Sample: TextMemoryPlugin ==");
 
         var memoryStore = new VolatileMemoryStore();
 
@@ -142,21 +142,21 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         //
         // This is a simple way to store memories from a code perspective, without using the Kernel.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        WriteLine("== PART 1: Saving Memories through the ISemanticTextMemory object ==");
+        Console.WriteLine("== PART 1: Saving Memories through the ISemanticTextMemory object ==");
 
-        WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
+        Console.WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea");
 
-        WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
+        Console.WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator");
 
-        WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
+        Console.WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005");
 
-        WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
+        Console.WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015");
 
-        this.WriteLine();
+        Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemoryPlugin, store memories through the Kernel.
@@ -164,13 +164,13 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         // This enables prompt functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        WriteLine("== PART 2: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
+        Console.WriteLine("== PART 2: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
         var memoryPlugin = kernel.ImportPluginFromObject(new Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin(textMemory));
 
         // Save a memory with the Kernel
-        WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+        Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
         await kernel.InvokeAsync(memoryPlugin["Save"], new()
         {
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.InputParam] = "My family is from New York",
@@ -178,7 +178,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.KeyParam] = "info5",
         });
 
-        this.WriteLine();
+        Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: Recall similar ideas with semantic search
@@ -186,10 +186,10 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
+        Console.WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
 
-        WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
-        WriteLine("Ask: live in Seattle?");
+        Console.WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
+        Console.WriteLine("Ask: live in Seattle?");
 
         await foreach (var answer in textMemory.SearchAsync(
                            collection: MemoryCollectionName,
@@ -198,15 +198,15 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
                            minRelevanceScore: 0.79,
                            withEmbeddings: true))
         {
-            WriteLine($"Answer: {answer.Metadata.Text}");
+            Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
 
         /* Possible output:
          Answer: I've been living in Seattle since 2005
         */
 
-        WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
-        WriteLine("Ask: my family is from?");
+        Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
+        Console.WriteLine("Ask: my family is from?");
 
         var result = await kernel.InvokeAsync(memoryPlugin["Recall"], new()
         {
@@ -216,8 +216,8 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.RelevanceParam] = "0.79",
         });
 
-        WriteLine($"Answer: {result.GetValue<string>()}");
-        WriteLine();
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
+        Console.WriteLine();
 
         /* Possible output:
          Answer: ["My family is from New York"]
@@ -230,7 +230,7 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
         // the text generation model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
+        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Prompt Function ==");
 
         // Build a prompt function that uses memory to find facts
         const string RecallFunctionDefinition = @"
@@ -254,40 +254,40 @@ Answer:
             [Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin.RelevanceParam] = "0.79",
         });
 
-        WriteLine("Ask: Where are my family from?");
-        WriteLine($"Answer: {result.GetValue<string>()}");
+        Console.WriteLine("Ask: Where are my family from?");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
 
         /* Possible output:
          Answer: New York
         */
 
-        this.WriteLine();
+        Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 5: Cleanup, deleting database collection
         //
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        WriteLine("== PART 5: Cleanup, deleting database collection ==");
+        Console.WriteLine("== PART 5: Cleanup, deleting database collection ==");
 
-        WriteLine("Printing Collections in DB...");
+        Console.WriteLine("Printing Collections in DB...");
         var collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            WriteLine(collection);
+            Console.WriteLine(collection);
         }
 
-        WriteLine();
+        Console.WriteLine();
 
-        WriteLine($"Removing Collection {MemoryCollectionName}");
+        Console.WriteLine($"Removing Collection {MemoryCollectionName}");
         await memoryStore.DeleteCollectionAsync(MemoryCollectionName);
-        WriteLine();
+        Console.WriteLine();
 
-        WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
+        Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
         collections = memoryStore.GetCollectionsAsync();
         await foreach (var collection in collections)
         {
-            WriteLine(collection);
+            Console.WriteLine(collection);
         }
     }
 }

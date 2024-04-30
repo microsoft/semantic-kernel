@@ -31,7 +31,7 @@ public sealed class Legacy_AgentCharts(ITestOutputHelper output) : BaseTest(outp
     [Fact(Skip = "Launches external processes")]
     public async Task CreateChartAsync()
     {
-        this.WriteLine("======== Using CodeInterpreter tool ========");
+        Console.WriteLine("======== Using CodeInterpreter tool ========");
 
         var fileService = CreateFileService();
 
@@ -69,8 +69,8 @@ Sum      426  1622     856 2904
                 {
                     var filename = $"{imageName}.jpg";
                     var path = Path.Combine(Environment.CurrentDirectory, filename);
-                    this.WriteLine($"# {message.Role}: {message.Content}");
-                    this.WriteLine($"# {message.Role}: {path}");
+                    Console.WriteLine($"# {message.Role}: {message.Content}");
+                    Console.WriteLine($"# {message.Role}: {path}");
                     var content = fileService.GetFileContent(message.Content);
                     await using var outputStream = File.OpenWrite(filename);
                     await using var inputStream = await content.GetStreamAsync();
@@ -84,11 +84,11 @@ Sum      426  1622     856 2904
                 }
                 else
                 {
-                    this.WriteLine($"# {message.Role}: {message.Content}");
+                    Console.WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
 
-            this.WriteLine();
+            Console.WriteLine();
         }
     }
 

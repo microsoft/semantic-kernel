@@ -17,6 +17,11 @@ public abstract class BaseTest
 
     protected ILoggerFactory LoggerFactory { get; }
 
+    /// <summary>
+    /// This property makes the samples Console friendly. Allowing them to be copied and pasted into a Console app, with minimal changes.
+    /// </summary>
+    public BaseTest Console => this;
+
     protected bool UseOpenAIConfig => this.ForceOpenAI || string.IsNullOrEmpty(TestConfiguration.AzureOpenAI.Endpoint);
 
     protected string ApiKey =>
@@ -72,16 +77,24 @@ public abstract class BaseTest
     /// This method can be substituted by Console.WriteLine when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
-    protected void WriteLine(object? target = null)
+    public void WriteLine(object? target = null)
     {
         this.Output.WriteLine(target ?? string.Empty);
     }
 
     /// <summary>
+    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// </summary>
+    /// <param name="format">Format string</param>
+    /// <param name="args">Arguments</param>
+    public void WriteLine(string? format, params object?[] args)
+        => this.Output.WriteLine(format ?? string.Empty, args);
+
+    /// <summary>
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
-    protected void Write(object? target = null)
+    public void Write(object? target = null)
     {
         this.Output.WriteLine(target ?? string.Empty);
     }

@@ -33,7 +33,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task RunSimpleChatAsync()
     {
-        WriteLine("======== Run:SimpleChat ========");
+        Console.WriteLine("======== Run:SimpleChat ========");
 
         // Call the common chat-loop
         return ChatAsync(
@@ -52,7 +52,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunWithMethodFunctionsAsync()
     {
-        WriteLine("======== Run:WithMethodFunctions ========");
+        Console.WriteLine("======== Run:WithMethodFunctions ========");
 
         LegacyMenuPlugin menuApi = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(menuApi);
@@ -68,10 +68,10 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
             "Do you have enough soup for 5 orders?",
             "Thank you!");
 
-        this.WriteLine("\nCorrelation Ids:");
+        Console.WriteLine("\nCorrelation Ids:");
         foreach (string correlationId in menuApi.CorrelationIds)
         {
-            this.WriteLine($"- {correlationId}");
+            Console.WriteLine($"- {correlationId}");
         }
     }
 
@@ -82,7 +82,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task RunWithPromptFunctionsAsync()
     {
-        WriteLine("======== WithPromptFunctions ========");
+        Console.WriteLine("======== WithPromptFunctions ========");
 
         // Create a prompt function.
         var function = KernelFunctionFactory.CreateFromPrompt(
@@ -109,7 +109,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsFunctionAsync()
     {
-        WriteLine("======== Run:AsFunction ========");
+        Console.WriteLine("======== Run:AsFunction ========");
 
         // Create parrot agent, same as the other cases.
         var agent =
@@ -124,7 +124,7 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
             var response = await agent.AsPlugin().InvokeAsync("Practice makes perfect.", new KernelArguments { { "count", 2 } });
 
             // Display result.
-            WriteLine(response ?? $"No response from agent: {agent.Id}");
+            Console.WriteLine(response ?? $"No response from agent: {agent.Id}");
         }
         finally
         {
@@ -166,15 +166,15 @@ public class Legacy_Agents(ITestOutputHelper output) : BaseTest(output)
         try
         {
             // Display agent identifier.
-            this.WriteLine($"[{agent.Id}]");
+            Console.WriteLine($"[{agent.Id}]");
 
             // Process each user message and agent response.
             foreach (var response in messages.Select(m => thread.InvokeAsync(agent, m, arguments)))
             {
                 await foreach (var message in response)
                 {
-                    this.WriteLine($"[{message.Id}]");
-                    this.WriteLine($"# {message.Role}: {message.Content}");
+                    Console.WriteLine($"[{message.Id}]");
+                    Console.WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }
