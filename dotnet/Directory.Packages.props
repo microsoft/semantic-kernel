@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.15" />
     <PackageVersion Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.3" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.11.2" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
@@ -23,6 +23,8 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.60.3" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.17.1" />
     <PackageVersion Include="FastBertTokenizer" Version="0.4.67" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
@@ -59,6 +61,7 @@
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="Verify.Xunit" Version="23.5.2" />
     <PackageVersion Include="xunit" Version="2.7.0" />
+    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
