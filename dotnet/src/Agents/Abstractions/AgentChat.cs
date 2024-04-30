@@ -188,7 +188,7 @@ public abstract class AgentChat
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
-            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 // Add to primary history
                 this.History.Add(message);
@@ -267,7 +267,7 @@ public abstract class AgentChat
 
     private string GetAgentHash(Agent agent)
     {
-        if (!this._channelMap.TryGetValue(agent, out var hash))
+        if (!this._channelMap.TryGetValue(agent, out string hash))
         {
             hash = KeyEncoder.GenerateHash(agent.GetChannelKeys());
 
