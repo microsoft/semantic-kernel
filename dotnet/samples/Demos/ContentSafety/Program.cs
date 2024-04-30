@@ -17,7 +17,7 @@ var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")
     .AddJsonFile("appsettings.Development.json", true)
-    .AddUserSecrets(Assembly.GetExecutingAssembly())
+    .AddUserSecrets<Program>()
     .Build();
 
 var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
