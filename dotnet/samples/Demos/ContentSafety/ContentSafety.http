@@ -19,7 +19,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "message": "You are a bad person!"
+    "message": "They are bad people!"
 }
 
 ###

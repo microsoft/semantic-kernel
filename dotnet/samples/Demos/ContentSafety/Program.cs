@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Reflection;
 using Azure;
 using Azure.AI.ContentSafety;
 using ContentSafety.Extensions;
