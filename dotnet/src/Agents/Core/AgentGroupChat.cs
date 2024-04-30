@@ -37,7 +37,7 @@ public sealed class AgentGroupChat : AgentChat
     /// Add a <see cref="Agent"/> to the chat.
     /// </summary>
     /// <param name="agent">The <see cref="KernelAgent"/> to add.</param>
-    public void AddAgent(Agent agent)
+    public void Add(Agent agent)
     {
         if (this._agentIds.Add(agent.Id))
         {
@@ -121,7 +121,7 @@ public sealed class AgentGroupChat : AgentChat
     {
         if (isJoining)
         {
-            this.AddAgent(agent);
+            this.Add(agent);
         }
 
         await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))

@@ -58,14 +58,14 @@ public class Step5_JsonResult(ITestOutputHelper output) : BaseTest(output)
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+            this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
             {
-                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
-                Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
             }
         }
     }

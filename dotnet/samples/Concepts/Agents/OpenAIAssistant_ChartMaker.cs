@@ -4,8 +4,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Agents;
-
+namespace Examples;
 /// <summary>
 /// Demonstrate using code-interpreter with <see cref="OpenAIAssistantAgent"/> to
 /// produce image content displays the requested charts.
@@ -64,20 +63,20 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
+            chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
-            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
+            this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var message in chat.InvokeAsync(agent))
             {
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
+                    this.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
                 }
 
                 foreach (var fileReference in message.Items.OfType<FileReferenceContent>())
                 {
-                    Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: #{fileReference.FileId}");
+                    this.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: #{fileReference.FileId}");
                 }
             }
         }
