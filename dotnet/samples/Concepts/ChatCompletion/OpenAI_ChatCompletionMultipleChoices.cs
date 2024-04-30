@@ -11,7 +11,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
     [Fact]
     public Task AzureOpenAIMultiChatCompletionAsync()
     {
-        WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
+        Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion ========");
 
         var chatCompletionService = new AzureOpenAIChatCompletionService(
             deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -25,7 +25,7 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
     [Fact]
     public Task OpenAIMultiChatCompletionAsync()
     {
-        WriteLine("======== Open AI - Multiple Chat Completion ========");
+        Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
         var chatCompletionService = new OpenAIChatCompletionService(
             TestConfiguration.OpenAI.ChatModelId,
@@ -51,10 +51,10 @@ public class OpenAI_ChatCompletionMultipleChoices(ITestOutputHelper output) : Ba
 
         foreach (var chatMessageChoice in await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings))
         {
-            Write(chatMessageChoice.Content ?? string.Empty);
-            WriteLine("\n-------------\n");
+            Console.Write(chatMessageChoice.Content ?? string.Empty);
+            Console.WriteLine("\n-------------\n");
         }
 
-        WriteLine();
+        Console.WriteLine();
     }
 }

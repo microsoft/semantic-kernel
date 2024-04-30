@@ -11,12 +11,12 @@ namespace Examples;
 /// This example demonstrates how to create native functions for AI to call as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class CreatingFunctions : BaseTest
+public class CreatingFunctions(ITestOutputHelper output) : LearnBaseTest(["What is 49 diivided by 37?"], output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Creating native functions ========");
+        Console.WriteLine("======== Creating native functions ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -24,7 +24,7 @@ public class CreatingFunctions : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -41,7 +41,7 @@ public class CreatingFunctions : BaseTest
             {
                 { "number1", 12 }
             });
-        WriteLine($"The square root of 12 is {answer}.");
+        Console.WriteLine($"The square root of 12 is {answer}.");
         // </RunningNativeFunction>
 
         // Create chat history
@@ -53,9 +53,9 @@ public class CreatingFunctions : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Start the conversation
-        Write("User > ");
+        Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             history.AddUserMessage(userInput);
 
@@ -78,26 +78,21 @@ public class CreatingFunctions : BaseTest
             {
                 if (content.Role.HasValue && first)
                 {
-                    Write("Assistant > ");
+                    Console.Write("Assistant > ");
                     first = false;
                 }
-                Write(content.Content);
+                Console.Write(content.Content);
                 fullMessage += content.Content;
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Add the message from the agent to the chat history
             history.AddAssistantMessage(fullMessage);
 
             // Get user input again
-            Write("User > ");
+            Console.Write("User > ");
         }
 
         // </Chat>
-    }
-
-    public CreatingFunctions(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = ["What is 49 diivided by 37?"];
     }
 }

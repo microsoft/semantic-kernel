@@ -15,7 +15,7 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Extended function result ========");
+        Console.WriteLine("======== Extended function result ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
@@ -38,9 +38,9 @@ public class FunctionResult_StronglyTyped(ITestOutputHelper output) : BaseTest(o
 
         var functionResultTestDataGen = new FunctionResultTestDataGen(functionResult!, sw.ElapsedMilliseconds);
 
-        this.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
-        this.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
-        this.WriteLine($"Total Tokens: {functionResultTestDataGen.TokenCounts!.TotalTokens} \n");
+        Console.WriteLine($"Test data: {functionResultTestDataGen.Result} \n");
+        Console.WriteLine($"Milliseconds: {functionResultTestDataGen.ExecutionTimeInMilliseconds} \n");
+        Console.WriteLine($"Total Tokens: {functionResultTestDataGen.TokenCounts!.TotalTokens} \n");
     }
 
     /// <summary>
