@@ -13,7 +13,7 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public void RunExample()
     {
-        WriteLine("=== Text chunking ===");
+        Console.WriteLine("=== Text chunking ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
@@ -24,7 +24,7 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public void RunExampleWithTokenCounter()
     {
-        WriteLine("=== Text chunking with a custom token counter ===");
+        Console.WriteLine("=== Text chunking with a custom token counter ===");
 
         var sw = new Stopwatch();
         sw.Start();
@@ -33,14 +33,14 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: text => s_tokenizer.CountTokens(text));
 
         sw.Stop();
-        WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
+        Console.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
         WriteParagraphsToConsole(paragraphs);
     }
 
     [Fact]
     public void RunExampleWithHeader()
     {
-        WriteLine("=== Text chunking with chunk header ===");
+        Console.WriteLine("=== Text chunking with chunk header ===");
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
@@ -52,11 +52,11 @@ public class TextChunkerUsage(ITestOutputHelper output) : BaseTest(output)
     {
         for (var i = 0; i < paragraphs.Count; i++)
         {
-            WriteLine(paragraphs[i]);
+            Console.WriteLine(paragraphs[i]);
 
             if (i < paragraphs.Count - 1)
             {
-                WriteLine("------------------------");
+                Console.WriteLine("------------------------");
             }
         }
     }

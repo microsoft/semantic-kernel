@@ -9,7 +9,7 @@ public class MethodFunctions(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task RunAsync()
     {
-        this.WriteLine("======== Functions ========");
+        Console.WriteLine("======== Functions ========");
 
         // Load native plugin
         var text = new TextPlugin();
@@ -17,7 +17,7 @@ public class MethodFunctions(ITestOutputHelper output) : BaseTest(output)
         // Use function without kernel
         var result = text.Uppercase("ciao!");
 
-        this.WriteLine(result);
+        Console.WriteLine(result);
 
         return Task.CompletedTask;
     }

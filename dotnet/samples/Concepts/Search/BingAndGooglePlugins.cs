@@ -23,7 +23,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 
         if (openAIModelId == null || openAIApiKey == null)
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -37,7 +37,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         string bingApiKey = TestConfiguration.Bing.ApiKey;
         if (bingApiKey == null)
         {
-            this.WriteLine("Bing credentials not found. Skipping example.");
+            Console.WriteLine("Bing credentials not found. Skipping example.");
         }
         else
         {
@@ -54,7 +54,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 
         if (googleApiKey == null || googleSearchEngineId == null)
         {
-            this.WriteLine("Google credentials not found. Skipping example.");
+            Console.WriteLine("Google credentials not found. Skipping example.");
         }
         else
         {
@@ -70,16 +70,16 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 
     private async Task Example1Async(Kernel kernel, string searchPluginName)
     {
-        this.WriteLine("======== Bing and Google Search Plugins ========");
+        Console.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
         var function = kernel.Plugins[searchPluginName]["search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        this.WriteLine(question);
-        this.WriteLine($"----{searchPluginName}----");
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(question);
+        Console.WriteLine($"----{searchPluginName}----");
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -96,7 +96,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
 
     private async Task Example2Async(Kernel kernel)
     {
-        this.WriteLine("======== Use Search Plugin to answer user questions ========");
+        Console.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = """
             Answer questions only when you know the facts or the information is provided.
@@ -134,7 +134,7 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
             """;
 
         var question = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
-        this.WriteLine(question);
+        Console.WriteLine(question);
 
         var oracle = kernel.CreateFunctionFromPrompt(SemanticFunction, new OpenAIPromptExecutionSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
@@ -152,11 +152,11 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
             var promptTemplateFactory = new KernelPromptTemplateFactory();
             var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(result));
 
-            this.WriteLine("---- Fetching information from Bing...");
+            Console.WriteLine("---- Fetching information from Bing...");
             var information = await promptTemplate.RenderAsync(kernel);
 
-            this.WriteLine("Information found:");
-            this.WriteLine(information);
+            Console.WriteLine("Information found:");
+            Console.WriteLine(information);
 
             // Run the prompt function again, now including information from Bing
             answer = await kernel.InvokeAsync(oracle, new KernelArguments()
@@ -168,11 +168,11 @@ public class BingAndGooglePlugins(ITestOutputHelper output) : BaseTest(output)
         }
         else
         {
-            this.WriteLine("AI had all the information, no need to query Bing.");
+            Console.WriteLine("AI had all the information, no need to query Bing.");
         }
 
-        this.WriteLine("---- ANSWER:");
-        this.WriteLine(answer.GetValue<string>());
+        Console.WriteLine("---- ANSWER:");
+        Console.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 

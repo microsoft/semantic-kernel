@@ -17,7 +17,7 @@ public class SerializingPrompts : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Serializing Prompts ========");
+        Console.WriteLine("======== Serializing Prompts ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -25,7 +25,7 @@ public class SerializingPrompts : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -67,7 +67,7 @@ public class SerializingPrompts : BaseTest
         ChatHistory history = [];
 
         // Start the chat loop
-        Write("User > ");
+        Console.Write("User > ");
         string? userInput;
         while ((userInput = ReadLine()) != null)
         {
@@ -105,19 +105,19 @@ public class SerializingPrompts : BaseTest
             {
                 if (chunk.Role.HasValue)
                 {
-                    Write(chunk.Role + " > ");
+                    Console.Write(chunk.Role + " > ");
                 }
                 message += chunk;
-                Write(chunk);
+                Console.Write(chunk);
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Append to history
             history.AddUserMessage(userInput);
             history.AddAssistantMessage(message);
 
             // Get user input again
-            Write("User > ");
+            Console.Write("User > ");
         }
     }
 

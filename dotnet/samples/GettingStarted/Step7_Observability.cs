@@ -34,7 +34,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -57,19 +57,19 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         // Handler which is called before a function is invoked
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            WriteLine($"Invoking {e.Function.Name}");
+            Console.WriteLine($"Invoking {e.Function.Name}");
         }
 
         // Handler which is called before a prompt is rendered
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            WriteLine($"Rendering prompt for {e.Function.Name}");
+            Console.WriteLine($"Rendering prompt for {e.Function.Name}");
         }
 
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            WriteLine($"Rendered prompt: {e.RenderedPrompt}");
+            Console.WriteLine($"Rendered prompt: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -77,7 +77,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
             }
         }
 
@@ -89,7 +89,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>

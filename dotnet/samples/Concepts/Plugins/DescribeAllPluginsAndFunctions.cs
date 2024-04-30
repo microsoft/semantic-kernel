@@ -8,72 +8,72 @@ namespace Plugins;
 
 public class DescribeAllPluginsAndFunctions(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Print a list of all the functions imported into the kernel, including function descriptions,
-    /// list of parameters, parameters descriptions, etc.
-    /// See the end of the file for a sample of what the output looks like.
-    /// </summary>
-    [Fact]
-    public Task RunAsync()
-    {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
+   /// <summary>
+   /// Print a list of all the functions imported into the kernel, including function descriptions,
+   /// list of parameters, parameters descriptions, etc.
+   /// See the end of the file for a sample of what the output looks like.
+   /// </summary>
+   [Fact]
+   public Task RunAsync()
+   {
+      var kernel = Kernel.CreateBuilder()
+          .AddOpenAIChatCompletion(
+              modelId: TestConfiguration.OpenAI.ChatModelId,
+              apiKey: TestConfiguration.OpenAI.ApiKey)
+          .Build();
 
-        // Import a native plugin
-        kernel.ImportPluginFromType<StaticTextPlugin>();
+      // Import a native plugin
+      kernel.ImportPluginFromType<StaticTextPlugin>();
 
-        // Import another native plugin
-        kernel.ImportPluginFromType<TextPlugin>("AnotherTextPlugin");
+      // Import another native plugin
+      kernel.ImportPluginFromType<TextPlugin>("AnotherTextPlugin");
 
-        // Import a semantic plugin
-        string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
+      // Import a semantic plugin
+      string folder = RepoFiles.SamplePluginsPath();
+      kernel.ImportPluginFromPromptDirectory(Path.Combine(folder, "SummarizePlugin"));
 
-        // Define a prompt function inline, without naming
-        var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
+      // Define a prompt function inline, without naming
+      var sFun1 = kernel.CreateFunctionFromPrompt("tell a joke about {{$input}}", new OpenAIPromptExecutionSettings() { MaxTokens = 150 });
 
-        // Define a prompt function inline, with plugin name
-        var sFun2 = kernel.CreateFunctionFromPrompt(
-            "write a novel about {{$input}} in {{$language}} language",
-            new OpenAIPromptExecutionSettings() { MaxTokens = 150 },
-            functionName: "Novel",
-            description: "Write a bedtime story");
+      // Define a prompt function inline, with plugin name
+      var sFun2 = kernel.CreateFunctionFromPrompt(
+          "write a novel about {{$input}} in {{$language}} language",
+          new OpenAIPromptExecutionSettings() { MaxTokens = 150 },
+          functionName: "Novel",
+          description: "Write a bedtime story");
 
-        var functions = kernel.Plugins.GetFunctionsMetadata();
+      var functions = kernel.Plugins.GetFunctionsMetadata();
 
-        WriteLine("**********************************************");
-        WriteLine("****** Registered plugins and functions ******");
-        WriteLine("**********************************************");
-        WriteLine();
+      Console.WriteLine("**********************************************");
+      Console.WriteLine("****** Registered plugins and functions ******");
+      Console.WriteLine("**********************************************");
+      Console.WriteLine();
 
-        foreach (KernelFunctionMetadata func in functions)
-        {
-            PrintFunction(func);
-        }
+      foreach (KernelFunctionMetadata func in functions)
+      {
+         PrintFunction(func);
+      }
 
-        return Task.CompletedTask;
-    }
+      return Task.CompletedTask;
+   }
 
-    private void PrintFunction(KernelFunctionMetadata func)
-    {
-        WriteLine($"Plugin: {func.PluginName}");
-        WriteLine($"   {func.Name}: {func.Description}");
+   private void PrintFunction(KernelFunctionMetadata func)
+   {
+      Console.WriteLine($"Plugin: {func.PluginName}");
+      Console.WriteLine($"   {func.Name}: {func.Description}");
 
-        if (func.Parameters.Count > 0)
-        {
-            WriteLine("      Params:");
-            foreach (var p in func.Parameters)
-            {
-                WriteLine($"      - {p.Name}: {p.Description}");
-                WriteLine($"        default: '{p.DefaultValue}'");
-            }
-        }
+      if (func.Parameters.Count > 0)
+      {
+         Console.WriteLine("      Params:");
+         foreach (var p in func.Parameters)
+         {
+            Console.WriteLine($"      - {p.Name}: {p.Description}");
+            Console.WriteLine($"        default: '{p.DefaultValue}'");
+         }
+      }
 
-        WriteLine();
-    }
+      Console.WriteLine();
+   }
 }
 
 /** Sample output:

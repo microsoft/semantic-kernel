@@ -16,7 +16,7 @@ public class FunctionsWithinPrompts : BaseTest
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Functions within Prompts ========");
+        Console.WriteLine("======== Functions within Prompts ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -24,7 +24,7 @@ public class FunctionsWithinPrompts : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -97,7 +97,7 @@ Assistant: "
         while (true)
         {
             // Get user input
-            Write("User > ");
+            Console.Write("User > ");
             var request = ReadLine();
 
             // Invoke handlebars prompt
@@ -134,12 +134,12 @@ Assistant: "
             {
                 if (chunk.Role.HasValue)
                 {
-                    Write(chunk.Role + " > ");
+                    Console.Write(chunk.Role + " > ");
                 }
                 message += chunk;
-                Write(chunk);
+                Console.Write(chunk);
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Append to history
             history.AddUserMessage(request!);

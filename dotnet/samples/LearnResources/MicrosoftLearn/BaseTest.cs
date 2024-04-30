@@ -32,7 +32,7 @@ public abstract class BaseTest
     /// This method can be substituted by Console.WriteLine when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
-    protected void WriteLine(object? target = null)
+    protected void Console.WriteLine(object? target = null)
     {
         this.Output.WriteLine(target?.ToString() ?? string.Empty);
     }
@@ -41,7 +41,7 @@ public abstract class BaseTest
     /// Current interface ITestOutputHelper does not have a Write method. This extension method adds it to make it analogous to Console.Write when used in Console apps.
     /// </summary>
     /// <param name="target">Target object to write</param>
-    protected void Write(object? target = null)
+    protected void Console.Write(object? target = null)
     {
         this.Output.WriteLine(target?.ToString() ?? string.Empty);
     }

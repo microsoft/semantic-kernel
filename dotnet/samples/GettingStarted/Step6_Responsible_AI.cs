@@ -30,7 +30,7 @@ public sealed class Step6_Responsible_AI(ITestOutputHelper output) : BaseTest(ou
 
         var result = await kernel.InvokePromptAsync("Tell me some useful information about this credit card number {{$card_number}}?", arguments);
 
-        WriteLine(result);
+        Console.WriteLine(result);
 
         // Output: Sorry, but I can't assist with that.
     }

@@ -44,6 +44,6 @@ public sealed class HuggingFace_ImageToText(ITestOutputHelper output) : BaseTest
         var textContent = await imageToText.GetTextContentAsync(imageContent, executionSettings);
 
         // Output image description
-        this.WriteLine(textContent.Text);
+        Console.WriteLine(textContent.Text);
     }
 }

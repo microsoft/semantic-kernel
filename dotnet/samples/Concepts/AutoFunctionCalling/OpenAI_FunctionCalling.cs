@@ -42,24 +42,24 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
         ]);
 
-        WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-            WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
-            WriteLine();
+            Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+            Console.WriteLine();
         }
 
-        WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
             OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)))
             {
-                Write(update);
+                Console.Write(update);
             }
-            WriteLine();
+            Console.WriteLine();
         }
 
-        WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -73,7 +73,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
                 if (result.Content is not null)
                 {
-                    Write(result.Content);
+                    Console.Write(result.Content);
                 }
 
                 IEnumerable<FunctionCallContent> functionCalls = FunctionCallContent.GetFunctionCalls(result);
@@ -102,11 +102,11 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     }
                 }
 
-                WriteLine();
+                Console.WriteLine();
             }
         }
 
-        WriteLine("======== Example 4: Simulated function calling with a non-streaming prompt ========");
+        Console.WriteLine("======== Example 4: Simulated function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -120,7 +120,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 ChatMessageContent result = await chat.GetChatMessageContentAsync(chatHistory, settings, kernel);
                 if (result.Content is not null)
                 {
-                    Write(result.Content);
+                    Console.Write(result.Content);
                 }
 
                 chatHistory.Add(result); // Adding LLM response containing function calls(requests) to chat history as it's required by LLMs.
@@ -146,7 +146,7 @@ public class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                 var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
                 chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
 
-                WriteLine();
+                Console.WriteLine();
             }
         }
 
