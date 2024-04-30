@@ -150,9 +150,9 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             await InvokeChatAsync("He likes photography.");
         }
 
-        this.WriteLine("\n\n######################################");
-        this.WriteLine("# AGGREGATED CHAT");
-        this.WriteLine("######################################");
+        this.WriteLine("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        this.WriteLine(">>>> AGGREGATED CHAT");
+        this.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
         await foreach (var content in chat.GetChatMessagesAsync(agentShopperGroup).Reverse())
         {
@@ -163,14 +163,14 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+            this.WriteLine($">>>> {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agentShopperGroup))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
 
-            this.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");
+            this.WriteLine($"\n>>>> IS COMPLETE: {chat.IsComplete}");
         }
 
         ChatCompletionAgent CreateAgent(string agentName, string agentInstructions) =>
