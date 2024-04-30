@@ -66,18 +66,18 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         // *******************************************************************************************************************************
         if (operationExtensions is null || !operationExtensions.TryGetValue("x-openai-isConsequential", out var isConsequential) || isConsequential is null)
         {
-            WriteLine("We cannot determine if the function has consequences, since the isConsequential extension is not provided, so safer not to run it.");
+            Console.WriteLine("We cannot determine if the function has consequences, since the isConsequential extension is not provided, so safer not to run it.");
         }
         else if ((isConsequential as bool?) == true)
         {
-            WriteLine("This function may have unwanted consequences, so safer not to run it.");
+            Console.WriteLine("This function may have unwanted consequences, so safer not to run it.");
         }
         else
         {
             // Invoke the function and output the result.
             var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
             var result = functionResult.GetValue<RestApiOperationResponse>();
-            WriteLine($"Function execution result: {result?.Content}");
+            Console.WriteLine($"Function execution result: {result?.Content}");
         }
 
         // *******************************************************************************************************************************
@@ -89,11 +89,11 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
             // Invoke the function and output the result.
             var functionResult = await kernel.InvokeAsync(function, new KernelArguments());
             var result = functionResult.GetValue<RestApiOperationResponse>();
-            WriteLine($"Function execution result: {result?.Content}");
+            Console.WriteLine($"Function execution result: {result?.Content}");
         }
         else
         {
-            WriteLine("This is a write operation, so safer not to run it.");
+            Console.WriteLine("This is a write operation, so safer not to run it.");
         }
     }
 

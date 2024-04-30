@@ -12,12 +12,14 @@ namespace Examples;
 /// https://learn.microsoft.com/semantic-kernel/overview/
 /// This sample uses function calling, so it only works on models newer than 0613.
 /// </summary>
-public class Plugin : BaseTest
+public class Plugin(ITestOutputHelper output) : LearnBaseTest([
+            "Hello",
+    "Can you turn on the lights"], output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Plugin ========");
+        Console.WriteLine("======== Plugin ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -25,7 +27,7 @@ public class Plugin : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -47,9 +49,9 @@ public class Plugin : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         // Start the conversation
-        Write("User > ");
+        Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Add user input
             history.AddUserMessage(userInput);
@@ -67,22 +69,15 @@ public class Plugin : BaseTest
                 kernel: kernel);
 
             // Print the results
-            WriteLine("Assistant > " + result);
+            Console.WriteLine("Assistant > " + result);
 
             // Add the message from the agent to the chat history
             history.AddMessage(result.Role, result.Content ?? string.Empty);
 
             // Get user input again
-            Write("User > ");
+            Console.Write("User > ");
         }
         // </Chat>
-    }
-
-    public Plugin(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Hello",
-            "Can you turn on the lights"];
     }
 }
 

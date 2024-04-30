@@ -16,7 +16,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine($"======== {nameof(CustomAIServiceSelector)} ========");
+        Console.WriteLine($"======== {nameof(CustomAIServiceSelector)} ========");
 
         // Build a kernel with multiple chat completion services
         var builder = Kernel.CreateBuilder()
@@ -36,7 +36,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
         // This invocation is done with the model selected by the custom selector
         var prompt = "Hello AI, what can you do for me?";
         var result = await kernel.InvokePromptAsync(prompt);
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 
     /// <summary>

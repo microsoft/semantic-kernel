@@ -18,7 +18,7 @@ public class Legacy_KernelHooks : BaseTest
     [Fact]
     public async Task GetUsageAsync()
     {
-        WriteLine("\n======== Get Usage Data ========\n");
+        Console.WriteLine("\n======== Get Usage Data ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -38,18 +38,18 @@ public class Legacy_KernelHooks : BaseTest
         // Define hooks
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.Function.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel = true;
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+            Console.WriteLine($"{e.Function.Name} : Post Execution Handler - Usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -63,7 +63,7 @@ public class Legacy_KernelHooks : BaseTest
         // Invoke prompt to trigger execution hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result}");
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public class Legacy_KernelHooks : BaseTest
     [Fact]
     public async Task GetRenderedPromptAsync()
     {
-        WriteLine("\n======== Get Rendered Prompt ========\n");
+        Console.WriteLine("\n======== Get Rendered Prompt ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -94,16 +94,16 @@ public class Legacy_KernelHooks : BaseTest
         // Define hooks
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
+            Console.WriteLine($"{e.Function.Name} : Prompt Rendering Handler - Triggered");
             e.Arguments["style"] = "Seinfeld";
         }
 
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
+            Console.WriteLine($"{e.Function.Name} : Prompt Rendered Handler - Triggered");
             e.RenderedPrompt += " USE SHORT, CLEAR, COMPLETE SENTENCES.";
 
-            WriteLine(e.RenderedPrompt);
+            Console.WriteLine(e.RenderedPrompt);
         }
 
         kernel.PromptRendering += MyRenderingHandler;
@@ -112,7 +112,7 @@ public class Legacy_KernelHooks : BaseTest
         // Invoke prompt to trigger prompt rendering hooks.
         const string Input = "I missed the F1 final race";
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = Input });
-        WriteLine($"Function Result: {result.GetValue<string>()}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public class Legacy_KernelHooks : BaseTest
     [Fact]
     public async Task ChangingResultAsync()
     {
-        WriteLine("\n======== Changing/Filtering Function Result ========\n");
+        Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -155,7 +155,7 @@ public class Legacy_KernelHooks : BaseTest
         // Invoke prompt to trigger execution hooks.
         var result = await kernel.InvokeAsync(writerFunction);
 
-        WriteLine($"Function Result: {result.GetValue<string>()}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public class Legacy_KernelHooks : BaseTest
     [Fact]
     public async Task BeforeInvokeCancellationAsync()
     {
-        WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
+        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -186,7 +186,7 @@ public class Legacy_KernelHooks : BaseTest
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
+            Console.WriteLine($"{e.Function.Name} : FunctionInvoking - Cancelling before execution");
             e.Cancel = true;
         };
 
@@ -204,10 +204,10 @@ public class Legacy_KernelHooks : BaseTest
         }
         catch (KernelFunctionCanceledException fcex)
         {
-            WriteLine(fcex.Message);
+            Console.WriteLine(fcex.Message);
         }
 
-        WriteLine($"Function Invocation Times: {functionInvokedCount}");
+        Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
     /// <summary>
@@ -218,7 +218,7 @@ public class Legacy_KernelHooks : BaseTest
     [Fact]
     public async Task AfterInvokeCancellationAsync()
     {
-        WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
+        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
 
         // Create kernel instance
         Kernel kernel = Kernel.CreateBuilder()
@@ -254,11 +254,11 @@ public class Legacy_KernelHooks : BaseTest
         }
         catch (KernelFunctionCanceledException fcex)
         {
-            WriteLine(fcex.Message);
+            Console.WriteLine(fcex.Message);
         }
 
-        WriteLine($"Function Invoked Times: {functionInvokedCount}");
-        WriteLine($"Function Invoking Times: {functionInvokingCount}");
+        Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
+        Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
     }
 
     private readonly string? _openAIModelId;
@@ -271,7 +271,7 @@ public class Legacy_KernelHooks : BaseTest
 
         if (this._openAIModelId == null || this._openAIApiKey == null)
         {
-            WriteLine("OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
     }
