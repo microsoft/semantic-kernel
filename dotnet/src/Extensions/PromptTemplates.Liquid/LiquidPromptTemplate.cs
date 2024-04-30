@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,8 +39,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         var template = this._config.Template;
         template = this.PreProcessTemplate(template);
         var liquidTemplate = Template.ParseLiquid(template);
-        arguments = this.GetVariables(kernel, arguments);
-        var renderedResult = liquidTemplate.Render(arguments.ToDictionary(x => x.Key, x => x.Value));
+        arguments = this.GetVariables(arguments);
+        var renderedResult = liquidTemplate.Render(arguments.ToDictionary(kv => kv.Key, kv => kv.Value));
 
         // parse chat history
         // for every text like below
@@ -82,14 +84,14 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     }
 
     /// <summary>
-    /// pre-process the template before rendering.
+    /// Pre-process the template before rendering.
     /// If the template contains any reserved characters and <see cref="_allowUnsafeContent"/> is false,
     /// throw an exception.
     ///
     /// Otherwise, no pre-processing is needed.
     /// </summary>
-    /// <param name="template"></param>
-    /// <returns></returns>
+    /// <param name="template">template</param>
+    /// <returns>Preprocessed template</returns>
     private string PreProcessTemplate(string template)
     {
         if (this._allowUnsafeContent)
@@ -119,7 +121,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(Kernel _, KernelArguments? arguments)
+    private KernelArguments GetVariables(KernelArguments? arguments)
     {
         KernelArguments result = [];
 
