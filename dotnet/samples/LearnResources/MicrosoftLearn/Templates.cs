@@ -12,7 +12,7 @@ namespace Examples;
 /// </summary>
 public class Templates(ITestOutputHelper output) : LearnBaseTest([
             "Can you send an approval to the marketing team?",
-            "That is all, thanks."], output)
+    "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()

@@ -14,7 +14,7 @@ namespace Examples;
 /// </summary>
 public class Plugin(ITestOutputHelper output) : LearnBaseTest([
             "Hello",
-            "Can you turn on the lights"], output)
+    "Can you turn on the lights"], output)
 {
     [Fact]
     public async Task RunAsync()

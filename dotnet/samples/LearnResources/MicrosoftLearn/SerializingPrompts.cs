@@ -14,7 +14,7 @@ namespace Examples;
 /// </summary>
 public class SerializingPrompts(ITestOutputHelper output) : LearnBaseTest([
             "Can you send an approval to the marketing team?",
-            "That is all, thanks."], output)
+    "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
