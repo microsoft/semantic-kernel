@@ -10,14 +10,14 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
     [Fact]
     public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Google AI - Gemini Chat Completion =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            this.WriteLine("Gemini credentials not found. Skipping example.");
+            Console.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
@@ -33,7 +33,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
     [Fact]
     public async Task VertexAIAsync()
     {
-        this.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
+        Console.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 
         string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -42,7 +42,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
 
         if (geminiBearerKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -87,7 +87,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
 
     private async Task SimpleChatAsync(Kernel kernel)
     {
-        this.WriteLine("======== Simple Chat ========");
+        Console.WriteLine("======== Simple Chat ========");
 
         var chatHistory = new ChatHistory();
         var chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -118,8 +118,8 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
     {
         var message = chatHistory.Last();
 
-        this.WriteLine($"{message.Role}: {message.Content}");
-        this.WriteLine("------------------------");
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

@@ -31,7 +31,7 @@ public class AutoFunctionInvocationFiltering(ITestOutputHelper output) : BaseTes
 
         var result = await kernel.InvokePromptAsync("Invoke provided function and return result", new(executionSettings));
 
-        WriteLine(result);
+        Console.WriteLine(result);
 
         // Output:
         // Request sequence number: 0

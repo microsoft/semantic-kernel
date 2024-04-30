@@ -27,11 +27,11 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Example71_AgentDelegation ========");
+        Console.WriteLine("======== Example71_AgentDelegation ========");
 
         if (TestConfiguration.OpenAI.ApiKey == null)
         {
-            WriteLine("OpenAI apiKey not found. Skipping example.");
+            Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
         }
 
@@ -77,8 +77,8 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
             {
                 await foreach (var message in response)
                 {
-                    WriteLine($"[{message.Id}]");
-                    WriteLine($"# {message.Role}: {message.Content}");
+                    Console.WriteLine($"[{message.Id}]");
+                    Console.WriteLine($"# {message.Role}: {message.Content}");
                 }
             }
         }

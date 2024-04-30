@@ -13,7 +13,7 @@ public class GroundednessChecks(ITestOutputHelper output) : BaseTest(output)
     [RetryFact(typeof(HttpOperationException))]
     public async Task GroundednessCheckingAsync()
     {
-        WriteLine("\n======== Groundedness Checks ========");
+        Console.WriteLine("\n======== Groundedness Checks ========");
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
@@ -48,23 +48,23 @@ her a beggar. My father came to her aid and two years later they married.
 
         var extractionResult = (await kernel.InvokeAsync(entityExtraction, variables)).ToString();
 
-        WriteLine("======== Extract Entities ========");
-        WriteLine(extractionResult);
+        Console.WriteLine("======== Extract Entities ========");
+        Console.WriteLine(extractionResult);
 
         variables["input"] = extractionResult;
         variables["reference_context"] = GroundingText;
 
         var groundingResult = (await kernel.InvokeAsync(reference_check, variables)).ToString();
 
-        WriteLine("\n======== Reference Check ========");
-        WriteLine(groundingResult);
+        Console.WriteLine("\n======== Reference Check ========");
+        Console.WriteLine(groundingResult);
 
         variables["input"] = summaryText;
         variables["ungrounded_entities"] = groundingResult;
         var excisionResult = await kernel.InvokeAsync(entity_excision, variables);
 
-        WriteLine("\n======== Excise Entities ========");
-        WriteLine(excisionResult.GetValue<string>());
+        Console.WriteLine("\n======== Excise Entities ========");
+        Console.WriteLine(excisionResult.GetValue<string>());
     }
 
     [Fact]
@@ -78,7 +78,7 @@ Take this list of entities, and from it make another list of those which are not
 grounded in the original input text. Finally, rewrite your summary to remove the entities
 which are not grounded in the original.";
 
-        WriteLine("\n======== Planning - Groundedness Checks ========");
+        Console.WriteLine("\n======== Planning - Groundedness Checks ========");
 
         var kernel = Kernel.CreateBuilder()
             .AddAzureOpenAIChatCompletion(
@@ -111,13 +111,13 @@ which are not grounded in the original.";
         };
         var plan = await planner.CreatePlanAsync(kernel, ask, initialArguments);
 
-        WriteLine($"======== Goal: ========\n{ask}");
-        WriteLine($"======== Plan ========\n{plan}");
+        Console.WriteLine($"======== Goal: ========\n{ask}");
+        Console.WriteLine($"======== Plan ========\n{plan}");
 
         var result = await plan.InvokeAsync(kernel, initialArguments);
 
-        WriteLine("======== Result ========");
-        WriteLine(result);
+        Console.WriteLine("======== Result ========");
+        Console.WriteLine(result);
     }
 
     private const string GroundingText = """

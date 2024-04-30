@@ -10,7 +10,7 @@ public class WebSearchQueriesPlugin(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== WebSearchQueries ========");
+        Console.WriteLine("======== WebSearchQueries ========");
 
         Kernel kernel = new();
 
@@ -21,8 +21,8 @@ public class WebSearchQueriesPlugin(ITestOutputHelper output) : BaseTest(output)
         var ask = "What's the tallest building in Europe?";
         var result = await kernel.InvokeAsync(bing["BingSearchUrl"], new() { ["query"] = ask });
 
-        WriteLine(ask + "\n");
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(ask + "\n");
+        Console.WriteLine(result.GetValue<string>());
 
         /* Expected output: 
         * ======== WebSearchQueries ========

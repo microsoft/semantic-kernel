@@ -179,6 +179,12 @@ public abstract class AgentChat
                 this.History.Add(message);
                 messages.Add(message);
 
+                if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
+                {
+                    // Don't expose internal messages to caller.
+                    continue;
+                }
+
                 // Yield message to caller
                 yield return message;
             }

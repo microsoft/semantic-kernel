@@ -29,7 +29,7 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
         var function = kernel.CreateFunctionFromPromptYaml(generateStoryYaml);
 
         // Invoke the prompt function and display the result
-        WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Dog" },
                 { "length", "3" },
@@ -40,7 +40,7 @@ public sealed class Step3_Yaml_Prompt(ITestOutputHelper output) : BaseTest(outpu
         function = kernel.CreateFunctionFromPromptYaml(generateStoryHandlebarsYaml, new HandlebarsPromptTemplateFactory());
 
         // Invoke the prompt function and display the result
-        WriteLine(await kernel.InvokeAsync(function, arguments: new()
+        Console.WriteLine(await kernel.InvokeAsync(function, arguments: new()
             {
                 { "topic", "Cat" },
                 { "length", "3" },
