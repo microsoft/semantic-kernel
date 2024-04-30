@@ -13,12 +13,12 @@ namespace Examples;
 /// This example demonstrates how to create native functions for AI to call as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class Planner(ITestOutputHelper output) : BaseTest(output)
+public class Planner(ITestOutputHelper output) : LearnBaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Planner ========");
+        Console.WriteLine("======== Planner ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -26,7 +26,7 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -45,12 +45,12 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
         ChatHistory history = [];
 
         // Start the conversation
-        Write("User > ");
+        Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Get user input
-            Write("User > ");
+            Console.Write("User > ");
             history.AddUserMessage(userInput!);
 
             // Enable auto function calling
@@ -72,19 +72,19 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
             {
                 if (content.Role.HasValue && first)
                 {
-                    Write("Assistant > ");
+                    Console.Write("Assistant > ");
                     first = false;
                 }
-                Write(content.Content);
+                Console.Write(content.Content);
                 fullMessage += content.Content;
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Add the message from the agent to the chat history
             history.AddAssistantMessage(fullMessage);
 
             // Get user input again
-            Write("User > ");
+            Console.Write("User > ");
         }
     }
 }

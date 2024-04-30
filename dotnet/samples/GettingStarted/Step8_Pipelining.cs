@@ -23,7 +23,7 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
         builder.Services.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Trace));
         Kernel kernel = builder.Build();
 
-        WriteLine("================ PIPELINE ================");
+        Console.WriteLine("================ PIPELINE ================");
         {
             // Create a pipeline of functions that will parse a string into an int, multiply it by a double, truncate it to an int, and then humanize it.
             KernelFunction parseInt32 = KernelFunctionFactory.CreateFromMethod((string s) => double.Parse(s, CultureInfo.InvariantCulture), "parseInt32");
@@ -45,10 +45,10 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
             // - The parseInt32 function will be invoked, read "123.456" from the arguments, and parse it into (double)123.456.
             // - The multiplyByN function will be invoked, with i=123.456 and n=78.90, and return (double)9740.6784.
             // - The truncate function will be invoked, with d=9740.6784, and return (int)9740, which will be the final result.
-            WriteLine(await pipeline.InvokeAsync(kernel, args));
+            Console.WriteLine(await pipeline.InvokeAsync(kernel, args));
         }
 
-        WriteLine("================ GRAPH ================");
+        Console.WriteLine("================ GRAPH ================");
         {
             KernelFunction rand = KernelFunctionFactory.CreateFromMethod(() => Random.Shared.Next(), "GetRandomInt32");
             KernelFunction mult = KernelFunctionFactory.CreateFromMethod((int i, int j) => i * j, "Multiply");
@@ -63,7 +63,7 @@ public sealed class Step8_Pipelining(ITestOutputHelper output) : BaseTest(output
                 (mult, "")
             }, "graph");
 
-            WriteLine(await graph.InvokeAsync(kernel));
+            Console.WriteLine(await graph.InvokeAsync(kernel));
         }
     }
 }
