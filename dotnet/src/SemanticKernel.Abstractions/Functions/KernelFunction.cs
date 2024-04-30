@@ -282,7 +282,7 @@ public abstract class KernelFunction
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
-        ILogger logger = kernel.LoggerFactory.CreateLogger($"Microsoft.SemanticKernel.KernelFunction.{this.Name}") ?? NullLogger.Instance;
+        ILogger logger = kernel.LoggerFactory.CreateLogger($"{this.GetType()}.{this.Name}") ?? NullLogger.Instance;
 
         arguments ??= [];
         logger.LogFunctionStreamingInvoking(this.Name);
