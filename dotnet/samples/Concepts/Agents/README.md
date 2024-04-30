@@ -22,13 +22,20 @@ MixedChat|How to combine different agent types.
 ComplexChat|How to deveop complex agent chat solutions.
 Legacy|How to use the legacy _Experimental Agent API_.
 
+## Legacy Agents
+
+Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
+[Microsoft.SemanticKernel.Experimental.Agents](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Experimental/Agents)
+
+This package has been superceded by the _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
+
 ## Running Examples
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
 
 You can also run specific examples via the command-line by using test filters (`dotnet test --filter`). Type `dotnet test --help` at the command line for more details.
 
 Example:
-
+    
 ```
 dotnet test --filter OpenAIAssistant_CodeInterpreter
 ```

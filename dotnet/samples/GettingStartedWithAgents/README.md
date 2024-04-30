@@ -1,6 +1,6 @@
 # Semantic Kernel Agents - Getting Started
 
-This project contains a step by step guide to get started with the _Semantic Kernel Agents_.
+This project contains a step by step guide to get started with  _Semantic Kernel Agents_.
 
 
 #### NuGet:
@@ -26,6 +26,13 @@ Example|Description
 [Step5_JsonResult](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step5_JsonResult.cs)|How to have an agent produce JSON.
 [Step6_DependencyInjection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step6_DependencyInjection.cs)|How to define dependency injection patterns for agents.
 [Step7_OpenAIAssistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/Step7_OpenAIAssistant.cs)|How to create an Open AI Assistant agent.
+
+## Legacy Agents
+
+Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
+[Microsoft.SemanticKernel.Experimental.Agents](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Experimental/Agents)
+
+This package has been superceded by the _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
 
 
 ## Running Examples with Filters
