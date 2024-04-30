@@ -19,7 +19,7 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
 
     private void WriteSampleHeading(string name)
     {
-        WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
+        Console.WriteLine($"======== [Handlebars Planner] Sample {s_sampleIndex++} - Create and Execute Plan with: {name} ========");
     }
 
     private async Task<Kernel?> SetupKernelAsync(params string[] pluginDirectoryNames)
@@ -31,7 +31,7 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
 
         if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
         {
-            WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
+            Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return null;
         }
 
@@ -77,15 +77,15 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
 
     private void PrintPlannerDetails(string goal, HandlebarsPlan plan, string result, bool shouldPrintPrompt)
     {
-        WriteLine($"Goal: {goal}");
-        WriteLine($"\nOriginal plan:\n{plan}");
-        WriteLine($"\nResult:\n{result}\n");
+        Console.WriteLine($"Goal: {goal}");
+        Console.WriteLine($"\nOriginal plan:\n{plan}");
+        Console.WriteLine($"\nResult:\n{result}\n");
 
         // Print the prompt template
         if (shouldPrintPrompt && plan.Prompt is not null)
         {
-            WriteLine("\n======== CreatePlan Prompt ========");
-            WriteLine(plan.Prompt);
+            Console.WriteLine("\n======== CreatePlan Prompt ========");
+            Console.WriteLine(plan.Prompt);
         }
     }
 
@@ -149,7 +149,7 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
         }
         catch (Exception e)
         {
-            WriteLine(e.InnerException?.Message);
+            Console.WriteLine(e.InnerException?.Message);
         }
     }
 
@@ -371,8 +371,8 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
             }
             catch (HttpRequestException e)
             {
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                System.Console.WriteLine("\nException Caught!");
+                System.Console.WriteLine("Message :{0} ", e.Message);
                 return "";
             }
         }

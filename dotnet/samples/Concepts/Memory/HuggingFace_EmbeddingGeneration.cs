@@ -15,7 +15,7 @@ public class HuggingFace_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
     [RetryFact(typeof(HttpOperationException))]
     public async Task RunInferenceApiEmbeddingAsync()
     {
-        this.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
+        Console.WriteLine("\n======= Hugging Face Inference API - Embedding Example ========\n");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddHuggingFaceTextEmbeddingGeneration(
@@ -28,6 +28,6 @@ public class HuggingFace_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         // Generate embeddings for each chunk.
         var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(["John: Hello, how are you?\nRoger: Hey, I'm Roger!"]);
 
-        this.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
+        Console.WriteLine($"Generated {embeddings.Count} embeddings for the provided text");
     }
 }

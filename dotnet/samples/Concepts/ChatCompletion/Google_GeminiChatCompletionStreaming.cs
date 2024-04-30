@@ -11,14 +11,14 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
     [Fact]
     public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Google AI - Gemini Chat Completion =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            this.WriteLine("Gemini credentials not found. Skipping example.");
+            Console.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
@@ -34,7 +34,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
     [Fact]
     public async Task VertexAIAsync()
     {
-        this.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
+        Console.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 
         string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -43,7 +43,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
 
         if (geminiBearerKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -88,7 +88,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
 
     private async Task StreamingChatAsync(Kernel kernel)
     {
-        this.WriteLine("======== Streaming Chat ========");
+        Console.WriteLine("======== Streaming Chat ========");
 
         var chatHistory = new ChatHistory();
         var chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -119,8 +119,8 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
     {
         var message = chatHistory.Last();
 
-        this.WriteLine($"{message.Role}: {message.Content}");
-        this.WriteLine("------------------------");
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }
@@ -133,16 +133,16 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
         {
             if (first)
             {
-                this.Write($"{chatMessage.Role}: ");
+                Console.Write($"{chatMessage.Role}: ");
                 first = false;
             }
 
-            this.Write(chatMessage.Content);
+            Console.Write(chatMessage.Content);
             messageBuilder.Append(chatMessage.Content);
         }
 
-        this.WriteLine();
-        this.WriteLine("------------------------");
+        Console.WriteLine();
+        Console.WriteLine("------------------------");
         return new ChatMessageContent(AuthorRole.Assistant, messageBuilder.ToString());
     }
 }

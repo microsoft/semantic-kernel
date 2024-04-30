@@ -29,19 +29,19 @@ public sealed class Step2_Add_Plugins(ITestOutputHelper output) : BaseTest(outpu
         Kernel kernel = kernelBuilder.Build();
 
         // Example 1. Invoke the kernel with a prompt that asks the AI for information it cannot provide and may hallucinate
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas?"));
 
         // Example 2. Invoke the kernel with a templated prompt that invokes a plugin and display the result
-        WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
+        Console.WriteLine(await kernel.InvokePromptAsync("The current time is {{TimeInformation.GetCurrentUtcTime}}. How many days until Christmas?"));
 
         // Example 3. Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
 
         // Example 4. Invoke the kernel with a prompt and allow the AI to automatically invoke functions that use enumerations
-        WriteLine(await kernel.InvokePromptAsync("Create a handy lime colored widget for me.", new(settings)));
-        WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
-        WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("Create a handy lime colored widget for me.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("Create a beautiful scarlet colored widget for me.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("Create an attractive maroon and navy colored widget for me.", new(settings)));
     }
 
     /// <summary>
