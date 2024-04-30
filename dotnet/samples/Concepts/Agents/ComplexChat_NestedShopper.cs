@@ -17,7 +17,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
 {
     protected override bool ForceOpenAI => true;
 
-    private const string LeaderName = "Spokesperson";
+    private const string LeaderName = "TaskLeader";
     private const string LeaderInstructions =
         """
         Your job is to clearly and directly communicate the current assistant response to the user.
@@ -101,7 +101,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatCompletionsResponseFormat.JsonObject };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
-        ChatCompletionAgent agentManager = CreateAgent(LeaderName, LeaderInstructions);
+        ChatCompletionAgent agentLeader = CreateAgent(LeaderName, LeaderInstructions);
         ChatCompletionAgent agentShopper = CreateAgent(ShopperName, ShopperInstructions);
         ChatCompletionAgent agentReviewer = CreateAgent(ReviewerName, ReviewerInstructions);
 
@@ -182,7 +182,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             };
 
         AgentGroupChat CreateChat() =>
-                new(agentManager, agentReviewer, agentShopper)
+                new(agentLeader, agentReviewer, agentShopper)
                 {
                     ExecutionSettings =
                         new()
@@ -204,7 +204,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                             TerminationStrategy =
                                 new AgentTerminationStrategy()
                                 {
-                                    Agents = [agentManager],
+                                    Agents = [agentLeader],
                                     MaximumIterations = 7,
                                     AutomaticReset = true,
                                 },
