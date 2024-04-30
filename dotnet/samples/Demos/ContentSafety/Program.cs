@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Azure;
 using Azure.AI.ContentSafety;
 using ContentSafety.Extensions;
@@ -15,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")
-    .AddJsonFile("appsettings.Development.json")
+    .AddJsonFile("appsettings.Development.json", true)
+    .AddUserSecrets(Assembly.GetExecutingAssembly())
     .Build();
 
 var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
@@ -31,7 +33,7 @@ builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
 
 // Add Semantic Kernel
 builder.Services.AddKernel();
-builder.Services.AddOpenAIChatCompletion(openAIOptions.ModelId, openAIOptions.ApiKey);
+builder.Services.AddOpenAIChatCompletion(openAIOptions.ChatModelId, openAIOptions.ApiKey);
 
 // Add Semantic Kernel prompt content safety filters
 builder.Services.AddSingleton<IPromptRenderFilter, TextModerationFilter>();

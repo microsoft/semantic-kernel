@@ -12,7 +12,7 @@ public class OpenAIOptions
     public const string SectionName = "OpenAI";
 
     [Required]
-    public string ModelId { get; set; }
+    public string ChatModelId { get; set; }
 
     [Required]
     public string ApiKey { get; set; }
