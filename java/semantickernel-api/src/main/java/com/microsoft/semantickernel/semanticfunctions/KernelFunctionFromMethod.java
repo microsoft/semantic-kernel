@@ -554,6 +554,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             .collect(Collectors.toList());
     }
 
+    @Nullable
     private static InputVariable toKernelParameterMetadata(Parameter parameter) {
         KernelFunctionParameter annotation = parameter.getAnnotation(
             KernelFunctionParameter.class);
