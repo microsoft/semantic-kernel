@@ -27,7 +27,7 @@ Legacy|How to use the legacy _Experimental Agent API_.
 Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
 [Microsoft.SemanticKernel.Experimental.Agents](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Experimental/Agents)
 
-This package has been superceded by the _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
+This package has been superseded by the _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
 
 ## Running Examples
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
