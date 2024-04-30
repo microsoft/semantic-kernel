@@ -8,6 +8,7 @@ import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.api.Schema;
 import com.google.cloud.vertexai.api.Tool;
+import com.google.cloud.vertexai.api.Type;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.microsoft.semantickernel.Kernel;
@@ -17,6 +18,7 @@ import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
+import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -55,7 +57,9 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
     @Override
     public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
-        return null;
+        GeminiXMLPromptParser.GeminiParsedPrompt parsedPrompt = GeminiXMLPromptParser.parse(prompt);
+
+        return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel, invocationContext);
     }
 
     private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(List<Content> contents, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
@@ -105,7 +109,35 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             if (invocationContext.getToolCallBehavior() != null) {
                 ToolCallBehavior toolCallBehavior = invocationContext.getToolCallBehavior();
 
-                // TODO: Add tool calls
+                if (kernel != null) {
+                    Tool.Builder tool = Tool.newBuilder();
+
+                    kernel.getPlugins()
+                            .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
+                                FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
+                                functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), name));
+                                functionBuilder.setDescription(function.getDescription());
+
+                                List<InputVariable> parameters = function.getMetadata().getParameters();
+                                if (parameters != null && !parameters.isEmpty()) {
+                                    Schema.Builder parametersBuilder = Schema.newBuilder();
+
+                                    function.getMetadata().getParameters().forEach(parameter -> {
+                                        parametersBuilder.setDescription(parameter.getDescription());
+                                        parametersBuilder.setType(Type.OBJECT);
+                                    });
+
+                                    functionBuilder.setParameters(parametersBuilder.build());
+                                }
+
+                                tool.addFunctionDeclarations(functionBuilder.build());
+                            }));
+
+                    List<Tool> tools = new ArrayList<>();
+                    tools.add(tool.build());
+
+                    modelBuilder.setTools(tools);
+                }
             }
         }
 
