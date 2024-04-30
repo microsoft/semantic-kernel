@@ -17,7 +17,7 @@ public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseT
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
+        Console.WriteLine("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -27,7 +27,7 @@ public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseT
 
         if (apiKey == null || deploymentName == null || modelId == null || endpoint == null)
         {
-            WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
+            Console.WriteLine("AzureOpenAI modelId, endpoint, apiKey, or deploymentName not found. Skipping example.");
             return;
         }
 
@@ -56,19 +56,19 @@ public class PromptFunctions_MultipleArguments(ITestOutputHelper output) : BaseT
 ";
 
         // This allows to see the prompt before it's sent to OpenAI
-        WriteLine("--- Rendered Prompt");
+        Console.WriteLine("--- Rendered Prompt");
         var promptTemplateFactory = new KernelPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(new PromptTemplateConfig(FunctionDefinition));
         var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
-        WriteLine(renderedPrompt);
+        Console.WriteLine(renderedPrompt);
 
         // Run the prompt / prompt function
         var haiku = kernel.CreateFunctionFromPrompt(FunctionDefinition, new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         // Show the result
-        WriteLine("--- Prompt Function result");
+        Console.WriteLine("--- Prompt Function result");
         var result = await kernel.InvokeAsync(haiku, arguments);
-        WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

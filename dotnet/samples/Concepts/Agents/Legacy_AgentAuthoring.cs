@@ -21,7 +21,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAgentAsync()
     {
-        WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
+        Console.WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
         try
         {
             // Initialize the agent with tools
@@ -30,8 +30,8 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
             // "Stream" messages as they become available
             await foreach (IChatMessage message in articleGenerator.InvokeAsync("Thai food is the best in the world"))
             {
-                WriteLine($"[{message.Id}]");
-                WriteLine($"# {message.Role}: {message.Content}");
+                Console.WriteLine($"[{message.Id}]");
+                Console.WriteLine($"# {message.Role}: {message.Content}");
             }
         }
         finally
@@ -43,7 +43,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginAsync()
     {
-        WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
+        Console.WriteLine($"======== {nameof(Legacy_AgentAuthoring)} ========");
         try
         {
             // Initialize the agent with tools
@@ -53,7 +53,7 @@ public class Legacy_AgentAuthoring(ITestOutputHelper output) : BaseTest(output)
             string response = await articleGenerator.AsPlugin().InvokeAsync("Thai food is the best in the world");
 
             // Display final result
-            WriteLine(response);
+            Console.WriteLine(response);
         }
         finally
         {

@@ -12,7 +12,7 @@ public class Arguments(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Arguments ========");
+        Console.WriteLine("======== Arguments ========");
 
         Kernel kernel = new();
         var textPlugin = kernel.ImportPluginFromType<StaticTextPlugin>();
@@ -27,17 +27,17 @@ public class Arguments(ITestOutputHelper output) : BaseTest(output)
 
         // Specify and get the value type as generic parameter
         string? resultValue = await kernel.InvokeAsync<string>(textPlugin["AppendDay"], arguments);
-        this.WriteLine($"string -> {resultValue}");
+        Console.WriteLine($"string -> {resultValue}");
 
         // If you need to access the result metadata, you can use the non-generic version to get the FunctionResult
         FunctionResult functionResult = await kernel.InvokeAsync(textPlugin["AppendDay"], arguments);
         var metadata = functionResult.Metadata;
 
         // Specify the type from the FunctionResult
-        this.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
+        Console.WriteLine($"FunctionResult.GetValue<string>() -> {functionResult.GetValue<string>()}");
 
         // FunctionResult.ToString() automatically converts the result to string
-        this.WriteLine($"FunctionResult.ToString() -> {functionResult}");
+        Console.WriteLine($"FunctionResult.ToString() -> {functionResult}");
     }
 
     public sealed class StaticTextPlugin

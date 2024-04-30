@@ -29,7 +29,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     [Fact(Skip = "This test take more than 5 minutes to execute")]
     public async Task RunCollaborationAsync()
     {
-        WriteLine($"======== Example72:Collaboration:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
+        Console.WriteLine($"======== Example72:Collaboration:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
 
         IAgentThread? thread = null;
         try
@@ -82,7 +82,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
     [Fact(Skip = "This test take more than 2 minutes to execute")]
     public async Task RunAsPluginsAsync()
     {
-        WriteLine($"======== Example72:AsPlugins:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
+        Console.WriteLine($"======== Example72:AsPlugins:{(UseOpenAI ? "OpenAI" : "AzureAI")} ========");
 
         try
         {
@@ -104,7 +104,7 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
             var response = await coordinator.AsPlugin().InvokeAsync("concept: maps made out of egg cartons.");
 
             // Display final result
-            WriteLine(response);
+            Console.WriteLine(response);
         }
         finally
         {
@@ -156,14 +156,14 @@ public class Legacy_AgentCollaboration(ITestOutputHelper output) : BaseTest(outp
 
     private void DisplayMessage(IChatMessage message, IAgent? agent = null)
     {
-        WriteLine($"[{message.Id}]");
+        Console.WriteLine($"[{message.Id}]");
         if (agent != null)
         {
-            WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
+            Console.WriteLine($"# {message.Role}: ({agent.Name}) {message.Content}");
         }
         else
         {
-            WriteLine($"# {message.Role}: {message.Content}");
+            Console.WriteLine($"# {message.Role}: {message.Content}");
         }
     }
 

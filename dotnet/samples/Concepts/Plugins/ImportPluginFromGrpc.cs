@@ -28,6 +28,6 @@ public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
         // Run
         var result = await kernel.InvokeAsync(plugin["<operation-name>"], arguments);
 
-        WriteLine($"Plugin response: {result.GetValue<string>()}");
+        Console.WriteLine($"Plugin response: {result.GetValue<string>()}");
     }
 }

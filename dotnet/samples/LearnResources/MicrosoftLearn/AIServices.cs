@@ -13,7 +13,7 @@ public class AIServices(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== AI Services ========");
+        Console.WriteLine("======== AI Services ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -22,7 +22,7 @@ public class AIServices(ITestOutputHelper output) : BaseTest(output)
 
         if (endpoint is null || modelId is null || textModelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -33,7 +33,7 @@ public class AIServices(ITestOutputHelper output) : BaseTest(output)
 
         if (openAImodelId is null || openAItextModelId is null || openAIapiKey is null)
         {
-            WriteLine("OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
 
             return;
         }

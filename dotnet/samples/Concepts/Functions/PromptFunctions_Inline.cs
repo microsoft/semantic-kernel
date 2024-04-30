@@ -10,14 +10,14 @@ public class PromptFunctions_Inline(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Inline Function Definition ========");
+        Console.WriteLine("======== Inline Function Definition ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId is null || openAIApiKey is null)
         {
-            this.WriteLine("OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
         }
 
@@ -50,14 +50,14 @@ Event: {{$input}}
         var excuseFunction = kernel.CreateFunctionFromPrompt(promptTemplate, new OpenAIPromptExecutionSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "I missed the F1 final race" });
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         result = await kernel.InvokeAsync(excuseFunction, new() { ["input"] = "sorry I forgot your birthday" });
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateFunctionFromPrompt($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIPromptExecutionSettings() { MaxTokens = 100 });
 
         result = await kernel.InvokeAsync(fixedFunction);
-        this.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.GetValue<string>());
     }
 }
