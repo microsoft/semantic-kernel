@@ -14,7 +14,7 @@ public class MethodFunctions_Types(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine("======== Method Function types ========");
+        Console.WriteLine("======== Method Function types ========");
 
         var builder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);

@@ -74,14 +74,14 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        this.WriteLine($"# {AuthorRole.User}: '{input}'");
+        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())
         {
-            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
-        this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

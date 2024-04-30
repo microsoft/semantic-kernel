@@ -18,7 +18,7 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Kernel ========");
+        Console.WriteLine("======== Kernel ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -26,7 +26,7 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -44,7 +44,7 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
         // Get the current time
         // <InvokeUtcNow>
         var currentTime = await kernel.InvokeAsync("TimePlugin", "UtcNow");
-        WriteLine(currentTime);
+        Console.WriteLine(currentTime);
         // </InvokeUtcNow>
 
         // Write a poem with the WriterPlugin.ShortPoem function using the current time as input
@@ -53,7 +53,7 @@ public class UsingTheKernel(ITestOutputHelper output) : BaseTest(output)
         {
             { "input", currentTime }
         });
-        WriteLine(poemResult);
+        Console.WriteLine(poemResult);
         // </InvokeShortPoem>
     }
 }

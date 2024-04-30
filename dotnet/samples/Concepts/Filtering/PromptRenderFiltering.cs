@@ -31,7 +31,7 @@ public class PromptRenderFiltering(ITestOutputHelper output) : BaseTest(output)
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));
         var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class PromptRenderFiltering(ITestOutputHelper output) : BaseTest(output)
 
         var result = await kernel.InvokePromptAsync("Hi, how can you help me?");
 
-        WriteLine(result);
+        Console.WriteLine(result);
 
         // Output:
         // Prompt from filter

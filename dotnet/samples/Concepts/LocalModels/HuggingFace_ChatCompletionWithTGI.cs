@@ -17,7 +17,7 @@ public class HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : BaseT
     [Fact(Skip = "Requires TGI (text generation inference) deployment")]
     public async Task RunTGI_ChatCompletionAsync()
     {
-        WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
+        Console.WriteLine("\n======== HuggingFace - TGI Chat Completion ========\n");
 
         // This example was run against one of the chat completion (Message API) supported models from HuggingFace, listed in here: <see href="https://huggingface.co/docs/text-generation-inference/main/en/supported_models"/>
         // Starting a Local Docker i.e:
@@ -42,8 +42,8 @@ public class HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : BaseT
 
         var result = await chatCompletion.GetChatMessageContentAsync(chatHistory);
 
-        WriteLine(result.Role);
-        WriteLine(result.Content);
+        Console.WriteLine(result.Role);
+        Console.WriteLine(result.Content);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public class HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : BaseT
     [Fact(Skip = "Requires TGI (text generation inference) deployment")]
     public async Task RunTGI_StreamingChatCompletionAsync()
     {
-        WriteLine("\n======== HuggingFace - TGI Chat Completion Streaming ========\n");
+        Console.WriteLine("\n======== HuggingFace - TGI Chat Completion Streaming ========\n");
 
         // This example was run against one of the chat completion (Message API) supported models from HuggingFace, listed in here: <see href="https://huggingface.co/docs/text-generation-inference/main/en/supported_models"/>
         // Starting a Local Docker i.e:
@@ -81,9 +81,9 @@ public class HuggingFace_ChatCompletionWithTGI(ITestOutputHelper output) : BaseT
             if (role is null)
             {
                 role = chatMessageChunk.Role;
-                Write(role);
+                Console.Write(role);
             }
-            Write(chatMessageChunk.Content);
+            Console.Write(chatMessageChunk.Content);
         }
     }
 }

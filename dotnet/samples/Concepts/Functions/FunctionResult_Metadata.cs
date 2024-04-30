@@ -9,7 +9,7 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
     [Fact]
     public async Task GetTokenUsageMetadataAsync()
     {
-        WriteLine("======== Inline Function Definition + Invocation ========");
+        Console.WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
         var kernel = Kernel.CreateBuilder()
@@ -26,15 +26,15 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
         FunctionResult result = await kernel.InvokeAsync(myFunction, new() { ["input"] = "travel" });
 
         // Display results
-        WriteLine(result.GetValue<string>());
-        WriteLine(result.Metadata?["Usage"]?.AsJson());
-        WriteLine();
+        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.Metadata?["Usage"]?.AsJson());
+        Console.WriteLine();
     }
 
     [Fact]
     public async Task GetFullModelMetadataAsync()
     {
-        WriteLine("======== Inline Function Definition + Invocation ========");
+        Console.WriteLine("======== Inline Function Definition + Invocation ========");
 
         // Create kernel
         var kernel = Kernel.CreateBuilder()
@@ -51,9 +51,9 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
         FunctionResult result = await kernel.InvokeAsync(myFunction);
 
         // Display results
-        WriteLine(result.GetValue<string>());
-        WriteLine(result.Metadata?.AsJson());
-        WriteLine();
+        Console.WriteLine(result.GetValue<string>());
+        Console.WriteLine(result.Metadata?.AsJson());
+        Console.WriteLine();
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class FunctionResult_Metadata(ITestOutputHelper output) : BaseTest(output
 
         await foreach (var content in kernel.InvokeStreamingAsync(myFunction))
         {
-            WriteLine(content.Metadata?.AsJson());
+            Console.WriteLine(content.Metadata?.AsJson());
         }
     }
 }

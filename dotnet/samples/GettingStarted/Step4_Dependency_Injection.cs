@@ -28,7 +28,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
         await foreach (var update in
                        kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
-            Write(update);
+            Console.Write(update);
         }
     }
 
