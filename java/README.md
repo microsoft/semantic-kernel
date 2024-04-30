@@ -22,6 +22,10 @@ The library is organized in a set of dependencies published to Maven Central. Fo
 
 Alternatively, check the `samples` folder for examples of common AI-enabled scenarios implemented with Semantic Kernel for Java.
 
+## Documentation
+
+The documentation is hosted on the Microsoft Learn platform. Visit [learn.microsoft.com/semantic-kernel/overview/?tabs=Java](https://learn.microsoft.com/semantic-kernel/overview/?tabs=Java).
+
 ## Discord community
 
 Join the [Microsoft Semantic Kernel Discord community](https://aka.ms/java-sk-discord) to discuss the Semantic Kernel
