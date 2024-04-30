@@ -20,7 +20,7 @@ public enum AggregatorMode
     /// <summary>
     /// A nested embedding the aggregated chat within another chat.
     /// </summary>
-    Hiearchical,
+    Nested,
 }
 
 /// <summary>

@@ -24,6 +24,7 @@ internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 
         await foreach (ChatMessageContent message in this._chat.InvokeAsync(cancellationToken).ConfigureAwait(false))
         {
+            // For AggregatorMode.Flat, the entire aggregated chat is merged into the owning chat.
             if (agent.Mode == AggregatorMode.Flat)
             {
                 yield return message;
@@ -32,7 +33,9 @@ internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
             lastMessage = message;
         }
 
-        if (agent.Mode == AggregatorMode.Hiearchical && lastMessage != null)
+        // For AggregatorMode.Nested, only the final message is merged into the owning chat.
+        // The entire history is always preserved within nested chat, however.
+        if (agent.Mode == AggregatorMode.Nested && lastMessage != null)
         {
             ChatMessageContent message =
                 new(lastMessage.Role, lastMessage.Items, lastMessage.ModelId, lastMessage.InnerContent, lastMessage.Encoding, lastMessage.Metadata)
@@ -46,6 +49,7 @@ internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 
     protected internal override Task ReceiveAsync(IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        // Always recieve the initial history from the owning chat.
         this._chat.AddChatMessages([.. history]);
 
         return Task.CompletedTask;

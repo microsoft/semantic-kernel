@@ -112,7 +112,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             new(CreateChat)
             {
                 Name = "Shopper",
-                Mode = AggregatorMode.Hiearchical,
+                Mode = AggregatorMode.Nested,
             };
 
         AgentGroupChat chat =

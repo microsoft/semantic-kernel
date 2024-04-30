@@ -20,7 +20,7 @@ public class AggregatorAgentTests
     /// Verify usage of <see cref="AggregatorAgent"/> through various states.
     /// </summary>
     [Theory]
-    [InlineData(AggregatorMode.Hiearchical, 0)]
+    [InlineData(AggregatorMode.Nested, 0)]
     [InlineData(AggregatorMode.Flat, 2)]
     public async Task VerifyAggregatorAgentUsageAsync(AggregatorMode mode, int modeOffset)
     {
