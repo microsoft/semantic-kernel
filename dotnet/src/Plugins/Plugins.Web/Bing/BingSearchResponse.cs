@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 /// <summary>
 /// Bing search response.
 /// </summary>
-internal class BingSearchResponse<T>
+internal sealed class BingSearchResponse<T>
 {
     /// <summary>
     /// Type hint, which is set to SearchResponse.
@@ -33,7 +33,7 @@ internal class BingSearchResponse<T>
 /// <summary>
 /// The query string that Bing used for the request.
 /// </summary>
-internal class BingQueryContext
+internal sealed class BingQueryContext
 {
     /// <summary>
     /// The query string as specified in the request.

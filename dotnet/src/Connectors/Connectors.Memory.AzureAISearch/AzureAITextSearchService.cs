@@ -78,6 +78,12 @@ public sealed class AzureAITextSearchService : ITextSearchService
                 SearchResults<SearchDocument>? searchResults = response.Value;
                 return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.SnippetField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
+            if (typeof(T) == typeof(TextSearchResult))
+            {
+                var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
+                SearchResults<SearchDocument>? searchResults = response.Value;
+                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.NameField, azureSearchSettings.SnippetField, azureSearchSettings.LinkField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+            }
             else
             {
                 SearchResults<T>? searchResults = await searchClient.SearchAsync<T>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
@@ -132,6 +138,25 @@ public sealed class AzureAITextSearchService : ITextSearchService
             {
                 yield return snippetValue;
             }
+        }
+    }
+
+    private async IAsyncEnumerable<T> GetResultsAsync<T>(SearchResults<SearchDocument>? searchResults, string? nameField, string? snippetField, string? linkField, [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+    {
+        Verify.NotNull(snippetField);
+
+        if (searchResults is null)
+        {
+            yield break;
+        }
+
+        await foreach (SearchResult<SearchDocument> searchResult in searchResults.GetResultsAsync().ConfigureAwait(false))
+        {
+            var name = searchResult.Document.GetString(nameField!);
+            var snippet = searchResult.Document.GetString(snippetField!);
+            var link = searchResult.Document.GetString(linkField!);
+
+            yield return (T)(object)new TextSearchResult(name, snippet, link, searchResult.Document);
         }
     }
 

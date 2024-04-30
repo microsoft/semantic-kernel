@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 namespace Search;
 
 /// <summary>
-/// This example shows how to create and use a <see cref="ITextSearchService"/>.
+/// This example shows how to create and use a <see cref="BingTextSearchService"/>.
 /// </summary>
-public sealed class BingSearch(ITestOutputHelper output) : BaseTest(output)
+public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="BingTextSearchService"/> and use it to perform a text search.
@@ -23,7 +23,7 @@ public sealed class BingSearch(ITestOutputHelper output) : BaseTest(output)
     {
         var query = "What is the Semantic Kernel?";
 
-        // Create a search service with Azure AI search
+        // Create a search service with Bing search service
         var searchService = new BingTextSearchService(
             endpoint: TestConfiguration.Bing.Endpoint,
             apiKey: TestConfiguration.Bing.ApiKey);
@@ -47,8 +47,19 @@ public sealed class BingSearch(ITestOutputHelper output) : BaseTest(output)
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
+        // Search with TextSearchResult result type
+        KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>(query, new() { Count = 2, Offset = 4 });
+        await foreach (TextSearchResult result in textResults.Results)
+        {
+            WriteLine($"Name: {result.Name}");
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            WriteLine(result.Value);
+            WriteLine(result.Link);
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+
         // Search with a the default result type
-        KernelSearchResults<BingWebPage> fullResults = await searchService.SearchAsync<BingWebPage>(query, new() { Count = 2, Offset = 4 });
+        KernelSearchResults<BingWebPage> fullResults = await searchService.SearchAsync<BingWebPage>(query, new() { Count = 2, Offset = 6 });
         await foreach (BingWebPage result in fullResults.Results)
         {
             WriteLine($"Name: {result.Name}");

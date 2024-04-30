@@ -130,6 +130,14 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
             {
                 yield return itemT;
             }
+            else if (typeof(T) == typeof(string))
+            {
+                yield return (T)(object)item.Snippet;
+            }
+            else if (typeof(T) == typeof(TextSearchResult))
+            {
+                yield return (T)(object)new TextSearchResult(item.Title, item.Snippet, item.Link, item);
+            }
             else
             {
                 throw new NotSupportedException($"Type {typeof(T)} is not supported.");

@@ -106,9 +106,56 @@ The class diagram below shows the first option.
 - `IISearchService` is the base interface for all search services and just stores attributes for the service
 - `ITextSearchService` is the interface for text based search services. This cna be invoked with a text query to return a collection of search results.
 - `SearchExecutionSettings` provides execution settings for a search service. Some common settings e.g. `IndexName`, `Count`, `Offset` are defined.
-- `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations will support `string`, `KernelSearchResult` and whatever native types the connector implementation supports.
+- `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations must support `string`, `TextSearchResult` and whatever native types the connector implementation supports. Some implementations will also support custom types.
 
-
+- An AI must be able to perform searches with a search plugin and get back “results” of type `T`.
+  - 1
+  - 2
+  - 3
+- Application developers should be able to easily add a search plugin using a search connector with minimal lines of code (ideally one).
+  - 1
+  - 2
+  - 3
+- Application developers must be able to provide connector specific settings.
+  - 1
+  - 2
+  - 3
+- Application developers must be able to set required information e.g. `IndexName` for search providers.
+  - 1
+  - 2
+  - 3
+- Application developers must to be able to override the semantic descriptions of the search function(s) per instance registered via settings / inputs.
+  - 1
+  - 2
+  - 3
+- Application developers must be able to optionally define the execution settings of an embedding service with a default being provided by the Kernel.
+  - 1
+  - 2
+  - 3
+- Application developers must be able to support custom schemas for search connectors. No fields should be required.
+  - 1
+  - 2
+  - 3
+- Search service developers must be able to easily create a new search service that returns type `T`.
+  - 1
+  - 2
+  - 3
+- Search service developers must be able to easily create a new search connector return type that inherits from `SearchResultContent`.
+  - 1
+  - 2
+  - 3
+- Search service developers must be able to define the attributes of the search method (e.g., name, description, input names, input descriptions, return description).
+  - 1
+  - 2
+  - 3
+- Application developers must be ab able to import a vector DB search connection using an ML index file.
+  - 1
+  - 2
+  - 3
+- The design must be flexible to support future requirements and different search modalities.
+  - 1
+  - 2
+  - 3
 
 Evaluation
 

@@ -37,24 +37,28 @@ classDiagram
             SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
         }
 
-        class ISearchService {
-            <<interface>>
-            +IReadOnlyDictionary Attributes 
-        }
-
         class SearchExecutionSettings {
             +string Index
             +int Count
             +int Offset
             +IDictionary ExtensionData
         }
+
+        class TextSearchResult {
+            +string? Name
+            +string? Value
+            +string? Link
+        }
     }
 
     ITextSearchService ..> SearchExecutionSettings
     ITextSearchService ..> KernelSearchResults
-    ITextSearchService --|> ISearchService
     BingTextSearchService --|> ITextSearchService
     GoogleTextSearchService --|> ITextSearchService
     AzureAISearchService --|> ITextSearchService
     AzureAISearchExecutionSettings --|> SearchExecutionSettings
+
+    BingTextSearchService ..> TextSearchResult
+    GoogleTextSearchService ..> TextSearchResult
+    AzureAISearchService ..> TextSearchResult
 

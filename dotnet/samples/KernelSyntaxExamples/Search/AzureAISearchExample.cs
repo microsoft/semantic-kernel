@@ -14,7 +14,7 @@ namespace Search;
 /// <summary>
 /// This example shows how to create and use a <see cref="AzureAITextSearchService"/>.
 /// </summary>
-public sealed class AzureAISearch(ITestOutputHelper output) : BaseTest(output)
+public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Show how to create a <see cref="AzureAITextSearchService"/> and use it to perform a text search.
@@ -50,8 +50,20 @@ public sealed class AzureAISearch(ITestOutputHelper output) : BaseTest(output)
             WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
+        // Search with TextSearchResult result type
+        settings = new() { Index = IndexName, Count = 2, Offset = 2, NameField = "title", SnippetField = "chunk", LinkField = "metadata_spo_item_weburi" };
+        KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>(query, settings);
+        await foreach (TextSearchResult result in textResults.Results)
+        {
+            WriteLine($"Name: {result.Name}");
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            WriteLine(result.Value);
+            WriteLine(result.Link);
+            WriteLine("------------------------------------------------------------------------------------------------------------------");
+        }
+
         // Search with a the default result type
-        KernelSearchResults<SearchDocument> fullResults = await searchService.SearchAsync<SearchDocument>(query, new() { Index = IndexName, Count = 2, Offset = 4 });
+        KernelSearchResults<SearchDocument> fullResults = await searchService.SearchAsync<SearchDocument>(query, new() { Index = IndexName, Count = 2, Offset = 6 });
         await foreach (SearchDocument result in fullResults.Results)
         {
             WriteLine($"Title: {result.GetString("title")}");

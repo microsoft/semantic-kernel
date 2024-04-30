@@ -82,6 +82,25 @@ public sealed class BingTextSearchService : ITextSearchService
                 };
             }
         }
+        else if (typeof(T) == typeof(TextSearchResult))
+        {
+            var webPages = JsonSerializer.Deserialize<BingSearchResponse<BingWebPage>>(json);
+            if (webPages is not null && webPages.WebPages is not null)
+            {
+                searchResponse = new BingSearchResponse<T>()
+                {
+                    Type = webPages.Type,
+                    QueryContext = webPages.QueryContext,
+                    WebPages = new BingWebPages<T>()
+                    {
+                        Id = webPages.WebPages.Id,
+                        SomeResultsRemoved = webPages.WebPages.SomeResultsRemoved,
+                        TotalEstimatedMatches = webPages.WebPages.TotalEstimatedMatches,
+                        Value = webPages?.WebPages?.Value.Select(x => new TextSearchResult(x.Name, x.Snippet, x.Url, x)).ToList() as List<T>
+                    },
+                };
+            }
+        }
         else
         {
             searchResponse = JsonSerializer.Deserialize<BingSearchResponse<T>>(json);
