@@ -41,6 +41,21 @@ public abstract class AgentChat(ILogger logger)
     protected ChatHistory History { get; } = [];
 
     /// <summary>
+    /// Process a series of interactions between the agents participating in this chat.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Asynchronous enumeration of messages.</returns>
+    public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieve the chat history.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The message history</returns>
+    public IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(CancellationToken cancellationToken = default) =>
+        this.GetChatMessagesAsync(agent: null, cancellationToken);
+
+    /// <summary>
     /// Retrieve the message history, either the primary history or
     /// an agent specific version.
     /// </summary>
@@ -52,7 +67,7 @@ public abstract class AgentChat(ILogger logger)
     /// will throw exception if concurrent activity is attempted.
     /// </remarks>
     public async IAsyncEnumerable<ChatMessageContent> GetChatMessagesAsync(
-        Agent? agent = null,
+        Agent? agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
@@ -186,12 +201,18 @@ public abstract class AgentChat(ILogger logger)
 
             // Invoke agent & process response
             List<ChatMessageContent> messages = [];
-            await foreach (var message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
+            await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
                 this._logger.LogTrace("Message received: {Message}", message);  // %%% TAO - LOGGING PII (TRACE)
                 // Add to primary history
                 this.History.Add(message);
                 messages.Add(message);
+
+                if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
+                {
+                    // Don't expose internal messages to caller.
+                    continue;
+                }
 
                 // Yield message to caller
                 yield return message;
@@ -264,7 +285,7 @@ public abstract class AgentChat(ILogger logger)
 
     private string GetAgentHash(Agent agent)
     {
-        if (!this._channelMap.TryGetValue(agent, out var hash))
+        if (!this._channelMap.TryGetValue(agent, out string hash))
         {
             hash = KeyEncoder.GenerateHash(agent.GetChannelKeys());
 
