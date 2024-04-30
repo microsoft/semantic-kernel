@@ -11,7 +11,7 @@ namespace Examples;
 /// This example demonstrates how to configure prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/configure-prompts
 /// </summary>
-public class ConfiguringPrompts : BaseTest
+public class ConfiguringPrompts(ITestOutputHelper output) : LearnBaseTest(["Who were the Vikings?"], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -88,7 +88,7 @@ public class ConfiguringPrompts : BaseTest
         // Start the chat loop
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Get chat response
             var chatResult = kernel.InvokeStreamingAsync<StreamingChatMessageContent>(
@@ -120,10 +120,5 @@ public class ConfiguringPrompts : BaseTest
             // Get user input again
             Console.Write("User > ");
         }
-    }
-
-    public ConfiguringPrompts(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = ["Who were the Vikings?"];
     }
 }

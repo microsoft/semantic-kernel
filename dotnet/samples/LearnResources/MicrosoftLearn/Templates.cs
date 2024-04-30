@@ -10,7 +10,9 @@ namespace Examples;
 /// This example demonstrates how to templatize prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/templatizing-prompts
 /// </summary>
-public class Templates : BaseTest
+public class Templates(ITestOutputHelper output) : LearnBaseTest([
+            "Can you send an approval to the marketing team?",
+            "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -90,7 +92,7 @@ public class Templates : BaseTest
         {
             // Get user input
             Console.Write("User > ");
-            var request = ReadLine();
+            var request = Console.ReadLine();
 
             // Invoke prompt
             var intent = await kernel.InvokeAsync(
@@ -138,12 +140,5 @@ public class Templates : BaseTest
             history.AddUserMessage(request!);
             history.AddAssistantMessage(message);
         }
-    }
-
-    public Templates(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
     }
 }

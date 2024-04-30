@@ -3,19 +3,19 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 
-public sealed class TestConfiguration
+public sealed class TestConfiguration2
 {
     private readonly IConfigurationRoot _configRoot;
-    private static TestConfiguration? s_instance;
+    private static TestConfiguration2? s_instance;
 
-    private TestConfiguration(IConfigurationRoot configRoot)
+    private TestConfiguration2(IConfigurationRoot configRoot)
     {
         this._configRoot = configRoot;
     }
 
     public static void Initialize(IConfigurationRoot configRoot)
     {
-        s_instance = new TestConfiguration(configRoot);
+        s_instance = new TestConfiguration2(configRoot);
     }
 
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();

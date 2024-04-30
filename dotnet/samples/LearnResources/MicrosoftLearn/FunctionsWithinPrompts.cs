@@ -11,7 +11,9 @@ namespace Examples;
 /// This example demonstrates how to call functions within prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/calling-nested-functions
 /// </summary>
-public class FunctionsWithinPrompts : BaseTest
+public class FunctionsWithinPrompts(ITestOutputHelper output) : LearnBaseTest([
+            "Can you send an approval to the marketing team?",
+            "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -98,7 +100,7 @@ Assistant: "
         {
             // Get user input
             Console.Write("User > ");
-            var request = ReadLine();
+            var request = Console.ReadLine();
 
             // Invoke handlebars prompt
             var intent = await kernel.InvokeAsync(
@@ -147,12 +149,5 @@ Assistant: "
         }
 
         // </Chat>
-    }
-
-    public FunctionsWithinPrompts(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
     }
 }

@@ -13,7 +13,7 @@ namespace Examples;
 /// This example demonstrates how to create native functions for AI to call as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class Planner(ITestOutputHelper output) : BaseTest(output)
+public class Planner(ITestOutputHelper output) : LearnBaseTest(output)
 {
     [Fact]
     public async Task RunAsync()
@@ -47,7 +47,7 @@ public class Planner(ITestOutputHelper output) : BaseTest(output)
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Get user input
             Console.Write("User > ");

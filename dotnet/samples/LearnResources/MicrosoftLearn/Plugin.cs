@@ -12,7 +12,9 @@ namespace Examples;
 /// https://learn.microsoft.com/semantic-kernel/overview/
 /// This sample uses function calling, so it only works on models newer than 0613.
 /// </summary>
-public class Plugin : BaseTest
+public class Plugin(ITestOutputHelper output) : LearnBaseTest([
+            "Hello",
+            "Can you turn on the lights"], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -49,7 +51,7 @@ public class Plugin : BaseTest
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Add user input
             history.AddUserMessage(userInput);
@@ -76,13 +78,6 @@ public class Plugin : BaseTest
             Console.Write("User > ");
         }
         // </Chat>
-    }
-
-    public Plugin(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Hello",
-            "Can you turn on the lights"];
     }
 }
 

@@ -12,7 +12,9 @@ namespace Examples;
 /// This example demonstrates how to serialize prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/saving-prompts-as-files
 /// </summary>
-public class SerializingPrompts : BaseTest
+public class SerializingPrompts(ITestOutputHelper output) : LearnBaseTest([
+            "Can you send an approval to the marketing team?",
+            "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -69,7 +71,7 @@ public class SerializingPrompts : BaseTest
         // Start the chat loop
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             // Invoke handlebars prompt
             var intent = await kernel.InvokeAsync(
@@ -119,12 +121,5 @@ public class SerializingPrompts : BaseTest
             // Get user input again
             Console.Write("User > ");
         }
-    }
-
-    public SerializingPrompts(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
     }
 }

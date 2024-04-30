@@ -11,7 +11,7 @@ namespace Examples;
 /// This example demonstrates how to create native functions for AI to call as described at
 /// https://learn.microsoft.com/semantic-kernel/agents/plugins/using-the-KernelFunction-decorator
 /// </summary>
-public class CreatingFunctions : BaseTest
+public class CreatingFunctions(ITestOutputHelper output) : LearnBaseTest(["What is 49 diivided by 37?"], output)
 {
     [Fact]
     public async Task RunAsync()
@@ -55,7 +55,7 @@ public class CreatingFunctions : BaseTest
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) != null)
         {
             history.AddUserMessage(userInput);
 
@@ -94,10 +94,5 @@ public class CreatingFunctions : BaseTest
         }
 
         // </Chat>
-    }
-
-    public CreatingFunctions(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = ["What is 49 diivided by 37?"];
     }
 }
