@@ -43,7 +43,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        for (int messageIndex = messageCount; messageIndex < messageCount; messageIndex++)
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
         {
             ChatMessageContent message = chat[messageIndex];
 
