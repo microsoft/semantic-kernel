@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import os
 import time
 
@@ -24,14 +25,14 @@ pytestmark = pytest.mark.skipif(not pinecone_installed, reason="pinecone is not 
 async def retry(func, retries=1):
     for i in range(retries):
         try:
-            time.sleep(3)
+            await asyncio.sleep(3)
             return await func()
         except pinecone.core.client.exceptions.ForbiddenException as e:
             print(e)
-            time.sleep(i * 2)
+            await asyncio.sleep(i * 2)
         except pinecone.core.client.exceptions.ServiceException as e:
             print(e)
-            time.sleep(i * 2)
+            await asyncio.sleep(i * 2)
 
 
 @pytest.fixture(autouse=True, scope="module")

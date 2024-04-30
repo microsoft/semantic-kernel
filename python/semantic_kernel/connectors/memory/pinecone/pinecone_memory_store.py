@@ -64,6 +64,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         self._default_dimensionality = default_dimensionality
 
         self.pinecone = Pinecone(api_key=self._pinecone_api_key)
+        self.collection_names_cache = set()
 
     async def create_collection(
         self,
@@ -95,6 +96,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             self.pinecone.create_index(
                 name=collection_name, dimension=dimension_num, metric=distance_type, spec=index_spec
             )
+            self.collection_names_cache.add(collection_name)
 
     async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
         """Gets the description of the index.
@@ -128,6 +130,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         """
         if await self.does_collection_exist(collection_name):
             self.pinecone.delete_index(collection_name)
+            self.collection_names_cache.discard(collection_name)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -138,7 +141,13 @@ class PineconeMemoryStore(MemoryStoreBase):
         Returns:
             bool -- True if the collection exists; otherwise, False.
         """
-        return collection_name in self.pinecone.list_indexes().names()
+        if collection_name in self.collection_names_cache:
+            return True
+
+        index_collection_names = self.pinecone.list_indexes().names()
+        self.collection_names_cache |= set(index_collection_names)
+
+        return collection_name in index_collection_names
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
