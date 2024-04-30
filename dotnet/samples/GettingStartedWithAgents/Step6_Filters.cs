@@ -1,22 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.Filters;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Xunit;
-using Xunit.Abstractions;
 
-namespace Examples;
+namespace GettingStarted;
 
 /// <summary>
 /// Demonstrate usage of <see cref="AgentChat"/> with <see cref="IAgentChatFilter"/>.
 /// </summary>
-public class Example04_Filters(ITestOutputHelper output) : BaseTest(output)
+public class Step6_Filters(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
