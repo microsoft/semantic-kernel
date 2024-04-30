@@ -22,10 +22,6 @@ var config = new ConfigurationBuilder()
 var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
 var azureContentSafetyOptions = config.GetValid<AzureContentSafetyOptions>(AzureContentSafetyOptions.SectionName);
 
-builder.Services
-    .AddOptions<AzureContentSafetyOptions>()
-    .Bind(config.GetRequiredSection(AzureContentSafetyOptions.SectionName));
-
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
@@ -39,14 +35,19 @@ builder.Services.AddSingleton<IPromptRenderFilter, TextModerationFilter>();
 builder.Services.AddSingleton<IPromptRenderFilter, AttackDetectionFilter>();
 
 // Add Azure AI Content Safety services
-builder.Services.AddSingleton<ContentSafetyClient>((serviceProvider) =>
+builder.Services.AddSingleton<ContentSafetyClient>(_ =>
 {
     return new ContentSafetyClient(
         new Uri(azureContentSafetyOptions.Endpoint),
         new AzureKeyCredential(azureContentSafetyOptions.ApiKey));
 });
 
-builder.Services.AddSingleton<PromptShieldService>();
+builder.Services.AddSingleton<PromptShieldService>(serviceProvider =>
+{
+    return new PromptShieldService(
+        serviceProvider.GetRequiredService<ContentSafetyClient>(),
+        azureContentSafetyOptions);
+});
 
 // Add exception handlers
 builder.Services.AddExceptionHandler<ContentSafetyExceptionHandler>();

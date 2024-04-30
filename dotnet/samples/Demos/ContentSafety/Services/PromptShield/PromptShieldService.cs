@@ -4,7 +4,6 @@ using System.Text.Json;
 using Azure.AI.ContentSafety;
 using Azure.Core;
 using ContentSafety.Options;
-using Microsoft.Extensions.Options;
 
 namespace ContentSafety.Services.PromptShield;
 
@@ -14,11 +13,11 @@ namespace ContentSafety.Services.PromptShield;
 /// </summary>
 public class PromptShieldService(
     ContentSafetyClient contentSafetyClient,
-    IOptions<AzureContentSafetyOptions> azureContentSafetyOptions,
+    AzureContentSafetyOptions azureContentSafetyOptions,
     string apiVersion = "2024-02-15-preview")
 {
     private readonly ContentSafetyClient _contentSafetyClient = contentSafetyClient;
-    private readonly AzureContentSafetyOptions _azureContentSafetyOptions = azureContentSafetyOptions.Value;
+    private readonly AzureContentSafetyOptions _azureContentSafetyOptions = azureContentSafetyOptions;
     private readonly string _apiVersion = apiVersion;
 
     private Uri PromptShieldEndpoint
