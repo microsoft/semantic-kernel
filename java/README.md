@@ -1,38 +1,20 @@
-# Semantic Kernel for Java
+# Get Started with Semantic Kernel for Java ⚡
 
-Semantic Kernel (SK) is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
-Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box.
+## Overview
 
-To learn more about Microsoft Semantic Kernel, visit
+Semantic Kernel is a lightweight foundation that lets you easily mix conventional programming languages with the latest in
+Large Language Model (LLM) AI "prompts" with templating, chaining, and planning capabilities out-of-the-box. To learn more about Microsoft Semantic Kernel, visit
 the [Microsoft Semantic Kernel documentation](https://learn.microsoft.com/en-us/semantic-kernel/whatissk).
 
 The Microsoft Semantic Kernel for Java is a library that implements the key concepts and foundations of Microsoft Semantic Kernel. It is designed
 to be used in Java applications in both client (desktop, mobile, CLIs) and server environments in an idiomatic way, and to be easily integrated with other Java libraries
 and frameworks.
 
-## Get started
+## OpenAI / Azure OpenAI API keys
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://openai.com/api/)
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
-
-### Requirements
-
-To build the Semantic Kernel for Java, you will need:
-
-- **Required**:
-  - [OpenJDK 17](https://microsoft.com/openjdk/) or newer
-
-### Build the Semantic Kernel
-
-1. Clone this repository
-
-        git clone -b java-development https://github.com/microsoft/semantic-kernel/
-
-2. Build the project with the Maven Wrapper
-
-        cd semantic-kernel/java
-        ./mvnw install
 
 ## Using the Semantic Kernel for Java
 
@@ -46,6 +28,24 @@ Join the [Microsoft Semantic Kernel Discord community](https://aka.ms/java-sk-di
 and get help from the community. We have a `#java` channel for Java-specific questions.
 
 ## Contributing
+
+### Requirements
+
+To build the Semantic Kernel for Java, you will need:
+
+- **Required**:
+  - [JDK 17](https://microsoft.com/openjdk/) or newer
+
+### Build the Semantic Kernel
+
+1. Clone this repository
+
+        git clone -b java-development https://github.com/microsoft/semantic-kernel/
+
+2. Build the project with the Maven Wrapper
+
+        cd semantic-kernel/java
+        ./mvnw install
 
 ### Testing locally
 
