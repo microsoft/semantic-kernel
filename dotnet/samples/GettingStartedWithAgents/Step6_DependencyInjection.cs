@@ -12,7 +12,7 @@ namespace GettingStarted;
 /// <summary>
 /// Demonstrate creation of an agent via dependency injection.
 /// </summary>
-public class Step6_AgentInjection(ITestOutputHelper output) : BaseTest(output)
+public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(output)
 {
     private const string TutorName = "Tutor";
     private const string TutorInstructions =
