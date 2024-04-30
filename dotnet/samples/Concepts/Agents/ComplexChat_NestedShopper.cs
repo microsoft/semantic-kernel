@@ -17,8 +17,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
 {
     protected override bool ForceOpenAI => true;
 
-    private const string LeaderName = "TaskLeader";
-    private const string LeaderInstructions =
+    private const string InternalLeaderName = "InternalLeader";
+    private const string InternalLeaderInstructions =
         """
         Your job is to clearly and directly communicate the current assistant response to the user.
 
@@ -29,8 +29,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Do not come up with your own shopping suggestions.
         """;
 
-    private const string ShopperName = "PersonalShopper";
-    private const string ShopperInstructions =
+    private const string InternalGiftIdeaAgentName = "InternalGiftIdeas";
+    private const string InternalGiftIdeaAgentInstructions =
         """        
         You are a personal shopper that provides gift ideas.
 
@@ -45,8 +45,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Always immediately incorporate review feedback and provide an updated response.
         """;
 
-    private const string ReviewerName = "ShopperReviewer";
-    private const string ReviewerInstructions =
+    private const string InternalGiftReviewerName = "InternalGiftReviewer";
+    private const string InternalGiftReviewerInstructions =
         """
         Review the most recent shopping response.
 
@@ -58,16 +58,16 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         Select which participant will take the next turn based on the conversation history.
         
         Only choose from these participants:
-        - {{{ShopperName}}}
-        - {{{ReviewerName}}}
-        - {{{LeaderName}}}
+        - {{{InternalGiftIdeaAgentName}}}
+        - {{{InternalGiftReviewerName}}}
+        - {{{InternalLeaderName}}}
         
         Choose the next participant according to the action of the most recent participant:
-        - After user input, it is {{{ShopperName}}}'a turn.
-        - After {{{ShopperName}}} replies with ideas, it is {{{ReviewerName}}}'s turn.
-        - After {{{ShopperName}}} requests additional information, it is {{{LeaderName}}}'s turn.
-        - After {{{ReviewerName}}} provides feedback or instruction, it is {{{ShopperName}}}'s turn.
-        - After {{{ReviewerName}}} states the {{{ShopperName}}}'s response is adequate, it is {{{LeaderName}}}'s turn.
+        - After user input, it is {{{InternalGiftIdeaAgentName}}}'a turn.
+        - After {{{InternalGiftIdeaAgentName}}} replies with ideas, it is {{{InternalGiftReviewerName}}}'s turn.
+        - After {{{InternalGiftIdeaAgentName}}} requests additional information, it is {{{InternalLeaderName}}}'s turn.
+        - After {{{InternalGiftReviewerName}}} provides feedback or instruction, it is {{{InternalGiftIdeaAgentName}}}'s turn.
+        - After {{{InternalGiftReviewerName}}} states the {{{InternalGiftIdeaAgentName}}}'s response is adequate, it is {{{InternalLeaderName}}}'s turn.
                 
         Respond in JSON format.  The JSON schema can include only:
         {
@@ -101,22 +101,22 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatCompletionsResponseFormat.JsonObject };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
 
-        ChatCompletionAgent agentLeader = CreateAgent(LeaderName, LeaderInstructions);
-        ChatCompletionAgent agentShopper = CreateAgent(ShopperName, ShopperInstructions);
-        ChatCompletionAgent agentReviewer = CreateAgent(ReviewerName, ReviewerInstructions);
+        ChatCompletionAgent internalLeaderAgent = CreateAgent(InternalLeaderName, InternalLeaderInstructions);
+        ChatCompletionAgent internalGiftIdeaAgent = CreateAgent(InternalGiftIdeaAgentName, InternalGiftIdeaAgentInstructions);
+        ChatCompletionAgent internalGiftReviewerAgent = CreateAgent(InternalGiftReviewerName, InternalGiftReviewerInstructions);
 
         KernelFunction innerSelectionFunction = KernelFunctionFactory.CreateFromPrompt(InnerSelectionInstructions, jsonSettings);
         KernelFunction outerTerminationFunction = KernelFunctionFactory.CreateFromPrompt(OuterTerminationInstructions, jsonSettings);
 
-        AggregatorAgent agentShopperGroup =
+        AggregatorAgent personalShopperAgent =
             new(CreateChat)
             {
-                Name = "Shopper",
+                Name = "PersonalShopper",
                 Mode = AggregatorMode.Nested,
             };
 
         AgentGroupChat chat =
-            new(agentShopperGroup)
+            new(personalShopperAgent)
             {
                 ExecutionSettings =
                     new()
@@ -154,23 +154,23 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         this.WriteLine(">>>> AGGREGATED CHAT");
         this.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-        await foreach (var content in chat.GetChatMessagesAsync(agentShopperGroup).Reverse())
+        await foreach (var content in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            this.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
         async Task InvokeChatAsync(string input)
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($">>>> {AuthorRole.User}: '{input}'");
+            this.WriteLine($"# {AuthorRole.User}: '{input}'");
 
-            await foreach (var content in chat.InvokeAsync(agentShopperGroup))
+            await foreach (var content in chat.InvokeAsync(personalShopperAgent))
             {
-                this.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
 
-            this.WriteLine($"\n>>>> IS COMPLETE: {chat.IsComplete}");
+            this.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");
         }
 
         ChatCompletionAgent CreateAgent(string agentName, string agentInstructions) =>
@@ -182,7 +182,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             };
 
         AgentGroupChat CreateChat() =>
-                new(agentLeader, agentReviewer, agentShopper)
+                new(internalLeaderAgent, internalGiftReviewerAgent, internalGiftIdeaAgent)
                 {
                     ExecutionSettings =
                         new()
@@ -196,7 +196,9 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                                             AgentSelectionResult? jsonResult = JsonResultTranslator.Translate<AgentSelectionResult>(result.GetValue<string>());
 
                                             string? agentName = string.IsNullOrWhiteSpace(jsonResult?.name) ? null : jsonResult?.name;
-                                            agentName ??= ShopperName;
+                                            agentName ??= InternalGiftIdeaAgentName;
+
+                                            this.WriteLine($"\t>>>> INNER TURN: {agentName}");
 
                                             return agentName;
                                         }
@@ -204,7 +206,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                             TerminationStrategy =
                                 new AgentTerminationStrategy()
                                 {
-                                    Agents = [agentLeader],
+                                    Agents = [internalLeaderAgent],
                                     MaximumIterations = 7,
                                     AutomaticReset = true,
                                 },
