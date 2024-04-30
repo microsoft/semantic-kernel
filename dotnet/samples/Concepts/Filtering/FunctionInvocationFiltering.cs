@@ -34,7 +34,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
         kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("MyPlugin", functions: [function]));
         var result = await kernel.InvokeAsync(kernel.Plugins["MyPlugin"]["MyFunction"]);
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 
     [Fact]
@@ -50,8 +50,8 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
         var result = await kernel.InvokeAsync(function);
 
-        WriteLine(result);
-        WriteLine($"Metadata: {string.Join(",", result.Metadata!.Select(kv => $"{kv.Key}: {kv.Value}"))}");
+        Console.WriteLine(result);
+        Console.WriteLine($"Metadata: {string.Join(",", result.Metadata!.Select(kv => $"{kv.Key}: {kv.Value}"))}");
 
         // Output:
         // Result from filter.
@@ -79,7 +79,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
         await foreach (var item in kernel.InvokeStreamingAsync<int>(function))
         {
-            WriteLine(item);
+            Console.WriteLine(item);
         }
 
         // Output: 2, 4, 6.
@@ -100,7 +100,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
         var result = await kernel.InvokeAsync(function);
 
-        WriteLine(result);
+        Console.WriteLine(result);
 
         // Output: Friendly message instead of exception.
     }
@@ -126,7 +126,7 @@ public class FunctionInvocationFiltering(ITestOutputHelper output) : BaseTest(ou
 
         await foreach (var item in kernel.InvokeStreamingAsync<string>(function))
         {
-            WriteLine(item);
+            Console.WriteLine(item);
         }
 
         // Output: first chunk, chunk instead of exception.
