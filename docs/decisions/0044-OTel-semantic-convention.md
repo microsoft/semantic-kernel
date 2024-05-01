@@ -25,7 +25,7 @@ The semantic conventions for generative AI are currently in their nascent stage,
 
 ### Telemetry requirements (Experimental)
 
-Based on the initial version, Semantic Kernel should provide the following attributes in activities that represent individual LLM requests:
+Based on the [initial version](https://github.com/open-telemetry/semantic-conventions/blob/651d779183ecc7c2f8cfa90bf94e105f7b9d3f5a/docs/attributes-registry/gen-ai.md), Semantic Kernel should provide the following attributes in activities that represent individual LLM requests:
 
 > `Activity` is a .Net concept and existed before OpenTelemetry. A `span` is an OpenTelemetry concept that is equivalent to an `Activity`.
 
