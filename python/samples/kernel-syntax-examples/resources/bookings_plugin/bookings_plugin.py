@@ -117,7 +117,7 @@ class BookingsPlugin:
         ).appointments.get()
         return "\n".join(
             [
-                f"{appointment.service_location.display_name} on {appointment.start_date_time.date_time} with id: {appointment.id}"
+                f"{appointment.service_location.display_name} on {appointment.start_date_time.date_time} with id: {appointment.id}"  # noqa: E501
                 for appointment in appointments.value
             ]
         )

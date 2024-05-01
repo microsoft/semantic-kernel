@@ -24,14 +24,10 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.prompt_template.const import (KERNEL_TEMPLATE_FORMAT_NAME,
-                                                   TEMPLATE_FORMAT_TYPES)
-from semantic_kernel.prompt_template.prompt_template_base import \
-    PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import \
-    PromptTemplateConfig
-from semantic_kernel.reliability.pass_through_without_retry import \
-    PassThroughWithoutRetry
+from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.reliability.pass_through_without_retry import PassThroughWithoutRetry
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
@@ -382,6 +378,8 @@ class Kernel(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
+
+        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         function = KernelFunctionFromPrompt(
             function_name=function_name,

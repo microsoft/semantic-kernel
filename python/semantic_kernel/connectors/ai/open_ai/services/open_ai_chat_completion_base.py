@@ -2,36 +2,33 @@
 
 import logging
 from copy import copy
-from typing import (TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional,
-                    Tuple, Union)
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Optional, Tuple, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import \
-    ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.contents import (
-    OpenAIChatMessageContent, OpenAIStreamingChatMessageContent)
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import \
-    FunctionCall
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.contents import OpenAIChatMessageContent, OpenAIStreamingChatMessageContent
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.contents.tool_calls import ToolCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings, OpenAIPromptExecutionSettings)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import \
-    OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import \
-    ToolCallBehavior
-from semantic_kernel.connectors.ai.prompt_execution_settings import \
-    PromptExecutionSettings
+    OpenAIChatPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
+from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.chat_role import ChatRole
 from semantic_kernel.contents.finish_reason import FinishReason
-from semantic_kernel.exceptions import (FunctionCallInvalidArgumentsException,
-                                        ServiceInvalidExecutionSettingsError,
-                                        ServiceInvalidResponseError)
+from semantic_kernel.exceptions import (
+    FunctionCallInvalidArgumentsException,
+    ServiceInvalidExecutionSettingsError,
+    ServiceInvalidResponseError,
+)
 from semantic_kernel.utils.chat import store_results
 
 if TYPE_CHECKING:

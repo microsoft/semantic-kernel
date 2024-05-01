@@ -7,18 +7,16 @@ from dotenv import dotenv_values
 from msgraph import GraphServiceClient
 from resources.bookings_plugin.bookings_plugin import BookingsPlugin
 
-from semantic_kernel.connectors.ai.chat_completion_client_base import \
-    ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import \
-    OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import \
-    OpenAIChatCompletion
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import (
-    booking_sample_settings_from_dot_env_as_dict, openai_settings_from_dot_env)
+from semantic_kernel.utils.settings import booking_sample_settings_from_dot_env_as_dict, openai_settings_from_dot_env
 
 # To be able to run this sample, you must do the following:
 # 1. Create an Microsoft Entra App ID and Client Secret in Azure Portal
@@ -59,7 +57,9 @@ chat_function = kernel.add_function(
     template_format="semantic-kernel",
 )
 
-settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(service_id, ChatCompletionClientBase)
+settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
+    service_id, ChatCompletionClientBase
+)
 settings.max_tokens = 2000
 settings.temperature = 0.1
 settings.top_p = 0.8
@@ -67,7 +67,10 @@ settings.auto_invoke_kernel_functions = True
 settings.tool_choice = "auto"
 settings.tools = get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]})
 
-chat_history = ChatHistory(system_message="When responding to the user's request to book a table, include the reservation ID.")
+chat_history = ChatHistory(
+    system_message="When responding to the user's request to book a table, include the reservation ID."
+)
+
 
 async def chat() -> bool:
     try:
@@ -83,8 +86,11 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    # Note the reservation returned contains an ID. That ID can be used to cancel the reservation, when the bookings API supports it.
-    answer = await kernel.invoke(chat_function, KernelArguments(settings=settings, user_input=user_input, chat_history=chat_history))
+    # Note the reservation returned contains an ID. That ID can be used to cancel the reservation,
+    # when the bookings API supports it.
+    answer = await kernel.invoke(
+        chat_function, KernelArguments(settings=settings, user_input=user_input, chat_history=chat_history)
+    )
     chat_history.add_user_message(user_input)
     chat_history.add_assistant_message(str(answer))
     print(f"Assistant:> {answer}")
@@ -96,8 +102,9 @@ async def main() -> None:
     print(
         "Welcome to your Restaurant Booking Assistant.\
         \n  Type 'exit' to exit.\
-        \n  Please enter the following information to book a table: the restaurant, the date and time, the number of people, your name, phone, and email.\
-        \n  You may ask me for help booking a table, listing reservations, or cancelling a reservation. When cancelling please provide the reservation ID."
+        \n  Please enter the following information to book a table: the restaurant, the date and time, \
+        \n the number of people, your name, phone, and email. You may ask me for help booking a table, \
+        \n listing reservations, or cancelling a reservation. When cancelling please provide the reservation ID."
     )
     while chatting:
         chatting = await chat()
