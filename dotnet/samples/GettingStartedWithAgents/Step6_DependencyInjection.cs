@@ -68,7 +68,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Create a service provider for resolving registered services
         await using ServiceProvider serviceProvider = serviceContainer.BuildServiceProvider();
 
-        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
+        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the AgentClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
@@ -89,7 +89,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         }
     }
 
-    private sealed class AgentClient([FromKeyedServices(TutorName)] ChatCompletionAgent agent)
+    private sealed class AgentClient([FromKeyedServices(TutorName)] ChatCompletionAgent agent, ILoggerFactory loggerFactory)
     {
         private readonly AgentGroupChat _chat =
             new()
@@ -100,7 +100,8 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // the response includes a score that is greater than or equal to 70.
                         TerminationStrategy = new ThresholdTerminationStrategy()
-                    }
+                    },
+                LoggerFactory = loggerFactory,
             };
 
         public IAsyncEnumerable<ChatMessageContent> RunDemoAsync(string input)

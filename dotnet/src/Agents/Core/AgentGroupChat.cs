@@ -70,12 +70,13 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogInformation("Chat started with {AgentCount} agents.", this.Agents.Count); // %%% FIX LOGGING
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
             Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            this.Logger.LogDebug("Agent {AgentId} selected as the next agent.", agent.Id); // %%% FIX LOGGING
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -124,10 +125,9 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // %%% TAO - NOT SURE ???
-        this.EnsureStrategyLoggerAssignment();
+        this.EnsureStrategyLoggerAssignment(); // %%% FIX LOGGING
 
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogInformation("Process interaction with agent {AgentId}.", agent.Id); // %%% FIX LOGGING
 
         if (isJoining)
         {
@@ -158,8 +158,7 @@ public sealed class AgentGroupChat : AgentChat
 
     private void EnsureStrategyLoggerAssignment()
     {
-        // %%% TAO - NOT SURE ???
-        this.ExecutionSettings.SelectionStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
-        this.ExecutionSettings.TerminationStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
+        this.ExecutionSettings.SelectionStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType()); // %%% NULL LOGGER
+        this.ExecutionSettings.TerminationStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
     }
 }

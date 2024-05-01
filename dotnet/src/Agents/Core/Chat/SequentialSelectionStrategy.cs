@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -22,7 +23,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     /// <inheritdoc/>
     public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("Selecting agent {AgentId}.", agents[this._index].Id); // %%% FIX LOGGING
 
         if (agents.Count == 0)
         {
@@ -35,6 +36,7 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = 0;
         }
 
+        this.Logger.LogDebug("Selected agent {AgentId}.", agents[this._index].Id); // %%% FIX LOGGING
         var agent = agents[this._index];
 
         this._index = (this._index + 1) % agents.Count;

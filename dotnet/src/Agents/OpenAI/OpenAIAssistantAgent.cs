@@ -9,6 +9,7 @@ using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Azure.Core;
 using Azure.Core.Pipeline;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.OpenAI.Azure;
 using Microsoft.SemanticKernel.Http;
 
@@ -203,7 +204,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    protected override async Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
     {
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
 

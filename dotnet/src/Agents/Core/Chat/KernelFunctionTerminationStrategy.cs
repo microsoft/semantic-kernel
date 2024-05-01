@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -61,7 +62,7 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id); // %%% FIX LOGGING
 
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =

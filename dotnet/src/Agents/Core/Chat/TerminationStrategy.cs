@@ -58,6 +58,7 @@ public abstract class TerminationStrategy
         // `Agents` must contain `agent`, if `Agents` not empty.
         if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
         {
+            this.Logger.LogWarning("Agent '{AgentId}' not in list of agents for termination strategy.", agent.Id); // %%% LOGMESSAGE / TYPE
             return Task.FromResult(false);
         }
 

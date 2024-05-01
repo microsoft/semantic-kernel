@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -61,7 +62,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// <inheritdoc/>
     public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("Selecting next agent."); // %%% FIX LOGGING
 
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
@@ -78,6 +79,8 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
+
+        this.Logger.LogDebug("Agent {AgentName} selected as the next agent.", agentName); // %%% FIX LOGGING
 
         return
             agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??

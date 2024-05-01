@@ -26,6 +26,7 @@ public abstract class AgentChat
     private readonly Dictionary<Agent, string> _channelMap; // Map agent to its channel-hash: one entry per agent.
 
     private int _isActive;
+    private ILogger? _logger;
 
     /// <summary>
     /// Indicates if a chat operation is active.  Activity is defined as
@@ -37,6 +38,14 @@ public abstract class AgentChat
     /// The <see cref="ILoggerFactory"/> associated with the <see cref="AgentChat"/>.
     /// </summary>
     public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// The <see cref="ILogger"/> associated with this chat.
+    /// </summary>
+    protected ILogger Logger =>
+        this._logger ??
+            Interlocked.CompareExchange(ref this._logger, this.LoggerFactory.CreateLogger(this.GetType()), null) ??
+                this._logger;
 
     /// <summary>
     /// Exposes the internal history to subclasses.
@@ -75,7 +84,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType().Name ?? "primary", agent?.Id ?? "primary");
 
         try
         {
@@ -149,15 +158,16 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
-
         for (int index = 0; index < messages.Count; ++index)
         {
             if (messages[index].Role == AuthorRole.System)
             {
+                this.Logger.LogError("[{MethodName}] Unable to add message with role: {MessageRole}", nameof(AddChatMessages), AuthorRole.System);
                 throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
             }
         }
+
+        this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
 
         try
         {
@@ -168,6 +178,8 @@ public abstract class AgentChat
             // Note: Able to queue messages without synchronizing channels.
             var channelRefs = this._agentChannels.Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
         }
         finally
         {
@@ -191,7 +203,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
 
         try
         {
@@ -203,13 +215,15 @@ public abstract class AgentChat
             List<ChatMessageContent> messages = [];
             await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType().Name, message);
+
                 // Add to primary history
                 this.History.Add(message);
-                messages.Add(message); // %%% TAO - LOGGING PII (TRACE)
+                messages.Add(message);
 
+                // Don't expose internal messages to caller.
                 if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
                 {
-                    // Don't expose internal messages to caller.
                     continue;
                 }
 
@@ -224,6 +238,8 @@ public abstract class AgentChat
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
+
+            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
         }
         finally
         {
@@ -236,9 +252,10 @@ public abstract class AgentChat
             AgentChannel channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
             if (channel == null)
             {
-                // %%% TAO - LOG - CHANNEL CREATED !!!
-                channel = await agent.CreateChannelAsync(cancellationToken).ConfigureAwait(false);
-                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType()); // %%% TAO - TYPED LOGGER ASSIGNMENT EXAMPLE
+                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
+
+                channel = await agent.CreateChannelAsync(this.LoggerFactory.CreateLogger(agent.GetType()), cancellationToken).ConfigureAwait(false);
+                channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
 
                 this._agentChannels.Add(channelKey, channel);
 
@@ -246,6 +263,8 @@ public abstract class AgentChat
                 {
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
+
+                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
             }
 
             return channel;
@@ -277,6 +296,8 @@ public abstract class AgentChat
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
+            this.Logger.LogError("Unable to proceed while another agent is active.");
+
             throw new KernelException("Unable to proceed while another agent is active.");
         }
     }

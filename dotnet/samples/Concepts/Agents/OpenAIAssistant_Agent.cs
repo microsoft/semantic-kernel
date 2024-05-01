@@ -19,7 +19,7 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
-        
+
     [Fact]
     public async Task RunAsync()
     {

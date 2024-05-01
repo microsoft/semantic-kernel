@@ -24,10 +24,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
-        ILogger logger, // %%% TAO - CHANNEL TYPED LOGGER IS APPROPRIATE HERE.
+        ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        logger.LogDebug("Agent {AgentId} invoked.", this.Id); // %%% FIX LOGGING
 
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 

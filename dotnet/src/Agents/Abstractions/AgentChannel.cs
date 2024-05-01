@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync(CancellationToken)"/>.
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
 public abstract class AgentChannel
 {
@@ -45,7 +45,7 @@ public abstract class AgentChannel
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
-/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync(CancellationToken)"/>.
+/// An agent provides it own <see cref="AgentChannel"/> via <see cref="Agent.CreateChannelAsync"/>.
 /// </summary>
 /// <typeparam name="TAgent">The agent type for this channel</typeparam>
 /// <remarks>

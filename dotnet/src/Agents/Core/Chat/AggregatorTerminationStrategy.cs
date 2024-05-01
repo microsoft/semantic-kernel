@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -38,7 +39,7 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id); // %%% FIX LOGGING
 
         var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 

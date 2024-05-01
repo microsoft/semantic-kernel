@@ -133,7 +133,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                                     },
                                 MaximumIterations = 5,
                             },
-                    }
+                    },
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Invoke chat and display messages.
@@ -184,6 +185,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
         AgentGroupChat CreateChat() =>
                 new(internalLeaderAgent, internalGiftReviewerAgent, internalGiftIdeaAgent)
                 {
+                    LoggerFactory = this.LoggerFactory,
                     ExecutionSettings =
                         new()
                         {
@@ -210,7 +212,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                                     MaximumIterations = 7,
                                     AutomaticReset = true,
                                 },
-                        }
+                        },
                 };
     }
 

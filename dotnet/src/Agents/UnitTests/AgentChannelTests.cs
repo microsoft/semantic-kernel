@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
@@ -67,7 +68,7 @@ public class AgentChannelTests
 
     private class TestAgent : KernelAgent
     {
-        protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+        protected internal override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
@@ -62,7 +63,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         OpenAIAssistantAgent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogDebug("Agent {AgentId} invoked.", agent.Id); // %%% FIX LOGGING & ADD MORE
 
         if (agent.IsDeleted)
         {

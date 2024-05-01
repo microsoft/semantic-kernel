@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -17,7 +18,7 @@ public sealed class RegExTerminationStrategy : TerminationStrategy
     /// <inheritdoc/>
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        // %%% TAO - CONSIDER THIS SECTION FOR LOGGING
+        this.Logger.LogInformation("Evaluating termination for agent {AgentId}.", agent.Id); // %%% FIX LOGGING
 
         // Most recent message
         var message = history[history.Count - 1];
@@ -25,12 +26,15 @@ public sealed class RegExTerminationStrategy : TerminationStrategy
         // Evaluate expressions for match
         foreach (var expression in this._expressions)
         {
+            this.Logger.LogDebug("Evaluating expression: {Expression} against message: {Message}", expression, message.Content); // %%% FIX LOGGING
             if (Regex.IsMatch(message.Content, expression))
             {
+                this.Logger.LogInformation("Expression: {Expression} matched message: {Message}", expression, message.Content); // %%% FIX LOGGING
                 return Task.FromResult(true);
             }
         }
 
+        this.Logger.LogInformation("No expression matched message: {Message}", message.Content); // %%% FIX LOGGING
         return Task.FromResult(false);
     }
 

@@ -18,8 +18,10 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
     {
+        logger.LogDebug("[{MethodName}] Creating channel for {AgentId}.", nameof(CreateChannelAsync), this.Id);
+
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
     }
 
