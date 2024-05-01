@@ -18,7 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
     private readonly CosmosClient _cosmosClient;
-    private readonly AzureCosmosDBNoSQLConfig _config;
+    private readonly Embedding _embedding;
+    private readonly IndexingPolicy _indexingPolicy;
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -30,14 +31,13 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     public AzureCosmosDBNoSQLMemoryStore(
         string connectionString,
         string databaseName,
-        AzureCosmosDBNoSQLConfig config
+        Embedding embedding,
+        IndexingPolicy indexingPolicy,
+        string applicationName,
     )
     {
-        MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
-        this._config = config;
-        settings.ApplicationName = this._config.ApplicationName;
-        this._mongoClient = new MongoClient(settings);
-        this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._cosmosClient = new CosmosClient(connectionString);
+        this._databaseName = databaseName;
     }
 
     /// <summary>
