@@ -206,7 +206,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
     {
+        logger.LogDebug("[{MethodName}] Creating assistant thread", nameof(CreateChannelAsync));
+
         AssistantThread thread = await this._client.CreateThreadAsync(cancellationToken).ConfigureAwait(false);
+
+        logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), thread.Id);
 
         return new OpenAIAssistantChannel(this._client, thread.Id, this._config.Polling);
     }
