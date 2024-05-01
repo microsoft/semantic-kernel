@@ -1,21 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Plugins;
 
-namespace Agents;
+namespace GettingStarted;
+
 /// <summary>
-/// Demonstrate creation of <see cref="OpenAIAssistantAgent"/> and
-/// eliciting its response to three explicit user messages.
-/// </summary>
-/// <remarks>
 /// This example demonstrates that outside of initialization (and cleanup), using
 /// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
 /// even with with a <see cref="KernelPlugin"/>.
-/// </remarks>
-public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
+/// </summary>
+public class Step7_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
@@ -66,6 +63,34 @@ public class OpenAIAssistant_Agent(ITestOutputHelper output) : BaseTest(output)
             {
                 Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
+        }
+    }
+
+    private sealed class MenuPlugin
+    {
+        public const string CorrelationIdArgument = "correlationId";
+
+        private readonly List<string> _correlationIds = [];
+
+        public IReadOnlyList<string> CorrelationIds => this._correlationIds;
+
+        [KernelFunction, Description("Provides a list of specials from the menu.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
+        public string GetSpecials()
+        {
+            return @"
+Special Soup: Clam Chowder
+Special Salad: Cobb Salad
+Special Drink: Chai Tea
+";
+        }
+
+        [KernelFunction, Description("Provides the price of the requested menu item.")]
+        public string GetItemPrice(
+            [Description("The name of the menu item.")]
+            string menuItem)
+        {
+            return "$9.99";
         }
     }
 }
