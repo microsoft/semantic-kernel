@@ -34,14 +34,26 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         }
         chat.AddRange(history);
 
-        var messages =
+        int messageCount = chat.Count;
+
+        IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
                 this.ExecutionSettings,
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
 
-        foreach (var message in messages ?? [])
+        // Capture mutated messages related function calling / tools
+        for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)
+        {
+            ChatMessageContent message = chat[messageIndex];
+
+            message.AuthorName = this.Name;
+
+            yield return message;
+        }
+
+        foreach (ChatMessageContent message in messages ?? [])
         {
             // TODO: MESSAGE SOURCE - ISSUE #5731
             message.AuthorName = this.Name;

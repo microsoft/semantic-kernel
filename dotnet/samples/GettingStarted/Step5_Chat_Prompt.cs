@@ -25,6 +25,6 @@ public sealed class Step5_Chat_Prompt(ITestOutputHelper output) : BaseTest(outpu
             <message role="system">Respond with JSON.</message>
             """;
 
-        WriteLine(await kernel.InvokePromptAsync(chatPrompt));
+        Console.WriteLine(await kernel.InvokePromptAsync(chatPrompt));
     }
 }

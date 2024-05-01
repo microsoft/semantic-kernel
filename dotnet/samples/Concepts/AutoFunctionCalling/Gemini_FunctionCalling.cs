@@ -12,14 +12,14 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [RetryFact]
     public async Task GoogleAIAsync()
     {
-        this.WriteLine("============= Google AI - Gemini Chat Completion with function calling =============");
+        Console.WriteLine("============= Google AI - Gemini Chat Completion with function calling =============");
 
         string geminiApiKey = TestConfiguration.GoogleAI.ApiKey;
         string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
 
         if (geminiApiKey is null || geminiModelId is null)
         {
-            this.WriteLine("Gemini credentials not found. Skipping example.");
+            Console.WriteLine("Gemini credentials not found. Skipping example.");
             return;
         }
 
@@ -35,7 +35,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [RetryFact]
     public async Task VertexAIAsync()
     {
-        this.WriteLine("============= Vertex AI - Gemini Chat Completion with function calling =============");
+        Console.WriteLine("============= Vertex AI - Gemini Chat Completion with function calling =============");
 
         string geminiApiKey = TestConfiguration.VertexAI.BearerKey;
         string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
@@ -44,7 +44,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
         if (geminiApiKey is null || geminiModelId is null || geminiLocation is null || geminiProject is null)
         {
-            this.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
+            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
             return;
         }
 
@@ -102,27 +102,27 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
                 }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
         ]);
 
-        WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
+        Console.WriteLine("======== Example 1: Use automated function calling with a non-streaming prompt ========");
         {
             GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
-            WriteLine(await kernel.InvokePromptAsync(
+            Console.WriteLine(await kernel.InvokePromptAsync(
                 "Check current UTC time, and return current weather in Paris city", new(settings)));
-            WriteLine();
+            Console.WriteLine();
         }
 
-        WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
+        Console.WriteLine("======== Example 2: Use automated function calling with a streaming prompt ========");
         {
             GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions };
             await foreach (var update in kernel.InvokePromptStreamingAsync(
                                "Check current UTC time, and return current weather in Boston city", new(settings)))
             {
-                Write(update);
+                Console.Write(update);
             }
 
-            WriteLine();
+            Console.WriteLine();
         }
 
-        WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
+        Console.WriteLine("======== Example 3: Use manual function calling with a non-streaming prompt ========");
         {
             var chat = kernel.GetRequiredService<IChatCompletionService>();
             var chatHistory = new ChatHistory();
@@ -135,7 +135,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
 
                 if (result.Content is not null)
                 {
-                    Write(result.Content);
+                    Console.Write(result.Content);
                 }
 
                 if (result.ToolCalls is not { Count: > 0 })
@@ -161,7 +161,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
                     }
                     else
                     {
-                        this.WriteLine("Unable to find function. Please try again!");
+                        Console.WriteLine("Unable to find function. Please try again!");
                         continue;
                     }
 
@@ -174,7 +174,7 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
                 }
             }
 
-            WriteLine();
+            Console.WriteLine();
         }
 
         /* Uncomment this to try in a console chat loop.

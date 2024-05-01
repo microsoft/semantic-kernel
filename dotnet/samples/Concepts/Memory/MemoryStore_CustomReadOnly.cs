@@ -24,18 +24,18 @@ public class MemoryStore_CustomReadOnly(ITestOutputHelper output) : BaseTest(out
 
         var embedding = new ReadOnlyMemory<float>([22, 4, 6]);
 
-        WriteLine("Reading data from custom read-only memory store");
+        Console.WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
         if (memoryRecord != null)
         {
-            WriteLine($"ID = {memoryRecord.Metadata.Id}, Embedding = {string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding))}");
+            Console.WriteLine($"ID = {memoryRecord.Metadata.Id}, Embedding = {string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding))}");
         }
 
-        WriteLine($"Getting most similar vector to {string.Join(", ", MemoryMarshal.ToEnumerable(embedding))}");
+        Console.WriteLine($"Getting most similar vector to {string.Join(", ", MemoryMarshal.ToEnumerable(embedding))}");
         var result = await store.GetNearestMatchAsync("collection", embedding, 0.0);
         if (result.HasValue)
         {
-            WriteLine($"ID = {string.Join(", ", MemoryMarshal.ToEnumerable(result.Value.Item1.Embedding))}, Embedding = {result.Value.Item2}");
+            Console.WriteLine($"ID = {string.Join(", ", MemoryMarshal.ToEnumerable(result.Value.Item1.Embedding))}, Embedding = {result.Value.Item2}");
         }
     }
 
