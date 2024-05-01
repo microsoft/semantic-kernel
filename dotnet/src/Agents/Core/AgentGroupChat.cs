@@ -175,12 +175,12 @@ public sealed class AgentGroupChat : AgentChat
 
     private void EnsureStrategyLoggerAssignment()
     {
-        if (NullLogger.Instance == this.ExecutionSettings.SelectionStrategy.Logger)
+        if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
         {
             this.ExecutionSettings.SelectionStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
         }
 
-        if (NullLogger.Instance == this.ExecutionSettings.SelectionStrategy.Logger)
+        if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
         {
             this.ExecutionSettings.TerminationStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
         }
