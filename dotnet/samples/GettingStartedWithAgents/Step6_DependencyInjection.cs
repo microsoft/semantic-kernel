@@ -80,11 +80,11 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponse(string input)
         {
-            this.WriteLine($"# {AuthorRole.User}: {input}");
+            Console.WriteLine($"# {AuthorRole.User}: {input}");
 
             await foreach (var content in agentClient.RunDemoAsync(input))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
