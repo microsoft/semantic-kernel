@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -10,9 +11,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
-/// Unit testing of <see cref="RegExTerminationStrategy"/>.
+/// Unit testing of <see cref="RegexTerminationStrategy"/>.
 /// </summary>
-public class RegExTerminationStrategyTests
+public class RegexTerminationStrategyTests
 {
     /// <summary>
     /// Verify abililty of strategy to match expression.
@@ -20,24 +21,26 @@ public class RegExTerminationStrategyTests
     [Fact]
     public async Task VerifyExpressionTerminationStrategyAsync()
     {
-        RegExTerminationStrategy strategy = new("test");
+        RegexTerminationStrategy strategy = new("test");
+
+        Regex r = new("(?:^|\\W)test(?:$|\\W)");
 
         await VerifyResultAsync(
             expectedResult: false,
-            new("(?:^|\\W)test(?:$|\\W)"),
+            new(r),
             content: "fred");
 
         await VerifyResultAsync(
             expectedResult: true,
-            new("(?:^|\\W)test(?:$|\\W)"),
+            new(r),
             content: "this is a test");
     }
 
-    private static async Task VerifyResultAsync(bool expectedResult, RegExTerminationStrategy strategyRoot, string content)
+    private static async Task VerifyResultAsync(bool expectedResult, RegexTerminationStrategy strategyRoot, string content)
     {
         ChatMessageContent message = new(AuthorRole.Assistant, content);
         Mock<Agent> agent = new();
-        var result = await strategyRoot.ShouldTerminateAsync(agent.Object, new[] { message });
+        var result = await strategyRoot.ShouldTerminateAsync(agent.Object, [message]);
         Assert.Equal(expectedResult, result);
     }
 }
