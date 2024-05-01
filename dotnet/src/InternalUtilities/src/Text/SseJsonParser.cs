@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Text;
 
@@ -29,10 +31,10 @@ internal static class SseJsonParser
     /// <param name="cancellationToken">A cancellation token to stop the parsing process.</param>
     /// <remarks><paramref name="stream"/> will be disposed immediately once enumeration is complete.</remarks>
     /// <returns>An asynchronous enumerable sequence of <see cref="SseData"/> objects.</returns>
-    public static async IAsyncEnumerable<SseData> ParseAsync(
+    internal static async IAsyncEnumerable<SseData> ParseAsync(
         Stream stream,
         Func<SseLine, SseData?> parser,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         try
         {
@@ -66,6 +68,27 @@ internal static class SseJsonParser
 #else
             stream.Dispose();
 #endif
+        }
+    }
+
+    /// <summary>
+    /// Parses Server-Sent Events (SSE) data asynchronously from a stream and deserializes the data into the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the data into.</typeparam>
+    /// <param name="stream">The stream containing the SSE data.</param>
+    /// <param name="cancellationToken">A cancellation token to stop the parsing process.</param>
+    /// <returns>An asynchronous enumerable sequence of deserialized objects of type <typeparamref name="T"/>.</returns>
+    internal static async IAsyncEnumerable<T> ParseAsync<T>(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var sseData in ParseAsync(stream, DeserializeTargetType, cancellationToken).ConfigureAwait(false))
+        {
+            yield return (T)sseData.Data;
+        }
+
+        static SseData? DeserializeTargetType(SseLine sseLine)
+        {
+            var obj = JsonSerializer.Deserialize<T>(sseLine.FieldValue.Span, JsonOptionsCache.ReadPermissive);
+            return new SseData(sseLine.EventName, obj!);
         }
     }
 }

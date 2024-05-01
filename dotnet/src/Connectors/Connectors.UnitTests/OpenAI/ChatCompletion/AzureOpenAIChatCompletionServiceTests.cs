@@ -701,7 +701,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallRequestContentAsync()
+    public async Task FunctionCallsShouldBePropagatedToCallersViaChatMessageItemsOfTypeFunctionCallContentAsync()
     {
         // Arrange
         this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -723,28 +723,28 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal(5, result.Items.Count);
 
-        var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallRequestContent;
+        var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallContent;
         Assert.NotNull(getCurrentWeatherFunctionCall);
         Assert.Equal("GetCurrentWeather", getCurrentWeatherFunctionCall.FunctionName);
         Assert.Equal("MyPlugin", getCurrentWeatherFunctionCall.PluginName);
         Assert.Equal("1", getCurrentWeatherFunctionCall.Id);
         Assert.Equal("Boston, MA", getCurrentWeatherFunctionCall.Arguments?["location"]?.ToString());
 
-        var functionWithExceptionFunctionCall = result.Items[1] as FunctionCallRequestContent;
+        var functionWithExceptionFunctionCall = result.Items[1] as FunctionCallContent;
         Assert.NotNull(functionWithExceptionFunctionCall);
         Assert.Equal("FunctionWithException", functionWithExceptionFunctionCall.FunctionName);
         Assert.Equal("MyPlugin", functionWithExceptionFunctionCall.PluginName);
         Assert.Equal("2", functionWithExceptionFunctionCall.Id);
         Assert.Equal("value", functionWithExceptionFunctionCall.Arguments?["argument"]?.ToString());
 
-        var nonExistentFunctionCall = result.Items[2] as FunctionCallRequestContent;
+        var nonExistentFunctionCall = result.Items[2] as FunctionCallContent;
         Assert.NotNull(nonExistentFunctionCall);
         Assert.Equal("NonExistentFunction", nonExistentFunctionCall.FunctionName);
         Assert.Equal("MyPlugin", nonExistentFunctionCall.PluginName);
         Assert.Equal("3", nonExistentFunctionCall.Id);
         Assert.Equal("value", nonExistentFunctionCall.Arguments?["argument"]?.ToString());
 
-        var invalidArgumentsFunctionCall = result.Items[3] as FunctionCallRequestContent;
+        var invalidArgumentsFunctionCall = result.Items[3] as FunctionCallContent;
         Assert.NotNull(invalidArgumentsFunctionCall);
         Assert.Equal("InvalidArguments", invalidArgumentsFunctionCall.FunctionName);
         Assert.Equal("MyPlugin", invalidArgumentsFunctionCall.PluginName);
@@ -754,7 +754,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("Error: Function call arguments were invalid JSON.", invalidArgumentsFunctionCall.Exception.Message);
         Assert.NotNull(invalidArgumentsFunctionCall.Exception.InnerException);
 
-        var intArgumentsFunctionCall = result.Items[4] as FunctionCallRequestContent;
+        var intArgumentsFunctionCall = result.Items[4] as FunctionCallContent;
         Assert.NotNull(intArgumentsFunctionCall);
         Assert.Equal("IntArguments", intArgumentsFunctionCall.FunctionName);
         Assert.Equal("MyPlugin", intArgumentsFunctionCall.PluginName);
@@ -775,8 +775,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var items = new ChatMessageContentItemCollection
         {
-            new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }),
-            new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" })
+            new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }),
+            new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" })
         };
 
         var chatHistory = new ChatHistory
@@ -835,11 +835,11 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         {
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionCallResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
             }),
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionCallResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
             })
         };
 
@@ -883,8 +883,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         {
             new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
             {
-                new FunctionCallResultContent(new FunctionCallRequestContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
-                new FunctionCallResultContent(new FunctionCallRequestContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
+                new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
+                new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
             })
         };
 

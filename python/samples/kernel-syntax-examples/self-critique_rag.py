@@ -4,12 +4,12 @@ import asyncio
 
 from dotenv import dotenv_values
 
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
-from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
-from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
+from semantic_kernel.connectors.memory import AzureCognitiveSearchMemoryStore
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.core_plugins import TextMemoryPlugin
+from semantic_kernel.memory import SemanticTextMemory
 
 COLLECTION_NAME = "generic"
 
@@ -28,7 +28,7 @@ async def populate_memory(memory: SemanticTextMemory) -> None:
 
 
 async def main() -> None:
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     config = dotenv_values(".env")
 

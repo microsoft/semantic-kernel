@@ -225,7 +225,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var operations = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(4, operations.Count);
+        Assert.Equal(5, operations.Count);
     }
 
     [Fact]

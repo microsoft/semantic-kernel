@@ -4,61 +4,58 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import Callable, List
+from typing import TYPE_CHECKING, Callable, List
 from unittest.mock import Mock
 
 import pytest
 
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
-from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.utils.settings import (
-    azure_openai_settings_from_dot_env,
-    google_palm_settings_from_dot_env,
-    openai_settings_from_dot_env,
-)
+if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
 @pytest.fixture(scope="function")
-def kernel() -> Kernel:
+def kernel() -> "Kernel":
+    from semantic_kernel.kernel import Kernel
+
     return Kernel()
 
 
 @pytest.fixture(scope="session")
-def service() -> AIServiceClientBase:
+def service() -> "AIServiceClientBase":
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
     return AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
 
 
 @pytest.fixture(scope="session")
-def default_service() -> AIServiceClientBase:
+def default_service() -> "AIServiceClientBase":
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
     return AIServiceClientBase(service_id="default", ai_model_id="ai_model_id")
 
 
 @pytest.fixture(scope="function")
-def kernel_with_service(kernel: Kernel, service: AIServiceClientBase) -> Kernel:
+def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Kernel":
     kernel.add_service(service)
     return kernel
 
 
 @pytest.fixture(scope="function")
-def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClientBase) -> Kernel:
+def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
     kernel.add_service(default_service)
     return kernel
 
 
 @pytest.fixture(scope="function")
-def kernel_with_handlers(kernel: Kernel) -> Kernel:
-    def invoking_handler(kernel: Kernel, e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
+def kernel_with_handlers(kernel: "Kernel") -> "Kernel":
+    from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
+    from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
+
+    def invoking_handler(kernel: "Kernel", e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
         pass
 
-    def invoked_handler(kernel: Kernel, e: FunctionInvokedEventArgs) -> FunctionInvokedEventArgs:
+    def invoked_handler(kernel: "Kernel", e: FunctionInvokedEventArgs) -> FunctionInvokedEventArgs:
         pass
 
     kernel.add_function_invoking_handler(invoking_handler)
@@ -77,6 +74,8 @@ def not_decorated_native_function() -> Callable:
 
 @pytest.fixture(scope="session")
 def decorated_native_function() -> Callable:
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
         return "test"
@@ -86,6 +85,8 @@ def decorated_native_function() -> Callable:
 
 @pytest.fixture(scope="session")
 def custom_plugin_class():
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
     class CustomPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:
@@ -96,10 +97,15 @@ def custom_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
+    from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+    from semantic_kernel.functions.function_result import FunctionResult
+    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+
     async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
 
-    def create_mock_function(name: str, value: str = "test") -> KernelFunction:
+    def create_mock_function(name: str, value: str = "test") -> "KernelFunction":
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name="TestPlugin",
@@ -125,6 +131,8 @@ def create_mock_function() -> Callable:
 
 @pytest.fixture(scope="function")
 def chat_history():
+    from semantic_kernel.contents.chat_history import ChatHistory
+
     return ChatHistory()
 
 
@@ -168,6 +176,8 @@ def enable_debug_mode():
 
 @pytest.fixture(scope="session")
 def get_aoai_config():
+    from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env
+
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
         api_key = os.environ["AzureOpenAI_EastUS__ApiKey"]
@@ -182,6 +192,8 @@ def get_aoai_config():
 
 @pytest.fixture(scope="session")
 def get_oai_config():
+    from semantic_kernel.utils.settings import openai_settings_from_dot_env
+
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
         org_id = None
@@ -194,6 +206,8 @@ def get_oai_config():
 
 @pytest.fixture(scope="session")
 def get_gp_config():
+    from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
+
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["GOOGLE_PALM_API_KEY"]
     else:

@@ -239,7 +239,7 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         // Act
         var messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -256,7 +256,7 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
 
             // Sending the functions invocation results to the LLM to get the final response
             messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert
@@ -280,7 +280,7 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length != 0)
         {
@@ -293,12 +293,12 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
                 // Simulating an exception
                 var exception = new OperationCanceledException("The operation was canceled due to timeout.");
 
-                chatHistory.Add(new FunctionCallResultContent(functionCall, exception).ToChatMessage());
+                chatHistory.Add(new FunctionResultContent(functionCall, exception).ToChatMessage());
             }
 
             // Sending the functions execution results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert
@@ -324,7 +324,7 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         // Act
         var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
 
-        var functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
 
         while (functionCalls.Length > 0)
         {
@@ -340,16 +340,16 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
             }
 
             // Adding a simulated function call to the connector response message
-            var simulatedFunctionCall = new FunctionCallRequestContent("weather-alert", id: "call_123");
+            var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
             messageContent.Items.Add(simulatedFunctionCall);
 
             // Adding a simulated function result to chat history
             var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
-            chatHistory.Add(new FunctionCallResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+            chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
 
             // Sending the functions invocation results back to the LLM to get the final response
             messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
-            functionCalls = FunctionCallRequestContent.GetFunctionCalls(messageContent).ToArray();
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
         }
 
         // Assert
@@ -403,44 +403,44 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         Assert.Equal(AuthorRole.User, userMessage.Role);
 
         // LLM requested the current time.
-        var getCurrentTimeFunctionCallRequestMessage = chatHistory[1];
-        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallRequestMessage.Role);
+        var getCurrentTimeFunctionCallMessage = chatHistory[1];
+        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallMessage.Role);
 
-        var getCurrentTimeFunctionCallRequest = getCurrentTimeFunctionCallRequestMessage.Items.OfType<FunctionCallRequestContent>().Single();
-        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallRequest.FunctionName);
-        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallRequest.PluginName);
-        Assert.NotNull(getCurrentTimeFunctionCallRequest.Id);
+        var getCurrentTimeFunctionCall = getCurrentTimeFunctionCallMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCall.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCall.PluginName);
+        Assert.NotNull(getCurrentTimeFunctionCall.Id);
 
         // Connector invoked the GetCurrentUtcTime function and added result to chat history.
-        var getCurrentTimeFunctionCallResultMessage = chatHistory[2];
-        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionCallResultMessage.Role);
-        Assert.Single(getCurrentTimeFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+        var getCurrentTimeFunctionResultMessage = chatHistory[2];
+        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionResultMessage.Role);
+        Assert.Single(getCurrentTimeFunctionResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
 
-        var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionCallResultContent>().Single();
-        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
-        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
-        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.Id);
-        Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
+        var getCurrentTimeFunctionResult = getCurrentTimeFunctionResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionResult.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionResult.PluginName);
+        Assert.Equal(getCurrentTimeFunctionCall.Id, getCurrentTimeFunctionResult.Id);
+        Assert.NotNull(getCurrentTimeFunctionResult.Result);
 
         // LLM requested the weather for Boston.
-        var getWeatherForCityFunctionCallRequestMessage = chatHistory[3];
-        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallRequestMessage.Role);
+        var getWeatherForCityFunctionCallMessage = chatHistory[3];
+        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallMessage.Role);
 
-        var getWeatherForCityFunctionCallRequest = getWeatherForCityFunctionCallRequestMessage.Items.OfType<FunctionCallRequestContent>().Single();
-        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallRequest.FunctionName);
-        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallRequest.PluginName);
-        Assert.NotNull(getWeatherForCityFunctionCallRequest.Id);
+        var getWeatherForCityFunctionCall = getWeatherForCityFunctionCallMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCall.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCall.PluginName);
+        Assert.NotNull(getWeatherForCityFunctionCall.Id);
 
         // Connector invoked the Get_Weather_For_City function and added result to chat history.
-        var getWeatherForCityFunctionCallResultMessage = chatHistory[4];
-        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionCallResultMessage.Role);
-        Assert.Single(getWeatherForCityFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+        var getWeatherForCityFunctionResultMessage = chatHistory[4];
+        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionResultMessage.Role);
+        Assert.Single(getWeatherForCityFunctionResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
 
-        var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionCallResultContent>().Single();
-        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
-        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
-        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.Id);
-        Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
+        var getWeatherForCityFunctionResult = getWeatherForCityFunctionResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionResult.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionResult.PluginName);
+        Assert.Equal(getWeatherForCityFunctionCall.Id, getWeatherForCityFunctionResult.Id);
+        Assert.NotNull(getWeatherForCityFunctionResult.Result);
     }
 
     [Fact]

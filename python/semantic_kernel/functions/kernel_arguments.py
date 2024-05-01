@@ -27,10 +27,11 @@ class KernelArguments(dict):
             **kwargs (dict[str, Any]) -- The arguments for the function invocation, works similar to a regular dict.
         """
         super().__init__(**kwargs)
-        settings_dict = {}
+        settings_dict = None
         if settings:
+            settings_dict = {}
             if isinstance(settings, list):
-                settings_dict = {s.service_id: s for s in settings}
+                settings_dict = {s.service_id or "default": s for s in settings}
             else:
-                settings_dict = {settings.service_id: settings}
+                settings_dict = {settings.service_id or "default": settings}
         self.execution_settings: dict[str, "PromptExecutionSettings"] | None = settings_dict

@@ -26,6 +26,7 @@ public class AgentChatTests
         TestChat chat = new();
 
         // Verify initial state
+        Assert.False(chat.IsActive);
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
         await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
@@ -55,6 +56,59 @@ public class AgentChatTests
         await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
 
+    /// <summary>
+    /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
+    /// </summary>
+    [Fact(Skip = "Not 100% reliable for github workflows, but useful for dev testing.")]
+    public async Task VerifyGroupAgentChatConcurrencyAsync()
+    {
+        TestChat chat = new();
+
+        Task[] tasks;
+
+        int isActive = 0;
+
+        // Queue concurrent tasks
+        object syncObject = new();
+        lock (syncObject)
+        {
+            tasks =
+                new[]
+                {
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                    Task.Run(() => SynchronizedInvokeAsync()),
+                };
+        }
+
+        // Signal tasks to execute
+        Interlocked.CompareExchange(ref isActive, 1, 0);
+
+        await Task.Yield();
+
+        // Verify failure
+        await Assert.ThrowsAsync<KernelException>(() => Task.WhenAll(tasks));
+
+        async Task SynchronizedInvokeAsync()
+        {
+            // Loop until signaled
+            int isReady;
+            do
+            {
+                isReady = Interlocked.CompareExchange(ref isActive, 1, 1);
+            }
+            while (isReady == 0);
+
+            // Rush invocation
+            await chat.InvokeAsync().ToArrayAsync().AsTask();
+        }
+    }
+
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
         if (expectedCount == 0)
@@ -72,7 +126,7 @@ public class AgentChatTests
     {
         public TestAgent Agent { get; } = new TestAgent();
 
-        public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
+        public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
             CancellationToken cancellationToken = default) =>
                 this.InvokeAgentAsync(this.Agent, cancellationToken);
     }
