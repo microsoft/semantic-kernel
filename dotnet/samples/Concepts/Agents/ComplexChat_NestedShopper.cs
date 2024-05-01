@@ -209,8 +209,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                                     Agents = [internalLeaderAgent],
                                     MaximumIterations = 7,
                                     AutomaticReset = true,
-                                }
-                        },
+                                },
+                        }
                 };
     }
 
