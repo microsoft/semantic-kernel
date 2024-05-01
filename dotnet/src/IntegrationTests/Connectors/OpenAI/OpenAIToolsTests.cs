@@ -463,7 +463,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task RequiredFunctionShouldBeCalledByAsync()
+    public async Task RequiredFunctionShouldBeCalledAsync()
     {
         // Arrange
         var kernel = this.InitializeKernel(importHelperPlugin: false);

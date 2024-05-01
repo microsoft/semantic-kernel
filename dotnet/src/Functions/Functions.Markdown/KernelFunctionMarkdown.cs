@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelFunctionMarkdown
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { TypeInfoResolver = ToolBehaviorsResolver.Instance };
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { TypeInfoResolver = ToolBehaviorResolver.Instance };
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.

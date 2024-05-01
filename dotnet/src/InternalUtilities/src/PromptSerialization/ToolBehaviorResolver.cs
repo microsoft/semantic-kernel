@@ -9,9 +9,9 @@ using Microsoft.SemanticKernel.AI.ToolBehaviors;
 namespace Microsoft.SemanticKernel;
 
 [ExcludeFromCodeCoverage]
-internal sealed class ToolBehaviorsResolver : DefaultJsonTypeInfoResolver
+internal sealed class ToolBehaviorResolver : DefaultJsonTypeInfoResolver
 {
-    public static ToolBehaviorsResolver Instance { get; } = new ToolBehaviorsResolver();
+    public static ToolBehaviorResolver Instance { get; } = new ToolBehaviorResolver();
 
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {

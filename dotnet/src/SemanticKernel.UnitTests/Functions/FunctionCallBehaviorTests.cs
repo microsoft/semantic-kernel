@@ -15,7 +15,7 @@ namespace SemanticKernel.UnitTests.Functions;
 /// </summary>
 public sealed class FunctionCallBehaviorTests
 {
-    private readonly static JsonSerializerOptions s_serializerOptions = new() { TypeInfoResolver = new ToolBehaviorsResolver() };
+    private readonly static JsonSerializerOptions s_serializerOptions = new() { TypeInfoResolver = new ToolBehaviorResolver() };
 
     [Fact]
     public void EnableKernelFunctionsAreNotAutoInvoked()
