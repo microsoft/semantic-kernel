@@ -62,8 +62,6 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id); // %%% FIX LOGGING
-
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
@@ -72,7 +70,11 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
+        this.Logger.LogDebug("[{MethodName}] Invoking function: {PluginName}.{FunctionName}.", nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);
+
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogInformation("[{MethodName}] Invoked function: {PluginName}.{FunctionName}: {ResultType}", nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         return this.ResultParser.Invoke(result);
     }

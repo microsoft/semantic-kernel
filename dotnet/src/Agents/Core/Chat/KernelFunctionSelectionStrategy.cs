@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -62,8 +63,6 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
     /// <inheritdoc/>
     public sealed override async Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogDebug("Selecting next agent."); // %%% FIX LOGGING
-
         KernelArguments originalArguments = this.Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
@@ -72,15 +71,17 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
+        this.Logger.LogDebug("[{MethodName}] Invoking function: {PluginName}.{FunctionName}.", nameof(NextAsync), this.Function.PluginName, this.Function.Name);
+
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogInformation("[{MethodName}] Invoked function: {PluginName}.{FunctionName}: {ResultType}", nameof(NextAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         string? agentName = this.ResultParser.Invoke(result);
         if (string.IsNullOrEmpty(agentName))
         {
             throw new KernelException("Agent Failure - Strategy unable to determine next agent.");
         }
-
-        this.Logger.LogDebug("Agent {AgentName} selected as the next agent.", agentName); // %%% FIX LOGGING
 
         return
             agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??

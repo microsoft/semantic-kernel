@@ -27,8 +27,6 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         ILogger logger,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        logger.LogDebug("Agent {AgentId} invoked.", this.Id); // %%% FIX LOGGING
-
         var chatCompletionService = this.Kernel.GetRequiredService<IChatCompletionService>();
 
         ChatHistory chat = [];
@@ -40,12 +38,16 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         int messageCount = chat.Count;
 
+        logger.LogDebug("[{MethodName}] Invoking {ServiceType}.", nameof(InvokeAsync), chatCompletionService.GetType());
+
         IReadOnlyList<ChatMessageContent> messages =
             await chatCompletionService.GetChatMessageContentsAsync(
                 chat,
                 this.ExecutionSettings,
                 this.Kernel,
                 cancellationToken).ConfigureAwait(false);
+
+        logger.LogInformation("[{MethodName}] Invoked {ServiceType} with message count: {MessageCount}.", nameof(InvokeAsync), chatCompletionService.GetType(), messages.Count);
 
         // Capture mutated messages related function calling / tools
         for (int messageIndex = messageCount; messageIndex < chat.Count; messageIndex++)

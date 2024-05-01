@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -70,13 +71,25 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
-        this.Logger.LogInformation("Chat started with {AgentCount} agents.", this.Agents.Count); // %%% FIX LOGGING
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {Agents}", nameof(InvokeAsync), string.Join(", ", this.Agents.Select(a => $"{a.GetType().Name}:{a.Id}")));
 
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
-            this.Logger.LogDebug("Agent {AgentId} selected as the next agent.", agent.Id); // %%% FIX LOGGING
+            this.Logger.LogDebug("[{MethodName}] Selecting agent: {StrategyType}", nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType().Name);
+
+            Agent agent;
+            try
+            {
+                agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                this.Logger.LogError("[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
+                throw;
+            }
+
+            this.Logger.LogInformation("[{MethodName}] Agent selected {AgentType}: {AgentId} by {StrategyType}", nameof(InvokeAsync), agent.GetType().Name, agent.Id, this.ExecutionSettings.SelectionStrategy.GetType().Name);
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -95,6 +108,8 @@ public sealed class AgentGroupChat : AgentChat
                 break;
             }
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>
@@ -125,9 +140,9 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.EnsureStrategyLoggerAssignment(); // %%% FIX LOGGING
+        this.EnsureStrategyLoggerAssignment();
 
-        this.Logger.LogInformation("Process interaction with agent {AgentId}.", agent.Id); // %%% FIX LOGGING
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {AgentType}: {AgentId}", nameof(InvokeAsync), agent.GetType().Name, agent.Id);
 
         if (isJoining)
         {
@@ -144,6 +159,8 @@ public sealed class AgentGroupChat : AgentChat
 
             yield return message;
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>
@@ -158,7 +175,14 @@ public sealed class AgentGroupChat : AgentChat
 
     private void EnsureStrategyLoggerAssignment()
     {
-        this.ExecutionSettings.SelectionStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType()); // %%% NULL LOGGER
-        this.ExecutionSettings.TerminationStrategy.Logger ??= this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
+        if (NullLogger.Instance == this.ExecutionSettings.SelectionStrategy.Logger)
+        {
+            this.ExecutionSettings.SelectionStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
+        }
+
+        if (NullLogger.Instance == this.ExecutionSettings.SelectionStrategy.Logger)
+        {
+            this.ExecutionSettings.TerminationStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
+        }
     }
 }

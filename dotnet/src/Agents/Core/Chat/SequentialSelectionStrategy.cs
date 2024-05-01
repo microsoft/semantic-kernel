@@ -23,10 +23,9 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     /// <inheritdoc/>
     public override Task<Agent> NextAsync(IReadOnlyList<Agent> agents, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogDebug("Selecting agent {AgentId}.", agents[this._index].Id); // %%% FIX LOGGING
-
         if (agents.Count == 0)
         {
+            this.Logger.LogError("[{MethodName}] No agents.", nameof(NextAsync));
             throw new KernelException("Agent Failure - No agents present to select.");
         }
 
@@ -36,10 +35,14 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = 0;
         }
 
-        this.Logger.LogDebug("Selected agent {AgentId}.", agents[this._index].Id); // %%% FIX LOGGING
+        this.Logger.LogDebug("[{MethodName}] Prior agent index: {AgentIndex} / {AgentCount}.", nameof(NextAsync), this._index, agents.Count);
+
         var agent = agents[this._index];
 
         this._index = (this._index + 1) % agents.Count;
+
+        this.Logger.LogInformation("[{MethodName}] Current agent index: {AgentIndex} / {AgentCount}", nameof(NextAsync), this._index, agents.Count);
+
 
         return Task.FromResult(agent);
     }

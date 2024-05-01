@@ -39,7 +39,7 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogDebug("Evaluating termination for agent {AgentId}.", agent.Id); // %%% FIX LOGGING
+        this.Logger.LogDebug("[{MethodName}] Evaluating termination for {Count} strategies: {Mode}", nameof(ShouldAgentTerminateAsync), this._strategies.Length, this.Condition);
 
         var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 
