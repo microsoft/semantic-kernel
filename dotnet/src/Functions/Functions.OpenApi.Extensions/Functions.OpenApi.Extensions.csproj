@@ -15,6 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.OpenApi.ApiManifest" />
+    <PackageReference Include="Microsoft.Plugins.Manifest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
