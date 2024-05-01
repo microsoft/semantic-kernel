@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
 using Examples;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Search;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,13 +26,11 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
             apiKey: TestConfiguration.Bing.ApiKey);
 
         // Build a kernel with Bing search service and add a text search plugin
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<ITextSearchService>(searchService);
-        Kernel kernel = builder.Build();
-
+        Kernel kernel = new();
         var searchPlugin = new TextSearchPlugin(searchService);
         kernel.ImportPluginFromObject(searchPlugin, "TextSearch");
 
+        // Invoke the plugin to perform a text search
         var question = "What is the Semantic Kernel?";
         var function = kernel.Plugins["TextSearch"]["Search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
