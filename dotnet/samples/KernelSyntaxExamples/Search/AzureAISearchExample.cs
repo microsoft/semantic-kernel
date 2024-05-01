@@ -42,7 +42,7 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
         }
 
         // Search for just the summaries
-        AzureAISearchExecutionSettings settings = new() { Index = IndexName, Count = 2, Offset = 2, SnippetField = "chunk" };
+        AzureAISearchExecutionSettings settings = new() { Index = IndexName, Count = 2, Offset = 2, ValueField = "chunk" };
         KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, settings);
         await foreach (string result in summaryResults.Results)
         {
@@ -51,7 +51,7 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
         }
 
         // Search with TextSearchResult result type
-        settings = new() { Index = IndexName, Count = 2, Offset = 2, NameField = "title", SnippetField = "chunk", LinkField = "metadata_spo_item_weburi" };
+        settings = new() { Index = IndexName, Count = 2, Offset = 2, NameField = "title", ValueField = "chunk", LinkField = "metadata_spo_item_weburi" };
         KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>(query, settings);
         await foreach (TextSearchResult result in textResults.Results)
         {

@@ -24,8 +24,8 @@ public class AzureAISearchExecutionSettings : SearchExecutionSettings
     /// <summary>
     /// Name of the field that contains the snippet of text to return.
     /// </summary>
-    [JsonPropertyName("snippet_field")]
-    public string? SnippetField { get; set; }
+    [JsonPropertyName("value_field")]
+    public string? ValueField { get; set; }
 
     /// <summary>
     /// Name of the field that contains the link to return.

@@ -51,13 +51,13 @@ In each case a plugin implementation is provided which allows the search to be i
 
 The diagram below shows the layers in the current design of the Memory Store search functionality.
 
-<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="80%"/>
+<img src="./diagrams/text-search-service-imemorystore.png" alt="Current Memory Design" width="40%"/>
 
 #### Web Search Engine Integration
 
 The diagram below shows the layers in the current design of the Web Search Engine integration.
 
-<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="80%"/>
+<img src="./diagrams/text-search-service-iwebsearchengineconnector.png" alt="Current Web Search Design" width="40%"/>
 
 The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
 
@@ -83,20 +83,6 @@ Chosen option: "{title of option 1}", because
 
 <!-- This is an optional element. Feel free to remove. -->
 
-### Consequences
-
-- Good, because {positive consequence, e.g., improvement of one or more desired qualities, …}
-- Bad, because {negative consequence, e.g., compromising one or more desired qualities, …}
-- … <!-- numbers of consequences can vary -->
-
-<!-- This is an optional element. Feel free to remove. -->
-
-## Validation
-
-{describe how the implementation of/compliance with the ADR is validated. E.g., by a review or an ArchUnit test}
-
-<!-- This is an optional element. Feel free to remove. -->
-
 ## Pros and Cons of the Options
 
 ### Define `ITextSearchService` Abstraction
@@ -110,30 +96,94 @@ A new `ITextSearchService` abstraction is used to define the contract to perform
 - optionally instances of a specific type, although there may be limitations to this approach or or it may not be supported at all.
 
 The class diagram below shows the class hierarchy.
-<img src="./diagrams/text-search-service-abstraction.png" alt="Current Memory Design" width="80%"/>
+
+<img src="./diagrams/text-search-service-abstraction.png" alt="ITextSearchService Abstraction" width="80%"/>
+
+The abstraction contains the following interfaces and classes:
 
 - `ITextSearchService` is the interface for text based search services. This cna be invoked with a text query to return a collection of search results.
 - `SearchExecutionSettings` provides execution settings for a search service. Some common settings e.g. `IndexName`, `Count`, `Offset` are defined.
 - `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations must support `string`, `TextSearchResult` and whatever native types the connector implementation supports. Some implementations will also support custom types.
 - `TextSearchResult` represents a normalized text search result. All implementations must be able to return results using this type.
 
-- An AI must be able to perform searches with a search plugin and get back “results” of type `T`.
-- Application developers should be able to easily add a search plugin using a search connector with minimal lines of code (ideally one).
-- Application developers must be able to provide connector specific settings.
-- Application developers must be able to set required information e.g. `IndexName` for search providers.
-- Application developers must to be able to override the semantic descriptions of the search function(s) per instance registered via settings / inputs.
-- Application developers must be able to optionally define the execution settings of an embedding service with a default being provided by the Kernel.
-- Application developers must be able to support custom schemas for search connectors. No fields should be required.
-- Search service developers must be able to easily create a new search service that returns type `T`.
-- Search service developers must be able to easily create a new search connector return type that inherits from `SearchResultContent`.
-- Search service developers must be able to define the attributes of the search method (e.g., name, description, input names, input descriptions, return description).
-- Application developers must be ab able to import a vector DB search connection using an ML index file.
-- The design must be flexible to support future requirements and different search modalities.
+#### Return Results of Type `T`
+
+
+```csharp
+var searchService = new AzureAITextSearchService(
+    endpoint: TestConfiguration.AzureAISearch.Endpoint,
+    adminKey: TestConfiguration.AzureAISearch.ApiKey);
+
+AzureAISearchExecutionSettings settings = new() { Index = IndexName, Count = 2, Offset = 2, ValueField = "chunk" };
+KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>("What is the Semantic Kernel?", settings);
+await foreach (string result in summaryResults.Results)
+{
+    Console.WriteLine(result);
+}
+```
+
+```csharp
+var searchService = new BingTextSearchService(
+    endpoint: TestConfiguration.Bing.Endpoint,
+    apiKey: TestConfiguration.Bing.ApiKey);
+
+KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>("What is the Semantic Kernel?", new() { Count = 2, Offset = 2 });
+await foreach (string result in summaryResults.Results)
+{
+    Console.WriteLine(result);
+}
+```
+
+```csharp
+AzureAISearchExecutionSettings settings = new() { Index = IndexName, Count = 2, Offset = 2, NameField = "title", ValueField = "chunk", LinkField = "metadata_spo_item_weburi" };
+KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>("What is the Semantic Kernel?", settings);
+await foreach (TextSearchResult result in textResults.Results)
+{
+    Console.WriteLine(result.Name);
+    Console.WriteLine(result.Value);
+    Console.WriteLine(result.Link);
+}
+```
+
+```csharp
+var searchService = new BingTextSearchService(
+    endpoint: TestConfiguration.Bing.Endpoint,
+    apiKey: TestConfiguration.Bing.ApiKey);
+
+KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>("What is the Semantic Kernel?", new() { Count = 2 });
+await foreach (CustomSearchResult result in searchResults.Results)
+{
+    Console.WriteLine(result.Name);
+    Console.WriteLine(result.Snippet);
+    Console.WriteLine(result.Url);
+}
+```
+
+```csharp
+KernelSearchResults<SearchDocument> fullResults = await searchService.SearchAsync<SearchDocument>("What is the Semantic Kernel?", new() { Index = IndexName, Count = 2, Offset = 6 });
+await foreach (SearchDocument result in fullResults.Results)
+{
+    Console.WriteLine(result.GetString("title"));
+    Console.WriteLine(result.GetString("chunk_id"));
+    Console.WriteLine(result.GetString("chunk"));
+}
+```
+
 
 #### Perform Search using Plugin
 
+```csharp
+var searchService = new BingTextSearchService(
+    endpoint: TestConfiguration.Bing.Endpoint,
+    apiKey: TestConfiguration.Bing.ApiKey);
 
-#### Return Results of Type `T`
+Kernel kernel = new();
+var searchPlugin = new TextSearchPlugin(searchService);
+kernel.ImportPluginFromObject(searchPlugin, "TextSearch");
+
+var function = kernel.Plugins["TextSearch"]["Search"];
+var result = await kernel.InvokeAsync(function, new() { ["query"] = "What is the Semantic Kernel?" });
+```
 
 
 #### Support ML Index File Format

@@ -76,13 +76,13 @@ public sealed class AzureAITextSearchService : ITextSearchService
             {
                 var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
                 SearchResults<SearchDocument>? searchResults = response.Value;
-                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.SnippetField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.ValueField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
             if (typeof(T) == typeof(TextSearchResult))
             {
                 var response = await searchClient.SearchAsync<SearchDocument>(query, azureSearchSettings.SearchOptions, cancellationToken).ConfigureAwait(true);
                 SearchResults<SearchDocument>? searchResults = response.Value;
-                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.NameField, azureSearchSettings.SnippetField, azureSearchSettings.LinkField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
+                return new KernelSearchResults<T>(searchResults, this.GetResultsAsync<T>(searchResults, azureSearchSettings.NameField, azureSearchSettings.ValueField, azureSearchSettings.LinkField, cancellationToken), searchResults?.TotalCount, GetResultsMetadata(searchResults));
             }
             else
             {
