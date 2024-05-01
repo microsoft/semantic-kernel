@@ -47,6 +47,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
+  
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />

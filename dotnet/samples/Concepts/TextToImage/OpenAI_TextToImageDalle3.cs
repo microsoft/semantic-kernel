@@ -14,7 +14,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
     [Fact]
     public async Task OpenAIDallEAsync()
     {
-        WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
+        Console.WriteLine("======== OpenAI DALL-E 2 Text To Image ========");
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAITextToImage(TestConfiguration.OpenAI.ApiKey) // Add your text to image service
@@ -26,8 +26,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 256, 256);
 
-        WriteLine(imageDescription);
-        WriteLine("Image URL: " + image);
+        Console.WriteLine(imageDescription);
+        Console.WriteLine("Image URL: " + image);
 
         /* Output:
 
@@ -36,7 +36,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         */
 
-        WriteLine("======== Chat with images ========");
+        Console.WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
@@ -47,23 +47,23 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
-        WriteLine("User: " + msg);
+        Console.WriteLine("User: " + msg);
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
-        WriteLine("Bot: " + image);
-        WriteLine("Img description: " + reply);
+        Console.WriteLine("Bot: " + image);
+        Console.WriteLine("Img description: " + reply);
 
         msg = "Oh, wow. Not sure where that is, could you provide more details?";
         chatHistory.AddUserMessage(msg);
-        WriteLine("User: " + msg);
+        Console.WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 256, 256);
-        WriteLine("Bot: " + image);
-        WriteLine("Img description: " + reply);
+        Console.WriteLine("Bot: " + image);
+        Console.WriteLine("Img description: " + reply);
 
         /* Output:
 
@@ -81,7 +81,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
     [Fact(Skip = "Generating the Image can take too long and often break the test")]
     public async Task AzureOpenAIDallEAsync()
     {
-        WriteLine("========Azure OpenAI DALL-E 3 Text To Image ========");
+        Console.WriteLine("========Azure OpenAI DALL-E 3 Text To Image ========");
 
         var builder = Kernel.CreateBuilder()
             .AddAzureOpenAITextToImage( // Add your text to image service
@@ -111,8 +111,8 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
         var imageDescription = "A cute baby sea otter";
         var image = await dallE.GenerateImageAsync(imageDescription, 1024, 1024);
 
-        WriteLine(imageDescription);
-        WriteLine("Image URL: " + image);
+        Console.WriteLine(imageDescription);
+        Console.WriteLine("Image URL: " + image);
 
         /* Output:
 
@@ -121,7 +121,7 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         */
 
-        WriteLine("======== Chat with images ========");
+        Console.WriteLine("======== Chat with images ========");
 
         var chatGPT = kernel.GetRequiredService<IChatCompletionService>();
         var chatHistory = new ChatHistory(
@@ -132,23 +132,23 @@ public class OpenAI_TextToImageDalle3(ITestOutputHelper output) : BaseTest(outpu
 
         var msg = "Hi, I'm from Tokyo, where are you from?";
         chatHistory.AddUserMessage(msg);
-        WriteLine("User: " + msg);
+        Console.WriteLine("User: " + msg);
 
         var reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
-        WriteLine("Bot: " + image);
-        WriteLine("Img description: " + reply);
+        Console.WriteLine("Bot: " + image);
+        Console.WriteLine("Img description: " + reply);
 
         msg = "Oh, wow. Not sure where that is, could you provide more details?";
         chatHistory.AddUserMessage(msg);
-        WriteLine("User: " + msg);
+        Console.WriteLine("User: " + msg);
 
         reply = await chatGPT.GetChatMessageContentAsync(chatHistory);
         chatHistory.Add(reply);
         image = await dallE.GenerateImageAsync(reply.Content!, 1024, 1024);
-        WriteLine("Bot: " + image);
-        WriteLine("Img description: " + reply);
+        Console.WriteLine("Bot: " + image);
+        Console.WriteLine("Img description: " + reply);
 
         /* Output:
 
