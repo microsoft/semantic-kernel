@@ -89,7 +89,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         }
     }
 
-    private sealed class AgentClient([FromKeyedServices(TutorName)] ChatCompletionAgent agent, ILoggerFactory loggerFactory)
+    private sealed class AgentClient([FromKeyedServices(TutorName)] ChatCompletionAgent agent)
     {
         private readonly AgentGroupChat _chat =
             new()
@@ -100,8 +100,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
                         // Here a TerminationStrategy subclass is used that will terminate when
                         // the response includes a score that is greater than or equal to 70.
                         TerminationStrategy = new ThresholdTerminationStrategy()
-                    },
-                LoggerFactory = loggerFactory,
+                    }
             };
 
         public IAsyncEnumerable<ChatMessageContent> RunDemoAsync(string input)

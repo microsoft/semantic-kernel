@@ -63,10 +63,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         OpenAIAssistantAgent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        this.Logger.LogDebug("Agent {AgentId} invoked.", agent.Id); // %%% FIX LOGGING & ADD MORE
-
         if (agent.IsDeleted)
         {
+            // %%% LOGERROR
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
@@ -81,6 +80,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             this._agentNames.Add(agent.Id, agent.Name);
         }
 
+        // %%% CREATING RUN
+
         CreateRunOptions options =
             new(agent.Id)
             {
@@ -90,6 +91,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
         // Create run
         ThreadRun run = await this._client.CreateRunAsync(this._threadId, options, cancellationToken).ConfigureAwait(false);
+
+        // %%% CREATED RUN
 
         // Evaluate status and process steps and messages, as encountered.
         var processedMessageIds = new HashSet<string>();
@@ -108,6 +111,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
             {
+                // %%% EXECUTING STEPS
+
                 // Execute functions in parallel and post results at once.
                 var tasks = steps.Data.SelectMany(step => ExecuteStep(agent, step, cancellationToken)).ToArray();
                 if (tasks.Length > 0)
@@ -116,9 +121,14 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
                     await this._client.SubmitToolOutputsToRunAsync(run, results, cancellationToken).ConfigureAwait(false);
                 }
+
+                // %%% EXECUTED STEPS
             }
 
             // Enumerate completed messages
+
+            // %%% PROCESSING MESSAGES
+
             var messageDetails =
                 steps
                     .OrderBy(s => s.CompletedAt)
@@ -159,8 +169,12 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
                 processedMessageIds.Add(detail.MessageCreation.MessageId);
             }
+
+            // %%% PROCESSED MESSAGES
         }
         while (RunStatus.Completed != run.Status);
+
+        // %%% COMPLETED RUN
 
         // Local function to assist in run polling (participates in method closure).
         async Task<PageableList<RunStep>> PollRunStatusAsync()
@@ -183,6 +197,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     // Retry anyway..
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
+
+                // %%% RUN STATUS
             }
             while (s_pollingStatuses.Contains(run.Status));
 

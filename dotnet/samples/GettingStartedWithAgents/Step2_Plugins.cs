@@ -34,7 +34,7 @@ public class Step2_Plugins(ITestOutputHelper output) : BaseTest(output)
         agent.Kernel.Plugins.Add(plugin);
 
         /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
-        AgentGroupChat chat = new() { LoggerFactory = this.LoggerFactory };
+        AgentGroupChat chat = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");

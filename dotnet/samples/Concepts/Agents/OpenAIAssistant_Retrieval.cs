@@ -43,7 +43,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
                 });
 
         // Create a chat for agent interaction.
-        var chat = new AgentGroupChat() { LoggerFactory = this.LoggerFactory };
+        var chat = new AgentGroupChat();
 
         // Respond to user input
         try

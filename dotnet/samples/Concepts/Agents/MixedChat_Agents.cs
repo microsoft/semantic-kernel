@@ -72,8 +72,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
                                 // Limit total number of turns
                                 MaximumIterations = 10,
                             }
-                    },
-                LoggerFactory = this.LoggerFactory,
+                    }
             };
 
         // Invoke chat and display messages.

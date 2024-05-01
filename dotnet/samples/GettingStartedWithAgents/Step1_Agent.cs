@@ -27,7 +27,7 @@ public class Step1_Agent(ITestOutputHelper output) : BaseTest(output)
             };
 
         /// Create a chat for agent interaction. For more, <see cref="Step3_Chat"/>.
-        AgentGroupChat chat = new() { LoggerFactory = this.LoggerFactory };
+        AgentGroupChat chat = new();
 
         // Respond to user input
         await InvokeAgentAsync("Fortune favors the bold.");
