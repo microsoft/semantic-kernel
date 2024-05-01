@@ -96,7 +96,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
     [Fact]
     public async Task RunAsync()
     {
-        this.WriteLine($"! {Model}");
+        Console.WriteLine($"! {Model}");
 
         OpenAIPromptExecutionSettings jsonSettings = new() { ResponseFormat = ChatCompletionsResponseFormat.JsonObject };
         OpenAIPromptExecutionSettings autoInvokeSettings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -137,9 +137,9 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             };
 
         // Invoke chat and display messages.
-        this.WriteLine("\n######################################");
-        this.WriteLine("# DYNAMIC CHAT");
-        this.WriteLine("######################################");
+        Console.WriteLine("\n######################################");
+        Console.WriteLine("# DYNAMIC CHAT");
+        Console.WriteLine("######################################");
 
         await InvokeChatAsync("Can you provide three original birthday gift ideas.  I don't want a gift that someone else will also pick.");
 
@@ -150,27 +150,27 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
             await InvokeChatAsync("He likes photography.");
         }
 
-        this.WriteLine("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        this.WriteLine(">>>> AGGREGATED CHAT");
-        this.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        Console.WriteLine("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        Console.WriteLine(">>>> AGGREGATED CHAT");
+        Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
         await foreach (var content in chat.GetChatMessagesAsync(personalShopperAgent).Reverse())
         {
-            this.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            Console.WriteLine($">>>> {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
         async Task InvokeChatAsync(string input)
         {
             chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(personalShopperAgent))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
 
-            this.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");
+            Console.WriteLine($"\n# IS COMPLETE: {chat.IsComplete}");
         }
 
         ChatCompletionAgent CreateAgent(string agentName, string agentInstructions) =>
@@ -198,7 +198,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseTest(outp
                                             string? agentName = string.IsNullOrWhiteSpace(jsonResult?.name) ? null : jsonResult?.name;
                                             agentName ??= InternalGiftIdeaAgentName;
 
-                                            this.WriteLine($"\t>>>> INNER TURN: {agentName}");
+                                            Console.WriteLine($"\t>>>> INNER TURN: {agentName}");
 
                                             return agentName;
                                         }
