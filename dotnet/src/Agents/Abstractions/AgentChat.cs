@@ -84,7 +84,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType().Name ?? "primary", agent?.Id ?? "primary");
+        this.Logger.LogDebug("[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}", nameof(GetChatMessagesAsync), agent?.GetType() ?? "primary", agent?.Id ?? "primary");
 
         try
         {
@@ -203,7 +203,7 @@ public abstract class AgentChat
     {
         this.SetActivityOrThrow(); // Disallow concurrent access to chat history
 
-        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
+        this.Logger.LogDebug("[{MethodName}] Invoking agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
         try
         {
@@ -215,7 +215,7 @@ public abstract class AgentChat
             List<ChatMessageContent> messages = [];
             await foreach (ChatMessageContent message in channel.InvokeAsync(agent, cancellationToken).ConfigureAwait(false))
             {
-                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType().Name, message);
+                this.Logger.LogTrace("[{MethodName}] Agent message {AgentType}: {Message}", nameof(InvokeAgentAsync), agent.GetType(), message);
 
                 // Add to primary history
                 this.History.Add(message);
@@ -239,7 +239,7 @@ public abstract class AgentChat
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
             this._broadcastQueue.Enqueue(channelRefs, messages);
 
-            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
+            this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
         finally
         {
@@ -252,7 +252,7 @@ public abstract class AgentChat
             AgentChannel channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
             if (channel == null)
             {
-                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
+                this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
                 channel = await agent.CreateChannelAsync(this.LoggerFactory.CreateLogger(agent.GetType()), cancellationToken).ConfigureAwait(false);
                 channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
@@ -264,7 +264,7 @@ public abstract class AgentChat
                     await channel.ReceiveAsync(this.History, cancellationToken).ConfigureAwait(false);
                 }
 
-                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType().Name, agent.Id);
+                this.Logger.LogInformation("[{MethodName}] Created channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
             }
 
             return channel;
