@@ -113,7 +113,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PromptSerialization", "PromptSerialization", "{6A4C2EAA-E1B4-4F33-A4E6-21ED36413919}"
 	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\src\PromptSerialization\ToolBehaviorsResolver.cs = src\InternalUtilities\src\PromptSerialization\ToolBehaviorsResolver.cs
+		src\InternalUtilities\src\PromptSerialization\ToolBehaviorResolver.cs = src\InternalUtilities\src\PromptSerialization\ToolBehaviorResolver.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
