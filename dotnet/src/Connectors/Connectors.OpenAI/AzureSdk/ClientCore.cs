@@ -758,114 +758,6 @@ internal abstract class ClientCore
         }
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts)? ConfigureFunctionCallingOptions(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int iteration)
-    {
-        if (executionSettings.ToolBehaviors is not null && executionSettings.ToolCallBehavior is not null)
-        {
-            throw new ArgumentException("ToolBehaviors and ToolCallBehavior cannot be used together.");
-        }
-
-        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
-        if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
-        {
-            if (iteration >= toolCallBehavior.MaximumUseAttempts)
-            {
-                // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.", toolCallBehavior.MaximumUseAttempts);
-                }
-            }
-            else
-            {
-                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
-                // what functions are available in the kernel.
-                toolCallBehavior.ConfigureOptions(kernel, chatOptions);
-            }
-
-            return new()
-            {
-                AllowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction,
-                MaximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts,
-                MaximumUseAttempts = toolCallBehavior.MaximumUseAttempts
-            };
-        }
-
-        // Handling new tool behavior represented by `PromptExecutionSettings.ToolBehaviors` property.
-        if (executionSettings.ToolBehaviors?.OfType<FunctionCallBehavior>() is { } functionCallBehaviors && functionCallBehaviors.Any())
-        {
-            if (functionCallBehaviors.Count() > 1)
-            {
-                throw new KernelException("Only one function call behavior is allowed.");
-            }
-
-            var functionCallBehavior = functionCallBehaviors.Single();
-
-            // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
-            // what functions are available in the kernel.
-            var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel, Model = chatOptions });
-            if (config is null)
-            {
-                return null;
-            }
-
-            (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts) result = new()
-            {
-                AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
-                MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
-                MaximumUseAttempts = config.MaximumUseAttempts
-            };
-
-            if (iteration >= config.MaximumUseAttempts)
-            {
-                // Don't add any tools as we've reached the maximum attempts limit.
-                if (this.Logger.IsEnabled(LogLevel.Debug))
-                {
-                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", config.MaximumUseAttempts);
-                }
-
-                return result;
-            }
-
-            // If we have a required function, it means we want to force LLM to invoke that function.
-            if (config.RequiredFunctions is { } requiredFunctions && requiredFunctions.Any())
-            {
-                if (requiredFunctions.Count() > 1)
-                {
-                    throw new KernelException("Only one required function is allowed.");
-                }
-
-                var functionDefinition = requiredFunctions.First().ToOpenAIFunction().ToFunctionDefinition();
-
-                chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
-                chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
-
-                return result;
-            }
-
-            // If we have available functions, we want LLM to choose which function(s) to call.
-            if (config.AvailableFunctions is { } availableFunctions && availableFunctions.Any())
-            {
-                chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
-
-                foreach (var function in availableFunctions)
-                {
-                    var functionDefinition = function.ToOpenAIFunction().ToFunctionDefinition();
-                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
-                }
-
-                return result;
-            }
-
-            // If we have neither required nor available functions, we don't want LLM to call any functions.
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
-
-            return result;
-        }
-
-        return null;
-    }
-
     /// <summary>Checks if a tool call is for a function that was defined.</summary>
     private static bool IsRequestableTool(ChatCompletionsOptions options, OpenAIFunctionToolCall ftc)
     {
@@ -1469,5 +1361,113 @@ internal abstract class ClientCore
         {
             await functionCallCallback(context).ConfigureAwait(false);
         }
+    }
+
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts)? ConfigureFunctionCallingOptions(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int iteration)
+    {
+        if (executionSettings.ToolBehaviors is not null && executionSettings.ToolCallBehavior is not null)
+        {
+            throw new ArgumentException("ToolBehaviors and ToolCallBehavior cannot be used together.");
+        }
+
+        // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
+        if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
+        {
+            if (iteration >= toolCallBehavior.MaximumUseAttempts)
+            {
+                // Don't add any tools as we've reached the maximum attempts limit.
+                if (this.Logger.IsEnabled(LogLevel.Debug))
+                {
+                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.", toolCallBehavior.MaximumUseAttempts);
+                }
+            }
+            else
+            {
+                // Regenerate the tool list as necessary. The invocation of the function(s) could have augmented
+                // what functions are available in the kernel.
+                toolCallBehavior.ConfigureOptions(kernel, chatOptions);
+            }
+
+            return new()
+            {
+                AllowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction,
+                MaximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts,
+                MaximumUseAttempts = toolCallBehavior.MaximumUseAttempts
+            };
+        }
+
+        // Handling new tool behavior represented by `PromptExecutionSettings.ToolBehaviors` property.
+        if (executionSettings.ToolBehaviors?.OfType<FunctionCallBehavior>() is { } functionCallBehaviors && functionCallBehaviors.Any())
+        {
+            if (functionCallBehaviors.Count() > 1)
+            {
+                throw new KernelException("Only one function call behavior is allowed.");
+            }
+
+            var functionCallBehavior = functionCallBehaviors.Single();
+
+            // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
+            // what functions are available in the kernel.
+            var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel, Model = chatOptions });
+            if (config is null)
+            {
+                return null;
+            }
+
+            (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts) result = new()
+            {
+                AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
+                MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
+                MaximumUseAttempts = config.MaximumUseAttempts
+            };
+
+            if (iteration >= config.MaximumUseAttempts)
+            {
+                // Don't add any tools as we've reached the maximum attempts limit.
+                if (this.Logger.IsEnabled(LogLevel.Debug))
+                {
+                    this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", config.MaximumUseAttempts);
+                }
+
+                return result;
+            }
+
+            // If we have a required function, it means we want to force LLM to invoke that function.
+            if (config.RequiredFunctions is { } requiredFunctions && requiredFunctions.Any())
+            {
+                if (requiredFunctions.Count() > 1)
+                {
+                    throw new KernelException("Only one required function is allowed.");
+                }
+
+                var functionDefinition = requiredFunctions.First().ToOpenAIFunction().ToFunctionDefinition();
+
+                chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
+                chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+
+                return result;
+            }
+
+            // If we have available functions, we want LLM to choose which function(s) to call.
+            if (config.AvailableFunctions is { } availableFunctions && availableFunctions.Any())
+            {
+                chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+
+                foreach (var function in availableFunctions)
+                {
+                    var functionDefinition = function.ToOpenAIFunction().ToFunctionDefinition();
+                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+                }
+
+                return result;
+            }
+
+            // If we have neither required nor available functions, we don't want LLM to call any functions.
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
+            return result;
+        }
+
+        return null;
     }
 }
