@@ -43,7 +43,6 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
 
         this.Logger.LogInformation("[{MethodName}] Current agent index: {AgentIndex} / {AgentCount}", nameof(NextAsync), this._index, agents.Count);
 
-
         return Task.FromResult(agent);
     }
 }
