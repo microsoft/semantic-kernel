@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -40,7 +41,27 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         var template = this._config.Template;
         var liquidTemplate = Template.ParseLiquid(template);
-        var nonEmptyArguments = arguments?.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
+        Dictionary<string, object> nonEmptyArguments = new();
+        foreach (var p in this._config.InputVariables)
+        {
+            if (p.Default is null || (p.Default is string s && string.IsNullOrWhiteSpace(s)))
+            {
+                continue;
+            }
+
+            nonEmptyArguments[p.Name] = p.Default;
+        }
+
+        foreach (var p in arguments ?? new KernelArguments())
+        {
+            if (p.Value is null)
+            {
+                continue;
+            }
+
+            nonEmptyArguments[p.Key] = p.Value;
+        }
+
         var renderedResult = liquidTemplate.Render(nonEmptyArguments);
 
         // parse chat history
