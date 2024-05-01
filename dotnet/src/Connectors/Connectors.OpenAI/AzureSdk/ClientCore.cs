@@ -1221,9 +1221,11 @@ internal abstract class ClientCore
                     arguments = JsonSerializer.Deserialize<KernelArguments>(functionToolCall.Arguments);
                     if (arguments is not null)
                     {
-                        foreach (var argument in arguments)
+                        // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
+                        var names = arguments.Names.ToArray();
+                        foreach (var name in names)
                         {
-                            arguments[argument.Key] = argument.Value?.ToString();
+                            arguments[name] = arguments[name]?.ToString();
                         }
                     }
                 }
