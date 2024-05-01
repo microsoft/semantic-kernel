@@ -5,7 +5,8 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace Agents;
+
 /// <summary>
 /// Demonstrate that two different agent types are able to participate in the same conversation.
 /// In this case a <see cref="ChatCompletionAgent"/> and <see cref="OpenAIAssistantAgent"/> participate.
@@ -78,14 +79,14 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseTest(output)
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
         chat.Add(new ChatMessageContent(AuthorRole.User, input));
-        this.WriteLine($"# {AuthorRole.User}: '{input}'");
+        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())
         {
-            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
-        this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

@@ -6,7 +6,8 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Resources;
 
-namespace Examples;
+namespace Agents;
+
 /// <summary>
 /// Demonstrate using retrieval on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
@@ -61,11 +62,11 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
         {
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }

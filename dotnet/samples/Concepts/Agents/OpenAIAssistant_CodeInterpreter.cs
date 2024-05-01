@@ -4,7 +4,8 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Examples;
+namespace Agents;
+
 /// <summary>
 /// Demonstrate using code-interpreter on <see cref="OpenAIAssistantAgent"/> .
 /// </summary>
@@ -43,11 +44,11 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         {
             chat.Add(new ChatMessageContent(AuthorRole.User, input));
 
-            this.WriteLine($"# {AuthorRole.User}: '{input}'");
+            Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
             await foreach (var content in chat.InvokeAsync(agent))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
