@@ -60,7 +60,7 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets list
     ```
 
-2. If needed, perform first time initialization:
+3. If needed, perform first time initialization:
 
     ```
     dotnet user-secrets init
