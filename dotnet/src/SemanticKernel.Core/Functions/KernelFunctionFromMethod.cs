@@ -451,16 +451,10 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
 
         sawFirstParameter = true;
 
-        // Get the default value for the parameter, if any. If the default value is DBNull, treat it as null.
-        var defaultValue =
-            parameter.DefaultValue is DBNull
-                ? null
-                : parameter.DefaultValue?.ToString();
-
         var parameterView = new KernelParameterMetadata(name)
         {
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-            DefaultValue = defaultValue,
+            DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue?.ToString() : null,
             IsRequired = !parameter.IsOptional,
             ParameterType = type,
         };

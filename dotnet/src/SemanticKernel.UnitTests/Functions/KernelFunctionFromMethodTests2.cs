@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,6 +63,7 @@ public sealed class KernelFunctionFromMethodTests2
 
         // Assert
         this.AssertDefaultValue(plugin, "Type04Nullable", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type04Optional", "input", null, false);
         this.AssertDefaultValue(plugin, "Type05", "input", null, true);
         this.AssertDefaultValue(plugin, "Type05Nullable", "input", null, false);
         this.AssertDefaultValue(plugin, "Type05EmptyDefault", "input", string.Empty, false);
@@ -312,6 +314,11 @@ public sealed class KernelFunctionFromMethodTests2
 
         [KernelFunction]
         public void Type04Nullable(string? input)
+        {
+        }
+
+        [KernelFunction]
+        public void Type04Optional([Optional] string input)
         {
         }
 
