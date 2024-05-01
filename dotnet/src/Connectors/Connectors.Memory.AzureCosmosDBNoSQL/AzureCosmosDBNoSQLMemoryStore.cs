@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -18,8 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 {
     private readonly CosmosClient _cosmosClient;
-    private readonly Embedding _embedding;
+    private readonly VectorEmbeddingPolicy _vectorEmbeddingPolicy;
     private readonly IndexingPolicy _indexingPolicy;
+    private readonly string _databaseName;
 
     /// <summary>
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a Azure Cosmos DB connection string
@@ -27,17 +29,24 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure Cosmos DB.</param>
     /// <param name="databaseName">The database name to connect to.</param>
-    /// <param name="config">Azure CosmosDB NoSQL Config containing specific parameters for vector search.</param>
+    /// <param name="vectorEmbeddingPolicy">Details about the <see cref="Embedding"/> to use.</param>
+    /// <param name="indexingPolicy">The <see cref="IndexingPolicy"/> to use.</param>
+    /// <param name="applicationName">The application name to use in requests.</param>
     public AzureCosmosDBNoSQLMemoryStore(
         string connectionString,
         string databaseName,
-        Embedding embedding,
+        VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy,
-        string applicationName,
-    )
+        string? applicationName = null)
     {
-        this._cosmosClient = new CosmosClient(connectionString);
+        var options = new CosmosClientOptions
+        {
+            ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+        };
+        this._cosmosClient = new CosmosClient(connectionString, options);
         this._databaseName = databaseName;
+        this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
+        this._indexingPolicy = indexingPolicy;
     }
 
     /// <summary>
@@ -47,66 +56,50 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     public AzureCosmosDBNoSQLMemoryStore(
         CosmosClient cosmosClient,
         string databaseName,
-        AzureCosmosDBNoSQLonfig config)
+        VectorEmbeddingPolicy vectorEmbeddingPolicy,
+        IndexingPolicy indexingPolicy,
+        string? applicationName = null)
     {
-        MongoClientSettings settings = cosmosClient.Settings;
-        this._config = config;
-        settings.ApplicationName = this._config.ApplicationName;
-        this._cosmosClient = new MongoClient(settings);
-        this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._cosmosClient = cosmosClient;
+        this._cosmosClient.ClientOptions.ApplicationName = applicationName;
+        this._databaseName = databaseName;
+        this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
+        this._indexingPolicy = indexingPolicy;
     }
 
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(
         string collectionName,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
-        await this
-            ._mongoDatabase.CreateCollectionAsync(
-                collectionName,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-        var indexes = await this.GetCollection(collectionName)
-            .Indexes.ListAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var databaseResponse = await this._cosmosClient.CreateDatabaseAsync(
+            this._databaseName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (!indexes.ToList(cancellationToken: cancellationToken).Any(index => index["name"] == this._config.IndexName))
+        var containerProperties = new ContainerProperties(collectionName, "id")
         {
-            var command = new BsonDocument();
-            switch (this._config.Kind)
-            {
-                case AzureCosmosDBVectorSearchType.VectorIVF:
-                    command = this.GetIndexDefinitionVectorIVF(collectionName);
-                    break;
-                case AzureCosmosDBVectorSearchType.VectorHNSW:
-                    command = this.GetIndexDefinitionVectorHNSW(collectionName);
-                    break;
-            }
-            await this
-                ._mongoDatabase.RunCommandAsync<BsonDocument>(
-                    command,
-                    cancellationToken: cancellationToken
-                )
-                .ConfigureAwait(false);
-        }
+            VectorEmbeddingPolicy = this._vectorEmbeddingPolicy,
+            IndexingPolicy = this._indexingPolicy,
+        };
+        var containerResponse = databaseResponse.Database.CreateContainerAsync(
+            containerProperties,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this
-            ._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        using var feedIterator = this.
+            _cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainerQueryIterator<string>("SELECT c.Id FROM c");
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        while (feedIterator.HasMoreResults)
         {
-            foreach (var name in cursor.Current)
+            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var containerName in next.Resource)
             {
-                yield return name;
+                yield return containerName;
             }
         }
     }
@@ -114,8 +107,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<bool> DoesCollectionExistAsync(
         string collectionName,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
         await foreach (
             var existingCollectionName in this.GetCollectionsAsync(cancellationToken)
@@ -133,25 +125,24 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public Task DeleteCollectionAsync(
         string collectionName,
-        CancellationToken cancellationToken = default
-    ) => this._mongoDatabase.DropCollectionAsync(collectionName, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        return this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .DeleteContainerAsync(cancellationToken: cancellationToken);
+    }
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(
         string collectionName,
         MemoryRecord record,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
-        var replaceOptions = new ReplaceOptions() { IsUpsert = true };
-
-        var result = await this.GetCollection(collectionName)
-            .ReplaceOneAsync(
-                GetFilterById(record.Metadata.Id),
-                new AzureCosmosDBNoSQLryRecord(record),
-                replaceOptions,
-                cancellationToken
-            )
+        var result = await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .UpsertItemAsync(record, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         return record.Key;
@@ -161,8 +152,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     public async IAsyncEnumerable<string> UpsertBatchAsync(
         string collectionName,
         IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var record in records)
         {
@@ -176,19 +166,15 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         string collectionName,
         string key,
         bool withEmbedding = false,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.GetCollection(collectionName)
-            .FindAsync(GetFilterById(key), null, cancellationToken)
-            .ConfigureAwait(false);
+        var result = await this._cosmosClient
+         .GetDatabase(this._databaseName)
+         .GetContainer(collectionName)
+         .ReadItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+         .ConfigureAwait(false);
 
-        var cosmosRecord = await cursor
-            .SingleOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-        var result = cosmosRecord?.ToMemoryRecord(withEmbedding);
-
-        return result;
+        return result.Resource;
     }
 
     /// <inheritdoc/>
@@ -196,36 +182,49 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         string collectionName,
         IEnumerable<string> keys,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.GetCollection(collectionName)
-            .FindAsync(GetFilterByIds(keys), null, cancellationToken)
+        var items = keys.Select(k => (k, new PartitionKey(k))).ToList();
+        var feedResponse = await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .ReadManyItemsAsync<MemoryRecord>(items, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        foreach (var item in feedResponse.Resource)
         {
-            foreach (var cosmosRecord in cursor.Current)
-            {
-                yield return cosmosRecord.ToMemoryRecord(withEmbeddings);
-            }
+            yield return item;
         }
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(
+    public async Task RemoveAsync(
         string collectionName,
         string key,
-        CancellationToken cancellationToken = default
-    ) => this.GetCollection(collectionName).DeleteOneAsync(GetFilterById(key), cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var response = await this._cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainer(collectionName)
+            .DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
-    public Task RemoveBatchAsync(
+    public async Task RemoveBatchAsync(
         string collectionName,
         IEnumerable<string> keys,
-        CancellationToken cancellationToken = default
-    ) =>
-        this.GetCollection(collectionName).DeleteManyAsync(GetFilterByIds(keys), cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var key in keys)
+        {
+            var response = await this._cosmosClient
+                .GetDatabase(this._databaseName)
+                .GetContainer(collectionName)
+                .DeleteItemAsync<MemoryRecord>(key, new PartitionKey(key), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
 
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -233,29 +232,14 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.VectorSearchAsync(
-                1,
-                embedding,
-                collectionName,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-        var result = await cursor.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-        // Access the similarityScore from the BSON document
-        double similarityScore = result.GetValue("similarityScore").AsDouble;
-        if (similarityScore < minRelevanceScore)
+        await foreach (var item in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
-            return null;
+            return item;
         }
 
-        MemoryRecord memoryRecord = AzureCosmosDBNoSQLmoryRecord.ToMemoryRecord(
-            result["document"].AsBsonDocument,
-            withEmbedding
-        );
-        return (memoryRecord, similarityScore);
+        return null;
     }
 
     /// <inheritdoc/>
@@ -265,32 +249,30 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.VectorSearchAsync(
-                limit,
-                embedding,
-                collectionName,
-                cancellationToken
-            )
-            .ConfigureAwait(false);
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
-        {
-            foreach (var doc in cursor.Current)
-            {
-                // Access the similarityScore from the BSON document
-                var similarityScore = doc.GetValue("similarityScore").AsDouble;
-                if (similarityScore < minRelevanceScore)
-                {
-                    continue;
-                }
+        var queryDefinition = new QueryDefinition("""
+            SELECT x, VectorSimilarity(x.Embedding, @embedding)  AS SimilarityScore
+            FROM x
+            ORDER BY VectorSimilarity(x.Embedding, @embedding)
+            WHERE SimilarityScore >= @minRelevanceScore
+            TOP @limit
+            """);
+        queryDefinition.WithParameter("embedding", embedding);
+        queryDefinition.WithParameter("limit", limit);
+        queryDefinition.WithParameter("minRelevanceScore", minRelevanceScore);
 
-                MemoryRecord memoryRecord = AzureCosmosDBNoSQLMemoryRecord.ToMemoryRecord(
-                    doc["document"].AsBsonDocument,
-                    withEmbeddings
-                );
-                yield return (memoryRecord, similarityScore);
+        var feedIterator = this._cosmosClient
+         .GetDatabase(this._databaseName)
+         .GetContainer(collectionName)
+         .GetItemQueryIterator<MemoryRecord>(queryDefinition);
+
+        while (feedIterator.HasMoreResults)
+        {
+            foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // TODO: Get the similarity score out too.
+                yield return (memoryRecord, 0.0);
             }
         }
     }
