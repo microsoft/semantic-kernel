@@ -26,7 +26,7 @@ internal sealed class RestApiOperationRunner
     private const string WildcardResponseKeyFormat = "{0}XX";
 
     /// <summary>
-    /// List of payload builders/factories.
+    /// List of operationPayload builders/factories.
     /// </summary>
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
 
@@ -57,13 +57,13 @@ internal sealed class RestApiOperationRunner
     private readonly string? _userAgent;
 
     /// <summary>
-    /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'payload' property.
+    /// Determines whether the operation operationPayload is constructed dynamically based on operation operationPayload metadata.
+    /// If false, the operation operationPayload must be provided via the 'operationPayload' property.
     /// </summary>
     private readonly bool _enableDynamicPayload;
 
     /// <summary>
-    /// Determines whether payload parameters are resolved from the arguments by
+    /// Determines whether operationPayload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).
     /// </summary>
     private readonly bool _enablePayloadNamespacing;
@@ -74,10 +74,10 @@ internal sealed class RestApiOperationRunner
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
-    /// <param name="enableDynamicPayload">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'payload' property.
+    /// <param name="enableDynamicPayload">Determines whether the operation operationPayload is constructed dynamically based on operation operationPayload metadata.
+    /// If false, the operation operationPayload must be provided via the 'operationPayload' property.
     /// </param>
-    /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
+    /// <param name="enablePayloadNamespacing">Determines whether operationPayload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     public RestApiOperationRunner(
         HttpClient httpClient,
@@ -126,9 +126,9 @@ internal sealed class RestApiOperationRunner
 
         var headers = operation.BuildHeaders(arguments);
 
-        var payload = this.BuildOperationPayload(operation, arguments);
+        var operationPayload = this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, payload, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
+        return this.SendAsync(url, operation.Method, headers, operationPayload.Payload, operationPayload.Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), cancellationToken);
     }
 
     #region private
@@ -139,7 +139,8 @@ internal sealed class RestApiOperationRunner
     /// <param name="url">The url to send request to.</param>
     /// <param name="method">The HTTP request method.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
-    /// <param name="payload">HTTP request payload.</param>
+    /// <param name="payload">HTTP request operationPayload.</param>
+    /// <param name="requestContent">HTTP request content.</param>
     /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
@@ -147,7 +148,8 @@ internal sealed class RestApiOperationRunner
         Uri url,
         HttpMethod method,
         IDictionary<string, string>? headers = null,
-        HttpContent? payload = null,
+        object? payload = null,
+        HttpContent? requestContent = null,
         IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
         CancellationToken cancellationToken = default)
     {
@@ -157,7 +159,7 @@ internal sealed class RestApiOperationRunner
 
         if (payload != null)
         {
-            requestMessage.Content = payload;
+            requestMessage.Content = requestContent;
         }
 
         requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
@@ -175,7 +177,7 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+        var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
 
         response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
@@ -185,9 +187,11 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Serializes the response content of an HTTP request.
     /// </summary>
+    /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
+    /// <param name="payload">The operationPayload sent in the HTTP request.</param>
     /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
     /// <returns>The serialized content.</returns>
-    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpContent content)
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, HttpContent content)
     {
         var contentType = content.Headers.ContentType;
 
@@ -215,20 +219,24 @@ internal sealed class RestApiOperationRunner
         // Serialize response content and return it
         var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
 
-        return new RestApiOperationResponse(serializedContent, contentType!.ToString());
+        return new RestApiOperationResponse(serializedContent, contentType!.ToString())
+        {
+            RequestUri = request.RequestUri,
+            Payload = payload,
+        };
     }
 
     /// <summary>
-    /// Builds operation payload.
+    /// Builds operation operationPayload.
     /// </summary>
     /// <param name="operation">The operation.</param>
-    /// <param name="arguments">The payload arguments.</param>
-    /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent? BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
+    /// <param name="arguments">The operationPayload arguments.</param>
+    /// <returns>The HttpContent representing the operationPayload.</returns>
+    private (object? Payload, HttpContent? Content) BuildOperationPayload(RestApiOperation operation, IDictionary<string, object?> arguments)
     {
         if (operation.Payload is null && !arguments.ContainsKey(RestApiOperation.PayloadArgumentName))
         {
-            return null;
+            return (null, null);
         }
 
         var mediaType = operation.Payload?.MediaType;
@@ -251,14 +259,14 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds "application/json" payload.
+    /// Builds "application/json" operationPayload.
     /// </summary>
-    /// <param name="payloadMetadata">The payload meta-data.</param>
-    /// <param name="arguments">The payload arguments.</param>
-    /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    /// <param name="payloadMetadata">The operationPayload meta-data.</param>
+    /// <param name="arguments">The operationPayload arguments.</param>
+    /// <returns>The HttpContent representing the operationPayload.</returns>
+    private (object, HttpContent) BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
-        // Build operation payload dynamically
+        // Build operation operationPayload dynamically
         if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
@@ -268,20 +276,20 @@ internal sealed class RestApiOperationRunner
 
             var payload = this.BuildJsonObject(payloadMetadata.Properties, arguments);
 
-            return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
+            return (payload, new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson));
         }
 
-        // Get operation payload content from the 'payload' argument if dynamic payload building is not required.
+        // Get operation operationPayload content from the 'operationPayload' argument if dynamic operationPayload building is not required.
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string content)
         {
             throw new KernelException($"No payload is provided by the argument '{RestApiOperation.PayloadArgumentName}'.");
         }
 
-        return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
+        return (content, new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson));
     }
 
     /// <summary>
-    /// Builds a JSON object from a list of RestAPI operation payload properties.
+    /// Builds a JSON object from a list of RestAPI operation operationPayload properties.
     /// </summary>
     /// <param name="properties">The properties.</param>
     /// <param name="arguments">The arguments.</param>
@@ -344,27 +352,27 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds "text/plain" payload.
+    /// Builds "text/plain" operationPayload.
     /// </summary>
-    /// <param name="payloadMetadata">The payload meta-data.</param>
-    /// <param name="arguments">The payload arguments.</param>
-    /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
+    /// <param name="payloadMetadata">The operationPayload meta-data.</param>
+    /// <param name="arguments">The operationPayload arguments.</param>
+    /// <returns>The HttpContent representing the operationPayload.</returns>
+    private (object, HttpContent) BuildPlainTextPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string payload)
         {
             throw new KernelException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
-        return new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain);
+        return (payload, new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain));
     }
 
     /// <summary>
-    /// Retrieves the argument name for a payload property.
+    /// Retrieves the argument name for a operationPayload property.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyNamespace">The namespace to add to the property name (optional).</param>
-    /// <returns>The argument name for the payload property.</returns>
+    /// <returns>The argument name for the operationPayload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
         if (!this._enablePayloadNamespacing)
