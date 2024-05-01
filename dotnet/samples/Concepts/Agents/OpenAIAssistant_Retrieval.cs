@@ -33,7 +33,7 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateEmptyKernel(),
+                kernel: new(),
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {

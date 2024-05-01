@@ -26,7 +26,7 @@ public class OpenAIAssistant_ChartMaker(ITestOutputHelper output) : BaseTest(out
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateEmptyKernel(),
+                kernel: new(),
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
