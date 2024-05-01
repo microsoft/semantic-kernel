@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +52,34 @@ public sealed class KernelFunctionFromMethodTests2
         // Act
         Assert.Equal(methods.Length, functions.Length);
         Assert.All(functions, Assert.NotNull);
+    }
+
+    [Fact]
+    public void ItKeepsDefaultValueNullWhenNotProvided()
+    {
+        // Arrange & Act
+        var pluginInstance = new LocalExamplePlugin();
+        var plugin = KernelPluginFactory.CreateFromObject(pluginInstance);
+
+        // Assert
+        this.AssertDefaultValue(plugin, "Type04Nullable", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type04Optional", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type05Nullable", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05EmptyDefault", "input", string.Empty, false);
+        this.AssertDefaultValue(plugin, "Type05DefaultProvided", "input", "someDefault", false);
+    }
+
+    internal void AssertDefaultValue(KernelPlugin plugin, string functionName, string parameterName, object? expectedDefaultValue, bool expectedIsRequired)
+    {
+        var functionExists = plugin.TryGetFunction(functionName, out var function);
+        Assert.True(functionExists);
+        Assert.NotNull(function);
+
+        var parameter = function.Metadata.Parameters.First(p => p.Name == parameterName);
+        Assert.NotNull(parameter);
+        Assert.Equal(expectedDefaultValue, parameter.DefaultValue);
+        Assert.Equal(expectedIsRequired, parameter.IsRequired);
     }
 
     [Fact]
@@ -289,6 +318,11 @@ public sealed class KernelFunctionFromMethodTests2
         }
 
         [KernelFunction]
+        public void Type04Optional([Optional] string input)
+        {
+        }
+
+        [KernelFunction]
         public string Type05(string input)
         {
             return "";
@@ -296,6 +330,18 @@ public sealed class KernelFunctionFromMethodTests2
 
         [KernelFunction]
         public string? Type05Nullable(string? input = null)
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05EmptyDefault(string? input = "")
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05DefaultProvided(string? input = "someDefault")
         {
             return "";
         }
