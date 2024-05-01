@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
 
     <PackageReference Include="FastBertTokenizer" />
+    <PackageReference Include="Microsoft.Bcl.Numerics" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
