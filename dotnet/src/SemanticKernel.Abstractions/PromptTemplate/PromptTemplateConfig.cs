@@ -25,6 +25,8 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public sealed class PromptTemplateConfig
 {
+    private readonly static JsonSerializerOptions s_serializerOptions = new(JsonOptionsCache.ReadPermissive) { TypeInfoResolver = ToolBehaviorsResolver.Instance };
+
     /// <summary>The format of the prompt template.</summary>
     private string? _templateFormat;
     /// <summary>The prompt template string.</summary>
@@ -66,7 +68,7 @@ public sealed class PromptTemplateConfig
         PromptTemplateConfig? config = null;
         try
         {
-            config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, JsonOptionsCache.ReadPermissive);
+            config = JsonSerializer.Deserialize<PromptTemplateConfig>(json, s_serializerOptions);
             if (config is null)
             {
                 throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));

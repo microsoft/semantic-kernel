@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -68,7 +71,7 @@ public class KernelFunctionYamlTests
         // Arrange
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
+            .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
             .Build();
         var promptFunctionModel = deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
 
@@ -80,6 +83,41 @@ public class KernelFunctionYamlTests
         Assert.Equal("gpt-4", executionSettings.ModelId);
         Assert.Equal(1.0, executionSettings.Temperature);
         Assert.Equal(0.0, executionSettings.TopP);
+    }
+
+    [Fact]
+    public void ItShouldDeserializeFunctionCallChoices()
+    {
+        // Act
+        var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
+        Assert.Equal(2, promptTemplateConfig.ExecutionSettings.Count);
+
+        // Service with auto function call choice
+        var service1ExecutionSettings = promptTemplateConfig.ExecutionSettings["service1"];
+        Assert.NotNull(service1ExecutionSettings?.ToolBehaviors);
+        Assert.Single(service1ExecutionSettings.ToolBehaviors);
+
+        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        Assert.NotNull(service1FunctionCallBehavior?.Choice);
+
+        var autoFunctionCallChoice = service1FunctionCallBehavior.Choice as AutoFunctionCallChoice;
+        Assert.NotNull(autoFunctionCallChoice?.Functions);
+        Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
+
+        // Service with required function call choice
+        var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
+        Assert.NotNull(service2ExecutionSettings?.ToolBehaviors);
+        Assert.Single(service2ExecutionSettings.ToolBehaviors);
+
+        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        Assert.NotNull(service2FunctionCallBehavior?.Choice);
+
+        var requiredFunctionCallChoice = service2FunctionCallBehavior.Choice as RequiredFunctionCallChoice;
+        Assert.NotNull(requiredFunctionCallChoice?.Functions);
+        Assert.Equal("p2.f2", requiredFunctionCallChoice.Functions.Single());
     }
 
     [Fact]
@@ -157,6 +195,11 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    []
+            tool_behaviors:
+              - !function_call_behavior
+                choice: !auto
+                  functions:
+                    - p1.f1
           service2:
             model_id:          gpt-3.5
             temperature:       1.0
@@ -165,6 +208,11 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    [ "foo", "bar", "baz" ]
+            tool_behaviors:
+              - !function_call_behavior
+                choice: !required
+                  functions:
+                    - p2.f2
         """;
 
     private readonly string _yamlWithCustomSettings = """

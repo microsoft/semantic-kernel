@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
@@ -139,6 +141,143 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
         Assert.Equal("gpt-4", promptTemplateConfig.DefaultExecutionSettings?.ModelId);
+    }
+
+    [Fact]
+    public void DeserializingAutoFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "tool_behaviors": [
+                    {
+                      "type": "function_call_behavior",
+                      "choice":{
+                          "type": "auto",
+                          "allowAnyRequestedKernelFunction" : true,
+                          "maximumAutoInvokeAttempts": 12,
+                          "functions":[
+                              "p1.f1"
+                          ]
+                        }
+                    }
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        Assert.NotNull(executionSettings.Value.ToolBehaviors);
+        Assert.Single(executionSettings.Value.ToolBehaviors);
+
+        var functionCallBehavior = executionSettings.Value.ToolBehaviors.Single() as FunctionCallBehavior;
+        Assert.NotNull(functionCallBehavior);
+
+        var autoFunctionCallChoice = functionCallBehavior.Choice as AutoFunctionCallChoice;
+        Assert.NotNull(autoFunctionCallChoice?.Functions);
+        Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
+
+        Assert.True(autoFunctionCallChoice.AllowAnyRequestedKernelFunction);
+    }
+
+    [Fact]
+    public void DeserializingRequiredFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "tool_behaviors": [
+                    {
+                      "type": "function_call_behavior",
+                      "choice":{
+                          "type": "required",
+                          "maximumAutoInvokeAttempts": 11,
+                          "functions":[
+                              "p1.f1"
+                          ]
+                        }
+                    }
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        Assert.NotNull(executionSettings.Value.ToolBehaviors);
+        Assert.Single(executionSettings.Value.ToolBehaviors);
+
+        var functionCallBehavior = executionSettings.Value.ToolBehaviors.Single() as FunctionCallBehavior;
+        Assert.NotNull(functionCallBehavior);
+
+        var requiredFunctionCallChoice = functionCallBehavior.Choice as RequiredFunctionCallChoice;
+        Assert.NotNull(requiredFunctionCallChoice?.Functions);
+        Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
+
+        Assert.Equal(11, requiredFunctionCallChoice.MaximumAutoInvokeAttempts);
+        Assert.Equal(1, requiredFunctionCallChoice.MaximumUseAttempts);
+    }
+
+    [Fact]
+    public void DeserializingNoneFunctionCallingChoice()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "execution_settings": {
+                "default": {
+                  "model_id": "gpt-4",
+                  "tool_behaviors": [
+                    {
+                      "type": "function_call_behavior",
+                      "choice":{
+                          "type": "none"
+                        }
+                    }
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = PromptTemplateConfig.FromJson(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Single(promptTemplateConfig.ExecutionSettings);
+
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        Assert.NotNull(executionSettings.Value.ToolBehaviors);
+        Assert.Single(executionSettings.Value.ToolBehaviors);
+
+        var functionCallBehavior = executionSettings.Value.ToolBehaviors.Single() as FunctionCallBehavior;
+        Assert.NotNull(functionCallBehavior);
+        Assert.IsType<NoneFunctionCallChoice>(functionCallBehavior.Choice);
     }
 
     [Fact]

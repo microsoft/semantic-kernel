@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -40,6 +41,18 @@ public class PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._modelId = value;
+        }
+    }
+
+    [JsonPropertyName("tool_behaviors")]
+    public IEnumerable<ToolBehavior>? ToolBehaviors
+    {
+        get => this._toolBehaviors;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._toolBehaviors = value;
         }
     }
 
@@ -92,7 +105,8 @@ public class PromptExecutionSettings
         return new()
         {
             ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
+            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
+            ToolBehaviors = this.ToolBehaviors
         };
     }
 
@@ -112,6 +126,7 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
+    private IEnumerable<ToolBehavior>? _toolBehaviors;
 
     #endregion
 }

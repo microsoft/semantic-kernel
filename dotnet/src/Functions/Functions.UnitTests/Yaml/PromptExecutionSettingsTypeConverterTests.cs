@@ -8,9 +8,9 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace SemanticKernel.Functions.UnitTests.Yaml;
 
 /// <summary>
-/// Tests for <see cref="PromptExecutionSettingsNodeDeserializer"/>.
+/// Tests for <see cref="PromptExecutionSettingsTypeConverter"/>.
 /// </summary>
-public sealed class PromptExecutionSettingsNodeDeserializerTests
+public sealed class PromptExecutionSettingsTypeConverterTests
 {
     [Fact]
     public void ItShouldCreatePromptFunctionFromYamlWithCustomModelSettings()
@@ -18,7 +18,7 @@ public sealed class PromptExecutionSettingsNodeDeserializerTests
         // Arrange
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithNodeDeserializer(new PromptExecutionSettingsNodeDeserializer())
+            .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
             .Build();
 
         // Act

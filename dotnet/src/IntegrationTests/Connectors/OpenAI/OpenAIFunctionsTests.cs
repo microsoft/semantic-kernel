@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.Planners.Stepwise;
@@ -18,9 +19,9 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIToolsTests : BaseIntegrationTest
+public sealed class OpenAIFunctionsTests : BaseIntegrationTest
 {
-    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
+    [Fact]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
         // Arrange
@@ -39,7 +40,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 #pragma warning restore CS0618 // Events are deprecated
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
         var result = await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings));
 
         // Assert
@@ -47,7 +48,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Contains("GetCurrentUtcTime", invokedFunctions);
     }
 
-    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
+    [Fact]
     public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
     {
         // Arrange
@@ -66,7 +67,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 #pragma warning restore CS0618 // Events are deprecated
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
         string result = "";
         await foreach (string c in kernel.InvokePromptStreamingAsync<string>(
             $"How much older is John than Jim? Compute that value and pass it to the {nameof(TimeInformation)}.{nameof(TimeInformation.InterpretValue)} function, then respond only with its result.",
@@ -82,7 +83,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
     }
 
-    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
+    [Fact]
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
@@ -90,7 +91,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
         var result = await kernel.InvokePromptAsync("What is the current temperature in Dublin, Ireland, in Fahrenheit?", new(settings));
 
         // Assert
@@ -98,7 +99,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
-    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
+    [Fact]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
@@ -106,7 +107,9 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         kernel.ImportPluginFromType<WeatherPlugin>();
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
+
+
         var result = await kernel.InvokePromptAsync("Convert 50 degrees Fahrenheit to Celsius.", new(settings));
 
         // Assert
@@ -131,7 +134,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             [promptFunction]));
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
         var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
 
         // Assert
@@ -156,7 +159,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             [promptFunction]));
 
         // Act
-        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        OpenAIPromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
         var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
 
         var builder = new StringBuilder();
@@ -182,7 +185,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -229,7 +232,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -267,9 +270,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var kernel = this.InitializeKernel(importHelperPlugin: true);
 
         var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("If you are unable to answer the question for whatever reason, please add the 'error' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -300,8 +304,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         // Assert
         Assert.NotNull(messageContent.Content);
 
-        var failureWords = new List<string>() { "error", "unable", "couldn", "issue", "trouble", "difficulties" };
-        Assert.Contains(failureWords, word => messageContent.Content.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+        Assert.Contains("error", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Fact]
@@ -311,9 +314,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var kernel = this.InitializeKernel(importHelperPlugin: true);
 
         var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -361,7 +365,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
 
         var completionService = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -385,7 +389,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice()] };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -451,7 +455,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("What day is today?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableFunctions([function.Metadata.ToOpenAIFunction()], true) };
+        var settings = new OpenAIPromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice([function], autoInvoke: true)] };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 
@@ -464,7 +468,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task RequiredFunctionShouldBeCalledAsync()
+    public async Task RequiredFunctionShouldBeCalledByAsync()
     {
         // Arrange
         var kernel = this.InitializeKernel(importHelperPlugin: false);
@@ -475,7 +479,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage("What day is today?");
 
-        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.RequireFunction(function.Metadata.ToOpenAIFunction(), true) };
+        var settings = new PromptExecutionSettings() { ToolBehaviors = [FunctionCallBehavior.RequiredFunctionChoice([function], true)] };
 
         var sut = kernel.GetRequiredService<IChatCompletionService>();
 

@@ -110,6 +110,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PromptSerialization", "PromptSerialization", "{6A4C2EAA-E1B4-4F33-A4E6-21ED36413919}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\PromptSerialization\ToolBehaviorsResolver.cs = src\InternalUtilities\src\PromptSerialization\ToolBehaviorsResolver.cs
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Linq\AsyncEnumerable.cs = src\InternalUtilities\src\Linq\AsyncEnumerable.cs
@@ -650,6 +655,7 @@ Global
 		{5C246969-D794-4EC3-8E8F-F90D4D166420} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{958AD708-F048-4FAF-94ED-D2F2B92748B9} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{29E7D971-1308-4171-9872-E8E4669A1134} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{6A4C2EAA-E1B4-4F33-A4E6-21ED36413919} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{B00AD427-0047-4850-BEF9-BA8237EA9D8B} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{1C19D805-3573-4477-BF07-40180FCDE1BD} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
 		{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
