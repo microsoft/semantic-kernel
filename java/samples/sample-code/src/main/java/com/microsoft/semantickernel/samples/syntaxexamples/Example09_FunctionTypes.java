@@ -1,284 +1,713 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
+import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes.convert;
+
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import java.time.Duration;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter.NoopConverter;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import reactor.core.publisher.Mono;
 
-/**
- * Demonstrates how the Kernel uses functions loaded from skills.
- * <p>
- * Refer to the <a href=
- * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
- * README</a> for configuring your environment to run the examples.
- */
 public class Example09_FunctionTypes {
-    public static void main(String[] args) throws ConfigurationException {
-        OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletion()
-                .withModelId("davinci-002")
-                .withOpenAIClient(client)
-                .build();
+    private static final String PLUGIN_DIR = System.getenv("PLUGIN_DIR") == null ? "."
+        : System.getenv("PLUGIN_DIR");
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+    // Only required if AZURE_CLIENT_KEY is set
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
 
-        System.out.println("======== Native function types ========");
+    public static void main(String[] args) throws InterruptedException {
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        var test = kernel
-                .importSkill(new LocalExampleSkill(), "test");
+        System.out.println("======== Method Function types ========");
 
-        kernel.importSkillsFromDirectory(SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");
+        OpenAIAsyncClient client;
 
+        if (AZURE_CLIENT_KEY != null) {
+            client = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
+        } else {
+            client = new OpenAIClientBuilder()
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
+        }
 
-        var fakeContext = SKBuilders.context()
-                .withSkills(kernel.getSkills())
-                .build();
+        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+            .withOpenAIAsyncClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
-        // The kernel takes care of wiring the input appropriately
-        SKContext result = kernel.runAsync(
-                        "",
-                        test.getFunction("type01"),
-                        test.getFunction("type02"),
-                        test.getFunction("type03"),
-                        test.getFunction("type04"),
-                        test.getFunction("type05"),
-                        test.getFunction("type06"),
-                        test.getFunction("type07"),
-                        test.getFunction("type08"),
-                        test.getFunction("type09"),
-                        test.getFunction("type10"),
-                        test.getFunction("type11"),
-                        test.getFunction("type12"),
-                        test.getFunction("type13"),
-                        test.getFunction("type14"),
-                        test.getFunction("type15"),
-                        test.getFunction("type16"),
-                        test.getFunction("type17"),
-                        test.getFunction("type18")
-                )
-                .block();
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
+        KernelPlugin plugin = KernelPluginFactory
+            .createFromObject(new LocalExamplePlugin(), "Examples");
 
-        kernel.getFunction("test", "type01").invokeAsync().block();
-        test.getFunction("type01").invokeAsync().block();
+        KernelPlugin summarize = KernelPluginFactory
+            .importPluginFromDirectory(
+                Path.of(PLUGIN_DIR, "java/samples/sample-code/src/main/resources/Plugins"),
+                "SummarizePlugin",
+                null);
 
-        kernel.getFunction("test", "type02").invokeAsync().block();
-        test.getFunction("type02").invokeAsync().block();
+        KernelPlugin examplePlugin = KernelPluginFactory
+            .importPluginFromResourcesDirectory(
+                "Plugins",
+                "ExamplePlugins",
+                "ExampleFunction",
+                null,
+                Example09_FunctionTypes.class);
 
-        kernel.getFunction("test", "type03").invokeAsync().block();
-        test.getFunction("type03").invokeAsync().block();
+        Kernel kernel = Kernel.builder()
+            .withAIService(TextGenerationService.class, textGenerationService)
+            .withPlugin(plugin)
+            .withPlugin(summarize)
+            .withPlugin(examplePlugin)
+            .build();
 
-        kernel.getFunction("test", "type04").invokeAsync(fakeContext).block();
-        test.getFunction("type04").invokeAsync(fakeContext).block();
+        // Different ways to invoke a function (not limited to these examples)
+        FunctionResult<?> result = kernel.invokeAsync(plugin.get("NoInputWithVoidResult"))
+            .block();
+        assert result == null;
 
-        kernel.getFunction("test", "type05").invokeAsync(fakeContext).block();
-        test.getFunction("type05").invokeAsync(fakeContext).block();
+        CountDownLatch cdl = new CountDownLatch(1);
 
-        kernel.getFunction("test", "type06").invokeAsync(fakeContext).block();
-        test.getFunction("type06").invokeAsync(fakeContext).block();
+        kernel
+            .invokeAsync(plugin.get("NoInputWithVoidResult"))
+            .doFinally(ignore -> cdl.countDown())
+            .subscribe(ignore -> {
+                throw new RuntimeException("No return expected");
+            });
 
-        kernel.getFunction("test", "type07").invokeAsync(fakeContext).block();
-        test.getFunction("type07").invokeAsync(fakeContext).block();
+        cdl.await();
 
-        kernel.getFunction("test", "type08").invokeAsync("").block();
-        test.getFunction("type08").invokeAsync("").block();
+        System.out.println(result != null ? result.getResult() : "null");
+        result = kernel.invokeAsync(plugin.get("NoInputTaskWithVoidResult"))
+            .block();
+        assert result == null;
+        System.out.println(result != null ? result.getResult() : "null");
 
-        kernel.getFunction("test", "type09").invokeAsync("").block();
-        test.getFunction("type09").invokeAsync("").block();
+        result = kernel
+            .invokeAsync(plugin.<String>get("InputDateTimeWithStringResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("currentDate",
+                        ContextVariable.of(
+                            ZonedDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC),
+                            new DateTimeContextVariableTypeConverter()))
+                    .build())
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.getFunction("test", "type10").invokeAsync("").block();
-        test.getFunction("type10").invokeAsync("").block();
+        result = kernel.invokeAsync(plugin.<String>get("NoInputTaskWithStringResult"))
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.getFunction("test", "type11").invokeAsync("").block();
-        test.getFunction("type11").invokeAsync("").block();
+        result = kernel.invokeAsync(plugin.<String>get("MultipleInputsWithVoidResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("x", "x string")
+                    .withVariable("y", 100)
+                    .withVariable("z", 1.5)
+                    .build())
+            .block();
 
-        kernel.getFunction("test", "type12").invokeAsync("").block();
-        test.getFunction("type12").invokeAsync("").block();
+        result = kernel
+            .invokeAsync(plugin.<String>get("ComplexInputWithStringResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable(
+                        "complexObject",
+                        ContextVariable.of(
+                            new Object() {
+                                @Override
+                                public String toString() {
+                                    return "A complex object";
+                                }
+                            },
+                            new NoopConverter<>(Object.class)))
+                    .build())
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.getFunction("test", "type13").invokeAsync("").block();
-        test.getFunction("type13").invokeAsync("").block();
+        result = kernel
+            .invokeAsync(plugin.<String>get("InputStringTaskWithStringResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("echoInput", "return this")
+                    .build())
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.getFunction("test", "type14").invokeAsync("").block();
-        test.getFunction("type14").invokeAsync("").block();
+        result = kernel
+            .invokeAsync(plugin.<String>get("InputStringTaskWithVoidResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("x", "x input")
+                    .build())
+            .block();
+        assert result == null;
+        System.out.println(result != null ? result.getResult() : "null");
 
-        kernel.getFunction("test", "type15").invokeAsync("").block();
-        test.getFunction("type15").invokeAsync("").block();
+        result = kernel
+            .invokeAsync(plugin.<String>get("noInputComplexReturnTypeAsync"))
+            .block();
+        System.out.println(result.getResult());
 
-        kernel.getFunction("test", "type16").invokeAsync("").block();
-        test.getFunction("type16").invokeAsync("").block();
+        var temporalResult = kernel
+            .invokeAsync(plugin.<Temporal>get("noInputComplexReturnType"))
+            .block();
+        System.out.println(temporalResult.getResult());
 
-        kernel.getFunction("test", "type17").invokeAsync("").block();
-        test.getFunction("type17").invokeAsync("").block();
+        // Possibilities for return type combinations:
+        // | Method return type | Declared Function Return Type | Invocation Return type |
+        // |--------------------|-------------------------------|------------------------|
+        // | T                  | T                             | T                      |
+        // | T                  | T                             | V converted from T     |
 
-        kernel.getFunction("test", "type18").invokeAsync("").block();
-        test.getFunction("type18").invokeAsync("").block();
+        // | T                  | U extends T                   | T                      |
+        // | T                  | U extends T                   | U                      |
+        // | T                  | U extends T                   | V converted from U     |
+
+        var result1 = kernel
+            .invokeAsync(plugin.<OffsetDateTime>get("conversionScenarioA"))
+            .block();
+        System.out.println(result1.getResult());
+
+        var result2 = kernel
+            .invokeAsync(plugin.<Instant>get("conversionScenarioA"))
+            .block();
+        System.out.println(result2.getResult());
+
+        var result3 = kernel
+            .invokeAsync(plugin.<OffsetDateTime>get("conversionScenarioB"))
+            .block();
+        System.out.println(result3.getResult());
+
+        var result4 = kernel
+            .invokeAsync(plugin.<Temporal>get("conversionScenarioB"))
+            .block();
+        System.out.println(result4.getResult());
+
+        var result5 = kernel
+            .invokeAsync(plugin.<Instant>get("conversionScenarioB"))
+            .block();
+        System.out.println(result5.getResult());
+
+        var result6 = kernel
+            .invokeAsync(plugin.get("noInputComplexReturnType"))
+            .block();
+        System.out.println(result6.getResult());
+
+        var result7 = kernel
+            .invokeAsync(plugin.get("withDefaultValue"))
+            .block();
+        System.out.println(result7.getResult());
+
+        var result8 = kernel
+            .invokeAsync(plugin.get("noInputComplexReturnType"))
+            .withResultType(
+                new ContextVariableType<>(
+                    new DateTimeContextVariableTypeConverter(),
+                    ZonedDateTime.class))
+            .block();
+        System.out.println(result8.getResult());
+
+        var result9 = kernel
+            .invokeAsync(plugin.get("noInputComplexReturnType"))
+            .withResultType(
+                new ContextVariableType<>(
+                    new DateTimeContextVariableTypeConverter(),
+                    ZonedDateTime.class))
+            .block();
+        System.out.println(result9.getResult());
+
+        result = kernel.invokeAsync(plugin.get("MultipleComplexInputsWithVoidResult"))
+            .withArguments(
+                KernelFunctionArguments
+                    .builder()
+                    .withVariable("x", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+                    .withVariable("y", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
+                    .build())
+            .withTypeConverter(new DateTimeContextVariableTypeConverter())
+            .block();
+
+        var result10 = kernel
+            .invokeAsync(plugin.get("WithPrimativeReturnType"))
+            .block();
+        System.out.println(result10.getResult());
+
+        var result11 = kernel
+            .invokeAsync(plugin.get("WithBoxedPrimativeReturnType"))
+            .block();
+        System.out.println(result11.getResult());
+
+        var result12 = kernel
+            .invokeAsync(plugin.get("AsyncWithBoxedPrimativeReturnType"))
+            .block();
+        System.out.println(result12.getResult());
+
+        var result13 = kernel
+            .invokeAsync(plugin.get("WithEmptyListReturn"))
+            .block();
+        System.out.println(result13.getResult());
+
+        var result14 = kernel
+            .invokeAsync(plugin.get("WithListReturn"))
+            .block();
+        System.out.println(result14.getResult());
+
+        var result15 = kernel
+            .invokeAsync(plugin.get("WithListReturn2"))
+            .block();
+        System.out.println(result15.getResult());
+
+        var result16 = kernel
+            .invokeAsync(plugin.get("WithListReturn3"))
+            .block();
+        System.out.println(result16.getResult());
+
+        /*
+         * TODO: support FunctionResult
+         * kernel
+         * .invokeAsync(plugin.get("NoInputWithFunctionResult"),
+         * null,
+         * Void.class)
+         * .block();
+         *
+         */
+
+        /*
+         * TODO: support injection
+         * // Injecting Parameters Examples
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingKernelFunctionWithStringResult)]);
+         * await
+         * kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.TaskInjectingLoggerWithNoResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingLoggerFactoryWithNoResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingCultureInfoOrIFormatProviderWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingCancellationTokenWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingServiceSelectorWithStringResult)]);
+         * await kernel.InvokeAsync(plugin[nameof(LocalExamplePlugin.
+         * TaskInjectingKernelWithInputTextAndStringResult)],
+         * new()
+         * {
+         * ["textToSummarize"] = @"C# is a modern, versatile language by Microsoft, blending the
+         * efficiency of C++
+         * with Visual Basic's simplicity. It's ideal for a wide range of applications,
+         * emphasizing type safety, modularity, and modern programming paradigms."
+         * });
+         *
+         */
+
+        // You can also use the kernel.Plugins collection to invoke a function
+        kernel
+            .invokeAsync(
+                kernel.getFunction("Examples", "NoInputWithVoidResult"))
+            .block();
     }
 
+    private static class DateTimeContextVariableTypeConverter extends
+        ContextVariableTypeConverter<ZonedDateTime> {
 
-    public static class LocalExampleSkill {
+        private static final List<Converter<ZonedDateTime, ?>> converters = List.of(
+            new DefaultConverter<>(ZonedDateTime.class, Date.class) {
+                @Override
+                public Date toObject(ZonedDateTime zonedDateTime) {
+                    return new Date(zonedDateTime.toInstant().toEpochMilli());
+                }
+            },
+            new DefaultConverter<>(ZonedDateTime.class, String.class) {
+                @Override
+                public String toObject(ZonedDateTime zonedDateTime) {
+                    return zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+                }
+            });
 
-        @DefineSKFunction(name = "type01")
-        public void Type01() {
-            System.out.println("Running function type 1");
+        public DateTimeContextVariableTypeConverter() {
+            super(
+                ZonedDateTime.class,
+                (x) -> {
+                    if (x instanceof OffsetDateTime) {
+                        return ((OffsetDateTime) x).toZonedDateTime();
+                    }
+                    return convert(x, ZonedDateTime.class);
+                },
+                zonedDateTime -> zonedDateTime.format(DateTimeFormatter.ISO_DATE_TIME),
+                promptString -> ZonedDateTime.parse(promptString, DateTimeFormatter.ISO_DATE_TIME),
+                converters);
+        }
+    }
+
+    public static class LocalExamplePlugin {
+
+        /// <summary>
+        /// Example of using a void function with no input
+        /// </summary>
+        @DefineKernelFunction(name = "NoInputWithVoidResult", returnType = "void")
+        public void NoInputWithVoidResult() {
+            System.out.println("Running this.NoInputWithVoidResult) -> No input");
         }
 
-        @DefineSKFunction(name = "type02")
-        public String Type02() {
-            System.out.println("Running function type 2");
-            return "";
+        /// <summary>
+        /// Example of using a void task function with no input
+        /// </summary>
+        @DefineKernelFunction(name = "NoInputTaskWithVoidResult", returnType = "java.lang.Void")
+        public Mono<Void> NoInputTaskWithVoidResult() {
+            return Mono.fromRunnable(
+                () -> System.out.println("Running this.NoInputTaskWithVoidResult) -> No input"));
         }
 
-        @DefineSKFunction(name = "type03")
-        public Mono<String> Type03Async() {
-            return Mono.delay(Duration.ZERO)
-                    .map(x -> {
-                        System.out.println("Running function type 3");
-                        return "";
-                    });
+        /// <summary>
+        /// Example of using a function with a DateTime input and a string result
+        /// </summary>
+        @DefineKernelFunction(name = "InputDateTimeWithStringResult", returnType = "java.lang.String")
+        public String InputDateTimeWithStringResult(
+            @KernelFunctionParameter(name = "currentDate", description = "Current date time", type = ZonedDateTime.class) ZonedDateTime currentDate) {
+            var result = currentDate.format(DateTimeFormatter.ISO_DATE_TIME);
+            System.out.println(
+                "Running {nameof(this.InputDateTimeWithStringResult)} -> [currentDate = {"
+                    + currentDate + "}] -> result: {" + result + "}");
+            return result;
         }
 
-
-        @DefineSKFunction(name = "type04")
-        public void Type04(SKContext context) {
-            System.out.println("Running function type 4");
+        /// <summary>
+        /// Example of using a Task function with no input and a string result
+        /// </summary>
+        @DefineKernelFunction(name = "NoInputTaskWithStringResult", returnType = "java.lang.String")
+        public Mono<String> NoInputTaskWithStringResult() {
+            return Mono.fromCallable(() -> {
+                var result = "string result";
+                System.out.println(
+                    "Running {nameof(this.NoInputTaskWithStringResult)} -> No input -> result: {"
+                        + result + "}");
+                return result;
+            });
         }
 
+        /// <summary>
+        /// Example passing multiple parameters with multiple types
+        /// </summary>
+        @DefineKernelFunction(name = "MultipleInputsWithVoidResult")
+        public void MultipleInputsWithVoidResult(
+            @KernelFunctionParameter(name = "x") String x,
 
-        @DefineSKFunction(name = "type05")
-        public String Type05(SKContext context) {
-            System.out.println("Running function type 5");
-            return "";
+            @KernelFunctionParameter(name = "y", type = int.class) int y,
+
+            @KernelFunctionParameter(name = "z", type = double.class) double z) {
+            System.out.println(
+                "Running {nameof(this.MultipleInputsWithVoidResult)} -> input: [x = {" + x
+                    + "}, y = {" + y + "}, z = {" + z + "}]");
         }
 
-
-        @DefineSKFunction(name = "type06")
-        public Mono<String> Type06Async(SKContext context) {
-            var summarizer = context.getSkills().getFunction("SummarizeSkill", "Summarize", null);
-
-            return summarizer
-                    .invokeAsync("blah blah blah")
-                    .map(summary -> {
-                        System.out.println("Running function type 6 " + summary.getResult());
-                        return "";
-                    });
+        /// <summary>
+        /// Example passing a complex object and returning a string result
+        /// </summary>
+        @DefineKernelFunction(name = "ComplexInputWithStringResult")
+        public String ComplexInputWithStringResult(
+            @KernelFunctionParameter(name = "complexObject", type = Object.class) Object complexObject) {
+            String result = complexObject.toString();
+            System.out.println(
+                "Running {nameof(this.ComplexInputWithStringResult)} -> input: [complexObject = "
+                    + complexObject + "] -> result: {"
+                    + result + "}");
+            return result;
         }
 
-        @DefineSKFunction(name = "type07")
-        public Mono<SKContext> Type07Async(SKContext context) {
-            return Mono.delay(Duration.ZERO)
-                    .map(x -> {
-                        System.out.println("Running function type 7");
-                        return context;
-                    });
+        /// <summary>
+        /// Example using an async task function echoing the input
+        /// </summary>
+        @DefineKernelFunction(name = "InputStringTaskWithStringResult", returnType = "java.lang.String")
+        public Mono<String> InputStringTaskWithStringResult(
+
+            @KernelFunctionParameter(name = "echoInput") String echoInput) {
+            return Mono.fromCallable(() -> {
+                System.out.println(
+                    "Running {nameof(this.InputStringTaskWithStringResult)} -> input: [echoInput = "
+                        + echoInput + "] -> result: {"
+                        + echoInput + "}");
+                return echoInput;
+            });
         }
 
-        @DefineSKFunction(name = "type08")
-        public void Type08(
-                @SKFunctionInputAttribute(description = "?")
-                String x) {
-            System.out.println("Running function type 8");
+        /// <summary>
+        /// Example using an async void task with string input
+        /// </summary>
+        @DefineKernelFunction(name = "InputStringTaskWithVoidResult", returnType = "java.lang.Void")
+        public Mono<Void> InputStringTaskWithVoidResult(
+            @KernelFunctionParameter(name = "x") String x) {
+            return Mono.fromRunnable(() -> {
+                System.out.println(
+                    "Running {nameof(this.InputStringTaskWithVoidResult)} -> input: [x = {" + x
+                        + "}]");
+            });
         }
 
-
-        @DefineSKFunction(name = "type09")
-        public String Type09(
-                @SKFunctionInputAttribute(description = "?")
-                String x) {
-            System.out.println("Running function type 9");
-            return "";
+        @DefineKernelFunction(name = "noInputComplexReturnTypeAsync", returnType = "java.time.temporal.Temporal")
+        public Mono<OffsetDateTime> noInputComplexReturnTypeAsync() {
+            return Mono.just(
+                OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC));
         }
 
-        @DefineSKFunction(name = "type10")
-        public Mono<String> Type10Async(
-                @SKFunctionInputAttribute(description = "?")
-                String x) {
-            return Mono.delay(Duration.ZERO)
-                    .map(x2 -> {
-                        System.out.println("Running function type 10");
-                        return "";
-                    });
+        @DefineKernelFunction(name = "noInputComplexReturnType", returnType = "java.time.temporal.Temporal")
+        public OffsetDateTime noInputComplexReturnType() {
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
-        @DefineSKFunction(name = "type11")
-        public void Type11(
-                @SKFunctionInputAttribute(description = "?")
-                String x,
-                SKContext context) {
-            System.out.println("Running function type 11");
+        @DefineKernelFunction(name = "withDefaultValue", returnType = "java.lang.String")
+        public String withDefaultValue(
+            @KernelFunctionParameter(name = "x", defaultValue = "1", type = int.class) int x) {
+            return Integer.toString(x);
         }
 
-
-        @DefineSKFunction(name = "type12")
-        public String Type12(
-                @SKFunctionInputAttribute(description = "?")
-                String x,
-                SKContext context) {
-            System.out.println("Running function type 12");
-            return "";
+        // Possibilities for return type combinations:
+        // | Method return type | Declared Function Return Type |
+        // |--------------------|-------------------------------|
+        // | T                  | T                             |
+        // | T                  | U extends T                   |
+        @DefineKernelFunction(name = "conversionScenarioA", returnType = "java.time.OffsetDateTime")
+        public OffsetDateTime conversionScenarioA() {
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
-        @DefineSKFunction(name = "type13")
-        public Mono<String> Type13Async(
-                @SKFunctionInputAttribute(description = "?")
-                String x, SKContext context) {
-            return Mono.delay(Duration.ZERO)
-                    .map(x2 -> {
-                        System.out.println("Running function type 13");
-                        return "";
-                    });
+        @DefineKernelFunction(name = "conversionScenarioB", returnType = "java.time.temporal.Temporal")
+        public OffsetDateTime conversionScenarioB() {
+            return OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
         }
 
-        @DefineSKFunction(name = "type14")
-        public Mono<SKContext> Type14Async(
-                @SKFunctionInputAttribute(description = "?")
-                String x, SKContext context) {
-            return Mono.delay(Duration.ZERO)
-                    .ignoreElement()
-                    .map(x2 -> {
-                        System.out.println("Running function type 14");
-                        return context;
-                    });
+        @DefineKernelFunction(name = "MultipleComplexInputsWithVoidResult")
+        public void MultipleComplexInputsWithVoidResult(
+            @KernelFunctionParameter(name = "x", type = ZonedDateTime.class) ZonedDateTime x,
+
+            @KernelFunctionParameter(name = "y", type = ZonedDateTime.class) ZonedDateTime y) {
+            System.out.println(
+                "Running {nameof(this.MultipleComplexInputsWithVoidResult)} -> input: [x = {" + x
+                    + "}, y = {" + y + "}]");
         }
 
-        @DefineSKFunction(name = "type15")
-        public Mono<Void> Type15Async(String x) {
-            return Mono.delay(Duration.ZERO)
-                    .ignoreElement()
-                    .doFinally(ignore -> System.out.println("Running function type 15"))
-                    .then();
+        @DefineKernelFunction(name = "WithPrimativeReturnType", returnType = "int")
+        public int WithPrimativeReturnType() {
+            return 1;
         }
 
-        @DefineSKFunction(name = "type16")
-        public Mono<Void> Type16Async(SKContext context) {
-            return Mono.delay(Duration.ZERO)
-                    .ignoreElement()
-                    .doFinally(ignore -> System.out.println("Running function type 16"))
-                    .then();
+        @DefineKernelFunction(name = "WithBoxedPrimativeReturnType", returnType = "int")
+        public Integer WithBoxedPrimativeReturnType() {
+            return Integer.valueOf(1);
         }
 
-        @DefineSKFunction(name = "type17")
-        public Mono<Void> Type17Async(String x, SKContext context) {
-            return Mono.delay(Duration.ZERO)
-                    .ignoreElement()
-                    .doFinally(ignore -> System.out.println("Running function type 17"))
-                    .then();
+        @DefineKernelFunction(name = "AsyncWithBoxedPrimativeReturnType", returnType = "int")
+        public Mono<Integer> AsyncWithBoxedPrimativeReturnType() {
+            return Mono.just(Integer.valueOf(1));
         }
 
-        @DefineSKFunction(name = "type18")
-        public Mono<Void> Type18Async() {
-            return Mono.delay(Duration.ZERO)
-                    .ignoreElement()
-                    .doFinally(ignore -> System.out.println("Running function type 18"))
-                    .then();
+        @DefineKernelFunction(name = "WithEmptyListReturn")
+        public List<Integer> WithEmptyListReturn() {
+            return List.of();
         }
+
+        @DefineKernelFunction(name = "WithListReturn")
+        public List<Integer> WithListReturn() {
+            return List.of(1, 2, 3);
+        }
+
+        @DefineKernelFunction(name = "WithListReturn2", returnType = "java.util.List")
+        public List<Integer> WithListReturn2() {
+            return List.of(1, 2, 3);
+        }
+
+        @DefineKernelFunction(name = "WithListReturn3", returnType = "java.util.List")
+        public Mono<List<Integer>> WithListReturn3() {
+            return Mono.just(List.of(1, 2, 3));
+        }
+
+        /*
+         * /// <summary>
+         * /// Example using a function to return the result of another inner function
+         * /// </summary>
+         *
+         * @DefineKernelFunction(name = "InputStringTaskWithVoidResult")
+         * public FunctionResult NoInputWithFunctionResult()
+         * {
+         * var myInternalFunction = KernelFunctionFactory.CreateFromMethod(() => { });
+         * var result = new FunctionResult(myInternalFunction);
+         * Console.WriteLine(
+         * $"Running {nameof(this.NoInputWithFunctionResult)} -> No input -> result: {result.GetType().Name}"
+         * );
+         * return result;
+         * }
+         */
+
+        /*
+         *
+         * /// <summary>
+         * /// Example using a task function to return the result of another kernel function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<FunctionResult> NoInputTaskWithFunctionResult(Kernel kernel)
+         * {
+         * var result = await
+         * kernel.InvokeAsync(kernel.Plugins["Examples"][nameof(this.NoInputWithVoidResult)]);
+         * Console.WriteLine(
+         * $"Running {nameof(this.NoInputTaskWithFunctionResult)} -> Injected kernel -> result: {result.GetType().Name}"
+         * );
+         * return result;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject Kernel in your function
+         * /// This example uses the injected kernel to invoke a plugin from within another function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string> TaskInjectingKernelWithInputTextAndStringResult(Kernel kernel,
+         * string textToSummarize)
+         * {
+         * var summary = await
+         * kernel.InvokeAsync<string>(kernel.Plugins["SummarizePlugin"]["Summarize"], new() {
+         * ["input"] = textToSummarize });
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected kernel + input: [textToSummarize: {textToSummarize[..15]}...{textToSummarize[^15..]}] -> result: {summary}"
+         * );
+         * return summary!;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject the executing KernelFunction as a parameter
+         * /// </summary>
+         * [KernelFunction, Description("Example function injecting itself as a parameter")]
+         * public async Task<string> TaskInjectingKernelFunctionWithStringResult(KernelFunction
+         * executingFunction)
+         * {
+         * var result =
+         * $"Name: {executingFunction.Name}, Description: {executingFunction.Description}";
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Function -> result: {result}"
+         * );
+         * return result;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject ILogger in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public Task TaskInjectingLoggerWithNoResult(ILogger logger)
+         * {
+         * logger.LogWarning("Running {FunctionName} -> Injected Logger",
+         * nameof(this.TaskInjectingLoggerWithNoResult));
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger"
+         * );
+         * return Task.CompletedTask;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject ILoggerFactory in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public Task TaskInjectingLoggerFactoryWithNoResult(ILoggerFactory loggerFactory)
+         * {
+         * loggerFactory
+         * .CreateLogger<LocalExamplePlugin>()
+         * .LogWarning("Running {FunctionName} -> Injected Logger",
+         * nameof(this.TaskInjectingLoggerWithNoResult));
+         *
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Logger"
+         * );
+         * return Task.CompletedTask;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject a service selector in your function and use a specific service
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string> TaskInjectingServiceSelectorWithStringResult(Kernel kernel,
+         * KernelFunction function, KernelArguments arguments, IAIServiceSelector serviceSelector)
+         * {
+         * ChatMessageContent? chatMessageContent = null;
+         * if (serviceSelector.TrySelectAIService<IChatCompletionService>(kernel, function,
+         * arguments, out var chatCompletion, out var executionSettings))
+         * {
+         * chatMessageContent = await chatCompletion.GetChatMessageContentAsync(new
+         * ChatHistory("How much is 5 + 5 ?"), executionSettings);
+         * }
+         *
+         * var result = chatMessageContent?.Content;
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingKernelWithInputTextAndStringResult)} -> Injected Kernel, KernelFunction, KernelArguments, Service Selector -> result: {result}"
+         * );
+         * return result ?? string.Empty;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject CultureInfo or IFormatProvider in your function
+         * /// </summary>
+         * public async Task<string>
+         * TaskInjectingCultureInfoOrIFormatProviderWithStringResult(CultureInfo cultureInfo,
+         * IFormatProvider formatProvider)
+         * {
+         * var result =
+         * $"Culture Name: {cultureInfo.Name}, FormatProvider Equals CultureInfo?: {formatProvider.Equals(cultureInfo)}"
+         * ;
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected CultureInfo, IFormatProvider -> result: {result}"
+         * );
+         * return result;
+         * }
+         *
+         * /// <summary>
+         * /// Example how to inject current CancellationToken in your function
+         * /// </summary>
+         * [KernelFunction]
+         * public async Task<string>
+         * TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
+         * {
+         * var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+         * Console.WriteLine(
+         * $"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}"
+         * );
+         * return result;
+         * }
+         *
+         * public override string ToString()
+         * {
+         * return "Complex type result ToString override";
+         * }
+         *
+         */
     }
 }
