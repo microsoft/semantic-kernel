@@ -53,6 +53,7 @@ public static class PromptyKernelExtensions
     ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
+        Verify.NotNullOrWhitespace(promptyTemplate);
 
         promptTemplateFactory ??= new AggregatorPromptTemplateFactory(new HandlebarsPromptTemplateFactory(), new LiquidPromptTemplateFactory());
 
