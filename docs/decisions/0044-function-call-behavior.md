@@ -303,6 +303,5 @@ Explore the possibility of resolving specific types at a later post-deserializat
 - Today, the existing tool call behavior can accept and advertise [OpenAI functions](https://github.com/microsoft/semantic-kernel/blob/0296329886eb2116a66e5362f2cc72b42ee30157/dotnet/src/Connectors/Connectors.OpenAI/ToolCallBehavior.cs#L68). These functions are not registered in SK, and SK can only invoke them in 'manual' mode; the 'auto' mode requires the function to be registered on the kernel and throws an exception if that is not the case. Do we have a scenario that requires this functionality?
 
 ## Decision Outcome
-
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+There were a few decisions taken during the ADR review:
+- The Breaking glass support is out of scope. It may be added later if/when needed.
