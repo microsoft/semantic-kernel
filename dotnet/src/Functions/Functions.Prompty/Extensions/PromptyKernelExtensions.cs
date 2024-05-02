@@ -20,7 +20,7 @@ public static class PromptyKernelExtensions
     /// Create a <see cref="KernelFunction"/> from a prompty file.
     /// </summary>
     /// <param name="kernel">kernel</param>
-    /// <param name="promptyFilePath">Prompty template.</param>
+    /// <param name="promptyFilePath">Path to the file containing the prompty template.</param>
     /// <param name="promptTemplateFactory">prompty template factory, if not provided, a <see cref="LiquidPromptTemplateFactory"/> will be used.</param>
     /// <param name="loggerFactory">logger factory</param>
     /// <returns><see cref="KernelFunction"/></returns>
