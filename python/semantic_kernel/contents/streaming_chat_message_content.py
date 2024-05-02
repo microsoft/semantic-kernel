@@ -187,7 +187,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 for id, item in enumerate(list(self.items)):
                     if type(item) is type(other_item) and hasattr(item, "__add__"):
                         try:
-                            new_item = item + other_item # type: ignore
+                            new_item = item + other_item  # type: ignore
                             self.items[id] = new_item
                             added = True
                         except ValueError:
