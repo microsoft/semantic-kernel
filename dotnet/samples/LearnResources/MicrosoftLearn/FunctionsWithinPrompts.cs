@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Examples;
 
@@ -16,12 +11,14 @@ namespace Examples;
 /// This example demonstrates how to call functions within prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/calling-nested-functions
 /// </summary>
-public class FunctionsWithinPrompts : BaseTest
+public class FunctionsWithinPrompts(ITestOutputHelper output) : LearnBaseTest([
+            "Can you send an approval to the marketing team?",
+    "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Functions within Prompts ========");
+        Console.WriteLine("======== Functions within Prompts ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -29,7 +26,7 @@ public class FunctionsWithinPrompts : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -102,8 +99,8 @@ Assistant: "
         while (true)
         {
             // Get user input
-            Write("User > ");
-            var request = ReadLine();
+            Console.Write("User > ");
+            var request = Console.ReadLine();
 
             // Invoke handlebars prompt
             var intent = await kernel.InvokeAsync(
@@ -139,12 +136,12 @@ Assistant: "
             {
                 if (chunk.Role.HasValue)
                 {
-                    Write(chunk.Role + " > ");
+                    Console.Write(chunk.Role + " > ");
                 }
                 message += chunk;
-                Write(chunk);
+                Console.Write(chunk);
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Append to history
             history.AddUserMessage(request!);
@@ -152,12 +149,5 @@ Assistant: "
         }
 
         // </Chat>
-    }
-
-    public FunctionsWithinPrompts(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
     }
 }

@@ -1,15 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using RepoUtils;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GettingStarted;
 
@@ -34,7 +28,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
         await foreach (var update in
                        kernel.InvokePromptStreamingAsync("What color is the {{$topic}}? Provide a detailed explanation.", arguments))
         {
-            Write(update);
+            Console.Write(update);
         }
     }
 
