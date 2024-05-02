@@ -55,7 +55,9 @@ The samples search for the client settings in the following order:
 1. Properties file at `java/samples/conf.properties`.
 1. Properties file at `~/.sk/conf.properties`.
 
+
 ## Properties File
+
 You can set the location of a properties file, by setting the `CONF_PROPERTIES` property or environment variable, ie:
 
 ```shell
