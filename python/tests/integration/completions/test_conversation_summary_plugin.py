@@ -5,7 +5,6 @@ import os
 import pytest
 from test_utils import retry
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
@@ -64,12 +63,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
-    _, chatTranscript = setup_summarize_conversation_using_plugin
-
-    # Even though the kernel is scoped to the function, it appears that
-    # it is shared because adding the same plugin throws an error.
-    # Create a new kernel for this test.
-    kernel = sk.Kernel()
+    kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
