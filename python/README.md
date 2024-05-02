@@ -17,7 +17,7 @@ or all of them:
 ## OpenAI / Azure OpenAI API keys
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
