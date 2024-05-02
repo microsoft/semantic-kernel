@@ -2,14 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -263,20 +266,23 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // It would be nice to "WHERE" on the similarity score, but alas.
+        // It would be nice to "WHERE" on the similarity score to stay above the `minRelevanceScore`, but alas
+        // queries don't support that.
+        // TODO: Change this to use a `TOP @limit` instead of stopping client side.
         var queryDefinition = new QueryDefinition($"""
-            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")},VectorDistance(x.embedding, @embedding) AS SimilarityScore
+            SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")},VectorDistance(x.embedding, @embedding) AS SimilarityScore
             FROM x
             ORDER BY VectorDistance(x.embedding, @embedding)
             """);
-        queryDefinition.WithParameter("@limit", limit);
         queryDefinition.WithParameter("@embedding", embedding);
+        queryDefinition.WithParameter("@limit", limit);
 
         var feedIterator = this._cosmosClient
          .GetDatabase(this._databaseName)
          .GetContainer(collectionName)
          .GetItemQueryIterator<MemoryRecordWithSimilarityScore>(queryDefinition);
 
+        var count = 0;
         while (feedIterator.HasMoreResults)
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
@@ -284,6 +290,11 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 if (memoryRecord.SimilarityScore >= minRelevanceScore)
                 {
                     yield return (memoryRecord, memoryRecord.SimilarityScore);
+                    count++;
+                    if (count == limit)
+                    {
+                        yield break;
+                    }
                 }
             }
         }
