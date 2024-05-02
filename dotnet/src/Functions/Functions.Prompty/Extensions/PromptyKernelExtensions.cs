@@ -86,7 +86,7 @@ public static class PromptyKernelExtensions
             Template = content,
         };
 
-        PromptExecutionSettings defaultExecutionSetting;
+        PromptExecutionSettings? defaultExecutionSetting = null;
         if (prompty.Model?.ModelConfiguration?.ModelType is ModelType.azure_openai || prompty.Model?.ModelConfiguration?.ModelType is ModelType.openai)
         {
             defaultExecutionSetting = new PromptExecutionSettings
@@ -128,13 +128,8 @@ public static class PromptyKernelExtensions
             }
 
             defaultExecutionSetting.ExtensionData = extensionData;
+            promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
         }
-        else
-        {
-            throw new NotSupportedException($"Model type {prompty.Model?.ModelConfiguration?.ModelType} is not supported.");
-        }
-
-        promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
 
         // step 3. add input variables
         if (prompty.Inputs != null)

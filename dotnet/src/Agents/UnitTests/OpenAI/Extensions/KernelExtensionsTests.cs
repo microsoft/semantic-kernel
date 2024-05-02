@@ -17,7 +17,7 @@ public class KernelExtensionsTests
     [Fact]
     public void VerifyGetKernelFunctionLookup()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
+        Kernel kernel = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
         kernel.Plugins.Add(plugin);
 
@@ -32,7 +32,7 @@ public class KernelExtensionsTests
     [Fact]
     public void VerifyGetKernelFunctionInvalid()
     {
-        Kernel kernel = Kernel.CreateBuilder().Build();
+        Kernel kernel = new();
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<TestPlugin>();
         kernel.Plugins.Add(plugin);
 

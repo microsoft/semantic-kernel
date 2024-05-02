@@ -11,6 +11,9 @@ using Scriban;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
+/// <summary>
+/// Represents a Liquid prompt template.
+/// </summary>
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
     private const string ReservedString = "&#58;";
@@ -19,6 +22,12 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     private readonly bool _allowUnsafeContent;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):[\s]+");
 
+    /// <summary>
+    /// Constructor for Liquid PromptTemplate.
+    /// </summary>
+    /// <param name="config">Prompt template configuration</param>
+    /// <param name="allowUnsafeContent">Whether to allow unsafe content in the template</param>
+    /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
     {
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
@@ -30,6 +39,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         this._config = config;
     }
 
+    /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);

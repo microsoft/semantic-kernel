@@ -17,7 +17,7 @@ or all of them:
 ## OpenAI / Azure OpenAI API keys
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
@@ -39,7 +39,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureCha
 from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
 api_key, org_id = openai_settings_from_dot_env()

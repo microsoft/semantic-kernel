@@ -2,7 +2,7 @@
 name: Contoso_Chat_Prompt
 description: A retail assistant for Contoso Outdoors products retailer.
 authors:
-  - Cassie Breviu
+  - ????
 model:
   api: chat
   configuration:

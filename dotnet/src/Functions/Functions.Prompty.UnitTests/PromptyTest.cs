@@ -64,4 +64,24 @@ public sealed class PromptyTest
         Assert.Null(executionSettings.MaxTokens);
         Assert.Null(executionSettings.Seed);
     }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
+    {
+        // Arrange
+        var kernel = Kernel.CreateBuilder()
+            .Build();
+        var cwd = Directory.GetCurrentDirectory();
+        var promptyPath = Path.Combine(cwd, "TestData", "chatNoExecutionSettings.prompty");
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPrompty(promptyPath);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.Equal("prompty_with_no_execution_setting", kernelFunction.Name);
+        Assert.Equal("prompty without execution setting", kernelFunction.Description);
+        Assert.Single(kernelFunction.Metadata.Parameters);
+        Assert.Empty(kernelFunction.ExecutionSettings!);
+    }
 }
