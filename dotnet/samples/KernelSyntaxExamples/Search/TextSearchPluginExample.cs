@@ -10,12 +10,12 @@ using Xunit.Abstractions;
 namespace Search;
 
 /// <summary>
-/// This example shows how to create and use a <see cref="TextSearchPlugin"/>.
+/// This example shows how to create and use a <see cref="TextSearchPlugin{T}"/>.
 /// </summary>
 public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
-    /// Show how to create a <see cref="TextSearchPlugin"/> and use it to perform a text search.
+    /// Show how to create a <see cref="TextSearchPlugin{T}"/> and use it to perform a text search.
     /// </summary>
     [Fact]
     public async Task RunAsync()
@@ -27,13 +27,21 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
 
         // Build a kernel with Bing search service and add a text search plugin
         Kernel kernel = new();
-        var searchPlugin = new TextSearchPlugin(searchService);
-        kernel.ImportPluginFromObject(searchPlugin, "TextSearch");
+        var stringPlugin = new TextSearchPlugin<string>(searchService);
+        kernel.ImportPluginFromObject(stringPlugin, "StringSearch");
+        var pagePlugin = new TextSearchPlugin<BingWebPage>(searchService);
+        kernel.ImportPluginFromObject(pagePlugin, "PageSearch");
 
-        // Invoke the plugin to perform a text search
+        // Invoke the plugin to perform a text search and return string values
         var question = "What is the Semantic Kernel?";
-        var function = kernel.Plugins["TextSearch"]["Search"];
+        var function = kernel.Plugins["StringSearch"]["Search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
+
+        WriteLine(result);
+
+        // Invoke the plugin to perform a text search and return BingWebPage values
+        function = kernel.Plugins["PageSearch"]["Search"];
+        result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
 
         WriteLine(result);
     }

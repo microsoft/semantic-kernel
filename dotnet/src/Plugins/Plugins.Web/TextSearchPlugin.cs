@@ -2,6 +2,8 @@
 
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Search;
@@ -12,12 +14,21 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// Text search plugin
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="TextSearchPlugin"/> class.
+/// Initializes a new instance of the <see cref="TextSearchPlugin{T}"/> class.
 /// </remarks>
 /// <param name="service">The text search service instance to use.</param>
-public sealed class TextSearchPlugin(ITextSearchService service)
+public sealed class TextSearchPlugin<T>(ITextSearchService service) where T : class
 {
     private readonly ITextSearchService _service = service;
+
+    /// <summary>
+    /// The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping here is considered safe in this context
+    /// because the JSON result is not used for any security sensitive operations like HTML injection.
+    /// </summary>
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
 
     /// <summary>
     /// Performs a text search using the provided query, count, and offset.
@@ -34,13 +45,18 @@ public sealed class TextSearchPlugin(ITextSearchService service)
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await this._service.SearchAsync<string>(query, new() { Count = count, Offset = offset }, cancellationToken).ConfigureAwait(false);
+        var results = await this._service.SearchAsync<T>(query, new() { Count = count, Offset = offset }, cancellationToken).ConfigureAwait(false);
         var resultList = await results.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
         if (resultList.Count == 0)
         {
             return string.Empty;
         }
 
-        return string.Join("\n", resultList); // TODO: Use a better way to format the results
+        if (typeof(T) == typeof(string) && resultList.Count == 1)
+        {
+            return resultList[0] as string ?? string.Empty;
+        }
+
+        return JsonSerializer.Serialize(resultList, s_jsonOptionsCache);
     }
 }
