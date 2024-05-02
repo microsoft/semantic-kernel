@@ -5,23 +5,31 @@ using Microsoft.SemanticKernel;
 
 namespace ChatPrompts;
 
-public sealed class SafeChatPrompts : BaseTest
+public sealed class SafeChatPrompts : BaseTest, IDisposable
 {
+    private readonly LoggingHandler _handler;
+    private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
 
     public SafeChatPrompts(ITestOutputHelper output) : base(output)
     {
         // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        var client = new HttpClient(handler);
+        this._handler = new LoggingHandler(new HttpClientHandler(), this.Output);
+        this._httpClient = new(this._handler);
 
         // Create a kernel with OpenAI chat completion
         this._kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
-                httpClient: client)
+                httpClient: this._httpClient)
             .Build();
+    }
+
+    public void Dispose()
+    {
+        this._handler.Dispose();
+        this._httpClient.Dispose();
     }
 
     /// <summary>
