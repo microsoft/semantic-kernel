@@ -47,10 +47,10 @@ public static class PromptyKernelExtensions
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="NotSupportedException"></exception>
     public static KernelFunction CreateFunctionFromPrompty(
-    this Kernel kernel,
-    string promptyTemplate,
-    IPromptTemplateFactory? promptTemplateFactory = null,
-    ILoggerFactory? loggerFactory = null)
+        this Kernel kernel,
+        string promptyTemplate,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
         Verify.NotNullOrWhitespace(promptyTemplate);
