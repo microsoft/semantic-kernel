@@ -13,7 +13,7 @@
 ### Option 1: Use Secret Manager
 
 Integration tests will require secrets and credentials, to access OpenAI, Azure OpenAI,
-Bing and other resources.
+Bing and other resources. 
 
 We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
@@ -45,12 +45,11 @@ dotnet user-secrets set "Bing:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File
-
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
 2. Edit `testsettings.development.json` and
-   1. set you Azure OpenAI and OpenAI keys and settings found in Azure portal and OpenAI website.
-   2. set the `Bing:ApiKey` using the API key you can find in the Azure portal.
+    1. set you Azure OpenAI and OpenAI keys and settings found in Azure portal and OpenAI website.
+    2. set the `Bing:ApiKey` using the API key you can find in the Azure portal.
 
 For example:
 
@@ -87,7 +86,6 @@ For example:
 ```
 
 ### Option 3: Use Environment Variables
-
 You may also set the test settings in your environment variables. The environment variables will override the settings in the `testsettings.development.json` file.
 
 When setting environment variables, use a double underscore (i.e. "\_\_") to delineate between parent and child properties. For example:
