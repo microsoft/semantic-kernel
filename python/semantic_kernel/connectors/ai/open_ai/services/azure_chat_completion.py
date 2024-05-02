@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+from copy import deepcopy
 from typing import Any, Dict, Mapping, Optional, Union, overload
+from uuid import uuid4
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -10,7 +12,6 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.contents import AzureChatMessageContent, AzureStreamingChatMessageContent
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -19,8 +20,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.contents.chat_role import ChatRole
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.finish_reason import FinishReason
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -244,42 +249,42 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
-    ) -> AzureChatMessageContent:
+    ) -> ChatMessageContent:
         """Create a Azure chat message content object from a choice."""
-        metadata = self._get_metadata_from_chat_choice(choice)
-        metadata.update(response_metadata)
-        return AzureChatMessageContent(
-            inner_content=response,
-            ai_model_id=self.ai_model_id,
-            metadata=metadata,
-            role=ChatRole(choice.message.role) if choice.message.role is not None else None,
-            content=choice.message.content,
-            function_call=self._get_function_call_from_chat_choice(choice),
-            tool_calls=self._get_tool_calls_from_chat_choice(choice),
-            tool_message=self._get_tool_message_from_chat_choice(choice),
-        )
+        content = super()._create_chat_message_content(response, choice, response_metadata)
+        return self._add_tool_message_to_chat_message_content(content, choice)
 
     def _create_streaming_chat_message_content(
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
         chunk_metadata: Dict[str, Any],
-    ):
+    ) -> "StreamingChatMessageContent":
         """Create a Azure streaming chat message content object from a choice."""
-        metadata = self._get_metadata_from_chat_choice(choice)
-        metadata.update(chunk_metadata)
-        return AzureStreamingChatMessageContent(
-            choice_index=choice.index,
-            inner_content=chunk,
-            ai_model_id=self.ai_model_id,
-            metadata=metadata,
-            role=ChatRole(choice.delta.role) if choice.delta.role else ChatRole.ASSISTANT,
-            content=choice.delta.content,
-            finish_reason=FinishReason(choice.finish_reason) if choice.finish_reason is not None else None,
-            function_call=self._get_function_call_from_chat_choice(choice),
-            tool_calls=self._get_tool_calls_from_chat_choice(choice),
-            tool_message=self._get_tool_message_from_chat_choice(choice),
-        )
+        content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
+        return self._add_tool_message_to_chat_message_content(content, choice)
+
+    def _add_tool_message_to_chat_message_content(
+        self, content: ChatMessageContent | StreamingChatMessageContent, choice: Choice
+    ) -> "ChatMessageContent | StreamingChatMessageContent":
+        if tool_message := self._get_tool_message_from_chat_choice(choice=choice):
+            try:
+                tool_message_dict = json.loads(tool_message)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse tool message JSON: %s", tool_message)
+                tool_message_dict = {"citations": tool_message}
+
+            function_call = FunctionCallContent(
+                id=str(uuid4()),
+                name="Azure-OnYourData",
+                arguments=json.dumps({"query": tool_message_dict.get("intent", [])}),
+            )
+            result = FunctionResultContent.from_function_call_content_and_result(
+                result=tool_message_dict["citations"], function_call_content=function_call
+            )
+            content.items.insert(0, function_call)
+            content.items.insert(1, result)
+        return content
 
     def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
         """Get the tool message from a choice."""
@@ -292,6 +297,25 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
         return None
 
-    def get_chat_message_content_type(self) -> str:
-        """Get the chat message content types used by a class, default is 'ChatMessageContent'."""
-        return "AzureChatMessageContent"
+    @staticmethod
+    def split_message(message: "ChatMessageContent") -> list["ChatMessageContent"]:
+        """Split a Azure On Your Data response into separate ChatMessageContents.
+
+        If the message does not have three contents, and those three are one each of:
+        FunctionCallContent, FunctionResultContent, and TextContent,
+        it will not return three messages, potentially only one or two.
+
+        The order of the returned messages is as expected by OpenAI.
+        """
+        if len(message.items) != 3:
+            return [message]
+        messages = {"tool_call": deepcopy(message), "tool_result": deepcopy(message), "assistant": deepcopy(message)}
+        for key, msg in messages.items():
+            if key == "tool_call":
+                msg.items = [item for item in msg.items if isinstance(item, FunctionCallContent)]
+                msg.finish_reason = FinishReason.FUNCTION_CALL
+            if key == "tool_result":
+                msg.items = [item for item in msg.items if isinstance(item, FunctionResultContent)]
+            if key == "assistant":
+                msg.items = [item for item in msg.items if isinstance(item, TextContent)]
+        return [messages["tool_call"], messages["tool_result"], messages["assistant"]]

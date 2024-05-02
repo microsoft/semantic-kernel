@@ -30,12 +30,12 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
     def __bytes__(self) -> bytes:
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
-    def __add__(self, other: "StreamingTextContent") -> "StreamingTextContent":
+    def __add__(self, other: "TextContent") -> "StreamingTextContent":
         """When combining two StreamingTextContent instances, the text fields are combined.
 
         The inner_content of the first one is used, choice_index, ai_model_id and encoding should be the same.
         """
-        if self.choice_index != other.choice_index:
+        if isinstance(other, StreamingTextContent) and self.choice_index != other.choice_index:
             raise ContentAdditionException("Cannot add StreamingTextContent with different choice_index")
         if self.ai_model_id != other.ai_model_id:
             raise ContentAdditionException("Cannot add StreamingTextContent from different ai_model_id")

@@ -5,8 +5,8 @@ import time
 
 import pytest
 
-import semantic_kernel as sk
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
+from semantic_kernel.utils.settings import astradb_settings_from_dot_env
 
 astradb_installed: bool
 try:
@@ -43,7 +43,7 @@ def get_astradb_config():
         keyspace = os.environ["ASTRADB_KEYSPACE"]
     else:
         # Load credentials from .env file
-        app_token, db_id, region, keyspace = sk.astradb_settings_from_dot_env()
+        app_token, db_id, region, keyspace = astradb_settings_from_dot_env()
 
     return app_token, db_id, region, keyspace
 
