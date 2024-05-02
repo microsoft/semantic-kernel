@@ -65,7 +65,7 @@ The diagram below shows the layers in the current design of the Web Search Engin
 The Semantic Kernel currently includes experimental support for a `WebSearchEnginePlugin` which can be configured via a `IWebSearchEngineConnector` to integrate with a Web Search Services such as Bing or Google. The search results can be returned as a collection of string values or a collection of `WebPage` instances.
 
 - The `string` values returned from the plugin represent a snippet of the search result in plain text.
-- The `WebPage` instances returned from the plugin are a normalized subset of a complete search result. Each `WebPage` incudes:
+- The `WebPage` instances returned from the plugin are a normalized subset of a complete search result. Each `WebPage` includes:
   - `name` The name of the search result web page
   - `url` The url of the search result web page
   - `snippet` A snippet of the search result in plain text
@@ -106,7 +106,7 @@ The class diagram below shows the class hierarchy.
 
 The abstraction contains the following interfaces and classes:
 
-- `ITextSearchService` is the interface for text based search services. This cna be invoked with a text query to return a collection of search results.
+- `ITextSearchService` is the interface for text based search services. This can be invoked with a text query to return a collection of search results.
 - `SearchExecutionSettings` provides execution settings for a search service. Some common settings e.g. `IndexName`, `Count`, `Offset` are defined.
 - `KernelSearchResults` represents the search results returned from a `ISearchService` service. This provides access to the individual search results, underlying search result, metadata, ... This supports generics but an implementation can restrict the supported types. All implementations must support `string`, `TextSearchResult` and whatever native types the connector implementation supports. Some implementations will also support custom types.
 - `TextSearchResult` represents a normalized text search result. All implementations must be able to return results using this type.
