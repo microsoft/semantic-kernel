@@ -48,9 +48,7 @@ OR
 ```
 
 ## Client Settings
-
 The samples search for the client settings in the following order:
-
 1. Properties file whose location is defined by the `CONF_PROPERTIES` property or environment variable.
 1. System properties defined on the command line.
 1. Environment variables.
@@ -58,7 +56,6 @@ The samples search for the client settings in the following order:
 1. Properties file at `~/.sk/conf.properties`.
 
 ## Properties File
-
 You can set the location of a properties file, by setting the `CONF_PROPERTIES` property or environment variable, ie:
 
 ```shell
