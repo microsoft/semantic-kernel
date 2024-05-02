@@ -1,10 +1,10 @@
 ﻿---
 # These are optional elements. Feel free to remove any of them.
-status: { proposed }
+status: { accepted }
 contact: { Tao Chen }
-date: { 2024-04-15 }
-deciders: {}
-consulted: { Ben Thomas, Liudmila Molkova, Stephen Toub }
+date: { 2024-05-02 }
+deciders: { Stephen Toub, Ben Thomas }
+consulted: { Stephen Toub, Liudmila Molkova, Ben Thomas }
 informed: { Dmytro Struk, Mark Wallace }
 ---
 
@@ -223,7 +223,13 @@ else
 
 ## Decision Outcome
 
-TBD
+Chosen options:
+
+[x] Scope of Activities: **Option 3** - All connectors, noting that the attributes of activities derived from connectors and those from instrumented client SDKs do not overlap.
+
+[x] Instrumentation Implementation: **Option 1** - Static class
+
+[x] Experimental switch: **Option 1** - App context switch
 
 ## Appendix
 
