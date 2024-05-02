@@ -41,8 +41,6 @@ async def main() -> None:
     # Setting up OpenAI services for text completion and text embedding
     kernel.add_service(
         AzureChatCompletion(
-            # Note: text-davinci-003 is deprecated and will be replaced by
-            # AzureOpenAI's gpt-35-turbo-instruct model.
             service_id="dv",
             deployment_name="gpt-35-turbo",
             endpoint=AZURE_OPENAI_ENDPOINT,
@@ -79,7 +77,7 @@ Here is some background information about the user that you should use to answer
 User: {{$user_input}}
 Assistant: """.strip()
     sk_prompt_rag_sc = """
-You will get a question, background information to be used with that question and a answer that was given. 
+You will get a question, background information to be used with that question and a answer that was given.
 You have to answer Grounded or Ungrounded or Unclear.
 Grounded if the answer is based on the background information and clearly answers the question.
 Ungrounded if the answer could be true but is not based on the background information.

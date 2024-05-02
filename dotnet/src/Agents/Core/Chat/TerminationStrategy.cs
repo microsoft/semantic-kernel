@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -35,6 +37,11 @@ public abstract class TerminationStrategy
     public IReadOnlyList<Agent>? Agents { get; set; }
 
     /// <summary>
+    /// The <see cref="ILogger"/> associated with the <see cref="TerminationStrategy"/>.
+    /// </summary>
+    protected internal ILogger Logger { get; internal set; } = NullLogger.Instance;
+
+    /// <summary>
     /// Called to evaluate termination once <see cref="TerminationStrategy.Agents"/> is evaluated.
     /// </summary>
     protected abstract Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken);
@@ -46,14 +53,22 @@ public abstract class TerminationStrategy
     /// <param name="history">The most recent message</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>True to terminate chat loop.</returns>
-    public Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
+    public async Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        this.Logger.LogDebug("[{MethodName}] Evaluating termination for agent {AgentType}: {AgentId}.", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+
         // `Agents` must contain `agent`, if `Agents` not empty.
         if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
         {
-            return Task.FromResult(false);
+            this.Logger.LogInformation("[{MethodName}] {AgentType} agent out of scope for termination: {AgentId}.", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id);
+
+            return false;
         }
 
-        return this.ShouldAgentTerminateAsync(agent, history, cancellationToken);
+        bool shouldTerminate = await this.ShouldAgentTerminateAsync(agent, history, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogInformation("[{MethodName}] Evaluated termination for agent {AgentType}: {AgentId} - {Termination}", nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, shouldTerminate);
+
+        return shouldTerminate;
     }
 }
