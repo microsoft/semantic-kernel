@@ -188,7 +188,7 @@ public sealed class NoneFunctionCallChoice : FunctionCallChoice
 }
 ```
 ### Sequence diagram
-<img src="./diagrams/tool-behavior-usage-by-ai-service.png" alt="OpenAI Assistant API Objects.png" width="600"/>
+<img src="./diagrams/tool-behavior-usage-by-ai-service.png" alt="Tool behavior usage by AI service.png" width="600"/>
 
 ### Breaking glass support
 The list of choice classes described above may not be sufficient to support all scenarios users might encounter. To accommodate these, the `FunctionCallChoice.Configure` method accepts an instance of model a connector use internally, allowing users to access and modify it from within the config method of a custom function call choice.
