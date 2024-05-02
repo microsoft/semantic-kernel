@@ -13,8 +13,8 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
-    private const char ReservedChar = 'Ġ';
-    private const char ColonChar = ':';
+    private const string ReservedString = "&#58;";
+    private const string ColonString = ":";
     private readonly PromptTemplateConfig _config;
     private readonly bool _allowUnsafeContent;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):[\s]+");
@@ -35,7 +35,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         Verify.NotNull(kernel);
 
         var template = this._config.Template;
-        template = this.PreProcessTemplate(template);
+        //template = this.PreProcessTemplate(template);
         var liquidTemplate = Template.ParseLiquid(template);
         arguments = this.GetVariables(arguments);
         var renderedResult = liquidTemplate.Render(arguments.ToDictionary(kv => kv.Key, kv => kv.Value));
@@ -71,7 +71,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         {
             var role = splits[i];
             var content = splits[i + 1];
-            content = this.DecodeReservedCharIfNeeded(content);
+            content = this.ReplaceReservedStringBackToColonIfNeeded(content);
             sb.Append("<message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
             sb.AppendLine("</message>");
@@ -97,23 +97,23 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
             return template;
         }
 
-        if (template.Contains(ReservedChar))
+        if (template.Contains(ReservedString))
         {
-            var errorMessage = $"Template contains reserved character: {ReservedChar}, either remove the character or set {nameof(this._allowUnsafeContent)} to true.";
+            var errorMessage = $"Template contains reserved character: {ReservedString}, either remove the character or set {nameof(this._allowUnsafeContent)} to true.";
             throw new ArgumentException(errorMessage);
         }
 
         return template;
     }
 
-    private string DecodeReservedCharIfNeeded(string text)
+    private string ReplaceReservedStringBackToColonIfNeeded(string text)
     {
         if (this._allowUnsafeContent)
         {
             return text;
         }
 
-        return text.Replace(ReservedChar, ColonChar);
+        return text.Replace(ReservedString, ColonString);
     }
 
     /// <summary>
@@ -140,15 +140,20 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
                 if (kvp.Value is not null)
                 {
                     var value = (object)kvp.Value;
-
-                    if (this.ShouldEncodeTags(this._config, kvp.Key, kvp.Value))
+                    if (this.ShouldEncode(value))
                     {
                         var valueString = value.ToString();
-                        valueString = valueString.Replace(ColonChar, ReservedChar);
-                        value = HttpUtility.HtmlEncode(valueString);
+                        valueString = HttpUtility.HtmlEncode(valueString);
+                        if (this.ShouldEncodeColon(this._config, kvp.Key, kvp.Value))
+                        {
+                            valueString = valueString.Replace(ColonString, ReservedString);
+                        }
+                        result[kvp.Key] = valueString;
                     }
-
-                    result[kvp.Key] = value;
+                    else
+                    {
+                        result[kvp.Key] = value;
+                    }
                 }
             }
         }
@@ -156,7 +161,17 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         return result;
     }
 
-    private bool ShouldEncodeTags(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    private bool ShouldEncode(object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool ShouldEncodeColon(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
         if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
         {
