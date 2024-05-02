@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -10,11 +10,19 @@ using Scriban;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
+/// <summary>
+/// Represents a Liquid prompt template.
+/// </summary>
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
     private readonly PromptTemplateConfig _config;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):[\s]+");
 
+    /// <summary>
+    /// Constructor for Liquid PromptTemplate.
+    /// </summary>
+    /// <param name="config">Prompt template configuration</param>
+    /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     public LiquidPromptTemplate(PromptTemplateConfig config)
     {
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
@@ -25,13 +33,34 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         this._config = config;
     }
 
+    /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
         var template = this._config.Template;
         var liquidTemplate = Template.ParseLiquid(template);
-        var nonEmptyArguments = arguments?.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value!);
+        Dictionary<string, object> nonEmptyArguments = new();
+        foreach (var p in this._config.InputVariables)
+        {
+            if (p.Default is null || (p.Default is string s && string.IsNullOrWhiteSpace(s)))
+            {
+                continue;
+            }
+
+            nonEmptyArguments[p.Name] = p.Default;
+        }
+
+        foreach (var p in arguments ?? new KernelArguments())
+        {
+            if (p.Value is null)
+            {
+                continue;
+            }
+
+            nonEmptyArguments[p.Key] = p.Value;
+        }
+
         var renderedResult = liquidTemplate.Render(nonEmptyArguments);
 
         // parse chat history
