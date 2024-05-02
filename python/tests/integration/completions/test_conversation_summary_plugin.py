@@ -5,7 +5,6 @@ import os
 import pytest
 from test_utils import retry
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
@@ -13,6 +12,7 @@ from semantic_kernel.core_plugins.conversation_summary_plugin import (
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 @pytest.mark.asyncio
@@ -63,19 +63,14 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
 async def test_oai_summarize_conversation_using_plugin(
     setup_summarize_conversation_using_plugin,
 ):
-    _, chatTranscript = setup_summarize_conversation_using_plugin
-
-    # Even though the kernel is scoped to the function, it appears that
-    # it is shared because adding the same plugin throws an error.
-    # Create a new kernel for this test.
-    kernel = sk.Kernel()
+    kernel, chatTranscript = setup_summarize_conversation_using_plugin
 
     if "Python_Integration_Tests" in os.environ:
         api_key = os.environ["OpenAI__ApiKey"]
         org_id = None
     else:
         # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+        api_key, org_id = openai_settings_from_dot_env()
 
     execution_settings = PromptExecutionSettings(
         service_id="conversation_summary", max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5

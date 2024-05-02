@@ -454,7 +454,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameterView = new KernelParameterMetadata(name)
         {
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-            DefaultValue = parameter.DefaultValue?.ToString(),
+            DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue?.ToString() : null,
             IsRequired = !parameter.IsOptional,
             ParameterType = type,
         };
