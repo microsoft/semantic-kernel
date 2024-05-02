@@ -184,14 +184,16 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         if self.items or other.items:
             for other_item in other.items:
                 added = False
-                for id, item in enumerate(self.items):
+                for id, item in enumerate(list(self.items)):  # Use a copy for safe iteration if necessary
                     if type(item) is type(other_item) and hasattr(item, "__add__"):
                         try:
-                            self.items[id] = item + other_item  # type: ignore
+                            # Attempt to add and update the current item
+                            new_item = item + other_item
+                            self.items[id] = new_item
                             added = True
-                            break
-                        except Exception:
-                            pass
+                        except ValueError:
+                            # Handle specific expected error, e.g., mismatched IDs
+                            continue
                 if not added:
                     self.items.append(other_item)
         if not isinstance(self.inner_content, list):
@@ -231,6 +233,9 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             if isinstance(value, int):
                 value = str(value)
             root.set(field, value)
+        for index, item in enumerate(self.items):
+            root.insert(index, item.to_element())
+        return root
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root

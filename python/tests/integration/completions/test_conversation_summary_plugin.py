@@ -13,6 +13,7 @@ from semantic_kernel.core_plugins.conversation_summary_plugin import (
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 @pytest.mark.asyncio
@@ -75,7 +76,7 @@ async def test_oai_summarize_conversation_using_plugin(
         org_id = None
     else:
         # Load credentials from .env file
-        api_key, org_id = sk.openai_settings_from_dot_env()
+        api_key, org_id = openai_settings_from_dot_env()
 
     execution_settings = PromptExecutionSettings(
         service_id="conversation_summary", max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5

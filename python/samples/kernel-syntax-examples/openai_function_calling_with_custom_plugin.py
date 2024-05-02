@@ -10,23 +10,18 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
-    OpenAIChatCompletion,
-)
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import (
-    azure_openai_settings_from_dot_env_as_dict,
-    openai_settings_from_dot_env,
-)
+from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict, openai_settings_from_dot_env
 
 
 class WeatherPlugin:
@@ -71,8 +66,8 @@ async def main():
         )
     kernel.add_service(ai_service)
 
-    kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
-    kernel.import_plugin_from_object(WeatherPlugin(), plugin_name="weather")
+    kernel.add_plugin(TimePlugin(), plugin_name="time")
+    kernel.add_plugin(WeatherPlugin(), plugin_name="weather")
 
     # Example 1: Use automated function calling with a non-streaming prompt
     print("========== Example 1: Use automated function calling with a non-streaming prompt ==========")
@@ -134,7 +129,7 @@ async def main():
         if result.content:
             print(result.content)
 
-        if not result.tool_calls:
+        if not result.items or not any(isinstance(item, FunctionCallContent) for item in result.items):
             break
 
         chat_history.add_message(result)

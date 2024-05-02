@@ -126,7 +126,6 @@ class BookingsPlugin:
     async def cancel_reservation(
         self,
         reservation_id: Annotated[str, "The ID of the reservation"],
-        # self, reservation_id: Annotated[str, "The ID of the reservation"]
     ) -> Annotated[str, "The cancellation status of the reservation"]:
         """Cancel a reservation."""
 
