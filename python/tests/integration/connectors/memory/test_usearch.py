@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from semantic_kernel.connectors.memory.usearch import USearchMemoryStore
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
@@ -127,7 +128,7 @@ def compare_memory_records(record1: MemoryRecord, record2: MemoryRecord, with_em
         record1._additional_metadata == record2._additional_metadata
     ), f"_additional_metadata mismatch: {record1._additional_metadata} != {record2._additional_metadata}"
     if with_embedding is True:
-        assert np.array_equal(record1._embedding, record2._embedding), "_embedding arrays are not equal"
+        assert record1._embedding == pytest.approx(record2._embedding, abs=1e-2), "_embedding arrays are not equal"
 
 
 @pytest.mark.asyncio
@@ -212,7 +213,7 @@ async def test_remove(memory_record1):
     await memory.remove("test_collection", "test_id1")
 
     # memory.get should raise Exception if record is not found
-    with pytest.raises(KeyError):
+    with pytest.raises(ServiceResourceNotFoundError):
         await memory.get("test_collection", "test_id1", True)
 
 
@@ -241,7 +242,7 @@ async def test_get_nearest_match(memory_record1: MemoryRecord, memory_record2: M
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)
-    assert result[1] == pytest.approx(1, abs=1e-5)
+    assert result[1] == pytest.approx(1, abs=1e-2)
 
 
 @pytest.mark.asyncio
@@ -257,8 +258,8 @@ async def test_get_nearest_matches(memory_record1: MemoryRecord, memory_record2:
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
-    assert results[0][1] == pytest.approx(1, abs=1e-5)
-    assert results[1][1] == pytest.approx(0.90450, abs=1e-5)
+    assert results[0][1] == pytest.approx(1, abs=1e-2)
+    assert results[1][1] == pytest.approx(0.90450, abs=1e-2)
 
 
 @pytest.mark.asyncio

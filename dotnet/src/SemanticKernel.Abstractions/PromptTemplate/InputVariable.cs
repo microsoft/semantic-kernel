@@ -16,6 +16,29 @@ public sealed class InputVariable
     private string _description = string.Empty;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="InputVariable"/> class.
+    /// </summary>
+    public InputVariable()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InputVariable"/> class from an existing instance.
+    /// </summary>
+    /// <param name="inputVariable"></param>
+    public InputVariable(InputVariable inputVariable)
+    {
+        Verify.NotNull(inputVariable);
+
+        this.Name = inputVariable.Name;
+        this.Description = inputVariable.Description;
+        this.Default = inputVariable.Default;
+        this.IsRequired = inputVariable.IsRequired;
+        this.JsonSchema = inputVariable.JsonSchema;
+        this.AllowUnsafeContent = inputVariable.AllowUnsafeContent;
+    }
+
+    /// <summary>
     /// Gets or sets the name of the variable.
     /// </summary>
     /// <remarks>
@@ -66,4 +89,17 @@ public sealed class InputVariable
     /// </remarks>
     [JsonPropertyName("json_schema")]
     public string? JsonSchema { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to allow unsafe content.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the value of the input variable is treated as safe content and will not be HTML encoded.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_unsafe_content")]
+    public bool AllowUnsafeContent { get; set; } = false;
 }

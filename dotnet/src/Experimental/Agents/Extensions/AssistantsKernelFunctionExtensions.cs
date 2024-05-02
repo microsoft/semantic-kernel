@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Json.More;
 using Microsoft.SemanticKernel.Experimental.Agents.Models;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents;
@@ -79,11 +78,34 @@ internal static class AssistantsKernelFunctionExtensions
             return "number";
         }
 
+        if (type == typeof(bool))
+        {
+            return "boolean";
+        }
+
         if (type.IsEnum)
         {
             return "enum";
         }
 
-        return type.Name;
+        if (type.IsArray)
+        {
+            return "array";
+        }
+
+        return "object";
     }
+
+    private static bool IsNumber(this Type type) =>
+        type == typeof(byte) ||
+        type == typeof(sbyte) ||
+        type == typeof(short) ||
+        type == typeof(ushort) ||
+        type == typeof(int) ||
+        type == typeof(uint) ||
+        type == typeof(long) ||
+        type == typeof(ulong) ||
+        type == typeof(float) ||
+        type == typeof(double) ||
+        type == typeof(decimal);
 }

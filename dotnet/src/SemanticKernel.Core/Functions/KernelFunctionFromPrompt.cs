@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -111,7 +112,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         return new KernelFunctionFromPrompt(
             template: promptTemplate,
             promptConfig: promptConfig,
-            loggerFactory: loggerFactory);
+            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
 
     /// <inheritdoc/>j
@@ -131,11 +132,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0612 // Events are deprecated
 
-        if (result.RenderedContext?.Cancel is true)
-        {
-            throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
-        }
-
         if (result.AIService is IChatCompletionService chatCompletion)
         {
             var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
@@ -154,6 +150,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
     }
 
+    /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
@@ -169,11 +166,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 #pragma warning restore CS0612 // Events are deprecated
-
-        if (result.RenderedContext?.Cancel is true)
-        {
-            yield break;
-        }
 
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
 
@@ -191,7 +183,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             throw new NotSupportedException($"The AI service {result.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}");
         }
 
-        await foreach (var content in asyncReference)
+        await foreach (var content in asyncReference.ConfigureAwait(false))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -216,6 +208,23 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
 
+    /// <inheritdoc/>
+    public override KernelFunction Clone(string pluginName)
+    {
+        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+
+        return new KernelFunctionFromPrompt(
+            this._promptTemplate,
+            this.Name,
+            pluginName,
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter,
+            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+            this._inputVariables,
+            this._logger);
+    }
+
     /// <summary>
     /// JSON serialized string representation of the function.
     /// </summary>
@@ -224,23 +233,46 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) : base(
+        ILogger logger) : this(
+            template,
             promptConfig.Name ?? CreateRandomFunctionName(),
+            null,
             promptConfig.Description ?? string.Empty,
             promptConfig.GetKernelParametersMetadata(),
             promptConfig.GetKernelReturnParameterMetadata(),
-            promptConfig.ExecutionSettings)
+            promptConfig.ExecutionSettings,
+            promptConfig.InputVariables,
+            logger)
     {
-        this._logger = loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance;
+    }
+
+    private KernelFunctionFromPrompt(
+        IPromptTemplate template,
+        string functionName,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata? returnParameter,
+        Dictionary<string, PromptExecutionSettings> executionSettings,
+        List<InputVariable> inputVariables,
+        ILogger logger) : base(
+            functionName ?? CreateRandomFunctionName(),
+            pluginName,
+            description ?? string.Empty,
+            parameters,
+            returnParameter,
+            executionSettings)
+    {
+        this._logger = logger;
 
         this._promptTemplate = template;
-        this._promptConfig = promptConfig;
+        this._inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
 
     #region private
 
     private readonly ILogger _logger;
-    private readonly PromptTemplateConfig _promptConfig;
+    private readonly List<InputVariable> _inputVariables;
     private readonly IPromptTemplate _promptTemplate;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -264,7 +296,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
     {
-        foreach (var parameter in this._promptConfig.InputVariables)
+        foreach (var parameter in this._inputVariables)
         {
             if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
             {
@@ -276,7 +308,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private async Task<PromptRenderingResult> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
+
         IAIService? aiService;
+        string renderedPrompt = string.Empty;
 
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
@@ -298,13 +332,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         kernel.OnPromptRendering(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-        kernel.OnPromptRenderingFilter(this, arguments);
-
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, async (context) =>
         {
-            this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+            renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+            }
+
+            context.RenderedPrompt = renderedPrompt;
+        }).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(renderingContext.RenderedPrompt) &&
+            !string.Equals(renderingContext.RenderedPrompt, renderedPrompt, StringComparison.OrdinalIgnoreCase))
+        {
+            renderedPrompt = renderingContext.RenderedPrompt!;
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderingContext.RenderedPrompt);
+            }
         }
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -323,25 +371,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0618 // Events are deprecated
 
-        var renderedContext = kernel.OnPromptRenderedFilter(this, arguments, renderedPrompt);
-
-        if (renderedContext is not null &&
-            !renderedContext.Cancel &&
-            renderedContext.RenderedPrompt != renderedPrompt)
-        {
-            renderedPrompt = renderedContext.RenderedPrompt;
-
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderedContext.RenderedPrompt);
-            }
-        }
-
         return new(aiService, renderedPrompt)
         {
             ExecutionSettings = executionSettings,
             RenderedEventArgs = renderedEventArgs,
-            RenderedContext = renderedContext
         };
     }
 

@@ -6,10 +6,12 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
+using Microsoft.SemanticKernel.TextToAudio;
 using Microsoft.SemanticKernel.TextToImage;
 using Xunit;
 
@@ -26,6 +28,8 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     {
         this._httpClient = new HttpClient();
     }
+
+    #region Text generation
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -145,6 +149,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAITextGenerationService);
     }
 
+    #endregion
+
+    #region Text embeddings
+
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.TokenCredential)]
@@ -262,6 +270,10 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextEmbeddingGenerationService);
     }
+
+    #endregion
+
+    #region Chat completion
 
     [Theory]
     [InlineData(InitializationType.ApiKey)]
@@ -403,8 +415,46 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.True(service is OpenAIChatCompletionService);
     }
 
+    #endregion
+
+    #region Text to image
+
     [Fact]
-    public void KernelBuilderAddAzureOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder = builder.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceTokenCredentials()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+
+        // Act
+        builder.Services.AddAzureOpenAITextToImage("deployment-name", "https://endpoint", credentials);
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToImageService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToImageService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -420,7 +470,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddAzureOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -436,7 +486,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void KernelBuilderAddOpenAITextToImageAddsValidService()
+    public void KernelBuilderAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -452,7 +502,7 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void ServiceCollectionAddOpenAITextToImageAddsValidService()
+    public void ServiceCollectionAddOpenAITextToImageAddsValidServiceWithApiKey()
     {
         // Arrange
         var builder = Kernel.CreateBuilder();
@@ -466,6 +516,198 @@ public sealed class OpenAIServiceCollectionExtensionsTests : IDisposable
         Assert.NotNull(service);
         Assert.True(service is OpenAITextToImageService);
     }
+
+    #endregion
+
+    #region Text to audio
+
+    [Fact]
+    public void KernelBuilderAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder = builder.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddAzureOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.Services.AddAzureOpenAITextToAudio("deployment-name", "https://endpoint", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void KernelBuilderAddOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder = builder.AddOpenAITextToAudio("model-id", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAITextToAudioService);
+    }
+
+    [Fact]
+    public void ServiceCollectionAddOpenAITextToAudioAddsValidService()
+    {
+        // Arrange
+        var builder = Kernel.CreateBuilder();
+
+        // Act
+        builder.Services.AddOpenAITextToAudio("model-id", "api-key");
+
+        // Assert
+        var service = builder.Build().GetRequiredService<ITextToAudioService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAITextToAudioService);
+    }
+
+    #endregion
+
+    #region Audio to text
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void KernelBuilderAddAzureOpenAIAudioToTextAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
+            InitializationType.OpenAIClientInline => builder.AddAzureOpenAIAudioToText("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddAzureOpenAIAudioToText("deployment-name"),
+            _ => builder
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAIAudioToTextService);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void ServiceCollectionAddAzureOpenAIAudioToTextAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIAudioToText("deployment-name", "https://endpoint", credentials),
+            InitializationType.OpenAIClientInline => builder.Services.AddAzureOpenAIAudioToText("deployment-name", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddAzureOpenAIAudioToText("deployment-name"),
+            _ => builder.Services
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is AzureOpenAIAudioToTextService);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void KernelBuilderAddOpenAIAudioToTextAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
+        // Act
+        builder = type switch
+        {
+            InitializationType.ApiKey => builder.AddOpenAIAudioToText("model-id", "api-key"),
+            InitializationType.OpenAIClientInline => builder.AddOpenAIAudioToText("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.AddOpenAIAudioToText("model-id"),
+            _ => builder
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAIAudioToTextService);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.OpenAIClientInline)]
+    [InlineData(InitializationType.OpenAIClientInServiceProvider)]
+    public void ServiceCollectionAddOpenAIAudioToTextAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var client = new OpenAIClient("key");
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<OpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddOpenAIAudioToText("model-id", "api-key"),
+            InitializationType.OpenAIClientInline => builder.Services.AddOpenAIAudioToText("model-id", client),
+            InitializationType.OpenAIClientInServiceProvider => builder.Services.AddOpenAIAudioToText("model-id"),
+            _ => builder.Services
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IAudioToTextService>();
+
+        Assert.NotNull(service);
+        Assert.True(service is OpenAIAudioToTextService);
+    }
+
+    #endregion
 
     public void Dispose()
     {

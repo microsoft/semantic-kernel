@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "description": "Turn a scenario into a short and entertaining poem.",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 200,
+      "temperature": 0.7,
+      "top_p": 0.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 0.0
+    }
+  },
+  "input_variables": [
+    {
+      "name": "input",
+      "description": "The scenario to turn into a poem.",
+      "default": ""
+    }
+  ]
+}

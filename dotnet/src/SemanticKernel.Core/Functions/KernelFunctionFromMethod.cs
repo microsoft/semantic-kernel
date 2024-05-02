@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -50,21 +51,48 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
+        return Create(
+            method,
+            target,
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = functionName,
+                Description = description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory
+            });
+    }
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
+    public static KernelFunction Create(
+        MethodInfo method,
+        object? target = null,
+        KernelFunctionFromMethodOptions? options = default)
+    {
         Verify.NotNull(method);
         if (!method.IsStatic && target is null)
         {
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        MethodDetails methodDetails = GetMethodDetails(functionName, method, target);
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, target);
         var result = new KernelFunctionFromMethod(
             methodDetails.Function,
             methodDetails.Name,
-            description ?? methodDetails.Description,
-            parameters?.ToList() ?? methodDetails.Parameters,
-            returnParameter ?? methodDetails.ReturnParameter);
+            options?.Description ?? methodDetails.Description,
+            options?.Parameters?.ToList() ?? methodDetails.Parameters,
+            options?.ReturnParameter ?? methodDetails.ReturnParameter,
+            options?.AdditionalMetadata);
 
-        if (loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
             logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunction '{Name}' for '{MethodName}'", result.Name, method.Name);
@@ -121,8 +149,21 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
+    }
 
-        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
+    /// <inheritdoc/>
+    public override KernelFunction Clone(string pluginName)
+    {
+        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+
+        return new KernelFunctionFromMethod(
+            this._function,
+            this.Name,
+            pluginName,
+            this.Description,
+            this.Metadata.Parameters,
+            this.Metadata.ReturnParameter,
+            this.Metadata.AdditionalProperties);
     }
 
     /// <summary>
@@ -139,7 +180,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-    private static readonly object[] s_cancellationTokenNoneArray = new object[] { CancellationToken.None };
+    private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
     private readonly ImplementationFunc _function;
 
     private record struct MethodDetails(string Name, string Description, ImplementationFunc Function, List<KernelParameterMetadata> Parameters, KernelReturnParameterMetadata ReturnParameter);
@@ -149,8 +190,21 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         string functionName,
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
-        KernelReturnParameterMetadata returnParameter) :
-        base(functionName, description, parameters, returnParameter)
+        KernelReturnParameterMetadata returnParameter,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        this(implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
+    {
+    }
+
+    private KernelFunctionFromMethod(
+        ImplementationFunc implementationFunc,
+        string functionName,
+        string? pluginName,
+        string description,
+        IReadOnlyList<KernelParameterMetadata> parameters,
+        KernelReturnParameterMetadata returnParameter,
+        ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
+        base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
         Verify.ValidFunctionName(functionName);
 
@@ -186,7 +240,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
         // we don't want to advertize their metadata, e.g. CultureInfo, ILoggerFactory, etc.
-        List<KernelParameterMetadata> argParameterViews = new();
+        List<KernelParameterMetadata> argParameterViews = [];
 
         // Get marshaling funcs for parameters and build up the parameter metadata.
         var parameters = method.GetParameters();
@@ -216,7 +270,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         ValueTask<FunctionResult> Function(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
             // Create the arguments.
-            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
+            object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : [];
             for (int i = 0; i < args.Length; i++)
             {
                 args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
@@ -400,7 +454,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameterView = new KernelParameterMetadata(name)
         {
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-            DefaultValue = parameter.DefaultValue?.ToString(),
+            DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue?.ToString() : null,
             IsRequired = !parameter.IsOptional,
             ParameterType = type,
         };
@@ -546,79 +600,74 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
             );
         }
 
-        // All other synchronous return types T.
-
-        if (!returnType.IsGenericType || returnType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        // Asynchronous return types
+        if (returnType.IsGenericType)
         {
-            return (returnType, (kernel, function, result) =>
+            // Task<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericTask &&
+                genericTask == typeof(Task<>) &&
+                returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
             {
-                return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
-            }
-            );
-        }
-
-        // All other asynchronous return types
-
-        // Task<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericTask &&
-            genericTask == typeof(Task<>) &&
-            returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter)
-        {
-            return (taskResultGetter.ReturnType, async (kernel, function, result) =>
-            {
-                await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-
-                var taskResult = Invoke(taskResultGetter, result, Array.Empty<object>());
-                return new FunctionResult(function, taskResult, kernel.Culture);
-            }
-            );
-        }
-
-        // ValueTask<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
-            genericValueTask == typeof(ValueTask<>) &&
-            returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
-            valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
-        {
-            return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
-            {
-                Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), Array.Empty<object>())!;
-                await task.ConfigureAwait(false);
-
-                var taskResult = Invoke(asTaskResultGetter, task, Array.Empty<object>());
-                return new FunctionResult(function, taskResult, kernel.Culture);
-            }
-            );
-        }
-
-        // IAsyncEnumerable<T>
-        if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
-        {
-            Type elementType = returnType.GetGenericArguments()[0];
-
-            MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
-                .MakeGenericType(elementType)
-                .GetMethod("GetAsyncEnumerator");
-
-            if (getAsyncEnumeratorMethod is not null)
-            {
-                return (returnType, (kernel, function, result) =>
+                return (taskResultGetter.ReturnType, async (kernel, function, result) =>
                 {
-                    var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
+                    await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                    if (asyncEnumerator is not null)
-                    {
-                        return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
-                    }
-
-                    return new ValueTask<FunctionResult>(new FunctionResult(function));
+                    var taskResult = Invoke(taskResultGetter, result, []);
+                    return new FunctionResult(function, taskResult, kernel.Culture);
                 }
                 );
             }
+
+            // ValueTask<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericValueTask &&
+                genericValueTask == typeof(ValueTask<>) &&
+                returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
+                valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter)
+            {
+                return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
+                {
+                    Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), [])!;
+                    await task.ConfigureAwait(false);
+
+                    var taskResult = Invoke(asTaskResultGetter, task, []);
+                    return new FunctionResult(function, taskResult, kernel.Culture);
+                }
+                );
+            }
+
+            // IAsyncEnumerable<T>
+            if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
+            {
+                Type elementType = returnType.GetGenericArguments()[0];
+
+                MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+                    .MakeGenericType(elementType)
+                    .GetMethod("GetAsyncEnumerator");
+
+                if (getAsyncEnumeratorMethod is not null)
+                {
+                    return (returnType, (kernel, function, result) =>
+                    {
+                        var asyncEnumerator = Invoke(getAsyncEnumeratorMethod, result, s_cancellationTokenNoneArray);
+
+                        if (asyncEnumerator is not null)
+                        {
+                            return new ValueTask<FunctionResult>(new FunctionResult(function, asyncEnumerator, kernel.Culture));
+                        }
+
+                        return new ValueTask<FunctionResult>(new FunctionResult(function));
+                    }
+                    );
+                }
+            }
         }
 
-        // Unrecognized return type.
-        throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
+        // For everything else, just use the result as-is.
+        return (returnType, (kernel, function, result) =>
+        {
+            return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
+        }
+        );
 
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result) =>

@@ -6,81 +6,70 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.14-alpha-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
+
     <url>https://www.github.com/microsoft/semantic-kernel</url>
     <name>Semantic Kernel Parent</name>
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.5</azure-ai-openai.version>
-        <checkstyle.version>10.12.2</checkstyle.version>
-        <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
+        <azure-ai-openai.version>1.0.0-beta.7</azure-ai-openai.version>
+        <checkstyle.version>10.13.0</checkstyle.version>
+        <com.uber.nullaway.version>0.10.21</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <google.java.format.version>1.17.0</google.java.format.version>
         <jreleaser.plugin.version>1.6.0</jreleaser.plugin.version>
-        <junit5.version>5.10.0</junit5.version>
-        <log4j2.version>2.20.0</log4j2.version>
+        <junit5.version>5.10.2</junit5.version>
+        <log4j2.version>2.22.1</log4j2.version>
         <maven.antrun-plugin.version>3.1.0</maven.antrun-plugin.version>
         <maven.changes-plugin.version>2.12.1</maven.changes-plugin.version>
-        <maven.checkstyle-plugin.version>3.3.0</maven.checkstyle-plugin.version>
-        <maven.clean-plugin.version>3.3.1</maven.clean-plugin.version>
-        <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
+        <maven.checkstyle-plugin.version>3.3.1</maven.checkstyle-plugin.version>
+        <maven.clean-plugin.version>3.3.2</maven.clean-plugin.version>
+        <maven.compiler-plugin.version>3.12.1</maven.compiler-plugin.version>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <maven.dependency-plugin.version>3.6.0</maven.dependency-plugin.version>
+        <maven.dependency-plugin.version>3.6.1</maven.dependency-plugin.version>
         <maven.deploy-plugin.version>3.1.1</maven.deploy-plugin.version>
         <maven.directory-maven-plugin.version>1.0</maven.directory-maven-plugin.version>
-        <maven.enforcer-plugin.version>3.3.0</maven.enforcer-plugin.version>
-        <maven.exec-plugin.version>3.1.0</maven.exec-plugin.version>
+        <maven.enforcer-plugin.version>3.4.1</maven.enforcer-plugin.version>
+        <maven.exec-plugin.version>3.1.1</maven.exec-plugin.version>
         <maven.install-plugin.version>3.1.1</maven.install-plugin.version>
-        <maven.jacoco-plugin.version>0.8.10</maven.jacoco-plugin.version>
+        <maven.jacoco-plugin.version>0.8.11</maven.jacoco-plugin.version>
         <maven.jar-plugin.version>3.3.0</maven.jar-plugin.version>
-        <maven.javadoc-plugin.version>3.5.0</maven.javadoc-plugin.version>
-        <maven.jxr-plugin.version>3.3.0</maven.jxr-plugin.version>
-        <maven.license-plugin.version>2.2.0</maven.license-plugin.version>
-        <maven.pmd-plugin.version>3.21.0</maven.pmd-plugin.version>
-        <maven.project-info-reports-plugin.version>3.4.5</maven.project-info-reports-plugin.version>
-        <maven.rat-plugin.version>0.15</maven.rat-plugin.version>
+        <maven.javadoc-plugin.version>3.6.3</maven.javadoc-plugin.version>
+        <maven.jxr-plugin.version>3.3.2</maven.jxr-plugin.version>
+        <maven.license-plugin.version>2.4.0</maven.license-plugin.version>
+        <maven.pmd-plugin.version>3.21.2</maven.pmd-plugin.version>
+        <maven.project-info-reports-plugin.version>3.5.0</maven.project-info-reports-plugin.version>
+        <maven.rat-plugin.version>0.16.1</maven.rat-plugin.version>
         <maven.release-plugin.version>3.0.1</maven.release-plugin.version>
         <maven.resources-plugin.version>3.3.1</maven.resources-plugin.version>
-        <maven.site-plugin.version>4.0.0-M9</maven.site-plugin.version>
-        <maven.shade-plugin.version>3.5.0</maven.shade-plugin.version>
+        <maven.site-plugin.version>4.0.0-M13</maven.site-plugin.version>
+        <maven.shade-plugin.version>3.5.1</maven.shade-plugin.version>
         <maven.source-plugin.version>3.3.0</maven.source-plugin.version>
-        <maven.spotbugs-plugin.version>4.7.3.5</maven.spotbugs-plugin.version>
+        <maven.spotbugs-plugin.version>4.8.3.1</maven.spotbugs-plugin.version>
         <!-- TODO 2.30.0 is the last supported version for Java 8 Not sure how 2.38.0 is working... -->
         <maven.spotless-plugin.version>2.38.0</maven.spotless-plugin.version>
-        <maven.surefire-plugin.version>3.1.2</maven.surefire-plugin.version>
+        <maven.surefire-plugin.version>3.2.5</maven.surefire-plugin.version>
         <maven.version>3.9.3</maven.version>
-        <maven.versions-plugin.version>2.16.0</maven.versions-plugin.version>
-        <mockito.version>5.4.0</mockito.version>
+        <maven.versions-plugin.version>2.16.2</maven.versions-plugin.version>
+        <mockito.version>5.10.0</mockito.version>
         <mutability.detector.version>0.9.1</mutability.detector.version>
         <pmd.version>6.55.0</pmd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.github.repository>microsoft/semantic-kernel</project.github.repository>
         <repository.url>git@github.com:${project.github.repository}.git</repository.url>
-        <spotbugs.version>4.7.3</spotbugs.version>
+        <spotbugs.version>4.8.3</spotbugs.version>
     </properties>
 
     <modules>
-        <module>connectors/semantickernel-connectors-ai-openai</module>
-        <module>connectors/semantickernel-connectors-memory-sqlite</module>
-        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
-        <module>connectors/semantickernel-connectors-memory-jdbc</module>
-        <module>connectors/semantickernel-connectors-memory-postgresql</module>
-        <module>connectors/semantickernel-connectors-memory-mysql</module>
-        <module>connectors/semantickernel-connectors-memory-redis</module>
-
-        <module>extensions/semantickernel-planners</module>
-        <module>extensions/semantickernel-gpt3-tokenizer</module>
-        <module>extensions/semantickernel-settings-loader</module>
-
-        <module>plugins/semantickernel-plugin-core</module>
-
         <module>semantickernel-bom</module>
+
+        <module>aiservices/openai</module>
+
         <module>semantickernel-api</module>
-        <module>semantickernel-core</module>
     </modules>
 
     <dependencyManagement>
@@ -148,6 +137,12 @@
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-annotations</artifactId>
+                <version>${spotbugs.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -168,12 +163,6 @@
                             <version>${spotbugs.version}</version>
                         </dependency>
                     </dependencies>
-                    <!--
-                        TODO: Enable this once we have a good set of exclusions
-                        <configuration>
-                            <excludeFilterFile>spotbugs-excludes.xml</excludeFilterFile>
-                        </configuration>
-                    -->
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -256,6 +245,7 @@
                         <failOnError>false</failOnError>
                         <nohelp>true</nohelp>
                         <show>public</show>
+                        <excludePackageNames>*.implementation.*:*.implementation</excludePackageNames>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -395,17 +385,6 @@
                     </executions>
                     <configuration>
                         <!-- 
-                            LATEST: Android API level 32 (Android 12)
-                            See https://developer.android.com/studio/releases/platforms
-                        -->
-                        <!--
-                        <signature>
-                            <groupId>net.sf.androidscents.signature</groupId>
-                            <artifactId>android-api-level-32</artifactId>
-                            <version>12_r1</version>
-                        </signature>
-                        -->
-                        <!-- 
                             COMPATIBLE: Android API level 26 (Android 8.0)
                             See https://developer.android.com/studio/releases/platforms
 
@@ -416,17 +395,6 @@
                             <artifactId>android-api-level-26</artifactId>
                             <version>8.0.0_r2</version>
                         </signature>
-                        <!-- 
-                            Android API level 21 (Android 5.0)
-                            See https://developer.android.com/studio/releases/platforms
-                        -->
-                        <!--
-                        <signature>
-                            <groupId>net.sf.androidscents.signature</groupId>
-                            <artifactId>android-api-level-21</artifactId>
-                            <version>5.0.1_r2</version>
-                        </signature>
-                        -->
                     </configuration>
                 </plugin>
             </plugins>
@@ -610,9 +578,6 @@
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
             </properties>
-            <modules>
-                <module>samples</module>
-            </modules>
         </profile>
         <profile>
             <id>bug-check</id>
@@ -640,6 +605,7 @@
                                     -XepOpt:NullAway:AnnotatedPackages=com.microsoft.semantickernel
                                     -Xep:AlmostJavadoc:OFF -Xep:MissingSummary:OFF
                                     -Xep:UnusedVariable:OFF -Xep:EmptyBlockTag:OFF
+                                    -XepExcludedPaths:.*/src/test/java/.*
                                 </arg>
                             </compilerArgs>
                             <annotationProcessorPaths>
@@ -678,11 +644,17 @@
                         </executions>
                         <configuration>
                             <java>
+                                <eclipse>
+                                    <version>4.30</version>
+                                    <file>eclipse-formatter.xml</file>
+                                </eclipse>
+                                <!--
                                 <googleJavaFormat>
                                     <version>${google.java.format.version}</version>
                                     <style>AOSP</style>
                                     <reflowLongStrings>true</reflowLongStrings>
                                 </googleJavaFormat>
+                                -->
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
@@ -695,7 +667,6 @@
                         <artifactId>spotbugs-maven-plugin</artifactId>
                         <version>${maven.spotbugs-plugin.version}</version>
                         <configuration>
-                            <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                             <effort>Max</effort>
                             <!-- Lower when more project is stable -->
                             <threshold>Normal</threshold>
@@ -809,6 +780,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.13-alpha</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>

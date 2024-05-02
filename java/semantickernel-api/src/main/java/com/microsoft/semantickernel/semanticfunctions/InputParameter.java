@@ -4,18 +4,27 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Input parameter for semantic functions */
+/**
+ * Input parameter for semantic functions
+ */
 public class InputParameter {
 
     private final String name;
     private final String description;
     private final String defaultValue;
 
+    /**
+     * Creates a new instance of the {@link InputParameter} class.
+     *
+     * @param name         name of the parameter
+     * @param description  description of the parameter
+     * @param defaultValue default value of the parameter
+     */
     @JsonCreator
     public InputParameter(
-            @JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("defaultValue") String defaultValue) {
+        @JsonProperty("name") String name,
+        @JsonProperty("description") String description,
+        @JsonProperty("defaultValue") String defaultValue) {
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
