@@ -1408,7 +1408,7 @@ internal abstract class ClientCore
 
             // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
             // what functions are available in the kernel.
-            var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel, Model = chatOptions });
+            var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel });
             if (config is null)
             {
                 return null;

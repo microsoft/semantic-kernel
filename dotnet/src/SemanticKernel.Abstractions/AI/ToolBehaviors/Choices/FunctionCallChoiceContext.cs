@@ -5,6 +5,4 @@ namespace Microsoft.SemanticKernel.AI.ToolBehaviors;
 public class FunctionCallChoiceContext
 {
     public Kernel? Kernel { get; init; }
-
-    public object? Model { get; init; }
 }
