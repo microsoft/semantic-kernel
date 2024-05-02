@@ -1,7 +1,15 @@
-﻿<message role="system">
+﻿------ Rendered Result ------
+<message role="system">
 This is a system message
 user:
 First user message
 &lt;message role=&#39;user&#39;&gt;Second user message&lt;/message&gt;
 &lt;message role=&#39;user&#39;&gt;&lt;text&gt;Third user message&lt;/text&gt;&lt;/message&gt;
 </message>
+
+------ ChatPromptParser Result ------
+system:This is a system message
+user:
+First user message
+<message role='user'>Second user message</message>
+<message role='user'><text>Third user message</text></message>

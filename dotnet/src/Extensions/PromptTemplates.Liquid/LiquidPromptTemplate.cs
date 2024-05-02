@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,9 +63,11 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         var splits = s_roleRegex.Split(renderedResult);
 
-        // if no role is found, return the entire text
+        // if no role is found, return the entire text as system message
         if (splits.Length == 1)
         {
+            renderedResult = this.ReplaceReservedStringBackToColonIfNeeded(renderedResult);
+            renderedResult = HttpUtility.HtmlEncode(renderedResult);
             return Task.FromResult(renderedResult);
         }
 
@@ -82,6 +85,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
             var role = splits[i];
             var content = splits[i + 1];
             content = this.ReplaceReservedStringBackToColonIfNeeded(content);
+            content = HttpUtility.HtmlEncode(content);
             sb.Append("<message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
             sb.AppendLine("</message>");
@@ -153,7 +157,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
                     if (this.ShouldEncode(value))
                     {
                         var valueString = value.ToString();
-                        valueString = HttpUtility.HtmlEncode(valueString);
                         if (this.ShouldEncodeColon(this._config, kvp.Key, kvp.Value))
                         {
                             valueString = valueString.Replace(ColonString, ReservedString);
