@@ -67,7 +67,6 @@ dotnet user-secrets set "Planners:OpenAI:ApiKey" "..."
 ```
 
 ### Option 2: Use Configuration File
-
 1. Create a `testsettings.development.json` file next to `testsettings.json`. This file will be ignored by git,
    the content will not end up in pull requests, so it's safe for personal settings. Keep the file safe.
 2. Edit `testsettings.development.json` and
