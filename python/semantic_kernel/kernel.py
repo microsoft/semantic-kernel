@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Literal, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Callable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 
