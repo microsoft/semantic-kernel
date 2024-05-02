@@ -144,7 +144,7 @@ public class SemanticKernelOpenAPIImporter {
         @Nullable HttpHeaders httpHeaders,
         @Nullable HttpClient client) {
 
-        // Currently this does not apply as the Netty client does not obay the headers provided in the
+        // Currently this does not apply as the Netty client does not obey the headers provided in the
         // HttpClientOptions, however they may do one day
         if (httpHeaders != null && client != null) {
             throw new IllegalArgumentException(

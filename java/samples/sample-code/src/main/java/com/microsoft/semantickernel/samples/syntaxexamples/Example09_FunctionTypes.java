@@ -264,17 +264,17 @@ public class Example09_FunctionTypes {
             .block();
 
         var result10 = kernel
-            .invokeAsync(plugin.get("WithPrimativeReturnType"))
+            .invokeAsync(plugin.get("WithPrimitiveReturnType"))
             .block();
         System.out.println(result10.getResult());
 
         var result11 = kernel
-            .invokeAsync(plugin.get("WithBoxedPrimativeReturnType"))
+            .invokeAsync(plugin.get("WithBoxedPrimitiveReturnType"))
             .block();
         System.out.println(result11.getResult());
 
         var result12 = kernel
-            .invokeAsync(plugin.get("AsyncWithBoxedPrimativeReturnType"))
+            .invokeAsync(plugin.get("AsyncWithBoxedPrimitiveReturnType"))
             .block();
         System.out.println(result12.getResult());
 
@@ -520,18 +520,18 @@ public class Example09_FunctionTypes {
                     + "}, y = {" + y + "}]");
         }
 
-        @DefineKernelFunction(name = "WithPrimativeReturnType", returnType = "int")
-        public int WithPrimativeReturnType() {
+        @DefineKernelFunction(name = "WithPrimitiveReturnType", returnType = "int")
+        public int WithPrimitiveReturnType() {
             return 1;
         }
 
-        @DefineKernelFunction(name = "WithBoxedPrimativeReturnType", returnType = "int")
-        public Integer WithBoxedPrimativeReturnType() {
+        @DefineKernelFunction(name = "WithBoxedPrimitiveReturnType", returnType = "int")
+        public Integer WithBoxedPrimitiveReturnType() {
             return Integer.valueOf(1);
         }
 
-        @DefineKernelFunction(name = "AsyncWithBoxedPrimativeReturnType", returnType = "int")
-        public Mono<Integer> AsyncWithBoxedPrimativeReturnType() {
+        @DefineKernelFunction(name = "AsyncWithBoxedPrimitiveReturnType", returnType = "int")
+        public Mono<Integer> AsyncWithBoxedPrimitiveReturnType() {
             return Mono.just(Integer.valueOf(1));
         }
 

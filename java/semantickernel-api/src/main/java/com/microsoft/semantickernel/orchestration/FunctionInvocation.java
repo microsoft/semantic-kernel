@@ -311,7 +311,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     /**
-     * This method hanldes the reactive stream when the KernelFunciton is invoked.
+     * This method handles the reactive stream when the KernelFunction is invoked.
      *
      * @param coreSubscriber The subscriber to subscribe to the function invocation.
      */

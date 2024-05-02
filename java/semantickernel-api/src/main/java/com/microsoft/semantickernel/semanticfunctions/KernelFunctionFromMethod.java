@@ -451,7 +451,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                 return arg.getValue();
             }
 
-            if (isPrimative(arg.getType().getClazz(), parameter.getType())) {
+            if (isPrimitive(arg.getType().getClazz(), parameter.getType())) {
                 return arg.getValue();
             }
 
@@ -492,7 +492,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
     @SuppressWarnings("OperatorPrecedence")
-    private static boolean isPrimative(Class<?> argType, Class<?> param) {
+    private static boolean isPrimitive(Class<?> argType, Class<?> param) {
         return (argType == Byte.class || argType == byte.class) && (param == Byte.class
             || param == byte.class) ||
             (argType == Integer.class || argType == int.class) && (param == Integer.class
