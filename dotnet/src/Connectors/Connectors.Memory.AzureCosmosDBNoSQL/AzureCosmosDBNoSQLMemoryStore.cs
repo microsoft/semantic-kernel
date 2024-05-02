@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
@@ -42,6 +43,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         var options = new CosmosClientOptions
         {
             ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+            Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
         };
         this._cosmosClient = new CosmosClient(connectionString, options);
         this._databaseName = databaseName;
@@ -72,15 +74,15 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        var databaseResponse = await this._cosmosClient.CreateDatabaseAsync(
+        var databaseResponse = await this._cosmosClient.CreateDatabaseIfNotExistsAsync(
             this._databaseName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var containerProperties = new ContainerProperties(collectionName, "id")
+        var containerProperties = new ContainerProperties(collectionName, "/key")
         {
             VectorEmbeddingPolicy = this._vectorEmbeddingPolicy,
             IndexingPolicy = this._indexingPolicy,
         };
-        var containerResponse = databaseResponse.Database.CreateContainerAsync(
+        var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(
             containerProperties,
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -92,14 +94,14 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         using var feedIterator = this.
             _cosmosClient
             .GetDatabase(this._databaseName)
-            .GetContainerQueryIterator<string>("SELECT c.Id FROM c");
+            .GetContainerQueryIterator<string>("SELECT VALUE(c.id) FROM c");
 
         while (feedIterator.HasMoreResults)
         {
             var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var containerName in next.Resource)
+            foreach (var container in next.Resource)
             {
-                yield return containerName;
+                yield return container;
             }
         }
     }
@@ -123,14 +125,15 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task DeleteCollectionAsync(
+    public async Task DeleteCollectionAsync(
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        return this._cosmosClient
+        await this._cosmosClient
             .GetDatabase(this._databaseName)
             .GetContainer(collectionName)
-            .DeleteContainerAsync(cancellationToken: cancellationToken);
+            .DeleteContainerAsync(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -142,7 +145,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         var result = await this._cosmosClient
             .GetDatabase(this._databaseName)
             .GetContainer(collectionName)
-            .UpsertItemAsync(record, cancellationToken: cancellationToken)
+            .UpsertItemAsync(record, new PartitionKey(record.Key), cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         return record.Key;
@@ -251,28 +254,28 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // It would be nice to "WHERE" on the similarity score, but alas.
         var queryDefinition = new QueryDefinition("""
-            SELECT x, VectorSimilarity(x.Embedding, @embedding)  AS SimilarityScore
+            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,VectorDistance(x.embedding, @embedding) AS SimilarityScore
             FROM x
-            ORDER BY VectorSimilarity(x.Embedding, @embedding)
-            WHERE SimilarityScore >= @minRelevanceScore
-            TOP @limit
+            ORDER BY VectorDistance(x.embedding, @embedding)
             """);
-        queryDefinition.WithParameter("embedding", embedding);
-        queryDefinition.WithParameter("limit", limit);
-        queryDefinition.WithParameter("minRelevanceScore", minRelevanceScore);
+        queryDefinition.WithParameter("@limit", limit);
+        queryDefinition.WithParameter("@embedding", embedding);
 
         var feedIterator = this._cosmosClient
          .GetDatabase(this._databaseName)
          .GetContainer(collectionName)
-         .GetItemQueryIterator<MemoryRecord>(queryDefinition);
+         .GetItemQueryIterator<MemoryRecordWithSimilarityScore>(queryDefinition);
 
         while (feedIterator.HasMoreResults)
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                // TODO: Get the similarity score out too.
-                yield return (memoryRecord, 0.0);
+                if (memoryRecord.SimilarityScore >= minRelevanceScore)
+                {
+                    yield return (memoryRecord, memoryRecord.SimilarityScore);
+                }
             }
         }
     }
@@ -297,4 +300,23 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             this._cosmosClient.Dispose();
         }
     }
+}
+
+/// <summary>
+/// Creates a new record with a similarity score.
+/// </summary>
+/// <param name="metadata"></param>
+/// <param name="embedding"></param>
+/// <param name="key"></param>
+/// <param name="timestamp"></param>
+public class MemoryRecordWithSimilarityScore(
+    MemoryRecordMetadata metadata,
+    ReadOnlyMemory<float> embedding,
+    string? key,
+    DateTimeOffset? timestamp = null) : MemoryRecord(metadata, embedding, key, timestamp)
+{
+    /// <summary>
+    /// The similarity score returned.
+    /// </summary>
+    public double SimilarityScore { get; set; }
 }
