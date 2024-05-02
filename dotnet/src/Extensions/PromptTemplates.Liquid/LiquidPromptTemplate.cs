@@ -46,7 +46,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         Verify.NotNull(kernel);
 
         var template = this._config.Template;
-        //template = this.PreProcessTemplate(template);
         var liquidTemplate = Template.ParseLiquid(template);
         arguments = this.GetVariables(arguments);
         var renderedResult = liquidTemplate.Render(arguments.ToDictionary(kv => kv.Key, kv => kv.Value));
@@ -66,8 +65,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         // if no role is found, return the entire text as system message
         if (splits.Length == 1)
         {
-            renderedResult = this.ReplaceReservedStringBackToColonIfNeeded(renderedResult);
-            renderedResult = HttpUtility.HtmlEncode(renderedResult);
+            renderedResult = this.Encoding(renderedResult);
             return Task.FromResult(renderedResult);
         }
 
@@ -84,8 +82,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         {
             var role = splits[i];
             var content = splits[i + 1];
-            content = this.ReplaceReservedStringBackToColonIfNeeded(content);
-            content = HttpUtility.HtmlEncode(content);
+            content = this.Encoding(content);
             sb.Append("<message role=\"").Append(role).AppendLine("\">");
             sb.AppendLine(content);
             sb.AppendLine("</message>");
@@ -95,29 +92,11 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         return Task.FromResult(renderedResult);
     }
 
-    /// <summary>
-    /// Pre-process the template before rendering.
-    /// If the template contains any reserved characters and <see cref="_allowUnsafeContent"/> is false,
-    /// throw an exception.
-    ///
-    /// Otherwise, no pre-processing is needed.
-    /// </summary>
-    /// <param name="template">template</param>
-    /// <returns>Preprocessed template</returns>
-    private string PreProcessTemplate(string template)
+    private string Encoding(string text)
     {
-        if (this._allowUnsafeContent)
-        {
-            return template;
-        }
-
-        if (template.Contains(ReservedString))
-        {
-            var errorMessage = $"Template contains reserved character: {ReservedString}, either remove the character or set {nameof(this._allowUnsafeContent)} to true.";
-            throw new ArgumentException(errorMessage);
-        }
-
-        return template;
+        text = this.ReplaceReservedStringBackToColonIfNeeded(text);
+        text = HttpUtility.HtmlEncode(text);
+        return text;
     }
 
     private string ReplaceReservedStringBackToColonIfNeeded(string text)
@@ -154,13 +133,10 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
                 if (kvp.Value is not null)
                 {
                     var value = (object)kvp.Value;
-                    if (this.ShouldEncode(value))
+                    if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
                     {
                         var valueString = value.ToString();
-                        if (this.ShouldEncodeColon(this._config, kvp.Key, kvp.Value))
-                        {
-                            valueString = valueString.Replace(ColonString, ReservedString);
-                        }
+                        valueString = valueString.Replace(ColonString, ReservedString);
                         result[kvp.Key] = valueString;
                     }
                     else
@@ -174,17 +150,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         return result;
     }
 
-    private bool ShouldEncode(object? propertyValue)
-    {
-        if (propertyValue is null || propertyValue is not string)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private bool ShouldEncodeColon(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
         if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
         {
