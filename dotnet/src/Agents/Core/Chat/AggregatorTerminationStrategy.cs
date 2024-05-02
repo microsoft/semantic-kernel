@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -38,6 +39,11 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
+        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogDebug("[{MethodName}] Evaluating termination for {Count} strategies: {Mode}", nameof(ShouldAgentTerminateAsync), this._strategies.Length, this.Condition);
+        }
+
         var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 
         var results = await Task.WhenAll(strategyExecution).ConfigureAwait(false);
