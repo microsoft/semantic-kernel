@@ -165,7 +165,7 @@ public abstract class AgentChat
 
         if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
         {
-            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+            this.Logger.LogDebug("[{MethodName}] Adding Messages: {MessageCount}", nameof(Add), messages.Count);
         }
 
         try
@@ -180,7 +180,7 @@ public abstract class AgentChat
 
             if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
             {
-                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(AddChatMessages), messages.Count);
+                this.Logger.LogInformation("[{MethodName}] Added Messages: {MessageCount}", nameof(Add), messages.Count);
             }
         }
         finally
