@@ -7,7 +7,7 @@ want to run the tests included.
 ## LLM setup
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
@@ -133,12 +133,12 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 ## Tools and scripts
 
-## Implementation Decisions 
+## Implementation Decisions
 
 ### Asynchronous programming
 
-It's important to note that most of this library is written with asynchronous in mind. The 
-developer should always assume everything is asynchronous. One can use the function signature 
+It's important to note that most of this library is written with asynchronous in mind. The
+developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
 
 ## Pydantic and Serialization
@@ -219,6 +219,7 @@ this command, from the [python](../python) folder:
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python - Run Checks` to run the checks on the whole project.
 - `Python - Run Checks - Staged` to run the checks on the currently staged files only.
 
@@ -232,12 +233,15 @@ We try to maintain a high code coverage for the project. To run the code coverag
     cd python
     poetry run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
+
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python: Tests - Code Coverage` to run the code coverage on the whole project.
 
 This will show you which files are not covered by the tests, including the specific lines not covered.
 
 ## Catching up with the latest changes
+
 There are many people committing to Semantic Kernel, so it is important to keep your local repository up to date. To do this, you can run the following commands:
 
 ```bash
@@ -245,6 +249,7 @@ There are many people committing to Semantic Kernel, so it is important to keep 
     git rebase upstream/main
     git push --force-with-lease
 ```
+
 or:
 
 ```bash
@@ -256,4 +261,3 @@ or:
 This is assuming the upstream branch refers to the main repository. If you have a different name for the upstream branch, you can replace `upstream` with the name of your upstream branch.
 
 After running the rebase command, you may need to resolve any conflicts that arise. If you are unsure how to resolve a conflict, please refer to the [GitHub's documentation on resolving conflicts](https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase), or for [VSCode](https://code.visualstudio.com/docs/sourcecontrol/overview#_merge-conflicts).
-

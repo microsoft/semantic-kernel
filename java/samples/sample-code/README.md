@@ -35,7 +35,7 @@ They can then be run by:
 # Configuration
 
 You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
-property or environment variable to either [`OPENAI`](https://openai.com/product/)
+property or environment variable to either [`OPENAI`](https://platform.openai.com)
 or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
 By default, the samples will use the Open AI client.
 
@@ -48,13 +48,14 @@ OR
 ```
 
 ## Client Settings
+
 The samples search for the client settings in the following order:
+
 1. Properties file whose location is defined by the `CONF_PROPERTIES` property or environment variable.
 1. System properties defined on the command line.
 1. Environment variables.
 1. Properties file at `java/samples/conf.properties`.
 1. Properties file at `~/.sk/conf.properties`.
-
 
 ## Properties File
 
