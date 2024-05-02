@@ -49,7 +49,7 @@ public abstract class AgentChat
     /// <summary>
     /// %%%
     /// </summary>
-    public IList<IAgentChatFilter> Filters => this._filters ?? [];
+    public IList<IAgentChatFilter> Filters => this._filters ??= [];
 
     /// <summary>
     /// Exposes the internal history to subclasses.
