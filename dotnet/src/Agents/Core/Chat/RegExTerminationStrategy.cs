@@ -53,7 +53,10 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
         // Most recent message
         var message = history[history.Count - 1].Content;
 
-        this.Logger.LogDebug("[{MethodName}] Evaluating expressions: {ExpressionCount}", nameof(ShouldAgentTerminateAsync), this._expressions.Length);
+        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogDebug("[{MethodName}] Evaluating expressions: {ExpressionCount}", nameof(ShouldAgentTerminateAsync), this._expressions.Length);
+        }
 
         // Evaluate expressions for match
         foreach (var expression in this._expressions)

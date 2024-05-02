@@ -34,13 +34,19 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
             this._index = 0;
         }
 
-        this.Logger.LogDebug("[{MethodName}] Prior agent index: {AgentIndex} / {AgentCount}.", nameof(NextAsync), this._index, agents.Count);
+        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogDebug("[{MethodName}] Prior agent index: {AgentIndex} / {AgentCount}.", nameof(NextAsync), this._index, agents.Count);
+        }
 
         var agent = agents[this._index];
 
         this._index = (this._index + 1) % agents.Count;
 
-        this.Logger.LogInformation("[{MethodName}] Current agent index: {AgentIndex} / {AgentCount}", nameof(NextAsync), this._index, agents.Count);
+        if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+        {
+            this.Logger.LogInformation("[{MethodName}] Current agent index: {AgentIndex} / {AgentCount}", nameof(NextAsync), this._index, agents.Count);
+        }
 
         return Task.FromResult(agent);
     }

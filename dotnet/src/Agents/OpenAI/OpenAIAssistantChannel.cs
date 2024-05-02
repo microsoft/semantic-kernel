@@ -121,7 +121,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                     await this._client.SubmitToolOutputsToRunAsync(run, results, cancellationToken).ConfigureAwait(false);
                 }
 
-                this.Logger.LogInformation("[{MethodName}] Processed #{MessageCount} run steps: {RunId}", nameof(InvokeAsync), tasks.Length, run.Id);
+                if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+                {
+                    this.Logger.LogInformation("[{MethodName}] Processed #{MessageCount} run steps: {RunId}", nameof(InvokeAsync), tasks.Length, run.Id);
+                }
             }
 
             // Enumerate completed messages
@@ -171,7 +174,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 processedMessageIds.Add(detail.MessageCreation.MessageId);
             }
 
-            this.Logger.LogInformation("[{MethodName}] Processed #{MessageCount} run messages: {RunId}", nameof(InvokeAsync), messageCount, run.Id);
+            if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
+            {
+                this.Logger.LogInformation("[{MethodName}] Processed #{MessageCount} run messages: {RunId}", nameof(InvokeAsync), messageCount, run.Id);
+            }
         }
         while (RunStatus.Completed != run.Status);
 
