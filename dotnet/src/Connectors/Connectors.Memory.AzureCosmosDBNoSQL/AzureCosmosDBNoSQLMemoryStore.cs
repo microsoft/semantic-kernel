@@ -99,9 +99,9 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         while (feedIterator.HasMoreResults)
         {
             var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var container in next.Resource)
+            foreach (var containerName in next.Resource)
             {
-                yield return container;
+                yield return containerName;
             }
         }
     }
@@ -196,7 +196,16 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 
         foreach (var item in feedResponse.Resource)
         {
-            yield return item;
+            if (withEmbeddings)
+            {
+                yield return item;
+            }
+            else
+            {
+                // TODO: Consider changing this into a select that doesn't return the embeddings.
+                // Is that actually better? RU consumption of query, vs ReadMany and transmission of larger docs.
+                yield return new MemoryRecord(item.Metadata, null, item.Key, item.Timestamp);
+            }
         }
     }
 
@@ -255,8 +264,8 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // It would be nice to "WHERE" on the similarity score, but alas.
-        var queryDefinition = new QueryDefinition("""
-            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,VectorDistance(x.embedding, @embedding) AS SimilarityScore
+        var queryDefinition = new QueryDefinition($"""
+            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")},VectorDistance(x.embedding, @embedding) AS SimilarityScore
             FROM x
             ORDER BY VectorDistance(x.embedding, @embedding)
             """);

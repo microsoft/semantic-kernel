@@ -31,6 +31,6 @@ internal static class DataHelper
             description: $"description_{i}",
             embedding: new[] { 1, (float)Math.Cos(Math.PI * i / count), (float)Math.Sin(Math.PI * i / count) },
             key: $"test_{i}",
-            timestamp: DateTime.Now))
+            timestamp: DateTimeOffset.Now))
         .ToArray();
 }
