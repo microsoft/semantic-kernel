@@ -68,7 +68,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Create a service provider for resolving registered services
         await using ServiceProvider serviceProvider = serviceContainer.BuildServiceProvider();
 
-        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
+        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the AgentClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
