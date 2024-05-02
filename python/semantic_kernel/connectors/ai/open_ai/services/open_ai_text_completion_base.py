@@ -1,22 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, List, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Union
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
 from openai.types.chat.chat_completion import Choice as ChatCompletionChoice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 
-from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.models.contents import StreamingTextContent, TextContent
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceInvalidResponseError
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -35,7 +35,6 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
     ) -> List["TextContent"]:
         """Executes a completion request and returns the result.
 
@@ -77,8 +76,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-        **kwargs,
-    ) -> AsyncIterable[List["StreamingTextContent"]]:
+    ) -> AsyncGenerator[List["StreamingTextContent"], Any]:
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.
@@ -101,7 +99,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         settings.stream = True
         response = await self._send_request(request_settings=settings)
         if not isinstance(response, AsyncStream):
-            raise ValueError("Expected an AsyncStream[Completion] response.")
+            raise ServiceInvalidResponseError("Expected an AsyncStream[Completion] response.")
 
         async for chunk in response:
             if len(chunk.choices) == 0:
@@ -144,5 +142,5 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
         """Get metadata from a completion choice."""
         return {
-            "logprobs": choice.logprobs,
+            "logprobs": getattr(choice, "logprobs", None),
         }

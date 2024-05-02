@@ -19,11 +19,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "pythonTestExplorer.testFramework": "pytest",
-    "pythonTestExplorer.pytestPath": "poetry",
-    "pythonTestExplorer.pytestArguments": [
-        "run",
-        "pytest"
-    ],
     "[python]": {
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",

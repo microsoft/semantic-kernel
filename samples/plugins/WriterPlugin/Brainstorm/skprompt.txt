@@ -4,5 +4,5 @@ Must: only one list.
 Must: end list with ##END##
 Should: no more than 10 items.
 Should: at least 3 items.
-Topic: {{$INPUT}}
+Topic: {{$input}}
 Start.

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1812
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Experimental.Agents.Models;
@@ -38,10 +37,10 @@ internal sealed class ThreadRunStepModel
     public string RunId { get; set; } = string.Empty;
 
     /// <summary>
-    /// ID of the agent associated with the run step.
+    /// ID of the assistant associated with the run step.
     /// </summary>
-    [JsonPropertyName("agent_id")]
-    public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("assistant_id")]
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     /// The ID of the thread to which the run and run step belongs.
@@ -125,7 +124,7 @@ internal sealed class ThreadRunStepModel
         /// Details of tool calls.
         /// </summary>
         [JsonPropertyName("tool_calls")]
-        public ToolCallsDetailsModel[] ToolCalls { get; set; } = Array.Empty<ToolCallsDetailsModel>();
+        public ToolCallsDetailsModel[] ToolCalls { get; set; } = [];
     }
 
     /// <summary>

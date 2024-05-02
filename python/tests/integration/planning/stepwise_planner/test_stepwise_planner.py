@@ -5,25 +5,25 @@ import os
 
 import pytest
 
-import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.kernel_context import KernelContext
-from semantic_kernel.planning import StepwisePlanner
-from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
+from semantic_kernel.planners import StepwisePlanner
+from semantic_kernel.planners.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+from semantic_kernel.utils.settings import bing_search_settings_from_dot_env
 
 
 class TempWebSearchEnginePlugin:
     """
     TODO: replace this class with semantic_kernel.core_plugins.web_search_engine_plugin.WebSearchEnginePlugin
 
-    KernelFunction.describe() does not contains info for arguments.
+    KernelFunction.metadata does not contains info for arguments.
 
     so that `query: str` is not shown in the function description,
     BUT this argument must be passed to planner to work appropriately.
@@ -36,12 +36,8 @@ class TempWebSearchEnginePlugin:
         self._connector = connector
 
     @kernel_function(description="Performs a web search for a given query", name="searchAsync")
-    @kernel_function_context_parameter(
-        name="query",
-        description="The search query",
-    )
-    async def search(self, query: str, context: KernelContext) -> str:
-        query = query or context.variables.get("query")
+    async def search(self, query: str, arguments: KernelArguments) -> str:
+        query = query or arguments.get("query")
         result = await self._connector.search(query, num_results=5, offset=0)
         return str(result)
 
@@ -52,7 +48,7 @@ def get_bing_config():
         api_key = os.environ["Bing__ApiKey"]
     else:
         # Load credentials from .env file
-        api_key = sk.bing_search_settings_from_dot_env()
+        api_key = bing_search_settings_from_dot_env()
 
     return api_key
 
@@ -62,24 +58,25 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
 
     kernel = Kernel()
     if use_chat_model:
-        kernel.add_chat_service(
-            "chat_completion",
-            sk_oai.AzureChatCompletion(deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key),
+        kernel.add_service(
+            sk_oai.AzureChatCompletion(
+                service_id="chat_completion", deployment_name="gpt-35-turbo", endpoint=endpoint, api_key=api_key
+            ),
         )
     else:
-        kernel.add_text_completion_service(
-            "text_completion",
-            sk_oai.AzureChatCompletion(
-                deployment_name="gpt-35-turbo",
+        kernel.add_service(
+            sk_oai.AzureTextCompletion(
+                service_id="text_completion",
+                deployment_name="gpt-35-turbo-instruct",
                 endpoint=endpoint,
                 api_key=api_key,
             ),
         )
 
     if use_embeddings:
-        kernel.add_text_embedding_generation_service(
-            "text_embedding",
+        kernel.add_service(
             sk_oai.AzureTextEmbedding(
+                service_id="text_embedding",
                 deployment_name="text-embedding-ada-002",
                 endpoint=endpoint,
                 api_key=api_key,
@@ -119,8 +116,8 @@ async def test_can_create_stepwise_plan(
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
     web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
-    kernel.import_plugin(TimePlugin(), "time")
+    kernel.add_plugin(web_search_engine_plugin, "WebSearch")
+    kernel.add_plugin(TimePlugin(), "time")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 
@@ -155,9 +152,9 @@ async def test_can_execute_stepwise_plan(
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
     web_search_engine_plugin = TempWebSearchEnginePlugin(bing_connector)
-    kernel.import_plugin(web_search_engine_plugin, "WebSearch")
-    kernel.import_plugin(TimePlugin(), "time")
-    kernel.import_plugin(MathPlugin(), "math")
+    kernel.add_plugin(web_search_engine_plugin, "WebSearch")
+    kernel.add_plugin(TimePlugin(), "time")
+    kernel.add_plugin(MathPlugin(), "math")
 
     planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000))
 

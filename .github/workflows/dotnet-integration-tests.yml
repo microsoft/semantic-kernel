@@ -28,10 +28,10 @@ jobs:
           clean: true
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         if: ${{ github.event_name != 'pull_request' }}
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
 
       - name: Find projects
         shell: bash

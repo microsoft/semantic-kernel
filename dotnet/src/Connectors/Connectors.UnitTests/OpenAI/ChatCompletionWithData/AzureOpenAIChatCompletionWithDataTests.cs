@@ -86,7 +86,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;
 
-        Assert.Contains("2023-06-01-preview", actualUri, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("2024-02-01", actualUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

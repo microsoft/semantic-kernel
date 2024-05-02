@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,11 +47,39 @@ public sealed class KernelFunctionFromMethodTests2
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        KernelFunction[] functions = KernelPluginFactory.CreateFromObject(pluginInstance).ToArray();
+        KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
-        Assert.All(functions, f => Assert.NotNull(f));
+        Assert.All(functions, Assert.NotNull);
+    }
+
+    [Fact]
+    public void ItKeepsDefaultValueNullWhenNotProvided()
+    {
+        // Arrange & Act
+        var pluginInstance = new LocalExamplePlugin();
+        var plugin = KernelPluginFactory.CreateFromObject(pluginInstance);
+
+        // Assert
+        this.AssertDefaultValue(plugin, "Type04Nullable", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type04Optional", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type05Nullable", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05EmptyDefault", "input", string.Empty, false);
+        this.AssertDefaultValue(plugin, "Type05DefaultProvided", "input", "someDefault", false);
+    }
+
+    internal void AssertDefaultValue(KernelPlugin plugin, string functionName, string parameterName, object? expectedDefaultValue, bool expectedIsRequired)
+    {
+        var functionExists = plugin.TryGetFunction(functionName, out var function);
+        Assert.True(functionExists);
+        Assert.NotNull(function);
+
+        var parameter = function.Metadata.Parameters.First(p => p.Name == parameterName);
+        Assert.NotNull(parameter);
+        Assert.Equal(expectedDefaultValue, parameter.DefaultValue);
+        Assert.Equal(expectedIsRequired, parameter.IsRequired);
     }
 
     [Fact]
@@ -87,8 +118,10 @@ public sealed class KernelFunctionFromMethodTests2
     public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var arguments = new KernelArguments();
-        arguments["done"] = "NO";
+        var arguments = new KernelArguments
+        {
+            ["done"] = "NO"
+        };
 
         // Note: This is an important edge case that affects the function signature and how delegates
         //       are handled internally: the function references an external variable and cannot be static.
@@ -122,7 +155,7 @@ public sealed class KernelFunctionFromMethodTests2
         builder.Services.AddLogging(c => c.SetMinimumLevel(LogLevel.Warning));
         Kernel kernel = builder.Build();
         kernel.Culture = new CultureInfo("fr-FR");
-        KernelArguments args = new();
+        KernelArguments args = [];
         using CancellationTokenSource cts = new();
 
         bool invoked = false;
@@ -199,13 +232,47 @@ public sealed class KernelFunctionFromMethodTests2
         await Assert.ThrowsAsync<KernelException>(() => func.InvokeAsync(kernel));
     }
 
-    private interface IExampleService
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromDelegate()
     {
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(() => { return "Value1"; }, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
 
-    private sealed class ExampleService : IExampleService
+    [Fact]
+    public void ItMakesProvidedExtensionPropertiesAvailableViaMetadataWhenConstructedFromMethodInfo()
     {
+        // Arrange.
+        var target = new LocalExamplePlugin();
+        var methodInfo = target.GetType().GetMethod(nameof(LocalExamplePlugin.Type02))!;
+
+        // Act.
+        var func = KernelFunctionFactory.CreateFromMethod(methodInfo, target, new KernelFunctionFromMethodOptions
+        {
+            AdditionalMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                ["key1"] = "value1",
+            })
+        });
+
+        // Assert.
+        Assert.Contains("key1", func.Metadata.AdditionalProperties.Keys);
+        Assert.Equal("value1", func.Metadata.AdditionalProperties["key1"]);
     }
+
+    private interface IExampleService;
+
+    private sealed class ExampleService : IExampleService;
 
     private sealed class LocalExamplePlugin
     {
@@ -251,6 +318,11 @@ public sealed class KernelFunctionFromMethodTests2
         }
 
         [KernelFunction]
+        public void Type04Optional([Optional] string input)
+        {
+        }
+
+        [KernelFunction]
         public string Type05(string input)
         {
             return "";
@@ -258,6 +330,18 @@ public sealed class KernelFunctionFromMethodTests2
 
         [KernelFunction]
         public string? Type05Nullable(string? input = null)
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05EmptyDefault(string? input = "")
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05DefaultProvided(string? input = "someDefault")
         {
             return "";
         }

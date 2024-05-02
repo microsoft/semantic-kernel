@@ -39,7 +39,7 @@ internal sealed class ThreadMessageModel
     public string ThreadId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The entity that produced the message. One of "user" or "agent".
+    /// The entity that produced the message. One of "user" or "assistant".
     /// </summary>
     [JsonPropertyName("role")]
     public string Role { get; set; } = string.Empty;
@@ -48,19 +48,19 @@ internal sealed class ThreadMessageModel
     /// The content of the message in array of text and/or images.
     /// </summary>
     [JsonPropertyName("content")]
-    public List<ContentModel> Content { get; set; } = new List<ContentModel>();
+    public List<ContentModel> Content { get; set; } = [];
 
     /// <summary>
     /// A list of file IDs that the agent should use.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; set; } = new List<string>();
+    public List<string> FileIds { get; set; } = [];
 
     /// <summary>
-    /// If applicable, the ID of the agent that authored this message.
+    /// If applicable, the ID of the assistant that authored this message.
     /// </summary>
-    [JsonPropertyName("agent_id")]
-    public string AgentId { get; set; } = string.Empty;
+    [JsonPropertyName("assistant_id")]
+    public string AssistantId { get; set; } = string.Empty;
 
     /// <summary>
     /// If applicable, the ID of the run associated with the authoring of this message.
@@ -75,7 +75,7 @@ internal sealed class ThreadMessageModel
     /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = [];
 
     /// <summary>
     /// Representa contents within a message.
@@ -91,8 +91,26 @@ internal sealed class ThreadMessageModel
         /// <summary>
         /// Text context.
         /// </summary>
+        [JsonPropertyName("image_file")]
+        public ImageContentModel? Image { get; set; }
+
+        /// <summary>
+        /// Text context.
+        /// </summary>
         [JsonPropertyName("text")]
         public TextContentModel? Text { get; set; }
+    }
+
+    /// <summary>
+    /// Text content.
+    /// </summary>
+    public sealed class ImageContentModel
+    {
+        /// <summary>
+        /// The image file identifier.
+        /// </summary>
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -110,7 +128,7 @@ internal sealed class ThreadMessageModel
         /// Any annotations on the text.
         /// </summary>
         [JsonPropertyName("annotations")]
-        public List<TextAnnotationModel> Annotations { get; set; } = new List<TextAnnotationModel>();
+        public List<TextAnnotationModel> Annotations { get; set; } = [];
     }
 
     public sealed class TextAnnotationModel

@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-import logging
 
-import semantic_kernel as sk
+import logging
+import os
+
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.utils.logging import setup_logging
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
@@ -12,17 +15,23 @@ async def main():
     # Set the logging level for  semantic_kernel.kernel to DEBUG.
     logging.getLogger("kernel").setLevel(logging.DEBUG)
 
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    api_key, org_id = openai_settings_from_dot_env()
 
-    kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id))
+    service_id = "chat-gpt"
+    kernel.add_service(
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+    )
 
-    plugin = kernel.import_semantic_plugin_from_directory("../../samples/plugins", "FunPlugin")
+    plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+    plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")
 
     joke_function = plugin["Joke"]
 
-    print(joke_function("time travel to dinosaur age"))
+    result = await kernel.invoke(joke_function, input="time travel to dinosaur age", style="silly")
+
+    print(result)
 
 
 if __name__ == "__main__":
