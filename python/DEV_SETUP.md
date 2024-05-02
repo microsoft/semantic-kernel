@@ -245,7 +245,6 @@ There are many people committing to Semantic Kernel, so it is important to keep 
     git rebase upstream/main
     git push --force-with-lease
 ```
-
 or:
 
 ```bash
