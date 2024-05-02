@@ -20,21 +20,39 @@ public static class PromptyKernelExtensions
     /// Create a <see cref="KernelFunction"/> from a prompty file.
     /// </summary>
     /// <param name="kernel">kernel</param>
-    /// <param name="promptyPath">path to prompty file.</param>
+    /// <param name="promptyFilePath">Prompty template.</param>
+    /// <param name="promptTemplateFactory">prompty template factory, if not provided, a <see cref="LiquidPromptTemplateFactory"/> will be used.</param>
+    /// <param name="loggerFactory">logger factory</param>
+    /// <returns><see cref="KernelFunction"/></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="NotSupportedException"></exception>
+    public static KernelFunction CreateFunctionFromPromptyFile(
+        this Kernel kernel,
+        string promptyFilePath,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        var promptyTemplate = File.ReadAllText(promptyFilePath);
+        return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory, loggerFactory);
+    }
+
+    /// <summary>
+    /// Create a <see cref="KernelFunction"/> from a prompty file.
+    /// </summary>
+    /// <param name="kernel">kernel</param>
+    /// <param name="promptyTemplate">Prompty template.</param>
     /// <param name="promptTemplateFactory">prompty template factory, if not provided, a <see cref="LiquidPromptTemplateFactory"/> will be used.</param>
     /// <param name="loggerFactory">logger factory</param>
     /// <returns><see cref="KernelFunction"/></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="NotSupportedException"></exception>
     public static KernelFunction CreateFunctionFromPrompty(
-        this Kernel kernel,
-        string promptyPath,
-        IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null)
+    this Kernel kernel,
+    string promptyTemplate,
+    IPromptTemplateFactory? promptTemplateFactory = null,
+    ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
-
-        var text = File.ReadAllText(promptyPath);
 
         promptTemplateFactory ??= new AggregatorPromptTemplateFactory(new HandlebarsPromptTemplateFactory(), new LiquidPromptTemplateFactory());
 
@@ -70,7 +88,7 @@ public static class PromptyKernelExtensions
         // ---
         // ... (rest of the prompty content)
 
-        var splits = text.Split(["---"], StringSplitOptions.RemoveEmptyEntries);
+        var splits = promptyTemplate.Split(["---"], StringSplitOptions.RemoveEmptyEntries);
         var yaml = splits[0];
         var content = splits[1];
 
