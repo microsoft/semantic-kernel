@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -83,9 +84,9 @@ public sealed class AgentGroupChat : AgentChat
             {
                 agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
             }
-            catch
+            catch (Exception exception)
             {
-                this.Logger.LogError("[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
+                this.Logger.LogError(exception, "[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
                 throw;
             }
 
@@ -175,12 +176,13 @@ public sealed class AgentGroupChat : AgentChat
 
     private void EnsureStrategyLoggerAssignment()
     {
+        // Only invoke logger factory when required.
         if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
         {
             this.ExecutionSettings.SelectionStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
         }
 
-        if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
+        if (this.ExecutionSettings.TerminationStrategy.Logger == NullLogger.Instance)
         {
             this.ExecutionSettings.TerminationStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
         }

@@ -42,10 +42,7 @@ public abstract class AgentChat
     /// <summary>
     /// The <see cref="ILogger"/> associated with this chat.
     /// </summary>
-    protected ILogger Logger =>
-        this._logger ??
-            Interlocked.CompareExchange(ref this._logger, this.LoggerFactory.CreateLogger(this.GetType()), null) ??
-                this._logger;
+    protected ILogger Logger => this._logger ??= this.LoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
     /// Exposes the internal history to subclasses.
@@ -162,7 +159,6 @@ public abstract class AgentChat
         {
             if (messages[index].Role == AuthorRole.System)
             {
-                this.Logger.LogError("[{MethodName}] Unable to add message with role: {MessageRole}", nameof(AddChatMessages), AuthorRole.System);
                 throw new KernelException($"History does not support messages with Role of {AuthorRole.System}.");
             }
         }
@@ -254,7 +250,9 @@ public abstract class AgentChat
             {
                 this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 
+                // Creating an agent-typed logger for CreateChannelAsync
                 channel = await agent.CreateChannelAsync(this.LoggerFactory.CreateLogger(agent.GetType()), cancellationToken).ConfigureAwait(false);
+                // Creating an channel-typed logger for the channel
                 channel.Logger = this.LoggerFactory.CreateLogger(channel.GetType());
 
                 this._agentChannels.Add(channelKey, channel);
@@ -296,8 +294,6 @@ public abstract class AgentChat
         int wasActive = Interlocked.CompareExchange(ref this._isActive, 1, 0);
         if (wasActive > 0)
         {
-            this.Logger.LogError("Unable to proceed while another agent is active.");
-
             throw new KernelException("Unable to proceed while another agent is active.");
         }
     }

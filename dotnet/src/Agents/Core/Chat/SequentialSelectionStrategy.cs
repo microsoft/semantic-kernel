@@ -25,7 +25,6 @@ public sealed class SequentialSelectionStrategy : SelectionStrategy
     {
         if (agents.Count == 0)
         {
-            this.Logger.LogError("[{MethodName}] No agents.", nameof(NextAsync));
             throw new KernelException("Agent Failure - No agents present to select.");
         }
 

@@ -65,7 +65,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
     {
         if (agent.IsDeleted)
         {
-            this.Logger.LogError("[{MethodName}] {AgentType} agent deleted: {AgentId}", nameof(InvokeAsync), nameof(OpenAIAssistantAgent), agent.Id);
             throw new KernelException($"Agent Failure - {nameof(OpenAIAssistantAgent)} agent is deleted: {agent.Id}.");
         }
 
@@ -105,7 +104,6 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             // Is in terminal state?
             if (s_terminalStatuses.Contains(run.Status))
             {
-                this.Logger.LogError("[{MethodName}] Run terminated: {RunStatus} [{RunId}]", nameof(InvokeAsync), run.Status, run.Id);
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
