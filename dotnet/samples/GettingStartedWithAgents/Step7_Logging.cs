@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
@@ -7,11 +8,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace GettingStarted;
 
 /// <summary>
-/// Demonstrate creation of <see cref="AgentChat"/> with <see cref="AgentGroupChatSettings"/>
-/// that inform how chat proceeds with regards to: Agent selection, chat continuation, and maximum
-/// number of agent interactions.
+/// A repeat of <see cref="Step3_Chat"/> with logging enabled via assignment
+/// of a <see cref="LoggerFactory"/> to <see cref="AgentChat.LoggerFactory"/>.
 /// </summary>
-public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
+/// <remarks>
+/// Samples become super noisy with logging always enabled.
+/// </remarks>
+public class Step7_Logging(ITestOutputHelper output) : BaseTest(output)
 {
     private const string ReviewerName = "ArtDirector";
     private const string ReviewerInstructions =
@@ -19,7 +22,7 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         You are an art director who has opinions about copywriting born of a love for David Ogilvy.
         The goal is to determine if the given copy is acceptable to print.
         If so, state that it is approved.
-        If not, provide insight on how to refine suggested copy without example.
+        If not, provide insight on how to refine suggested copy without examples.
         """;
 
     private const string CopyWriterName = "CopyWriter";
@@ -57,6 +60,8 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         AgentGroupChat chat =
             new(agentWriter, agentReviewer)
             {
+                // This is all that is required to enable logging across the agent framework/
+                LoggerFactory = this.LoggerFactory,
                 ExecutionSettings =
                     new()
                     {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -69,7 +70,11 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
                 { this.HistoryVariableName, JsonSerializer.Serialize(history) }, // TODO: GitHub Task #5894
             };
 
+        this.Logger.LogDebug("[{MethodName}] Invoking function: {PluginName}.{FunctionName}.", nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);
+
         FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+
+        this.Logger.LogInformation("[{MethodName}] Invoked function: {PluginName}.{FunctionName}: {ResultType}", nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
 
         return this.ResultParser.Invoke(result);
     }

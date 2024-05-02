@@ -12,7 +12,7 @@ namespace GettingStarted;
 /// <see cref="OpenAIAssistantAgent"/> is no different from <see cref="ChatCompletionAgent"/>
 /// even with with a <see cref="KernelPlugin"/>.
 /// </summary>
-public class Step7_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
+public class Step8_OpenAIAssistant(ITestOutputHelper output) : BaseTest(output)
 {
     private const string HostName = "Host";
     private const string HostInstructions = "Answer questions about the menu.";
