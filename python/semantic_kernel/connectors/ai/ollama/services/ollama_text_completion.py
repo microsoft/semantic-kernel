@@ -2,18 +2,14 @@
 
 import json
 import logging
-from typing import AsyncIterable, List, Optional
+from typing import Any, AsyncGenerator, List, Optional
 
 import aiohttp
 from pydantic import HttpUrl
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
-    OllamaTextPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
-from semantic_kernel.connectors.ai.text_completion_client_base import (
-    TextCompletionClientBase,
-)
+from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 
@@ -64,7 +60,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-    ) -> AsyncIterable[List[StreamingTextContent]]:
+    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses,

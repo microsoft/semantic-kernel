@@ -3,24 +3,21 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, List
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_chat_message_content import OpenAIChatMessageContent
-from semantic_kernel.connectors.ai.open_ai.contents.open_ai_streaming_chat_message_content import (
-    OpenAIStreamingChatMessageContent,
-)
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions import KernelFunction
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -35,12 +32,12 @@ Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 kernel.add_service(
-    sk_oai.OpenAIChatCompletion(
+    OpenAIChatCompletion(
         service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
         api_key=api_key,
@@ -68,7 +65,7 @@ chat_function = kernel.add_function(
 
 # Note: the number of responses for auto inoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
-execution_settings = sk_oai.OpenAIChatPromptExecutionSettings(
+execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
     ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
@@ -89,61 +86,46 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-def print_tool_calls(message: OpenAIChatMessageContent) -> None:
+def print_tool_calls(message: ChatMessageContent) -> None:
     # A helper method to pretty print the tool calls from the message.
     # This is only triggered if auto invoke tool calls is disabled.
-    if isinstance(message, OpenAIChatMessageContent):
-        tool_calls = message.tool_calls
-        formatted_tool_calls = []
-        for i, tool_call in enumerate(tool_calls, start=1):
-            tool_call_id = tool_call.id
-            function_name = tool_call.function.name
-            function_arguments = tool_call.function.arguments
+    items = message.items
+    formatted_tool_calls = []
+    for i, item in enumerate(items, start=1):
+        if isinstance(item, FunctionCallContent):
+            tool_call_id = item.id
+            function_name = item.name
+            function_arguments = item.arguments
             formatted_str = (
                 f"tool_call {i} id: {tool_call_id}\n"
                 f"tool_call {i} function name: {function_name}\n"
                 f"tool_call {i} arguments: {function_arguments}"
             )
             formatted_tool_calls.append(formatted_str)
-        print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+    print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
 
 
 async def handle_streaming(
-    kernel: sk.Kernel,
+    kernel: Kernel,
     chat_function: "KernelFunction",
-    user_input: str,
-    history: ChatHistory,
-    execution_settings: OpenAIChatPromptExecutionSettings,
+    arguments: KernelArguments,
 ) -> None:
     response = kernel.invoke_stream(
         chat_function,
         return_function_results=False,
-        user_input=user_input,
-        chat_history=history,
+        arguments=arguments,
     )
 
     print("Mosscap:> ", end="")
-    streamed_chunks: List[OpenAIStreamingChatMessageContent] = []
-    tool_call_ids_by_index: Dict[str, Any] = {}
-
+    streamed_chunks: List[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.auto_invoke_kernel_functions and isinstance(
-            message[0], OpenAIStreamingChatMessageContent
-        ):
+        if not execution_settings.auto_invoke_kernel_functions:
             streamed_chunks.append(message[0])
-            if message[0].tool_calls is not None:
-                for tc in message[0].tool_calls:
-                    if tc.id not in tool_call_ids_by_index:
-                        tool_call_ids_by_index[tc.id] = tc
-                    else:
-                        for tc in message[0].tool_calls:
-                            tool_call_ids_by_index[tc.id] += tc
         else:
             print(str(message[0]), end="")
 
     if streamed_chunks:
         streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
-        streaming_chat_message.tool_calls = list(tool_call_ids_by_index.values())
         print("Auto tool calls is disabled, printing returned tool calls...")
         print_tool_calls(streaming_chat_message)
 
@@ -163,19 +145,19 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
+    arguments["user_input"] = user_input
+    arguments["chat_history"] = history
 
     stream = True
     if stream:
-        await handle_streaming(kernel, chat_function, user_input, history, execution_settings)
+        await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
-        result = await kernel.invoke(chat_function, user_input=user_input, chat_history=history)
+        result = await kernel.invoke(chat_function, arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
-        # OpenAIChatMessageContent with information about the tool calls, which need to be sent
+        # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.auto_invoke_kernel_functions and isinstance(
-            result.value[0], OpenAIChatMessageContent
-        ):
+        if not execution_settings.auto_invoke_kernel_functions:
             print_tool_calls(result.value[0])
             return True
 

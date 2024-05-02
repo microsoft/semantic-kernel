@@ -11,7 +11,7 @@ This project contains a collection of examples used in documentation on [learn.m
 The samples can be configured with a `.env` file in the project which holds api keys and other secrets and configurations.
 
 Make sure you have an
-[Open AI API Key](https://openai.com/product/) or
+[Open AI API Key](https://platform.openai.com) or
 [Azure Open AI service key](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
 
 Copy the `.env.example` file to a new file named `.env`. Then, copy those keys into the `.env` file:
@@ -19,13 +19,13 @@ Copy the `.env.example` file to a new file named `.env`. Then, copy those keys i
 ```
 GLOBAL_LLM_SERVICE="OpenAI" # Toggle between "OpenAI" or "AzureOpenAI"
 
-OPEN_AI__CHAT_COMPLETION_MODEL_ID="gpt-3.5-turbo-0125"
-OPEN_AI__TEXT_COMPLETION_MODEL_ID="gpt-3.5-turbo-instruct"
+OPEN_AI_CHAT_COMPLETION_MODEL_ID="gpt-3.5-turbo-0125"
+OPEN_AI_TEXT_COMPLETION_MODEL_ID="gpt-3.5-turbo-instruct"
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
 
-AZURE_OPEN_AI__CHAT_COMPLETION_DEPLOYMENT_NAME="gpt-35-turbo"
-AZURE_OPEN_AI__TEXT_COMPLETION_DEPLOYMENT_NAME="text-davinci-003"
+AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME="gpt-35-turbo"
+AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME="text-davinci-003"
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 AZURE_OPENAI_API_VERSION=""

@@ -7,6 +7,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnablePackageValidation>false</EnablePackageValidation>
     <IsPackable>false</IsPackable>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -15,7 +16,6 @@
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - Abstractions</Title>
     <Description>Semantic Kernel Agents abstractions. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
-    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
