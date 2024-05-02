@@ -98,6 +98,7 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
             .ToListAsync();
 
         Assert.NotNull(nearestMatchesActual);
+        Assert.Equal(nearestMatchesExpected.Length, nearestMatchesActual.Count);
 
         for (int i = 0; i < limit; i++)
         {
