@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -268,9 +269,8 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     {
         // It would be nice to "WHERE" on the similarity score to stay above the `minRelevanceScore`, but alas
         // queries don't support that.
-        // TODO: Change this to use a `TOP @limit` instead of stopping client side.
         var queryDefinition = new QueryDefinition($"""
-            SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")},VectorDistance(x.embedding, @embedding) AS SimilarityScore
+            SELECT TOP @limit x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}VectorDistance(x.embedding, @embedding) AS SimilarityScore
             FROM x
             ORDER BY VectorDistance(x.embedding, @embedding)
             """);
@@ -282,7 +282,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
          .GetContainer(collectionName)
          .GetItemQueryIterator<MemoryRecordWithSimilarityScore>(queryDefinition);
 
-        var count = 0;
         while (feedIterator.HasMoreResults)
         {
             foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
@@ -290,11 +289,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 if (memoryRecord.SimilarityScore >= minRelevanceScore)
                 {
                     yield return (memoryRecord, memoryRecord.SimilarityScore);
-                    count++;
-                    if (count == limit)
-                    {
-                        yield break;
-                    }
                 }
             }
         }
@@ -329,6 +323,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 /// <param name="embedding"></param>
 /// <param name="key"></param>
 /// <param name="timestamp"></param>
+[DebuggerDisplay("{GetDebuggerDisplay()}")]
 public class MemoryRecordWithSimilarityScore(
     MemoryRecordMetadata metadata,
     ReadOnlyMemory<float> embedding,
@@ -339,4 +334,9 @@ public class MemoryRecordWithSimilarityScore(
     /// The similarity score returned.
     /// </summary>
     public double SimilarityScore { get; set; }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"{this.Key} - {this.SimilarityScore}";
+    }
 }
