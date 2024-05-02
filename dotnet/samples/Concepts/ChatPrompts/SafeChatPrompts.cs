@@ -265,7 +265,7 @@ public sealed class SafeChatPrompts : BaseTest
         return promptTemplate.RenderAsync(this._kernel, arguments);
     }
 
-    private class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
+    private sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {
         private readonly ITestOutputHelper _output = output;
 
