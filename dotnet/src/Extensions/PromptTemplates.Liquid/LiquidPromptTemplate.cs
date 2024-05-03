@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -71,8 +70,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
         cancellationToken.ThrowIfCancellationRequested();
-        arguments = this.GetVariables(arguments);
-        var renderedResult = this._liquidTemplate.Render(arguments.ToDictionary(kv => kv.Key, kv => kv.Value));
+        var variables = this.GetVariables(arguments);
+        var renderedResult = this._liquidTemplate.Render(variables);
 
         // parse chat history
         // for every text like below
@@ -133,9 +132,9 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(KernelArguments? arguments)
+    private Dictionary<string, object> GetVariables(KernelArguments? arguments)
     {
-        KernelArguments result = [];
+        var result= new Dictionary<string, object>();
 
         foreach (var p in this._config.InputVariables)
         {
