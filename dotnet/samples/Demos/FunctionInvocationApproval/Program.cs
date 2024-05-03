@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace FunctionInvocationApproval;
 
-internal class Program
+internal sealed class Program
 {
     /// <summary>
     /// This console application shows how to use function invocation filter to invoke function only if such operation was approved.
@@ -69,7 +69,7 @@ internal class Program
     /// <summary>
     /// Class that contains product details.
     /// </summary>
-    public class ProductDetails(decimal price, int quantity)
+    public sealed class ProductDetails(decimal price, int quantity)
     {
         public decimal Price { get; set; } = price;
 
@@ -79,7 +79,7 @@ internal class Program
     /// <summary>
     /// Store plugin that provides product price and sells the products to buyer.
     /// </summary>
-    public class StorePlugin(Dictionary<string, ProductDetails> products)
+    public sealed class StorePlugin(Dictionary<string, ProductDetails> products)
     {
         private readonly Dictionary<string, ProductDetails> _products = products;
 
@@ -126,7 +126,7 @@ internal class Program
     /// <summary>
     /// Bank plugin with account balance.
     /// </summary>
-    public class BankPlugin(decimal balance)
+    public sealed class BankPlugin(decimal balance)
     {
         private decimal _balance = balance;
 
@@ -162,7 +162,7 @@ internal class Program
     /// <summary>
     /// Service that verifies if function invocation is approved using console.
     /// </summary>
-    public class ConsoleFunctionApprovalService : IFunctionApprovalService
+    public sealed class ConsoleFunctionApprovalService : IFunctionApprovalService
     {
         public bool IsInvocationApproved(KernelFunction function, KernelArguments arguments)
         {
@@ -199,7 +199,7 @@ internal class Program
     /// <summary>
     /// Filter to invoke function only if it's approved.
     /// </summary>
-    public class FunctionInvocationFilter(IFunctionApprovalService approvalService) : IFunctionInvocationFilter
+    public sealed class FunctionInvocationFilter(IFunctionApprovalService approvalService) : IFunctionInvocationFilter
     {
         private readonly IFunctionApprovalService _approvalService = approvalService;
 
@@ -212,7 +212,7 @@ internal class Program
             }
             else
             {
-                // Otherwise, return a result that operation was denied.
+                // Otherwise, return a result that operation was rejected.
                 context.Result = new FunctionResult(context.Result, "Operation was rejected.");
             }
         }
