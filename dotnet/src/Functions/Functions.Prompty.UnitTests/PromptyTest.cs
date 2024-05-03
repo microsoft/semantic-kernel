@@ -17,9 +17,10 @@ public sealed class PromptyTest
 
         var cwd = Directory.GetCurrentDirectory();
         var chatPromptyPath = Path.Combine(cwd, "TestData", "chat.prompty");
+        var promptyTemplate = File.ReadAllText(chatPromptyPath);
 
         // Act
-        var kernelFunction = kernel.CreateFunctionFromPrompty(chatPromptyPath);
+        var kernelFunction = kernel.CreateFunctionFromPrompty(promptyTemplate);
 
         // Assert
         Assert.Equal("Contoso_Chat_Prompt", kernelFunction.Name);
@@ -40,7 +41,7 @@ public sealed class PromptyTest
         var chatPromptyPath = Path.Combine(cwd, "TestData", "chat.prompty");
 
         // Act
-        var kernelFunction = kernel.CreateFunctionFromPrompty(chatPromptyPath);
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath);
 
         // Assert
         // kernel function created from chat.prompty should have a single execution setting
@@ -75,7 +76,7 @@ public sealed class PromptyTest
         var promptyPath = Path.Combine(cwd, "TestData", "chatNoExecutionSettings.prompty");
 
         // Act
-        var kernelFunction = kernel.CreateFunctionFromPrompty(promptyPath);
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(promptyPath);
 
         // Assert
         Assert.NotNull(kernelFunction);
