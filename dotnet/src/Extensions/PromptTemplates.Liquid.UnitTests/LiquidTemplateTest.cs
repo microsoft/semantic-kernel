@@ -13,7 +13,7 @@ using Xunit;
 namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
 public class LiquidTemplateTest
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         WriteIndented = true,
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -426,6 +426,7 @@ public class LiquidTemplateTest
         await VerifyXunit.Verifier.Verify(chatHistoryString);
     }
 
+    [Fact]
     public async Task ItRendersVariablesAsync()
     {
         // Arrange

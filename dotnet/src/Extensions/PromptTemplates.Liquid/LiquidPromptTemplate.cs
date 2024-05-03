@@ -134,7 +134,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// </summary>
     private Dictionary<string, object> GetVariables(KernelArguments? arguments)
     {
-        var result= new Dictionary<string, object>();
+        var result = new Dictionary<string, object>();
 
         foreach (var p in this._config.InputVariables)
         {
