@@ -97,7 +97,7 @@ internal class Program
         {
             var product = this.GetProduct(productName);
 
-            if (product.Quantity - quantity < 0)
+            if (quantity > product.Quantity)
             {
                 throw new Exception("The requested quantity exceeds the available stock for the selected product.");
             }
@@ -138,7 +138,7 @@ internal class Program
         [Description("Withdraws specified amount from balance.")]
         public decimal Withdraw(decimal amount)
         {
-            if (this._balance - amount < 0)
+            if (this._balance < amount)
             {
                 throw new Exception("Insufficient funds.");
             }
