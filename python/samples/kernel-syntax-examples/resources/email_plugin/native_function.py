@@ -15,7 +15,7 @@ class EmailPlugin:
     Description: EmailPlugin provides a set of functions to send emails.
 
     Usage:
-        kernel.import_plugin_from_object(EmailPlugin(), plugin_name="email")
+        kernel.add_plugin(EmailPlugin(), plugin_name="email")
 
     Examples:
         {{email.SendEmail}} => Sends an email with the provided subject and body.

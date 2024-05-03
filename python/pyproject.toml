@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.9.5b1"
+version = "0.9.6b1"
 description = "Semantic Kernel Python SDK"
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
 packages = [{include = "semantic_kernel"}]
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.13"
+python = "^3.10,<3.13"
 aiohttp = "^3.8"
 numpy = [
     { version = "^1.24", python = "3.8" },
@@ -70,12 +70,12 @@ pyarrow = { version = ">=12.0.1,<16.0.0", optional = true}
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5"
 black = "^24.2.0"
-ruff = "^0.3.2"
+ruff = ">=0.3.2,<0.5.0"
 ipykernel = "^6.29.3"
 pytest = "^8.1.1"
-pytest-asyncio = "^0.23.5.post1"
+pytest-asyncio = "^0.23.6"
 snoop = "^0.4.3"
-pytest-cov = ">=4.1.0"
+pytest-cov = ">=5.0.0"
 mypy = ">=1.9.0"
 types-PyYAML = "^6.0.12.20240311"
 
@@ -118,6 +118,7 @@ azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 usearch = "^2.9"
 pyarrow = ">=12.0.1,<16.0.0"
+msgraph-sdk = "^1.2.0"
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
@@ -130,7 +131,7 @@ weaviate = ["weaviate-client"]
 pinecone = ["pinecone-client"]
 postgres = ["psycopg"]
 redis = ["redis"]
-azure = ["azure-search-documents", "azure-core", "azure-identity"]
+azure = ["azure-search-documents", "azure-core", "azure-identity", "msgraph-sdk"]
 usearch = ["usearch", "pyarrow"]
 notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow", "ipykernel"]
