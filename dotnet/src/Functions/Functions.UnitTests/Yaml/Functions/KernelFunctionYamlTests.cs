@@ -97,10 +97,9 @@ public class KernelFunctionYamlTests
 
         // Service with auto function call choice
         var service1ExecutionSettings = promptTemplateConfig.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings?.ToolBehaviors);
-        Assert.Single(service1ExecutionSettings.ToolBehaviors);
+        Assert.NotNull(service1ExecutionSettings?.ToolBehavior);
 
-        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehavior as FunctionCallBehavior;
         Assert.NotNull(service1FunctionCallBehavior?.Choice);
 
         var autoFunctionCallChoice = service1FunctionCallBehavior.Choice as AutoFunctionCallChoice;
@@ -109,10 +108,9 @@ public class KernelFunctionYamlTests
 
         // Service with required function call choice
         var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings?.ToolBehaviors);
-        Assert.Single(service2ExecutionSettings.ToolBehaviors);
+        Assert.NotNull(service2ExecutionSettings?.ToolBehavior);
 
-        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehavior as FunctionCallBehavior;
         Assert.NotNull(service2FunctionCallBehavior?.Choice);
 
         var requiredFunctionCallChoice = service2FunctionCallBehavior.Choice as RequiredFunctionCallChoice;
@@ -195,11 +193,11 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    []
-            tool_behaviors:
-              - !function_call_behavior
-                choice: !auto
-                  functions:
-                    - p1.f1
+            tool_behavior:
+              !function_call_behavior
+              choice: !auto
+                functions:
+                - p1.f1
           service2:
             model_id:          gpt-3.5
             temperature:       1.0
@@ -208,11 +206,11 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    [ "foo", "bar", "baz" ]
-            tool_behaviors:
-              - !function_call_behavior
-                choice: !required
-                  functions:
-                    - p2.f2
+            tool_behavior:
+              !function_call_behavior
+              choice: !required
+                functions:
+                  - p2.f2
         """;
 
     private readonly string _yamlWithCustomSettings = """

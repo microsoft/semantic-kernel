@@ -44,15 +44,15 @@ public class PromptExecutionSettings
         }
     }
 
-    [JsonPropertyName("tool_behaviors")]
-    public IEnumerable<ToolBehavior>? ToolBehaviors
+    [JsonPropertyName("tool_behavior")]
+    public ToolBehavior? ToolBehavior
     {
-        get => this._toolBehaviors;
+        get => this._toolBehavior;
 
         set
         {
             this.ThrowIfFrozen();
-            this._toolBehaviors = value;
+            this._toolBehavior = value;
         }
     }
 
@@ -106,7 +106,7 @@ public class PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            ToolBehaviors = this.ToolBehaviors
+            ToolBehavior = this.ToolBehavior
         };
     }
 
@@ -126,7 +126,7 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
-    private IEnumerable<ToolBehavior>? _toolBehaviors;
+    private ToolBehavior? _toolBehavior;
 
     #endregion
 }

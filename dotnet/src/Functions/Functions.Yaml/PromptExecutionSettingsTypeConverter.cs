@@ -38,8 +38,8 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
                 case "model_id":
                     executionSettings.ModelId = s_deserializer.Deserialize<string>(parser);
                     break;
-                case "tool_behaviors":
-                    executionSettings.ToolBehaviors = s_deserializer.Deserialize<IEnumerable<ToolBehavior>>(parser);
+                case "tool_behavior":
+                    executionSettings.ToolBehavior = s_deserializer.Deserialize<ToolBehavior>(parser);
                     break;
                 default:
                     (executionSettings.ExtensionData ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));

@@ -43,10 +43,9 @@ public class KernelFunctionMarkdownTests
 
         // AutoFunctionCallChoice for service1
         var service1ExecutionSettings = function.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings?.ToolBehaviors);
-        Assert.Single(service1ExecutionSettings.ToolBehaviors);
+        Assert.NotNull(service1ExecutionSettings?.ToolBehavior);
 
-        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehavior as FunctionCallBehavior;
         Assert.NotNull(service1FunctionCallBehavior?.Choice);
 
         var service1AutoFunctionCallChoice = service1FunctionCallBehavior?.Choice as AutoFunctionCallChoice;
@@ -58,10 +57,9 @@ public class KernelFunctionMarkdownTests
 
         // RequiredFunctionCallChoice for service2
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings?.ToolBehaviors);
-        Assert.Single(service2ExecutionSettings.ToolBehaviors);
+        Assert.NotNull(service2ExecutionSettings?.ToolBehavior);
 
-        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehaviors.Single() as FunctionCallBehavior;
+        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehavior as FunctionCallBehavior;
         Assert.NotNull(service2FunctionCallBehavior?.Choice);
 
         var service2RequiredFunctionCallChoice = service2FunctionCallBehavior?.Choice as RequiredFunctionCallChoice;
@@ -72,8 +70,7 @@ public class KernelFunctionMarkdownTests
 
         // NoneFunctionCallChoice for service3
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
-        Assert.NotNull(service3ExecutionSettings?.ToolBehaviors);
-        Assert.Single(service3ExecutionSettings.ToolBehaviors);
+        Assert.NotNull(service3ExecutionSettings?.ToolBehavior);
     }
 
     [Fact]
@@ -101,16 +98,14 @@ public class KernelFunctionMarkdownTests
             "service1" : {
                 "model_id": "gpt4",
                 "temperature": 0.7,
-                "tool_behaviors": [
-                    {
-                        "type": "function_call_behavior",
-                        "choice": {
-                            "type": "auto",
-                            "allowAnyRequestedKernelFunction" : true,
-                            "functions": ["p1.f1"]
-                        }
+                "tool_behavior": {
+                    "type": "function_call_behavior",
+                    "choice": {
+                        "type": "auto",
+                        "allowAnyRequestedKernelFunction" : true,
+                        "functions": ["p1.f1"]
                     }
-                ]
+                }
             }
         }
         ```
@@ -120,15 +115,13 @@ public class KernelFunctionMarkdownTests
             "service2" : {
                 "model_id": "gpt3.5",
                 "temperature": 0.8,
-                "tool_behaviors": [
-                    {
-                        "type": "function_call_behavior",
-                        "choice": {
-                            "type": "required",
-                            "functions": ["p1.f1"]
-                        }
+                "tool_behavior": {
+                    "type": "function_call_behavior",
+                    "choice": {
+                        "type": "required",
+                        "functions": ["p1.f1"]
                     }
-                ]
+                }
             }
         }
         ```
@@ -138,14 +131,12 @@ public class KernelFunctionMarkdownTests
             "service3" : {
                 "model_id": "gpt3.5-turbo",
                 "temperature": 0.8,
-                "tool_behaviors": [
-                    {
-                        "type": "function_call_behavior",
-                        "choice": {
-                            "type": "none"
-                        }
+                "tool_behavior": {
+                    "type": "function_call_behavior",
+                    "choice": {
+                        "type": "none"
                     }
-                ]
+                }
             }
         }
         ```

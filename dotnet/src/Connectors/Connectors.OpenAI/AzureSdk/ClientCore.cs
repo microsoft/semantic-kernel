@@ -1365,7 +1365,7 @@ internal abstract class ClientCore
 
     private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts)? ConfigureFunctionCallingOptions(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int iteration)
     {
-        if (executionSettings.ToolBehaviors is not null && executionSettings.ToolCallBehavior is not null)
+        if (executionSettings.ToolBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
             throw new ArgumentException("ToolBehaviors and ToolCallBehavior cannot be used together.");
         }
@@ -1397,15 +1397,8 @@ internal abstract class ClientCore
         }
 
         // Handling new tool behavior represented by `PromptExecutionSettings.ToolBehaviors` property.
-        if (executionSettings.ToolBehaviors?.OfType<FunctionCallBehavior>() is { } functionCallBehaviors && functionCallBehaviors.Any())
+        if (executionSettings.ToolBehavior is FunctionCallBehavior functionCallBehavior)
         {
-            if (functionCallBehaviors.Count() > 1)
-            {
-                throw new KernelException("Only one function call behavior is allowed.");
-            }
-
-            var functionCallBehavior = functionCallBehaviors.Single();
-
             // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
             // what functions are available in the kernel.
             var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel });
