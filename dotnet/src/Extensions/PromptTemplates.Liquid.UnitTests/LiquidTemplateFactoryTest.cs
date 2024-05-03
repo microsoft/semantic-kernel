@@ -8,18 +8,22 @@ namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
 
 public class LiquidTemplateFactoryTest
 {
-    [Fact]
-    public void ItThrowsExceptionForUnknownPromptTemplateFormat()
+    [Theory]
+    [InlineData("unknown-format")]
+    [InlineData(null)]
+    public void ItThrowsExceptionForUnknownPromptTemplateFormat(string? format)
     {
         // Arrange
         var promptConfig = new PromptTemplateConfig("UnknownFormat")
         {
-            TemplateFormat = "unknown-format",
+            TemplateFormat = format,
         };
 
         var target = new LiquidPromptTemplateFactory();
 
         // Act & Assert
+        Assert.False(target.TryCreate(promptConfig, out IPromptTemplate? result));
+        Assert.Null(result);
         Assert.Throws<KernelException>(() => target.Create(promptConfig));
     }
 
@@ -38,7 +42,6 @@ public class LiquidTemplateFactoryTest
         var result = target.Create(promptConfig);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.True(result is LiquidPromptTemplate);
+        Assert.IsType<LiquidPromptTemplate>(result);
     }
 }

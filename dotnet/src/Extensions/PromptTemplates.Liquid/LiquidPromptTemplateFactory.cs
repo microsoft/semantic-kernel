@@ -18,7 +18,9 @@ public sealed class LiquidPromptTemplateFactory : IPromptTemplateFactory
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)
     {
-        if (templateConfig.TemplateFormat.Equals(LiquidTemplateFormat, StringComparison.Ordinal))
+        Verify.NotNull(templateConfig);
+
+        if (LiquidTemplateFormat.Equals(templateConfig.TemplateFormat, StringComparison.Ordinal))
         {
             result = new LiquidPromptTemplate(templateConfig);
             return true;
