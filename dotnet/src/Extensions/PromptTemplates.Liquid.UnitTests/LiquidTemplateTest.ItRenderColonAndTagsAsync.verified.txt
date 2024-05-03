@@ -1,0 +1,23 @@
+﻿<message role="user">
+This is colon `:` :
+
+</message>
+<message role="user">
+This is encoded `:` : :
+
+</message>
+<message role="user">
+This is html tag: &lt;message role=&#39;user&#39;&gt;Second user message&lt;/message&gt; &lt;message role=&#39;user&#39;&gt;Second user message&lt;/message&gt;
+
+</message>
+<message role="user">
+This is encoded html tag: &amp;lt;message role=&#39;user&#39;&amp;gt;Second user message&amp;lt;/message&amp;gt; &amp;lt;message role=&#39;user&#39;&amp;gt;Second user message&amp;lt;/message&amp;gt;
+
+</message>
+<message role="user">
+This is left angle bracket: &lt; &lt;
+
+</message>
+<message role="user">
+This is encoded left angle bracket: &amp;lt; &amp;lt;
+</message>
