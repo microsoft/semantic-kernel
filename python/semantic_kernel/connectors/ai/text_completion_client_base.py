@@ -18,8 +18,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     async def complete(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
-    ) -> list[TextContent]:
+        settings: "PromptExecutionSettings",
+    ) -> list["TextContent"]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -35,8 +35,8 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     def complete_stream(
         self,
         prompt: str,
-        settings: PromptExecutionSettings,
-    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
+        settings: "PromptExecutionSettings",
+    ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         """
         This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 

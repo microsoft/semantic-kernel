@@ -10,12 +10,8 @@ from pydantic import ValidationError
 if sys.version_info >= (3, 9):
     from google.generativeai.types import ChatResponse, MessageDict
 
-    from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmChatPromptExecutionSettings,
-    )
-    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
-        GooglePalmChatCompletion,
-    )
+    from semantic_kernel.connectors.ai.google_palm import GooglePalmChatPromptExecutionSettings
+    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import GooglePalmChatCompletion
     from semantic_kernel.contents.chat_history import ChatHistory
 
 
@@ -87,5 +83,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
             top_p=settings.top_p,
             top_k=settings.top_k,
             candidate_count=settings.candidate_count,
-            messages=gp_chat_completion._prepare_chat_history_for_request(chats),
+            messages=[message.to_dict(role_key="author") for message in chats.messages],
         )

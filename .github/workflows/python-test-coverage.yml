@@ -17,11 +17,11 @@ jobs:
       actions: read
     strategy:
       matrix:
-        python-version: ["3.8"]
+        python-version: ["3.10"]
         os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.3
+        uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'

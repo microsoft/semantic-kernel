@@ -75,6 +75,9 @@
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
   },
+  "AzureCosmosDB": {
+    "ConnectionString": ""
+  }, 
   "Planners": {
     "AzureOpenAI": {
       "ServiceId": "azure-gpt-35-turbo",
