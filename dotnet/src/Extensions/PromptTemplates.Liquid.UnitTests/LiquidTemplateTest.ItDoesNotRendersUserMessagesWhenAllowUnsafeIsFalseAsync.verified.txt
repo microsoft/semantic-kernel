@@ -8,8 +8,9 @@ First user message
 </message>
 
 ------ ChatPromptParser Result ------
-system:This is a system message
-user:
-First user message
-<message role='user'>Second user message</message>
-<message role='user'><text>Third user message</text></message>
+[
+  {
+    "Role": "system",
+    "Content": "This is a system message\nuser:\nFirst user message\n<message role='user'>Second user message</message>\n<message role='user'><text>Third user message</text></message>"
+  }
+]

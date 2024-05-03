@@ -1,4 +1,14 @@
-﻿system:This is the system message
-user:system:
-This is the newer system message
-user:<b>This is bold text</b>
+﻿[
+  {
+    "Role": "system",
+    "Content": "This is the system message"
+  },
+  {
+    "Role": "user",
+    "Content": "system:\rThis is the newer system message"
+  },
+  {
+    "Role": "user",
+    "Content": "<b>This is bold text</b>"
+  }
+]

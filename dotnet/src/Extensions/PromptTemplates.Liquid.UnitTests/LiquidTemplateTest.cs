@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,6 +13,12 @@ using Xunit;
 namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
 public class LiquidTemplateTest
 {
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     [Fact]
     public async Task ItRenderChatTestAsync()
     {
@@ -159,11 +167,11 @@ public class LiquidTemplateTest
             AllowUnsafeContent = true,
             InputVariables = [
                 new() { Name = "colon", AllowUnsafeContent = true },
-                new() { Name = "encodedColon", AllowUnsafeContent = true },
-                new() { Name = "htmlTag", AllowUnsafeContent = true },
-                new() { Name = "encodedHtmlTag", AllowUnsafeContent = true },
-                new() { Name = "leftAngleBracket", AllowUnsafeContent = true },
-                new() { Name = "encodedLeftAngleBracket", AllowUnsafeContent = true }
+                new() { Name = "encodedColon" },
+                new() { Name = "htmlTag" },
+                new() { Name = "encodedHtmlTag" },
+                new() { Name = "leftAngleBracket" },
+                new() { Name = "encodedLeftAngleBracket" }
             ],
         });
 
@@ -216,12 +224,12 @@ public class LiquidTemplateTest
             AllowUnsafeContent = false,
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             InputVariables = [
-                new() { Name = "colon", AllowUnsafeContent = false },
-                new() { Name = "encodedColon", AllowUnsafeContent = false },
-                new() { Name = "htmlTag", AllowUnsafeContent = false },
-                new() { Name = "encodedHtmlTag", AllowUnsafeContent = false },
-                new() { Name = "leftAngleBracket", AllowUnsafeContent = false },
-                new() { Name = "encodedLeftAngleBracket", AllowUnsafeContent = false }
+                new() { Name = "colon" },
+                new() { Name = "encodedColon" },
+                new() { Name = "htmlTag" },
+                new() { Name = "encodedHtmlTag" },
+                new() { Name = "leftAngleBracket" },
+                new() { Name = "encodedLeftAngleBracket" }
             ]
         });
 
@@ -282,14 +290,7 @@ public class LiquidTemplateTest
         sb.AppendLine(result);
 
         sb.AppendLine("------ ChatPromptParser Result ------");
-        foreach (var chat in chatHistory!)
-        {
-            // Append role
-            var role = chat.Role.ToString();
-            sb.Append(role + ":");
-            sb.Append(chat.Content);
-            sb.AppendLine();
-        }
+        sb.AppendLine(this.SerializeChatHistory(chatHistory!));
 
         // Assert
         Assert.True(isParseChatHistorySucceed);
@@ -411,6 +412,7 @@ public class LiquidTemplateTest
         // Act
         var prompt = await target.RenderAsync(kernel, new() { ["unsafe_input"] = unsafe_input, ["safe_input"] = safe_input });
         bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+        var chatHistoryString = this.SerializeChatHistory(chatHistory!);
 
         // Assert
         Assert.True(result);
@@ -421,18 +423,7 @@ public class LiquidTemplateTest
             c => c.Role = AuthorRole.User,
             c => c.Role = AuthorRole.User);
 
-        var sb = new StringBuilder();
-        foreach (var chat in chatHistory)
-        {
-            // Append role
-            var role = chat.Role.ToString();
-            sb.Append(role + ":");
-            sb.Append(chat.Content);
-            sb.AppendLine();
-        }
-
-        var expected = new StringBuilder();
-        await VerifyXunit.Verifier.Verify(sb.ToString());
+        await VerifyXunit.Verifier.Verify(chatHistoryString);
     }
 
     public async Task ItRendersVariablesAsync()
@@ -539,4 +530,13 @@ public class LiquidTemplateTest
         // Assert   
         Assert.Equal("List: item1item2item3", prompt);
     }
+
+    #region Private
+    private string SerializeChatHistory(ChatHistory chatHistory)
+    {
+        var chatObject = chatHistory.Select(chat => new { Role = chat.Role.ToString(), Content = chat.Content });
+
+        return JsonSerializer.Serialize(chatObject, this._jsonSerializerOptions);
+    }
+    #endregion Private
 }
