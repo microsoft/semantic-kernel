@@ -3,17 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -149,7 +147,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         var result = await this._cosmosClient
             .GetDatabase(this._databaseName)
             .GetContainer(collectionName)
-            .UpsertItemAsync(record, new PartitionKey(record.Key), cancellationToken: cancellationToken)
+            .UpsertItemAsync(new MemoryRecordWithId(record), new PartitionKey(record.Key), cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         return record.Key;
@@ -191,24 +189,23 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var items = keys.Select(k => (k, new PartitionKey(k))).ToList();
-        var feedResponse = await this._cosmosClient
-            .GetDatabase(this._databaseName)
-            .GetContainer(collectionName)
-            .ReadManyItemsAsync<MemoryRecord>(items, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var queryDefinition = new QueryDefinition($"""
+            SELECT x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}
+            FROM x
+            where x.id in @keys
+            """);
+        queryDefinition.WithParameter("@keys", keys.Select(k => (k, k)));
 
-        foreach (var item in feedResponse.Resource)
+        var feedIterator = this._cosmosClient
+         .GetDatabase(this._databaseName)
+         .GetContainer(collectionName)
+         .GetItemQueryIterator<MemoryRecord>(queryDefinition);
+
+        while (feedIterator.HasMoreResults)
         {
-            if (withEmbeddings)
+            foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return item;
-            }
-            else
-            {
-                // TODO: Consider changing this into a select that doesn't return the embeddings.
-                // Is that actually better? RU consumption of query, vs ReadMany and transmission of larger docs.
-                yield return new MemoryRecord(item.Metadata, null, item.Key, item.Timestamp);
+                yield return memoryRecord;
             }
         }
     }
@@ -338,5 +335,25 @@ public class MemoryRecordWithSimilarityScore(
     private string GetDebuggerDisplay()
     {
         return $"{this.Key} - {this.SimilarityScore}";
+    }
+}
+
+/// <summary>
+/// Creates a new record that also serializes an "id" property.
+/// </summary>
+[DebuggerDisplay("{GetDebuggerDisplay()}")]
+public class MemoryRecordWithId(MemoryRecord source)
+    : MemoryRecord(source.Metadata, source.Embedding, source.Key, source.Timestamp)
+{
+    /// <summary>
+    /// The similarity score returned.
+    /// </summary>
+    [JsonInclude]
+    [JsonPropertyName("id")]
+    public string Id => this.Key;
+
+    private string GetDebuggerDisplay()
+    {
+        return this.Key;
     }
 }

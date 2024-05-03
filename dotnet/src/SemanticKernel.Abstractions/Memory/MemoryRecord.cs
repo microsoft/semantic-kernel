@@ -28,13 +28,6 @@ public class MemoryRecord : DataEntryBase
     public MemoryRecordMetadata Metadata { get; }
 
     /// <summary>
-    /// Unique identifier. The format of the value is domain specific, so it can be a URL, a GUID, etc.
-    /// </summary>
-    [JsonInclude]
-    [JsonPropertyName("id")]
-    public string Id { get; }
-
-    /// <summary>
     /// Constructor, use <see cref="ReferenceRecord"/> or <see cref="LocalRecord"/>
     /// </summary>
     [JsonConstructor]
@@ -45,7 +38,6 @@ public class MemoryRecord : DataEntryBase
         DateTimeOffset? timestamp = null) : base(key, timestamp)
     {
         this.Metadata = metadata;
-        this.Id = metadata.Id;
         this.Embedding = embedding;
     }
 
