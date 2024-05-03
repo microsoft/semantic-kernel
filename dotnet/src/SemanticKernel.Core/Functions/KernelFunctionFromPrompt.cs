@@ -379,7 +379,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
+    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
     /// <summary>
     /// Captures usage details, including token information.
