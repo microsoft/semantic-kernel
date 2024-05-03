@@ -31,8 +31,12 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     /// <param name="allowUnsafeContent">Whether to allow unsafe content in the template</param>
     /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     /// <exception cref="ArgumentException">The template in <paramref name="config"/> could not be parsed.</exception>
+    /// <exception cref="ArgumentNullException">throw if <paramref name="config"/> is null</exception>
+    /// <exception cref="ArgumentNullException">throw if the template in <paramref name="config"/> is null</exception>
     public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
     {
+        Verify.NotNull(config, nameof(config));
+        Verify.NotNull(config.Template, nameof(config.Template));
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
         {
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
