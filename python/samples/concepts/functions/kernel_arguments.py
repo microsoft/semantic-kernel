@@ -59,7 +59,6 @@ async def main():
     text_plugin = kernel.add_plugin(StaticTextPlugin(), "TextPlugin")
     arguments = KernelArguments(input="Today is:", day=get_day_of_week_for_locale())
 
-    # Specify and get the value type as a generic parameter
     result = await kernel.invoke(text_plugin["append_day"], arguments)
 
     # The result returned is of type FunctionResult. Printing the result calls the __str__ method.
