@@ -189,12 +189,13 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // TODO: Need to split this into multiple queries if the query string is larger than 512kB
+        var whereClause = string.Join(" OR ", keys.Select(k => $"(x.id = \"{k}\" AND x.key = \"{k}\")"));
         var queryDefinition = new QueryDefinition($"""
-            SELECT x.id,x.key,x.metadata,x.timestamp,{(withEmbeddings ? "x.embedding," : "")}
+            SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
             FROM x
-            where x.id in @keys
+            where {whereClause}
             """);
-        queryDefinition.WithParameter("@keys", keys.Select(k => (k, k)));
 
         var feedIterator = this._cosmosClient
          .GetDatabase(this._databaseName)
@@ -342,9 +343,29 @@ public class MemoryRecordWithSimilarityScore(
 /// Creates a new record that also serializes an "id" property.
 /// </summary>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
-public class MemoryRecordWithId(MemoryRecord source)
-    : MemoryRecord(source.Metadata, source.Embedding, source.Key, source.Timestamp)
+public class MemoryRecordWithId : MemoryRecord
 {
+    /// <summary>
+    /// Creates a new record that also serializes an "id" property.
+    /// </summary>
+    public MemoryRecordWithId(MemoryRecord source)
+        : base(source.Metadata, source.Embedding, source.Key, source.Timestamp)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new record that also serializes an "id" property.
+    /// </summary>
+    [JsonConstructor]
+    public MemoryRecordWithId(
+        MemoryRecordMetadata metadata,
+        ReadOnlyMemory<float> embedding,
+        string? key,
+        DateTimeOffset? timestamp = null)
+        : base(metadata, embedding, key, timestamp)
+    {
+    }
+
     /// <summary>
     /// The similarity score returned.
     /// </summary>
