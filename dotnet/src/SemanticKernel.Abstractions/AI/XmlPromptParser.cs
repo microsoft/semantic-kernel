@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Web;
 using System.Xml;
 
 namespace Microsoft.SemanticKernel;
@@ -37,7 +39,13 @@ internal static class XmlPromptParser
             return false;
         }
 
-        var xmlDocument = new XmlDocument();
+        var xmlDocument = new XmlDocument()
+        {
+            // This is necessary to preserve whitespace within prompts as this may be significant.
+            // E.g. if the prompt contains well formatted code and we want the LLM to return well formatted code.
+            PreserveWhitespace = true
+        };
+
         try
         {
             xmlDocument.LoadXml($"<root>{prompt}</root>");
@@ -69,11 +77,21 @@ internal static class XmlPromptParser
             return null;
         }
 
-        var nodeContent = node.InnerText.Trim();
+        // Since we're preserving whitespace for the contents within each XMLNode, we
+        //  need to skip any whitespace nodes at the front of the children.
+        var firstNonWhitespaceChild = node.ChildNodes
+                    .Cast<XmlNode>()
+                    .Where(n => n.NodeType != XmlNodeType.Whitespace)
+                    .FirstOrDefault();
+
+        var isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
+        var nodeContent = isCData
+            ? node.InnerText.Trim()
+            : node.InnerXml.Trim();
 
         var promptNode = new PromptNode(node.Name)
         {
-            Content = !string.IsNullOrEmpty(nodeContent) ? nodeContent : null
+            Content = !string.IsNullOrEmpty(nodeContent) ? HttpUtility.HtmlDecode(nodeContent) : null
         };
 
         if (node.Attributes is not null)

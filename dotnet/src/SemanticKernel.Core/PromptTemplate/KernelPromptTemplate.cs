@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -28,8 +30,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// Constructor for PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
+    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
     /// <param name="loggerFactory">Logger factory</param>
-    public KernelPromptTemplate(PromptTemplateConfig promptConfig, ILoggerFactory? loggerFactory = null)
+    internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
@@ -39,6 +42,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
+
+        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
+        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name));
     }
 
     /// <inheritdoc/>
@@ -52,6 +58,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
+    private readonly bool _allowUnsafeContent;
+    private readonly HashSet<string> _safeBlocks;
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -92,19 +100,29 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         var result = new StringBuilder();
         foreach (var block in blocks)
         {
+            string? blockResult = null;
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture);
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    result.Append(InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture));
+                    blockResult = InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture);
                     break;
 
                 default:
                     Debug.Fail($"Unexpected block type {block?.GetType()}, the block doesn't have a rendering method");
                     break;
+            }
+
+            if (blockResult is not null)
+            {
+                if (ShouldEncodeTags(this._allowUnsafeContent, this._safeBlocks, block!))
+                {
+                    blockResult = HttpUtility.HtmlEncode(blockResult);
+                }
+                result.Append(blockResult);
             }
         }
 
@@ -163,5 +181,16 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             }
         }
     }
+
+    private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
+    {
+        if (block is VarBlock varBlock)
+        {
+            return !safeBlocks.Contains(varBlock.Name);
+        }
+
+        return !disableTagEncoding && block is not TextBlock;
+    }
+
     #endregion
 }
