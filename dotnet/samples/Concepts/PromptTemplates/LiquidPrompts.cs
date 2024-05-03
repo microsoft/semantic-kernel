@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
-namespace Prompty;
+namespace PromptTemplates;
 
-public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
+public class LiquidPrompts(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task InlineFunctionAsync()
+    public async Task PromptWithVariablesAsync()
     {
         Kernel kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
@@ -15,46 +16,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        string promptTemplate = """
-            ---
-            name: Contoso_Chat_Prompt
-            description: A sample prompt that responds with what Seattle is.
-            authors:
-              - ????
-            model:
-              api: chat
-            ---
-            system:
-            You are a helpful assistant who knows all about cities in the USA
-
-            user:
-            What is Seattle?
-            """;
-
-        var function = kernel.CreateFunctionFromPrompty(promptTemplate);
-
-        var result = await kernel.InvokeAsync(function);
-        Console.WriteLine(result);
-    }
-
-    [Fact]
-    public async Task InlineFunctionWithVariablesAsync()
-    {
-        Kernel kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
-
-        string promptyTemplate = """
-            ---
-            name: Contoso_Chat_Prompt
-            description: A sample prompt that responds with what Seattle is.
-            authors:
-              - ????
-            model:
-              api: chat
-            ---
+        string template = """
             system:
             You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 
             and in a personable manner using markdown, the customers name and even add some personal flair with appropriate emojis. 
@@ -96,9 +58,16 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
             { "history", chatHistory },
         };
 
-        var function = kernel.CreateFunctionFromPrompty(promptyTemplate);
+        var templateFactory = new LiquidPromptTemplateFactory();
+        var promptTemplateConfig = new PromptTemplateConfig()
+        {
+            Template = template,
+            TemplateFormat = "liquid",
+            Name = "Contoso_Chat_Prompt",
+        };
+        var promptTemplate = templateFactory.Create(promptTemplateConfig);
 
-        var result = await kernel.InvokeAsync(function, arguments);
-        Console.WriteLine(result);
+        var renderedPrompt = await promptTemplate.RenderAsync(kernel, arguments);
+        Console.WriteLine(renderedPrompt);
     }
 }
