@@ -69,10 +69,10 @@ public class CodeInterpreterBehavior : ToolBehavior
 }
 ```
 
-To satisfy the "connector/mode-agnostic model" driver, the behavior should not be configured on model-specific prompt execution setting classes, such as `OpenAIPromptExecutionSettings`, as it is done today. Instead, it should be configured on a model-agnostic one, like `PromptExecutionSettings`. Considering that new tools may become available in the future and that multiple tools might be configured together, it makes sense to provide the ability to configure multiple tools in a new design. This way, later on, it would simply be a matter of adding a new directive and adding its instance in a collection of tool behaviors.
+To satisfy the "connector/mode-agnostic model" driver, the behavior should not be configured on model-specific prompt execution setting classes, such as `OpenAIPromptExecutionSettings`, as it is done today. Instead, it should be configured on a model-agnostic one, like `PromptExecutionSettings`. Considering that new tools may become available in the future, it makes sense to provide the ability to easily support them. This way, later on, it would simply be a matter of adding a new directive of the `ToolBehavior` class and assigning its instance to the `ToolBehavior` property.
 
 ```csharp
-PromptExecutionSettings settings = new() { ToolBehaviors = [FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false)] };
+PromptExecutionSettings settings = new() { ToolBehavior = FunctionCallBehavior.AutoFunctionChoice(autoInvoke: false) };
 ```
 
 ### Function call choice classes 
@@ -216,32 +216,26 @@ public sealed class NewCustomFunctionCallChoice : FunctionCallChoice
 ...
 
 // Registering the custom choice
-PromptExecutionSettings settings = new() { ToolBehaviors = [new FunctionCallBehavior { Choice = new NewCustomFunctionCallChoice() }] };
+PromptExecutionSettings settings = new() { ToolBehavior = new FunctionCallBehavior { Choice = new NewCustomFunctionCallChoice() } };
 ```
 
 ### Support in JSON prompts
-Taking into account the hierarchical nature of the behavior and choice model classes described above, polymorphic deserialization should be enabled for cases when tool behaviors and function-calling choices need to be configured in JSON prompts like MD and Kernel (config.json) prompts. The same applies to YAML prompts like handlebars described in the next section.
+Taking into account the hierarchical nature of the behavior and choice model classes described above, polymorphic deserialization should be enabled for cases when tool behavior and function-calling choices need to be configured in JSON prompts like MD and Kernel (config.json) prompts. The same applies to YAML prompts like handlebars described in the next section.
 ```json
 {
     ...
     "execution_settings": {
         "default": {
             "temperature": 0.4,
-            "tool_behaviors": [
-                {
-                    "type": "functions_call_behavior",
-                    "choice":{
-                        "type": "auto",
-                        "functions":[
-                            "plugin1.function1"
-                        ]
-                    }
-                },
-                {   <!-- Just an example -->
-                    "type": "code_interpreter",
-                    "language": "python"
+            "tool_behavior": {
+                "type": "functions_call_behavior",
+                "choice":{
+                    "type": "auto",
+                    "functions":[
+                        "plugin1.function1"
+                    ]
                 }
-            ]
+            }
         }
     }
 }
@@ -256,45 +250,42 @@ YamlDotNet uses a slightly different approach for polymorphic deserialization ou
 execution_settings:
   default:
     temperature: 0.4
-    tool_behaviors:
-      - !function_call_behavior
-        choice: !auto
-          functions:
-            - p1.f1
-      - !code_interpreter
-        language: python
+      !function_call_behavior
+      choice: !auto
+        functions:
+          - p1.f1
 ```
 
 ### Tool behavior section location
-SK prompts may have one or more entries, one per service, of execution settings to describe service-specific configurations in a prompt. Considering that each section is deserialized to an instance of the `PromptExecutionSettings` class and that class is used by the corresponding service, it makes sense to specify the tool behaviors in each service configuration section. On the other hand, this may introduce unnecessary duplication because all services might need exactly the same behavior. Additionally, there could be scenarios where 2 out of 3 services use the same tool behavior configuration, while the remaining one uses a different one.
+SK prompts may have one or more entries, one per service, of execution settings to describe service-specific configurations in a prompt. Considering that each section is deserialized to an instance of the `PromptExecutionSettings` class and that class is used by the corresponding service, it makes sense to specify the tool behavior in each service configuration section. On the other hand, this may introduce unnecessary duplication because all services might need exactly the same behavior. Additionally, there could be scenarios where 2 out of 3 services use the same tool behavior configuration, while the remaining one uses a different one.
 ```json
-"tool_behaviors":[
+"tool_behavior":{
     ...
-],
+},
 "execution_settings": {
    "default": {
      "temperature": 0,
-     "tool_behaviors":[
+     "tool_behavior":{
         ...
-     ]
+     }
    },
    "gpt-3.5-turbo": {
      "model_id": "gpt-3.5-turbo-0613",
      "temperature": 0.1,
-     "tool_behaviors":[
+     "tool_behavior":{
         ...
-     ]
+     }
    },
    "gpt-4": {
      "model_id": "gpt-4-1106-preview",
      "temperature": 0.3,
-     "tool_behaviors":[
+     "tool_behavior":{
         ...
-     ]
+     }
    }
  }
 ```
-To accommodate the scenarios above, it makes sense to introduce an inheritance mechanism that would inherit parent tool behavior configurations if specified on the parent. Regardless of whether the parent has tool behavior configurations or not, it should be possible to specify or override the parent one at each service entry level.
+To accommodate the scenarios above, it makes sense to introduce an inheritance mechanism that would inherit parent tool behavior configuration if specified on the parent. Regardless of whether the parent has tool behavior configurations or not, it should be possible to specify or override the parent one at each service entry level.
 
 ## Option 2
 Explore the possibility of resolving specific types at a later post-deserialization phase and in a location with access to a kernel instance, so no polymorphic deserialization would be required. This would allow for the resolution of custom classes registered by users in the kernel service collection. Users will simply register the custom classes that will be automatically picked either during prompt rendering or at the moment the information is required, regardless of the prompt format - JSON or YAML.
@@ -305,3 +296,4 @@ Explore the possibility of resolving specific types at a later post-deserializat
 ## Decision Outcome
 There were a few decisions taken during the ADR review:
 - The Breaking glass support is out of scope. It may be added later if/when needed.
+- The `PromptExecution.ToolBehaviors` property should support only one behavior. The original design described in Option 1 supported multiple tool behaviors configured per service. However, it was pointed out that this might not be necessary, could confuse SK users, and adds unnecessary complexity that degrades developer experience.
