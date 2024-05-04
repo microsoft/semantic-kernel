@@ -23,7 +23,7 @@ AZURE_OPENAI_API_KEY=""
 We suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)
-- [./notebooks](./notebooks).
+- [./samples/getting_started](./samples/getting_started).
 
 ## System setup
 
@@ -133,12 +133,12 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 ## Tools and scripts
 
-## Implementation Decisions 
+## Implementation Decisions
 
 ### Asynchronous programming
 
-It's important to note that most of this library is written with asynchronous in mind. The 
-developer should always assume everything is asynchronous. One can use the function signature 
+It's important to note that most of this library is written with asynchronous in mind. The
+developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
 
 ## Pydantic and Serialization
