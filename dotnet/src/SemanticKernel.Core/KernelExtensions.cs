@@ -661,6 +661,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -699,6 +700,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -775,6 +777,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -815,6 +818,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);

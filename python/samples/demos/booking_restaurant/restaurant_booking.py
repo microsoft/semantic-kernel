@@ -3,9 +3,9 @@
 import asyncio
 
 from azure.identity import ClientSecretCredential
+from bookings_plugin.bookings_plugin import BookingsPlugin
 from dotenv import dotenv_values
 from msgraph import GraphServiceClient
-from resources.bookings_plugin.bookings_plugin import BookingsPlugin
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -17,13 +17,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import booking_sample_settings_from_dot_env_as_dict, openai_settings_from_dot_env
-
-# To be able to run this sample, you must do the following:
-# 1. Create an Microsoft Entra App ID and Client Secret in Azure Portal
-# 2. Add the client ID, tenant ID, and client secret to a .env file in the root of the project
-#   using the following format: BOOKING_SAMPLE_CLIENT_ID="", BOOKING_SAMPLE_TENANT_ID="",
-#   BOOKING_SAMPLE_CLIENT_SECRET="".
-# 3. Create a booking business ID and service ID and give the app permissions based on your App Id and secret.
 
 kernel = Kernel()
 
