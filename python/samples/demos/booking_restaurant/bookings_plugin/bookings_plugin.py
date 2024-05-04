@@ -63,6 +63,11 @@ class BookingsPlugin:
         Returns:
             str: The status of the booking.
         """
+        print(f"System > Do you want to book a table at {restaurant} on {date_time} for {party_size} people?")
+        print("System > Please confirm by typing 'yes' or 'no'.")
+        confirmation = input("User:> ")
+        if confirmation.lower() != "yes":
+            return "Booking aborted by the user."
         request_body = BookingAppointment(
             odata_type="#microsoft.graph.bookingAppointment",
             customer_time_zone=self.customer_timezone,
@@ -107,7 +112,7 @@ class BookingsPlugin:
             self.booking_business_id
         ).appointments.post(request_body)
 
-        return response.id
+        return f"Booking successful! Your reservation ID is {response.id}."
 
     @kernel_function(name="list_revervations", description="List all reservations")
     async def list_reservations(self) -> Annotated[str, "The list of reservations"]:
@@ -126,26 +131,18 @@ class BookingsPlugin:
     async def cancel_reservation(
         self,
         reservation_id: Annotated[str, "The ID of the reservation"],
+        restaurant: Annotated[str, "The name of the restaurant"],
+        date: Annotated[str, "The date of the reservation"],
+        time: Annotated[str, "The time of the reservation"],
+        party_size: Annotated[int, "The number of people in the party"],
     ) -> Annotated[str, "The cancellation status of the reservation"]:
         """Cancel a reservation."""
 
-        # The graph API is throwing a 500 (instead of a 400), so commenting this out for now until we
-        # can understand how to get it working.
-        # Filed issue: https://github.com/microsoftgraph/msgraph-sdk-python/issues/659
+        print(f"System > [Cancelling a reservation for {party_size} at {restaurant} on {date} at {time}]")
 
-        # # First cancel the reservation
-        # request_body = CancelPostRequestBody(
-        #     comment="Your appointment has been successfully cancelled. Please call us again.",
-        # )
-
-        # await self.graph_client.solutions.booking_businesses.by_booking_business_id(
-        #     self.booking_business_id
-        # ).appointments.by_booking_appointment_id(reservation.id).cancel.post(request_body)
-
-        # # Then delete the reservation
-        # _ = (
-        #     await self.graph_client.solutions.booking_businesses.by_booking_business_id(self.booking_business_id)
-        #     .appointments.by_booking_appointment_id(reservation.id)
-        #     .delete()
-        # )
-        return "Reservation canceled!"
+        _ = (
+            await self.graph_client.solutions.booking_businesses.by_booking_business_id(self.booking_business_id)
+            .appointments.by_booking_appointment_id(reservation_id)
+            .delete()
+        )
+        return "Cancellation successful!"
