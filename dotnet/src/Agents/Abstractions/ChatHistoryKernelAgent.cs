@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -17,7 +18,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     }
 
     /// <inheritdoc/>
-    protected internal sealed override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    protected internal sealed override Task<AgentChannel> CreateChannelAsync(ILogger logger, CancellationToken cancellationToken)
     {
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel());
     }
@@ -25,5 +26,6 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     public abstract IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         IReadOnlyList<ChatMessageContent> history,
+        ILogger logger,
         CancellationToken cancellationToken = default);
 }
