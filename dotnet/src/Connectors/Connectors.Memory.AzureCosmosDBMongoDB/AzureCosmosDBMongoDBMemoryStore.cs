@@ -408,7 +408,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                 break;
         }
 
-        using var cursor = await this.GetCollection(collectionName)
+        var cursor = await this.GetCollection(collectionName)
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         return cursor;
