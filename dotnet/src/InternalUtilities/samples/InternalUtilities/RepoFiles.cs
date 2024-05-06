@@ -5,13 +5,12 @@ using System.Reflection;
 public static class RepoFiles
 {
     /// <summary>
-    /// Scan the local folders from the repo, looking for "samples/plugins" folder.
+    /// Scan the local folders from the repo, looking for "prompt_template_samples" folder.
     /// </summary>
-    /// <returns>The full path to samples/plugins</returns>
+    /// <returns>The full path to prompt_template_samples folder.</returns>
     public static string SamplePluginsPath()
     {
-        const string Parent = "samples";
-        const string Folder = "plugins";
+        const string Folder = "prompt_template_samples";
 
         static bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
@@ -27,8 +26,7 @@ public static class RepoFiles
             return found;
         }
 
-        if (!SearchPath(Parent + Path.DirectorySeparatorChar + Folder, out string path)
-            && !SearchPath(Folder, out path))
+        if (!SearchPath(Folder, out var path))
         {
             throw new YourAppException("Plugins directory not found. The app needs the plugins from the repo to work.");
         }
