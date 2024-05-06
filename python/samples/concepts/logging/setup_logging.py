@@ -24,7 +24,7 @@ async def main():
         OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
     )
 
-    plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+    plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
     plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")
 
     joke_function = plugin["Joke"]
