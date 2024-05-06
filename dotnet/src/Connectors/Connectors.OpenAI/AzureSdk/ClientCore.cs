@@ -132,15 +132,31 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
-        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
-        if (responseData.Choices.Count == 0)
+        Completions responseData;
+        IEnumerable<TextContent> responseContent;
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.DeploymentOrModelName, "OpenAI", text, executionSettings))
         {
-            throw new KernelException("Text completions not found");
+            try
+            {
+                responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+                if (responseData.Choices.Count == 0)
+                {
+                    throw new KernelException("Text completions not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                throw;
+            }
+
+            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice)));
+            activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
+        return responseContent.ToList();
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -323,18 +339,34 @@ internal abstract class ClientCore
         for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
-            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
-            this.CaptureUsageDetails(responseData.Usage);
-            if (responseData.Choices.Count == 0)
+            ChatCompletions responseData;
+            IEnumerable<OpenAIChatMessageContent> responseContent;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.DeploymentOrModelName, "OpenAI", chat, executionSettings))
             {
-                throw new KernelException("Chat completions not found");
+                try
+                {
+                    responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+                    this.CaptureUsageDetails(responseData.Usage);
+                    if (responseData.Choices.Count == 0)
+                    {
+                        throw new KernelException("Chat completions not found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    throw;
+                }
+
+                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData));
+                activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).ToList();
+                return responseContent.ToList();
             }
 
             Debug.Assert(kernel is not null);

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel;
 
+[ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace;
@@ -36,15 +38,15 @@ internal static class ModelDiagnostics
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    public static void SetCompletionResponse(Activity? activity, IEnumerable<TextContent> completions, int promptTokens, int completionTokens, IEnumerable<string?>? finishReason)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, finishReason, completions => $"[{string.Join(", ", completions)}]");
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int promptTokens, int completionTokens)
+        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}]");
 
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    public static void SetCompletionResponse(Activity? activity, IEnumerable<ChatMessageContent> completions, int promptTokens, int completionTokens, IEnumerable<string?>? finishReason)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, finishReason, ToOpenAIFormat);
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int promptTokens, int completionTokens)
+        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
 
     # region Private
     /// <summary>
@@ -102,10 +104,11 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        string activityType = prompt is ChatHistory ? "chat.completions" : "text.completions";
+        string operationName = prompt is ChatHistory ? "chat.completions" : "text.completions";
         var activity = s_activitySource.StartActivityWithTags(
-            $"{activityType} {modelName}",
+            $"{operationName} {modelName}",
             [
+                new(ModelDiagnosticsTags.Operation, operationName),
                 new(ModelDiagnosticsTags.System, modelProvider),
                 new(ModelDiagnosticsTags.Model, modelName),
             ]);
@@ -130,33 +133,47 @@ internal static class ModelDiagnostics
     /// The `formatCompletions` delegate won't be invoked if events are disabled.
     /// </summary>
     private static void SetCompletionResponse<T>(
-        Activity? activity,
+        Activity activity,
         T completions,
         int promptTokens,
         int completionTokens,
-        IEnumerable<string?>? finishReason,
-        Func<T, string> formatCompletions)
+        Func<T, string> formatCompletions) where T : IEnumerable<KernelContent>
     {
         if (!IsModelDiagnosticsEnabled())
         {
             return;
         }
 
-        activity?.EnrichAfterResponse(
+        activity.AddTags(
             [
-                new(ModelDiagnosticsTags.FinishReason, $"[{string.Join(", ", finishReason)}]"),
+                new(ModelDiagnosticsTags.FinishReason, GetFinishReasons(completions)),
                 new(ModelDiagnosticsTags.PromptToken, promptTokens),
                 new(ModelDiagnosticsTags.CompletionToken, completionTokens),
             ]);
 
         if (s_enableSensitiveEvents)
         {
-            activity?.AttachSensitiveDataAsEvent(
+            activity.AttachSensitiveDataAsEvent(
                 ModelDiagnosticsTags.CompletionEvent,
                 [
                     new(ModelDiagnosticsTags.CompletionEventCompletion, formatCompletions(completions)),
                 ]);
         }
+    }
+
+    private static string GetFinishReasons(IEnumerable<KernelContent> completions)
+    {
+        var finishReasons = completions.Select(c =>
+        {
+            if (c.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
+            {
+                return finishReason;
+            }
+
+            return null;
+        });
+
+        return $"[{string.Join(", ", finishReasons)}]";
     }
 
     /// <summary>
@@ -166,6 +183,7 @@ internal static class ModelDiagnostics
     {
         // Activity tags
         public const string System = "gen_ai.system";
+        public const string Operation = "gen_ai.operation.name";
         public const string Model = "gen_ai.request.model";
         public const string MaxToken = "gen_ai.request.max_token";
         public const string Temperature = "gen_ai.request.temperature";

@@ -14,14 +14,11 @@ internal static class ActivityExtensions
             tags);
     }
 
-    public static Activity EnrichAfterResponse(this Activity activity, List<KeyValuePair<string, object?>> tags)
+    public static Activity AddTags(this Activity activity, List<KeyValuePair<string, object?>> tags)
     {
         tags.ForEach(tag =>
         {
-            if (tag.Value is not null)
-            {
-                activity.SetTag(tag.Key, tag.Value);
-            }
+            activity.SetTag(tag.Key, tag.Value);
         });
 
         return activity;
