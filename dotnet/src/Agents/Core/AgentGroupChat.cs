@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -56,6 +59,8 @@ public sealed class AgentGroupChat : AgentChat
     /// <returns>Asynchronous enumeration of messages.</returns>
     public async override IAsyncEnumerable<ChatMessageContent> InvokeAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.EnsureStrategyLoggerAssignment();
+
         if (this.IsComplete)
         {
             // Throw exception if chat is completed and automatic-reset is not enabled.
@@ -67,10 +72,25 @@ public sealed class AgentGroupChat : AgentChat
             this.IsComplete = false;
         }
 
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {Agents}", nameof(InvokeAsync), string.Join(", ", this.Agents.Select(a => $"{a.GetType()}:{a.Id}")));
+
         for (int index = 0; index < this.ExecutionSettings.TerminationStrategy.MaximumIterations; index++)
         {
             // Identify next agent using strategy
-            Agent agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            this.Logger.LogDebug("[{MethodName}] Selecting agent: {StrategyType}", nameof(InvokeAsync), this.ExecutionSettings.SelectionStrategy.GetType());
+
+            Agent agent;
+            try
+            {
+                agent = await this.ExecutionSettings.SelectionStrategy.NextAsync(this.Agents, this.History, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                this.Logger.LogError(exception, "[{MethodName}] Unable to determine next agent.", nameof(InvokeAsync));
+                throw;
+            }
+
+            this.Logger.LogInformation("[{MethodName}] Agent selected {AgentType}: {AgentId} by {StrategyType}", nameof(InvokeAsync), agent.GetType(), agent.Id, this.ExecutionSettings.SelectionStrategy.GetType());
 
             // Invoke agent and process messages along with termination
             await foreach (var message in base.InvokeAgentAsync(agent, cancellationToken).ConfigureAwait(false))
@@ -89,6 +109,8 @@ public sealed class AgentGroupChat : AgentChat
                 break;
             }
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>
@@ -119,6 +141,10 @@ public sealed class AgentGroupChat : AgentChat
         bool isJoining,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.EnsureStrategyLoggerAssignment();
+
+        this.Logger.LogDebug("[{MethodName}] Invoking chat: {AgentType}: {AgentId}", nameof(InvokeAsync), agent.GetType(), agent.Id);
+
         if (isJoining)
         {
             this.AddAgent(agent);
@@ -134,6 +160,8 @@ public sealed class AgentGroupChat : AgentChat
 
             yield return message;
         }
+
+        this.Logger.LogDebug("[{MethodName}] Yield chat - IsComplete: {IsComplete}", nameof(InvokeAsync), this.IsComplete);
     }
 
     /// <summary>
@@ -144,5 +172,19 @@ public sealed class AgentGroupChat : AgentChat
     {
         this._agents = new(agents);
         this._agentIds = new(this._agents.Select(a => a.Id));
+    }
+
+    private void EnsureStrategyLoggerAssignment()
+    {
+        // Only invoke logger factory when required.
+        if (this.ExecutionSettings.SelectionStrategy.Logger == NullLogger.Instance)
+        {
+            this.ExecutionSettings.SelectionStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.SelectionStrategy.GetType());
+        }
+
+        if (this.ExecutionSettings.TerminationStrategy.Logger == NullLogger.Instance)
+        {
+            this.ExecutionSettings.TerminationStrategy.Logger = this.LoggerFactory.CreateLogger(this.ExecutionSettings.TerminationStrategy.GetType());
+        }
     }
 }
