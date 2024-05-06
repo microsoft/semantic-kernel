@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel;
 using FunctionInvocationApproval.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,9 +13,9 @@ internal sealed class Program
     /// <summary>
     /// This console application shows how to use function invocation filter to invoke function only if such operation was approved.
     /// If function invocation was rejected, the result will contain an information about this, so LLM can react accordingly.
-    /// Application handles purchase request by using "Bank" and "Store" plugins.
-    /// In order to buy a product, specific amount should be withdrawn from "Bank" to provide it to "Store" and get a product.
-    /// Each step can be approved or rejected. Based on that, LLM will decide how to proceed.
+    /// Application uses a plugin that allows to build a software by following main development stages:
+    /// Collection of requirements, design, implementation, testing and deployment.
+    /// With filters, it's possible to reject each stage and observe the response from LLM.
     /// </summary>
     public static async Task Main()
     {
@@ -29,121 +28,65 @@ internal sealed class Program
         builder.Services.AddSingleton<IFunctionApprovalService, ConsoleFunctionApprovalService>();
         builder.Services.AddSingleton<IFunctionInvocationFilter, FunctionInvocationFilter>();
 
-        // Add store and bank plugins
-        builder.Plugins.AddFromObject(new StorePlugin(products: new()
-        {
-            ["Laptop"] = new ProductDetails(price: 1000, quantity: 5),
-            ["Headphones"] = new ProductDetails(price: 100, quantity: 4),
-            ["Sunglasses"] = new ProductDetails(price: 50, quantity: 7),
-            ["Backpack"] = new ProductDetails(price: 40, quantity: 3),
-            ["Watch"] = new ProductDetails(price: 150, quantity: 9),
-        }));
-
-        builder.Plugins.AddFromObject(new BankPlugin(balance: 2000));
+        // Add software builder plugin
+        builder.Plugins.AddFromType<SoftwareBuilderPlugin>();
 
         var kernel = builder.Build();
 
-        // Enable automatic function calling and provide limitations to LLM
+        // Enable automatic function calling
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ChatSystemPrompt = "It's possible to buy something only after withdrawing amount from bank.",
+            Temperature = 0,
             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
         };
 
-        // Initialize kernel arguments (it's possible to experiment with values to compare LLM results).
-        var arguments = new KernelArguments(executionSettings) { ["productName"] = "Watch", ["quantity"] = 3 };
-
-        // Define purchase request
-        var function = KernelFunctionFactory.CreateFromPrompt(
-            "I want to buy {{$productName}} of quantity {{$quantity}} and get balance after the purchase.", functionName: "PurchaseRequest");
+        // Initialize kernel arguments.
+        var arguments = new KernelArguments(executionSettings);
 
         // Start execution
         // Try to reject invocation at each stage to compare LLM results.
-        var result = await kernel.InvokeAsync(function, arguments);
+        var result = await kernel.InvokePromptAsync("I want to build a software. Let's start from the first step.", arguments);
 
         Console.WriteLine(result);
     }
 
     #region Plugins
 
-    /// <summary>
-    /// Class that contains product details.
-    /// </summary>
-    public sealed class ProductDetails(decimal price, int quantity)
+    public class SoftwareBuilderPlugin
     {
-        public decimal Price { get; set; } = price;
-
-        public int Quantity { get; set; } = quantity;
-    }
-
-    /// <summary>
-    /// Store plugin that provides product price and sells the products to buyer.
-    /// </summary>
-    public sealed class StorePlugin(Dictionary<string, ProductDetails> products)
-    {
-        private readonly Dictionary<string, ProductDetails> _products = products;
-
         [KernelFunction]
-        [Description("Provides product price to buyer.")]
-        public decimal ProvidePrice(string productName)
+        public string CollectRequirements()
         {
-            var product = this.GetProduct(productName);
-            return product.Price;
+            Console.WriteLine("Collecting requirements...");
+            return "Requirements";
         }
 
         [KernelFunction]
-        [Description("Sells product to buyer.")]
-        public string Sell(decimal amount, string productName, int quantity)
+        public string Design(string requirements)
         {
-            var product = this.GetProduct(productName);
-
-            if (quantity > product.Quantity)
-            {
-                throw new Exception("The requested quantity exceeds the available stock for the selected product.");
-            }
-
-            if (amount < quantity * product.Price)
-            {
-                throw new Exception("Insufficient funds to make a purchase.");
-            }
-
-            this._products[productName].Quantity -= quantity;
-
-            return productName;
+            Console.WriteLine($"Designing based on: {requirements}");
+            return "Design";
         }
 
-        private ProductDetails GetProduct(string productName)
+        [KernelFunction]
+        public string Implement(string requirements, string design)
         {
-            if (!this._products.TryGetValue(productName, out ProductDetails? product))
-            {
-                throw new Exception("Product was not found.");
-            }
-
-            return product;
+            Console.WriteLine($"Implementing based on {requirements} and {design}");
+            return "Implementation";
         }
-    }
-
-    /// <summary>
-    /// Bank plugin with account balance.
-    /// </summary>
-    public sealed class BankPlugin(decimal balance)
-    {
-        private decimal _balance = balance;
 
         [KernelFunction]
-        [Description("Returns account balance.")]
-        public decimal CheckBalance() => this._balance;
-
-        [KernelFunction]
-        [Description("Withdraws specified amount from balance.")]
-        public decimal Withdraw(decimal amount)
+        public string Test(string requirements, string design, string implementation)
         {
-            if (this._balance < amount)
-            {
-                throw new Exception("Insufficient funds.");
-            }
+            Console.WriteLine($"Testing based on {requirements}, {design} and {implementation}");
+            return "Test Results";
+        }
 
-            return this._balance -= amount;
+        [KernelFunction]
+        public string Deploy(string requirements, string design, string implementation, string testResults)
+        {
+            Console.WriteLine($"Deploying based on {requirements}, {design}, {implementation} and {testResults}");
+            return "Deployment";
         }
     }
 
