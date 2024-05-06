@@ -118,6 +118,7 @@ azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 usearch = "^2.9"
 pyarrow = ">=12.0.1,<16.0.0"
+msgraph-sdk = "^1.2.0"
 
 # Extras are exposed to pip, this allows a user to easily add the right dependencies to their environment
 [tool.poetry.extras]
@@ -130,7 +131,7 @@ weaviate = ["weaviate-client"]
 pinecone = ["pinecone-client"]
 postgres = ["psycopg"]
 redis = ["redis"]
-azure = ["azure-search-documents", "azure-core", "azure-identity"]
+azure = ["azure-search-documents", "azure-core", "azure-identity", "msgraph-sdk"]
 usearch = ["usearch", "pyarrow"]
 notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow", "ipykernel"]

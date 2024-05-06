@@ -233,18 +233,25 @@ internal abstract class ClientCore
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
     internal async Task<IList<ReadOnlyMemory<float>>> GetEmbeddingsAsync(
         IList<string> data,
         Kernel? kernel,
+        int? dimensions,
         CancellationToken cancellationToken)
     {
         var result = new List<ReadOnlyMemory<float>>(data.Count);
 
         if (data.Count > 0)
         {
-            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(new(this.DeploymentOrModelName, data), cancellationToken)).ConfigureAwait(false);
+            var embeddingsOptions = new EmbeddingsOptions(this.DeploymentOrModelName, data)
+            {
+                Dimensions = dimensions
+            };
+
+            var response = await RunRequestAsync(() => this.Client.GetEmbeddingsAsync(embeddingsOptions, cancellationToken)).ConfigureAwait(false);
             var embeddings = response.Value.Data;
 
             if (embeddings.Count != data.Count)
