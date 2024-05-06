@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -121,7 +122,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo"
+        deployment_name = "gpt-35-turbo-0613"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
@@ -151,9 +152,9 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["ChatBot"]}),
-        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -181,7 +182,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo"
+        deployment_name = "gpt-35-turbo-0613"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
@@ -191,7 +192,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -213,13 +214,13 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["chat"]}),
-        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
     arguments = KernelArguments(input="what is 101+102?", settings=execution_settings)
 
-    result = None
+    result: StreamingChatMessageContent | None = None
     async for message in kernel.invoke_stream(function_name="chat", plugin_name="chat", arguments=arguments):
         result = message[0] if not result else result + message[0]
     output = str(result)

@@ -87,11 +87,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// <param name="httpClient">HttpClient instance used to send HTTP requests</param>
     /// <param name="modelId">Id of the model supporting chat completion</param>
     /// <param name="apiKey">Api key for GoogleAI endpoint</param>
+    /// <param name="apiVersion">Version of the Google API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
         string modelId,
         string apiKey,
+        GoogleAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -100,9 +102,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._modelId = modelId;
-        this._chatGenerationEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:generateContent?key={apiKey}");
-        this._chatStreamingEndpoint = new Uri($"https://generativelanguage.googleapis.com/v1beta/models/{this._modelId}:streamGenerateContent?key={apiKey}&alt=sse");
+        this._chatGenerationEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:generateContent?key={apiKey}");
+        this._chatStreamingEndpoint = new Uri($"https://generativelanguage.googleapis.com/{versionSubLink}/models/{this._modelId}:streamGenerateContent?key={apiKey}&alt=sse");
     }
 
     /// <summary>
@@ -113,6 +117,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// <param name="bearerTokenProvider">Bearer key provider used for authentication</param>
     /// <param name="location">The region to process the request</param>
     /// <param name="projectId">Project ID from google cloud</param>
+    /// <param name="apiVersion">Version of the Vertex API</param>
     /// <param name="logger">Logger instance used for logging (optional)</param>
     public GeminiChatCompletionClient(
         HttpClient httpClient,
@@ -120,6 +125,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Func<Task<string>> bearerTokenProvider,
         string location,
         string projectId,
+        VertexAIVersion apiVersion,
         ILogger? logger = null)
         : base(
             httpClient: httpClient,
@@ -130,9 +136,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Verify.NotNullOrWhiteSpace(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
+        string versionSubLink = GetApiVersionSubLink(apiVersion);
+
         this._modelId = modelId;
-        this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
-        this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/v1/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
+        this._chatGenerationEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:generateContent");
+        this._chatStreamingEndpoint = new Uri($"https://{location}-aiplatform.googleapis.com/{versionSubLink}/projects/{projectId}/locations/{location}/publishers/google/models/{this._modelId}:streamGenerateContent?alt=sse");
     }
 
     /// <summary>

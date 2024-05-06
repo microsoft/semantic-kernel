@@ -57,7 +57,6 @@ async def test_build_chat_history_for_step():
     kernel_mock.get_service.return_value = AsyncMock()
     service_mock = AsyncMock(spec=OpenAIChatCompletion)
     arguments_mock = KernelArguments(goal="Test", initial_plan="Initial Plan")
-    service_mock.get_chat_message_content_type.return_value = "OpenAIChatMessageContent"
     chat_history = await planner._build_chat_history_for_step(
         "goal", "initial_plan", kernel_mock, arguments_mock, service_mock
     )

@@ -18,6 +18,9 @@ internal sealed class ChatThread : IAgentThread
     /// <inheritdoc/>
     public string Id { get; private set; }
 
+    /// <inheritdoc/>
+    public bool EnableFunctionArgumentPassThrough { get; set; }
+
     private readonly OpenAIRestContext _restContext;
     private bool _isDeleted;
 
@@ -88,7 +91,11 @@ internal sealed class ChatThread : IAgentThread
 
         // Create run using templated prompt
         var runModel = await this._restContext.CreateRunAsync(this.Id, agent.Id, instructions, agent.Tools, cancellationToken).ConfigureAwait(false);
-        var run = new ChatRun(runModel, agent.Kernel, this._restContext);
+        var run =
+            new ChatRun(runModel, agent.Kernel, this._restContext)
+            {
+                Arguments = this.EnableFunctionArgumentPassThrough ? arguments : null,
+            };
 
         await foreach (var messageId in run.GetResultAsync(cancellationToken).ConfigureAwait(false))
         {

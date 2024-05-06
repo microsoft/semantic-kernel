@@ -70,9 +70,9 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["ChatBot"]}),
-        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -114,9 +114,9 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=kernel.get_json_schema_of_functions(filters={"exclude_plugin": ["ChatBot"]}),
-        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -129,7 +129,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
     )
 
     result = None
-    async for message in kernel.invoke_stream(tldr_function, input="what is 1+1?"):
+    async for message in kernel.invoke_stream(tldr_function, input="what is 101+102?"):
         result = message[0] if not result else result + message[0]
     output = str(result)
 

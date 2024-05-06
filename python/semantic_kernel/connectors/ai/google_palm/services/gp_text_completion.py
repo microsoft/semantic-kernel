@@ -4,9 +4,6 @@ import logging
 import sys
 from typing import List
 
-from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceResponseException
-
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -20,6 +17,8 @@ from pydantic import StringConstraints
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.exceptions import ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 

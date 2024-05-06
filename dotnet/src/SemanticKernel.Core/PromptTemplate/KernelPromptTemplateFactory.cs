@@ -17,6 +17,18 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     private readonly ILoggerFactory _loggerFactory;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to allow unsafe content.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true then all input content added to templates is treated as safe content and will not be HTML encoded.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    public bool AllowUnsafeContent { get; init; } = false;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelPromptTemplateFactory"/> class.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -32,7 +44,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
 
         if (templateConfig.TemplateFormat.Equals(PromptTemplateConfig.SemanticKernelTemplateFormat, System.StringComparison.Ordinal))
         {
-            result = new KernelPromptTemplate(templateConfig, this._loggerFactory);
+            result = new KernelPromptTemplate(templateConfig, this.AllowUnsafeContent, this._loggerFactory);
             return true;
         }
 

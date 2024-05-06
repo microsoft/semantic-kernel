@@ -360,7 +360,7 @@ class StepwisePlanner:
         excluded_functions = self.config.excluded_functions or []
         available_functions = [
             func
-            for func in self._kernel.get_list_of_function_metadata()
+            for func in self._kernel.get_list_of_function_metadata({"excluded_plugins": excluded_plugins})
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
         available_functions = sorted(available_functions, key=lambda x: (x.plugin_name, x.name))
