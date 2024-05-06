@@ -15,7 +15,7 @@ internal sealed class Program
     /// If function invocation was rejected, the result will contain an information about this, so LLM can react accordingly.
     /// Application uses a plugin that allows to build a software by following main development stages:
     /// Collection of requirements, design, implementation, testing and deployment.
-    /// With filters, it's possible to reject each stage and observe the response from LLM.
+    /// Each step can be approved or rejected. Based on that, LLM will decide how to proceed.
     /// </summary>
     public static async Task Main()
     {
@@ -52,7 +52,7 @@ internal sealed class Program
 
     #region Plugins
 
-    public class SoftwareBuilderPlugin
+    public sealed class SoftwareBuilderPlugin
     {
         [KernelFunction]
         public string CollectRequirements()
