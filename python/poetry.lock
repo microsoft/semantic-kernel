@@ -3840,13 +3840,13 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.4.0"
+version = "2.4.1"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymilvus-2.4.0-1-py3-none-any.whl", hash = "sha256:9f8212af51bc235a4c1230c344a852b6f75a4be01cac38f21dab5b65695a9598"},
-    {file = "pymilvus-2.4.0.tar.gz", hash = "sha256:f1d1a2e9d5172fea3e0a5d396bed9de561a2b93a4d3e1945fdf68b74d771fb05"},
+    {file = "pymilvus-2.4.1-py3-none-any.whl", hash = "sha256:1ad85c011e56b40944b224c34ad5c1565fe5ac703589986d323b9fd7ad3973bf"},
+    {file = "pymilvus-2.4.1.tar.gz", hash = "sha256:e77ceb3459d4574685fa3e346c4608354272b50b16a2d65fb7928068184a1ab7"},
 ]
 
 [package.dependencies]
@@ -3859,11 +3859,13 @@ pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
 pyarrow = ">=12.0.0"
 requests = "*"
+scipy = "*"
 setuptools = ">=67"
 ujson = ">=2.0.0"
 
 [package.extras]
 model = ["milvus-model (>=0.1.0)"]
+test = ["black", "grpcio-testing", "pytest (>=5.3.4)", "pytest-cov (>=2.8.1)", "pytest-timeout (>=1.3.4)", "ruff (>=0.3.3)"]
 
 [[package]]
 name = "pymongo"
@@ -6163,4 +6165,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "550a987ce4cf26f9ba9941cec6fa1aab4ff64249fc0611bb4b49ae8f4443db2e"
+content-hash = "b71bb895b853c22a7d0841ea75fe03bbf892f2c27549130c7c3c922872d38f2c"
