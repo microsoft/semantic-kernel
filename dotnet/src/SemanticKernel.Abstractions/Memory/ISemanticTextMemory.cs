@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -21,6 +22,7 @@ public interface ISemanticTextMemory
     /// <param name="id">Unique identifier.</param>
     /// <param name="description">Optional description.</param>
     /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Unique identifier of the saved memory record.</returns>
@@ -30,6 +32,7 @@ public interface ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
+        DateTimeOffset? timestamp = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 

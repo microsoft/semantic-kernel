@@ -3,6 +3,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
+using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Caching;
@@ -14,13 +16,10 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task InMemoryCacheAsync()
     {
-        var kernel = GetKernel(_ => new VolatileMemoryStore());
+        var kernel = GetKernelWithCache(_ => new VolatileMemoryStore());
 
-        Console.WriteLine("First run:");
-        var result1 = await ExecuteAsync(() => kernel.InvokePromptAsync("What's the tallest building in New York?"));
-
-        Console.WriteLine("Second run:");
-        var result2 = await ExecuteAsync(() => kernel.InvokePromptAsync("What is the highest building in New York City?"));
+        var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
+        var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
 
         Console.WriteLine($"Result 1: {result1}");
         Console.WriteLine($"Result 2: {result2}");
@@ -29,18 +28,38 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     [Fact]
     public async Task RedisCacheAsync()
     {
+        var kernel = GetKernelWithCache(_ => new RedisMemoryStore("localhost:6379", vectorSize: 1536));
 
+        var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
+        var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
+
+        Console.WriteLine($"Result 1: {result1}");
+        Console.WriteLine($"Result 2: {result2}");
     }
 
     [Fact]
     public async Task AzureCosmosDBMongoDBCacheAsync()
     {
+        var kernel = GetKernelWithCache(_ => new AzureCosmosDBMongoDBMemoryStore(
+            TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
+            TestConfiguration.AzureCosmosDbMongoDb.DatabaseName,
+            new()
+            {
+                Kind = AzureCosmosDBVectorSearchType.VectorIVF,
+                Similarity = AzureCosmosDBSimilarityType.Cosine,
+                Dimensions = 1536
+            }));
 
+        var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
+        var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
+
+        Console.WriteLine($"Result 1: {result1}");
+        Console.WriteLine($"Result 2: {result2}");
     }
 
     #region Configuration
 
-    private Kernel GetKernel(Func<IServiceProvider, IMemoryStore> cacheFactory)
+    private Kernel GetKernelWithCache(Func<IServiceProvider, IMemoryStore> cacheFactory)
     {
         var builder = Kernel.CreateBuilder();
 
@@ -72,7 +91,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     {
         protected const string CacheCollectionName = "llm_responses";
 
-        protected const string IsCachedResultKey = "IsCachedResult";
+        protected const string CacheRecordIdKey = "CacheRecordId";
     }
 
     public sealed class PromptCacheFilter(ISemanticTextMemory semanticTextMemory, double minRelevanceScore) : CacheBaseFilter, IPromptRenderFilter
@@ -93,7 +112,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             {
                 context.Result = new FunctionResult(context.Function, searchResult.Metadata.AdditionalMetadata)
                 {
-                    Metadata = new Dictionary<string, object?> { [IsCachedResultKey] = true }
+                    Metadata = new Dictionary<string, object?> { [CacheRecordIdKey] = searchResult.Metadata.Id }
                 };
             }
         }
@@ -109,24 +128,29 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
             if (!string.IsNullOrEmpty(context.Result.RenderedPrompt))
             {
+                var recordId = context.Result.Metadata?.GetValueOrDefault(CacheRecordIdKey, Guid.NewGuid().ToString()) as string;
+
                 await semanticTextMemory.SaveInformationAsync(
                     CacheCollectionName,
                     context.Result.RenderedPrompt,
-                    Guid.NewGuid().ToString(),
-                    additionalMetadata: result.ToString());
+                    recordId!,
+                    additionalMetadata: result.ToString(),
+                    timestamp: DateTimeOffset.UtcNow);
             }
         }
     }
 
     #endregion
 
-    #region Benchmarking
+    #region Execution
 
-    private async Task<FunctionResult> ExecuteAsync(Func<Task<FunctionResult>> action)
+    private async Task<FunctionResult> ExecuteAsync(Kernel kernel, string title, string prompt)
     {
+        Console.WriteLine($"{title}: {prompt}");
+
         var stopwatch = Stopwatch.StartNew();
 
-        var result = await action();
+        var result = await kernel.InvokePromptAsync(prompt);
 
         stopwatch.Stop();
 

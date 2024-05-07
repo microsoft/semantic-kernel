@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,6 +29,7 @@ public sealed class NullMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
+        DateTimeOffset? timestamp = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {

@@ -41,12 +41,18 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
+        DateTimeOffset? timestamp = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
         MemoryRecord data = MemoryRecord.LocalRecord(
-            id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
+            id: id,
+            text: text,
+            description: description,
+            additionalMetadata: additionalMetadata,
+            embedding: embedding,
+            timestamp: timestamp);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
@@ -116,17 +122,20 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).ConfigureAwait(false);
 
-        IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
-            collectionName: collection,
-            embedding: queryEmbedding,
-            limit: limit,
-            minRelevanceScore: minRelevanceScore,
-            withEmbeddings: withEmbeddings,
-            cancellationToken: cancellationToken);
-
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        if ((await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
-            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
+                collectionName: collection,
+                embedding: queryEmbedding,
+                limit: limit,
+                minRelevanceScore: minRelevanceScore,
+                withEmbeddings: withEmbeddings,
+                cancellationToken: cancellationToken);
+
+            await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            }
         }
     }
 
