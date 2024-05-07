@@ -227,7 +227,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
             this._inputVariables,
             this._logger);
     }

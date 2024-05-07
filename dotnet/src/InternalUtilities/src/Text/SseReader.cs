@@ -121,7 +121,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
 #if NET7_0_OR_GREATER
-        string lineText = await this._reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+        string? lineText = await this._reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 #else
         string? lineText = await this._reader.ReadLineAsync().ConfigureAwait(false);
 #endif

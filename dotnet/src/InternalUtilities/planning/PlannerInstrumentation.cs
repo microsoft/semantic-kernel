@@ -38,7 +38,7 @@ internal static partial class PlannerInstrumentation
         where TPlanner : class
         where TPlan : class
     {
-        string plannerName = planner.GetType().FullName;
+        string plannerName = planner.GetType().FullName!;
 
         using var activity = s_activitySource.StartActivity(plannerName);
 
@@ -78,7 +78,7 @@ internal static partial class PlannerInstrumentation
         where TPlanInput : class
         where TPlanResult : class
     {
-        string planName = plan.GetType().FullName;
+        string planName = plan.GetType().FullName!;
         using var activity = s_activitySource.StartActivity(planName);
 
         logger.LogInvokePlanStarted();
@@ -192,7 +192,7 @@ internal static partial class PlannerInstrumentation
                 var jsonString = planResult.GetType() == typeof(string)
                     ? planResult.ToString()
                     : JsonSerializer.Serialize(planResult);
-                s_logPlanResult(logger, jsonString, null);
+                s_logPlanResult(logger, jsonString ?? "", null);
             }
             catch (NotSupportedException ex)
             {

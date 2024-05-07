@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Adapt channel contract to underlying <see cref="AgentChat"/>.
 /// </summary>
-internal class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
+internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<AggregatorAgent>
 {
     private readonly AgentChat _chat = chat;
 

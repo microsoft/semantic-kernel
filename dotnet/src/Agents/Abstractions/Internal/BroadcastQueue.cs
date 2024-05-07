@@ -73,7 +73,7 @@ internal sealed class BroadcastQueue
     {
         // Either won race with Enqueue or lost race with ReceiveAsync.
         // Missing queue is synchronized by definition.
-        if (!this._queues.TryGetValue(channelRef.Hash, out QueueReference queueRef))
+        if (!this._queues.TryGetValue(channelRef.Hash, out QueueReference? queueRef))
         {
             return;
         }

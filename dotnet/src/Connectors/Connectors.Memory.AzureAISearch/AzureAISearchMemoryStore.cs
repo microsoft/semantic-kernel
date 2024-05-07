@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// <see cref="AzureAISearchMemoryStore"/> is a memory store implementation using Azure AI Search.
 /// </summary>
-public class AzureAISearchMemoryStore : IMemoryStore
+public partial class AzureAISearchMemoryStore : IMemoryStore
 {
     /// <summary>
     /// Create a new instance of memory storage using Azure AI Search.
@@ -259,7 +259,13 @@ public class AzureAISearchMemoryStore : IMemoryStore
     /// - replacing chars introduces a small chance of conflicts, e.g. "the-user" and "the_user".
     /// - we should consider whether making this optional and leave it to the developer to handle.
     /// </summary>
+#if NET
+    [GeneratedRegex(@"[\s|\\|/|.|_|:]")]
+    private static partial Regex ReplaceIndexNameSymbolsRegex();
+#else
+    private static Regex ReplaceIndexNameSymbolsRegex() => s_replaceIndexNameSymbolsRegex;
     private static readonly Regex s_replaceIndexNameSymbolsRegex = new(@"[\s|\\|/|.|_|:]");
+#endif
 
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
@@ -389,7 +395,7 @@ public class AzureAISearchMemoryStore : IMemoryStore
         indexName = indexName.ToLowerInvariant();
 #pragma warning restore CA1308
 
-        return s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+        return ReplaceIndexNameSymbolsRegex().Replace(indexName.Trim(), "-");
     }
 
     /// <summary>

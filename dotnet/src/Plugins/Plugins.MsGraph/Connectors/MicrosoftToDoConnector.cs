@@ -67,7 +67,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         while (lists.Count != 0 && lists.NextPageRequest != null)
         {
             lists = await lists.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
-            taskLists.AddRange(lists.ToList());
+            taskLists.AddRange(lists);
         }
 
         return taskLists.Select(list => new TaskManagementTaskList(
@@ -95,7 +95,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
         while (tasksPage.Count != 0 && tasksPage.NextPageRequest != null)
         {
             tasksPage = await tasksPage.NextPageRequest.GetAsync(cancellationToken).ConfigureAwait(false);
-            tasks.AddRange(tasksPage.ToList());
+            tasks.AddRange(tasksPage);
         }
 
         return tasks.Select(task => new TaskManagementTask(

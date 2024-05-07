@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public class WeaviateMemoryStore : IMemoryStore
+public partial class WeaviateMemoryStore : IMemoryStore
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     /// <summary>
@@ -39,7 +39,13 @@ public class WeaviateMemoryStore : IMemoryStore
 
     // Regex to ensure Weaviate class names confirm to the naming convention
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
-    private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
+#if NET
+    [GeneratedRegex("[^0-9a-zA-Z]+")]
+    private static partial Regex ClassNameRegex();
+#else
+    private static Regex ClassNameRegex() => s_classNameRegex;
+    private static readonly Regex s_classNameRegex = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
+#endif
 
     private const string DefaultApiVersion = "v1";
 
@@ -501,7 +507,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private static string ToWeaviateFriendlyClassName(string collectionName)
     {
         // Prefix class names with to ensure proper case for Weaviate Classes
-        var sanitised = s_classNameRegEx.Replace(collectionName, string.Empty);
+        var sanitised = ClassNameRegex().Replace(collectionName, string.Empty);
         if (!char.IsLetter(sanitised[0]))
         {
             throw new ArgumentException("collectionName must start with a letter.", nameof(collectionName));

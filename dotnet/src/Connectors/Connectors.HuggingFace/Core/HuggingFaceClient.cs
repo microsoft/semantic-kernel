@@ -89,13 +89,7 @@ internal sealed class HuggingFaceClient
     {
         try
         {
-            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-            if (deserializedResponse is null)
-            {
-                throw new JsonException("Response is null");
-            }
-
-            return deserializedResponse;
+            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -116,7 +110,7 @@ internal sealed class HuggingFaceClient
         }
     }
 
-    internal HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey)
+    internal HttpRequestMessage CreatePost(object requestData, Uri endpoint)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         this.SetRequestHeaders(httpRequestMessage);
@@ -136,7 +130,7 @@ internal sealed class HuggingFaceClient
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -159,7 +153,7 @@ internal sealed class HuggingFaceClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -240,7 +234,7 @@ internal sealed class HuggingFaceClient
             Inputs = data
         };
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -275,8 +269,11 @@ internal sealed class HuggingFaceClient
         var endpoint = this.GetImageToTextGenerationEndpoint(executionSettings?.ModelId ?? this.ModelId);
 
         // Read the file into a byte array
-        var imageContent = new ByteArrayContent(content.Data?.ToArray());
-        imageContent.Headers.ContentType = new(content.MimeType);
+        var imageContent = new ByteArrayContent(content.Data?.ToArray() ?? []);
+        if (content.MimeType is string mime)
+        {
+            imageContent.Headers.ContentType = new(mime);
+        }
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

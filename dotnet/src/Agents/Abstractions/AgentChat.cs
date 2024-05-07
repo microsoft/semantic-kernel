@@ -251,7 +251,7 @@ public abstract class AgentChat
         async Task<AgentChannel> GetOrCreateChannelAsync()
         {
             string channelKey = this.GetAgentHash(agent);
-            AgentChannel channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
+            AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
             if (channel == null)
             {
                 this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
@@ -306,7 +306,7 @@ public abstract class AgentChat
 
     private string GetAgentHash(Agent agent)
     {
-        if (!this._channelMap.TryGetValue(agent, out string hash))
+        if (!this._channelMap.TryGetValue(agent, out string? hash))
         {
             hash = KeyEncoder.GenerateHash(agent.GetChannelKeys());
 
@@ -317,9 +317,9 @@ public abstract class AgentChat
         return hash;
     }
 
-    private async Task<AgentChannel> SynchronizeChannelAsync(string channelKey, CancellationToken cancellationToken)
+    private async Task<AgentChannel?> SynchronizeChannelAsync(string channelKey, CancellationToken cancellationToken)
     {
-        if (this._agentChannels.TryGetValue(channelKey, out AgentChannel channel))
+        if (this._agentChannels.TryGetValue(channelKey, out AgentChannel? channel))
         {
             await this._broadcastQueue.EnsureSynchronizedAsync(
                 new ChannelReference(channel, channelKey), cancellationToken).ConfigureAwait(false);

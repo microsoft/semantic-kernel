@@ -23,7 +23,6 @@ internal sealed class RestApiOperationRunner
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
-    private const string WildcardResponseKeyFormat = "{0}XX";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -337,13 +336,13 @@ internal sealed class RestApiOperationRunner
         KernelJsonSchema? matchingResponse = null;
         if (expectedSchemas is not null)
         {
-            var statusCodeKey = $"{(int)statusCode}";
+            var statusCodeKey = ((int)statusCode).ToString(CultureInfo.InvariantCulture);
 
             // Exact Match
             matchingResponse = expectedSchemas.FirstOrDefault(r => r.Key == statusCodeKey).Value;
 
             // Wildcard match e.g. 2XX
-            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == string.Format(CultureInfo.InvariantCulture, WildcardResponseKeyFormat, statusCodeKey.Substring(0, 1))).Value;
+            matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key is { Length: 3 } key && key[0] == statusCodeKey[0] && key[1] == 'X' && key[2] == 'X').Value;
 
             // Default
             matchingResponse ??= expectedSchemas.FirstOrDefault(r => r.Key == DefaultResponseKey).Value;

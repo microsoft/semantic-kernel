@@ -399,7 +399,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             limit = int.MaxValue;
         }
 
-        BsonDocument[] pipeline = Array.Empty<BsonDocument>();
+        BsonDocument[] pipeline = [];
         switch (this._config.Kind)
         {
             case AzureCosmosDBVectorSearchType.VectorIVF:
@@ -439,17 +439,18 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         }";
 
         string projectStage =
-            @"
-        {
-            ""$project"": {
-                ""similarityScore"": { ""$meta"": ""searchScore"" },
-                ""document"": ""$$ROOT""
+            """
+            {
+                "$project": {
+                    "similarityScore": { "$meta": "searchScore" },
+                    "document": "$$ROOT"
+                }
             }
-        }";
+            """;
 
         BsonDocument searchBson = BsonDocument.Parse(searchStage);
         BsonDocument projectBson = BsonDocument.Parse(projectStage);
-        return new BsonDocument[] { searchBson, projectBson };
+        return [searchBson, projectBson];
     }
 
     private BsonDocument[] GetVectorHNSWSearchPipeline(ReadOnlyMemory<float> embedding, int limit)
@@ -487,7 +488,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 
         BsonDocument searchBson = BsonDocument.Parse(searchStage);
         BsonDocument projectBson = BsonDocument.Parse(projectStage);
-        return new BsonDocument[] { searchBson, projectBson };
+        return [searchBson, projectBson];
     }
 
     private IMongoCollection<AzureCosmosDBMongoDBMemoryRecord> GetCollection(

@@ -177,7 +177,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Distinguish from other channel types.
-        yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName;
+        yield return typeof(AgentChannel<OpenAIAssistantAgent>).FullName!;
 
         // Distinguish between different Azure OpenAI endpoints or OpenAI services.
         yield return this._config.Endpoint ?? "openai";
@@ -185,7 +185,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Distinguish between different API versioning.
         if (this._config.Version.HasValue)
         {
-            yield return this._config.Version!.ToString();
+            yield return this._config.Version.ToString()!;
         }
 
         // Custom client receives dedicated channel.

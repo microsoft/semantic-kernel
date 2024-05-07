@@ -833,14 +833,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
-            }),
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            ]),
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
@@ -881,11 +881,11 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };

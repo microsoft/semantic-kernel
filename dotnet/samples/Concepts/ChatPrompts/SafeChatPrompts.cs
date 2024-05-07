@@ -263,7 +263,7 @@ public sealed class SafeChatPrompts : BaseTest, IDisposable
         {
             TemplateFormat = PromptTemplateConfig.SemanticKernelTemplateFormat,
             Template = template
-        }, arguments ?? new(), promptTemplateFactory);
+        }, arguments ?? [], promptTemplateFactory);
     }
 
     private Task<string> RenderPromptAsync(PromptTemplateConfig promptConfig, KernelArguments arguments, IPromptTemplateFactory? promptTemplateFactory = null)

@@ -21,7 +21,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     public List<KernelParameterMetadata> Properties { get; set; } = [];
 
     // Override the Equals method to compare the property values
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         // Check to make sure the object is the expected type
         if (obj is not HandlebarsParameterTypeMetadata other)

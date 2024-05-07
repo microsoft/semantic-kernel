@@ -226,7 +226,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
                 // Serialize complex objects and set as json strings.
                 // The only remaining type not referenced here is null, but the default value of extensionValueObj
                 // is null, so if we just continue that will handle the null case.
-                if (any.AnyType == AnyType.Array || any.AnyType == AnyType.Object)
+                if (any.AnyType is AnyType.Array or AnyType.Object)
                 {
                     var schemaBuilder = new StringBuilder();
                     var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings() { Terse = true });

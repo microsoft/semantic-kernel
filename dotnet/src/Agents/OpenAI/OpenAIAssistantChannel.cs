@@ -293,10 +293,9 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         return
             new ChatMessageContent(
                 role,
-                new ChatMessageContentItemCollection()
-                {
+                [
                     new FileReferenceContent(contentImage.FileId)
-                })
+                ])
             {
                 AuthorName = agentName,
             };
@@ -352,7 +351,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             {
                 KernelFunction function = agent.Kernel.GetKernelFunction(functionDetails.Name, FunctionDelimiter);
 
-                KernelArguments functionArguments = new();
+                KernelArguments functionArguments = [];
                 if (!string.IsNullOrWhiteSpace(functionDetails.Arguments))
                 {
                     Dictionary<string, object> arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(functionDetails.Arguments)!;

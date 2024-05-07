@@ -30,7 +30,9 @@ internal static class ChatPromptParser
         // the text contains "<message", as that's required in any valid XML prompt.
         const string MessageTagStart = "<" + MessageTagName;
         if (prompt is not null &&
+#pragma warning disable CA2249 //'string.Contains' not available for netstandard2.0
             prompt.IndexOf(MessageTagStart, StringComparison.OrdinalIgnoreCase) >= 0 &&
+#pragma warning restore CA2249
             XmlPromptParser.TryParse(prompt, out var nodes) &&
             TryParse(nodes, out chatHistory))
         {

@@ -341,8 +341,10 @@ public static class OpenApiKernelExtensions
         var returnParameter = operation.GetDefaultReturnParameter();
 
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
-        var additionalMetadata = new Dictionary<string, object?>();
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant());
+        var additionalMetadata = new Dictionary<string, object?>
+        {
+            { OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() }
+        };
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);

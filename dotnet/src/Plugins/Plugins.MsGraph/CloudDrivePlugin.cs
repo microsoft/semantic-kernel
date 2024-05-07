@@ -47,9 +47,11 @@ public sealed class CloudDrivePlugin
         Stream fileContentStream = await this._connector.GetFileContentStreamAsync(filePath, cancellationToken).ConfigureAwait(false);
 
         using StreamReader sr = new(fileContentStream);
-        string content = await sr.ReadToEndAsync().ConfigureAwait(false);
-
-        return content;
+#if NET
+        return await sr.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+#else
+        return await sr.ReadToEndAsync().ConfigureAwait(false);
+#endif
     }
 
     /// <summary>
