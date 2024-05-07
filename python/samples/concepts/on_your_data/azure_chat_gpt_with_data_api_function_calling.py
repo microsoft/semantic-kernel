@@ -51,7 +51,7 @@ kernel.add_service(
     chat_service,
 )
 
-plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")
