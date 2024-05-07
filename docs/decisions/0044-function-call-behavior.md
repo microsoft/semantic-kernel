@@ -23,6 +23,7 @@ Additionally, today, it's not possible to specify function calling behavior decl
 - The same set of function call behavior model classes should be connector/mode-agnostic, allowing them to be used by all SK connectors that support function calling.
 - Function calling behavior should be specified in the `PromptExecutionSettings` base class rather than in connector-specific derivatives.
 - It should be possible and easy to specify function calling behavior in all already supported YAML, MD, and SK(config.json) prompts.
+- It should be possible to override the prompt execution settings specified in the prompt by using the prompt execution settings specified in the code.
 
 ## Existing function calling behavior model - ToolCallBehavior
 Today, SK uses the `ToolCallBehavior` abstract class and its derivatives `KernelFunctions`, `EnabledFunctions`, and `RequiredFunction` to define function calling behavior for the OpenAI connector. The behavior is specified via the `OpenAIPromptExecutionSettings.ToolCallBehavior` property. The model is identical for other connectors and differs only in the function call behavior class names.
@@ -37,7 +38,7 @@ GeminiPromptExecutionSettings settings = new() { ToolCallBehavior = GeminiToolCa
 
 Taking into account that the function-calling behavior has been around since SK v1 release and might be used extensively as a result, the new function-calling abstraction must be introduced and coexist alongside the existing function-calling model. This will prevent breaking changes and allow consumers to gradually migrate from the current model to the new one.
 
-## Option 1
+## [New model] Option 1.1 - A class per specialization of tool behavior and function call choice
 To satisfy the "no breaking changes" requirement above and the "connector/mode-agnostic model" decision driver, the new set of connector agnostic classes needs to be introduced.
 
 ### Tool behavior classes
@@ -287,8 +288,55 @@ SK prompts may have one or more entries, one per service, of execution settings 
 ```
 To accommodate the scenarios above, it makes sense to introduce an inheritance mechanism that would inherit parent tool behavior configuration if specified on the parent. Regardless of whether the parent has tool behavior configurations or not, it should be possible to specify or override the parent one at each service entry level.
 
-## Option 2
+## [New model] Option 1.2 - alternative design
 Explore the possibility of resolving specific types at a later post-deserialization phase and in a location with access to a kernel instance, so no polymorphic deserialization would be required. This would allow for the resolution of custom classes registered by users in the kernel service collection. Users will simply register the custom classes that will be automatically picked either during prompt rendering or at the moment the information is required, regardless of the prompt format - JSON or YAML.
+
+## 2. Separation of function call choice and function invocation configs
+The new model should support scenarios in which the prompt is engineered by one person and executed or invoked by another. One way to achieve this is to separate function call choice configuration - auto, enabled, none - from function invocation configuration, such as MaximumAutoInvokeAttempts, InvokeInParallel, etc. The function call choice configuration can still be provided through PromptExecutionSettings, while the appropriate location for supplying the function invocation configuration needs to be identified. It should be possible to override function call choice from the code as well. Below are several options considering potential places for supplying function invocation configuration via the code:
+
+### Option 2.1 - Supplying config as a parameter of the `IChatCompletionService.GetChatMessageContentsAsync` and `IChatCompletionService.GetStreamingChatMessageContentsAsync` methods.
+Pros:  
+- The function invocation configuration can be supplied per operation, rather than per AI service configuration.  
+   
+Cons:  
+- Adding a new parameter to the interface methods will introduce breaking changes that will affect all non-SK custom implementations of the interface.  
+- This approach deviates from the current development experience, where both configurations are supplied via connector-specific prompt execution settings.
+
+### Option 2.2 - Supplying config as a constructor parameter of each implementation of the `IChatCompletionService` interface.
+Pros:  
+- No need to change the interface method signatures - so no non-SK custom implementations will be broken.  
+   
+Cons:  
+- The function invocation configuration will be applied at the service level during the service registration phase. If some operations need different configurations, a new service with a different config needs to be registered.  
+- This approach will require adding overloaded constructors for all AI SK services/connectors. This may potentially cause the "ambiguous constructor" problem that may require an additional solution.  
+- This approach deviates from the current development experience, where both configurations are supplied via connector-specific prompt execution settings.
+
+### Option 2.3 - Supplying config via a new `Kernel.FunctionInvocationConfig` property.
+Pros:
+- No breaking changes - neither `IChatCompletionService` members signatures nor its implementation constructors signatures are changed.
+
+Cons:
+- A new kernel needs to be created or existing one needs to be cloned every time a different configuration is required.
+- Kernel gets more AI connector specific logic.
+- This approach deviates from the current development experience, where both configurations are supplied via connector-specific prompt execution settings.
+
+### Option 2.4 - Supplying config via `Kernel.Data` collection.
+Pros:  
+- No breaking changes - neither `IChatCompletionService` member signatures nor its implementation constructor signatures are changed.  
+- No AI connector-specific logic is added to the Kernel.  
+   
+Cons:  
+- Requires a magic constant that is not enforced by the compiler.  
+- A new kernel needs to be created or an existing one needs to be cloned every time a different configuration is required.  
+- This approach deviates from the current development experience, where both configurations are supplied via connector-specific prompt execution settings.
+
+### Option 2.5 - Supplying config via `PromptExecutionSettings`.
+Pros:
+- This approach is the same as the current one, where both configurations are supplied via connector-specific prompt execution settings.
+- No breaking changes - neither IChatCompletionService member signatures nor its implementation constructor signatures are changed.
+
+Cons:
+- A new service selector needs to be implemented and registered on the Kernel to merge execution settings provided via the prompt with execution settings provided by developers at the invocation step.
 
 ## Questions
 - Today, the existing tool call behavior can accept and advertise [OpenAI functions](https://github.com/microsoft/semantic-kernel/blob/0296329886eb2116a66e5362f2cc72b42ee30157/dotnet/src/Connectors/Connectors.OpenAI/ToolCallBehavior.cs#L68). These functions are not registered in SK, and SK can only invoke them in 'manual' mode; the 'auto' mode requires the function to be registered on the kernel and throws an exception if that is not the case. Do we have a scenario that requires this functionality?
@@ -297,3 +345,4 @@ Explore the possibility of resolving specific types at a later post-deserializat
 There were a few decisions taken during the ADR review:
 - The Breaking glass support is out of scope. It may be added later if/when needed.
 - The `PromptExecution.ToolBehaviors` property should support only one behavior. The original design described in Option 1 supported multiple tool behaviors configured per service. However, it was pointed out that this might not be necessary, could confuse SK users, and adds unnecessary complexity that degrades developer experience.
+- Option 2.5, which presumes supplying function call choices and function invocation configurations via prompt execution settings, was preferred over the other options due to its simplicity, absence of breaking changes, and familiar developer experience.
