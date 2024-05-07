@@ -6,8 +6,11 @@ from functools import reduce
 from typing import TYPE_CHECKING, List
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -71,10 +74,9 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    tool_choice="auto",
-    tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-    auto_invoke_kernel_functions=True,
-    max_auto_invoke_attempts=3,
+    function_call_behavior=FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"included_plugins": ["math"]}
+    ),
 )
 
 history = ChatHistory()
@@ -119,7 +121,9 @@ async def handle_streaming(
     print("Mosscap:> ", end="")
     streamed_chunks: List[StreamingChatMessageContent] = []
     async for message in response:
-        if not execution_settings.auto_invoke_kernel_functions:
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+            message[0], FunctionCallContent
+        ):
             streamed_chunks.append(message[0])
         else:
             print(str(message[0]), end="")
@@ -148,7 +152,7 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = True
+    stream = False
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
@@ -157,7 +161,9 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.auto_invoke_kernel_functions:
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
+            result.value[0], FunctionCallContent
+        ):
             print_tool_calls(result.value[0])
             return True
 
