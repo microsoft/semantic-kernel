@@ -24,29 +24,45 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
-        => StartCompletionActivity(modelName, modelProvider, prompt, executionSettings, prompt => prompt);
+    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+        => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
 
     /// <summary>
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
-        => StartCompletionActivity(modelName, modelProvider, chatHistory, executionSettings, chatHistory => ToOpenAIFormat(chatHistory.AsEnumerable()));
+    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
+        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, chatHistory => ToOpenAIFormat(chatHistory.AsEnumerable()));
 
     /// <summary>
     /// Set the text completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
-    public static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int promptTokens, int completionTokens)
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens, int? completionTokens)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}]");
 
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
+    /// Token counts will be set to -1 if not provided.
     /// </summary>
-    public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int promptTokens, int completionTokens)
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions)
+            => SetCompletionResponse(activity, completions, null, null, completions => $"[{string.Join(", ", completions)}]");
+
+    /// <summary>
+    /// Set the chat completion response for a given activity.
+    /// The activity will be enriched with the response attributes specified by the semantic conventions.
+    /// </summary>
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens, int? completionTokens)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
+
+    /// <summary>
+    /// Set the chat completion response for a given activity.
+    /// The activity will be enriched with the response attributes specified by the semantic conventions.
+    /// Token counts will be set to -1 if not provided.
+    /// </summary>
+    public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions)
+        => SetCompletionResponse(activity, completions, null, null, ToOpenAIFormat);
 
     # region Private
     /// <summary>
@@ -93,6 +109,7 @@ internal static class ModelDiagnostics
     /// The `formatPrompt` delegate won't be invoked if events are disabled.
     /// </summary>
     private static Activity? StartCompletionActivity<T>(
+        Uri? endpoint,
         string modelName,
         string modelProvider,
         T prompt,
@@ -112,6 +129,14 @@ internal static class ModelDiagnostics
                 new(ModelDiagnosticsTags.System, modelProvider),
                 new(ModelDiagnosticsTags.Model, modelName),
             ]);
+
+        if (endpoint is not null)
+        {
+            activity?.AddTags([
+                new(ModelDiagnosticsTags.Address, endpoint.AbsoluteUri),
+                new(ModelDiagnosticsTags.Port, endpoint.Port),
+            ]);
+        }
 
         AddOptionalTags(activity, executionSettings);
 
@@ -135,8 +160,8 @@ internal static class ModelDiagnostics
     private static void SetCompletionResponse<T>(
         Activity activity,
         T completions,
-        int promptTokens,
-        int completionTokens,
+        int? promptTokens,
+        int? completionTokens,
         Func<T, string> formatCompletions) where T : IEnumerable<KernelContent>
     {
         if (!IsModelDiagnosticsEnabled())
@@ -147,8 +172,9 @@ internal static class ModelDiagnostics
         activity.AddTags(
             [
                 new(ModelDiagnosticsTags.FinishReason, GetFinishReasons(completions)),
-                new(ModelDiagnosticsTags.PromptToken, promptTokens),
-                new(ModelDiagnosticsTags.CompletionToken, completionTokens),
+                new(ModelDiagnosticsTags.PromptToken, promptTokens ?? -1),
+                new(ModelDiagnosticsTags.CompletionToken, completionTokens ?? -1),
+                new(ModelDiagnosticsTags.ResponseId, GetResponseId(completions.FirstOrDefault())),
             ]);
 
         if (s_enableSensitiveEvents)
@@ -176,6 +202,16 @@ internal static class ModelDiagnostics
         return $"[{string.Join(", ", finishReasons)}]";
     }
 
+    private static string GetResponseId(KernelContent completion)
+    {
+        if (completion.Metadata?.TryGetValue("Id", out var id) == true)
+        {
+            return id as string ?? "N/A";
+        }
+
+        return "N/A";
+    }
+
     /// <summary>
     /// Tags used in model diagnostics
     /// </summary>
@@ -195,6 +231,8 @@ internal static class ModelDiagnostics
         public const string CompletionToken = "gen_ai.response.completion_tokens";
         public const string Prompt = "gen_ai.content.prompt";
         public const string Completion = "gen_ai.content.completion";
+        public const string Address = "server.address";
+        public const string Port = "server.port";
 
         // Activity events
         public const string PromptEvent = "gen_ai.content.prompt";

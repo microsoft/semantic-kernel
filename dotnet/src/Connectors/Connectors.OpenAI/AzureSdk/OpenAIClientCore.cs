@@ -59,11 +59,14 @@ internal sealed class OpenAIClientCore : ClientCore
         if (providedEndpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
+            this.Endpoint = new Uri("https://api.openai.com/v1");
         }
         else
         {
             options.AddPolicy(new CustomHostPipelinePolicy(providedEndpoint), Azure.Core.HttpPipelinePosition.PerRetry);
+            this.Endpoint = providedEndpoint;
         }
+
         this.Client = new OpenAIClient(apiKey ?? string.Empty, options);
     }
 

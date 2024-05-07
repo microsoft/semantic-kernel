@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
@@ -161,11 +162,29 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
-                    this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
-                .ConfigureAwait(false);
+            GeminiResponse geminiResponse;
+            List<GeminiChatMessageContent> chatResponses;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, "Google", chatHistory, executionSettings))
+            {
+                try
+                {
+                    geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
+                            this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
+                        .ConfigureAwait(false);
+                    chatResponses = this.ProcessChatResponse(geminiResponse);
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    throw;
+                }
 
-            var chatResponses = this.ProcessChatResponse(geminiResponse);
+                activity?.SetCompletionResponse(
+                    chatResponses,
+                    geminiResponse.UsageMetadata?.PromptTokenCount,
+                    geminiResponse.UsageMetadata?.CandidatesTokenCount);
+            }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.

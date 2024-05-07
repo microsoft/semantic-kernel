@@ -70,6 +70,8 @@ internal abstract class ClientCore
     /// </summary>
     internal abstract OpenAIClient Client { get; }
 
+    internal Uri? Endpoint { get; set; } = null;
+
     /// <summary>
     /// Logger instance
     /// </summary>
@@ -134,7 +136,7 @@ internal abstract class ClientCore
 
         Completions responseData;
         IEnumerable<TextContent> responseContent;
-        using (var activity = ModelDiagnostics.StartCompletionActivity(this.DeploymentOrModelName, "OpenAI", text, executionSettings))
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, "OpenAI", text, executionSettings))
         {
             try
             {
@@ -341,7 +343,7 @@ internal abstract class ClientCore
             // Make the request.
             ChatCompletions responseData;
             IEnumerable<OpenAIChatMessageContent> responseContent;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.DeploymentOrModelName, "OpenAI", chat, executionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, "OpenAI", chat, executionSettings))
             {
                 try
                 {

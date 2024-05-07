@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -136,14 +137,27 @@ internal sealed class HuggingFaceClient
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
+
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, "HuggingFace", prompt, executionSettings);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        TextGenerationResponse response;
+        try
+        {
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        var response = DeserializeResponse<TextGenerationResponse>(body);
+            response = DeserializeResponse<TextGenerationResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            throw;
+        }
+
         var textContents = GetTextContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(textContents);
         this.LogTextGenerationUsage(executionSettings);
 
         return textContents;

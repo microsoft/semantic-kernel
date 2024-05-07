@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
@@ -106,14 +107,27 @@ internal sealed class HuggingFaceMessageApiClient
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
+
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, "HuggingFace", chatHistory, executionSettings);
 
-        string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        ChatCompletionResponse response;
+        try
+        {
+            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        var response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+            response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            throw;
+        }
+
         var chatContents = GetChatMessageContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(chatContents, response.Usage?.PromptTokens, response.Usage?.CompletionTokens);
         this.LogChatCompletionUsage(executionSettings, response);
 
         return chatContents;
