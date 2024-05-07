@@ -30,7 +30,7 @@ Use their orders as context to the question they are asking.
 {% for item in customer.orders %}
 name: {{item.name}}
 description: {{item.description}}
-{% endfor %} 
+{% endfor %}
 
 
 # Customer Context

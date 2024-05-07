@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Scriban;
 using Scriban.Syntax;
 
@@ -17,6 +18,11 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 /// </summary>
 internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
+    private const string ReservedString = "&#58;";
+    private const string ColonString = ":";
+    private const char LineEnding = '\n';
+    private readonly PromptTemplateConfig _config;
+    private readonly bool _allowUnsafeContent;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
 
     private readonly Template _liquidTemplate;
@@ -24,15 +30,22 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
     /// <param name="config">Prompt template configuration</param>
-    /// <exception cref="ArgumentException"><see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/>.</exception>
+    /// <param name="allowUnsafeContent">Whether to allow unsafe content in the template</param>
+    /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     /// <exception cref="ArgumentException">The template in <paramref name="config"/> could not be parsed.</exception>
-    public LiquidPromptTemplate(PromptTemplateConfig config)
+    /// <exception cref="ArgumentNullException">throw if <paramref name="config"/> is null</exception>
+    /// <exception cref="ArgumentNullException">throw if the template in <paramref name="config"/> is null</exception>
+    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
     {
+        Verify.NotNull(config, nameof(config));
+        Verify.NotNull(config.Template, nameof(config.Template));
         if (config.TemplateFormat != LiquidPromptTemplateFactory.LiquidTemplateFormat)
         {
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
         }
 
+        this._allowUnsafeContent = allowUnsafeContent;
+        this._config = config;
         // Parse the template now so we can check for errors, understand variable usage, and
         // avoid having to parse on each render.
         this._liquidTemplate = Template.ParseLiquid(config.Template);
@@ -72,24 +85,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
         cancellationToken.ThrowIfCancellationRequested();
-
-        Dictionary<string, object>? nonEmptyArguments = null;
-        if (this._inputVariables.Count is > 0 || arguments?.Count is > 0)
-        {
-            nonEmptyArguments = new(this._inputVariables);
-            if (arguments is not null)
-            {
-                foreach (var p in arguments)
-                {
-                    if (p.Value is not null)
-                    {
-                        nonEmptyArguments[p.Key] = p.Value;
-                    }
-                }
-            }
-        }
-
-        var renderedResult = this._liquidTemplate.Render(nonEmptyArguments);
+        var variables = this.GetVariables(arguments);
+        var renderedResult = this._liquidTemplate.Render(variables);
 
         // parse chat history
         // for every text like below
@@ -116,15 +113,94 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
             var sb = new StringBuilder();
             for (var i = 1; i < splits.Length; i += 2)
             {
-                sb.Append("<message role=\"").Append(splits[i]).AppendLine("\">");
-                sb.AppendLine(splits[i + 1]);
-                sb.AppendLine("</message>");
+                var role = splits[i];
+                var content = splits[i + 1];
+                content = this.Encoding(content);
+                sb.Append("<message role=\"").Append(role).Append("\">").Append(LineEnding);
+                sb.Append(content).Append(LineEnding);
+                sb.Append("</message>").Append(LineEnding);
             }
 
-            renderedResult = sb.ToString();
+            renderedResult = sb.ToString().TrimEnd();
         }
 
         return renderedResult;
+    }
+
+    private string Encoding(string text)
+    {
+        text = this.ReplaceReservedStringBackToColonIfNeeded(text);
+        text = HttpUtility.HtmlEncode(text);
+        return text;
+    }
+
+    private string ReplaceReservedStringBackToColonIfNeeded(string text)
+    {
+        if (this._allowUnsafeContent)
+        {
+            return text;
+        }
+
+        return text.Replace(ReservedString, ColonString);
+    }
+
+    /// <summary>
+    /// Gets the variables for the prompt template, including setting any default values from the prompt config.
+    /// </summary>
+    private Dictionary<string, object> GetVariables(KernelArguments? arguments)
+    {
+        var result = new Dictionary<string, object>();
+
+        foreach (var p in this._config.InputVariables)
+        {
+            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            {
+                continue;
+            }
+
+            result[p.Name] = p.Default;
+        }
+
+        if (arguments is not null)
+        {
+            foreach (var kvp in arguments)
+            {
+                if (kvp.Value is not null)
+                {
+                    var value = (object)kvp.Value;
+                    if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
+                    {
+                        var valueString = value.ToString();
+                        valueString = valueString.Replace(ColonString, ReservedString);
+                        result[kvp.Key] = valueString;
+                    }
+                    else
+                    {
+                        result[kvp.Key] = value;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
+    {
+        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        {
+            return false;
+        }
+
+        foreach (var inputVariable in promptTemplateConfig.InputVariables)
+        {
+            if (inputVariable.Name == propertyName)
+            {
+                return !inputVariable.AllowUnsafeContent;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
