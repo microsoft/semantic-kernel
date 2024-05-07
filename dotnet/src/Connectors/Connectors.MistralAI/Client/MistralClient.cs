@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
@@ -40,6 +41,7 @@ internal sealed class MistralClient
         this._apiKey = apiKey;
         this._httpClient = httpClient;
         this._logger = logger ?? NullLogger.Instance;
+        this._streamJsonParser = new StreamJsonParser();
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, CancellationToken cancellationToken, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null)
@@ -350,38 +352,28 @@ internal sealed class MistralClient
         this.ValidateChatHistory(chatHistory);
 
         var endpoint = this.GetEndpoint(executionSettings, path: "chat/completions");
-
         using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: true);
-
         using var response = await this.SendStreamingRequestAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-
         using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(responseStream);
-        string line;
-        string? rawChunk = null;
-        string? currentRole = null;
-        while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
-            if (!string.IsNullOrEmpty(line))
-            {
-                rawChunk = line.Substring(SseDataLength).Trim();
-            }
-            else if (rawChunk is not null)
-            {
-                if (rawChunk is "[DONE]")
-                {
-                    continue;
-                }
-                var chunk = JsonSerializer.Deserialize<MistralChatCompletionChunk>(rawChunk);
-                rawChunk = null;
+            yield return streamingChatContent;
+        }
+    }
 
-                if (chunk is null)
-                {
-                    throw new KernelException("Unexpected chunk response from model")
-                    {
-                        Data = { { "ResponseData", rawChunk } },
-                    };
-                }
+    private async IAsyncEnumerable<StreamingChatMessageContent> ProcessChatResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        IAsyncEnumerator<MistralChatCompletionChunk>? responseEnumerator = null;
+
+        try
+        {
+            var responseEnumerable = this.ParseChatResponseStreamAsync(stream, cancellationToken);
+            responseEnumerator = responseEnumerable.GetAsyncEnumerator(cancellationToken);
+
+            string? currentRole = null;
+            while (await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                var chunk = responseEnumerator.Current!;
 
                 for (int i = 0; i < chunk.GetChoiceCount(); i++)
                 {
@@ -396,6 +388,21 @@ internal sealed class MistralClient
                         metadata: chunk.GetMetadata());
                 }
             }
+        }
+        finally
+        {
+            if (responseEnumerator != null)
+            {
+                await responseEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async IAsyncEnumerable<MistralChatCompletionChunk> ParseChatResponseStreamAsync(Stream responseStream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var json in this._streamJsonParser.ParseAsync(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false))
+        {
+            yield return DeserializeResponse<MistralChatCompletionChunk>(json);
         }
     }
 
@@ -417,6 +424,7 @@ internal sealed class MistralClient
     private readonly Uri? _endpoint;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
+    private readonly StreamJsonParser _streamJsonParser;
 
     private const int SseDataLength = 5;
 
