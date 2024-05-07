@@ -65,7 +65,7 @@ internal sealed class MistralClient
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return ToChatMessageContent(modelId, responseData);
+                return this.ToChatMessageContent(modelId, responseData);
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
@@ -76,7 +76,7 @@ internal sealed class MistralClient
             MistralChatChoice chatChoice = responseData.Choices[0]; // TODO Handle multiple choices
             if (!chatChoice.IsToolCall)
             {
-                return ToChatMessageContent(modelId, responseData);
+                return this.ToChatMessageContent(modelId, responseData);
             }
 
             if (this._logger.IsEnabled(LogLevel.Debug))
@@ -95,7 +95,7 @@ internal sealed class MistralClient
             // history: if they don't want it, they can remove it, but this makes the data available,
             // including metadata like usage.
             chatRequest.AddMessage(chatChoice.Message!);
-            chatHistory.Add(ToChatMessageContent(modelId, responseData, chatChoice));
+            chatHistory.Add(this.ToChatMessageContent(modelId, responseData, chatChoice));
 
             // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
             // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -229,7 +229,7 @@ internal sealed class MistralClient
                         // history: if they don't want it, they can remove it, but this makes the data available,
                         // including metadata like usage.
                         chatRequest.AddMessage(new MistralChatMessage(streamedRole!, completionChunk.GetContent(0)) { ToolCalls = chatChoice.ToolCalls });
-                        chatHistory.Add(ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
+                        chatHistory.Add(this.ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
                     }
                 }
 
@@ -464,7 +464,7 @@ internal sealed class MistralClient
         var request = new ChatCompletionRequest(modelId)
         {
             Stream = stream,
-            Messages = chatHistory.Select(chatMessage => new MistralChatMessage(chatMessage.Role.ToString(), chatMessage.Content!)).ToList(),
+            Messages = chatHistory.Select(chatMessage => this.CreateChatMessage(chatMessage)).ToList(),
         };
 
         if (executionSettings is not null)
@@ -482,6 +482,37 @@ internal sealed class MistralClient
         }
 
         return request;
+    }
+
+    private MistralChatMessage CreateChatMessage(ChatMessageContent content)
+    {
+        var message = new MistralChatMessage(content.Role.ToString(), content.Content!);
+
+        if (content.Role == AuthorRole.Tool)
+        {
+            foreach (var item in content.Items)
+            {
+                if (item is not FunctionResultContent resultContent)
+                {
+                    continue;
+                }
+                /*
+                toolMessages ??= [];
+
+                if (resultContent.Result is Exception ex)
+                {
+                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    continue;
+                }
+
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
+
+                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                */
+            }
+        }
+
+        return message;
     }
 
     private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string apiKey, bool stream)
@@ -558,24 +589,94 @@ internal sealed class MistralClient
         }
     }
 
-    private static List<ChatMessageContent> ToChatMessageContent(string modelId, ChatCompletionResponse response)
+    private List<ChatMessageContent> ToChatMessageContent(string modelId, ChatCompletionResponse response)
     {
-        return response.Choices.Select(chatChoice => ToChatMessageContent(modelId, response, chatChoice)).ToList();
+        return response.Choices.Select(chatChoice => this.ToChatMessageContent(modelId, response, chatChoice)).ToList();
     }
 
-    private static List<ChatMessageContent> ToChatMessageContent(string modelId, string streamedRole, MistralChatCompletionChunk chunk)
+    private List<ChatMessageContent> ToChatMessageContent(string modelId, string streamedRole, MistralChatCompletionChunk chunk)
     {
-        return chunk.Choices.Select(chatChoice => ToChatMessageContent(modelId, streamedRole, chunk, chatChoice)).ToList();
+        return chunk.Choices.Select(chatChoice => this.ToChatMessageContent(modelId, streamedRole, chunk, chatChoice)).ToList();
     }
 
-    private static ChatMessageContent ToChatMessageContent(string modelId, ChatCompletionResponse response, MistralChatChoice chatChoice)
+    private ChatMessageContent ToChatMessageContent(string modelId, ChatCompletionResponse response, MistralChatChoice chatChoice)
     {
-        return new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role!), chatChoice.Message!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice));
+        var message = new ChatMessageContent(new AuthorRole(chatChoice.Message!.Role!), chatChoice.Message!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(response, chatChoice));
+
+        if (chatChoice.IsToolCall)
+        {
+            foreach (var toolCall in chatChoice.ToolCalls!)
+            {
+                this.AddFunctionCallContent(message, toolCall);
+            }
+        }
+
+        return message;
     }
 
-    private static ChatMessageContent ToChatMessageContent(string modelId, string streamedRole, MistralChatCompletionChunk chunk, MistralChatCompletionChoice chatChoice)
+    private ChatMessageContent ToChatMessageContent(string modelId, string streamedRole, MistralChatCompletionChunk chunk, MistralChatCompletionChoice chatChoice)
     {
-        return new ChatMessageContent(new AuthorRole(streamedRole), chatChoice.Delta!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(chunk, chatChoice));
+        var message = new ChatMessageContent(new AuthorRole(streamedRole), chatChoice.Delta!.Content, modelId, chatChoice, Encoding.UTF8, GetChatChoiceMetadata(chunk, chatChoice));
+
+        if (chatChoice.IsToolCall)
+        {
+            foreach (var toolCall in chatChoice.ToolCalls!)
+            {
+                this.AddFunctionCallContent(message, toolCall);
+            }
+        }
+
+        return message;
+    }
+
+    private void AddFunctionCallContent(ChatMessageContent message, MistralToolCall toolCall)
+    {
+        if (toolCall.Function is null)
+        {
+            return;
+        }
+
+        // Adding items of 'FunctionCallContent' type to the 'Items' collection even though the function calls are available via the 'ToolCalls' property.
+        // This allows consumers to work with functions in an LLM-agnostic way.
+        Exception? exception = null;
+        KernelArguments? arguments = null;
+        if (toolCall.Function.Arguments is not null)
+        {
+            try
+            {
+                arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.Function.Arguments);
+                if (arguments is not null)
+                {
+                    // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
+                    var names = arguments.Names.ToArray();
+                    foreach (var name in names)
+                    {
+                        arguments[name] = arguments[name]?.ToString();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
+
+                if (this._logger.IsEnabled(LogLevel.Debug))
+                {
+                    this._logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", toolCall.Function.Name, toolCall.Id);
+                }
+            }
+        }
+
+        var functionCallContent = new FunctionCallContent(
+            functionName: toolCall.Function.FunctionName,
+            pluginName: toolCall.Function.PluginName,
+            id: toolCall.Id,
+            arguments: arguments)
+        {
+            InnerContent = toolCall,
+            Exception = exception
+        };
+
+        message.Items.Add(functionCallContent);
     }
 
     private void AddResponseMessage(ChatCompletionRequest chatRequest, ChatHistory chat, MistralToolCall toolCall, string? result, string? errorMessage)
@@ -587,10 +688,25 @@ internal sealed class MistralClient
             this._logger.LogDebug("Failed to handle tool request ({ToolId}). {Error}", toolCall.Function?.Name, errorMessage);
         }
 
-        // Add the tool response message to both the chat options and to the chat history.
+        // Add the tool response message to both the chat options
         result ??= errorMessage ?? string.Empty;
         chatRequest.AddMessage(new MistralChatMessage(AuthorRole.Tool.ToString(), result));
-        chat.AddMessage(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { nameof(MistralToolCall.Function), toolCall.Function } });
+
+        // Add the tool response message to the chat history
+        var message = new ChatMessageContent(AuthorRole.Tool, result, metadata: new Dictionary<string, object?> { { nameof(MistralToolCall.Function), toolCall.Function } });
+
+        // Add an item of type FunctionResultContent to the ChatMessageContent.Items collection in addition to the function result stored as a string in the ChatMessageContent.Content property.  
+        // This will enable migration to the new function calling model and facilitate the deprecation of the current one in the future.
+        if (toolCall.Function is not null)
+        {
+            message.Items.Add(new FunctionResultContent(
+                toolCall.Function.FunctionName,
+                toolCall.Function.PluginName,
+                toolCall.Id,
+                result));
+        }
+
+        chat.Add(message);
     }
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(ChatCompletionResponse completionResponse, MistralChatChoice chatChoice)
