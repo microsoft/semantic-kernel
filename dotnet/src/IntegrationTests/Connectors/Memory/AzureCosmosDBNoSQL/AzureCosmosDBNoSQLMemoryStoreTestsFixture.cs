@@ -61,26 +61,11 @@ public class AzureCosmosDBNoSQLMemoryStoreTestsFixture : IAsyncLifetime
         );
     }
 
-    public async Task InitializeAsync()
-    {
-        await this.MemoryStore.CreateCollectionAsync(this.CollectionName);
-        await this
-            .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
-            .ToListAsync();
-    }
+    public Task InitializeAsync()
+        => Task.CompletedTask;
 
-    public async Task DisposeAsync()
-    {
-        try
-        {
-            await this.MemoryStore.DeleteCollectionAsync(this.CollectionName);
-        }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            // It's okay if a test already deleted the collection.
-        }
-        this.MemoryStore.Dispose();
-    }
+    public Task DisposeAsync()
+        => Task.CompletedTask;
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {

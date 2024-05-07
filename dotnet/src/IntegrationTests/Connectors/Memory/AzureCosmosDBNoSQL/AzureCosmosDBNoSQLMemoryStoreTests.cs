@@ -74,6 +74,8 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
         await memoryStore.RemoveBatchAsync(collectionName, keys);
         var ids = await memoryStore.GetBatchAsync(collectionName, keys).ToListAsync();
         Assert.Empty(ids);
+
+        await memoryStore.DeleteCollectionAsync(collectionName);
     }
 
     [Theory(Skip = SkipReason)]
@@ -87,6 +89,9 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
         var memoryStore = this._fixture.MemoryStore;
         var searchEmbedding = DataHelper.VectorSearchTestEmbedding;
         var nearestMatchesExpected = DataHelper.VectorSearchExpectedResults;
+
+        await memoryStore.CreateCollectionAsync(collectionName);
+        var keys = await memoryStore.UpsertBatchAsync(collectionName, DataHelper.VectorSearchTestRecords).ToListAsync();
 
         var nearestMatchesActual = await memoryStore
             .GetNearestMatchesAsync(
@@ -108,6 +113,8 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
                 withEmbeddings
             );
         }
+
+        await memoryStore.DeleteCollectionAsync(collectionName);
     }
 
     private static void AssertMemoryRecordEqual(
