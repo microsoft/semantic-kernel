@@ -22,7 +22,7 @@ public class RepairServiceTests
         var plugin = await kernel.ImportPluginFromOpenApiAsync(
             "RepairService",
             stream,
-            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false, EnablePayloadInResponse = true });
+            new OpenAIFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true, EnableDynamicPayload = false, EnableRequestPayloadInResponse = true });
 
         var arguments = new KernelArguments
         {
