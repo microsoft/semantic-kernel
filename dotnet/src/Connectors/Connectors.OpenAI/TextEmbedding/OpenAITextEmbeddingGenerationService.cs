@@ -20,6 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly OpenAIClientCore _core;
+    private readonly int? _dimensions;
 
     /// <summary>
     /// Create an instance of the OpenAI text embedding connector
@@ -29,12 +30,14 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     /// <param name="organization">OpenAI Organization Id (usually optional)</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     public OpenAITextEmbeddingGenerationService(
         string modelId,
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        int? dimensions = null)
     {
         this._core = new(
             modelId: modelId,
@@ -44,6 +47,8 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
             logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+
+        this._dimensions = dimensions;
     }
 
     /// <summary>
@@ -71,6 +76,6 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         CancellationToken cancellationToken = default)
     {
         this._core.LogActionDetails();
-        return this._core.GetEmbeddingsAsync(data, kernel, cancellationToken);
+        return this._core.GetEmbeddingsAsync(data, kernel, this._dimensions, cancellationToken);
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
@@ -184,7 +185,26 @@ public class ChatMessageContentTests
                 ["metadata-key-6"] = "metadata-value-6"
             }) { MimeType = "mime-type-6" },
             new FunctionCallContent("function-name", "plugin-name", "function-id", new KernelArguments { ["parameter"] = "argument" }),
-            new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result")
+            new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
+            new FileReferenceContent(
+                fileId: "file-id-1",
+                modelId: "model-7",
+                metadata: new Dictionary<string, object?>()
+                {
+                    ["metadata-key-7"] = "metadata-value-7"
+                }),
+            new AnnotationContent(
+                modelId: "model-8",
+                metadata: new Dictionary<string, object?>()
+                {
+                    ["metadata-key-8"] = "metadata-value-8"
+                })
+            {
+                FileId = "file-id-2",
+                StartIndex = 2,
+                EndIndex = 24,
+                Quote = "quote-8"
+            },
         };
 
         // Act
@@ -282,5 +302,24 @@ public class ChatMessageContentTests
         Assert.Equal("function-name", functionResultContent.FunctionName);
         Assert.Equal("function-id", functionResultContent.Id);
         Assert.Equal("plugin-name", functionResultContent.PluginName);
+
+        var fileReferenceContent = deserializedMessage.Items[8] as FileReferenceContent;
+        Assert.NotNull(fileReferenceContent);
+        Assert.Equal("file-id-1", fileReferenceContent.FileId);
+        Assert.Equal("model-7", fileReferenceContent.ModelId);
+        Assert.NotNull(fileReferenceContent.Metadata);
+        Assert.Single(fileReferenceContent.Metadata);
+        Assert.Equal("metadata-value-7", fileReferenceContent.Metadata["metadata-key-7"]?.ToString());
+
+        var annotationContent = deserializedMessage.Items[9] as AnnotationContent;
+        Assert.NotNull(annotationContent);
+        Assert.Equal("file-id-2", annotationContent.FileId);
+        Assert.Equal("quote-8", annotationContent.Quote);
+        Assert.Equal("model-8", annotationContent.ModelId);
+        Assert.Equal(2, annotationContent.StartIndex);
+        Assert.Equal(24, annotationContent.EndIndex);
+        Assert.NotNull(annotationContent.Metadata);
+        Assert.Single(annotationContent.Metadata);
+        Assert.Equal("metadata-value-8", annotationContent.Metadata["metadata-key-8"]?.ToString());
     }
 }
