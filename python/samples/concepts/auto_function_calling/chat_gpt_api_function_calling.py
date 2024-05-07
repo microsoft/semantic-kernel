@@ -25,10 +25,10 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose. You are also a math wizard, 
+flowery prose. You are also a math wizard,
 especially for adding and subtracting.
 You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for, 
+Once you have the answer I am looking for,
 you will return a full answer to me as soon as possible.
 """
 
@@ -44,7 +44,7 @@ kernel.add_service(
     ),
 )
 
-plugins_directory = os.path.join(__file__, "../../../../samples/plugins")
+plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
