@@ -2,12 +2,10 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
-using MongoDB.Driver;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBNoSQL;

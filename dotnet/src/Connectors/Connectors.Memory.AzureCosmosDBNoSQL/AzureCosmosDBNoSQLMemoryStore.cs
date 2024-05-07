@@ -33,8 +33,8 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure Cosmos DB.</param>
     /// <param name="databaseName">The database name to connect to.</param>
-    /// <param name="vectorEmbeddingPolicy">Details about the <see cref="Embedding"/> to use.</param>
-    /// <param name="indexingPolicy">The <see cref="IndexingPolicy"/> to use.</param>
+    /// <param name="vectorEmbeddingPolicy">The <see cref="VectorEmbeddingPolicy" /> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
+    /// <param name="indexingPolicy">The <see cref="IndexingPolicy"/> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
     /// <param name="applicationName">The application name to use in requests.</param>
     public AzureCosmosDBNoSQLMemoryStore(
         string connectionString,
@@ -58,6 +58,12 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// Initiates a AzureCosmosDBNoSQLMemoryStore instance using a <see cref="CosmosClient"/> instance
     /// and other properties required for vector search.
     /// </summary>
+    /// <param name="cosmosClient">An existing <see cref="CosmosClient"/> to use. NOTE: This must support serializing with
+    /// System.Text.Json, not the default Cosmos serializer.</param>
+    /// <param name="databaseName">The database name to operate against.</param>
+    /// <param name="vectorEmbeddingPolicy">The <see cref="VectorEmbeddingPolicy" /> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
+    /// <param name="indexingPolicy">The <see cref="IndexingPolicy"/> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
+    /// <param name="applicationName">The application name to use in requests.</param>
     public AzureCosmosDBNoSQLMemoryStore(
         CosmosClient cosmosClient,
         string databaseName,
