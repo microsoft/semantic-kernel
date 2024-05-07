@@ -118,6 +118,10 @@ public static class PromptyKernelExtensions
         var content = m.Groups["content"].Value;
 
         var prompty = new DeserializerBuilder().Build().Deserialize<PromptyYaml>(header);
+        if (prompty is null)
+        {
+            throw new ArgumentException("Invalid prompty template. Header could not be parsed.");
+        }
 
         // Step 2:
         // Create a prompt template config from the prompty data.
