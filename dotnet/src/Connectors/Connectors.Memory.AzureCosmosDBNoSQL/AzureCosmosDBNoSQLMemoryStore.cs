@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -189,24 +190,75 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // TODO: Need to split this into multiple queries if the query string is larger than 512kB
+        // Optimistically create the entire query string.
         var whereClause = string.Join(" OR ", keys.Select(k => $"(x.id = \"{k}\" AND x.key = \"{k}\")"));
         var queryDefinition = new QueryDefinition($"""
             SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
             FROM x
-            where {whereClause}
+            WHERE {whereClause}
             """);
 
-        var feedIterator = this._cosmosClient
-         .GetDatabase(this._databaseName)
-         .GetContainer(collectionName)
-         .GetItemQueryIterator<MemoryRecord>(queryDefinition);
-
-        while (feedIterator.HasMoreResults)
+        // NOTE: Cosmos DB queries are limited to 512kB, so if this is larger than that, break it into segments.
+        var byteCount = Encoding.UTF8.GetByteCount(whereClause);
+        var ratio = byteCount / ((float)(512 * 1024));
+        if (ratio < 1)
         {
-            foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
+            var feedIterator = this._cosmosClient
+                .GetDatabase(this._databaseName)
+                .GetContainer(collectionName)
+                .GetItemQueryIterator<MemoryRecord>(queryDefinition);
+
+            while (feedIterator.HasMoreResults)
             {
-                yield return memoryRecord;
+                foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    yield return memoryRecord;
+                }
+            }
+        }
+        else
+        {
+            // We're in the very large case, we'll need to split this into multiple queries.
+            // We add one to catch any fractional piece left in the last segment
+            var segments = (int)(ratio + 1);
+            var keyList = keys.ToList();
+            var keysPerQuery = keyList.Count / segments;
+            // Make a guess as to how long this query will be. We need at least 26 chars for each "OR" block, so
+            // put a few extra for the values of the keys.
+            var estimatedWhereLength = 30 * keysPerQuery;
+            var localWhere = new StringBuilder(estimatedWhereLength);
+            const string OR = " OR ";
+            for (var i = 0; i < segments; i++)
+            {
+                localWhere.Clear();
+                for (var q = i * keysPerQuery; q < (i + 1) * keysPerQuery && q < keyList.Count; q++)
+                {
+                    var k = keyList[q];
+                    localWhere.Append($"(x.id = \"{k}\" AND x.key = \"{k}\")").Append(OR);
+                }
+
+                if (localWhere.Length >= OR.Length)
+                {
+                    localWhere.Length -= OR.Length;
+
+                    var localQueryDefinition = new QueryDefinition($"""
+                    SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
+                    FROM x
+                    WHERE {localWhere}
+                    """);
+                    var feedIterator = this._cosmosClient
+                        .GetDatabase(this._databaseName)
+                        .GetContainer(collectionName)
+                        .GetItemQueryIterator<MemoryRecord>(localQueryDefinition);
+
+                    while (feedIterator.HasMoreResults)
+                    {
+                        foreach (var memoryRecord in await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false))
+                        {
+                            yield return memoryRecord;
+                        }
+                    }
+                }
             }
         }
     }
