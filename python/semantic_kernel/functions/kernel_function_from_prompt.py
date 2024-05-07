@@ -183,7 +183,7 @@ through prompt_template_config or in the prompt_template."
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if hasattr(execution_settings, "auto_invoke_kernel_functions"):
+        if hasattr(execution_settings, "function_call_behavior"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
@@ -280,7 +280,7 @@ through prompt_template_config or in the prompt_template."
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if hasattr(execution_settings, "auto_invoke_kernel_functions"):
+        if hasattr(execution_settings, "function_call_behavior"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
