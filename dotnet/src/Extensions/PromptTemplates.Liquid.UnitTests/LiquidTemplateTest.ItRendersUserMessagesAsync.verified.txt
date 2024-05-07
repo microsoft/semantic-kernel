@@ -1,2 +1,0 @@
-﻿<message role='system'>This is the system message</message>
-<message role='user'>First user message</message>

@@ -1,9 +1,0 @@
-﻿```csharp
-/// <summary>
-/// Example code with comment in the system prompt
-/// </summary>
-public void ReturnSomething()
-{
-	// no return
-}
-```
