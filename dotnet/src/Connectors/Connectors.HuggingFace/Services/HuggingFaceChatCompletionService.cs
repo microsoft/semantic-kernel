@@ -42,7 +42,6 @@ public sealed class HuggingFaceChatCompletionService : IChatCompletionService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        // var clientEndpoint = endpoint ?? httpClient?.BaseAddress;
         var clientEndpoint = endpoint ?? httpClient?.BaseAddress
             ?? throw new ArgumentNullException(nameof(endpoint), "Chat completion service requires a valid endpoint provided explicitly or via HTTP client base address");
 
