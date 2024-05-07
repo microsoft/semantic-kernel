@@ -7,7 +7,7 @@ want to run the tests included.
 ## LLM setup
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
@@ -23,7 +23,7 @@ AZURE_OPENAI_API_KEY=""
 We suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)
-- [./notebooks](./notebooks).
+- [./samples/getting_started](./samples/getting_started).
 
 ## System setup
 
@@ -133,12 +133,12 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 
 ## Tools and scripts
 
-## Implementation Decisions 
+## Implementation Decisions
 
 ### Asynchronous programming
 
-It's important to note that most of this library is written with asynchronous in mind. The 
-developer should always assume everything is asynchronous. One can use the function signature 
+It's important to note that most of this library is written with asynchronous in mind. The
+developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
 
 ## Pydantic and Serialization
@@ -256,4 +256,3 @@ or:
 This is assuming the upstream branch refers to the main repository. If you have a different name for the upstream branch, you can replace `upstream` with the name of your upstream branch.
 
 After running the rebase command, you may need to resolve any conflicts that arise. If you are unsure how to resolve a conflict, please refer to the [GitHub's documentation on resolving conflicts](https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase), or for [VSCode](https://code.visualstudio.com/docs/sourcecontrol/overview#_merge-conflicts).
-

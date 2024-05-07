@@ -5,33 +5,36 @@ import re
 from enum import Enum
 from typing import Callable, Dict
 
-from semantic_kernel.contents.chat_history import ROOT_KEY_MESSAGE, ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _messages(chat_history):
+    from semantic_kernel.contents.chat_history import ChatHistory
+
     if not isinstance(chat_history, ChatHistory):
         return ""
     return str(chat_history)
 
 
 def _message_to_prompt(context):
+    from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
     if isinstance(context, ChatMessageContent):
-        return str(context.to_prompt(ROOT_KEY_MESSAGE))
+        return str(context.to_prompt())
     return str(context)
 
 
 def _message(item):
-    start = f"<{ROOT_KEY_MESSAGE}"
+    from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
+
+    start = f"<{CHAT_MESSAGE_CONTENT_TAG}"
     role = item.role
     content = item.content
     if isinstance(role, Enum):
         role = role.value
     start += f' role="{role}"'
     start += ">"
-    end = f"</{ROOT_KEY_MESSAGE}>"
+    end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
     return f"{start}{content}{end}"
 
 
