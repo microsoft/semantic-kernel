@@ -1092,19 +1092,21 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var result = await sut.RunAsync(operation, arguments);
 
         // Assert
+        Assert.NotNull(result.RequestMethod);
+        Assert.Equal(HttpMethod.Post.Method, result.RequestMethod);
         Assert.NotNull(result.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", result.RequestUri.AbsoluteUri);
         if (includePayload)
         {
-            Assert.True(result.IncludesPayload);
-            Assert.NotNull(result.Payload);
-            Assert.IsType<JsonObject>(result.Payload);
-            Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.Payload).ToJsonString());
+            Assert.True(result.IncludesRequestPayload);
+            Assert.NotNull(result.RequestPayload);
+            Assert.IsType<JsonObject>(result.RequestPayload);
+            Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
         }
         else
         {
-            Assert.False(result.IncludesPayload);
-            Assert.Null(result.Payload);
+            Assert.False(result.IncludesRequestPayload);
+            Assert.Null(result.RequestPayload);
         }
     }
 

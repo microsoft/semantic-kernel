@@ -57,10 +57,10 @@ public class OpenApiFunctionExecutionParameters
     /// <summary>
     /// Determines whether payload will be included in the RestApiOperationResponse.
     /// If true, the payload will be included in the response.
-    /// Otherwise the payload will not be included and RestApiOperationResponse.Payload will be null.
-    /// RestApiOperationResponse.IncludesPayload will be set to true if the payload is included in the response.
+    /// Otherwise the payload will not be included and RestApiOperationResponse.RequestPayload will be null.
+    /// RestApiOperationResponse.IncludesRequestPayload will be set to true if the payload is included in the response.
     /// </summary>
-    public bool EnablePayloadInResponse { get; set; }
+    public bool EnableRequestPayloadInResponse { get; set; }
 
     /// <summary>
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.

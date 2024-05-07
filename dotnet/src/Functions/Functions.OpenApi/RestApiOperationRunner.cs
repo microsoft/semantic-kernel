@@ -230,9 +230,10 @@ internal sealed class RestApiOperationRunner
 
         return new RestApiOperationResponse(serializedContent, contentType!.ToString())
         {
+            RequestMethod = request.Method.Method,
             RequestUri = request.RequestUri,
-            Payload = includesPayload ? payload : null,
-            IncludesPayload = includesPayload,
+            RequestPayload = includesPayload ? payload : null,
+            IncludesRequestPayload = includesPayload,
         };
     }
 

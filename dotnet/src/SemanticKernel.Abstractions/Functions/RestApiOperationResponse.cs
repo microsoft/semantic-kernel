@@ -27,6 +27,11 @@ public sealed class RestApiOperationResponse
     public KernelJsonSchema? ExpectedSchema { get; set; }
 
     /// <summary>
+    /// Gets the method used for the HTTP request.
+    /// </summary>
+    public string? RequestMethod { get; init; }
+
+    /// <summary>
     /// Gets the System.Uri used for the HTTP request.
     /// </summary>
     public Uri? RequestUri { get; init; }
@@ -34,12 +39,12 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// Gets the payload sent in the request.
     /// </summary>
-    public object? Payload { get; init; }
+    public object? RequestPayload { get; init; }
 
     /// <summary>
     /// Returns a value indicating whether the response includes the payload that was sent in the request.
     /// </summary>
-    public bool IncludesPayload { get; init; }
+    public bool IncludesRequestPayload { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
