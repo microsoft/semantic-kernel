@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -22,7 +23,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <param name="databaseName">Database name.</param>
     /// <param name="indexName">Name of the search index. If no value is provided default index will be used.</param>
     public MongoDBMemoryStore(string connectionString, string databaseName, string? indexName = default) :
-        this(new MongoClient(connectionString), databaseName, indexName)
+        this(new MongoClient(GetMongoClientSettings(connectionString)), databaseName, indexName)
     {
     }
 
@@ -218,6 +219,14 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
     private static FilterDefinition<MongoDBMemoryEntry> GetFilterByIds(IEnumerable<string> ids) =>
         Builders<MongoDBMemoryEntry>.Filter.In(m => m.Id, ids);
+
+    private static MongoClientSettings GetMongoClientSettings(string connectionString)
+    {
+        var settings = MongoClientSettings.FromConnectionString(connectionString);
+        var skVersion = typeof(IMemoryStore).Assembly.GetName().Version.ToString();
+        settings.LibraryInfo = new LibraryInfo("Microsoft Semantic Kernel", skVersion);
+        return settings;
+    }
 
     private Task<IAsyncCursor<MongoDBMemoryEntry>> VectorSearch(
         string collectionName,
