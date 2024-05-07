@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
 
 import sys
 
@@ -16,7 +17,7 @@ class FunctionCallingStepwisePlannerResult(KernelBaseModel):
     """The result of the function calling stepwise planner"""
 
     final_answer: str = ""
-    chat_history: ChatHistory = None
+    chat_history: ChatHistory | None = None
     iterations: int = 0
 
 

@@ -12,7 +12,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -56,9 +55,7 @@ settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settin
 settings.max_tokens = 2000
 settings.temperature = 0.1
 settings.top_p = 0.8
-settings.auto_invoke_kernel_functions = True
-settings.tool_choice = "auto"
-settings.tools = get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]})
+settings.function_call_behavior.enable_functions(auto_invoke=True, filters={"exclude_plugin": ["ChatBot"]})
 
 chat_history = ChatHistory(
     system_message="When responding to the user's request to book a table, include the reservation ID."

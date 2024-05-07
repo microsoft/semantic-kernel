@@ -1,8 +1,12 @@
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import Field, field_validator, model_validator
 
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
@@ -55,13 +59,12 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     """Specific settings for the Chat Completion endpoint."""
 
     response_format: Optional[Dict[Literal["type"], Literal["text", "json_object"]]] = None
-    tools: Optional[List[Dict[str, Any]]] = None
+    tools: Optional[List[Dict[str, Any]]] = Field(None, max_length=64)
     tool_choice: Optional[str] = None
     function_call: Optional[str] = None
     functions: Optional[List[Dict[str, Any]]] = None
     messages: Optional[List[Dict[str, Any]]] = None
-    auto_invoke_kernel_functions: Optional[bool] = Field(default=False, exclude=True)
-    max_auto_invoke_attempts: Optional[int] = Field(default=5, exclude=True)
+    function_call_behavior: Optional[FunctionCallBehavior] = Field(None, exclude=True)
 
     @field_validator("functions", "function_call", mode="after")
     @classmethod
