@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,34 @@ public sealed class PromptyTest
         Assert.Empty(kernelFunction.ExecutionSettings!);
     }
 
+    [Fact]
+    public void ItFailsToParseAnEmptyHeader()
+    {
+        Kernel kernel = new();
+
+        Assert.NotNull(kernel.CreateFunctionFromPrompty("""
+            ---
+            name: MyPrompt
+            ---
+            Hello
+            """));
+
+        Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty("""
+            ---
+            ---
+            Hello
+            """));
+
+        Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompty("""
+            ---
+
+
+
+            ---
+            Hello
+            """));
+    }
+
     [Theory]
     [InlineData("""
          ---
@@ -149,6 +178,85 @@ public sealed class PromptyTest
             ---
             Efg
             """, await kernelFunction.InvokeAsync<string>(kernel));
+    }
+
+    [Fact]
+    public void ItCreatesInputVariablesForSimpleVariables()
+    {
+        // Arrange
+        const string Prompty = """
+            ---
+            name: MyPrompt
+            ---
+            {{a}} {{b}} {{c}}
+            """;
+        string[] expectedVariables = ["a", "b", "c"];
+
+        // Act
+        var kernelFunction = new Kernel().CreateFunctionFromPrompty(Prompty);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.Equal(expectedVariables, kernelFunction.Metadata.Parameters.Select(p => p.Name));
+    }
+
+    [Theory]
+    [InlineData("""
+        ---
+        name: MyPrompt
+        ---
+        {{a}}
+        {% for item in items %}
+        {% endfor %}
+        """)]
+    [InlineData("""
+        ---
+        name: MyPrompt
+        ---
+        {{a}} {{b}} {{c.d}}
+        """)]
+    [InlineData("""
+        ---
+        name: MyPrompt
+        ---
+        {{a.b}}
+        """)]
+    [InlineData("""
+        ---
+        name: MyPrompt
+        ---
+        {{a}} {{b}} {{a.c}}
+        """)]
+    public void ItAvoidsCreatingInputVariablesIfAnythingComplex(string prompty)
+    {
+        // Act
+        var kernelFunction = new Kernel().CreateFunctionFromPrompty(prompty);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.Empty(kernelFunction.Metadata.Parameters.Select(p => p.Name));
+    }
+
+    [Fact]
+    public void ItCreatesInputVariablesOnlyWhenNoneAreExplicitlySet()
+    {
+        // Arrange
+        const string Prompty = """
+            ---
+            name: MyPrompt
+            inputs:
+              question: What is the color of the sky?
+            ---
+            {{a}} {{b}} {{c}}
+            """;
+        string[] expectedVariables = ["question"];
+
+        // Act
+        var kernelFunction = new Kernel().CreateFunctionFromPrompty(Prompty);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.Equal(expectedVariables, kernelFunction.Metadata.Parameters.Select(p => p.Name));
     }
 
     private sealed class EchoTextGenerationService : ITextGenerationService
