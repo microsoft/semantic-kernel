@@ -20,6 +20,7 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 {
     private const string ReservedString = "&#58;";
     private const string ColonString = ":";
+    private const char LineEnding = '\n';
     private readonly PromptTemplateConfig _config;
     private readonly bool _allowUnsafeContent;
     private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function):\s+", RegexOptions.Compiled);
@@ -115,12 +116,12 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
                 var role = splits[i];
                 var content = splits[i + 1];
                 content = this.Encoding(content);
-                sb.Append("<message role=\"").Append(role).AppendLine("\">");
-                sb.AppendLine(content);
-                sb.AppendLine("</message>");
+                sb.Append("<message role=\"").Append(role).Append("\">").Append(LineEnding);
+                sb.Append(content).Append(LineEnding);
+                sb.Append("</message>").Append(LineEnding);
             }
 
-            renderedResult = sb.ToString();
+            renderedResult = sb.ToString().TrimEnd();
         }
 
         return renderedResult;
