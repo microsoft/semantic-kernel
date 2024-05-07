@@ -37,6 +37,11 @@ public sealed class RestApiOperationResponse
     public object? Payload { get; init; }
 
     /// <summary>
+    /// Returns a value indicating whether the response includes the payload that was sent in the request.
+    /// </summary>
+    public bool IncludesPayload { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
     /// <param name="content">The content of the response.</param>

@@ -233,7 +233,8 @@ public static class OpenApiKernelExtensions
             executionParameters?.AuthCallback,
             executionParameters?.UserAgent,
             executionParameters?.EnableDynamicPayload ?? true,
-            executionParameters?.EnablePayloadNamespacing ?? false);
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            executionParameters?.EnablePayloadInResponse ?? false);
 
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance;

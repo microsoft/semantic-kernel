@@ -1051,8 +1051,10 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
     }
 
-    [Fact]
-    public async Task ItShouldReturnRequestUriAndContentAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ItShouldReturnRequestUriAndContentAsync(bool includePayload)
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -1084,7 +1086,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "enabled", true }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, enablePayloadInResponse: includePayload);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1092,9 +1094,18 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Assert
         Assert.NotNull(result.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", result.RequestUri.AbsoluteUri);
-        Assert.NotNull(result.Payload);
-        Assert.IsType<JsonObject>(result.Payload);
-        Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.Payload).ToJsonString());
+        if (includePayload)
+        {
+            Assert.True(result.IncludesPayload);
+            Assert.NotNull(result.Payload);
+            Assert.IsType<JsonObject>(result.Payload);
+            Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.Payload).ToJsonString());
+        }
+        else
+        {
+            Assert.False(result.IncludesPayload);
+            Assert.Null(result.Payload);
+        }
     }
 
     public class SchemaTestData : IEnumerable<object[]>
