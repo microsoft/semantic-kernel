@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoSQLMemoryStoreTestsFixture>
 {
-    private const string? SkipReason = null;//"Azure CosmosDB Account with Vector indexing enabled required";
+    private const string? SkipReason = "Azure Cosmos DB Account with Vector indexing enabled required";
 
     private readonly AzureCosmosDBNoSQLMemoryStoreTestsFixture _fixture;
 
