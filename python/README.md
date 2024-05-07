@@ -148,18 +148,18 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
-- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
-- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./notebooks/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
-- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
-- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
-- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
-- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
-- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
-- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
+- [Getting started with Semantic Kernel](./samples/getting_started/00-getting-started.ipynb)
+- [Loading and configuring Semantic Kernel](./samples/getting_started/01-basic-loading-the-kernel.ipynb)
+- [Running AI prompts from file](./samples/getting_started/02-running-prompts-from-file.ipynb)
+- [Creating Prompt Functions at runtime (i.e. inline functions)](./samples/getting_started/03-prompt-function-inline.ipynb)
+- [Using Context Variables to Build a Chat Experience](./samples/getting_started/04-kernel-arguments-chat.ipynb)
+- [Introduction to planners](./samples/getting_started/05-using-the-planner.ipynb)
+- [Building Memory with Embeddings](./samples/getting_started/06-memory-and-embeddings.ipynb)
+- [Using Hugging Face for Plugins](./samples/getting_started/07-hugging-face-for-plugins.ipynb)
+- [Combining native functions and semantic functions](./samples/getting_started/08-native-function-inline.ipynb)
+- [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
+- [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
+- [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 
