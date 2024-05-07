@@ -197,6 +197,7 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="request">The HttpRequestMessage associated with the HTTP request.</param>
     /// <param name="payload">The operationPayload sent in the HTTP request.</param>
+    /// <param name="includesPayload">Flag indicating if the operation payload is included in the response.></param>
     /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
     /// <returns>The serialized content.</returns>
     private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpRequestMessage request, object? payload, bool includesPayload, HttpContent content)
