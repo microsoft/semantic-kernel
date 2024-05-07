@@ -78,9 +78,9 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Xunit.Abstractions" />
-    <Using Include="System.Collections.Generic"/>
-    <Using Include="System.Threading"/>
-    <Using Include="System.Threading.Tasks"/>
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
     <Using Include="System" />
     <Using Include="System.Linq" />
     <Using Include="System.Net.Http" />

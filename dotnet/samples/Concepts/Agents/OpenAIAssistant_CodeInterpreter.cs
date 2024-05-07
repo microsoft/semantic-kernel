@@ -17,7 +17,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Define the agent
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                kernel: this.CreateEmptyKernel(),
+                kernel: new(),
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
