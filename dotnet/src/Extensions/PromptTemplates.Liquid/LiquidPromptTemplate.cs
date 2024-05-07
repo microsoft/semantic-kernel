@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Scriban;
+using Scriban.Syntax;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
@@ -53,7 +54,16 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         }
         Debug.Assert(this._liquidTemplate.Page is not null);
 
-        // TODO: Update config.InputVariables with any variables referenced by the template but that aren't explicitly defined in the front matter.
+        // Ideally the prompty author would have explicitly specified input variables. If they specified any,
+        // assume they specified them all. If they didn't, heuristically try to find the variables, looking for
+        // variables that are read but never written and that appear to be simple values rather than complex objects.
+        if (config.InputVariables.Count == 0)
+        {
+            foreach (string implicitVariable in SimpleVariablesVisitor.InferInputs(this._liquidTemplate))
+            {
+                config.InputVariables.Add(new() { Name = implicitVariable, AllowUnsafeContent = config.AllowUnsafeContent });
+            }
+        }
 
         // Configure _inputVariables with the default values from the config. This will be used
         // in RenderAsync to seed the arguments used when evaluating the template.
@@ -190,5 +200,52 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Visitor for <see cref="ScriptPage"/> looking for variables that are only
+    /// ever read and appear to represent very simple strings. If any variables
+    /// other than that are found, none are returned.
+    /// </summary>
+    private sealed class SimpleVariablesVisitor : ScriptVisitor
+    {
+        private readonly HashSet<string> _variables = new(StringComparer.OrdinalIgnoreCase);
+        private bool _valid = true;
+
+        public static HashSet<string> InferInputs(Template template)
+        {
+            var visitor = new SimpleVariablesVisitor();
+
+            template.Page.Accept(visitor);
+            if (!visitor._valid)
+            {
+                visitor._variables.Clear();
+            }
+
+            return visitor._variables;
+        }
+
+        public override void Visit(ScriptVariableGlobal node)
+        {
+            if (this._valid)
+            {
+                switch (node.Parent)
+                {
+                    case ScriptAssignExpression assign when ReferenceEquals(assign.Target, node):
+                    case ScriptForStatement forLoop:
+                    case ScriptMemberExpression member:
+                        // Unsupported use found; bail.
+                        this._valid = false;
+                        return;
+
+                    default:
+                        // Reading from a simple variable.
+                        this._variables.Add(node.Name);
+                        break;
+                }
+
+                base.DefaultVisit(node);
+            }
+        }
     }
 }
