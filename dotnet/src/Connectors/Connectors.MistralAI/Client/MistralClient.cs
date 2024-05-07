@@ -426,8 +426,6 @@ internal sealed class MistralClient
     private readonly ILogger _logger;
     private readonly StreamJsonParser _streamJsonParser;
 
-    private const int SseDataLength = 5;
-
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
     /// asynchronous chain of execution.
