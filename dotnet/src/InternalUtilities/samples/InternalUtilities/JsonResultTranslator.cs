@@ -41,8 +41,13 @@ public static class JsonResultTranslator
     /// <param name="result">A text result</param>
     /// <typeparam name="TResult">The target type of the <see cref="FunctionResult"/>.</typeparam>
     /// <returns>The JSON translated to the requested type.</returns>
-    public static TResult? Translate<TResult>(string result)
+    public static TResult? Translate<TResult>(string? result)
     {
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            return default;
+        }
+
         string rawJson = ExtractJson(result);
 
         return JsonSerializer.Deserialize<TResult>(rawJson);

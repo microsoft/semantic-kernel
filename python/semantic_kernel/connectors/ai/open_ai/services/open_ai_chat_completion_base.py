@@ -198,6 +198,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             if not tool_call_behavior.auto_invoke_kernel_functions:
                 yield contents, None
                 continue
+
             full_content = contents[0] if full_content is None else full_content + contents[0]
             finish_reason = getattr(full_content, "finish_reason", None)
             if not any(isinstance(item, FunctionCallContent) for item in full_content.items) or finish_reason not in (
@@ -295,7 +296,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         if content.tool_calls is None:
             return []
         return [
-            FunctionCallContent(id=tool.id, name=tool.function.name, arguments=tool.function.arguments)
+            FunctionCallContent(
+                id=tool.id,
+                index=getattr(tool, "index", None),
+                name=tool.function.name,
+                arguments=tool.function.arguments,
+            )
             for tool in content.tool_calls
         ]
 

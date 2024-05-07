@@ -30,8 +30,8 @@ public class OpenAI_UsingLogitBias(ITestOutputHelper output) : BaseTest(output)
             TokenSelectionBiases = keys.ToDictionary(key => key, key => -100)
         };
 
-        WriteLine("Chat content:");
-        WriteLine("------------------------");
+        Console.WriteLine("Chat content:");
+        Console.WriteLine("------------------------");
 
         var chatHistory = new ChatHistory("You are a librarian expert");
 
@@ -71,8 +71,8 @@ public class OpenAI_UsingLogitBias(ITestOutputHelper output) : BaseTest(output)
     {
         var message = chatHistory.Last();
 
-        WriteLine($"{message.Role}: {message.Content}");
-        WriteLine("------------------------");
+        Console.WriteLine($"{message.Role}: {message.Content}");
+        Console.WriteLine("------------------------");
 
         return Task.CompletedTask;
     }

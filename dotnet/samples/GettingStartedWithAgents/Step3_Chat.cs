@@ -22,12 +22,14 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         If not, provide insight on how to refine suggested copy without example.
         """;
 
-    private const string CopyWriterName = "Writer";
+    private const string CopyWriterName = "CopyWriter";
     private const string CopyWriterInstructions =
         """
         You are a copywriter with ten years of experience and are known for brevity and a dry humor.
-        You're laser focused on the goal at hand. Don't waste time with chit chat.
         The goal is to refine and decide on the single best copy as an expert in the field.
+        Only provide a single proposal per response.
+        You're laser focused on the goal at hand.
+        Don't waste time with chit chat.
         Consider suggestions when refining an idea.
         """;
 
@@ -74,14 +76,14 @@ public class Step3_Chat(ITestOutputHelper output) : BaseTest(output)
         // Invoke chat and display messages.
         string input = "concept: maps made out of egg cartons.";
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, input));
-        this.WriteLine($"# {AuthorRole.User}: '{input}'");
+        Console.WriteLine($"# {AuthorRole.User}: '{input}'");
 
         await foreach (var content in chat.InvokeAsync())
         {
-            this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+            Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
         }
 
-        this.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
+        Console.WriteLine($"# IS COMPLETE: {chat.IsComplete}");
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

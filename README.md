@@ -90,7 +90,7 @@ The fastest way to learn how to use Semantic Kernel is with our C# and Python Ju
 demonstrate how to use Semantic Kernel with code snippets that you can run with a push of a button.
 
 - [Getting Started with C# notebook](dotnet/notebooks/00-getting-started.ipynb)
-- [Getting Started with Python notebook](python/notebooks/00-getting-started.ipynb)
+- [Getting Started with Python notebook](python/samples/getting_started/00-getting-started.ipynb)
 
 Once you've finished the getting started notebooks, you can then check out the main walkthroughs
 on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.

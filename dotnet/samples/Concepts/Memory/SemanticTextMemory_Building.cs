@@ -21,9 +21,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("==============================================================");
-        WriteLine("======== Semantic Memory using Azure AI Search ========");
-        WriteLine("==============================================================");
+        Console.WriteLine("==============================================================");
+        Console.WriteLine("======== Semantic Memory using Azure AI Search ========");
+        Console.WriteLine("==============================================================");
 
         /* This example leverages Azure AI Search to provide SK with Semantic Memory.
          *
@@ -38,9 +38,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
         await RunExampleAsync(memoryWithACS);
 
-        WriteLine("====================================================");
-        WriteLine("======== Semantic Memory (volatile, in RAM) ========");
-        WriteLine("====================================================");
+        Console.WriteLine("====================================================");
+        Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
+        Console.WriteLine("====================================================");
 
         /* You can build your own semantic memory combining an Embedding Generator
          * with a Memory storage that supports search by similarity (ie semantic search).
@@ -94,7 +94,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
         Query: Can I build a chat with SK?
 
         Result 1:
-          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT
+          URL:     : https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples/ChatPlugin/ChatGPT
           Title    : Sample demonstrating how to create a chat plugin interfacing with ChatGPT
 
         Result 2:
@@ -106,21 +106,21 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
 
     private async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
-        WriteLine("\nQuery: " + query + "\n");
+        Console.WriteLine("\nQuery: " + query + "\n");
 
         var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
         await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
-            WriteLine($"Result {++i}:");
-            WriteLine("  URL:     : " + memoryResult.Metadata.Id);
-            WriteLine("  Title    : " + memoryResult.Metadata.Description);
-            WriteLine("  Relevance: " + memoryResult.Relevance);
-            WriteLine();
+            Console.WriteLine($"Result {++i}:");
+            Console.WriteLine("  URL:     : " + memoryResult.Metadata.Id);
+            Console.WriteLine("  Title    : " + memoryResult.Metadata.Description);
+            Console.WriteLine("  Relevance: " + memoryResult.Relevance);
+            Console.WriteLine();
         }
 
-        WriteLine("----------------------");
+        Console.WriteLine("----------------------");
     }
 
     private async Task StoreMemoryAsync(ISemanticTextMemory memory)
@@ -133,7 +133,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
          * care of creating and storing the index
          */
 
-        WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
+        Console.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
         var githubFiles = SampleData();
         var i = 0;
         foreach (var entry in githubFiles)
@@ -148,7 +148,7 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
             Console.Write($" #{++i} saved.");
         }
 
-        WriteLine("\n----------------------");
+        Console.WriteLine("\n----------------------");
     }
 
     private static Dictionary<string, string> SampleData()
@@ -159,9 +159,9 @@ public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(ou
                 = "README: Installation, getting started, and how to contribute",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb"]
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic plugin or function",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/00-getting-started.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
-            ["https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins/ChatPlugin/ChatGPT"]
+            ["https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples/ChatPlugin/ChatGPT"]
                 = "Sample demonstrating how to create a chat plugin interfacing with ChatGPT",
             ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Plugins/Plugins.Memory/VolatileMemoryStore.cs"]
                 = "C# class that defines a volatile embedding store",

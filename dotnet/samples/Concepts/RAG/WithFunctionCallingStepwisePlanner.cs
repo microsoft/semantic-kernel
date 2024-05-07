@@ -31,7 +31,7 @@ public class WithFunctionCallingStepwisePlanner(ITestOutputHelper output) : Base
         foreach (var question in questions)
         {
             FunctionCallingStepwisePlannerResult result = await planner.ExecuteAsync(kernel, question);
-            WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
+            Console.WriteLine($"Q: {question}\nA: {result.FinalAnswer}");
 
             // You can uncomment the line below to see the planner's process for completing the request.
             // Console.WriteLine($"Chat history:\n{System.Text.Json.JsonSerializer.Serialize(result.ChatHistory)}");

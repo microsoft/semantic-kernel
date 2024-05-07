@@ -12,7 +12,7 @@ public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RunAsync()
     {
-        var collection = new ServiceCollection();
+        ServiceCollection collection = new();
         collection.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
         collection.AddOpenAITextGeneration(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey);
         collection.AddSingleton<Kernel>();
@@ -20,12 +20,12 @@ public class Kernel_Injecting(ITestOutputHelper output) : BaseTest(output)
         // Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
-        //Creating a service provider for resolving registered services
-        var serviceProvider = collection.BuildServiceProvider();
+        // Create a service provider for resolving registered services
+        await using ServiceProvider serviceProvider = collection.BuildServiceProvider();
 
         //If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
         //DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
-        var kernelClient = serviceProvider.GetRequiredService<KernelClient>();
+        KernelClient kernelClient = serviceProvider.GetRequiredService<KernelClient>();
 
         //Execute the function
         await kernelClient.SummarizeAsync("What's the tallest building in South America?");
