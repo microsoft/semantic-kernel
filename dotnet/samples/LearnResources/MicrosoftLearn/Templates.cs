@@ -64,7 +64,7 @@ public class Templates(ITestOutputHelper output) : LearnBaseTest([
             {
                 Template = """
                            <message role="system">Instructions: What is the intent of this request?
-                           Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices[0]}}.
+                           Do not explain the reasoning, just reply back with the intent. If you are unsure, reply with {{choices.[0]}}.
                            Choices: {{choices}}.</message>
 
                            {{#each fewShotExamples}}
