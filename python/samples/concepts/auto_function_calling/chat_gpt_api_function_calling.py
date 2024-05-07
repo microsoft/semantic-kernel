@@ -156,7 +156,7 @@ async def chat() -> bool:
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:
-        result = await kernel.invoke(chat_function, arguments=arguments, user_input=user_input, chat_history=history)
+        result = await kernel.invoke(chat_function, arguments=arguments)
 
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
