@@ -5,13 +5,13 @@ import logging
 import os
 
 import semantic_kernel as sk
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     AzureAISearchDataSource,
     AzureChatCompletion,
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -85,9 +85,9 @@ chat_function = kernel.add_function(
 # calling the chat, you could add a overloaded version of the settings here,
 # to enable or disable function calling or set the function calling to a specific plugin.
 # see the openai_function_calling example for how to use this with a unrelated function definition
-filter = {"exclude_plugin": ["ChatBot"]}
-req_settings.tools = get_tool_call_object(kernel, filter)
-req_settings.auto_invoke_kernel_functions = True
+req_settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+    auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+)
 
 arguments = KernelArguments(settings=req_settings)
 

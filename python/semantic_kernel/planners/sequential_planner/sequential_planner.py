@@ -10,9 +10,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
-from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerKernelExtension as KernelContextExtension,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -94,7 +92,7 @@ class SequentialPlanner:
         if len(goal) == 0:
             raise PlannerInvalidGoalError("The goal specified is empty")
 
-        relevant_function_manual = await KernelContextExtension.get_functions_manual(
+        relevant_function_manual = await SequentialPlannerKernelExtension.get_functions_manual(
             self._kernel, self._arguments, goal, self.config
         )
         self._arguments["available_functions"] = relevant_function_manual

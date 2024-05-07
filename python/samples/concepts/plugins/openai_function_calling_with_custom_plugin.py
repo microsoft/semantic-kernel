@@ -10,11 +10,11 @@ if sys.version_info >= (3, 9):
 else:
     from typing_extensions import Annotated
 
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
@@ -74,9 +74,9 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.auto_invoke_kernel_functions = True
-    settings.tool_choice = "auto"
-    settings.tools = get_tool_call_object(kernel, filter={})
+    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+    )
 
     print(
         await kernel.invoke_prompt(
@@ -92,9 +92,9 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.auto_invoke_kernel_functions = True
-    settings.tool_choice = "auto"
-    settings.tools = get_tool_call_object(kernel, filter={})
+    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+    )
 
     result = kernel.invoke_prompt_stream(
         function_name="prompt_test",
@@ -115,8 +115,9 @@ async def main():
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
         service_id=service_id
     )
-    settings.auto_invoke_kernel_functions = False
-    settings.tools = get_tool_call_object(kernel, filter={})
+    settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
+        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+    )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
     )
