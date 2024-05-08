@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from copy import copy
+from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Callable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
@@ -245,6 +246,8 @@ class Kernel(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
                 raise KernelFunctionNotFoundError("No function or plugin name provided")
@@ -466,7 +469,7 @@ class Kernel(KernelBaseModel):
 
     def add_plugin(
         self,
-        plugin: KernelPlugin | Any | dict[str, Any] | None = None,
+        plugin: KernelPlugin | object | dict[str, Any] | None = None,
         plugin_name: str | None = None,
         parent_directory: str | None = None,
         description: str | None = None,
@@ -518,7 +521,7 @@ class Kernel(KernelBaseModel):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object]) -> None:
+    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
         """
         Adds a list of plugins to the kernel's collection of plugins.
 
@@ -526,8 +529,8 @@ class Kernel(KernelBaseModel):
             plugins (list[KernelPlugin] | dict[str, KernelPlugin]): The plugins to add to the kernel
         """
         if isinstance(plugins, list):
-            for plugin in plugins:
-                self.add_plugin(plugin)
+            for plug in plugins:
+                self.add_plugin(plug)
             return
         for name, plugin in plugins.items():
             self.add_plugin(plugin, plugin_name=name)
@@ -753,9 +756,21 @@ class Kernel(KernelBaseModel):
             function_name = names[1]
         return self.get_function(plugin_name, function_name)
 
-    def get_list_of_function_metadata(
+    def get_full_list_of_function_metadata(self) -> list["KernelFunctionMetadata"]:
+        """Get a list of all function metadata in the plugins."""
+        if not self.plugins:
+            return []
+        return [func.metadata for plugin in self.plugins.values() for func in plugin]
+
+    @singledispatchmethod
+    def get_list_of_function_metadata(self, *args: Any, **kwargs: Any) -> list["KernelFunctionMetadata"]:
+        """Get a list of all function metadata in the plugin collection."""
+        raise NotImplementedError("This method is not implemented for the provided arguments.")
+
+    @get_list_of_function_metadata.register(bool)
+    def get_list_of_function_metadata_bool(
         self, include_prompt: bool = True, include_native: bool = True
-    ) -> list[KernelFunctionMetadata]:
+    ) -> list["KernelFunctionMetadata"]:
         """
         Get a list of the function metadata in the plugin collection
 
@@ -774,6 +789,51 @@ class Kernel(KernelBaseModel):
             for func in plugin.functions.values()
             if (include_prompt and func.is_prompt) or (include_native and not func.is_prompt)
         ]
+
+    @get_list_of_function_metadata.register(dict)
+    def get_list_of_function_metadata_filters(
+        self,
+        filters: dict[
+            Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
+        ],
+    ) -> list["KernelFunctionMetadata"]:
+        """Get a list of Kernel Function Metadata based on filters.
+
+        Args:
+            filters (dict[str, list[str]]): The filters to apply to the function list.
+                The keys are:
+                    - included_plugins: A list of plugin names to include.
+                    - excluded_plugins: A list of plugin names to exclude.
+                    - included_functions: A list of function names to include.
+                    - excluded_functions: A list of function names to exclude.
+                The included and excluded parameters are mutually exclusive.
+                The function names are checked against the fully qualified name of a function.
+
+        Returns:
+            list[KernelFunctionMetadata]: The list of Kernel Function Metadata that match the filters.
+        """
+        if not self.plugins:
+            return []
+        included_plugins = filters.get("included_plugins", None)
+        excluded_plugins = filters.get("excluded_plugins", [])
+        included_functions = filters.get("included_functions", None)
+        excluded_functions = filters.get("excluded_functions", [])
+        if included_plugins and excluded_plugins:
+            raise ValueError("Cannot use both included_plugins and excluded_plugins at the same time.")
+        if included_functions and excluded_functions:
+            raise ValueError("Cannot use both included_functions and excluded_functions at the same time.")
+
+        result: list["KernelFunctionMetadata"] = []
+        for plugin_name, plugin in self.plugins.items():
+            if plugin_name in excluded_plugins or (included_plugins and plugin_name not in included_plugins):
+                continue
+            for function in plugin:
+                if function.fully_qualified_name in excluded_functions or (
+                    included_functions and function.fully_qualified_name not in included_functions
+                ):
+                    continue
+                result.append(function.metadata)
+        return result
 
     # endregion
     # region Services
