@@ -3,15 +3,20 @@
 import logging
 from typing import TYPE_CHECKING, Any, Optional
 
-from jinja2 import BaseLoader, Environment, TemplateError
+from jinja2 import BaseLoader, TemplateError
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
-from semantic_kernel.exceptions import Jinja2TemplateRenderException, Jinja2TemplateSyntaxError
+from semantic_kernel.exceptions import (Jinja2TemplateRenderException,
+                                        Jinja2TemplateSyntaxError)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS, create_template_helper_from_function
+from semantic_kernel.prompt_template.prompt_template_base import \
+    PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import \
+    PromptTemplateConfig
+from semantic_kernel.prompt_template.utils import (
+    JINJA2_SYSTEM_HELPERS, create_template_helper_from_function)
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -43,7 +48,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         Jinja2TemplateSyntaxError: If there is a syntax error in the Jinja2 template.
     """
 
-    _env: Environment = PrivateAttr()
+    _env: ImmutableSandboxedEnvironment = PrivateAttr()
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -57,7 +62,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             self._env = None
             return
         try:
-            self._env = Environment(loader=BaseLoader())
+            self._env = ImmutableSandboxedEnvironment(loader=BaseLoader())
         except TemplateError as e:
             logger.error(f"Invalid jinja2 template: {self.prompt_template_config.template}")
             raise Jinja2TemplateSyntaxError(f"Invalid jinja2 template: {self.prompt_template_config.template}") from e
