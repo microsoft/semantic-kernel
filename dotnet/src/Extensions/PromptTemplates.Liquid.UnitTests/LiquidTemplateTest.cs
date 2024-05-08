@@ -23,7 +23,7 @@ public class LiquidTemplateTest
     public async Task ItRenderChatTestAsync()
     {
         // Arrange
-        var liquidTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "chat.txt");
+        var liquidTemplatePath = Path.Combine("TestData", "chat.txt");
         var liquidTemplate = File.ReadAllText(liquidTemplatePath);
 
         var config = new PromptTemplateConfig()
