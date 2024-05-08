@@ -68,7 +68,7 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Create a service provider for resolving registered services
         await using ServiceProvider serviceProvider = serviceContainer.BuildServiceProvider();
 
-        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
+        // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the AgentClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
         AgentClient agentClient = serviceProvider.GetRequiredService<AgentClient>();
 
@@ -80,11 +80,11 @@ public class Step6_DependencyInjection(ITestOutputHelper output) : BaseTest(outp
         // Local function to invoke agent and display the conversation messages.
         async Task WriteAgentResponse(string input)
         {
-            this.WriteLine($"# {AuthorRole.User}: {input}");
+            Console.WriteLine($"# {AuthorRole.User}: {input}");
 
             await foreach (var content in agentClient.RunDemoAsync(input))
             {
-                this.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
+                Console.WriteLine($"# {content.Role} - {content.AuthorName ?? "*"}: '{content.Content}'");
             }
         }
     }
