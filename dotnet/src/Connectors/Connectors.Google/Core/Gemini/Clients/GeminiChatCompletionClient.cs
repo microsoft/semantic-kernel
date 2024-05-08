@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -22,6 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase
 {
+    private const string ModelProvider = "Google";
     private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
@@ -165,7 +167,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             GeminiResponse geminiResponse;
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, "Google", chatHistory, executionSettings))
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
             {
                 try
                 {
@@ -176,7 +178,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 }
                 catch (Exception ex)
                 {
-                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.SetError(ex);
                     throw;
                 }
 

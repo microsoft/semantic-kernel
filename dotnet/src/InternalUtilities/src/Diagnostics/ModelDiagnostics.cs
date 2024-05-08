@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.SemanticKernel.Diagnostics;
 
 [ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
@@ -135,7 +135,7 @@ internal static class ModelDiagnostics
         if (endpoint is not null)
         {
             activity?.AddTags([
-                new(ModelDiagnosticsTags.Address, endpoint.AbsoluteUri),
+                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),   // Skip the query string
                 new(ModelDiagnosticsTags.Port, endpoint.Port),
             ]);
         }

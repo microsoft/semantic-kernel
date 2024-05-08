@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -108,8 +109,8 @@ internal sealed class HuggingFaceMessageApiClient
         var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
 
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, "HuggingFace", chatHistory, executionSettings);
 
         ChatCompletionResponse response;
         try
@@ -121,7 +122,7 @@ internal sealed class HuggingFaceMessageApiClient
         }
         catch (Exception ex)
         {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             throw;
         }
 

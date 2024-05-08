@@ -18,6 +18,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -29,6 +30,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
+    private const string ModelProvider = "OpenAI";
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -136,7 +138,7 @@ internal abstract class ClientCore
 
         Completions responseData;
         IEnumerable<TextContent> responseContent;
-        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, "OpenAI", text, executionSettings))
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, text, executionSettings))
         {
             try
             {
@@ -148,7 +150,7 @@ internal abstract class ClientCore
             }
             catch (Exception ex)
             {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.SetError(ex);
                 throw;
             }
 
@@ -343,7 +345,7 @@ internal abstract class ClientCore
             // Make the request.
             ChatCompletions responseData;
             IEnumerable<OpenAIChatMessageContent> responseContent;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, "OpenAI", chat, executionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
             {
                 try
                 {
@@ -356,7 +358,7 @@ internal abstract class ClientCore
                 }
                 catch (Exception ex)
                 {
-                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.SetError(ex);
                     throw;
                 }
 

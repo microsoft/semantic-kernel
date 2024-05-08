@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -22,6 +23,7 @@ internal sealed class HuggingFaceClient
 {
     private readonly HttpClient _httpClient;
 
+    internal string ModelProvider => "HuggingFace";
     internal string ModelId { get; }
     internal string? ApiKey { get; }
     internal Uri Endpoint { get; }
@@ -138,8 +140,8 @@ internal sealed class HuggingFaceClient
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
 
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, "HuggingFace", prompt, executionSettings);
 
         TextGenerationResponse response;
         try
@@ -151,7 +153,7 @@ internal sealed class HuggingFaceClient
         }
         catch (Exception ex)
         {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             throw;
         }
 
