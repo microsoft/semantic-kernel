@@ -64,8 +64,8 @@ class SequentialPlannerKernelExtension:
 
         available_functions = [
             func
-            for func in kernel.get_list_of_function_metadata()
-            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
+            for func in kernel.get_list_of_function_metadata({"excluded_plugins": excluded_plugins})
+            if func.name not in excluded_functions
         ]
 
         if semantic_query is None or config.relevancy_threshold is None:
