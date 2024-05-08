@@ -81,7 +81,7 @@ It is possible to add the code interpreter plugin as follows:
 ```python
 kernel = Kernel()
 
-service_id = "python-code-interpreter"
+service_id = "azure_oai"
 chat_service = AzureChatCompletion(
     service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
@@ -101,7 +101,7 @@ print(result)
 
 Instead of hard-coding a well-formatted Python code string, you may use automatic function calling inside of SK and allow the model to form the Python and call the plugin.
 
-The authentication callback may be handled as follows:
+The authentication callback must return a valid token for the session pool. One possible way of doing this with a `DefaultAzureCredential` is as follows:
 
 ```python
 async def auth_callback() -> str:

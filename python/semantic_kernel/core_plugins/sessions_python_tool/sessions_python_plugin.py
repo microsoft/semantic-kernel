@@ -143,7 +143,7 @@ class SessionsPythonTool(KernelBaseModel):
         }
 
         response = await self.http_client.post(
-            url=self.pool_management_endpoint + "python/execute/",
+            url=f"{self.pool_management_endpoint}python/execute/",
             json=request_body,
         )
         response.raise_for_status()
@@ -182,7 +182,7 @@ class SessionsPythonTool(KernelBaseModel):
         files = [("file", (remote_file_path, data, "application/octet-stream"))]
 
         response = await self.http_client.post(
-            url=self.pool_management_endpoint + f"python/uploadFile?identifier={self.settings.session_id}",
+            url=f"{self.pool_management_endpoint}python/uploadFile?identifier={self.settings.session_id}",
             json={},
             files=files,
         )
@@ -207,7 +207,7 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
         response = await self.http_client.get(
-            url=self.pool_management_endpoint + f"python/files?identifier={self.settings.session_id}",
+            url=f"{self.pool_management_endpoint}python/files?identifier={self.settings.session_id}",
         )
         response.raise_for_status()
 
@@ -232,8 +232,7 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
         response = await self.http_client.get(
-            url=self.pool_management_endpoint
-            + f"python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}",
+            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}", # noqa: E501
         )
         response.raise_for_status()
 
