@@ -7,6 +7,7 @@
   "paths": {
     "/Lights/{id}": {
       "get": {
+        "operationId": "GetLightById",
         "tags": [
           "Lights"
         ],
@@ -29,6 +30,7 @@
         }
       },
       "put": {
+        "operationId": "PutLightById",
         "tags": [
           "Lights"
         ],
@@ -70,6 +72,7 @@
         }
       },
       "delete": {
+        "operationId": "DeleteLightById",
         "tags": [
           "Lights"
         ],
@@ -94,6 +97,7 @@
     },
     "/Lights": {
       "get": {
+        "operationId": "GetLights",
         "tags": [
           "Lights"
         ],
@@ -115,6 +119,7 @@
         }
       },
       "post": {
+        "operationId": "CreateLights",
         "tags": [
           "Lights"
         ],
