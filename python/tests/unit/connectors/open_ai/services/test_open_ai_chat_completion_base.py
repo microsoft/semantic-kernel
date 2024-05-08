@@ -6,12 +6,13 @@ import pytest
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
+from semantic_kernel.contents import (
+    ChatMessageContent,
+    StreamingChatMessageContent,
+    TextContent,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
@@ -30,9 +31,6 @@ async def test_complete_chat_stream(kernel: Kernel):
     arguments = KernelArguments()
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
-        return_value=ToolCallBehavior(auto_invoke_kernel_functions=True, max_auto_invoke_attempts=3),
-    ) as settings_mock, patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._prepare_settings",
         return_value=settings,
     ) as prepare_settings_mock, patch(
@@ -51,8 +49,7 @@ async def test_complete_chat_stream(kernel: Kernel):
         ):
             assert content is not None
 
-        settings_mock.assert_called_once_with(settings)
-        prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=True)
+        prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=True, kernel=kernel)
         mock_send_chat_stream_request.assert_called_with(settings)
 
 
@@ -68,9 +65,6 @@ async def test_complete_chat(tool_call, kernel: Kernel):
     arguments = KernelArguments()
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._get_tool_call_behavior",
-        return_value=ToolCallBehavior(auto_invoke_kernel_functions=tool_call, max_auto_invoke_attempts=3),
-    ) as settings_mock, patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.OpenAIChatCompletionBase._prepare_settings",
         return_value=settings,
     ) as prepare_settings_mock, patch(
@@ -90,8 +84,7 @@ async def test_complete_chat(tool_call, kernel: Kernel):
         else:
             assert result is not None
 
-        settings_mock.assert_called_once_with(settings)
-        prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=False)
+        prepare_settings_mock.assert_called_with(settings, chat_history, stream_request=False, kernel=kernel)
         mock_send_chat_request.assert_called_with(settings)
         if tool_call:
             mock_process_chat_response_with_tool_call.assert_called()
@@ -120,13 +113,8 @@ async def test_process_tool_calls():
         ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
     )
 
-    with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True
-    ) as logger_mock:
+    with patch("semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True):
         await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
-
-    # logger_mock.info.assert_any_call(f"processing {len(result_mock.tool_calls)} tool calls")
-    logger_mock.info.assert_any_call(f"Calling {tool_call_mock.name} function with args: {tool_call_mock.arguments}")
 
     kernel_mock.invoke.assert_called_once_with(**tool_call_mock.split_name_dict(), arguments={"arg_name": "arg_value"})
 
