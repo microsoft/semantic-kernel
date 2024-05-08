@@ -138,8 +138,7 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
-                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false,
-                openApiFunctionExecutionParameters?.EnableRequestPayloadInResponse ?? false);
+                openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             foreach (var path in filteredOpenApiDocument.Paths)
             {

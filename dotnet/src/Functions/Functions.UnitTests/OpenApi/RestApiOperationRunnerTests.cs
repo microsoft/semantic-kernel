@@ -1051,10 +1051,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ItShouldReturnRequestUriAndContentAsync(bool includePayload)
+    [Fact]
+    public async Task ItShouldReturnRequestUriAndContentAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -1086,7 +1084,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "enabled", true }
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true, enablePayloadInResponse: includePayload);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -1096,18 +1094,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(HttpMethod.Post.Method, result.RequestMethod);
         Assert.NotNull(result.RequestUri);
         Assert.Equal("https://fake-random-test-host/fake-path", result.RequestUri.AbsoluteUri);
-        if (includePayload)
-        {
-            Assert.True(result.IncludesRequestPayload);
-            Assert.NotNull(result.RequestPayload);
-            Assert.IsType<JsonObject>(result.RequestPayload);
-            Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
-        }
-        else
-        {
-            Assert.False(result.IncludesRequestPayload);
-            Assert.Null(result.RequestPayload);
-        }
+        Assert.NotNull(result.RequestPayload);
+        Assert.IsType<JsonObject>(result.RequestPayload);
+        Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
     public class SchemaTestData : IEnumerable<object[]>
