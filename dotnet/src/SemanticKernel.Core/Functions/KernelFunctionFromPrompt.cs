@@ -135,7 +135,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // Return function result if it was set in prompt filter.
         if (result.FunctionResult is not null)
         {
-            return new(result.FunctionResult) { RenderedPrompt = result.RenderedPrompt };
+            result.FunctionResult.RenderedPrompt = result.RenderedPrompt;
+            return result.FunctionResult;
         }
 
         if (result.AIService is IChatCompletionService chatCompletion)
