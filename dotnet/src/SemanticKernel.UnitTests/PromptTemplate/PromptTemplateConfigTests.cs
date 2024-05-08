@@ -154,7 +154,6 @@ public class PromptTemplateConfigTests
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
                     "type": "auto",
-                    "allowAnyRequestedKernelFunction" : true,
                     "maximumAutoInvokeAttempts": 12,
                     "functions":["p1.f1"]
                   }
@@ -174,6 +173,7 @@ public class PromptTemplateConfigTests
 
         var autoFunctionCallChoice = executionSettings.Value.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
         Assert.NotNull(autoFunctionCallChoice?.Functions);
+        Assert.Equal(12, autoFunctionCallChoice.MaximumAutoInvokeAttempts);
         Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
     }
 

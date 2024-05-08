@@ -96,7 +96,6 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.7,
                 "function_choice_behavior": {
                     "type": "auto",
-                    "allowAnyRequestedKernelFunction" : true,
                     "functions": ["p1.f1"]
                 }
             }

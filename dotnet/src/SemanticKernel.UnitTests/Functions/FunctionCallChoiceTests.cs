@@ -210,7 +210,6 @@ public sealed class FunctionCallChoiceTests
             """
             {
                 "type":"auto",
-                "allowAnyRequestedKernelFunction":true,
                 "maximumAutoInvokeAttempts":12,
                 "functions":[
                     "MyPlugin.MyFunction"
