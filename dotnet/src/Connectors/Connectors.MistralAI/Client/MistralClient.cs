@@ -488,6 +488,34 @@ internal sealed class MistralClient
     {
         var message = new MistralChatMessage(content.Role.ToString(), content.Content!);
 
+        if (content.Role == AuthorRole.Assistant)
+        {
+            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
+
+            // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
+            HashSet<string>? functionCallIds = null;
+            foreach (var item in message.Items)
+            {
+                if (item is not FunctionCallContent callRequest)
+                {
+                    continue;
+                }
+
+                functionCallIds ??= new HashSet<string>(asstMessage.ToolCalls.Select(t => t.Id));
+
+                if (callRequest.Id is null || functionCallIds.Contains(callRequest.Id))
+                {
+                    continue;
+                }
+
+                var argument = JsonSerializer.Serialize(callRequest.Arguments);
+
+                asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+            }
+
+            return new[] { asstMessage };
+        }
+
         if (content.Role == AuthorRole.Tool)
         {
             foreach (var item in content.Items)
