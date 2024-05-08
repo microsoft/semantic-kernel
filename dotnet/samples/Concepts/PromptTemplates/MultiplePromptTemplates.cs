@@ -2,6 +2,7 @@
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using xRetry;
 
 namespace PromptTemplates;
@@ -13,9 +14,10 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
     /// Show how to combine multiple prompt template factories.
     /// </summary>
     [RetryTheory(typeof(HttpOperationException))]
-    [InlineData("semantic-kernel", "Hello AI, my name is {{$name}}. What is the origin of my name?")]
-    [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?")]
-    public Task RunAsync(string templateFormat, string prompt)
+    [InlineData("semantic-kernel", "Hello AI, my name is {{$name}}. What is the origin of my name?", "Paz")]
+    [InlineData("handlebars", "Hello AI, my name is {{name}}. What is the origin of my name?", "Mira")]
+    [InlineData("liquid", "Hello AI, my name is {{name}}. What is the origin of my name?", "Aoibhinn")]
+    public Task InvokeDifferentPromptTypes(string templateFormat, string prompt, string name)
     {
         Console.WriteLine($"======== {nameof(MultiplePromptTemplates)} ========");
 
@@ -30,12 +32,13 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
 
         var promptTemplateFactory = new AggregatorPromptTemplateFactory(
             new KernelPromptTemplateFactory(),
-            new HandlebarsPromptTemplateFactory());
+            new HandlebarsPromptTemplateFactory(),
+            new LiquidPromptTemplateFactory());
 
-        return RunPromptAsync(kernel, prompt, templateFormat, promptTemplateFactory);
+        return RunPromptAsync(kernel, prompt, name, templateFormat, promptTemplateFactory);
     }
 
-    private async Task RunPromptAsync(Kernel kernel, string prompt, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
+    private async Task RunPromptAsync(Kernel kernel, string prompt, string name, string templateFormat, IPromptTemplateFactory promptTemplateFactory)
     {
         Console.WriteLine($"======== {templateFormat} : {prompt} ========");
 
@@ -51,7 +54,7 @@ public class MultiplePromptTemplates(ITestOutputHelper output) : BaseTest(output
 
         var arguments = new KernelArguments()
         {
-            { "name", "Bob" }
+            { "name", name }
         };
 
         var result = await kernel.InvokeAsync(function, arguments);
