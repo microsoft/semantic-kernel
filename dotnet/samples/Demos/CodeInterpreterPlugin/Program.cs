@@ -30,7 +30,7 @@ var settings = new SessionPythonSettings()
     SessionId = Guid.NewGuid().ToString()
 };
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===");
 
 var builder =
     Kernel.CreateBuilder()
