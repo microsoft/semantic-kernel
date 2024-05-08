@@ -7,16 +7,12 @@ from jinja2 import BaseLoader, TemplateError
 from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
-from semantic_kernel.exceptions import (Jinja2TemplateRenderException,
-                                        Jinja2TemplateSyntaxError)
+from semantic_kernel.exceptions import Jinja2TemplateRenderException, Jinja2TemplateSyntaxError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
-from semantic_kernel.prompt_template.prompt_template_base import \
-    PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import \
-    PromptTemplateConfig
-from semantic_kernel.prompt_template.utils import (
-    JINJA2_SYSTEM_HELPERS, create_template_helper_from_function)
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS, create_template_helper_from_function
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
