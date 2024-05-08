@@ -62,4 +62,10 @@ public sealed class PromptRenderContext
             this._renderedPrompt = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets the result of the function's invocation.
+    /// Setting <see cref="Result"/> to a non-<c>null</c> value will skip function invocation and return the result.
+    /// </summary>
+    public FunctionResult? Result { get; set; }
 }
