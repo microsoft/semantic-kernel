@@ -63,9 +63,11 @@
     <ProjectReference Include="..\..\src\Experimental\Agents\Experimental.Agents.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.Prompty\Functions.Prompty.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />

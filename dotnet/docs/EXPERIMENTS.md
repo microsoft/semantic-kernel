@@ -58,6 +58,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0040 | Markdown functions | | | | | |
 | SKEXP0040 | OpenAPI functions | | | | | |
 | SKEXP0040 | OpenAPI function extensions | | | | | |
+| SKEXP0040 | Prompty Format support | | | | | |
 | | | | | | | |
 | SKEXP0050 | Core plugins | | | | | |
 | SKEXP0050 | Document plugins | | | | | |
