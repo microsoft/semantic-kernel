@@ -191,7 +191,7 @@ public class KernelFunctionYamlTests
             max_tokens:        256
             stop_sequences:    []
             function_choice_behavior:
-              !auto
+              type: auto
               functions:
               - p1.f1
           service2:
@@ -203,7 +203,7 @@ public class KernelFunctionYamlTests
             max_tokens:        256
             stop_sequences:    [ "foo", "bar", "baz" ]
             function_choice_behavior:
-              !required
+              type: required
               functions:
               - p2.f2
           service3:
@@ -215,7 +215,7 @@ public class KernelFunctionYamlTests
             max_tokens:        256
             stop_sequences:    [ "foo", "bar", "baz" ]
             function_choice_behavior:
-              !none
+              type: none
         """;
 
     private readonly string _yamlWithCustomSettings = """

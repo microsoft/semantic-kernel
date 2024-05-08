@@ -22,9 +22,16 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithTagMapping("!auto", typeof(AutoFunctionChoiceBehavior))
-            .WithTagMapping("!required", typeof(RequiredFunctionChoiceBehavior))
-            .WithTagMapping("!none", typeof(NoneFunctionChoiceBehavior))
+            .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used for type discrimination. Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
+            .WithTypeDiscriminatingNodeDeserializer((options) =>
+            {
+                options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>("type", new Dictionary<string, Type>
+                {
+                    { "auto", typeof(AutoFunctionChoiceBehavior) },
+                    { "required", typeof(RequiredFunctionChoiceBehavior) },
+                    { "none", typeof(NoneFunctionChoiceBehavior) }
+                });
+            })
             .Build();
 
         parser.MoveNext(); // Move to the first property  
