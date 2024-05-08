@@ -232,7 +232,7 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
         response = await self.http_client.get(
-            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}", # noqa: E501
+            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}",  # noqa: E501
         )
         response.raise_for_status()
 
