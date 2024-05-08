@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-import httpx
 import logging
+
+import httpx
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -12,14 +14,13 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
-from openai import AsyncOpenAI, AsyncAzureOpenAI
 
 # Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
@@ -31,14 +32,17 @@ logger.addHandler(console_handler)
 # A prompt with multiple user and AI messages. For example:
 
 # var result = await kernel.InvokePromptAsync<ChatMessageContent>(
-#     "<message role=\"user\">Can you help me tell the time in Seattle right now?</message><message role=\"assistant\">Sure! The time in Seattle is currently 3:00 PM.</message><message role=\"user\">What about New York?</message>"
+#     "<message role=\"user\">Can you help me tell the time in Seattle right now?</message>
+#      <message role=\"assistant\">Sure! The time in Seattle is currently 3:00 PM.</message>
+#      <message role=\"user\">What about New York?</message>"
 # );
 # Rendered "intermediate" prompt:
 
 # <message role="user">Can you help me tell the time in Seattle right now?</message>
 # <message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message>
 # <message role="user">What about New York?</message>
-# This will validate that each language can successfully parse and generate the same request body for a prompt with multiple chat roles.
+# This will validate that each language can successfully parse and generate the same request body
+# for a prompt with multiple chat roles.
 ####################################################################################################
 
 
@@ -61,7 +65,7 @@ class LoggingTransport(httpx.AsyncBaseTransport):
 
 class LoggingAsyncClient(httpx.AsyncClient):
     def __init__(self, *args, **kwargs):
-        transport = kwargs.pop('transport', None)
+        transport = kwargs.pop("transport", None)
         super().__init__(*args, **kwargs, transport=LoggingTransport(transport or httpx.AsyncHTTPTransport()))
 
 
@@ -106,12 +110,13 @@ async def main():
         await kernel.invoke_prompt(
             function_name="prompt_test_2",
             plugin_name="test_2",
-            prompt="<message role=\"user\">Can you help me tell the time in Seattle right now?</message><message role=\"assistant\">Sure! The time in Seattle is currently 3:00 PM.</message><message role=\"user\">What about New York?</message>",
+            prompt='<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
             settings=settings,
         )
     )
 
     await logging_async_client.aclose()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

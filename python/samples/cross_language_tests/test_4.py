@@ -3,24 +3,25 @@
 from __future__ import annotations
 
 import asyncio
-import httpx
 import logging
+
+import httpx
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
-from openai import AsyncOpenAI, AsyncAzureOpenAI
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 # Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
@@ -64,7 +65,7 @@ class LoggingTransport(httpx.AsyncBaseTransport):
 
 class LoggingAsyncClient(httpx.AsyncClient):
     def __init__(self, *args, **kwargs):
-        transport = kwargs.pop('transport', None)
+        transport = kwargs.pop("transport", None)
         super().__init__(*args, **kwargs, transport=LoggingTransport(transport or httpx.AsyncHTTPTransport()))
 
 
@@ -116,6 +117,7 @@ async def main():
     )
 
     await logging_async_client.aclose()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

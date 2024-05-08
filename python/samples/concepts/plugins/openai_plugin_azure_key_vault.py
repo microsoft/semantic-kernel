@@ -136,16 +136,14 @@ async def main():
     kernel = Kernel()
 
     openai_spec_file = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "resources", "open_ai_plugins", "akv-openai.json"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
     )
-    with open(openai_spec_file, "r") as file:
-        openai_spec = file.read()
 
     http_client = httpx.AsyncClient()
 
     plugin = await kernel.add_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",
-        plugin_str=openai_spec,
+        plugin_str=openai_spec_file,
         execution_parameters=OpenAIFunctionExecutionParameters(
             http_client=http_client,
             auth_callback=authentication_provider.authenticate_request,
