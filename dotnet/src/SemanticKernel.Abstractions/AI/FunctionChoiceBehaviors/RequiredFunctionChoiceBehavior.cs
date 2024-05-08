@@ -24,7 +24,6 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     }
 
     [JsonPropertyName("functions")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IEnumerable<string>? Functions { get; init; }
 
     [JsonPropertyName("maximumAutoInvokeAttempts")]

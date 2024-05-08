@@ -318,7 +318,7 @@ internal abstract class ClientCore
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        var functionCallConfiguration = this.ConfigureFunctionCallingOptions(kernel, chatExecutionSettings, chatOptions, 0);
+        var functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, 0);
 
         bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
@@ -505,7 +505,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            this.ConfigureFunctionCallingOptions(kernel, chatExecutionSettings, chatOptions, requestIndex);
+            this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, requestIndex);
 
             // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
             // if we don't send any tools in subsequent requests, even if we say not to use any.
@@ -540,7 +540,7 @@ internal abstract class ClientCore
 
         var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
-        var functionCallConfiguration = this.ConfigureFunctionCallingOptions(kernel, chatExecutionSettings, chatOptions, 0);
+        var functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, 0);
 
         bool autoInvoke = kernel is not null && functionCallConfiguration?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
@@ -742,7 +742,7 @@ internal abstract class ClientCore
             chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
             chatOptions.Tools.Clear();
 
-            this.ConfigureFunctionCallingOptions(kernel, chatExecutionSettings, chatOptions, requestIndex);
+            this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, requestIndex);
 
             // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
             // if we don't send any tools in subsequent requests, even if we say not to use any.
@@ -1369,7 +1369,15 @@ internal abstract class ClientCore
         }
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts)? ConfigureFunctionCallingOptions(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int iteration)
+    /// <summary>
+    /// Configures the function calling functionality based on the provided parameters.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> to be used for function calling.</param>
+    /// <param name="executionSettings">Execution settings for the completion API.</param>
+    /// <param name="chatOptions">The chat completion options from the Azure.AI.OpenAI package.</param>
+    /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
+    /// <returns>A tuple containing the AllowAnyRequestedKernelFunction and MaximumAutoInvokeAttempts settings.</returns>
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int requestIndex)
     {
         if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
@@ -1379,7 +1387,7 @@ internal abstract class ClientCore
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
-            if (iteration >= toolCallBehavior.MaximumUseAttempts)
+            if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -1398,7 +1406,6 @@ internal abstract class ClientCore
             {
                 AllowAnyRequestedKernelFunction = toolCallBehavior.AllowAnyRequestedKernelFunction,
                 MaximumAutoInvokeAttempts = toolCallBehavior.MaximumAutoInvokeAttempts,
-                MaximumUseAttempts = toolCallBehavior.MaximumUseAttempts
             };
         }
 
@@ -1413,14 +1420,13 @@ internal abstract class ClientCore
                 return null;
             }
 
-            (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts) result = new()
+            (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts) result = new()
             {
                 AllowAnyRequestedKernelFunction = false,
                 MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
-                MaximumUseAttempts = config.MaximumUseAttempts
             };
 
-            if (iteration >= config.MaximumUseAttempts)
+            if (requestIndex >= config.MaximumUseAttempts)
             {
                 // Don't add any tools as we've reached the maximum attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
