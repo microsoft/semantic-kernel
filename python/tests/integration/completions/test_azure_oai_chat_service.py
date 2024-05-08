@@ -7,10 +7,10 @@ from openai import AsyncAzureOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -122,7 +122,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo"
+        deployment_name = "gpt-35-turbo-0613"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
@@ -152,10 +152,9 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-        auto_invoke_kernel_functions=True,
-        max_auto_invoke_attempts=3,
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -183,7 +182,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo"
+        deployment_name = "gpt-35-turbo-0613"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
@@ -215,10 +214,9 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=get_tool_call_object(kernel, {"exclude_plugin": ["chat"]}),
-        auto_invoke_kernel_functions=True,
-        max_auto_invoke_attempts=3,
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
     arguments = KernelArguments(input="what is 101+102?", settings=execution_settings)
 
