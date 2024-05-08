@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
+[ExcludeFromCodeCoverage]
 internal static class ActivityExtensions
 {
     public static Activity? StartActivityWithTags(this ActivitySource source, string name, List<KeyValuePair<string, object?>> tags)
