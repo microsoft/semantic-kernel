@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public sealed class PromptTemplateConfig
 {
-    private readonly static JsonSerializerOptions s_serializerOptions = new(JsonOptionsCache.ReadPermissive) { TypeInfoResolver = ToolBehaviorResolver.Instance };
+    private readonly static JsonSerializerOptions s_serializerOptions = new(JsonOptionsCache.ReadPermissive) { TypeInfoResolver = FunctionChoiceBehaviorResolver.Instance };
 
     /// <summary>The format of the prompt template.</summary>
     private string? _templateFormat;

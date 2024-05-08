@@ -2,7 +2,6 @@
 
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.Markdown.Functions;
@@ -43,34 +42,31 @@ public class KernelFunctionMarkdownTests
 
         // AutoFunctionCallChoice for service1
         var service1ExecutionSettings = function.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings?.ToolBehavior);
+        Assert.NotNull(service1ExecutionSettings);
 
-        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(service1FunctionCallBehavior?.Choice);
+        var service1AutoFunctionChoiceBehavior = service1ExecutionSettings?.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
+        Assert.NotNull(service1AutoFunctionChoiceBehavior);
 
-        var service1AutoFunctionCallChoice = service1FunctionCallBehavior?.Choice as AutoFunctionCallChoice;
-        Assert.NotNull(service1AutoFunctionCallChoice);
-        Assert.True(service1AutoFunctionCallChoice.AllowAnyRequestedKernelFunction);
-        Assert.NotNull(service1AutoFunctionCallChoice.Functions);
-        Assert.Single(service1AutoFunctionCallChoice.Functions);
-        Assert.Equal("p1.f1", service1AutoFunctionCallChoice.Functions.First());
+        Assert.NotNull(service1AutoFunctionChoiceBehavior.Functions);
+        Assert.Single(service1AutoFunctionChoiceBehavior.Functions);
+        Assert.Equal("p1.f1", service1AutoFunctionChoiceBehavior.Functions.First());
 
         // RequiredFunctionCallChoice for service2
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings?.ToolBehavior);
+        Assert.NotNull(service2ExecutionSettings);
 
-        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(service2FunctionCallBehavior?.Choice);
-
-        var service2RequiredFunctionCallChoice = service2FunctionCallBehavior?.Choice as RequiredFunctionCallChoice;
-        Assert.NotNull(service2RequiredFunctionCallChoice);
-        Assert.NotNull(service2RequiredFunctionCallChoice.Functions);
-        Assert.Single(service2RequiredFunctionCallChoice.Functions);
-        Assert.Equal("p1.f1", service2RequiredFunctionCallChoice.Functions.First());
+        var service2RequiredFunctionChoiceBehavior = service2ExecutionSettings?.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
+        Assert.NotNull(service2RequiredFunctionChoiceBehavior);
+        Assert.NotNull(service2RequiredFunctionChoiceBehavior.Functions);
+        Assert.Single(service2RequiredFunctionChoiceBehavior.Functions);
+        Assert.Equal("p1.f1", service2RequiredFunctionChoiceBehavior.Functions.First());
 
         // NoneFunctionCallChoice for service3
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
-        Assert.NotNull(service3ExecutionSettings?.ToolBehavior);
+        Assert.NotNull(service3ExecutionSettings);
+
+        var service3NoneFunctionChoiceBehavior = service3ExecutionSettings?.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
+        Assert.NotNull(service3NoneFunctionChoiceBehavior);
     }
 
     [Fact]
@@ -98,13 +94,10 @@ public class KernelFunctionMarkdownTests
             "service1" : {
                 "model_id": "gpt4",
                 "temperature": 0.7,
-                "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice": {
-                        "type": "auto",
-                        "allowAnyRequestedKernelFunction" : true,
-                        "functions": ["p1.f1"]
-                    }
+                "function_choice_behavior": {
+                    "type": "auto",
+                    "allowAnyRequestedKernelFunction" : true,
+                    "functions": ["p1.f1"]
                 }
             }
         }
@@ -115,12 +108,9 @@ public class KernelFunctionMarkdownTests
             "service2" : {
                 "model_id": "gpt3.5",
                 "temperature": 0.8,
-                "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice": {
-                        "type": "required",
-                        "functions": ["p1.f1"]
-                    }
+                "function_choice_behavior": {
+                    "type": "required",
+                    "functions": ["p1.f1"]
                 }
             }
         }
@@ -131,11 +121,8 @@ public class KernelFunctionMarkdownTests
             "service3" : {
                 "model_id": "gpt3.5-turbo",
                 "temperature": 0.8,
-                "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice": {
-                        "type": "none"
-                    }
+                "function_choice_behavior": {
+                    "type": "none"
                 }
             }
         }

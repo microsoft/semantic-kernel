@@ -2,15 +2,13 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.AI.ToolBehaviors;
+namespace Microsoft.SemanticKernel;
 
-public class FunctionCallChoiceConfiguration
+public class FunctionChoiceBehaviorConfiguration
 {
     public IEnumerable<KernelFunctionMetadata>? AvailableFunctions { get; init; }
 
     public IEnumerable<KernelFunctionMetadata>? RequiredFunctions { get; init; }
-
-    public bool? AllowAnyRequestedKernelFunction { get; init; }
 
     public int? MaximumAutoInvokeAttempts { get; init; }
 

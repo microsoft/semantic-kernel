@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.AI.ToolBehaviors;
+namespace Microsoft.SemanticKernel;
 
-public class FunctionCallChoiceContext
+public class FunctionChoiceBehaviorContext
 {
     public Kernel? Kernel { get; init; }
 }

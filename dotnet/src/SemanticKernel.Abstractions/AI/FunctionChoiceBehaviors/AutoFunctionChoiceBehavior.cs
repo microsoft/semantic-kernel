@@ -5,22 +5,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.ToolBehaviors;
+namespace Microsoft.SemanticKernel;
 
-public sealed class AutoFunctionCallChoice : FunctionCallChoice
+public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     internal const int DefaultMaximumAutoInvokeAttempts = 5;
 
     [JsonConstructor]
-    public AutoFunctionCallChoice()
+    public AutoFunctionChoiceBehavior()
     {
     }
 
-    public AutoFunctionCallChoice(IEnumerable<KernelFunction> functions)
+    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
         this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator));
-
-        this.AllowAnyRequestedKernelFunction = !functions.Any();
     }
 
     [JsonPropertyName("maximumAutoInvokeAttempts")]
@@ -29,10 +27,7 @@ public sealed class AutoFunctionCallChoice : FunctionCallChoice
     [JsonPropertyName("functions")]
     public IEnumerable<string>? Functions { get; init; }
 
-    [JsonPropertyName("allowAnyRequestedKernelFunction")]
-    public bool AllowAnyRequestedKernelFunction { get; init; }
-
-    public override FunctionCallChoiceConfiguration Configure(FunctionCallChoiceContext context)
+    public override FunctionChoiceBehaviorConfiguration Configure(FunctionChoiceBehaviorContext context)
     {
         bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
 
@@ -77,11 +72,10 @@ public sealed class AutoFunctionCallChoice : FunctionCallChoice
             }
         }
 
-        return new FunctionCallChoiceConfiguration()
+        return new FunctionChoiceBehaviorConfiguration()
         {
             AvailableFunctions = availableFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
-            AllowAnyRequestedKernelFunction = this.AllowAnyRequestedKernelFunction
+            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts
         };
     }
 }

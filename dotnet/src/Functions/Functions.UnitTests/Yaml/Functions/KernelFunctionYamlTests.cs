@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 using Xunit;
@@ -86,36 +85,34 @@ public class KernelFunctionYamlTests
     }
 
     [Fact]
-    public void ItShouldDeserializeFunctionCallChoices()
+    public void ItShouldDeserializeFunctionChoiceBehaviors()
     {
         // Act
         var promptTemplateConfig = KernelFunctionYaml.ToPromptTemplateConfig(this._yaml);
 
         // Assert
         Assert.NotNull(promptTemplateConfig?.ExecutionSettings);
-        Assert.Equal(2, promptTemplateConfig.ExecutionSettings.Count);
+        Assert.Equal(3, promptTemplateConfig.ExecutionSettings.Count);
 
-        // Service with auto function call choice
+        // Service with auto function choice behavior
         var service1ExecutionSettings = promptTemplateConfig.ExecutionSettings["service1"];
-        Assert.NotNull(service1ExecutionSettings?.ToolBehavior);
 
-        var service1FunctionCallBehavior = service1ExecutionSettings.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(service1FunctionCallBehavior?.Choice);
+        var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
+        Assert.NotNull(autoFunctionChoiceBehavior?.Functions);
+        Assert.Equal("p1.f1", autoFunctionChoiceBehavior.Functions.Single());
 
-        var autoFunctionCallChoice = service1FunctionCallBehavior.Choice as AutoFunctionCallChoice;
-        Assert.NotNull(autoFunctionCallChoice?.Functions);
-        Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
-
-        // Service with required function call choice
+        // Service with required function choice behavior
         var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
-        Assert.NotNull(service2ExecutionSettings?.ToolBehavior);
 
-        var service2FunctionCallBehavior = service2ExecutionSettings.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(service2FunctionCallBehavior?.Choice);
+        var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
+        Assert.NotNull(requiredFunctionChoiceBehavior?.Functions);
+        Assert.Equal("p2.f2", requiredFunctionChoiceBehavior.Functions.Single());
 
-        var requiredFunctionCallChoice = service2FunctionCallBehavior.Choice as RequiredFunctionCallChoice;
-        Assert.NotNull(requiredFunctionCallChoice?.Functions);
-        Assert.Equal("p2.f2", requiredFunctionCallChoice.Functions.Single());
+        // Service with none function choice behavior
+        var service3ExecutionSettings = promptTemplateConfig.ExecutionSettings["service3"];
+
+        var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
+        Assert.NotNull(noneFunctionChoiceBehavior);
     }
 
     [Fact]
@@ -193,11 +190,10 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    []
-            tool_behavior:
-              !function_call_behavior
-              choice: !auto
-                functions:
-                - p1.f1
+            function_choice_behavior:
+              !auto
+              functions:
+              - p1.f1
           service2:
             model_id:          gpt-3.5
             temperature:       1.0
@@ -206,11 +202,20 @@ public class KernelFunctionYamlTests
             frequency_penalty: 0.0
             max_tokens:        256
             stop_sequences:    [ "foo", "bar", "baz" ]
-            tool_behavior:
-              !function_call_behavior
-              choice: !required
-                functions:
-                  - p2.f2
+            function_choice_behavior:
+              !required
+              functions:
+              - p2.f2
+          service3:
+            model_id:          gpt-3.5
+            temperature:       1.0
+            top_p:             0.0
+            presence_penalty:  0.0
+            frequency_penalty: 0.0
+            max_tokens:        256
+            stop_sequences:    [ "foo", "bar", "baz" ]
+            function_choice_behavior:
+              !none
         """;
 
     private readonly string _yamlWithCustomSettings = """

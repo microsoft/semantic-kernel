@@ -5,20 +5,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.AI.ToolBehaviors;
+namespace Microsoft.SemanticKernel;
 
-public sealed class RequiredFunctionCallChoice : FunctionCallChoice
+public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     internal const int DefaultMaximumAutoInvokeAttempts = 5;
 
     internal const int DefaultMaximumUseAttempts = 1;
 
     [JsonConstructor]
-    public RequiredFunctionCallChoice()
+    public RequiredFunctionChoiceBehavior()
     {
     }
 
-    public RequiredFunctionCallChoice(IEnumerable<KernelFunction> functions)
+    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
         this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator));
     }
@@ -33,7 +33,7 @@ public sealed class RequiredFunctionCallChoice : FunctionCallChoice
     [JsonPropertyName("maximumUseAttempts")]
     public int MaximumUseAttempts { get; init; } = DefaultMaximumUseAttempts;
 
-    public override FunctionCallChoiceConfiguration Configure(FunctionCallChoiceContext context)
+    public override FunctionChoiceBehaviorConfiguration Configure(FunctionChoiceBehaviorContext context)
     {
         List<KernelFunctionMetadata>? requiredFunctions = null;
 
@@ -70,12 +70,11 @@ public sealed class RequiredFunctionCallChoice : FunctionCallChoice
             }
         }
 
-        return new FunctionCallChoiceConfiguration()
+        return new FunctionChoiceBehaviorConfiguration()
         {
             RequiredFunctions = requiredFunctions,
             MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
-            MaximumUseAttempts = this.MaximumUseAttempts,
-            AllowAnyRequestedKernelFunction = false
+            MaximumUseAttempts = this.MaximumUseAttempts
         };
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
 {
-    private readonly static JsonSerializerOptions s_serializerOptions = new(JsonOptionsCache.ReadPermissive) { TypeInfoResolver = ToolBehaviorResolver.Instance };
+    private readonly static JsonSerializerOptions s_serializerOptions = new(JsonOptionsCache.ReadPermissive) { TypeInfoResolver = FunctionChoiceBehaviorResolver.Instance };
 
     /// <summary>
     /// Temperature controls the randomness of the completion.

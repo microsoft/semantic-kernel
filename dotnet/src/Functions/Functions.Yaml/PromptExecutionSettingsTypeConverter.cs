@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -23,8 +22,9 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithTypeConverter(new FunctionCallBehaviorTypeConverter())
-            .WithTagMapping("!function_call_behavior", typeof(FunctionCallBehavior))
+            .WithTagMapping("!auto", typeof(AutoFunctionChoiceBehavior))
+            .WithTagMapping("!required", typeof(RequiredFunctionChoiceBehavior))
+            .WithTagMapping("!none", typeof(NoneFunctionChoiceBehavior))
             .Build();
 
         parser.MoveNext(); // Move to the first property  
@@ -38,8 +38,8 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
                 case "model_id":
                     executionSettings.ModelId = s_deserializer.Deserialize<string>(parser);
                     break;
-                case "tool_behavior":
-                    executionSettings.ToolBehavior = s_deserializer.Deserialize<ToolBehavior>(parser);
+                case "function_choice_behavior":
+                    executionSettings.FunctionChoiceBehavior = s_deserializer.Deserialize<FunctionChoiceBehavior>(parser);
                     break;
                 default:
                     (executionSettings.ExtensionData ??= new Dictionary<string, object>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));

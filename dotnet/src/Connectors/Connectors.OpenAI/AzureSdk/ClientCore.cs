@@ -17,7 +17,6 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 
@@ -1365,7 +1364,7 @@ internal abstract class ClientCore
 
     private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts)? ConfigureFunctionCallingOptions(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int iteration)
     {
-        if (executionSettings.ToolBehavior is not null && executionSettings.ToolCallBehavior is not null)
+        if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
             throw new ArgumentException("ToolBehaviors and ToolCallBehavior cannot be used together.");
         }
@@ -1397,11 +1396,11 @@ internal abstract class ClientCore
         }
 
         // Handling new tool behavior represented by `PromptExecutionSettings.ToolBehaviors` property.
-        if (executionSettings.ToolBehavior is FunctionCallBehavior functionCallBehavior)
+        if (executionSettings.FunctionChoiceBehavior is FunctionChoiceBehavior functionChoiceBehavior)
         {
             // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
             // what functions are available in the kernel.
-            var config = functionCallBehavior.Choice.Configure(new() { Kernel = kernel });
+            var config = functionChoiceBehavior.Configure(new() { Kernel = kernel });
             if (config is null)
             {
                 return null;
@@ -1409,7 +1408,7 @@ internal abstract class ClientCore
 
             (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts, int? MaximumUseAttempts) result = new()
             {
-                AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
+                AllowAnyRequestedKernelFunction = false,
                 MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
                 MaximumUseAttempts = config.MaximumUseAttempts
             };

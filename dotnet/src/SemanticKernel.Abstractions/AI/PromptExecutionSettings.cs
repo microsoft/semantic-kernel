@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -44,15 +43,15 @@ public class PromptExecutionSettings
         }
     }
 
-    [JsonPropertyName("tool_behavior")]
-    public ToolBehavior? ToolBehavior
+    [JsonPropertyName("function_choice_behavior")]
+    public FunctionChoiceBehavior? FunctionChoiceBehavior
     {
-        get => this._toolBehavior;
+        get => this._functionChoiceBehavior;
 
         set
         {
             this.ThrowIfFrozen();
-            this._toolBehavior = value;
+            this._functionChoiceBehavior = value;
         }
     }
 
@@ -106,7 +105,7 @@ public class PromptExecutionSettings
         {
             ModelId = this.ModelId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            ToolBehavior = this.ToolBehavior
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior
         };
     }
 
@@ -126,7 +125,7 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
-    private ToolBehavior? _toolBehavior;
+    private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
 }

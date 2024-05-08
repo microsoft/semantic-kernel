@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ToolBehaviors;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
@@ -153,14 +152,11 @@ public class PromptTemplateConfigTests
               "execution_settings": {
                 "default": {
                   "model_id": "gpt-4",
-                  "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice":{
-                      "type": "auto",
-                      "allowAnyRequestedKernelFunction" : true,
-                      "maximumAutoInvokeAttempts": 12,
-                      "functions":["p1.f1"]
-                    }
+                  "function_choice_behavior": {
+                    "type": "auto",
+                    "allowAnyRequestedKernelFunction" : true,
+                    "maximumAutoInvokeAttempts": 12,
+                    "functions":["p1.f1"]
                   }
                 }
               }
@@ -175,16 +171,10 @@ public class PromptTemplateConfigTests
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
         var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
-        Assert.NotNull(executionSettings.Value.ToolBehavior);
 
-        var functionCallBehavior = executionSettings.Value.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(functionCallBehavior);
-
-        var autoFunctionCallChoice = functionCallBehavior.Choice as AutoFunctionCallChoice;
+        var autoFunctionCallChoice = executionSettings.Value.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
         Assert.NotNull(autoFunctionCallChoice?.Functions);
         Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
-
-        Assert.True(autoFunctionCallChoice.AllowAnyRequestedKernelFunction);
     }
 
     [Fact]
@@ -197,15 +187,10 @@ public class PromptTemplateConfigTests
               "execution_settings": {
                 "default": {
                   "model_id": "gpt-4",
-                  "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice":{
-                        "type": "required",
-                        "maximumAutoInvokeAttempts": 11,
-                        "functions":[
-                            "p1.f1"
-                        ]
-                    }
+                  "function_choice_behavior": {
+                    "type": "required",
+                    "maximumAutoInvokeAttempts": 11,
+                    "functions":["p1.f1"]
                   }
                 }
               }
@@ -220,12 +205,8 @@ public class PromptTemplateConfigTests
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
         var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
-        Assert.NotNull(executionSettings.Value.ToolBehavior);
 
-        var functionCallBehavior = executionSettings.Value.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(functionCallBehavior);
-
-        var requiredFunctionCallChoice = functionCallBehavior.Choice as RequiredFunctionCallChoice;
+        var requiredFunctionCallChoice = executionSettings.Value.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
         Assert.NotNull(requiredFunctionCallChoice?.Functions);
         Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
 
@@ -243,11 +224,8 @@ public class PromptTemplateConfigTests
               "execution_settings": {
                 "default": {
                   "model_id": "gpt-4",
-                  "tool_behavior": {
-                    "type": "function_call_behavior",
-                    "choice":{
-                        "type": "none"
-                    }
+                  "function_choice_behavior": {
+                    "type": "none",
                   }
                 }
               }
@@ -262,11 +240,8 @@ public class PromptTemplateConfigTests
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
         var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
-        Assert.NotNull(executionSettings.Value.ToolBehavior);
 
-        var functionCallBehavior = executionSettings.Value.ToolBehavior as FunctionCallBehavior;
-        Assert.NotNull(functionCallBehavior);
-        Assert.IsType<NoneFunctionCallChoice>(functionCallBehavior.Choice);
+        Assert.IsType<NoneFunctionChoiceBehavior>(executionSettings.Value.FunctionChoiceBehavior);
     }
 
     [Fact]
