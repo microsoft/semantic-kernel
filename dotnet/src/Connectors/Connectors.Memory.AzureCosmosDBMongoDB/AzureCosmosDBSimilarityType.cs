@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
+using System.Reflection;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -13,18 +15,27 @@ public enum AzureCosmosDBSimilarityType
     /// <summary>
     /// Cosine similarity
     /// </summary>
-    [JsonPropertyName("COS")]
+    [BsonElement("COS")]
     Cosine,
 
     /// <summary>
     /// Inner Product similarity
     /// </summary>
-    [JsonPropertyName("IP")]
+    [BsonElement("IP")]
     InnerProduct,
 
     /// <summary>
     /// Euclidean similarity
     /// </summary>
-    [JsonPropertyName("L2")]
+    [BsonElement("L2")]
     Euclidean
+}
+
+internal static class AzureCosmosDBSimilarityTypeExtensions
+{
+    public static string GetCustomName(this AzureCosmosDBSimilarityType type)
+    {
+        var attribute = type.GetType().GetField(type.ToString()).GetCustomAttribute<BsonElementAttribute>();
+        return attribute?.ElementName ?? type.ToString();
+    }
 }
