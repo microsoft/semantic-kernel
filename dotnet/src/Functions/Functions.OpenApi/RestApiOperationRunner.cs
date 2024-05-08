@@ -58,12 +58,12 @@ internal sealed class RestApiOperationRunner
 
     /// <summary>
     /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'operationPayload' property.
+    /// If false, the operation payload must be provided via the 'payload' property.
     /// </summary>
     private readonly bool _enableDynamicPayload;
 
     /// <summary>
-    /// Determines whether operationPayload parameters are resolved from the arguments by
+    /// Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).
     /// </summary>
     private readonly bool _enablePayloadNamespacing;
@@ -75,7 +75,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
     /// <param name="enableDynamicPayload">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false, the operation payload must be provided via the 'operationPayload' property.
+    /// If false, the operation payload must be provided via the 'payload' property.
     /// </param>
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
@@ -260,14 +260,14 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds "application/json" operation payload.
+    /// Builds "application/json" payload.
     /// </summary>
-    /// <param name="payloadMetadata">The operation payload meta-data.</param>
-    /// <param name="arguments">The operation payload arguments.</param>
-    /// <returns>The HttpContent representing the operation payload.</returns>
+    /// <param name="payloadMetadata">The payload meta-data.</param>
+    /// <param name="arguments">The payload arguments.</param>
+    /// <returns>The JSON payload the corresponding HttpContent.</returns>
     private (object?, HttpContent) BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, object?> arguments)
     {
-        // Build operation operation payload dynamically
+        // Build operation payload dynamically
         if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
@@ -280,7 +280,7 @@ internal sealed class RestApiOperationRunner
             return (payload, new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson));
         }
 
-        // Get operation payload content from the 'arguments' if dynamic payload building is not required.
+        // Get operation payload content from the 'payload' argument if dynamic payload building is not required.
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out object? argument) || argument is not string content)
         {
             throw new KernelException($"No payload is provided by the argument '{RestApiOperation.PayloadArgumentName}'.");
@@ -353,7 +353,7 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds "text/plain" operation payload.
+    /// Builds "text/plain" payload.
     /// </summary>
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
