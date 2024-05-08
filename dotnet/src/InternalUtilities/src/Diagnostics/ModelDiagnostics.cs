@@ -204,9 +204,9 @@ internal static class ModelDiagnostics
         return $"[{string.Join(", ", finishReasons)}]";
     }
 
-    private static string GetResponseId(KernelContent completion)
+    private static string GetResponseId(KernelContent? completion)
     {
-        if (completion.Metadata?.TryGetValue("Id", out var id) == true)
+        if (completion?.Metadata?.TryGetValue("Id", out var id) == true)
         {
             return id as string ?? "N/A";
         }
