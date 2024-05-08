@@ -464,7 +464,7 @@ internal sealed class MistralClient
         var request = new ChatCompletionRequest(modelId)
         {
             Stream = stream,
-            Messages = chatHistory.Select(chatMessage => this.CreateChatMessage(chatMessage)).ToList(),
+            Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
         };
 
         if (executionSettings is not null)
@@ -484,63 +484,77 @@ internal sealed class MistralClient
         return request;
     }
 
-    private MistralChatMessage CreateChatMessage(ChatMessageContent content)
+    private List<MistralChatMessage> ToMistralChatMessages(ChatMessageContent content, MistralAIToolCallBehavior? toolCallBehavior)
     {
-        var message = new MistralChatMessage(content.Role.ToString(), content.Content!);
-
         if (content.Role == AuthorRole.Assistant)
         {
-            var asstMessage = new ChatRequestAssistantMessage(message.Content) { Name = message.AuthorName };
-
             // Handling function calls supplied via ChatMessageContent.Items collection elements of the FunctionCallContent type.
-            HashSet<string>? functionCallIds = null;
-            foreach (var item in message.Items)
+            var message = new MistralChatMessage(content.Role.ToString(), content.Content ?? string.Empty);
+            Dictionary<string, MistralToolCall> toolCalls = new();
+            foreach (var item in content.Items)
             {
                 if (item is not FunctionCallContent callRequest)
                 {
                     continue;
                 }
 
-                functionCallIds ??= new HashSet<string>(asstMessage.ToolCalls.Select(t => t.Id));
-
-                if (callRequest.Id is null || functionCallIds.Contains(callRequest.Id))
+                if (callRequest.Id is null || toolCalls.ContainsKey(callRequest.Id))
                 {
                     continue;
                 }
 
-                var argument = JsonSerializer.Serialize(callRequest.Arguments);
-
-                asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
+                var arguments = JsonSerializer.Serialize(callRequest.Arguments);
+                var toolCall = new MistralToolCall()
+                {
+                    Id = callRequest.Id,
+                    Function = new MistralFunction(
+                        callRequest.FunctionName,
+                        callRequest.PluginName)
+                    {
+                        Arguments = arguments
+                    }
+                };
+                toolCalls.Add(callRequest.Id, toolCall);
             }
-
-            return new[] { asstMessage };
+            if (toolCalls.Count > 0)
+            {
+                message.ToolCalls = toolCalls.Values.ToList();
+            }
+            return [message];
         }
 
         if (content.Role == AuthorRole.Tool)
         {
+            List<MistralChatMessage>? messages = null;
             foreach (var item in content.Items)
             {
                 if (item is not FunctionResultContent resultContent)
                 {
                     continue;
                 }
-                /*
-                toolMessages ??= [];
 
-                if (resultContent.Result is Exception ex)
+                messages ??= [];
+
+                var toolCall = new MistralToolCall()
                 {
-                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
-                    continue;
-                }
+                    Id = resultContent.Id,
+                    Function = new MistralFunction(
+                        resultContent.FunctionName ?? string.Empty, // FunctionResultContent allows null function names
+                        resultContent.PluginName)
+                };
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
-
-                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
-                */
+                messages.Add(new MistralChatMessage(content.Role.ToString(), stringResult) { ToolCalls = new List<MistralToolCall> { toolCall } });
             }
+            if (messages is not null)
+            {
+                return messages;
+            }
+
+            throw new NotSupportedException("No function result provided in the tool message.");
         }
 
-        return message;
+        return [new MistralChatMessage(content.Role.ToString(), content.Content ?? string.Empty)];
     }
 
     private HttpRequestMessage CreatePost(object requestData, Uri endpoint, string apiKey, bool stream)

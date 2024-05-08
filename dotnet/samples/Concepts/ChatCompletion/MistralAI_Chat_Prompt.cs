@@ -4,12 +4,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 
-namespace MistralAI;
+namespace ChatCompletion;
 
 /// <summary>
 /// Demonstrates the use of chat prompts with MistralAI.
 /// </summary>
-public sealed class MistralAI_Chat_Prompt : BaseTest
+public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -75,6 +75,4 @@ public sealed class MistralAI_Chat_Prompt : BaseTest
 
         WriteLine(chatPromptResult);
     }
-
-    public MistralAI_Chat_Prompt(ITestOutputHelper output) : base(output) { }
 }

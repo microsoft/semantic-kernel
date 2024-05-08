@@ -5,12 +5,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 
-namespace MistralAI;
+namespace ChatCompletion;
 
 /// <summary>
 /// Demonstrates the use of function calling and streaming with MistralAI.
 /// </summary>
-public sealed class MistralAI_Streaming_Function_Calling : BaseTest
+public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -46,6 +46,4 @@ public sealed class MistralAI_Streaming_Function_Calling : BaseTest
             [Description("The city and department, e.g. Marseille, 13")] string location
             ) => "17°C\nWind: 23 KMPH\nHumidity: 59%\nMostly cloudy";
     }
-
-    public MistralAI_Streaming_Function_Calling(ITestOutputHelper output) : base(output) { }
 }
