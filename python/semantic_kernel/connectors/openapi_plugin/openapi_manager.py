@@ -342,23 +342,33 @@ def _create_function_from_operation(
         name=operation.id,
     )
     async def run_openapi_operation(
-        path_params: Annotated[dict | str | None, "A dictionary of path parameters"] = None,
-        query_params: Annotated[dict | str | None, "A dictionary of query parameters"] = None,
-        headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
-        request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
+        path_params: Annotated[
+            dict | str | None, "A dictionary of path parameters. If not specified return empty string."
+        ] = None,
+        query_params: Annotated[
+            dict | str | None, "A dictionary of query parameters. If not specified return empty string."
+        ] = None,
+        headers: Annotated[dict | str | None, "A dictionary of headers. If not specified return empty string."] = None,
+        request_body: Annotated[
+            dict | str | None, "A dictionary of the request body. If not specified return empty string."
+        ] = None,
     ) -> str:
+        def parse_params(param):
+            if param == "" or param is None:
+                return {}
+            if isinstance(param, str):
+                try:
+                    return json.loads(param)
+                except json.JSONDecodeError:
+                    raise ValueError(f"Invalid JSON string: {param}")
+            return param
+
         response = await runner.run_operation(
             operation,
-            path_params=(
-                json.loads(path_params) if isinstance(path_params, str) else path_params if path_params else None
-            ),
-            query_params=(
-                json.loads(query_params) if isinstance(query_params, str) else query_params if query_params else None
-            ),
-            headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
-            request_body=(
-                json.loads(request_body) if isinstance(request_body, str) else request_body if request_body else None
-            ),
+            path_params=parse_params(path_params),
+            query_params=parse_params(query_params),
+            headers=parse_params(headers),
+            request_body=parse_params(request_body),
         )
         return response
 
