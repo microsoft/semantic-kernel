@@ -373,7 +373,7 @@ def azure_container_apps_settings_from_dot_env() -> str:
         str: Azure Container Apps pool management connection string
     """
     config = dotenv_values(".env")
-    connection_string = config.get("AZURE_CONTAINER_APPS_CONNECTION_STRING", None)
+    connection_string = config.get("ACA_POOL_MANAGEMENT_ENDPOINT", None)
 
     assert connection_string is not None, "Azure Container Apps connection string not found in .env file"
 

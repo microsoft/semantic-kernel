@@ -70,7 +70,7 @@ If all goes well, you should receive a 200 Status Code. The response will contai
 
 To successfully use the Python Plugin in Semantic Kernel, you must install the Poetry `azure` extras by running `poetry install -E azure`.
 
-Next, in the .env file, add the `poolManagementEndpoint` value from above to the variable `AZURE_CONTAINER_APPS_CONNECTION_STRING`. The `poolManagementEndpoint` should look something like:
+Next, in the .env file, add the `poolManagementEndpoint` value from above to the variable `ACA_POOL_MANAGEMENT_ENDPOINT`. The `poolManagementEndpoint` should look something like:
 
 ```html
 https://eastus.acasessions.io/subscriptions/{{subscriptionId}}/resourceGroups/{{resourceGroup}}/sessionPools/{{sessionPool}}/python/execute
