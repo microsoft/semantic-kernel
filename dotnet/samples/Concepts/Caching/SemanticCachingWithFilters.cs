@@ -217,13 +217,12 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 // Get cache record id if result was cached previously or generate new id.
                 var recordId = context.Result.Metadata?.GetValueOrDefault(RecordIdKey, Guid.NewGuid().ToString()) as string;
 
-                // Cache rendered prompt, LLM result and timestamp.
+                // Cache rendered prompt and LLM result.
                 await semanticTextMemory.SaveInformationAsync(
                     CollectionName,
                     context.Result.RenderedPrompt,
                     recordId!,
-                    additionalMetadata: result.ToString(),
-                    timestamp: DateTimeOffset.UtcNow);
+                    additionalMetadata: result.ToString());
             }
         }
     }

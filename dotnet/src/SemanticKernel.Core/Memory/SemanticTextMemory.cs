@@ -41,7 +41,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         string id,
         string? description = null,
         string? additionalMetadata = null,
-        DateTimeOffset? timestamp = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
@@ -51,8 +50,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
             text: text,
             description: description,
             additionalMetadata: additionalMetadata,
-            embedding: embedding,
-            timestamp: timestamp);
+            embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
