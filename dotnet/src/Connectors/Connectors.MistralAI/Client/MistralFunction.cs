@@ -39,8 +39,6 @@ internal class MistralFunction
     public string? Arguments { get; set; }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
-    /// to developers who want to use underscores in their function or plugin names. We plan to make this setting configurable in the future.</remarks>
     public static char NameSeparator { get; set; } = '-';
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>
@@ -73,7 +71,7 @@ internal class MistralFunction
     /// </summary>
     public MistralFunction(KernelFunctionMetadata metadata)
     {
-        var name = string.IsNullOrEmpty(metadata.PluginName) ? metadata.Name : $"{metadata.PluginName}-{metadata.Name}";
+        var name = string.IsNullOrEmpty(metadata.PluginName) ? metadata.Name : $"{metadata.PluginName}{NameSeparator}{metadata.Name}";
         ValidFunctionName(name);
 
         this.Name = name;
@@ -81,6 +79,19 @@ internal class MistralFunction
         this.FunctionName = metadata.Name;
         this.Description = metadata.Description;
         this.Parameters = ToMistralParameters(metadata);
+    }
+
+    /// <summary>
+    /// Construct an instance of <see cref="MistralFunction"/>.
+    /// </summary>
+    public MistralFunction(string functionName, string? pluginName)
+    {
+        var name = string.IsNullOrEmpty(pluginName) ? functionName : $"{pluginName}{NameSeparator}{functionName}";
+        ValidFunctionName(name);
+
+        this.Name = name;
+        this.PluginName = pluginName;
+        this.FunctionName = functionName;
     }
 
     #region private

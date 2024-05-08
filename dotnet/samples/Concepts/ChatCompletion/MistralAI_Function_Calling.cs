@@ -4,12 +4,12 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 
-namespace MistralAI;
+namespace ChatCompletion;
 
 /// <summary>
 /// Demonstrates the use of function calling with MistralAI.
 /// </summary>
-public sealed class MistralAI_Function_Calling : BaseTest
+public sealed class MistralAI_Function_Calling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -41,6 +41,4 @@ public sealed class MistralAI_Function_Calling : BaseTest
             [Description("The city and department, e.g. Marseille, 13")] string location
             ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
-
-    public MistralAI_Function_Calling(ITestOutputHelper output) : base(output) { }
 }
