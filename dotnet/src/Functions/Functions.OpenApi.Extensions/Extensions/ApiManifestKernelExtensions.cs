@@ -117,7 +117,7 @@ public static class ApiManifestKernelExtensions
                     continue;
                 }
 
-                requestUrls.Add(UriTemplate, new List<string>() { Method });
+                requestUrls.Add(UriTemplate, [Method]);
             }
 
             var predicate = OpenApiFilterService.CreatePredicate(null, null, requestUrls, openApiDocument);
@@ -142,7 +142,7 @@ public static class ApiManifestKernelExtensions
 
             foreach (var path in filteredOpenApiDocument.Paths)
             {
-                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value);
+                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
                 foreach (RestApiOperation operation in operations)
                 {
                     try

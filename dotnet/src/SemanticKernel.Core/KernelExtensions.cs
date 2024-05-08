@@ -447,7 +447,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -555,7 +555,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -603,7 +603,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -661,6 +661,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -699,6 +700,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -775,6 +777,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -815,6 +818,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -853,12 +857,12 @@ public static class KernelExtensions
             // that such functionality will work when KernelBuilder is used to build the kernel but not when the IServiceProvider
             // is created via other means, such as if Kernel is directly created by DI. However, it allows us to create the APIs
             // the way we want them for the longer term and then subsequently fix the implementation when M.E.DI is fixed.
-            Dictionary<Type, HashSet<object?>> typeToKeyMappings = new();
+            Dictionary<Type, HashSet<object?>> typeToKeyMappings = [];
             foreach (ServiceDescriptor serviceDescriptor in services)
             {
                 if (!typeToKeyMappings.TryGetValue(serviceDescriptor.ServiceType, out HashSet<object?>? keys))
                 {
-                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = new();
+                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = [];
                 }
 
                 keys.Add(serviceDescriptor.ServiceKey);

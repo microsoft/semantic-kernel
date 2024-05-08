@@ -31,7 +31,7 @@ async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel, get_oa
         ),
     )
 
-    kernel.import_plugin_from_object(MathPlugin(), "MathPlugin")
+    kernel.add_plugin(MathPlugin(), "MathPlugin")
 
     questions = [
         "What is the current hour number, plus 5?",

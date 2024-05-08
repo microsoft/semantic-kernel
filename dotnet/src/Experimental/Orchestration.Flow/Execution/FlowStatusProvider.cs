@@ -125,7 +125,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         {
             try
             {
-                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
+                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
             }
             catch
             {
@@ -134,7 +134,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             }
         }
 
-        return new List<ReActStep>();
+        return [];
     }
 
     /// <inheritdoc/>

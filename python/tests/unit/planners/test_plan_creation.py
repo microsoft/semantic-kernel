@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import semantic_kernel as sk
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners import Plan
 
 
@@ -74,15 +74,12 @@ def test_create_plan_with_state_and_parameters():
     assert plan._steps == []
 
 
-def test_create_plan_with_name_and_native_function():
-    # create a kernel
-    kernel = sk.Kernel()
-
+def test_create_plan_with_name_and_native_function(kernel: Kernel):
     # import test (math) plugin
     plugin = MathPlugin()
-    plugin = kernel.import_plugin_from_object(plugin, "math")
+    kernel.add_plugin(plugin, "math")
 
-    test_function = plugin["Add"]
+    test_function = kernel.get_function("math", "Add")
 
     plan = Plan(name="test", function=test_function)
     assert plan is not None
@@ -100,16 +97,12 @@ def test_create_plan_with_name_and_native_function():
     assert plan._steps == []
 
 
-def test_create_multistep_plan_with_functions():
-    # create a kernel
-    kernel = sk.Kernel()
-
+def test_create_multistep_plan_with_functions(kernel: Kernel):
     # import test (math) plugin
-    plugin = MathPlugin()
-    plugin = kernel.import_plugin_from_object(plugin, "math")
+    kernel.add_plugin(MathPlugin(), "math")
 
-    test_function1 = plugin["Add"]
-    test_function2 = plugin["Subtract"]
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test")
     plan.add_steps([test_function1, test_function2])
@@ -129,16 +122,11 @@ def test_create_multistep_plan_with_functions():
     assert len(plan._steps) == 2
 
 
-def test_create_multistep_plan_with_plans():
-    # create a kernel
-    kernel = sk.Kernel()
+def test_create_multistep_plan_with_plans(kernel: Kernel):
+    kernel.add_plugin(MathPlugin(), "math")
 
-    # import test (math) plugin
-    plugin = MathPlugin()
-    plugin = kernel.import_plugin_from_object(plugin, "math")
-
-    test_function1 = plugin["Add"]
-    test_function2 = plugin["Subtract"]
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test")
     plan_step1 = Plan(name="step1", function=test_function1)
@@ -160,16 +148,11 @@ def test_create_multistep_plan_with_plans():
     assert len(plan._steps) == 2
 
 
-def test_add_step_to_plan():
-    # create a kernel
-    kernel = sk.Kernel()
+def test_add_step_to_plan(kernel: Kernel):
+    kernel.add_plugin(MathPlugin(), "math")
 
-    # import test (math) plugin
-    plugin = MathPlugin()
-    plugin = kernel.import_plugin_from_object(plugin, "math")
-
-    test_function1 = plugin["Add"]
-    test_function2 = plugin["Subtract"]
+    test_function1 = kernel.get_function("math", "Add")
+    test_function2 = kernel.get_function("math", "Subtract")
 
     plan = Plan(name="multistep_test", function=test_function1)
     plan.add_steps([test_function2])

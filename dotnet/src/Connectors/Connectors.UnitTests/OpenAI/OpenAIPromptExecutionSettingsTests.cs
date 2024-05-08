@@ -139,17 +139,19 @@ public class OpenAIPromptExecutionSettingsTests
     public void ItCreatesOpenAIExecutionSettingsFromJsonSnakeCase()
     {
         // Arrange
-        var json = @"{
-  ""temperature"": 0.7,
-  ""top_p"": 0.7,
-  ""frequency_penalty"": 0.7,
-  ""presence_penalty"": 0.7,
-  ""results_per_prompt"": 2,
-  ""stop_sequences"": [ ""foo"", ""bar"" ],
-  ""chat_system_prompt"": ""chat system prompt"",
-  ""token_selection_biases"": { ""1"": 2, ""3"": 4 },
-  ""max_tokens"": 128
-}";
+        var json = """
+            {
+              "temperature": 0.7,
+              "top_p": 0.7,
+              "frequency_penalty": 0.7,
+              "presence_penalty": 0.7,
+              "results_per_prompt": 2,
+              "stop_sequences": [ "foo", "bar" ],
+              "chat_system_prompt": "chat system prompt",
+              "token_selection_biases": { "1": 2, "3": 4 },
+              "max_tokens": 128
+            }
+            """;
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
 
         // Act
@@ -175,13 +177,15 @@ public class OpenAIPromptExecutionSettingsTests
     public void PromptExecutionSettingsCloneWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+        {
+            "max_tokens": 60,
+            "temperature": 0.5,
+            "top_p": 0.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0
+        }
+        """;
         var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Act
@@ -197,13 +201,17 @@ public class OpenAIPromptExecutionSettingsTests
     public void PromptExecutionSettingsFreezeWorksAsExpected()
     {
         // Arrange
-        string configPayload = @"{
-            ""max_tokens"": 60,
-            ""temperature"": 0.5,
-            ""top_p"": 0.0,
-            ""presence_penalty"": 0.0,
-            ""frequency_penalty"": 0.0
-        }";
+        string configPayload = """
+        {
+            "max_tokens": 60,
+            "temperature": 0.5,
+            "top_p": 0.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "stop_sequences": [ "DONE" ],
+            "token_selection_biases": { "1": 2, "3": 4 }
+        }
+        """;
         var executionSettings = JsonSerializer.Deserialize<OpenAIPromptExecutionSettings>(configPayload);
 
         // Act
@@ -214,6 +222,22 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.ModelId = "gpt-4");
         Assert.Throws<InvalidOperationException>(() => executionSettings.ResultsPerPrompt = 2);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Temperature = 1);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.TopP = 1);
+        Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences?.Add("STOP"));
+        Assert.Throws<NotSupportedException>(() => executionSettings.TokenSelectionBiases?.Add(5, 6));
+    }
+
+    [Fact]
+    public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
+    {
+        // Arrange
+        var executionSettings = new OpenAIPromptExecutionSettings { StopSequences = [] };
+
+        // Act
+        var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
+
+        // Assert
+        Assert.Null(executionSettingsWithData.StopSequences);
     }
 
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
