@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
-    private const string ModelProvider = "OpenAI";
+    private const string ModelProvider = "openai";
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -136,8 +136,8 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
-        Completions responseData;
-        IEnumerable<TextContent> responseContent;
+        Completions? responseData = null;
+        List<TextContent> responseContent;
         using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, text, executionSettings))
         {
             try
@@ -151,16 +151,24 @@ internal abstract class ClientCore
             catch (Exception ex)
             {
                 activity?.SetError(ex);
+                if (responseData != null)
+                {
+                    // Capture available metadata even if the operation failed.
+                    activity?
+                        .SetResponseId(responseData.Id)
+                        .SetPromptTokenUsage(responseData.Usage.PromptTokens)
+                        .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                }
                 throw;
             }
 
-            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice)));
+            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
             activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseContent.ToList();
+        return responseContent;
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -343,8 +351,8 @@ internal abstract class ClientCore
         for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
-            ChatCompletions responseData;
-            IEnumerable<OpenAIChatMessageContent> responseContent;
+            ChatCompletions? responseData = null;
+            List<OpenAIChatMessageContent> responseContent;
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
             {
                 try
@@ -359,10 +367,18 @@ internal abstract class ClientCore
                 catch (Exception ex)
                 {
                     activity?.SetError(ex);
+                    if (responseData != null)
+                    {
+                        // Capture available metadata even if the operation failed.
+                        activity?
+                            .SetResponseId(responseData.Id)
+                            .SetPromptTokenUsage(responseData.Usage.PromptTokens)
+                            .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                    }
                     throw;
                 }
 
-                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData));
+                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).ToList();
                 activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
             }
 
@@ -370,7 +386,7 @@ internal abstract class ClientCore
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseContent.ToList();
+                return responseContent;
             }
 
             Debug.Assert(kernel is not null);

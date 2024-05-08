@@ -23,7 +23,7 @@ internal sealed class HuggingFaceClient
 {
     private readonly HttpClient _httpClient;
 
-    internal string ModelProvider => "HuggingFace";
+    internal string ModelProvider => "huggingface";
     internal string ModelId { get; }
     internal string? ApiKey { get; }
     internal Uri Endpoint { get; }

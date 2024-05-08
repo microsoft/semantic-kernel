@@ -16,6 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal sealed class OpenAIClientCore : ClientCore
 {
+    private const string DefaultPublicEndpoint = "https://api.openai.com/v1";
+
     /// <summary>
     /// Gets the attribute name used to store the organization in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
@@ -59,7 +61,7 @@ internal sealed class OpenAIClientCore : ClientCore
         if (providedEndpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            this.Endpoint = new Uri("https://api.openai.com/v1");
+            this.Endpoint = new Uri(DefaultPublicEndpoint);
         }
         else
         {

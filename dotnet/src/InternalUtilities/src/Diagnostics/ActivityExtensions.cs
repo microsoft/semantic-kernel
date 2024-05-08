@@ -13,24 +13,18 @@ internal static class ActivityExtensions
     /// <summary>
     /// Starts an activity with the specified name and tags.
     /// </summary>
-    public static Activity? StartActivityWithTags(this ActivitySource source, string name, List<KeyValuePair<string, object?>> tags)
-    {
-        return source.StartActivity(
-            name,
-            ActivityKind.Internal,
-            Activity.Current?.Context ?? new ActivityContext(),
-            tags);
-    }
+    public static Activity? StartActivityWithTags(this ActivitySource source, string name, IEnumerable<KeyValuePair<string, object?>> tags, ActivityKind kind = ActivityKind.Internal)
+        => source.StartActivity(name, kind, default(ActivityContext), tags);
 
     /// <summary>
     /// Adds tags to the activity.
     /// </summary>
-    public static Activity AddTags(this Activity activity, List<KeyValuePair<string, object?>> tags)
+    public static Activity SetTags(this Activity activity, ReadOnlySpan<KeyValuePair<string, object?>> tags)
     {
-        tags.ForEach(tag =>
+        foreach (var tag in tags)
         {
             activity.SetTag(tag.Key, tag.Value);
-        });
+        };
 
         return activity;
     }
@@ -38,7 +32,7 @@ internal static class ActivityExtensions
     /// <summary>
     /// Adds an event to the activity. Should only be used for events that contain sensitive data.
     /// </summary>
-    public static Activity AttachSensitiveDataAsEvent(this Activity activity, string name, List<KeyValuePair<string, object?>> tags)
+    public static Activity AttachSensitiveDataAsEvent(this Activity activity, string name, IEnumerable<KeyValuePair<string, object?>> tags)
     {
         activity.AddEvent(new ActivityEvent(
             name,

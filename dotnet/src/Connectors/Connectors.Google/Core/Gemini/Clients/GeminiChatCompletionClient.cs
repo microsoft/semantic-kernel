@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase
 {
-    private const string ModelProvider = "Google";
+    private const string ModelProvider = "google";
     private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
