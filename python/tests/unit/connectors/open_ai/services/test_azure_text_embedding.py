@@ -130,6 +130,7 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
     api_key = "test_api_key"
     api_version = "2023-03-15-preview"
     texts = ["hello world", "goodbye world"]
+    embedding_dimensions = 1536
 
     azure_text_embedding = AzureTextEmbedding(
         deployment_name=deployment_name,
@@ -138,11 +139,12 @@ async def test_azure_text_embedding_calls_with_parameters(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_embedding.generate_embeddings(texts)
+    await azure_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
 
     mock_create.assert_awaited_once_with(
         input=texts,
         model=deployment_name,
+        dimensions=embedding_dimensions,
     )
 
 
