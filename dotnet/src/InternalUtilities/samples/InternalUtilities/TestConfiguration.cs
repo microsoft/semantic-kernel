@@ -42,6 +42,7 @@ public sealed class TestConfiguration
     public static MsGraphConfiguration MSGraph => LoadSection<MsGraphConfiguration>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
+    public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -209,6 +210,12 @@ public sealed class TestConfiguration
         {
             public string ModelId { get; set; }
         }
+    }
+
+    public class AzureCosmosDbMongoDbConfig
+    {
+        public string ConnectionString { get; set; }
+        public string DatabaseName { get; set; }
     }
 
     /// <summary>

@@ -104,32 +104,19 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def pinecone_settings_from_dot_env() -> str:
     """
-    Reads the Pinecone API key and Environment from the .env file.
+    Reads the Pinecone API key from the .env file.
     Returns:
-        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+        str: The Pinecone API key
     """
 
-    api_key, environment = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("PINECONE_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("PINECONE_ENVIRONMENT"):
-                parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
 
     assert api_key, "Pinecone API key not found in .env file"
-    assert environment, "Pinecone environment not found in .env file"
 
-    return api_key, environment
+    return api_key
 
 
 def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
