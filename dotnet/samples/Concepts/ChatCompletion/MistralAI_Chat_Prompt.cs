@@ -73,6 +73,6 @@ public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(o
             ChatPrompt, new MistralAIPromptExecutionSettings { MaxTokens = 500 });
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 }
