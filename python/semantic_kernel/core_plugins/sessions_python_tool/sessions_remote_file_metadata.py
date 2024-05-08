@@ -2,6 +2,7 @@
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
+
 class SessionsRemoteFileMetadata(KernelBaseModel):
     """Metadata for a file in the session."""
 

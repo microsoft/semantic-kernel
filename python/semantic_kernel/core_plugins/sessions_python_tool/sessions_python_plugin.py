@@ -5,15 +5,14 @@ from __future__ import annotations
 import logging
 import os
 import re
-
-import httpx
-
-
 from io import BufferedReader, BytesIO
 from typing import Annotated, Any, Awaitable, Callable
 
+import httpx
 from pydantic import field_validator
 
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
     SessionsPythonSettings,
 )
@@ -21,8 +20,6 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_meta
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.connectors.telemetry import version_info, HTTP_USER_AGENT
-from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +28,6 @@ SESSIONS_USER_AGENT = f"{HTTP_USER_AGENT}/{version_info} (Language=Python)"
 
 
 class SessionsPythonTool(KernelBaseModel):
-
     """A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter."""
 
     pool_management_endpoint: str

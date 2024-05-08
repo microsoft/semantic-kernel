@@ -6,3 +6,5 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin im
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
     SessionsPythonSettings,
 )
+
+__all__ = ["SessionsPythonTool", "SessionsPythonSettings"]
