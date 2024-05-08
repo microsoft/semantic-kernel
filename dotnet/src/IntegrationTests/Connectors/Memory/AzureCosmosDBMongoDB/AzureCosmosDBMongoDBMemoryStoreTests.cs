@@ -30,7 +30,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTests : IClassFixture<AzureCosmosDBM
         var collectionName = this._fixture.CollectionName;
         var memoryStore = this._fixture.MemoryStore;
 
-        await memoryStore.CreateCollectionAsync(collectionName);
         var collectionNames = memoryStore.GetCollectionsAsync();
 
         Assert.True(await collectionNames.ContainsAsync(collectionName));

@@ -87,12 +87,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
         var kernel = GetKernelWithCache(_ => new AzureCosmosDBMongoDBMemoryStore(
             TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
             TestConfiguration.AzureCosmosDbMongoDb.DatabaseName,
-            new()
-            {
-                Kind = AzureCosmosDBVectorSearchType.VectorIVF,
-                Similarity = AzureCosmosDBSimilarityType.Cosine,
-                Dimensions = 1536
-            }));
+            new(dimensions: 1536)));
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");
         var result2 = await ExecuteAsync(kernel, "Second run", "What is the highest building in New York City?");
