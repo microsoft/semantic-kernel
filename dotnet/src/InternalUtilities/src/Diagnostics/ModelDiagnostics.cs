@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static class ModelDiagnostics
 {
-    private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace;
+    private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
     private static readonly ActivitySource s_activitySource = new(s_namespace);
 
     private const string EnableModelDiagnosticsSettingName = "Microsoft.SemanticKernel.Experimental.EnableModelDiagnostics";
