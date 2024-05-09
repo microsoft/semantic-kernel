@@ -312,7 +312,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
     /// </summary>
     private sealed class PresidioTextAnonymizer
     {
-        /// <summary>Anonymizer action type that can be perform to update the prompt.</summary>
+        /// <summary>Anonymizer action type that can be performed to update the prompt.</summary>
         [JsonPropertyName("type")]
         public string Type { get; set; }
 
