@@ -15,15 +15,12 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Agents - Abstractions</Title>
-    <Description>Semantic Kernel Agents abstractions. This package is automatically installed by
-      Semantic Kernel Agents packages if needed.</Description>
+    <Description>Semantic Kernel Agents abstractions. This package is automatically installed by Semantic Kernel Agents packages if needed.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*"
-      Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/AppContextSwitchHelper.cs"
-      Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/AppContextSwitchHelper.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
