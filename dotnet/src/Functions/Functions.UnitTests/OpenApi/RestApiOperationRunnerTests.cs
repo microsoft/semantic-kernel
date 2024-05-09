@@ -1051,6 +1051,54 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
     }
 
+    [Fact]
+    public async Task ItShouldReturnRequestUriAndContentAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiOperationPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, []),
+            new("attributes", "object", false,
+            [
+                new("enabled", "boolean", false, []),
+            ])
+        ];
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            [],
+            payload
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "name", "fake-name-value" },
+            { "enabled", true }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result.RequestMethod);
+        Assert.Equal(HttpMethod.Post.Method, result.RequestMethod);
+        Assert.NotNull(result.RequestUri);
+        Assert.Equal("https://fake-random-test-host/fake-path", result.RequestUri.AbsoluteUri);
+        Assert.NotNull(result.RequestPayload);
+        Assert.IsType<JsonObject>(result.RequestPayload);
+        Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
+    }
+
     public class SchemaTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
