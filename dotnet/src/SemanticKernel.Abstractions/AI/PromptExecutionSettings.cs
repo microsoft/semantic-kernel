@@ -43,6 +43,33 @@ public class PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Gets or sets the behavior for how functions are chosen by the model and how their calls are handled.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
+    /// <item>
+    /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.AutoFunctionChoice"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
+    /// </item>
+    /// <item>
+    /// To force the model to always call one or more functions, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.RequiredFunctionChoice"/> method.
+    /// Pass list of the functions when calling the method.
+    /// </item>
+    /// <item>
+    /// To force the model to not call any functions and only generate a user-facing message, set the property to an instance returned
+    /// from <see cref="FunctionChoiceBehavior.None"/> property.
+    /// </item>
+    /// </list>
+    /// For all the behaviors that presume the model to call functions, auto-invoke behavior may be selected. If the service
+    /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
+    /// resolve that function from the functions available in the <see cref="Kernel"/>, and if found, rather
+    /// than returning the response back to the caller, it will handle the request automatically, invoking
+    /// the function, and sending back the result. The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
+    /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
     public FunctionChoiceBehavior? FunctionChoiceBehavior
     {

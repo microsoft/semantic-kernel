@@ -109,7 +109,6 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         // Act
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice() };
 
-
         var result = await kernel.InvokePromptAsync("Convert 50 degrees Fahrenheit to Celsius.", new(settings));
 
         // Assert

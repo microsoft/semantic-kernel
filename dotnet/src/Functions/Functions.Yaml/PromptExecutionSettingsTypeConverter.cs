@@ -9,27 +9,33 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Microsoft.SemanticKernel;
 
+/// <summary>
+/// Allows custom deserialization for <see cref="PromptExecutionSettings"/> from YAML prompts.
+/// </summary>
 internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
 {
     private static IDeserializer? s_deserializer;
 
+    /// <inheritdoc/>
     public bool Accepts(Type type)
     {
         return type == typeof(PromptExecutionSettings);
     }
 
+    /// <inheritdoc/>
     public object? ReadYaml(IParser parser, Type type)
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used for type discrimination. Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
+            .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination in the WithTypeDiscriminatingNodeDeserializer method below.
+                                         // Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
             .WithTypeDiscriminatingNodeDeserializer((options) =>
             {
                 options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>("type", new Dictionary<string, Type>
                 {
-                    { "auto", typeof(AutoFunctionChoiceBehavior) },
-                    { "required", typeof(RequiredFunctionChoiceBehavior) },
-                    { "none", typeof(NoneFunctionChoiceBehavior) }
+                    { AutoFunctionChoiceBehavior.Alias, typeof(AutoFunctionChoiceBehavior) },
+                    { RequiredFunctionChoiceBehavior.Alias, typeof(RequiredFunctionChoiceBehavior) },
+                    { NoneFunctionChoiceBehavior.Alias, typeof(NoneFunctionChoiceBehavior) }
                 });
             })
             .Build();
@@ -57,6 +63,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         return executionSettings;
     }
 
+    /// <inheritdoc/>
     public void WriteYaml(IEmitter emitter, object? value, Type type)
     {
         throw new NotImplementedException();

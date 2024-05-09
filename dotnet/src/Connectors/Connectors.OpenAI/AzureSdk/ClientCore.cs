@@ -1414,7 +1414,7 @@ internal abstract class ClientCore
         {
             // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
             // what functions are available in the kernel.
-            var config = functionChoiceBehavior.Configure(new() { Kernel = kernel });
+            var config = functionChoiceBehavior.GetConfiguration(new() { Kernel = kernel });
             if (config is null)
             {
                 return null;
@@ -1428,7 +1428,7 @@ internal abstract class ClientCore
 
             if (requestIndex >= config.MaximumUseAttempts)
             {
-                // Don't add any tools as we've reached the maximum attempts limit.
+                // Don't add any tools as we've reached the maximum use attempts limit.
                 if (this.Logger.IsEnabled(LogLevel.Debug))
                 {
                     this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", config.MaximumUseAttempts);

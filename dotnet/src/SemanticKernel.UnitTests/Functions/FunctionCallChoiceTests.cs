@@ -14,8 +14,6 @@ namespace SemanticKernel.UnitTests.Functions;
 /// </summary>
 public sealed class FunctionCallChoiceTests
 {
-    private readonly static JsonSerializerOptions s_serializerOptions = new() { TypeInfoResolver = new FunctionChoiceBehaviorResolver() };
-
     [Fact]
     public void EnableKernelFunctionsAreNotAutoInvoked()
     {
@@ -24,7 +22,7 @@ public sealed class FunctionCallChoiceTests
         var behavior = FunctionChoiceBehavior.AutoFunctionChoice(autoInvoke: false);
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -39,7 +37,7 @@ public sealed class FunctionCallChoiceTests
         var behavior = FunctionChoiceBehavior.AutoFunctionChoice();
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -53,7 +51,7 @@ public sealed class FunctionCallChoiceTests
         var behavior = FunctionChoiceBehavior.AutoFunctionChoice(autoInvoke: false);
 
         // Act
-        var config = behavior.Configure(new() { });
+        var config = behavior.GetConfiguration(new() { });
 
         // Assert
         Assert.Null(config.AvailableFunctions);
@@ -69,7 +67,7 @@ public sealed class FunctionCallChoiceTests
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         Assert.Null(config.AvailableFunctions);
@@ -88,7 +86,7 @@ public sealed class FunctionCallChoiceTests
         kernel.Plugins.Add(plugin);
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         Assert.Null(config.RequiredFunctions);
@@ -104,7 +102,7 @@ public sealed class FunctionCallChoiceTests
         var chatCompletionsOptions = new ChatCompletionsOptions();
 
         // Act
-        var config = behavior.Configure(new() { });
+        var config = behavior.GetConfiguration(new() { });
 
         // Assert
         Assert.Null(chatCompletionsOptions.ToolChoice);
@@ -121,7 +119,7 @@ public sealed class FunctionCallChoiceTests
         var behavior = FunctionChoiceBehavior.AutoFunctionChoice([function], autoInvoke: true);
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => behavior.Configure(new() { })); ;
+        var exception = Assert.Throws<KernelException>(() => behavior.GetConfiguration(new() { })); ;
         Assert.Equal("Auto-invocation in Auto mode is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -134,7 +132,7 @@ public sealed class FunctionCallChoiceTests
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => behavior.Configure(new() { Kernel = kernel }));
+        var exception = Assert.Throws<KernelException>(() => behavior.GetConfiguration(new() { Kernel = kernel }));
         Assert.Equal("The specified function MyPlugin.MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -152,7 +150,7 @@ public sealed class FunctionCallChoiceTests
         kernel.Plugins.Add(plugin);
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         this.AssertFunctions(config.AvailableFunctions);
@@ -168,7 +166,7 @@ public sealed class FunctionCallChoiceTests
         var behavior = FunctionChoiceBehavior.AutoFunctionChoice([function], autoInvoke: true);
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => behavior.Configure(new() { }));
+        var exception = Assert.Throws<KernelException>(() => behavior.GetConfiguration(new() { }));
         Assert.Equal("Auto-invocation in Auto mode is not supported when no kernel is provided.", exception.Message);
     }
 
@@ -181,7 +179,7 @@ public sealed class FunctionCallChoiceTests
         var kernel = Kernel.CreateBuilder().Build();
 
         // Act & Assert
-        var exception = Assert.Throws<KernelException>(() => behavior.Configure(new() { Kernel = kernel }));
+        var exception = Assert.Throws<KernelException>(() => behavior.GetConfiguration(new() { Kernel = kernel }));
         Assert.Equal("The specified function MyPlugin.MyFunction is not available in the kernel.", exception.Message);
     }
 
@@ -196,7 +194,7 @@ public sealed class FunctionCallChoiceTests
         kernel.Plugins.Add(plugin);
 
         // Act
-        var config = behavior.Configure(new() { Kernel = kernel });
+        var config = behavior.GetConfiguration(new() { Kernel = kernel });
 
         // Assert
         this.AssertFunctions(config.RequiredFunctions);
@@ -218,7 +216,7 @@ public sealed class FunctionCallChoiceTests
             """;
 
         // Act
-        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json, s_serializerOptions) as AutoFunctionChoiceBehavior;
+        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json) as AutoFunctionChoiceBehavior;
 
         // Assert
         Assert.NotNull(deserializedFunction);
@@ -245,7 +243,7 @@ public sealed class FunctionCallChoiceTests
             """;
 
         // Act
-        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json, s_serializerOptions) as RequiredFunctionChoiceBehavior;
+        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json) as RequiredFunctionChoiceBehavior;
 
         // Assert
         Assert.NotNull(deserializedFunction);
@@ -268,7 +266,7 @@ public sealed class FunctionCallChoiceTests
             """;
 
         // Act
-        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json, s_serializerOptions) as NoneFunctionChoiceBehavior;
+        var deserializedFunction = JsonSerializer.Deserialize<FunctionChoiceBehavior>(json) as NoneFunctionChoiceBehavior;
 
         // Assert
         Assert.NotNull(deserializedFunction);

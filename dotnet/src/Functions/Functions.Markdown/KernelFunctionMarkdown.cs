@@ -13,8 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelFunctionMarkdown
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { TypeInfoResolver = FunctionChoiceBehaviorResolver.Instance };
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
     /// </summary>
@@ -58,7 +56,7 @@ public static class KernelFunctionMarkdown
 
                     case "sk.execution_settings":
                         var modelSettings = codeBlock.Lines.ToString();
-                        var settingsDictionary = JsonSerializer.Deserialize<Dictionary<string, PromptExecutionSettings>>(modelSettings, s_jsonSerializerOptions);
+                        var settingsDictionary = JsonSerializer.Deserialize<Dictionary<string, PromptExecutionSettings>>(modelSettings);
                         if (settingsDictionary is not null)
                         {
                             foreach (var keyValue in settingsDictionary)

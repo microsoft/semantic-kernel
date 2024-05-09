@@ -7,27 +7,54 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
+/// <summary>
+/// Represent <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
+/// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
+/// </summary>
 public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
-    internal const int DefaultMaximumAutoInvokeAttempts = 5;
+    /// <summary>
+    /// The class alias. Used as a value for the discriminator property for polymorphic deserialization
+    /// of function choice behavior specified in JSON and YAML prompts.
+    /// </summary>
+    public const string Alias = "auto";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
+    /// </summary>
     [JsonConstructor]
     public AutoFunctionChoiceBehavior()
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
+    /// </summary>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
     public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
         this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator));
     }
 
+    /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    /// <remarks>
+    /// After this number of iterations as part of a single user request is reached, auto-invocation
+    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
+    /// the same function over and over. To disable auto invocation, this can be set to 0.
+    /// </remarks>
     [JsonPropertyName("maximumAutoInvokeAttempts")]
     public int MaximumAutoInvokeAttempts { get; init; } = DefaultMaximumAutoInvokeAttempts;
 
+    /// <summary>
+    /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
+    /// </summary>
     [JsonPropertyName("functions")]
     public IEnumerable<string>? Functions { get; init; }
 
-    public override FunctionChoiceBehaviorConfiguration Configure(FunctionChoiceBehaviorContext context)
+    /// <inheritdoc />
+    public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
         bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
 
@@ -51,7 +78,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
                 {
                     availableFunctions ??= new List<KernelFunctionMetadata>();
 
-                    // Make sure that every enabled function can be found in the kernel.
+                    // Make sure that every function can be found in the kernel.
                     Debug.Assert(context.Kernel is not null);
 
                     var name = FunctionName.Parse(functionFQN, FunctionNameSeparator);
