@@ -27,6 +27,8 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -34,175 +36,35 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
     """Azure Chat completion class."""
 
-    @overload
     def __init__(
         self,
-        deployment_name: str,
-        base_url: Union[HttpsUrl, str],
-        service_id: Optional[str] = None,
-        api_version: str = DEFAULT_AZURE_API_VERSION,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
+        service_id: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: AsyncAzureADTokenProvider | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
 
         Arguments:
-            deployment_name: The name of the Azure deployment. This value
-                will correspond to the custom name you chose for your deployment
-                when you deployed a model. This value can be found under
-                Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
-            base_url: The url of the Azure deployment. This value
-                can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal, the base_url consists of the endpoint,
-                followed by /openai/deployments/{deployment_name}/,
-                use endpoint if you only want to supply the endpoint.
-            api_key: The API key for the Azure deployment. This value can be
-                found in the Keys & Endpoint section when examining your resource in
-                the Azure portal. You can use either KEY1 or KEY2.
-            api_version: The API version to use. (Optional)
-                The default value is "2023-05-15".
-            ad_auth: Whether to use Azure Active Directory authentication. (Optional)
-                The default value is False.
-            default_headers: The default headers mapping of string keys to
-                string values for HTTP requests. (Optional)
-        """
-
-    @overload
-    def __init__(
-        self,
-        deployment_name: str,
-        endpoint: Union[HttpsUrl, str],
-        api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-    ) -> None:
-        """
-        Initialize an AzureChatCompletion service.
-
-        Arguments:
-            deployment_name: The name of the Azure deployment. This value
-                will correspond to the custom name you chose for your deployment
-                when you deployed a model. This value can be found under
-                Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
-            endpoint: The endpoint of the Azure deployment. This value
-                can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal, the endpoint should end in openai.azure.com.
-            api_key: The API key for the Azure deployment. This value can be
-                found in the Keys & Endpoint section when examining your resource in
-                the Azure portal. You can use either KEY1 or KEY2.
-            api_version: The API version to use. (Optional)
-                The default value is "2023-05-15".
-            ad_auth: Whether to use Azure Active Directory authentication. (Optional)
-                The default value is False.
-            default_headers: The default headers mapping of string keys to
-                string values for HTTP requests. (Optional)
-        """
-
-    @overload
-    def __init__(
-        self,
-        deployment_name: str,
-        async_client: AsyncAzureOpenAI,
-        service_id: Optional[str] = None,
-    ) -> None:
-        """
-        Initialize an AzureChatCompletion service.
-
-        Arguments:
-            deployment_name: The name of the Azure deployment. This value
-                will correspond to the custom name you chose for your deployment
-                when you deployed a model. This value can be found under
-                Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
-            async_client {AsyncAzureOpenAI} -- An existing client to use.
-        """
-
-    @overload
-    def __init__(
-        self,
-        deployment_name: str,
-        endpoint: Union[HttpsUrl, str],
-        api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-    ) -> None:
-        """
-        Initialize an AzureChatCompletion service.
-
-        Arguments:
-        deployment_name: The name of the Azure deployment. This value
-            will correspond to the custom name you chose for your deployment
-            when you deployed a model. This value can be found under
-            Resource Management > Deployments in the Azure portal or, alternatively,
-            under Management > Deployments in Azure OpenAI Studio.
-        endpoint: The endpoint of the Azure deployment. This value
-            can be found in the Keys & Endpoint section when examining
-            your resource from the Azure portal, the endpoint should end in openai.azure.com.
-        api_key: The API key for the Azure deployment. This value can be
-            found in the Keys & Endpoint section when examining your resource in
-            the Azure portal. You can use either KEY1 or KEY2.
-        api_version: The API version to use. (Optional)
-            The default value is "2023-05-15".
-        ad_auth: Whether to use Azure Active Directory authentication. (Optional)
-            The default value is False.
-        default_headers: The default headers mapping of string keys to
-            string values for HTTP requests. (Optional)
-        log: The logger instance to use. (Optional)
-        """
-
-    def __init__(
-        self,
-        deployment_name: str,
-        endpoint: Optional[Union[HttpsUrl, str]] = None,
-        base_url: Optional[Union[HttpsUrl, str]] = None,
-        api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[AsyncAzureADTokenProvider] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncAzureOpenAI] = None,
-    ) -> None:
-        """
-        Initialize an AzureChatCompletion service.
-
-        Arguments:
-            deployment_name: The name of the Azure deployment. This value
-                will correspond to the custom name you chose for your deployment
-                when you deployed a model. This value can be found under
-                Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
-            base_url: The url of the Azure deployment. This value
-                can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal, the base_url consists of the endpoint,
-                followed by /openai/deployments/{deployment_name}/,
-                use endpoint if you only want to supply the endpoint.
-            endpoint: The endpoint of the Azure deployment. This value
-                can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal, the endpoint should end in openai.azure.com.
-                If both base_url and endpoint are supplied, base_url will be used.
-            api_key: The API key for the Azure deployment. This value can be
-                found in the Keys & Endpoint section when examining your resource in
-                the Azure portal. You can use either KEY1 or KEY2.
-            api_version: The API version to use. (Optional)
-                The default value is "2023-05-15".
-            ad_auth: Whether to use Azure Active Directory authentication. (Optional)
-                The default value is False.
+            service_id: The service ID for the Azure deployment. (Optional)
+            ad_token: The Azure Active Directory token. (Optional)
+            ad_token_provider: The Azure Active Directory token provider. (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
         """
+        azure_openai_settings = AzureOpenAISettings()
+        base_url = azure_openai_settings.base_url
+        endpoint = azure_openai_settings.endpoint
+        deployment_name = azure_openai_settings.deployment_name
+        api_version = azure_openai_settings.api_version
+        api_key = azure_openai_settings.api_key.get_secret_value()
+
+        if not base_url and not endpoint:
+            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
+
         if base_url and isinstance(base_url, str):
             base_url = HttpsUrl(base_url)
         if endpoint and deployment_name:
@@ -228,16 +90,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
         Arguments:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, default_headers
+                should contains keys: service_id, and optionally:
+                    ad_auth, ad_token_provider, default_headers
         """
+
         return AzureChatCompletion(
-            deployment_name=settings.get("deployment_name"),
-            endpoint=settings.get("endpoint"),
-            base_url=settings.get("base_url"),
-            api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
-            api_key=settings.get("api_key"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),

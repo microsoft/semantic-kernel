@@ -17,20 +17,20 @@ def test_auth_callback():
 
 
 def test_it_can_be_instantiated():
-    plugin = SessionsPythonTool(pool_management_endpoint="https://example.com", auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert plugin is not None
 
 
 def test_validate_endpoint():
     plugin = SessionsPythonTool(
-        pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
+        auth_callback=test_auth_callback
     )
     assert plugin is not None
     assert plugin.pool_management_endpoint == "https://example.com/"
 
 
 def test_it_can_be_imported(kernel: Kernel):
-    plugin = SessionsPythonTool(pool_management_endpoint="https://example.com", auth_callback=test_auth_callback)
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert kernel.add_plugin(plugin=plugin, plugin_name="PythonCodeInterpreter")
     assert kernel.plugins["PythonCodeInterpreter"] is not None
     assert kernel.plugins["PythonCodeInterpreter"].name == "PythonCodeInterpreter"
@@ -55,7 +55,7 @@ async def test_call_to_container_succeeds(mock_post):
         mock_post.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
+            auth_callback=test_auth_callback
         )
         result = await plugin.execute_code("print('hello world')")
 
@@ -80,7 +80,7 @@ async def test_call_to_container_fails_raises_exception(mock_post):
         mock_post.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
+            auth_callback=test_auth_callback
         )
 
         with pytest.raises(Exception):
@@ -107,7 +107,7 @@ async def test_upload_file_with_local_path(mock_post):
         mock_post.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
+            auth_callback=lambda: "sample_token"
         )
 
         result = await plugin.upload_file(local_file_path="test.txt", remote_file_path="uploaded_test.txt")
@@ -136,7 +136,7 @@ async def test_upload_file_with_buffer(mock_post):
         mock_post.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
+            auth_callback=lambda: "sample_token"
         )
 
         data_buffer = BufferedReader(BytesIO(b"file data"))
@@ -175,7 +175,7 @@ async def test_list_files(mock_get):
         mock_get.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
+            auth_callback=lambda: "sample_token"
         )
 
         files = await plugin.list_files()
@@ -210,7 +210,7 @@ async def test_download_file_to_local(mock_get):
         mock_get.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=mock_auth_callback
+            auth_callback=mock_auth_callback
         )
 
         await plugin.download_file(remote_file_path="remote_test.txt", local_file_path="local_test.txt")
@@ -242,7 +242,7 @@ async def test_download_file_to_buffer(mock_get):
         mock_get.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=mock_auth_callback
+            auth_callback=mock_auth_callback
         )
 
         buffer = await plugin.download_file(remote_file_path="remote_test.txt")
@@ -277,7 +277,7 @@ async def test_download_file_to_buffer(mock_get):
 def test_sanitize_input(input_code, expected_output):
     """Test the `_sanitize_input` function with various inputs."""
     plugin = SessionsPythonTool(
-        pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
+        auth_callback=lambda: "sample_token"
     )
     sanitized_code = plugin._sanitize_input(input_code)
     assert sanitized_code == expected_output

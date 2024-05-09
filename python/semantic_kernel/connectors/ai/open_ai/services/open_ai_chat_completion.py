@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
+from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -25,12 +26,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase):
     """OpenAI Chat completion class."""
 
-    @overload
     def __init__(
         self,
-        ai_model_id: str,
-        async_client: AsyncOpenAI,
-        service_id: Optional[str] = None,
+        ai_model_id: str | None = None,
+        service_id: str | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncOpenAI | None = None,
     ) -> None:
         """
         Initialize an OpenAIChatCompletion service.
@@ -38,79 +39,18 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         Arguments:
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
-            async_client {AsyncOpenAI} -- An existing client to use.
-        """
-
-    @overload
-    def __init__(
-        self,
-        ai_model_id: str,
-        api_key: Optional[str] = None,
-        org_id: Optional[str] = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-    ) -> None:
-        """
-        Initialize an OpenAIChatCompletion service.
-
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {Optional[str]} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
-            default_headers: The default headers mapping of string keys to
-                string values for HTTP requests. (Optional)
-        """
-
-    @overload
-    def __init__(
-        self,
-        ai_model_id: str,
-        api_key: Optional[str] = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-    ) -> None:
-        """
-        Initialize an OpenAIChatCompletion service.
-
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {Optional[str]} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            default_headers: The default headers mapping of string keys to
-                string values for HTTP requests. (Optional)
-        """
-
-    def __init__(
-        self,
-        ai_model_id: str,
-        api_key: Optional[str] = None,
-        org_id: Optional[str] = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncOpenAI] = None,
-    ) -> None:
-        """
-        Initialize an OpenAIChatCompletion service.
-
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {Optional[str]} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
+            service_id {str | None} -- Service ID tied to the execution settings.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
         """
+        openai_settings = OpenAISettings()
+        api_key = openai_settings.api_key.get_secret_value()
+        org_id = openai_settings.org_id
+        model_id = ai_model_id or openai_settings.ai_model_id
+
         super().__init__(
-            ai_model_id=ai_model_id,
+            ai_model_id=model_id,
             api_key=api_key,
             org_id=org_id,
             service_id=service_id,
@@ -130,8 +70,6 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
 
         return OpenAIChatCompletion(
             ai_model_id=settings["ai_model_id"],
-            api_key=settings["api_key"],
-            org_id=settings.get("org_id"),
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
         )

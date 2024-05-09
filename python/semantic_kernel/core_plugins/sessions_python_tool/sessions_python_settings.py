@@ -8,7 +8,8 @@ from enum import Enum
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from semantic_kernel.kernel_pydantic import HttpsUrl
 
 class CodeInputType(str, Enum):
     """Code input type."""
@@ -32,3 +33,16 @@ class SessionsPythonSettings(KernelBaseModel):
     python_code: str | None = Field(alias="pythonCode", default=None)
     timeout_in_sec: int | None = Field(default=100, alias="timeoutInSeconds")
     sanitize_input: bool | None = Field(default=True, alias="sanitizeInput")
+
+
+class ACASessionsSettings(BaseSettings):
+    """Azure Container Apps sessions settings.
+
+    Required:
+    - pool_management_endpoint: HttpsUrl - The URL of the Azure Container Apps pool management endpoint.
+    """
+    model_config = SettingsConfigDict(env_prefix='ACA_', env_file='.env', env_file_encoding='utf-8', extra='ignore')
+
+    pool_management_endpoint: HttpsUrl
+
+

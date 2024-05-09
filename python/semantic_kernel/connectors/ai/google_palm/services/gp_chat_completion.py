@@ -25,6 +25,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
+from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -39,7 +40,6 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def __init__(
         self,
         ai_model_id: str,
-        api_key: str,
         message_history: Optional[ChatHistory] = None,
     ):
         """
@@ -48,10 +48,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-                https://developers.generativeai.google/products/palm
             message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
         """
+        google_palm_settings = GooglePalmSettings()
+        api_key = google_palm_settings.api_key.get_secret_value()
+
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,

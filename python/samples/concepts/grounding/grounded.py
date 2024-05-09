@@ -61,10 +61,6 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
         kernel.add_service(
             AzureChatCompletion(
                 service_id=service_id,
-                deployment_name=deployment,
-                endpoint=endpoint,
-                api_key=api_key,
-                api_version="2023-12-01-preview",
             ),
         )
     else:

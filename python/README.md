@@ -37,30 +37,21 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
-        ai_model_id="gpt-3.5-turbo",
-        api_key=api_key,
-        org_id=org_id
     )
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
-#       deployment_name=deployment,
-#       endpoint=endpoint,
-#       api_key=api_key
 #   )
 # )
 

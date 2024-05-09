@@ -14,7 +14,7 @@ from pydantic import field_validator
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
-    SessionsPythonSettings,
+    SessionsPythonSettings, ACASessionsSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
@@ -37,7 +37,6 @@ class SessionsPythonTool(KernelBaseModel):
 
     def __init__(
         self,
-        pool_management_endpoint: str,
         auth_callback: Callable[..., Awaitable[Any]],
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
@@ -50,8 +49,11 @@ class SessionsPythonTool(KernelBaseModel):
         if not http_client:
             http_client = httpx.AsyncClient()
 
+        aca_settings = ACASessionsSettings()
+        endpoint = aca_settings.pool_management_endpoint
+
         super().__init__(
-            pool_management_endpoint=pool_management_endpoint,
+            pool_management_endpoint=endpoint,
             auth_callback=auth_callback,
             settings=settings,
             http_client=http_client,

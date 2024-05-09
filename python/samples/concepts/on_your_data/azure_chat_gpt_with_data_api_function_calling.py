@@ -25,11 +25,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 kernel = sk.Kernel()
 
-# Load Azure OpenAI Settings
-deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env(include_deployment=True)
-
 # Create the data source settings
-azure_ai_search_settings = sk.azure_aisearch_settings_from_dot_env_as_dict()
+
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
@@ -42,10 +39,6 @@ req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_bod
 
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
-    deployment_name=deployment,
-    api_key=api_key,
-    endpoint=endpoint,
-    api_version="2024-02-15-preview",
 )
 kernel.add_service(
     chat_service,

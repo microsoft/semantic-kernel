@@ -15,12 +15,12 @@ from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
-
+from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str, api_key: str) -> None:
+    def __init__(self, ai_model_id: str) -> None:
         """
         Initializes a new instance of the GooglePalmTextEmbedding class.
 
@@ -30,6 +30,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             api_key {str} -- GooglePalm API key, see
             https://developers.generativeai.google/products/palm
         """
+        google_palm_settings = GooglePalmSettings()
+        api_key = google_palm_settings.api_key.get_secret_value()
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:

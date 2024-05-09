@@ -190,6 +190,51 @@ def get_aoai_config():
     return deployment_name, api_key, endpoint
 
 
+@pytest.fixture
+def exclude_list(request):
+    """Fixture that returns a list of environment variables to exclude."""
+    return request.param if hasattr(request, 'param') else []
+
+@pytest.fixture()
+def azure_openai_unit_test_env(monkeypatch, exclude_list):
+    """Fixture to set environment variables for AzureOpenAISettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    env_vars = {
+        "AZURE_OPENAI_DEPLOYMENT_NAME": "test_deployment",
+        "AZURE_OPENAI_API_KEY": "test_api_key",
+        "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
+        "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
+        "AZURE_OPENAI_BASE_URL": "https://test-base-url.com",
+    }
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+
+    return env_vars
+
+
+@pytest.fixture()
+def openai_unit_test_env(monkeypatch, exclude_list):
+    """Fixture to set environment variables for OpenAISettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    env_vars = {
+        "OPENAI_API_KEY": "test_api_key",
+        "OPENAI_ORG_ID": "test_org_id",
+        "OPENAI_AI_MODEL_ID": "test_ai_model_id",
+    }
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+
+    return env_vars
+
+
 @pytest.fixture(scope="session")
 def get_oai_config():
     from semantic_kernel.utils.settings import openai_settings_from_dot_env

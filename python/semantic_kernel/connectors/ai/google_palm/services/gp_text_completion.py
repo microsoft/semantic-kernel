@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -26,16 +27,16 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str, api_key: str):
+    def __init__(self, ai_model_id: str):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-                https://developers.generativeai.google/products/palm
         """
+        google_palm_settings = GooglePalmSettings()
+        api_key = google_palm_settings.api_key.get_secret_value()
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
