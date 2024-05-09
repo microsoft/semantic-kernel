@@ -155,7 +155,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         return new FunctionChoiceBehaviorConfiguration()
         {
             RequiredFunctions = requiredFunctions,
-            MaximumAutoInvokeAttempts = requiredFunctions?.Count > 0 ? this.MaximumAutoInvokeAttempts : 0,
+            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
             MaximumUseAttempts = this.MaximumUseAttempts,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };

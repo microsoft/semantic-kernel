@@ -294,6 +294,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ResponseFormat = this.ResponseFormat,
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
+            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt
         };

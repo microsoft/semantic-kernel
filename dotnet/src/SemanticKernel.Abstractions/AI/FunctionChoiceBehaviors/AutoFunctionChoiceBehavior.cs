@@ -143,7 +143,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         return new FunctionChoiceBehaviorConfiguration()
         {
             AvailableFunctions = availableFunctions,
-            MaximumAutoInvokeAttempts = availableFunctions?.Count > 0 ? this.MaximumAutoInvokeAttempts : 0,
+            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }
