@@ -56,7 +56,6 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         this._config = config;
         this._mongoClient = mongoClient;
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
-        
     }
 
     /// <inheritdoc/>
