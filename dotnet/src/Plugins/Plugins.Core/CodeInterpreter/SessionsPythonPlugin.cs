@@ -163,7 +163,6 @@ Stderr:
         }
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
-        // Response Body {"$id":"1","$values":[{"$id":"2","filename":"test-file.txt","size":17,"last_modified_time":"2024-05-07T22:24:00.7528208Z"}]}
 
         return JsonSerializer.Deserialize<SessionRemoteFileMetadata>(JsonElementResult.GetProperty("$values")[0].GetRawText())!;
     }
@@ -172,10 +171,10 @@ Stderr:
     /// Downloads a file from the current Session ID.
     /// </summary>
     /// <param name="remoteFilePath"> The path to download the file from, relative to `/mnt/data`. </param>
-    /// <param name="localFilePath"> The path to save the downloaded file to. If not provided, the file is returned as a BufferedReader. </param>
-    /// <returns> The data of the downloaded file. </returns>
+    /// <param name="localFilePath"> The path to save the downloaded file to.</param>
+    /// <returns> The data of the downloaded file as byte array. </returns>
     [Description("Downloads a file from the current Session ID.")]
-    public async Task<byte[]?> DownloadFileAsync(
+    public async Task<byte[]> DownloadFileAsync(
         [Description("The path to download the file from, relative to `/mnt/data`.")] string remoteFilePath,
         [Description("The path to save the downloaded file to. If not provided, the file is returned as a BufferedReader.")] string localFilePath)
     {
@@ -197,13 +196,13 @@ Stderr:
             throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}");
         }
 
+        var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+
         if (!string.IsNullOrWhiteSpace(localFilePath))
         {
-            var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
             try
             {
                 File.WriteAllBytes(localFilePath, fileContent);
-                return null;
             }
             catch (Exception ex)
             {
@@ -211,7 +210,7 @@ Stderr:
             }
         }
 
-        return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+        return fileContent;
     }
 
     /// <summary>
