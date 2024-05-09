@@ -61,7 +61,7 @@ public class SessionsPythonPlugin
     /// Add spaces directly after \n sequences to replicate indentation.
     /// Use \"" to include double quotes within the code without ending the string.
     /// Keep everything in a single line; the \n sequences will represent line breaks
-    /// when the string is processed or displayed
+    /// when the string is processed or displayed.
     /// </summary>
     /// <param name="code"> The valid Python code to execute. </param>
     /// <returns> The result of the Python code execution. </returns>
@@ -73,7 +73,7 @@ public class SessionsPythonPlugin
                      Add spaces directly after \n sequences to replicate indentation.
                      Use \"" to include double quotes within the code without ending the string.
                      Keep everything in a single line; the \n sequences will represent line breaks
-                     when the string is processed or displayed")]
+                     when the string is processed or displayed.")]
     public async Task<string> ExecuteCodeAsync([Description("The valid Python code to execute.")] string code)
     {
         Verify.NotNullOrWhiteSpace(code, nameof(code));
@@ -106,7 +106,7 @@ public class SessionsPythonPlugin
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}");
+            throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}.");
         }
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -137,7 +137,7 @@ Stderr:
     /// <returns>The metadata of the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
-    [KernelFunction, Description("Uploads a file for the current session id pool")]
+    [KernelFunction, Description("Uploads a file for the current session id pool.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
         [Description("The path to the file in the session.")] string remoteFilePath,
         [Description("The path to the file on the local machine.")] string? localFilePath)
@@ -168,7 +168,7 @@ Stderr:
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}");
+            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}.");
         }
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -201,7 +201,7 @@ Stderr:
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}");
+            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}.");
         }
 
         var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
@@ -225,7 +225,7 @@ Stderr:
     /// Lists all files in the provided session id pool.
     /// </summary>
     /// <returns> The list of files in the session. </returns>
-    [KernelFunction, Description("Lists all files in the provided session id pool")]
+    [KernelFunction, Description("Lists all files in the provided session id pool.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync()
     {
         if (this._logger.IsEnabled(LogLevel.Trace))
