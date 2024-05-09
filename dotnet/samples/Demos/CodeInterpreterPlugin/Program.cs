@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -17,14 +19,40 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 var apiKey = configuration["OpenAI:ApiKey"];
-var token = configuration["AzureContainerApps:BearerKey"];
+var modelId = configuration["OpenAI:ChatModelId"];
 var endpoint = configuration["AzureContainerApps:Endpoint"];
 
+// Cached token for the Azure Container Apps service
+string? cachedToken = null;
+
+// Logger for program scope
+ILogger logger = NullLogger.Instance;
+
 ArgumentNullException.ThrowIfNull(apiKey);
-ArgumentNullException.ThrowIfNull(token);
+ArgumentNullException.ThrowIfNull(modelId);
 ArgumentNullException.ThrowIfNull(endpoint);
 
-Task<string> TokenProvider() => Task.FromResult(token);
+/// <summary>
+/// Acquire a token for the Azure Container Apps service
+/// </summary>
+async Task<string> TokenProvider()
+{
+    if (cachedToken is null)
+    {
+        string resource = "https://acasessions.io/.default";
+        var credential = new InteractiveBrowserCredential();
+
+        // Attempt to get the token
+        var accessToken = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Access token obtained successfully");
+        }
+        cachedToken = accessToken.Token;
+    }
+
+    return cachedToken;
+}
 
 var settings = new SessionPythonSettings()
 {
@@ -36,9 +64,10 @@ Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ==
 
 var builder =
     Kernel.CreateBuilder()
-    .AddOpenAIChatCompletion("gpt-3.5-turbo", apiKey);
+    .AddOpenAIChatCompletion(modelId, apiKey);
 
-builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
+// Change the log level to Trace to see more detailed logs
+builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton((sp)
     => new SessionsPythonPlugin(
@@ -48,6 +77,7 @@ builder.Services.AddSingleton((sp)
         sp.GetRequiredService<ILoggerFactory>()));
 var kernel = builder.Build();
 
+logger = kernel.GetRequiredService<ILoggerFactory>().CreateLogger<Program>();
 kernel.Plugins.AddFromObject(kernel.GetRequiredService<SessionsPythonPlugin>());
 var chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 

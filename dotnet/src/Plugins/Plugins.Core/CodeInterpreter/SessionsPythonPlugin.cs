@@ -81,9 +81,9 @@ public class SessionsPythonPlugin
             code = SanitizeCodeInput(code);
         }
 
-        if (this._logger.IsEnabled(LogLevel.Information))
+        if (this._logger.IsEnabled(LogLevel.Trace))
         {
-            this._logger.LogInformation("Executing Python code: {Code}", code);
+            this._logger.LogTrace("Executing Python code: {Code}", code);
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();
@@ -105,7 +105,8 @@ public class SessionsPythonPlugin
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Failed to execute code. Status code: {response.StatusCode}");
+            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}");
         }
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -157,7 +158,8 @@ Stderr:
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}");
+            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}");
         }
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
@@ -179,9 +181,9 @@ Stderr:
     {
         Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
 
-        if (this._logger.IsEnabled(LogLevel.Information))
+        if (this._logger.IsEnabled(LogLevel.Trace))
         {
-            this._logger.LogInformation("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFilePath, localFilePath);
+            this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFilePath, localFilePath);
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();
@@ -191,7 +193,8 @@ Stderr:
         var response = await httpClient.GetAsync($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}").ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}");
+            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}");
         }
 
         if (!string.IsNullOrWhiteSpace(localFilePath))
@@ -218,9 +221,9 @@ Stderr:
     [KernelFunction, Description("Lists all files in the provided session id pool")]
     public async Task<IReadOnlyList<SessionRemoteFileMetadata>> ListFilesAsync()
     {
-        if (this._logger.IsEnabled(LogLevel.Information))
+        if (this._logger.IsEnabled(LogLevel.Trace))
         {
-            this._logger.LogInformation("Listing files for Session ID: {SessionId}", this._settings.SessionId);
+            this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();

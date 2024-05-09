@@ -252,6 +252,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agents.OpenAI", "src\Agents\OpenAI\Agents.OpenAI.csproj", "{644A2F10-324D-429E-A1A3-887EAE64207F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{5D4C0700-BBB5-418F-A7B2-F392B9A18263}"
+	ProjectSection(SolutionItems) = preProject
+		samples\Demos\README.md = samples\Demos\README.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearnResources", "samples\LearnResources\LearnResources.csproj", "{B04C26BC-A933-4A53-BE17-7875EB12E012}"
 EndProject

@@ -14,8 +14,8 @@ If you have set up those credentials as secrets within Secret Manager or through
 dotnet user-secrets init
 
 dotnet user-secrets set "OpenAI:ApiKey" "..."
+dotnet user-secrets set "OpenAI:ChatModelId" "gpt-3.5-turbo" # or any other function callable model.
 
-dotnet user-secrets set "AzureContainerApps:BearerKey" " .. current token .. "
 dotnet user-secrets set "AzureContainerApps:Endpoint" " .. endpoint .. "
 ```
 
@@ -26,8 +26,8 @@ Use these names:
 ```
 # OpenAI
 OpenAI__ApiKey
+OpenAI__ChatModelId
 
 # Azure Container Apps
-AzureContainerApps__BearerKey
 AzureContainerApps__Endpoint
 ```
