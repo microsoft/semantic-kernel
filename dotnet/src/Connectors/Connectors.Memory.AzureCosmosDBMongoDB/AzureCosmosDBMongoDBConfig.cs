@@ -74,20 +74,4 @@ public class AzureCosmosDBMongoDBConfig(int dimensions)
     /// the cost of speed.
     /// </summary>
     public int EfSearch { get; set; }
-
-    /// <summary>
-    /// Initialize the AzureCosmosDBMongoDBConfig with default values
-    /// </summary>
-    public AzureCosmosDBMongoDBConfig()
-    {
-        this.ApplicationName = HttpHeaderConstant.Values.UserAgent;
-        this.IndexName = "default_index";
-        this.Kind = AzureCosmosDBVectorSearchType.VectorHNSW;
-        this.NumLists = 1;
-        this.Similarity = AzureCosmosDBSimilarityType.Cosine;
-        this.NumberOfConnections = 16;
-        this.EfConstruction = 64;
-        this.EfSearch = 40;
-        this.Dimensions = 1536;
-    }
 }
