@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
@@ -45,7 +47,7 @@ internal static class ModelDiagnostics
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
     public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
-        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, chatHistory => ToOpenAIFormat(chatHistory.AsEnumerable()));
+        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
     /// Set the text completion response for a given activity.
@@ -120,9 +122,29 @@ internal static class ModelDiagnostics
     /// </summary>
     private static string ToOpenAIFormat(IEnumerable<ChatMessageContent> chatHistory)
     {
-        return $"[{string.Join(
-            ", \n",
-            chatHistory.Select(m => $"{{\"role:\" {m.Role}, \"content:\" {m.Content}}}"))}]";
+        var sb = new StringBuilder();
+        sb.Append('[');
+        var isFirst = true;
+        foreach (var message in chatHistory)
+        {
+            if (!isFirst)
+            {
+                // Append a comma and a newline to separate the elements after the previous one.
+                // This can avoid adding an unnecessary comma after the last element.
+                sb.Append(", \n");
+            }
+
+            sb.Append("{\"role\": \"");
+            sb.Append(message.Role);
+            sb.Append("\", \"content\": \"");
+            sb.Append(JsonSerializer.Serialize(message.Content));
+            sb.Append("\"}");
+
+            isFirst = false;
+        }
+        sb.Append(']');
+
+        return sb.ToString();
     }
 
     /// <summary>
