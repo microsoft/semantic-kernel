@@ -82,5 +82,6 @@ public class AzureCosmosDBMongoDBConfig
         this.NumberOfConnections = 16;
         this.EfConstruction = 64;
         this.EfSearch = 40;
+        this.Dimensions = 1536;
     }
 }

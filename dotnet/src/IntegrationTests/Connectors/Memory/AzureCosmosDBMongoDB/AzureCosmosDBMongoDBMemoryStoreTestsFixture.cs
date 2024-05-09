@@ -32,10 +32,13 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
+        AzureCosmosDBMongoDBConfig config = new AzureCosmosDBMongoDBConfig();
+        config.Dimensions = 3;
+        
         this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
-            new AzureCosmosDBMongoDBConfig()
+            config
         );
     }
 
