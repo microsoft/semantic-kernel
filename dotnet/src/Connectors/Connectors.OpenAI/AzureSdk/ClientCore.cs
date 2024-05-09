@@ -1422,7 +1422,7 @@ internal abstract class ClientCore
 
             (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts) result = new()
             {
-                AllowAnyRequestedKernelFunction = false,
+                AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
                 MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
             };
 
@@ -1445,7 +1445,7 @@ internal abstract class ClientCore
                     throw new KernelException("Only one required function is allowed.");
                 }
 
-                var functionDefinition = requiredFunctions.First().ToOpenAIFunction().ToFunctionDefinition();
+                var functionDefinition = requiredFunctions.First().Metadata.ToOpenAIFunction().ToFunctionDefinition();
 
                 chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
                 chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
@@ -1460,7 +1460,7 @@ internal abstract class ClientCore
 
                 foreach (var function in availableFunctions)
                 {
-                    var functionDefinition = function.ToOpenAIFunction().ToFunctionDefinition();
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
                     chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
                 }
 

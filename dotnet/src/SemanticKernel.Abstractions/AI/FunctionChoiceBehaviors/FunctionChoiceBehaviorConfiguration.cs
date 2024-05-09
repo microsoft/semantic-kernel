@@ -14,12 +14,12 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// <summary>
     /// The functions that are available for the model to call.
     /// </summary>
-    public IEnumerable<KernelFunctionMetadata>? AvailableFunctions { get; init; }
+    public IEnumerable<KernelFunction>? AvailableFunctions { get; init; }
 
     /// <summary>
     /// The functions that the model is required to call.
     /// </summary>
-    public IEnumerable<KernelFunctionMetadata>? RequiredFunctions { get; init; }
+    public IEnumerable<KernelFunction>? RequiredFunctions { get; init; }
 
     /// <summary>
     /// The maximum number of function auto-invokes that can be made in a single user request.
@@ -41,4 +41,9 @@ public sealed class FunctionChoiceBehaviorConfiguration
     /// will not include the functions for further use.
     /// </remarks>
     public int? MaximumUseAttempts { get; init; }
+
+    /// <summary>
+    /// Specifies whether validation against a specified list of functions is required before allowing the model to request a function from the kernel.
+    /// </summary>
+    public bool? AllowAnyRequestedKernelFunction { get; init; }
 }

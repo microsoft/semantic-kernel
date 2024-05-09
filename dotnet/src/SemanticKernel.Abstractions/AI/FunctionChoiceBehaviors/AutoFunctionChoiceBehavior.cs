@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -15,6 +14,16 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 {
+    /// <summary>
+    /// List of the functions that the model can choose from.
+    /// </summary>
+    private readonly IEnumerable<KernelFunction>? _functions;
+
+    /// <summary>
+    /// List of the fully qualified names of the functions that the model can choose from.
+    /// </summary>
+    private readonly IEnumerable<string>? _functionFQNs;
+
     /// <summary>
     /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
     /// </summary>
@@ -34,7 +43,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
     public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
-        this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator));
+        this._functions = functions;
     }
 
     /// <summary>
@@ -52,7 +61,19 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
     /// </summary>
     [JsonPropertyName("functions")]
-    public IEnumerable<string>? Functions { get; init; }
+    public IEnumerable<string>? Functions
+    {
+        get => this._functionFQNs;
+        init
+        {
+            if (value?.Count() > 0 && this._functions?.Count() > 0)
+            {
+                throw new KernelException("Functions are already provided via the constructor.");
+            }
+
+            this._functionFQNs = value;
+        }
+    }
 
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
@@ -69,41 +90,61 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
             throw new KernelException("Auto-invocation in Auto mode is not supported when no kernel is provided.");
         }
 
-        IList<KernelFunctionMetadata>? availableFunctions = null;
+        List<KernelFunction>? availableFunctions = null;
+        bool allowAnyRequestedKernelFunction = false;
 
-        if (context.Kernel is not null)
+        // Handle functions provided via constructor as function instances.
+        if (this._functions is { } functions && functions.Any())
         {
-            if (this.Functions is { } functionFQNs && functionFQNs.Any())
+            // Make sure that every function can be found in the kernel.
+            if (autoInvoke)
             {
-                foreach (var functionFQN in functionFQNs)
+                foreach (var function in functions)
                 {
-                    availableFunctions ??= new List<KernelFunctionMetadata>();
-
-                    // Make sure that every function can be found in the kernel.
-                    Debug.Assert(context.Kernel is not null);
-
-                    var name = FunctionName.Parse(functionFQN, FunctionNameSeparator);
-
-                    if (!context.Kernel!.Plugins.TryGetFunction(name.PluginName, name.Name, out var function))
+                    if (!context.Kernel!.Plugins.TryGetFunction(function.PluginName, function.Name, out _))
                     {
-                        throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
+                        throw new KernelException($"The specified function {function.PluginName}.{function.Name} is not available in the kernel.");
                     }
-
-                    availableFunctions.Add(function.Metadata);
                 }
             }
-            else
+
+            availableFunctions = functions.ToList();
+        }
+        // Handle functions provided via the 'Functions' property as function fully qualified names.
+        else if (this.Functions is { } functionFQNs && functionFQNs.Any())
+        {
+            availableFunctions = [];
+
+            foreach (var functionFQN in functionFQNs)
             {
-                // Provide all functions from the kernel.
-                var kernelFunctions = context.Kernel.Plugins.GetFunctionsMetadata();
-                availableFunctions = kernelFunctions.Any() ? kernelFunctions : null;
+                // Make sure that every function can be found in the kernel.
+                var name = FunctionName.Parse(functionFQN, FunctionNameSeparator);
+
+                if (!context.Kernel!.Plugins.TryGetFunction(name.PluginName, name.Name, out var function))
+                {
+                    throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
+                }
+
+                availableFunctions.Add(function);
+            }
+        }
+        // Provide all functions from the kernel.
+        else if (context.Kernel is not null)
+        {
+            allowAnyRequestedKernelFunction = true;
+
+            foreach (var plugin in context.Kernel.Plugins)
+            {
+                availableFunctions ??= [];
+                availableFunctions.AddRange(plugin);
             }
         }
 
         return new FunctionChoiceBehaviorConfiguration()
         {
             AvailableFunctions = availableFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts
+            MaximumAutoInvokeAttempts = availableFunctions?.Count > 0 ? this.MaximumAutoInvokeAttempts : 0,
+            AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }
 }

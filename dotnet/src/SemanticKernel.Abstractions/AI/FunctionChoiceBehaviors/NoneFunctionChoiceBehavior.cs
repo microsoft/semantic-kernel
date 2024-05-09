@@ -22,7 +22,8 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
         return new FunctionChoiceBehaviorConfiguration()
         {
             // By not providing either available or required functions, we are telling the model to not call any functions.
-            MaximumAutoInvokeAttempts = 0, // Disable unnecessary auto-invocation
+            AvailableFunctions = null,
+            RequiredFunctions = null,
         };
     }
 }

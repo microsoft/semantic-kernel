@@ -284,7 +284,7 @@ public sealed class FunctionCallChoiceTests
         return KernelPluginFactory.CreateFromFunctions("MyPlugin", [function]);
     }
 
-    private void AssertFunctions(IEnumerable<KernelFunctionMetadata>? kernelFunctionsMetadata)
+    private void AssertFunctions(IEnumerable<KernelFunction>? kernelFunctionsMetadata)
     {
         Assert.NotNull(kernelFunctionsMetadata);
         Assert.Single(kernelFunctionsMetadata);
@@ -296,6 +296,6 @@ public sealed class FunctionCallChoiceTests
         Assert.Equal("MyPlugin", functionMetadata.PluginName);
         Assert.Equal("MyFunction", functionMetadata.Name);
         Assert.Equal("Test Function", functionMetadata.Description);
-        Assert.Equal(2, functionMetadata.Parameters.Count);
+        Assert.Equal(2, functionMetadata.Metadata.Parameters.Count);
     }
 }
