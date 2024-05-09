@@ -351,3 +351,27 @@ def booking_sample_settings_from_dot_env_as_dict() -> dict[str, str]:
     """
     client_id, tenant_id, client_secret = booking_sample_settings_from_dot_env()
     return {"client_id": client_id, "tenant_id": tenant_id, "client_secret": client_secret}
+
+
+def azure_container_apps_settings_from_dot_env() -> str:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        str: Azure Container Apps pool management connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("ACA_POOL_MANAGEMENT_ENDPOINT", None)
+
+    assert connection_string is not None, "Azure Container Apps connection string not found in .env file"
+
+    return connection_string
+
+
+def azure_container_apps_settings_from_dot_env_as_dict() -> dict[str, str]:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        Dict[str, str]: Azure Container Apps environment variables
+    """
+    pool_management_endpoint = azure_container_apps_settings_from_dot_env()
+    return {"pool_management_endpoint": pool_management_endpoint}

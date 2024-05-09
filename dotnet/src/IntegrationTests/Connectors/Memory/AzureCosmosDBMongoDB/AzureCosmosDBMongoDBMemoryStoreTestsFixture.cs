@@ -44,6 +44,8 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        await this.MemoryStore.CreateCollectionAsync(this.CollectionName);
+
         await this
             .MemoryStore.UpsertBatchAsync(this.CollectionName, DataHelper.VectorSearchTestRecords)
             .ToListAsync();
