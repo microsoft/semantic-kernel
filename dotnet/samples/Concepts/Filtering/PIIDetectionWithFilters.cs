@@ -44,24 +44,30 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
         builder.Services.AddSingleton<IPromptRenderFilter>(sp => new PromptAnalyzerFilter(
             sp.GetRequiredService<ILogger>(),
             sp.GetRequiredService<PresidioTextAnalyzerService>(),
-            scoreThreshold: 0.5));
+            scoreThreshold: 0.9));
 
         var kernel = builder.Build();
 
         // Example 1: Use prompt with PII
-        var result1 = await kernel.InvokePromptAsync("John Smith drivers license is AC432223");
-        logger.LogInformation("Result: {Result}", result1.ToString());
+        try
+        {
+            await kernel.InvokePromptAsync("John Smith has a card 1111 2222 3333 4444");
+        }
+        catch (KernelException exception)
+        {
+            logger.LogError("Exception: {Exception}", exception.Message);
+        }
 
         /* 
-        Prompt: John Smith drivers license is AC432223
+        Prompt: John Smith has a card 1111 2222 3333 4444
+        Entity type: CREDIT_CARD. Score: 1
         Entity type: PERSON. Score: 0.85
-        Entity type: US_DRIVER_LICENSE. Score: 0.6499999999999999
-        Result: Prompt contains PII information. Operation is canceled. 
+        Exception: Prompt contains PII information. Operation is canceled.
         */
 
         // Example 2: Use prompt without PII
-        var result2 = await kernel.InvokePromptAsync("Hi, can you help me?");
-        logger.LogInformation("Result: {Result}", result2.ToString());
+        var result = await kernel.InvokePromptAsync("Hi, can you help me?");
+        logger.LogInformation("Result: {Result}", result.ToString());
 
         /*
         Prompt: Hi, can you help me?
@@ -161,11 +167,11 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
                 }
             }
 
-            // If PII detected, override function result with custom message.
-            // In this case, prompt won't be sent to LLM and result will be returned immediately.
+            // If PII detected, throw an exception to prevent this prompt from being sent to LLM.
+            // It's also possible to override 'context.Result' to return some default function result instead.
             if (piiDetected)
             {
-                context.Result = new FunctionResult(context.Function, "Prompt contains PII information. Operation is canceled.");
+                throw new KernelException("Prompt contains PII information. Operation is canceled.");
             }
         }
     }
@@ -221,7 +227,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
         public static AnalyzerEntityType Person = new("PERSON");
         public static AnalyzerEntityType PhoneNumber = new("PHONE_NUMBER");
         public static AnalyzerEntityType EmailAddress = new("EMAIL_ADDRESS");
-        public static AnalyzerEntityType USDriverLicense = new("US_DRIVER_LICENSE");
+        public static AnalyzerEntityType CreditCard = new("CREDIT_CARD");
 
         public static implicit operator string(AnalyzerEntityType type) => type.Name;
     }
