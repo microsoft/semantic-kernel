@@ -171,12 +171,12 @@ Stderr:
     /// Downloads a file from the current Session ID.
     /// </summary>
     /// <param name="remoteFilePath"> The path to download the file from, relative to `/mnt/data`. </param>
-    /// <param name="localFilePath"> The path to save the downloaded file to.</param>
+    /// <param name="localFilePath"> The path to save the downloaded file to. If not provided won't save it in the disk.</param>
     /// <returns> The data of the downloaded file as byte array. </returns>
     [Description("Downloads a file from the current Session ID.")]
     public async Task<byte[]> DownloadFileAsync(
         [Description("The path to download the file from, relative to `/mnt/data`.")] string remoteFilePath,
-        [Description("The path to save the downloaded file to. If not provided, the file is returned as a BufferedReader.")] string localFilePath)
+        [Description("The path to save the downloaded file to. If not provided won't save it in the disk.")] string? localFilePath = null)
     {
         Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
 
