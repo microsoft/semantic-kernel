@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -9,9 +10,10 @@ namespace Microsoft.SemanticKernel;
 /// Represents the base class for different function choice behaviors.
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: AutoFunctionChoiceBehavior.Alias)]
-[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: RequiredFunctionChoiceBehavior.Alias)]
-[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: NoneFunctionChoiceBehavior.Alias)]
+[JsonDerivedType(typeof(AutoFunctionChoiceBehavior), typeDiscriminator: AutoFunctionChoiceBehavior.TypeDiscriminator)]
+[JsonDerivedType(typeof(RequiredFunctionChoiceBehavior), typeDiscriminator: RequiredFunctionChoiceBehavior.TypeDiscriminator)]
+[JsonDerivedType(typeof(NoneFunctionChoiceBehavior), typeDiscriminator: NoneFunctionChoiceBehavior.TypeDiscriminator)]
+[Experimental("SKEXP0001")]
 public abstract class FunctionChoiceBehavior
 {
     /// <summary>The separator used to separate plugin name and function name.</summary>

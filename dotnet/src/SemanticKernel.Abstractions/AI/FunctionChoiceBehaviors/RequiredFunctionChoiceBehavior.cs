@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,13 +12,13 @@ namespace Microsoft.SemanticKernel;
 /// Represent <see cref="FunctionChoiceBehavior"/> that provides a subset of the <see cref="Kernel"/>'s plugins' function information to the model.
 /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
 /// </summary>
+[Experimental("SKEXP0001")]
 public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 {
     /// <summary>
-    /// The class alias. Used as a value for the discriminator property for polymorphic deserialization
-    /// of function choice behavior specified in JSON and YAML prompts.
+    /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
     /// </summary>
-    public const string Alias = "required";
+    public const string TypeDiscriminator = "required";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -71,6 +72,7 @@ public class PromptExecutionSettings
     /// the function, and sending back the result. The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
     /// </remarks>
     [JsonPropertyName("function_choice_behavior")]
+    [Experimental("SKEXP0001")]
     public FunctionChoiceBehavior? FunctionChoiceBehavior
     {
         get => this._functionChoiceBehavior;

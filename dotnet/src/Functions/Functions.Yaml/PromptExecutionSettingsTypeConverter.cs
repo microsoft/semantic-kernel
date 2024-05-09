@@ -31,12 +31,14 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
                                          // Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
             .WithTypeDiscriminatingNodeDeserializer((options) =>
             {
+#pragma warning disable SKEXP0001
                 options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>("type", new Dictionary<string, Type>
                 {
-                    { AutoFunctionChoiceBehavior.Alias, typeof(AutoFunctionChoiceBehavior) },
-                    { RequiredFunctionChoiceBehavior.Alias, typeof(RequiredFunctionChoiceBehavior) },
-                    { NoneFunctionChoiceBehavior.Alias, typeof(NoneFunctionChoiceBehavior) }
+                    { AutoFunctionChoiceBehavior.TypeDiscriminator, typeof(AutoFunctionChoiceBehavior) },
+                    { RequiredFunctionChoiceBehavior.TypeDiscriminator, typeof(RequiredFunctionChoiceBehavior) },
+                    { NoneFunctionChoiceBehavior.TypeDiscriminator, typeof(NoneFunctionChoiceBehavior) }
                 });
+#pragma warning restore SKEXP0010
             })
             .Build();
 
