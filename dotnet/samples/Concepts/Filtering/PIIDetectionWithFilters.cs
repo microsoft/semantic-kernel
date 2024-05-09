@@ -291,7 +291,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
     #region Microsoft Presidio Text Anonymizer
 
     /// <summary>
-    /// Anonymizer action type that can be perform to update the prompt.
+    /// Anonymizer action type that can be performed to update the prompt.
     /// More information here: https://microsoft.github.io/presidio/api-docs/api-docs.html#tag/Anonymizer/paths/~1anonymizers/get
     /// </summary>
     private readonly struct AnonymizerType(string name)
