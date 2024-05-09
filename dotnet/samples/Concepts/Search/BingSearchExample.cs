@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Search;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Search;
 
@@ -19,7 +14,7 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
     /// Show how to create a <see cref="BingTextSearchService"/> and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task SearchAsync()
     {
         var query = "What is the Semantic Kernel?";
 
@@ -32,43 +27,43 @@ public sealed class BingSearchExample(ITestOutputHelper output) : BaseTest(outpu
         KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Count = 2 });
         await foreach (CustomSearchResult result in searchResults.Results)
         {
-            WriteLine($"Title: {result.Name}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Snippet);
-            WriteLine(result.Url);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Title: {result.Name}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.Snippet);
+            Console.WriteLine(result.Url);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search for just the summaries
         KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, new() { Count = 2, Offset = 2 });
         await foreach (string result in summaryResults.Results)
         {
-            WriteLine(result);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search with TextSearchResult result type
         KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>(query, new() { Count = 2, Offset = 4 });
         await foreach (TextSearchResult result in textResults.Results)
         {
-            WriteLine($"Name: {result.Name}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Value);
-            WriteLine(result.Link);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Name: {result.Name}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.Value);
+            Console.WriteLine(result.Link);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search with a the default result type
         KernelSearchResults<BingWebPage> fullResults = await searchService.SearchAsync<BingWebPage>(query, new() { Count = 2, Offset = 6 });
         await foreach (BingWebPage result in fullResults.Results)
         {
-            WriteLine($"Name: {result.Name}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Snippet);
-            WriteLine(result.Url);
-            WriteLine(result.DisplayUrl);
-            WriteLine(result.DateLastCrawled);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Name: {result.Name}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.Snippet);
+            Console.WriteLine(result.Url);
+            Console.WriteLine(result.DisplayUrl);
+            Console.WriteLine(result.DateLastCrawled);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
     }
 

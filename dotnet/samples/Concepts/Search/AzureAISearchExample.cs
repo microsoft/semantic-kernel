@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Azure.Search.Documents.Models;
-using Examples;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Search;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Search;
 
@@ -20,7 +16,7 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
     /// Show how to create a <see cref="AzureAITextSearchService"/> and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task SearchAsync()
     {
         var query = "What is the Semantic Kernel?";
         var IndexName = TestConfiguration.AzureAISearch.IndexName;
@@ -34,11 +30,11 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
         KernelSearchResults<CustomSearchResult> searchResults = await searchService.SearchAsync<CustomSearchResult>(query, new() { Index = IndexName, Count = 2, Offset = 2 });
         await foreach (CustomSearchResult result in searchResults.Results)
         {
-            WriteLine($"Title: {result.Title}");
-            WriteLine($"Chunk Id: {result.ChunkId}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Chunk);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Title: {result.Title}");
+            Console.WriteLine($"Chunk Id: {result.ChunkId}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.Chunk);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search for just the summaries
@@ -46,8 +42,8 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
         KernelSearchResults<string> summaryResults = await searchService.SearchAsync<string>(query, settings);
         await foreach (string result in summaryResults.Results)
         {
-            WriteLine(result);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search with TextSearchResult result type
@@ -55,22 +51,22 @@ public sealed class AzureAISearchExample(ITestOutputHelper output) : BaseTest(ou
         KernelSearchResults<TextSearchResult> textResults = await searchService.SearchAsync<TextSearchResult>(query, settings);
         await foreach (TextSearchResult result in textResults.Results)
         {
-            WriteLine($"Name: {result.Name}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.Value);
-            WriteLine(result.Link);
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Name: {result.Name}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.Value);
+            Console.WriteLine(result.Link);
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
 
         // Search with a the default result type
         KernelSearchResults<SearchDocument> fullResults = await searchService.SearchAsync<SearchDocument>(query, new() { Index = IndexName, Count = 2, Offset = 6 });
         await foreach (SearchDocument result in fullResults.Results)
         {
-            WriteLine($"Title: {result.GetString("title")}");
-            WriteLine($"Chunk Id: {result.GetString("chunk_id")}");
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
-            WriteLine(result.GetString("chunk"));
-            WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"Title: {result.GetString("title")}");
+            Console.WriteLine($"Chunk Id: {result.GetString("chunk_id")}");
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine(result.GetString("chunk"));
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------");
         }
     }
 

@@ -36,6 +36,7 @@ public class AzureAISearchExecutionSettings : SearchExecutionSettings
     /// <summary>
     /// Parameters for filtering, sorting, faceting, paging, and other search query behaviors.
     /// </summary>
+    [JsonIgnore]
     public SearchOptions? SearchOptions
     {
         get

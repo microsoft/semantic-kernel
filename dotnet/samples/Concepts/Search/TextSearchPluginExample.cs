@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Search;
 
@@ -18,7 +14,7 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
     /// Show how to create a <see cref="TextSearchPlugin{T}"/> and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task RunAsync()
+    public async Task SearchAsync()
     {
         // Create a search service with Bing search service
         var searchService = new BingTextSearchService(
@@ -37,12 +33,12 @@ public sealed class TextSearchPluginExample(ITestOutputHelper output) : BaseTest
         var function = kernel.Plugins["StringSearch"]["Search"];
         var result = await kernel.InvokeAsync(function, new() { ["query"] = question });
 
-        WriteLine(result);
+        Console.WriteLine(result);
 
         // Invoke the plugin to perform a text search and return BingWebPage values
         function = kernel.Plugins["PageSearch"]["Search"];
         result = await kernel.InvokeAsync(function, new() { ["query"] = question, ["count"] = 2 });
 
-        WriteLine(result);
+        Console.WriteLine(result);
     }
 }
