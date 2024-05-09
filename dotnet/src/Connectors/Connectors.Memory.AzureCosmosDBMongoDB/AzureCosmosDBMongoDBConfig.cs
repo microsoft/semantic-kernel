@@ -73,5 +73,5 @@ public class AzureCosmosDBMongoDBConfig(int dimensions)
     /// The size of the dynamic candidate list for search (40 by default). A higher value provides better recall at
     /// the cost of speed.
     /// </summary>
-    public int EfSearch { get; set; }
+    public int EfSearch { get; set; } = 40;
 }

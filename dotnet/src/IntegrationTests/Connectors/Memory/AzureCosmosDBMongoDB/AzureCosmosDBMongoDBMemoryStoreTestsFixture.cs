@@ -28,7 +28,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
             )
             .AddEnvironmentVariables()
             .Build();
-
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
