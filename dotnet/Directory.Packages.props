@@ -84,6 +84,7 @@
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.1.2" />
+    <PackageVersion Include="Scriban" Version="5.10.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
