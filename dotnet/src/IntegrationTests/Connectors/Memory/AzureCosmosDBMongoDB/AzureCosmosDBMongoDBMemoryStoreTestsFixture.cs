@@ -31,7 +31,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var connectionString = GetSetting(configuration, "ConnectionString");
         this.DatabaseName = "DotNetSKTestDB";
         this.CollectionName = "DotNetSKTestCollection";
-        
         this.MemoryStore = new AzureCosmosDBMongoDBMemoryStore(
             connectionString,
             this.DatabaseName,
