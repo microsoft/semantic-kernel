@@ -7,9 +7,9 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 /// <summary>
-/// Settings for a Python session.
+/// Settings for a Python Sessions Plugin.
 /// </summary>
-public class SessionPythonSettings
+public class SessionsPythonSettings
 {
     /// <summary>
     /// Determines if the input should be sanitized.
@@ -21,25 +21,25 @@ public class SessionPythonSettings
     /// The target endpoint.
     /// </summary>
     [JsonIgnore]
-    public Uri? Endpoint { get; init; }
+    public Uri Endpoint { get; set; }
 
     /// <summary>
     /// The session identifier.
     /// </summary>
     [JsonPropertyName("identifier")]
-    public string? SessionId { get; init; }
+    public string SessionId { get; set; }
 
     /// <summary>
     /// Code input type.
     /// </summary>
     [JsonPropertyName("codeInputType")]
-    public CodeInputTypeSetting CodeInputType { get; set; }
+    public CodeInputTypeSetting CodeInputType { get; set; } = CodeInputTypeSetting.Inline;
 
     /// <summary>
     /// Code execution type.
     /// </summary>
     [JsonPropertyName("executionType")]
-    public CodeExecutionTypeSetting CodeExecutionType { get; set; }
+    public CodeExecutionTypeSetting CodeExecutionType { get; set; } = CodeExecutionTypeSetting.Synchronous;
 
     /// <summary>
     /// Timeout in seconds for the code execution.
@@ -48,10 +48,16 @@ public class SessionPythonSettings
     public int TimeoutInSeconds { get; set; } = 100;
 
     /// <summary>
-    /// The Python code to execute.
+    /// Initializes a new instance of the <see cref="SessionsPythonSettings"/> class.
     /// </summary>
-    [JsonPropertyName("pythonCode")]
-    public string? PythonCode { get; set; }
+    /// <param name="sessionId">Session identifier.</param>
+    /// <param name="endpoint">Azure Container Apps Endpoint.</param>
+    [JsonConstructor]
+    public SessionsPythonSettings(string sessionId, Uri endpoint)
+    {
+        this.SessionId = sessionId;
+        this.Endpoint = endpoint;
+    }
 
     /// <summary>
     /// Code input type.
@@ -81,18 +87,5 @@ public class SessionPythonSettings
         [Description("Code is provided as a inline string.")]
         [JsonPropertyName("synchronous")]
         Synchronous
-    }
-
-    internal SessionPythonSettings CloneForRequest(string pythonCode)
-    {
-        return new SessionPythonSettings
-        {
-            SanitizeInput = this.SanitizeInput,
-            SessionId = this.SessionId,
-            CodeInputType = this.CodeInputType,
-            CodeExecutionType = this.CodeExecutionType,
-            TimeoutInSeconds = this.TimeoutInSeconds,
-            PythonCode = pythonCode
-        };
     }
 }

@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace SemanticKernel.Plugins.UnitTests.Core;
@@ -24,11 +24,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private const string UpdaloadFileTestDataFilePath = "./TestData/sessions_python_plugin_file_upload.json";
     private const string FileTestDataFilePath = "./TestData/sessions_python_plugin_file.txt";
 
-    private readonly SessionPythonSettings _defaultSettings = new()
+    private readonly SessionsPythonSettings _defaultSettings = new(
+        sessionId: Guid.NewGuid().ToString(),
+        endpoint: new Uri("http://localhost:8888"))
     {
-        Endpoint = new Uri("http://localhost:8888"),
-        CodeExecutionType = SessionPythonSettings.CodeExecutionTypeSetting.Synchronous,
-        CodeInputType = SessionPythonSettings.CodeInputTypeSetting.Inline
+        CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
     };
 
     private readonly IHttpClientFactory _httpClientFactory;
@@ -43,23 +44,18 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         this._httpClientFactory = httpClientFactoryMock.Object;
     }
-    private readonly HttpResponseMessage _response = new()
-    {
-        StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("hello world"),
-    };
 
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        _ = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        _ = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
     }
 
     [Fact]
     public void ItCanBeImported()
     {
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act - Assert no exception occurs e.g. due to reflection
         Assert.NotNull(KernelPluginFactory.CreateFromObject(plugin));
@@ -82,13 +78,102 @@ public sealed class SessionsPythonPluginTests : IDisposable
                        ""
                        """;
         // Arrange
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.ExecuteCodeAsync("print('hello world')");
 
         // Assert
         Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData(nameof(SessionsPythonPlugin.DownloadFileAsync))]
+    [InlineData(nameof(SessionsPythonPlugin.ListFilesAsync))]
+    [InlineData(nameof(SessionsPythonPlugin.UploadFileAsync))]
+    public async Task ItShouldCallTokenProviderWhenProvidedAsync(string methodName)
+    {
+        // Arrange
+        var tokenProviderCalled = false;
+
+        Task<string> tokenProviderAsync()
+        {
+            tokenProviderCalled = true;
+            return Task.FromResult("token");
+        }
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(""),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory, tokenProviderAsync);
+
+        // Act
+        try
+        {
+            switch (methodName)
+            {
+                case nameof(SessionsPythonPlugin.DownloadFileAsync):
+                    await plugin.DownloadFileAsync("test.txt");
+                    break;
+                case nameof(SessionsPythonPlugin.ListFilesAsync):
+                    await plugin.ListFilesAsync();
+                    break;
+                case nameof(SessionsPythonPlugin.UploadFileAsync):
+                    await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
+                    break;
+            }
+        }
+        catch (JsonException)
+        {
+            // Ignore response serialization exceptions
+        }
+
+        // Assert
+        Assert.True(tokenProviderCalled);
+    }
+
+    [Fact]
+    public async Task ItShouldUseSameSessionIdAcrossMultipleCallsAsync()
+    {
+        // Arrange
+
+        using var multiMessageHandlerStub = new MultipleHttpMessageHandlerStub();
+        multiMessageHandlerStub.AddJsonResponse(File.ReadAllText(CodeExecutionTestDataFilePath));
+        multiMessageHandlerStub.AddJsonResponse(File.ReadAllText(ListFilesTestDataFilePath));
+        multiMessageHandlerStub.AddJsonResponse(File.ReadAllText(UpdaloadFileTestDataFilePath));
+        multiMessageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK));
+
+        List<HttpClient> httpClients = [];
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() =>
+        {
+            var targetClient = new HttpClient(multiMessageHandlerStub, false);
+            httpClients.Add(targetClient);
+
+            return targetClient;
+        });
+
+        var expectedSessionId = Guid.NewGuid().ToString();
+        this._defaultSettings.SessionId = expectedSessionId;
+
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, httpClientFactoryMock.Object);
+
+        // Act
+        await plugin.ExecuteCodeAsync("print('hello world')");
+        await plugin.ListFilesAsync();
+        await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
+
+        // Assert
+        Assert.Contains(expectedSessionId, Encoding.UTF8.GetString(multiMessageHandlerStub.RequestContents[0]!), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[1]!.Query, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[2]!.Query, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var httpClient in httpClients)
+        {
+            httpClient.Dispose();
+        }
     }
 
     [Fact]
@@ -101,18 +186,18 @@ public sealed class SessionsPythonPluginTests : IDisposable
         };
 
         // Arrange
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.ListFilesAsync();
 
         // Assert
-        Assert.Contains<SessionRemoteFileMetadata>(result, (item) =>
+        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
             item.Filename == "test.txt" &&
             item.Size == 680 &&
             item.LastModifiedTime!.Value.Ticks == 638508470494918207);
 
-        Assert.Contains<SessionRemoteFileMetadata>(result, (item) =>
+        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
             item.Filename == "test2.txt" &&
             item.Size == 1074 &&
             item.LastModifiedTime!.Value.Ticks == 638508471084916062);
@@ -125,7 +210,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionRemoteFileMetadata("test.txt", 680)
+        var expectedResponse = new SessionsRemoteFileMetadata("test.txt", 680)
         {
             LastModifiedTime = new DateTime(638508470494918207),
         };
@@ -135,7 +220,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new StringContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
@@ -157,7 +242,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new ByteArrayContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt");
@@ -182,7 +267,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             Content = new ByteArrayContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(this._defaultSettings, () => Task.FromResult(string.Empty), this._httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt", downloadDiskPath);

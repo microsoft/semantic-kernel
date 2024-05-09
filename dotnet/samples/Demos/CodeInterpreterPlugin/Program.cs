@@ -54,13 +54,13 @@ async Task<string> TokenProvider()
     return cachedToken;
 }
 
-var settings = new SessionPythonSettings()
-{
-    Endpoint = new Uri(endpoint),
-    SessionId = Guid.NewGuid().ToString()
-};
+var settings = new SessionsPythonSettings(
+        sessionId: Guid.NewGuid().ToString(),
+        endpoint: new Uri(endpoint));
 
-Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===");
+Console.WriteLine("=== Code Interpreter With Azure Container Apps Plugin Demo ===\n");
+
+Console.WriteLine("Start your conversation with the assistant. Type enter or an empty message to quit.");
 
 var builder =
     Kernel.CreateBuilder()
@@ -72,8 +72,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton((sp)
     => new SessionsPythonPlugin(
         settings,
-        TokenProvider,
         sp.GetRequiredService<IHttpClientFactory>(),
+        TokenProvider,
         sp.GetRequiredService<ILoggerFactory>()));
 var kernel = builder.Build();
 

@@ -9,13 +9,13 @@ namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 /// <summary>
 /// Metadata for a file in the session.
 /// </summary>
-public class SessionRemoteFileMetadata
+public class SessionsRemoteFileMetadata
 {
     /// <summary>
     /// Initializes a new instance of the SessionRemoteFileMetadata class.
     /// </summary>
     [JsonConstructor]
-    public SessionRemoteFileMetadata(string filename, int size)
+    public SessionsRemoteFileMetadata(string filename, int size)
     {
         this.Filename = filename;
         this.Size = size;

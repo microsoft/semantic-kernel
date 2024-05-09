@@ -22,23 +22,25 @@ public class SessionsPythonPlugin
 {
     private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
     private readonly Uri _poolManagementEndpoint;
-    private readonly SessionPythonSettings _settings;
-    private readonly Func<Task<string>> _authTokenProvider;
+    private readonly SessionsPythonSettings _settings;
+    private readonly Func<Task<string>>? _authTokenProvider;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _logger;
-    private string? _authToken;
 
     /// <summary>
     /// Initializes a new instance of the SessionsPythonTool class.
     /// </summary>
     /// <param name="settings">The settings for the Python tool plugin. </param>
-    /// <param name="authTokenProvider"> The function to provide the auth token. </param>
     /// <param name="httpClientFactory">The HTTP client factory. </param>
+    /// <param name="authTokenProvider"> Optional provider for auth token generation. </param>
     /// <param name="loggerFactory">The logger factory. </param>
-    public SessionsPythonPlugin(SessionPythonSettings settings, Func<Task<string>> authTokenProvider, IHttpClientFactory httpClientFactory, ILoggerFactory? loggerFactory = null)
+    public SessionsPythonPlugin(
+        SessionsPythonSettings settings,
+        IHttpClientFactory httpClientFactory,
+        Func<Task<string>>? authTokenProvider = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(settings, nameof(settings));
-        Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
         Verify.NotNull(httpClientFactory, nameof(httpClientFactory));
         Verify.NotNull(settings.Endpoint, nameof(settings.Endpoint));
 
@@ -89,15 +91,13 @@ public class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         var requestBody = new
         {
-            properties = this._settings.CloneForRequest(code)
+            properties = new SessionsPythonCodeExecutionProperties(this._settings, code)
         };
+
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, this._poolManagementEndpoint + "python/execute")
         {
-            Headers = {
-                { "Authorization", $"Bearer {(await this.GetAuthTokenAsync().ConfigureAwait(false))}" },
-                { "User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)" }
-            },
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
         };
 
@@ -119,6 +119,16 @@ Stderr:
 {jsonElementResult.GetProperty("stderr").GetRawText()}";
     }
 
+    private async Task AddHeadersAsync(HttpClient httpClient)
+    {
+        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+
+        if (this._authTokenProvider is not null)
+        {
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
+        }
+    }
+
     /// <summary>
     /// Upload a file to the session pool.
     /// </summary>
@@ -128,7 +138,7 @@ Stderr:
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
     [KernelFunction, Description("Uploads a file for the current session id pool")]
-    public async Task<SessionRemoteFileMetadata> UploadFileAsync(
+    public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
         [Description("The path to the file in the session.")] string remoteFilePath,
         [Description("The path to the file on the local machine.")] string? localFilePath)
     {
@@ -141,13 +151,12 @@ Stderr:
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();
+
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
+
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}python/uploadFile?identifier={this._settings.SessionId}")
         {
-            Headers = {
-                { "Authorization", $"Bearer {(await this.GetAuthTokenAsync().ConfigureAwait(false))}" },
-                { "User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)" }
-            },
             Content = new MultipartFormDataContent
             {
                 { fileContent, "file", remoteFilePath },
@@ -164,7 +173,7 @@ Stderr:
 
         var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
-        return JsonSerializer.Deserialize<SessionRemoteFileMetadata>(JsonElementResult.GetProperty("$values")[0].GetRawText())!;
+        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("$values")[0].GetRawText())!;
     }
 
     /// <summary>
@@ -186,8 +195,7 @@ Stderr:
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this.GetAuthTokenAsync().ConfigureAwait(false))}");
-        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         var response = await httpClient.GetAsync($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}").ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
@@ -218,7 +226,7 @@ Stderr:
     /// </summary>
     /// <returns> The list of files in the session. </returns>
     [KernelFunction, Description("Lists all files in the provided session id pool")]
-    public async Task<IReadOnlyList<SessionRemoteFileMetadata>> ListFilesAsync()
+    public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync()
     {
         if (this._logger.IsEnabled(LogLevel.Trace))
         {
@@ -226,8 +234,7 @@ Stderr:
         }
 
         using var httpClient = this._httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this.GetAuthTokenAsync().ConfigureAwait(false))}");
-        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         var response = await httpClient.GetAsync($"{this._poolManagementEndpoint}python/files?identifier={this._settings.SessionId}").ConfigureAwait(false);
 
@@ -240,34 +247,14 @@ Stderr:
 
         var files = jsonElementResult.GetProperty("$values");
 
-        var result = new SessionRemoteFileMetadata[files.GetArrayLength()];
+        var result = new SessionsRemoteFileMetadata[files.GetArrayLength()];
 
         for (var i = 0; i < result.Length; i++)
         {
-            result[i] = JsonSerializer.Deserialize<SessionRemoteFileMetadata>(files[i].GetRawText())!;
+            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetRawText())!;
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Retrieves the auth token for the session.
-    /// </summary>
-    private async Task<string> GetAuthTokenAsync()
-    {
-        if (string.IsNullOrWhiteSpace(this._authToken))
-        {
-            try
-            {
-                this._authToken = await this._authTokenProvider().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to get auth token.", ex);
-            }
-        }
-
-        return this._authToken!;
     }
 
     private static Uri GetBaseEndpoint(Uri endpoint)
