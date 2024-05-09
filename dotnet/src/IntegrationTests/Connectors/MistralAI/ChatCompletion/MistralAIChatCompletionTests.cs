@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -161,6 +162,38 @@ public sealed class MistralAIChatCompletionTests
         Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
     }
 
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetChatMessageContentsWithAutoInvokeAndInvocationFilterAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+        var invokedFunctions = new List<string>();
+        var filter = new FakeFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+        kernel.FunctionInvocationFilters.Add(filter);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("sunny", response[0].Content, System.StringComparison.Ordinal);
+        Assert.Contains("GetWeather", invokedFunctions);
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
@@ -172,4 +205,18 @@ public sealed class MistralAIChatCompletionTests
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TemperatureUnit { Celsius, Fahrenheit }
+
+    private sealed class FakeFunctionFilter : IFunctionInvocationFilter
+    {
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
+
+        public FakeFunctionFilter(
+            Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null)
+        {
+            this._onFunctionInvocation = onFunctionInvocation;
+        }
+
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
 }
