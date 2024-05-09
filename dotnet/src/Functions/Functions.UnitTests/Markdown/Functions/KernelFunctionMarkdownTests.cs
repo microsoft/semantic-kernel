@@ -26,7 +26,7 @@ public class KernelFunctionMarkdownTests
     }
 
     [Fact]
-    public void ItShouldInitializeFunctionCallChoicesFromMarkdown()
+    public void ItShouldInitializeFunctionChoiceBehaviorsFromMarkdown()
     {
         // Arrange
         var kernel = new Kernel();
@@ -44,29 +44,31 @@ public class KernelFunctionMarkdownTests
         var service1ExecutionSettings = function.ExecutionSettings["service1"];
         Assert.NotNull(service1ExecutionSettings);
 
-        var service1AutoFunctionChoiceBehavior = service1ExecutionSettings?.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
-        Assert.NotNull(service1AutoFunctionChoiceBehavior);
+        var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
+        Assert.NotNull(autoFunctionChoiceBehavior);
 
-        Assert.NotNull(service1AutoFunctionChoiceBehavior.Functions);
-        Assert.Single(service1AutoFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1.f1", service1AutoFunctionChoiceBehavior.Functions.First());
+        Assert.NotNull(autoFunctionChoiceBehavior.Functions);
+        Assert.Single(autoFunctionChoiceBehavior.Functions);
+        Assert.Equal("p1.f1", autoFunctionChoiceBehavior.Functions.First());
+        Assert.Equal(8, autoFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
 
         // RequiredFunctionCallChoice for service2
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
         Assert.NotNull(service2ExecutionSettings);
 
-        var service2RequiredFunctionChoiceBehavior = service2ExecutionSettings?.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
-        Assert.NotNull(service2RequiredFunctionChoiceBehavior);
-        Assert.NotNull(service2RequiredFunctionChoiceBehavior.Functions);
-        Assert.Single(service2RequiredFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1.f1", service2RequiredFunctionChoiceBehavior.Functions.First());
+        var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
+        Assert.NotNull(requiredFunctionChoiceBehavior);
+        Assert.NotNull(requiredFunctionChoiceBehavior.Functions);
+        Assert.Single(requiredFunctionChoiceBehavior.Functions);
+        Assert.Equal("p1.f1", requiredFunctionChoiceBehavior.Functions.First());
+        Assert.Equal(2, requiredFunctionChoiceBehavior.MaximumUseAttempts);
 
         // NoneFunctionCallChoice for service3
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
         Assert.NotNull(service3ExecutionSettings);
 
-        var service3NoneFunctionChoiceBehavior = service3ExecutionSettings?.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
-        Assert.NotNull(service3NoneFunctionChoiceBehavior);
+        var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
+        Assert.NotNull(noneFunctionChoiceBehavior);
     }
 
     [Fact]
@@ -96,7 +98,8 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.7,
                 "function_choice_behavior": {
                     "type": "auto",
-                    "functions": ["p1.f1"]
+                    "functions": ["p1.f1"],
+                    "maximumAutoInvokeAttempts": 8
                 }
             }
         }
@@ -109,7 +112,8 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.8,
                 "function_choice_behavior": {
                     "type": "required",
-                    "functions": ["p1.f1"]
+                    "functions": ["p1.f1"],
+                    "maximumUseAttempts": 2
                 }
             }
         }

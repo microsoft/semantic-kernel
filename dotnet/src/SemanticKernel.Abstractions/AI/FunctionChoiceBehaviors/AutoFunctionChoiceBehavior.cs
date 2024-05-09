@@ -87,7 +87,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         // specify the kernel and the kernel must contain those functions.
         if (autoInvoke && context.Kernel is null)
         {
-            throw new KernelException("Auto-invocation in Auto mode is not supported when no kernel is provided.");
+            throw new KernelException("Auto-invocation for Auto choice behavior is not supported when no kernel is provided.");
         }
 
         List<KernelFunction>? availableFunctions = null;

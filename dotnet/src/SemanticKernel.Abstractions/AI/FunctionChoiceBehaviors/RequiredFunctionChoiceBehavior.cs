@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represent <see cref="FunctionChoiceBehavior"/> that provides a subset of the <see cref="Kernel"/>'s plugins' function information to the model.
+/// Represent <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
 /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
 /// </summary>
 [Experimental("SKEXP0001")]
@@ -99,7 +99,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         // specify the kernel and the kernel must contain those functions.
         if (autoInvoke && context.Kernel is null)
         {
-            throw new KernelException("Auto-invocation in Auto mode is not supported when no kernel is provided.");
+            throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
         }
 
         List<KernelFunction>? requiredFunctions = null;

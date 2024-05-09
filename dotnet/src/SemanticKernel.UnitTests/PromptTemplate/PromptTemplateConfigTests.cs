@@ -169,12 +169,15 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
-        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
 
-        var autoFunctionCallChoice = executionSettings.Value.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
-        Assert.NotNull(autoFunctionCallChoice?.Functions);
-        Assert.Equal(12, autoFunctionCallChoice.MaximumAutoInvokeAttempts);
+        var autoFunctionCallChoice = executionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
+        Assert.NotNull(autoFunctionCallChoice);
+
+        Assert.NotNull(autoFunctionCallChoice.Functions);
         Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
+
+        Assert.Equal(12, autoFunctionCallChoice.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -190,6 +193,7 @@ public class PromptTemplateConfigTests
                   "function_choice_behavior": {
                     "type": "required",
                     "maximumAutoInvokeAttempts": 11,
+                    "maximumUseAttempts": 2,
                     "functions":["p1.f1"]
                   }
                 }
@@ -204,14 +208,17 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
-        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
+        Assert.NotNull(executionSettings);
 
-        var requiredFunctionCallChoice = executionSettings.Value.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
-        Assert.NotNull(requiredFunctionCallChoice?.Functions);
+        var requiredFunctionCallChoice = executionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
+        Assert.NotNull(requiredFunctionCallChoice);
+
+        Assert.NotNull(requiredFunctionCallChoice.Functions);
         Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
 
         Assert.Equal(11, requiredFunctionCallChoice.MaximumAutoInvokeAttempts);
-        Assert.Equal(1, requiredFunctionCallChoice.MaximumUseAttempts);
+        Assert.Equal(2, requiredFunctionCallChoice.MaximumUseAttempts);
     }
 
     [Fact]
@@ -239,9 +246,9 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplateConfig);
         Assert.Single(promptTemplateConfig.ExecutionSettings);
 
-        var executionSettings = promptTemplateConfig.ExecutionSettings.Single();
+        var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
 
-        Assert.IsType<NoneFunctionChoiceBehavior>(executionSettings.Value.FunctionChoiceBehavior);
+        Assert.IsType<NoneFunctionChoiceBehavior>(executionSettings.FunctionChoiceBehavior);
     }
 
     [Fact]

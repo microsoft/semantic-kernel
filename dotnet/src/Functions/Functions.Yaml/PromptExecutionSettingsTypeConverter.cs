@@ -26,7 +26,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     public object? ReadYaml(IParser parser, Type type)
     {
         s_deserializer ??= new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination in the WithTypeDiscriminatingNodeDeserializer method below.
                                          // Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
             .WithTypeDiscriminatingNodeDeserializer((options) =>

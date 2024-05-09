@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -100,6 +99,7 @@ public class KernelFunctionYamlTests
         var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
         Assert.NotNull(autoFunctionChoiceBehavior?.Functions);
         Assert.Equal("p1.f1", autoFunctionChoiceBehavior.Functions.Single());
+        Assert.Equal(9, autoFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
 
         // Service with required function choice behavior
         var service2ExecutionSettings = promptTemplateConfig.ExecutionSettings["service2"];
@@ -107,6 +107,8 @@ public class KernelFunctionYamlTests
         var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
         Assert.NotNull(requiredFunctionChoiceBehavior?.Functions);
         Assert.Equal("p2.f2", requiredFunctionChoiceBehavior.Functions.Single());
+        Assert.Equal(6, requiredFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
+        Assert.Equal(3, requiredFunctionChoiceBehavior.MaximumUseAttempts);
 
         // Service with none function choice behavior
         var service3ExecutionSettings = promptTemplateConfig.ExecutionSettings["service3"];
@@ -192,6 +194,7 @@ public class KernelFunctionYamlTests
             stop_sequences:    []
             function_choice_behavior:
               type: auto
+              maximum_auto_invoke_attempts: 9
               functions:
               - p1.f1
           service2:
@@ -204,6 +207,8 @@ public class KernelFunctionYamlTests
             stop_sequences:    [ "foo", "bar", "baz" ]
             function_choice_behavior:
               type: required
+              maximum_auto_invoke_attempts: 6
+              maximum_use_attempts: 3
               functions:
               - p2.f2
           service3:
