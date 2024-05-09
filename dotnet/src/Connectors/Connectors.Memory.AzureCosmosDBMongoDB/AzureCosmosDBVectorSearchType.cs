@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
+using System.Reflection;
+using MongoDB.Bson.Serialization.Attributes;
 
 // ReSharper disable InconsistentNaming
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -13,12 +14,21 @@ public enum AzureCosmosDBVectorSearchType
     /// <summary>
     /// vector-ivf is available on all cluster tiers
     /// </summary>
-    [JsonPropertyName("vector_ivf")]
+    [BsonElement("vector-ivf")]
     VectorIVF,
 
     /// <summary>
     /// vector-hnsw is available on M40 cluster tiers and higher.
     /// </summary>
-    [JsonPropertyName("vector_hnsw")]
+    [BsonElement("vector-hnsw")]
     VectorHNSW
+}
+
+internal static class AzureCosmosDBVectorSearchTypeExtensions
+{
+    public static string GetCustomName(this AzureCosmosDBVectorSearchType type)
+    {
+        var attribute = type.GetType().GetField(type.ToString()).GetCustomAttribute<BsonElementAttribute>();
+        return attribute?.ElementName ?? type.ToString();
+    }
 }

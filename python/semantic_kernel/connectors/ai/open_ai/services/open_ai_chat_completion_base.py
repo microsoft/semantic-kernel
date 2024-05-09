@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
@@ -10,12 +11,13 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
-    OpenAIPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.open_ai.services.tool_call_behavior import ToolCallBehavior
+from semantic_kernel.connectors.ai.open_ai.services.utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -54,7 +56,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def complete_chat(
         self,
         chat_history: ChatHistory,
-        settings: OpenAIPromptExecutionSettings,
+        settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> List["ChatMessageContent"]:
         """Executes a chat completion request and returns the result.
@@ -68,29 +70,40 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         Returns:
             List[ChatMessageContent] -- The completion result(s).
         """
-        tool_call_behavior = self._get_tool_call_behavior(settings)
+
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
+        if (
+            settings.function_call_behavior is not None
+            and settings.function_call_behavior.auto_invoke_kernel_functions
+            and (kernel is None or arguments is None)
+        ):
             raise ServiceInvalidExecutionSettingsError(
-                "The kernel argument and arguments are required for OpenAI tool calling."
+                "The kernel argument and arguments are required for auto invoking OpenAI tool calls."
             )
+        # behavior for non-function calling or for enable, but not auto-invoke.
+        settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
+        if settings.function_call_behavior is None or (
+            settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
+        ):
+            return await self._send_chat_request(settings)
 
-        for _ in range(tool_call_behavior.max_auto_invoke_attempts):
-            settings = self._prepare_settings(settings, chat_history, stream_request=False)
+        # loop for auto-invoke function calls
+        for _ in range(settings.function_call_behavior.max_auto_invoke_attempts):
             completions = await self._send_chat_request(settings)
-            if not tool_call_behavior.auto_invoke_kernel_functions or all(
+            if all(
                 not isinstance(item, FunctionCallContent) for completion in completions for item in completion.items
             ):
                 return completions
             await self._process_chat_response_with_tool_call(
                 completions=completions, chat_history=chat_history, kernel=kernel, arguments=arguments
             )
+            settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
 
     async def complete_chat_stream(
         self,
         chat_history: ChatHistory,
-        settings: OpenAIPromptExecutionSettings,
+        settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[List[StreamingChatMessageContent], Any]:
         """Executes a streaming chat completion request and returns the result.
@@ -105,29 +118,50 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             List[StreamingChatMessageContent] -- A stream of
                 StreamingChatMessageContent when using Azure.
         """
-        tool_call_behavior = self._get_tool_call_behavior(settings)
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if tool_call_behavior.auto_invoke_kernel_functions and (kernel is None or arguments is None):
+        if (
+            settings.function_call_behavior is not None
+            and settings.function_call_behavior.auto_invoke_kernel_functions
+            and (kernel is None or arguments is None)
+        ):
             raise ServiceInvalidExecutionSettingsError(
                 "The kernel argument and arguments are required for OpenAI tool calling."
             )
 
-        for _ in range(tool_call_behavior.max_auto_invoke_attempts):
-            settings = self._prepare_settings(settings, chat_history, stream_request=True)
+        # Prepare settings for streaming requests
+        settings = self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
+
+        # Behavior for non-function calling or for enable, but not auto-invoke
+        if settings.function_call_behavior is None or (
+            settings.function_call_behavior and not settings.function_call_behavior.auto_invoke_kernel_functions
+        ):
+            async for content, _ in self._process_chat_stream_response(
+                response=await self._send_chat_stream_request(settings),
+                chat_history=chat_history,
+                kernel=kernel,
+                tool_call_behavior=None,  # type: ignore
+                arguments=arguments,
+            ):
+                yield content
+            return
+
+        # Loop for auto-invoke function calls
+        for _ in range(settings.function_call_behavior.max_auto_invoke_attempts):
             response = await self._send_chat_stream_request(settings)
             finish_reason = None
             async for content, finish_reason in self._process_chat_stream_response(
                 response=response,
                 chat_history=chat_history,
                 kernel=kernel,
-                tool_call_behavior=tool_call_behavior,
+                tool_call_behavior=settings.function_call_behavior,  # type: ignore
                 arguments=arguments,
             ):
                 if content:
                     yield content
             if finish_reason != FinishReason.TOOL_CALLS:
                 break
+            settings = self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
     def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> Dict[str, Optional[str]]:
         msg = super()._chat_message_content_to_dict(message)
@@ -173,13 +207,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         for result in completions:
             # An assistant message needs to be followed be a tool call response
             chat_history = store_results(chat_history=chat_history, results=[result])
-            await self._process_tool_calls(result, kernel, chat_history, arguments)
+            await self._process_tool_calls(result=result, kernel=kernel, chat_history=chat_history, arguments=arguments)
 
     async def _process_chat_stream_response(
         self,
         response: AsyncStream,
         chat_history: ChatHistory,
-        tool_call_behavior: ToolCallBehavior,
+        tool_call_behavior: FunctionCallBehavior,
         kernel: Optional["Kernel"] = None,
         arguments: Optional["KernelArguments"] = None,
     ) -> AsyncGenerator[Tuple[List["StreamingChatMessageContent"], Optional["FinishReason"]], Any]:
@@ -195,7 +229,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             ]
             if not contents:
                 continue
-            if not tool_call_behavior.auto_invoke_kernel_functions:
+            if not tool_call_behavior or not tool_call_behavior.auto_invoke_kernel_functions:
                 yield contents, None
                 continue
 
@@ -319,22 +353,6 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
         ]
 
-    def _get_tool_call_behavior(self, execution_settings: OpenAIPromptExecutionSettings) -> ToolCallBehavior:
-        """Gets the auto invoke and max iterations settings through ToolCallBehavior."""
-        auto_invoke_kernel_functions = False
-        max_auto_invoke_attempts = 1
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
-            if execution_settings.auto_invoke_kernel_functions is not None:
-                auto_invoke_kernel_functions = execution_settings.auto_invoke_kernel_functions
-            if auto_invoke_kernel_functions and execution_settings.max_auto_invoke_attempts is not None:
-                max_auto_invoke_attempts = (
-                    execution_settings.max_auto_invoke_attempts if auto_invoke_kernel_functions else 1
-                )
-
-        return ToolCallBehavior(
-            auto_invoke_kernel_functions=auto_invoke_kernel_functions, max_auto_invoke_attempts=max_auto_invoke_attempts
-        )
-
     # endregion
     # region request preparation
 
@@ -343,23 +361,20 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         settings: OpenAIChatPromptExecutionSettings,
         chat_history: ChatHistory,
         stream_request: bool = False,
+        kernel: "Kernel | None" = None,
     ) -> OpenAIChatPromptExecutionSettings:
-        """Prepare the promp execution settings for the chat request."""
+        """Prepare the prompt execution settings for the chat request."""
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = stream_request
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
 
-        # If auto_invoke_kernel_functions is True and num_of_responses > 1 provide a warning
-        # that the num_of_responses will be configured to one.
-        if settings.auto_invoke_kernel_functions and settings.number_of_responses > 1:
-            logger.warning(
-                (
-                    "Auto invoking functions does not support more than one num_of_response. "
-                    "The num_of_responses setting is configured as 1."
-                )
+        if settings.function_call_behavior and kernel:
+            settings.function_call_behavior.configure(
+                kernel=kernel,
+                update_settings_callback=update_settings_from_function_call_configuration,
+                settings=settings,
             )
-            settings.number_of_responses = 1
         return settings
 
     # endregion
@@ -372,38 +387,49 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: ChatHistory,
         arguments: "KernelArguments",
     ) -> None:
+        """Processes the tool calls in parallel in the result and return it as part of the chat history."""
+        logger.info(f"processing {len(result.items)} tool calls in parallel.")
+        await asyncio.gather(
+            *[
+                self._process_tool_call(result=tc, kernel=kernel, chat_history=chat_history, arguments=arguments)
+                for tc in result.items
+            ]
+        )
+
+    async def _process_tool_call(
+        self,
+        result: ChatMessageContent,
+        kernel: "Kernel",
+        chat_history: ChatHistory,
+        arguments: "KernelArguments",
+    ) -> None:
         """Processes the tool calls in the result and return it as part of the chat history."""
-        logger.info(f"processing {len(result.items)} tool calls")
         args_cloned = copy(arguments)
-        for function_call in result.items:
-            if not isinstance(function_call, FunctionCallContent):
-                continue
-            try:
-                func_args = function_call.parse_arguments()
-                if func_args:
-                    args_cloned.update(func_args)
-            except FunctionCallInvalidArgumentsException as exc:
-                logger.exception(
-                    f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
-                )
-                frc = FunctionResultContent.from_function_call_content_and_result(
-                    function_call_content=function_call,
-                    result="The tool call arguments are malformed, please try again.",
-                )
-                chat_history.add_message(message=frc.to_chat_message_content())
-                continue
-            logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
-            try:
-                func_result = await kernel.invoke(**function_call.split_name_dict(), arguments=args_cloned)
-            except Exception as exc:
-                logger.exception(f"Error occurred while invoking function {function_call.name}")
-                raise ServiceInvalidResponseError(
-                    f"Error occurred while invoking function {function_call.name}"
-                ) from exc
+        func: FunctionCall | None = result
+        if not func:
+            return
+        try:
+            parsed_args = func.parse_arguments()
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except FunctionCallInvalidArgumentsException as exc:
+            logger.exception(f"Received invalid arguments for function {func.name}: {exc}. Trying tool call again.")
             frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call, result=func_result
+                function_call_content=result,
+                result="The tool call arguments are malformed, please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
+            return
+        logger.info(f"Calling {func.name} function with args: {func.arguments}")
+        try:
+            func_result = await kernel.invoke(**func.split_name_dict(), arguments=args_cloned)
+        except Exception as exc:
+            logger.exception(f"Error occurred while invoking function {func.name}")
+            raise ServiceInvalidResponseError(f"Error occurred while invoking function {func.name}") from exc
+        frc = FunctionResultContent.from_function_call_content_and_result(
+            function_call_content=result, result=func_result
+        )
+        chat_history.add_message(message=frc.to_chat_message_content())
 
 
 # endregion
