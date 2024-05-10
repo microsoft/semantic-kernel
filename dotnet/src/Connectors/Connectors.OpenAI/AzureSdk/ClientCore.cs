@@ -1378,7 +1378,7 @@ internal abstract class ClientCore
     {
         if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
-            throw new ArgumentException("ToolBehaviors and ToolCallBehavior cannot be used together.");
+            throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
         }
 
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
