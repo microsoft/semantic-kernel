@@ -15,7 +15,7 @@ namespace Filtering;
 /// This example shows how to implement Personal Identifiable Information (PII) detection with Filters using Microsoft Presidio service: https://github.com/microsoft/presidio.
 /// How to run Presidio on Docker locally: https://microsoft.github.io/presidio/installation/#using-docker.
 /// </summary>
-public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output)
+public class PIIDetection(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// Use Presidio Text Analyzer to detect PII information in prompt with specified score threshold.
@@ -34,7 +34,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
             TestConfiguration.AzureOpenAI.ApiKey);
 
         // Add logging
-        var logger = this.LoggerFactory.CreateLogger<PIIDetectionWithFilters>();
+        var logger = this.LoggerFactory.CreateLogger<PIIDetection>();
         builder.Services.AddSingleton<ILogger>(logger);
 
         // Add Microsoft Presidio Text Analyzer service and configure HTTP client for it
@@ -92,7 +92,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
             TestConfiguration.AzureOpenAI.ApiKey);
 
         // Add logging
-        var logger = this.LoggerFactory.CreateLogger<PIIDetectionWithFilters>();
+        var logger = this.LoggerFactory.CreateLogger<PIIDetection>();
         builder.Services.AddSingleton<ILogger>(logger);
 
         // Add Microsoft Presidio Text Analyzer service and configure HTTP client for it. Text Analyzer results are required for Text Anonymizer input.
