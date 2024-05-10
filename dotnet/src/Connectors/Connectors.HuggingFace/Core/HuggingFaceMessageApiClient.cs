@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -106,14 +107,27 @@ internal sealed class HuggingFaceMessageApiClient
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
-        string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        ChatCompletionResponse response;
+        try
+        {
+            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        var response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+            response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
+
         var chatContents = GetChatMessageContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(chatContents, response.Usage?.PromptTokens, response.Usage?.CompletionTokens);
         this.LogChatCompletionUsage(executionSettings, response);
 
         return chatContents;
