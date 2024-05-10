@@ -93,7 +93,7 @@ class MongoDBAtlasSettings(BaseModelSettings):
     - connection_string: str - MongoDB Atlas connection string
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "MONGODB_"})
+    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "MONGODB_ATLAS_"})
     connection_string: SecretStr
 
 
