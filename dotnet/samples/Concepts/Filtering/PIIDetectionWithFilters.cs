@@ -446,7 +446,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
     /// <summary>
     /// Contact model for demonstration purposes.
     /// </summary>
-    private class Contact
+    private sealed class Contact
     {
         public string Name { get; set; }
         public string Phone { get; set; }
@@ -460,11 +460,12 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
     {
         [KernelFunction]
         public List<Contact> GetContacts()
-            => [
+            =>
+            [
                 new () { Name = "John Smith", Phone = "+1 (123) 456-7890", Position = "Developer" },
                 new () { Name = "Alice Doe", Phone = "+1 (987) 654-3120", Position = "Manager" },
                 new () { Name = "Emily Davis", Phone = "+1 (555) 555-5555", Position = "Designer" }
-                ];
+            ];
     }
 
     #endregion
