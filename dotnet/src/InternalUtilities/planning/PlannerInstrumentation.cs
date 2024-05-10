@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -58,7 +59,7 @@ internal static partial class PlannerInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogCreatePlanError(ex, ex.Message);
             throw;
         }
@@ -97,7 +98,7 @@ internal static partial class PlannerInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogInvokePlanError(ex, ex.Message);
             throw;
         }

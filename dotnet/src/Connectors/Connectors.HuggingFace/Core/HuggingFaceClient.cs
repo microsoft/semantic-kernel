@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -21,6 +22,7 @@ internal sealed class HuggingFaceClient
 {
     private readonly HttpClient _httpClient;
 
+    internal string ModelProvider => "huggingface";
     internal string ModelId { get; }
     internal string? ApiKey { get; }
     internal Uri Endpoint { get; }
@@ -89,7 +91,8 @@ internal sealed class HuggingFaceClient
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(body) ?? throw new JsonException("Response is null");
+            return JsonSerializer.Deserialize<T>(body) ??
+                throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
@@ -110,7 +113,7 @@ internal sealed class HuggingFaceClient
         }
     }
 
-    internal HttpRequestMessage CreatePost(object requestData, Uri endpoint)
+    internal HttpRequestMessage CreatePost(object requestData, Uri endpoint, string? apiKey)
     {
         var httpRequestMessage = HttpRequest.CreatePostRequest(endpoint, requestData);
         this.SetRequestHeaders(httpRequestMessage);
@@ -130,14 +133,27 @@ internal sealed class HuggingFaceClient
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
-        using var httpRequestMessage = this.CreatePost(request, endpoint);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
-        var response = DeserializeResponse<TextGenerationResponse>(body);
+        TextGenerationResponse response;
+        try
+        {
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
+
+            response = DeserializeResponse<TextGenerationResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
+
         var textContents = GetTextContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(textContents);
         this.LogTextGenerationUsage(executionSettings);
 
         return textContents;
@@ -153,7 +169,7 @@ internal sealed class HuggingFaceClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
         using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -234,7 +250,7 @@ internal sealed class HuggingFaceClient
             Inputs = data
         };
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint);
+        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
         string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -270,10 +286,7 @@ internal sealed class HuggingFaceClient
 
         // Read the file into a byte array
         var imageContent = new ByteArrayContent(content.Data?.ToArray() ?? []);
-        if (content.MimeType is string mime)
-        {
-            imageContent.Headers.ContentType = new(mime);
-        }
+        imageContent.Headers.ContentType = new(content.MimeType ?? string.Empty);
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

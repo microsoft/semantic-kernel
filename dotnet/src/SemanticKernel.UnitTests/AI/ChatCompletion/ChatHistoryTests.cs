@@ -15,7 +15,7 @@ public class ChatHistoryTests
 {
     [Fact]
     public void ItCanBeSerializedAndDeserialized()
-    {   
+    {
         // Arrange
         var options = new JsonSerializerOptions();
         ChatHistory chatHistory =

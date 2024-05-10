@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -84,7 +85,7 @@ internal sealed class HuggingFaceMessageApiClient
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint);
+        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
         using var response = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
             .ConfigureAwait(false);
@@ -103,32 +104,46 @@ internal sealed class HuggingFaceMessageApiClient
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
+        string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
         var request = this.CreateChatRequest(chatHistory, executionSettings);
-        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint);
 
-        string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
+        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
-        var response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
-        var chatContents = GetChatMessageContentsFromResponse(response);
+        ChatCompletionResponse response;
+        try
+        {
+            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        this.LogChatCompletionUsage(response);
+            response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
+
+        var chatContents = GetChatMessageContentsFromResponse(response, modelId);
+
+        activity?.SetCompletionResponse(chatContents, response.Usage?.PromptTokens, response.Usage?.CompletionTokens);
+        this.LogChatCompletionUsage(executionSettings, response);
 
         return chatContents;
     }
 
-    private void LogChatCompletionUsage(ChatCompletionResponse chatCompletionResponse)
+    private void LogChatCompletionUsage(PromptExecutionSettings? executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
         if (this._clientCore.Logger.IsEnabled(LogLevel.Debug))
         {
             this._clientCore.Logger.Log(
-                LogLevel.Debug,
-                "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
-                chatCompletionResponse.Model,
-                chatCompletionResponse.Usage!.PromptTokens,
-                chatCompletionResponse.Usage!.CompletionTokens,
-                chatCompletionResponse.Usage!.TotalTokens);
+            LogLevel.Debug,
+            "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
+            chatCompletionResponse.Model,
+            chatCompletionResponse.Usage!.PromptTokens,
+            chatCompletionResponse.Usage!.CompletionTokens,
+            chatCompletionResponse.Usage!.TotalTokens);
         }
 
         s_promptTokensCounter.Add(chatCompletionResponse.Usage!.PromptTokens);
@@ -136,7 +151,7 @@ internal sealed class HuggingFaceMessageApiClient
         s_totalTokensCounter.Add(chatCompletionResponse.Usage!.TotalTokens);
     }
 
-    private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response)
+    private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response, string modelId)
     {
         var chatMessageContents = new List<ChatMessageContent>();
 
