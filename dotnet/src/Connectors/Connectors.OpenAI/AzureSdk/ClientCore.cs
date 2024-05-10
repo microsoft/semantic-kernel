@@ -455,7 +455,7 @@ internal abstract class ClientCore
                 functionResult = invocationContext.Result;
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
-                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings);
+                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, stringResult, errorMessage: null, functionToolCall, this.Logger);
 
@@ -703,7 +703,7 @@ internal abstract class ClientCore
                 functionResult = invocationContext.Result;
 
                 object functionResultValue = functionResult.GetValue<object>() ?? string.Empty;
-                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings);
+                var stringResult = ProcessFunctionResult(functionResultValue, chatExecutionSettings.ToolCallBehavior);
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
@@ -1066,7 +1066,7 @@ internal abstract class ClientCore
                     continue;
                 }
 
-                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, executionSettings);
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, executionSettings.ToolCallBehavior);
 
                 toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
             }
@@ -1304,9 +1304,9 @@ internal abstract class ClientCore
     /// Processes the function result.
     /// </summary>
     /// <param name="functionResult">The result of the function call.</param>
-    /// <param name="promptExecutionSettings">The prompt execution settings.</param>
+    /// <param name="toolCallBehavior">The ToolCallBehavior object containing optional settings like JsonSerializerOptions.TypeInfoResolver.</param>
     /// <returns>A string representation of the function result.</returns>
-    private static string? ProcessFunctionResult(object functionResult, OpenAIPromptExecutionSettings promptExecutionSettings)
+    private static string? ProcessFunctionResult(object functionResult, ToolCallBehavior? toolCallBehavior)
     {
         if (functionResult is string stringResult)
         {
@@ -1320,15 +1320,13 @@ internal abstract class ClientCore
             return chatMessageContent.ToString();
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var serializerOptions = promptExecutionSettings?.ToolCallBehavior?.ToolCallResultSerializerOptions;
-#pragma warning restore CS0618 // Type or member is obsolete
-
         // For polymorphic serialization of unknown in advance child classes of the KernelContent class,  
         // a corresponding JsonTypeInfoResolver should be provided via the JsonSerializerOptions.TypeInfoResolver property.  
         // For more details about the polymorphic serialization, see the article at:  
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-8-0
-        return JsonSerializer.Serialize(functionResult, serializerOptions);
+#pragma warning disable CS0618 // Type or member is obsolete
+        return JsonSerializer.Serialize(functionResult, toolCallBehavior?.ToolCallResultSerializerOptions);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     /// <summary>
@@ -1376,7 +1374,6 @@ internal abstract class ClientCore
     /// <param name="executionSettings">Execution settings for the completion API.</param>
     /// <param name="chatOptions">The chat completion options from the Azure.AI.OpenAI package.</param>
     /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
-    /// <returns>A tuple containing the AllowAnyRequestedKernelFunction and MaximumAutoInvokeAttempts settings.</returns>
     private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int requestIndex)
     {
         if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
@@ -1409,7 +1406,7 @@ internal abstract class ClientCore
             };
         }
 
-        // Handling new tool behavior represented by `PromptExecutionSettings.ToolBehaviors` property.
+        // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is FunctionChoiceBehavior functionChoiceBehavior)
         {
             // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented

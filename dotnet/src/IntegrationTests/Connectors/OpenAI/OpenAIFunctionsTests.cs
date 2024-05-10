@@ -30,14 +30,13 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
 
         var invokedFunctions = new List<string>();
 
-#pragma warning disable CS0618 // Events are deprecated
-        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        var filter = new FakeFunctionFilter(async (context, next) =>
         {
-            invokedFunctions.Add(e.Function.Name);
-        }
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-        kernel.FunctionInvoking += MyInvokingHandler;
-#pragma warning restore CS0618 // Events are deprecated
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice() };
@@ -584,4 +583,22 @@ public sealed class OpenAIFunctionsTests : BaseIntegrationTest
         public string Name { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
     }
+
+    #region private
+
+    private sealed class FakeFunctionFilter : IFunctionInvocationFilter
+    {
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
+
+        public FakeFunctionFilter(
+            Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null)
+        {
+            this._onFunctionInvocation = onFunctionInvocation;
+        }
+
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
+
+    #endregion
 }
