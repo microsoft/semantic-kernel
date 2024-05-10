@@ -339,6 +339,76 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         Assert.Empty(invokedFunctions);
     }
 
+    [Fact]
+    public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyAsync()
+    {
+        // Arrange
+        var plugin = this._kernel.CreatePluginFromType<DateTimeUtils>(); // Creating plugin without importing it to the kernel.
+
+        var invokedFunctions = new List<string>();
+
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
+        // Act
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+
+        var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Empty(invokedFunctions);
+
+        var responseContent = result.GetValue<ChatMessageContent>();
+        Assert.NotNull(responseContent);
+
+        var functionCalls = FunctionCallContent.GetFunctionCalls(responseContent);
+        Assert.NotNull(functionCalls);
+        Assert.Single(functionCalls);
+
+        var functionCall = functionCalls.First();
+        Assert.Equal("DateTimeUtils", functionCall.PluginName);
+        Assert.Equal("GetCurrentDate", functionCall.FunctionName);
+    }
+
+    [Fact]
+    public async Task SpecifiedInCodeInstructsConnectorToInvokeNonKernelFunctionManuallyForStreamingAsync()
+    {
+        // Arrange
+        var plugin = this._kernel.CreatePluginFromType<DateTimeUtils>(); // Creating plugin without importing it to the kernel.
+
+        var invokedFunctions = new List<string>();
+
+        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
+
+        var functionsForManualInvocation = new List<string>();
+
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+
+        // Act
+        await foreach (var content in this._kernel.InvokePromptStreamingAsync<OpenAIStreamingChatMessageContent>("How many days until Christmas?", new(settings)))
+        {
+            if (content.ToolCallUpdate is StreamingFunctionToolCallUpdate functionUpdate && !string.IsNullOrEmpty(functionUpdate.Name))
+            {
+                functionsForManualInvocation.Add(functionUpdate.Name);
+            }
+        }
+
+        // Assert
+        Assert.Single(functionsForManualInvocation);
+        Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
+
+        Assert.Empty(invokedFunctions);
+    }
+
     private Kernel InitializeKernel()
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
@@ -371,45 +441,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         [KernelFunction]
         [Description("Retrieves the current date.")]
         public string GetCurrentDate() => DateTime.UtcNow.ToString("d", CultureInfo.InvariantCulture);
-    }
-
-    public class WeatherPlugin
-    {
-        [KernelFunction, Description("Get current temperature.")]
-        public Task<double> GetCurrentTemperatureAsync(WeatherParameters parameters)
-        {
-            if (parameters.City.Name == "Dublin" && (parameters.City.Country == "Ireland" || parameters.City.Country == "IE"))
-            {
-                return Task.FromResult(42.8); // 42.8 Fahrenheit.
-            }
-
-            throw new NotSupportedException($"Weather in {parameters.City.Name} ({parameters.City.Country}) is not supported.");
-        }
-
-        [KernelFunction, Description("Convert temperature from Fahrenheit to Celsius.")]
-        public Task<double> ConvertTemperatureAsync(double temperatureInFahrenheit)
-        {
-            double temperatureInCelsius = (temperatureInFahrenheit - 32) * 5 / 9;
-            return Task.FromResult(temperatureInCelsius);
-        }
-
-        [KernelFunction, Description("Get the current weather for the specified city.")]
-        public Task<string> GetWeatherForCityAsync(string cityName)
-        {
-            return Task.FromResult(cityName switch
-            {
-                "Boston" => "61 and rainy",
-                _ => "31 and snowing",
-            });
-        }
-    }
-
-    public record WeatherParameters(City City);
-
-    public class City
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
     }
 
     #region private
