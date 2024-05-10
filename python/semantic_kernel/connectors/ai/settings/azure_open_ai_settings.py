@@ -35,9 +35,13 @@ class AzureOpenAISettings(BaseSettings):
                 If both base_url and endpoint are supplied, base_url will be used.
     - api_version: str | None - The API version to use. The default value is "2023-05-15".
     """
-    model_config = SettingsConfigDict(env_prefix='AZURE_OPENAI_', env_file='.env', env_file_encoding='utf-8', extra='ignore')
+    use_env_settings_file: bool = False
 
-    deployment_name: str
+    model_config = SettingsConfigDict(env_prefix='AZURE_OPENAI_', env_file='.env' if use_env_settings_file else None, env_file_encoding='utf-8', extra='ignore')
+
+    chat_deployment_name: str = "gpt-35-turbo"
+    text_deployment_name: str = "gpt-35-turbo-instruct"
+    embedding_deployment_name: str = "text-embedding-ada-002" # TODO don't have this as default
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr = None

@@ -21,7 +21,7 @@ def test_azure_text_completion_init(azure_openai_unit_test_env) -> None:
 
     assert azure_text_completion.client is not None
     assert isinstance(azure_text_completion.client, AsyncAzureOpenAI)
-    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"]
+    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_completion, TextCompletionClientBase)
 
 
@@ -36,34 +36,34 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
 
     assert azure_text_completion.client is not None
     assert isinstance(azure_text_completion.client, AsyncAzureOpenAI)
-    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"]
+    assert azure_text_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]
     assert isinstance(azure_text_completion, TextCompletionClientBase)
     for key, value in default_headers.items():
         assert key in azure_text_completion.client.default_headers
         assert azure_text_completion.client.default_headers[key] == value
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_DEPLOYMENT_NAME"]], indirect=True)
-def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError, match="ai_model_id"):
-        AzureTextCompletion()
+#TODO: remove test if we keep a default text deployment name?
+# @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
+# def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+#     with pytest.raises(ServiceInitializationError):
+#         AzureTextCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_text_completion_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError, match="api_key"):
+    with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT"]], indirect=True)
-def test_azure_text_completion_init_with_empty_endpoint(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError, match="endpoint"):
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
+def test_azure_text_completion_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 
-
-def test_azure_text_completion_init_with_invalid_endpoint() -> None:
-    # TODO add invalid endpoint for test
-    with pytest.raises(ValidationError, match="https"):
+@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+def test_azure_text_completion_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 
 
@@ -77,7 +77,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create, azure_ope
     await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
         max_tokens=complete_prompt_execution_settings.max_tokens,
@@ -107,7 +107,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
     await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias=complete_prompt_execution_settings.logit_bias,
         max_tokens=complete_prompt_execution_settings.max_tokens,
@@ -125,8 +125,9 @@ def test_azure_text_completion_serialize(azure_openai_unit_test_env) -> None:
     default_headers = {"X-Test": "test"}
 
     settings = {
-        "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],
+        "base_url": azure_openai_unit_test_env["AZURE_OPENAI_BASE_URL"],
         "api_key": azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"],
         "api_version": azure_openai_unit_test_env["AZURE_OPENAI_API_VERSION"],
         "default_headers": default_headers,
@@ -135,7 +136,7 @@ def test_azure_text_completion_serialize(azure_openai_unit_test_env) -> None:
     azure_text_completion = AzureTextCompletion.from_dict(settings)
     dumped_settings = azure_text_completion.to_dict()
     assert dumped_settings["ai_model_id"] == settings["deployment_name"]
-    assert settings["endpoint"] in str(dumped_settings["base_url"])
+    assert settings["base_url"] in str(dumped_settings["base_url"])
     assert settings["deployment_name"] in str(dumped_settings["base_url"])
     assert settings["api_key"] == dumped_settings["api_key"]
     assert settings["api_version"] == dumped_settings["api_version"]

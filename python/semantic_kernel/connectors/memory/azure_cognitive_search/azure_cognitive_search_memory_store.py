@@ -4,6 +4,7 @@ import logging
 import uuid
 from inspect import isawaitable
 from typing import List, Optional, Tuple
+from pydantic import ValidationError
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -29,9 +30,10 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
+from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -43,27 +45,38 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         vector_size: int,
-        search_endpoint: Optional[str] = None,
-        admin_key: Optional[str] = None,
-        azure_credentials: Optional[AzureKeyCredential] = None,
-        token_credentials: Optional[TokenCredential] = None,
-        **kwargs,
+        search_endpoint: str | None = None,
+        admin_key: str | None = None,
+        azure_credentials: AzureKeyCredential | None = None,
+        token_credentials: TokenCredential | None = None,
+        use_env_settings_file: bool = False,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
+            search_endpoint {str | None}                  -- The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
+            admin_key {str | None}                        -- Azure Cognitive Search API key (default: {None}).
+            azure_credentials {AzureKeyCredential | None} -- Azure Cognitive Search credentials (default: {None}).
+            token_credentials {TokenCredential | None}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
+            use_env_settings_file {bool}                  -- Use the environment settings file as a fallback
+                                                                to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
+        try:
+            acs_memory_settings = AzureAISearchSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error initializing AzureAISearchSettings: {e}")
+            raise MemoryConnectorInitializationError("Error initializing AzureAISearchSettings") from e
+
+        admin_key = admin_key or acs_memory_settings.api_key.get_secret_value()
+        search_endpoint = search_endpoint or acs_memory_settings.endpoint
+
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint, admin_key, azure_credentials, token_credentials
@@ -122,7 +135,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
 
         if not self._search_index_client:
-            raise ServiceInitializationError("Error: self._search_index_client not set 1.")
+            raise MemoryConnectorInitializationError("Error: self._search_index_client not set 1.")
 
         # Check to see if collection exists
         collection_index = None
@@ -264,7 +277,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
         except ResourceNotFoundError as exc:
             await search_client.close()
-            raise ServiceResourceNotFoundError("Memory record not found") from exc
+            raise MemoryConnectorResourceNotFound("Memory record not found") from exc
 
         await search_client.close()
 

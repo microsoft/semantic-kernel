@@ -6,15 +6,16 @@ from typing import List, Optional, Tuple
 
 import aiohttp
 from numpy import ndarray
-
+from pydantic import ValidationError
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.connectors.memory.memory_settings import AstraDBSettings
 
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
@@ -37,7 +38,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         keyspace_name: str,
         embedding_dim: int,
         similarity: str,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: aiohttp.ClientSession | None = None,
+        use_env_settings_file: bool = False,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -49,13 +51,24 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
             session -- Optional session parameter
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
         """
+        try:
+            astradb_settings = AstraDBSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error validating AstraDBSettings: {e}")
+            raise MemoryConnectorInitializationError("Error initializing AstraDBSettings") from e
+        astra_application_token = astra_application_token or astradb_settings.app_token.get_secret_value()
+        astra_id = astra_id or astradb_settings.db_id
+        astra_region = astra_region or astradb_settings.region
+        keyspace_name = keyspace_name or astradb_settings.keyspace
+
         self._embedding_dim = embedding_dim
         self._similarity = similarity
         self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
-            raise ServiceInitializationError(
+            raise MemoryConnectorInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )

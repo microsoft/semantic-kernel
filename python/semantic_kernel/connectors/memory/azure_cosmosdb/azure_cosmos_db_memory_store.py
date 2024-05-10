@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
+
+import logging
 from typing import List, Tuple
 
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
 from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
@@ -10,9 +13,12 @@ from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
     get_mongodb_search_client,
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.connectors.memory.memory_settings import AzureCosmosDBSettings
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
@@ -48,13 +54,13 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         ef_search: int = 40,
     ):
         if vector_dimensions <= 0:
-            raise ServiceInitializationError("Vector dimensions must be a positive number.")
+            raise MemoryConnectorInitializationError("Vector dimensions must be a positive number.")
         # if connection_string is None:
         #     raise ValueError("Connection String cannot be empty.")
         if database_name is None:
-            raise ServiceInitializationError("Database Name cannot be empty.")
+            raise MemoryConnectorInitializationError("Database Name cannot be empty.")
         if index_name is None:
-            raise ServiceInitializationError("Index Name cannot be empty.")
+            raise MemoryConnectorInitializationError("Index Name cannot be empty.")
 
         self.cosmosStore = cosmosStore
         self.index_name = index_name
@@ -80,11 +86,21 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         m,
         ef_construction,
         ef_search,
+        use_env_settings_file: bool = False,
     ) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
+
+            try:
+                cosmosdb_settings = AzureCosmosDBSettings(use_env_settings_file=use_env_settings_file)
+            except ValidationError as e:
+                logger.error(f"Error initializing AzureCosmosDBSettings: {e}")
+                raise MemoryConnectorInitializationError("Error initializing AzureCosmosDBSettings") from e
+
+            cosmos_connstr = cosmos_connstr or cosmosdb_settings.connection_string.get_secret_value()
+
             mongodb_client = get_mongodb_search_client(cosmos_connstr, application_name)
             database = mongodb_client[database_name]
             apiStore = MongoStoreApi(
@@ -100,7 +116,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
                 ef_search=ef_search,
             )
         else:
-            raise NotImplementedError(f"API type {cosmos_api} is not supported.")
+            raise MemoryConnectorInitializationError(f"API type {cosmos_api} is not supported.")
 
         store = AzureCosmosDBMemoryStore(
             apiStore,

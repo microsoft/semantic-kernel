@@ -2,13 +2,9 @@
 
 import logging
 import sys
-from typing import Any, List, Optional, Tuple
+from typing import Annotated, Any, List, Optional, Tuple
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
+from pydantic import ValidationError
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
 from pydantic import PrivateAttr, StringConstraints
@@ -26,6 +22,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
 from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -34,13 +31,14 @@ int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-    _message_history: Optional[ChatHistory] = PrivateAttr()
-    service_id: Optional[str] = None
+    _message_history: ChatHistory | None = PrivateAttr()
+    service_id: str | None = None
 
     def __init__(
         self,
         ai_model_id: str,
-        message_history: Optional[ChatHistory] = None,
+        message_history: ChatHistory | None = None,
+        use_env_settings_file: bool = False,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -48,9 +46,14 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
+            message_history {ChatHistory | None} -- The message history to use for context. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
         """
-        google_palm_settings = GooglePalmSettings()
+        try:
+            google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error loading Google Palm settings: {e}")
+            raise ServiceInitializationError("Error loading Google Palm settings") from e
         api_key = google_palm_settings.api_key.get_secret_value()
 
         super().__init__(

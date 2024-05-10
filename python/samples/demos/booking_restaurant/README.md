@@ -35,11 +35,21 @@ This sample uses function calling capable models and has been tested with the fo
 
 ## Configuring the sample
 
-Please make sure your .env file contains the following:
+Please make sure your either your environment variables or your .env file contains the following:
 
 - "BOOKING_SAMPLE_CLIENT_ID"
 - "BOOKING_SAMPLE_TENANT_ID"
 - "BOOKING_SAMPLE_CLIENT_SECRET"
+- "BOOKING_SAMPLE_BUSINESS_ID"
+- "BOOKING_SAMPLE_SERVICE_ID"
+
+If wanting to use the `.env` file, you must pass the `use_env_settings_file` flag as true:
+
+```python
+booking_sample_settings = BookingSampleSettings(use_env_settings_file=use_env_settings_file)
+```
+
+This will tell Pydantic settings to also load the `.env` file instead of just trying to load environment variables.
 
 ### Create an App Registration in Azure Active Directory
 

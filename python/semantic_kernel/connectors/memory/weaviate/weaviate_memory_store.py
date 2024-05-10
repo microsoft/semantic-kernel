@@ -6,12 +6,15 @@ from dataclasses import dataclass
 from typing import List, Tuple
 
 import numpy as np
+from pydantic import ValidationError
 import weaviate
 from weaviate.embedded import EmbeddedOptions
 
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.connectors.memory.memory_settings import WeaviateSettings
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -65,13 +68,6 @@ SCHEMA = {
 ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
 
 
-@dataclass
-class WeaviateConfig:
-    use_embed: bool = False
-    url: str = None
-    api_key: str = None
-
-
 class WeaviateMemoryStore(MemoryStoreBase):
     class FieldMapper:
         """
@@ -115,25 +111,35 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig, **kwargs):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        self.config = config
+    def __init__(self, use_env_settings_file: bool = False):
+
+        """Initializes a new instance of the WeaviateMemoryStore
+
+        Optional parameters:
+        - use_env_settings_file {bool} -- Whether to use the environment settings (.env) file. Defaults to False.
+        """
+
+        try:
+            weaviate_settings = WeaviateSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error initializing WeaviateSettings: {e}")
+            raise MemoryConnectorInitializationError("Error initializing WeaviateSettings") from e
+
+        self.settings = weaviate_settings
+        self.settings.validate_settings()
         self.client = self._initialize_client()
 
     def _initialize_client(self):
-        if self.config.use_embed:
-            return weaviate.Client(embedded_options=EmbeddedOptions())
-        elif self.config.url:
-            if self.config.api_key:
+        if self.settings.use_embed:
+            return weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
+        else:
+            if self.settings.api_key:
                 return weaviate.Client(
-                    url=self.config.url,
-                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.config.api_key),
+                    url=self.settings.url,
+                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key.get_secret_value())
                 )
             else:
-                return weaviate.Client(url=self.config.url)
-        else:
-            raise ServiceInitializationError("Weaviate config must have either url or use_embed set")
+                return weaviate.Client(url=self.settings.url)
 
     async def create_collection(self, collection_name: str) -> None:
         schema = SCHEMA.copy()

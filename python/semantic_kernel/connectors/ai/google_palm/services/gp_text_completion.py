@@ -1,18 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
-from typing import List
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated, List
 
 import google.generativeai as palm
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
-from pydantic import StringConstraints
+from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
@@ -20,6 +14,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -27,15 +22,20 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str):
+    def __init__(self, ai_model_id: str, use_env_settings_file: bool = False):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
         """
-        google_palm_settings = GooglePalmSettings()
+        try:
+            google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error loading Google Palm settings: {e}")
+            raise ServiceInitializationError("Error loading Google Palm settings") from e
         api_key = google_palm_settings.api_key.get_secret_value()
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 

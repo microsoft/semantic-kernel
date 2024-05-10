@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-
-from dotenv import dotenv_values
+import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
@@ -44,12 +43,8 @@ async def search_acs_memory_questions(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    config = dotenv_values(".env")
-
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
-    AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
+    AZURE_COGNITIVE_SEARCH_ENDPOINT = os.getenv["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
+    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = os.getenv["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
@@ -57,17 +52,11 @@ async def main() -> None:
     kernel.add_service(
         AzureTextCompletion(
             service_id=text_complete_service_id,
-            deployment_name="text-embedding-ada-002",
-            endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY,
         ),
     )
     embedding_service_id = "ada"
     embedding_gen = AzureTextEmbedding(
         service_id=embedding_service_id,
-        deployment_name="text-embedding-ada-002",
-        endpoint=AZURE_OPENAI_ENDPOINT,
-        api_key=AZURE_OPENAI_API_KEY,
     )
     kernel.add_service(
         embedding_gen,

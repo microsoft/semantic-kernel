@@ -5,7 +5,7 @@ from typing import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
-
+from pydantic import ValidationError
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
@@ -18,6 +18,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 )
 from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
+        use_env_settings_file: bool = False,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -43,11 +45,17 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+                environment variables. (Optional)
         """
-        azure_openai_settings = AzureOpenAISettings()
+        try:
+            azure_openai_settings = AzureOpenAISettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Failed to initialize AzureTextCompletion service: {e}")
+            raise ServiceInitializationError("Failed to initialize AzureTextCompletion service") from e
         base_url = azure_openai_settings.base_url
         endpoint = azure_openai_settings.endpoint
-        deployment_name = azure_openai_settings.deployment_name
+        deployment_name = azure_openai_settings.text_deployment_name
         api_version = azure_openai_settings.api_version
         api_key = azure_openai_settings.api_key.get_secret_value()
 
@@ -77,13 +85,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         """
 
         return AzureTextCompletion(
-            deployment_name=settings.get("deployment_name"),
-            endpoint=settings.get("endpoint"),
-            base_url=settings.get("base_url"),
-            api_version=settings.get("api_version", DEFAULT_AZURE_API_VERSION),
             service_id=settings.get("service_id"),
-            api_key=settings["api_key"],
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
+            use_env_settings_file=settings.get("use_env_settings_file", False),
         )

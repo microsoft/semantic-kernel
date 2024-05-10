@@ -1,36 +1,38 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
-import sys
-from typing import Any, List
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+import logging
+from typing import Annotated, Any, List
 
 import google.generativeai as palm
 from numpy import array, ndarray
-from pydantic import StringConstraints
+from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
 from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str) -> None:
+    def __init__(self, ai_model_id: str, use_env_settings_file: bool = False) -> None:
         """
         Initializes a new instance of the GooglePalmTextEmbedding class.
 
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
-            https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-            https://developers.generativeai.google/products/palm
+                https://developers.generativeai.google/models/language
+            use_env_settings_file {bool} -- Use the environment settings file
+                as a fallback to environment variables. (Optional)
         """
-        google_palm_settings = GooglePalmSettings()
+        try:
+            google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error loading Google Palm settings: {e}")
+            raise ServiceInitializationError("Error loading Google Palm settings") from e
         api_key = google_palm_settings.api_key.get_secret_value()
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 

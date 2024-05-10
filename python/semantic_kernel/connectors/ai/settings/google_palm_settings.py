@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -16,8 +15,22 @@ class GooglePalmSettings(BaseSettings):
     Required settings for prefix 'GOOGLE_PALM_' are:
     - api_key: SecretStr - GooglePalm API key, see https://developers.generativeai.google/products/palm
 
+    Optional settings:
+    - use_env_settings_file: bool - Use the environment settings file as a fallback to environment variables. (Optional)
     """
-    model_config = SettingsConfigDict(env_prefix='GOOGLE_PALM', env_file='.env', env_file_encoding='utf-8', extra='ignore')
-
+    use_env_settings_file: bool = False
     api_key: SecretStr = None
+
+    model_config = SettingsConfigDict(env_prefix='GOOGLE_PALM_', env_file_encoding='utf-8', extra='ignore')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.use_env_settings_file:
+            # Update model_config dynamically to include .env file if needed
+            self.__config__.model_config = SettingsConfigDict(
+                env_prefix='GOOGLE_PALM',
+                env_file='.env',
+                env_file_encoding='utf-8',
+                extra='ignore'
+            )
 

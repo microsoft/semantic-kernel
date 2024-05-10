@@ -5,9 +5,11 @@ import urllib
 from typing import List
 
 import aiohttp
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -19,13 +21,13 @@ class BingConnector(ConnectorBase):
 
     _api_key: str
 
-    def __init__(self, api_key: str) -> None:
-        self._api_key = api_key
-
-        if not self._api_key:
-            raise ServiceInitializationError(
-                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
-            )
+    def __init__(self, use_env_settings_file:bool=False) -> None:
+        try:
+            bing_settings = BingSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error loading Bing settings: {e}. The API key cannot be null.")
+            raise ServiceInitializationError("Error loading Bing settings. The API key cannot be null.") from e
+        self._api_key = bing_settings.api_key.get_secret_value()
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
         """

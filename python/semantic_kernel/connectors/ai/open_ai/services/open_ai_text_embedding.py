@@ -14,28 +14,13 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
     OpenAITextEmbeddingBase,
 )
+from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     """OpenAI Text Embedding class."""
-
-    @overload
-    def __init__(
-        self,
-        ai_model_id: str,
-        async_client: AsyncOpenAI,
-        service_id: Optional[str] = None,
-    ) -> None:
-        """
-        Initialize an OpenAITextEmbedding service.
-
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            async_client {AsyncOpenAI} -- An existing client to use.
-        """
 
     def __init__(
         self,
@@ -45,6 +30,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
+        use_env_settings_file: bool = False
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
@@ -60,7 +46,13 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as
+                a fallback to environment variables. (Optional)
         """
+        openai_settings = OpenAISettings(use_env_settings_file=use_env_settings_file)
+        api_key = openai_settings.api_key.get_secret_value()
+        org_id = openai_settings.org_id
+
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,
@@ -82,8 +74,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 
         return OpenAITextEmbedding(
             ai_model_id=settings["ai_model_id"],
-            api_key=settings["api_key"],
-            org_id=settings.get("org_id"),
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
+            use_env_settings_file=settings.get("use_env_settings_file", False),
         )

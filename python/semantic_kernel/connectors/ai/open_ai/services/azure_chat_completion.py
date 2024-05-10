@@ -5,6 +5,8 @@ from copy import deepcopy
 from typing import Any, Dict, Mapping, Optional, Union, overload
 from uuid import uuid4
 
+from pydantic import ValidationError
+
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -43,6 +45,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
+        use_env_settings_file: bool = False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -54,11 +57,16 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
         """
-        azure_openai_settings = AzureOpenAISettings()
+        try:
+            azure_openai_settings = AzureOpenAISettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Failed to validate AzureOpenAISettings: {e}")
+            raise ServiceInitializationError("Failed to validate AzureOpenAISettings") from e
         base_url = azure_openai_settings.base_url
         endpoint = azure_openai_settings.endpoint
-        deployment_name = azure_openai_settings.deployment_name
+        deployment_name = azure_openai_settings.chat_deployment_name
         api_version = azure_openai_settings.api_version
         api_key = azure_openai_settings.api_key.get_secret_value()
 
@@ -99,6 +107,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
+            use_env_settings_file=settings.get("use_env_settings_file", False),
         )
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":

@@ -9,7 +9,7 @@ from io import BufferedReader, BytesIO
 from typing import Annotated, Any, Awaitable, Callable
 
 import httpx
-from pydantic import field_validator
+from pydantic import field_validator, ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
@@ -40,6 +40,7 @@ class SessionsPythonTool(KernelBaseModel):
         auth_callback: Callable[..., Awaitable[Any]],
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
+        use_env_settings_file: bool = False,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
@@ -49,7 +50,11 @@ class SessionsPythonTool(KernelBaseModel):
         if not http_client:
             http_client = httpx.AsyncClient()
 
-        aca_settings = ACASessionsSettings()
+        try:
+            aca_settings = ACASessionsSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
+            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
         endpoint = aca_settings.pool_management_endpoint
 
         super().__init__(
@@ -63,6 +68,8 @@ class SessionsPythonTool(KernelBaseModel):
     @field_validator("pool_management_endpoint", mode="before")
     @classmethod
     def _validate_endpoint(cls, endpoint: str):
+        endpoint = str(endpoint)
+
         """Validates the pool management endpoint."""
         if "/python/execute" in endpoint:
             # Remove '/python/execute/' and ensure the endpoint ends with a '/'

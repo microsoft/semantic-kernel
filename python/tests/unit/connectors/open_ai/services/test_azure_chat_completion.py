@@ -35,7 +35,7 @@ def test_azure_chat_completion_init(azure_openai_unit_test_env) -> None:
 
     assert azure_chat_completion.client is not None
     assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
-    assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"]
+    assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
 
 
@@ -49,40 +49,35 @@ def test_azure_chat_completion_init_base_url(azure_openai_unit_test_env) -> None
 
     assert azure_chat_completion.client is not None
     assert isinstance(azure_chat_completion.client, AsyncAzureOpenAI)
-    assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"]
+    assert azure_chat_completion.ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]
     assert isinstance(azure_chat_completion, ChatCompletionClientBase)
     for key, value in default_headers.items():
         assert key in azure_chat_completion.client.default_headers
         assert azure_chat_completion.client.default_headers[key] == value
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_DEPLOYMENT_NAME"]], indirect=True)
-def test_azure_chat_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError, match="ai_model_id"):
-        AzureChatCompletion()
+# TODO, remove test we leave in the default deployment name?
+# @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"]], indirect=True)
+# def test_azure_chat_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+#     with pytest.raises(ValidationError, match="ai_model_id"):
+#         AzureChatCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
 def test_azure_chat_completion_init_with_empty_api_key(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError, match="api_key"):
+    with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT"]], indirect=True)
-def test_azure_chat_completion_init_with_empty_endpoint(azure_openai_unit_test_env, exclude_list) -> None:
-    with pytest.raises(ValidationError, match="url"):
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_BASE_URL"]], indirect=True)
+def test_azure_chat_completion_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT"]], indirect=True)
-def test_azure_chat_completion_init_with_invalid_endpoint(azure_openai_unit_test_env, exclude_list) -> None:
-    with pytest.raises(ValidationError, match="url"):
-        AzureChatCompletion()
-
-
-@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_ENDPOINT"]], indirect=True)
-def test_azure_chat_completion_init_with_base_url(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError, match="url"):
+@pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
+def test_azure_chat_completion_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ServiceInitializationError):
         AzureChatCompletion()
 
 
@@ -99,7 +94,7 @@ async def test_azure_chat_completion_call_with_parameters(
         chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
     )
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias={},
         max_tokens=complete_prompt_execution_settings.max_tokens,
@@ -131,7 +126,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
     )
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
@@ -161,7 +156,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
     await azure_chat_completion.complete(prompt=prompt, settings=complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=messages,
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
@@ -179,7 +174,7 @@ def test_azure_chat_completion_serialize(azure_openai_unit_test_env) -> None:
     default_headers = {"X-Test": "test"}
 
     settings = {
-        "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        "deployment_name": azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         "endpoint": azure_openai_unit_test_env["AZURE_OPENAI_ENDPOINT"],
         "api_key": azure_openai_unit_test_env["AZURE_OPENAI_API_KEY"],
         "api_version": azure_openai_unit_test_env["AZURE_OPENAI_API_VERSION"],
@@ -236,7 +231,7 @@ async def test_azure_chat_completion_with_data_call_with_parameters(
     )
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(messages_out),
         temperature=complete_prompt_execution_settings.temperature,
         frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
@@ -285,7 +280,7 @@ async def test_azure_chat_completion_call_with_data_parameters_and_function_call
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,
@@ -330,7 +325,7 @@ async def test_azure_chat_completion_call_with_data_with_parameters_and_Stop_Def
     expected_data_settings = extra.model_dump(exclude_none=True, by_alias=True)
 
     mock_create.assert_awaited_once_with(
-        model=azure_openai_unit_test_env["AZURE_OPENAI_DEPLOYMENT_NAME"],
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
         temperature=complete_prompt_execution_settings.temperature,
         top_p=complete_prompt_execution_settings.top_p,

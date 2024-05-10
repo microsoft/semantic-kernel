@@ -10,6 +10,7 @@ from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
+from pydantic import ValidationError
 
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -18,6 +19,8 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.connectors.memory.memory_settings import PostgresSettings
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000
@@ -41,7 +44,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        **kwargs,
+        use_env_settings_file: bool = False,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -52,10 +55,18 @@ class PostgresMemoryStore(MemoryStoreBase):
             max_pool {int} -- The maximum number of connections in the connection pool.\n
             schema {str} -- The schema to use. (default: {"public"})\n
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
-            Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+                Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        try:
+            postgres_settings = PostgresSettings(use_env_settings_file=use_env_settings_file)
+        except ValidationError as e:
+            logger.error(f"Error initializing PostgresSettings: {e}")
+            raise MemoryConnectorInitializationError("Error initializing PostgresSettings") from e
+
+        connection_string = connection_string or postgres_settings.connection_string.get_secret_value()
+
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string

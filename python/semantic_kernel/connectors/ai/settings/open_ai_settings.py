@@ -18,8 +18,20 @@ class OpenAISettings(BaseSettings):
     - org_id: str | None - This is usually optional unless your account belongs to multiple organizations.
     - ai_model_id: str | None - The OpenAI model ID to use. If not provided, the default model (gpt-3.5-turbo) is used.
     """
-    model_config = SettingsConfigDict(env_prefix='OPENAI_', env_file='.env', env_file_encoding='utf-8', extra='ignore')
-
+    use_env_settings_file: bool = False
     org_id: str | None = None
     api_key: SecretStr
     ai_model_id: str = "gpt-3.5-turbo"
+
+    model_config = SettingsConfigDict(env_prefix='OPENAI_', env_file_encoding='utf-8', extra='ignore')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.use_env_settings_file:
+            # Update model_config dynamically to include .env file if needed
+            self.__config__.model_config = SettingsConfigDict(
+                env_prefix='OPENAI_',
+                env_file='.env',
+                env_file_encoding='utf-8',
+                extra='ignore'
+            )

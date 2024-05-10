@@ -17,27 +17,16 @@ from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
+from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
 
 @pytest.mark.asyncio
-async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
-
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo"
-
-    print("* Service: Azure OpenAI Chat Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureChatCompletion(
-            service_id="chat", deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
+            service_id="chat",
         ),
     )
 
@@ -63,26 +52,17 @@ async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai
 
 @pytest.mark.asyncio
 async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
-    setup_tldr_function_for_oai_models, get_aoai_config
+    setup_tldr_function_for_oai_models
 ):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo"
-
-    print("* Service: Azure OpenAI Chat Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
+    azure_openai_settings = AzureOpenAISettings()
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=endpoint,
-        azure_deployment=deployment_name,
-        api_key=api_key,
-        api_version="2023-05-15",
+        azure_endpoint=azure_openai_settings.endpoint,
+        azure_deployment=azure_openai_settings.chat_deployment_name,
+        api_key=azure_openai_settings.api_key.get_secret_value(),
+        api_version=azure_openai_settings.api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -90,7 +70,6 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="chat_completion",
-            deployment_name=deployment_name,
             async_client=client,
         ),
     )
@@ -116,23 +95,14 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
 
 
 @pytest.mark.asyncio
-async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_config):
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo-0613"
-
-    print("* Service: Azure OpenAI Chat Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
+async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
+    azure_openai_settings = AzureOpenAISettings()
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=endpoint,
-        azure_deployment=deployment_name,
-        api_key=api_key,
-        api_version="2023-05-15",
+        azure_endpoint=azure_openai_settings.endpoint,
+        azure_deployment=azure_openai_settings.chat_deployment_name,
+        api_key=azure_openai_settings.api_key.get_secret_value(),
+        api_version=azure_openai_settings.api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -140,7 +110,6 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="chat_completion",
-            deployment_name=deployment_name,
             async_client=client,
         ),
     )
@@ -176,23 +145,14 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
 
 
 @pytest.mark.asyncio
-async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, get_aoai_config):
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo-0613"
-
-    print("* Service: Azure OpenAI Chat Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
+async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel):
+    azure_openai_settings = AzureOpenAISettings()
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=endpoint,
-        azure_deployment=deployment_name,
-        api_key=api_key,
-        api_version="2024-02-01",
+        azure_endpoint=azure_openai_settings.endpoint,
+        azure_deployment=azure_openai_settings.chat_deployment_name,
+        api_key=azure_openai_settings.api_key.get_secret_value(),
+        api_version=azure_openai_settings.api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -200,7 +160,6 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="chat_completion",
-            deployment_name=deployment_name,
             async_client=client,
         ),
     )
@@ -208,7 +167,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     kernel.add_plugin(MathPlugin(), plugin_name="Math")
 
     # Create the prompt function
-    kernel.add_function(prompt="{{$input}}", function_name="chat", plugin_name="chat")
+    kernel.add_function(prompt="Keep the answer short. {{$input}}", function_name="chat", plugin_name="chat")
     execution_settings = sk_oai.AzureChatPromptExecutionSettings(
         service_id="chat_completion",
         max_tokens=2000,
@@ -227,4 +186,4 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
 
     print(f"Math output: '{output}'")
     assert "2" in output
-    assert 0 < len(output) < 100
+    assert 0 < len(output) < 500

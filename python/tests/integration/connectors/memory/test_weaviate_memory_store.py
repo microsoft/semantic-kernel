@@ -76,7 +76,7 @@ def memory_store():
     max_attempts = 5  # the number of retry attempts
     delay = 30  # delay in seconds between each attempt
 
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
+    config = weaviate_memory_store()
     for attempt in range(max_attempts):
         try:
             store = weaviate_memory_store.WeaviateMemoryStore(config)
@@ -116,8 +116,7 @@ def memory_store_with_collection(memory_store, event_loop, documents):
 
 
 def test_embedded_weaviate():
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
-    memory_store = weaviate_memory_store.WeaviateMemoryStore(config=config)
+    memory_store = weaviate_memory_store.WeaviateMemoryStore()
 
     assert memory_store.client._connection.embedded_db
 

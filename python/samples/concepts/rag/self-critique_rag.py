@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-
-from dotenv import dotenv_values
+import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
@@ -30,28 +29,18 @@ async def populate_memory(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    config = dotenv_values(".env")
-
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_AISEARCH_URL"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_AISEARCH_API_KEY"]
-    AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
+    AZURE_COGNITIVE_SEARCH_ENDPOINT = os.getenv["AZURE_AISEARCH_URL"]
+    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = os.getenv["AZURE_AISEARCH_API_KEY"]
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
     kernel.add_service(
         AzureChatCompletion(
             service_id="dv",
-            deployment_name="gpt-35-turbo",
-            endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY,
         ),
     )
     embedding_gen = AzureTextEmbedding(
         service_id="ada",
-        deployment_name="text-embedding-ada-002",
-        endpoint=AZURE_OPENAI_ENDPOINT,
-        api_key=AZURE_OPENAI_API_KEY,
     )
     kernel.add_service(
         embedding_gen,

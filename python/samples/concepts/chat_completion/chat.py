@@ -6,7 +6,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 prompt = """
 ChatBot can have a conversation with you about any topic.
@@ -21,7 +20,6 @@ ChatBot:>
 
 kernel = Kernel()
 
-api_key, org_id = openai_settings_from_dot_env()
 service_id = "chat"
 kernel.add_service(
     OpenAIChatCompletion(service_id=service_id)
