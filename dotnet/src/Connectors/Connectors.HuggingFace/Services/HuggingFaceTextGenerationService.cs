@@ -43,7 +43,7 @@ public sealed class HuggingFaceTextGenerationService : ITextGenerationService
         Verify.NotNullOrWhiteSpace(model);
 
         this.Client = new HuggingFaceClient(
-        modelId: model,
+            modelId: model,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),

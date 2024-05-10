@@ -49,7 +49,6 @@ public class AzureCosmosDBMongoDBMemoryStoreTests : IClassFixture<AzureCosmosDBM
         var memoryStore = this._fixture.MemoryStore;
         var records = DataHelper.CreateBatchRecords(Count);
 
-        await memoryStore.CreateCollectionAsync(collectionName);
         var keys = await memoryStore.UpsertBatchAsync(collectionName, records).ToListAsync();
         var actualRecords = await memoryStore
             .GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings)
@@ -86,6 +85,12 @@ public class AzureCosmosDBMongoDBMemoryStoreTests : IClassFixture<AzureCosmosDBM
         var memoryStore = this._fixture.MemoryStore;
         var searchEmbedding = DataHelper.VectorSearchTestEmbedding;
         var nearestMatchesExpected = DataHelper.VectorSearchExpectedResults;
+        var records = DataHelper.VectorSearchTestRecords;
+
+        var keys = await memoryStore.UpsertBatchAsync(collectionName, records).ToListAsync();
+        var actualRecords = await memoryStore
+            .GetBatchAsync(collectionName, keys, withEmbeddings: withEmbeddings)
+            .ToListAsync();
 
         var nearestMatchesActual = await memoryStore
             .GetNearestMatchesAsync(
