@@ -18,7 +18,11 @@ public class PromptExecutionSettingsTests
             "temperature": 0.5,
             "top_p": 0.0,
             "presence_penalty": 0.0,
-            "frequency_penalty": 0.0
+            "frequency_penalty": 0.0,
+            "function_choice_behavior": {
+                "type": "auto",
+                "functions": ["p1.f1"]
+            }
         }
         """;
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(configPayload);
@@ -30,6 +34,7 @@ public class PromptExecutionSettingsTests
         Assert.NotNull(clone);
         Assert.Equal(executionSettings.ModelId, clone.ModelId);
         Assert.Equivalent(executionSettings.ExtensionData, clone.ExtensionData);
+        Assert.Equivalent(executionSettings.FunctionChoiceBehavior, clone.FunctionChoiceBehavior);
     }
 
     [Fact]
@@ -56,5 +61,6 @@ public class PromptExecutionSettingsTests
         Assert.NotNull(executionSettings.ExtensionData);
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData.Add("results_per_prompt", 2));
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData["temperature"] = 1);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.None);
     }
 }
