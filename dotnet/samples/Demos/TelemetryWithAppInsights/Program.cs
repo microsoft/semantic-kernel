@@ -181,25 +181,22 @@ public sealed class Program
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(loggerFactory);
-        builder.AddAzureOpenAIChatCompletion(
+        builder
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: AzureOpenAIChatServiceKey);
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable CS0612 // Type or member is obsolete
-        builder.AddGoogleAIGeminiChatCompletion(
+                serviceId: AzureOpenAIChatServiceKey)
+            .AddGoogleAIGeminiChatCompletion(
                 modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
                 apiKey: TestConfiguration.GoogleAI.ApiKey,
-                serviceId: GoogleAIGeminiChatServiceKey);
-        builder.AddHuggingFaceChatCompletion(
+                serviceId: GoogleAIGeminiChatServiceKey)
+            .AddHuggingFaceChatCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 endpoint: new Uri("https://api-inference.huggingface.co"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
                 serviceId: HuggingFaceChatServiceKey);
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
@@ -241,8 +238,6 @@ public sealed class Program
                 if (targetService is not null)
                 {
                     service = targetService;
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable CS0612 // Type or member is obsolete
                     serviceSettings = targetServiceKey switch
                     {
                         AzureOpenAIChatServiceKey => new OpenAIPromptExecutionSettings(),
@@ -250,8 +245,7 @@ public sealed class Program
                         HuggingFaceChatServiceKey => new HuggingFacePromptExecutionSettings(),
                         _ => null,
                     };
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
                     return true;
                 }
             }
