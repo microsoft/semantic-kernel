@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static partial class Verify
 {
-#if NET7_0_OR_GREATER
+#if NET
     [GeneratedRegex("^[0-9A-Za-z_]*$")]
     private static partial Regex AsciiLettersDigitsUnderscoresRegex();
 
@@ -46,7 +46,7 @@ internal static partial class Verify
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
-#if NET7_0_OR_GREATER
+#if NET
         ArgumentException.ThrowIfNullOrWhiteSpace(str, paramName);
 #else
         NotNull(str, paramName);

@@ -79,7 +79,7 @@ internal static class KernelSystemHelpers
             else
             {
                 var args = ProcessArguments(arguments, variables);
-                name = args[0].ToString() ?? "";
+                name = args[0].ToString() ?? string.Empty;
                 value = args[1];
             }
 

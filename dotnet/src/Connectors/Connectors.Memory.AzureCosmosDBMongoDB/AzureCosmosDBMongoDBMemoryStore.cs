@@ -480,14 +480,14 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             }
         }";
 
-        string projectStage =
-            @"
-        {
-            ""$project"": {
-                ""similarityScore"": { ""$meta"": ""searchScore"" },
-                ""document"": ""$$ROOT""
+        string projectStage = """
+            {
+                "$project": {
+                    "similarityScore": { "$meta": "searchScore" },
+                    "document": "$$ROOT"
+                }
             }
-        }";
+            """;
 
         BsonDocument searchBson = BsonDocument.Parse(searchStage);
         BsonDocument projectBson = BsonDocument.Parse(projectStage);
