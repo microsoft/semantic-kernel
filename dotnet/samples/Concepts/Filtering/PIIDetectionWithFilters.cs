@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Filtering;
 
@@ -114,20 +115,52 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
             sp.GetRequiredService<PresidioTextAnonymizerService>(),
             anonymizers));
 
+        builder.Plugins.AddFromType<SearchPlugin>();
+
         var kernel = builder.Build();
 
         // Define instructions for LLM how to react when certain conditions are met for demonstration purposes
         var executionSettings = new OpenAIPromptExecutionSettings
         {
-            ChatSystemPrompt = "If prompt does not contain first and last name - return 'true'."
+            ChatSystemPrompt = "If prompt does not contain first and last names - return 'true'."
         };
 
-        var result = await kernel.InvokePromptAsync("Hello world, my name is Jane Doe. My number is: 034453334", new(executionSettings));
+        // Define function with Handlebars prompt template, using markdown table for data representation.
+        // Data is fetched using SearchPlugin.GetContacts function.
+        var function = kernel.CreateFunctionFromPrompt(
+            new()
+            {
+                Template =
+                """
+                | Name | Phone number | Position |
+                |------|--------------|----------|
+                {{#each (SearchPlugin-GetContacts)}}
+                | {{Name}} | {{Phone}} | {{Position}} |
+                {{/each}}
+                """,
+                TemplateFormat = "handlebars"
+            },
+            new HandlebarsPromptTemplateFactory()
+        );
+
+        var result = await kernel.InvokeAsync(function, new(executionSettings));
         logger.LogInformation("Result: {Result}", result.ToString());
 
         /*
-        Prompt before anonymization : Hello world, my name is Jane Doe. My number is: 034453334
-        Prompt after anonymization : Hello world, my name is ANONYMIZED. My number is: 
+        Prompt before anonymization : 
+        | Name        | Phone number      | Position  |
+        |-------------|-------------------|---------- |
+        | John Smith  | +1 (123) 456-7890 | Developer |
+        | Alice Doe   | +1 (987) 654-3120 | Manager   |
+        | Emily Davis | +1 (555) 555-5555 | Designer  |
+
+        Prompt after anonymization : 
+        | Name        | Phone number      | Position  |
+        |-------------|-------------------|-----------|
+        | ANONYMIZED  | +1                | Developer |
+        | ANONYMIZED  | +1                | Manager   |
+        | ANONYMIZED  | +1                | Designer  |
+
         Result: true
         */
     }
@@ -192,7 +225,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
             // Get rendered prompt
             var prompt = context.RenderedPrompt!;
 
-            logger.LogTrace("Prompt before anonymization : {Prompt}", prompt);
+            logger.LogTrace("Prompt before anonymization : \n{Prompt}", prompt);
 
             // Call analyzer to detect PII
             var analyzerResults = await analyzerService.AnalyzeAsync(new PresidioTextAnalyzerRequest { Text = prompt });
@@ -205,7 +238,7 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
                 Anonymizers = anonymizers
             });
 
-            logger.LogTrace("Prompt after anonymization : {Prompt}", anonymizerResult.Text);
+            logger.LogTrace("Prompt after anonymization : \n{Prompt}", anonymizerResult.Text);
 
             // Update prompt in context to sent new prompt without PII to LLM
             context.RenderedPrompt = anonymizerResult.Text;
@@ -404,6 +437,34 @@ public class PIIDetectionWithFilters(ITestOutputHelper output) : BaseTest(output
             return JsonSerializer.Deserialize<PresidioTextAnonymizerResponse>(responseContent) ??
                 throw new Exception("Anonymizer response is not available.");
         }
+    }
+
+    #endregion
+
+    #region Plugins
+
+    /// <summary>
+    /// Contact model for demonstration purposes.
+    /// </summary>
+    private class Contact
+    {
+        public string Name { get; set; }
+        public string Phone { get; set; }
+        public string Position { get; set; }
+    }
+
+    /// <summary>
+    /// Search Plugin to be called from prompt for demonstration purposes.
+    /// </summary>
+    private sealed class SearchPlugin
+    {
+        [KernelFunction]
+        public List<Contact> GetContacts()
+            => [
+                new () { Name = "John Smith", Phone = "+1 (123) 456-7890", Position = "Developer" },
+                new () { Name = "Alice Doe", Phone = "+1 (987) 654-3120", Position = "Manager" },
+                new () { Name = "Emily Davis", Phone = "+1 (555) 555-5555", Position = "Designer" }
+                ];
     }
 
     #endregion
