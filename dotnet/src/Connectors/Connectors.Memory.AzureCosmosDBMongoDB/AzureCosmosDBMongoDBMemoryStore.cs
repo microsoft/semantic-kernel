@@ -58,7 +58,6 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         this._config = config;
         this._mongoClient = mongoClient;
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
-        this._ownsMongoClient = false;
     }
 
     /// <inheritdoc/>
@@ -319,11 +318,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            if (_ownsMongoClient) 
+            if (this._ownsMongoClient)
             {
                 this._mongoClient.Cluster.Dispose();
             }
-            
         }
     }
 
