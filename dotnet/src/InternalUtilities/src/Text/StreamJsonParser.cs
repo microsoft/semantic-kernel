@@ -72,12 +72,12 @@ internal sealed class StreamJsonParser
             this.ResetState();
             string? line;
             while ((line = await this._reader.ReadLineAsync(
-#if NET7_0_OR_GREATER
-                       cancellationToken
+#if NET
+                cancellationToken
 #endif
-                       ).ConfigureAwait(false)) != null || this._lastLine != null)
+                ).ConfigureAwait(false)) is not null || this._lastLine is not null)
             {
-                if (this._lastLine != null)
+                if (this._lastLine is not null)
                 {
                     line = this._lastLine + line;
                     this._lastLine = null;

@@ -135,7 +135,7 @@ public partial class AzureAISearchMemoryStore : IMemoryStore
             return null;
         }
 
-        if (result?.Value == null)
+        if (result?.Value is null)
         {
             throw new KernelException("Memory read returned null");
         }
@@ -153,7 +153,7 @@ public partial class AzureAISearchMemoryStore : IMemoryStore
         foreach (var key in keys)
         {
             var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (record != null) { yield return record; }
+            if (record is not null) { yield return record; }
         }
     }
 
@@ -211,12 +211,12 @@ public partial class AzureAISearchMemoryStore : IMemoryStore
             // Index not found, no data to return
         }
 
-        if (searchResult == null) { yield break; }
+        if (searchResult is null) { yield break; }
 
         var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
-            if (doc == null || doc.Score < minAzureSearchScore) { continue; }
+            if (doc is null || doc.Score < minAzureSearchScore) { continue; }
 
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
@@ -368,7 +368,7 @@ public partial class AzureAISearchMemoryStore : IMemoryStore
             result = await UpsertCode().ConfigureAwait(false);
         }
 
-        if (result == null || result.Value.Results.Count == 0)
+        if (result is null || result.Value.Results.Count == 0)
         {
             throw new KernelException("Memory write returned null or an empty set");
         }

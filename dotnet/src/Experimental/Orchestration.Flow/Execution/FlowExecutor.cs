@@ -517,7 +517,7 @@ internal partial class FlowExecutor : IFlowExecutor
     private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(KernelArguments context, KernelFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
     {
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
-        if (chatHistory != null)
+        if (chatHistory is not null)
         {
             chatHistory.AddUserMessage(input);
         }
@@ -606,7 +606,7 @@ internal partial class FlowExecutor : IFlowExecutor
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
-        if (lastStep != null)
+        if (lastStep is not null)
         {
             lastStep.Observation += $"{AuthorRole.User.Label}: {input}\n";
             await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);

@@ -43,7 +43,7 @@ internal sealed class HandlebarsParameterTypeMetadata
     private static bool ArePropertiesEqual(List<KernelParameterMetadata> list1, List<KernelParameterMetadata> list2)
     {
         // Check if the lists are null or have different lengths
-        if (list1 == null || list2 == null || list1.Count != list2.Count)
+        if (list1 is null || list2 is null || list1.Count != list2.Count)
         {
             return false;
         }

@@ -87,7 +87,7 @@ public abstract class AgentChat
         {
             IAsyncEnumerable<ChatMessageContent>? messages = null;
 
-            if (agent == null)
+            if (agent is null)
             {
                 // Provide primary history
                 messages = this.History.ToDescendingAsync();
@@ -97,13 +97,13 @@ public abstract class AgentChat
                 // Retrieve the requested channel, if exists, and block until channel is synchronized.
                 string channelKey = this.GetAgentHash(agent);
                 AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
-                if (channel != null)
+                if (channel is not null)
                 {
                     messages = channel.GetHistoryAsync(cancellationToken);
                 }
             }
 
-            if (messages != null)
+            if (messages is not null)
             {
                 await foreach (ChatMessageContent message in messages.ConfigureAwait(false))
                 {
@@ -252,7 +252,7 @@ public abstract class AgentChat
         {
             string channelKey = this.GetAgentHash(agent);
             AgentChannel? channel = await this.SynchronizeChannelAsync(channelKey, cancellationToken).ConfigureAwait(false);
-            if (channel == null)
+            if (channel is null)
             {
                 this.Logger.LogDebug("[{MethodName}] Creating channel for {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
 

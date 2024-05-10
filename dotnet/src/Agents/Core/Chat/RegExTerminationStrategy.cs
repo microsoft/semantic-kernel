@@ -51,9 +51,7 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Most recent message
-        var message = history[history.Count - 1].Content;
-
-        if (message is not null)
+        if (history.Count > 0 && history[history.Count - 1].Content is string message)
         {
             if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
             {

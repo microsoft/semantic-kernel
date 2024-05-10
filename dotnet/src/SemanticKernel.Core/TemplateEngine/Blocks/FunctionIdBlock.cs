@@ -60,7 +60,7 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
 
     private static bool HasMoreThanOneDot(string? value)
     {
-        if (value == null || value.Length < 2) { return false; }
+        if (value is null || value.Length < 2) { return false; }
 
         int count = 0;
         return value.Any(t => t == '.' && ++count > 1);

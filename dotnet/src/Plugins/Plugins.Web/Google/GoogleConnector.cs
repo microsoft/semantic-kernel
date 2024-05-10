@@ -81,7 +81,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         List<T>? returnValues = null;
-        if (results.Items != null)
+        if (results.Items is not null)
         {
             if (typeof(T) == typeof(string))
             {

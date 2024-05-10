@@ -610,7 +610,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 {
                     await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
 
-                    var taskResult = Invoke(taskResultGetter, result, []);
+                    var taskResult = Invoke(taskResultGetter, result, null);
                     return new FunctionResult(function, taskResult, kernel.Culture);
                 }
                 );
@@ -624,10 +624,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             {
                 return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
                 {
-                    Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), [])!;
+                    Task task = (Task)Invoke(valueTaskAsTask, ThrowIfNullResult(result), null)!;
                     await task.ConfigureAwait(false);
 
-                    var taskResult = Invoke(asTaskResultGetter, task, []);
+                    var taskResult = Invoke(asTaskResultGetter, task, null);
                     return new FunctionResult(function, taskResult, kernel.Culture);
                 }
                 );

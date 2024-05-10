@@ -15,15 +15,15 @@ public class ChatHistoryTests
 {
     [Fact]
     public void ItCanBeSerializedAndDeserialized()
-    {
+    {   
         // Arrange
         var options = new JsonSerializerOptions();
-        var chatHistory = new ChatHistory()
-        {
+        ChatHistory chatHistory =
+        [
             new ChatMessageContent(AuthorRole.System, "You are a polite bot.") { AuthorName = "ChatBot" },
             new ChatMessageContent(AuthorRole.User, "Hello") { AuthorName = "ChatBot" },
             new ChatMessageContent(AuthorRole.Assistant, "Hi") { AuthorName = "ChatBot" },
-        };
+        ];
         var chatHistoryJson = JsonSerializer.Serialize(chatHistory, options);
 
         // Act

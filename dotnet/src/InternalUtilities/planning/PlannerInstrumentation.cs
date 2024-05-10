@@ -192,7 +192,7 @@ internal static partial class PlannerInstrumentation
                 var jsonString = planResult.GetType() == typeof(string)
                     ? planResult.ToString()
                     : JsonSerializer.Serialize(planResult);
-                s_logPlanResult(logger, jsonString ?? "", null);
+                s_logPlanResult(logger, jsonString ?? string.Empty, null);
             }
             catch (NotSupportedException ex)
             {

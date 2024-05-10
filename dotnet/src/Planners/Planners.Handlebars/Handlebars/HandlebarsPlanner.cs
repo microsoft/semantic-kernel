@@ -90,7 +90,7 @@ public sealed partial class HandlebarsPlanner
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            MatchCollection matches = ParseRegex().Matches(modelResults.Content ?? "");
+            MatchCollection matches = ParseRegex().Matches(modelResults.Content ?? string.Empty);
             if (matches.Count < 1)
             {
                 throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{modelResults.Content}");

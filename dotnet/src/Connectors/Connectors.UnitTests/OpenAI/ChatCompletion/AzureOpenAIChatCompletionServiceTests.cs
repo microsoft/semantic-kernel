@@ -779,10 +779,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" })
         };
 
-        var chatHistory = new ChatHistory
-        {
+        ChatHistory chatHistory =
+        [
             new ChatMessageContent(AuthorRole.Assistant, items)
-        };
+        ];
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 

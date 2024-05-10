@@ -55,7 +55,7 @@ internal static class KernelFunctionExtensions
 
     private static string ConvertType(Type? type)
     {
-        if (type == null || type == typeof(string))
+        if (type is null || type == typeof(string))
         {
             return "string";
         }

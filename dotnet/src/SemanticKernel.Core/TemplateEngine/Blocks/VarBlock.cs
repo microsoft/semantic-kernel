@@ -64,7 +64,7 @@ internal sealed partial class VarBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        if (arguments == null) { return null; }
+        if (arguments is null) { return null; }
 
         if (string.IsNullOrEmpty(this.Name))
         {

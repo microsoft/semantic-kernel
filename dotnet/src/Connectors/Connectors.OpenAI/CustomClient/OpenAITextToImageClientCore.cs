@@ -92,7 +92,7 @@ internal sealed class OpenAITextToImageClientCore
     {
         using var request = new HttpRequestMessage(method, url);
 
-        if (content != null)
+        if (content is not null)
         {
             request.Content = content;
         }

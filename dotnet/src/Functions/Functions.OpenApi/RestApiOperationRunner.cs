@@ -156,7 +156,7 @@ internal sealed class RestApiOperationRunner
 
         await this._authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        if (requestContent != null)
+        if (requestContent is not null)
         {
             requestMessage.Content = requestContent;
         }
@@ -166,7 +166,7 @@ internal sealed class RestApiOperationRunner
             : HttpHeaderConstant.Values.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
-        if (headers != null)
+        if (headers is not null)
         {
             foreach (var header in headers)
             {
@@ -269,7 +269,7 @@ internal sealed class RestApiOperationRunner
         // Build operation payload dynamically
         if (this._enableDynamicPayload)
         {
-            if (payloadMetadata == null)
+            if (payloadMetadata is null)
             {
                 throw new KernelException("Payload can't be built dynamically due to the missing payload metadata.");
             }

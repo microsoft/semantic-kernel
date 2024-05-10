@@ -78,7 +78,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
 
         List<T>? returnValues = null;
-        if (data?.WebPages?.Value != null)
+        if (data?.WebPages?.Value is not null)
         {
             if (typeof(T) == typeof(string))
             {

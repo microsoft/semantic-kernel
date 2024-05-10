@@ -92,7 +92,7 @@ internal static class HandlebarsPlannerExtensions
         foreach (var resourceName in resourceNames)
         {
             using Stream? resourceStream = assembly.GetManifestResourceStream(resourceName);
-            if (resourceStream != null)
+            if (resourceStream is not null)
             {
                 using var reader = new StreamReader(resourceStream);
                 stringBuilder.AppendLine(reader.ReadToEnd());

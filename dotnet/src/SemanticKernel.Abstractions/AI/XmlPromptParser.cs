@@ -107,7 +107,7 @@ internal static class XmlPromptParser
         {
             var childPromptNode = GetPromptNode(childNode);
 
-            if (childPromptNode != null)
+            if (childPromptNode is not null)
             {
                 promptNode.ChildNodes.Add(childPromptNode);
             }

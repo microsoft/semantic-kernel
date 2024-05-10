@@ -132,7 +132,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
 
             CreateClassSchemaResponse? result = JsonSerializer.Deserialize<CreateClassSchemaResponse>(responseContent, s_jsonOptionsCache);
 
-            if (result == null || result.Description != description)
+            if (result is null || result.Description != description)
             {
                 throw new KernelException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
@@ -163,7 +163,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
 
             GetClassResponse? existing = JsonSerializer.Deserialize<GetClassResponse>(responseContent, s_jsonOptionsCache);
 
-            if (existing != null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
+            if (existing is not null && existing.Description != ToWeaviateFriendlyClassDescription(collectionName))
             {
                 // ReSharper disable once CommentTypo
                 // Check that we don't have an accidental conflict.
@@ -311,13 +311,13 @@ public partial class WeaviateMemoryStore : IMemoryStore
         }
 
         WeaviateObject? weaviateObject = JsonSerializer.Deserialize<WeaviateObject>(responseContent, s_jsonOptionsCache);
-        if (weaviateObject == null)
+        if (weaviateObject is null)
         {
             this._logger.LogError("Unable to deserialize response to WeaviateObject");
             return null;
         }
 
-        DateTimeOffset? timestamp = weaviateObject.Properties == null
+        DateTimeOffset? timestamp = weaviateObject.Properties is null
             ? null
             : weaviateObject.Properties.TryGetValue("sk_timestamp", out object? value)
                 ? Convert.ToDateTime(value.ToString(), CultureInfo.InvariantCulture)
@@ -341,7 +341,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
         foreach (string? key in keys)
         {
             MemoryRecord? record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -420,7 +420,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
 
             GraphResponse? data = JsonSerializer.Deserialize<GraphResponse>(responseContent, s_jsonOptionsCache);
 
-            if (data == null)
+            if (data is null)
             {
                 this._logger.LogWarning("Unable to deserialize Search response");
                 yield break;
@@ -461,7 +461,7 @@ public partial class WeaviateMemoryStore : IMemoryStore
         string description = json["sk_description"]!.GetValue<string>();
         string additionalMetadata = json["sk_additional_metadata"]!.GetValue<string>();
         string key = json["sk_id"]!.GetValue<string>();
-        DateTime? timestamp = json["sk_timestamp"] != null
+        DateTime? timestamp = json["sk_timestamp"] is not null
             ? Convert.ToDateTime(json["sk_timestamp"]!.GetValue<string>(), CultureInfo.InvariantCulture)
             : null;
 

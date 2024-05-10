@@ -160,7 +160,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
         foreach (var p in this._config.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            if (p.Default is null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
