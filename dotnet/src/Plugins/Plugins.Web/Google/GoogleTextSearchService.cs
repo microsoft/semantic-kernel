@@ -59,7 +59,7 @@ public sealed class GoogleTextSearchService : ITextSearchService, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, CancellationToken cancellationToken = default) where T : class
+    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) where T : class
     {
         searchSettings ??= new SearchExecutionSettings();
         var count = searchSettings.Count;

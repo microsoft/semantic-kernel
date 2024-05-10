@@ -31,14 +31,14 @@ public sealed class TextSearchPlugin<T>(ITextSearchService service) where T : cl
     };
 
     /// <summary>
-    /// Performs a text search using the provided query, count, and offset.
+    /// Perform a search for content related to the specified query.
     /// </summary>
     /// <param name="query">The text to search for.</param>
     /// <param name="count">The number of results to return. Default is 1.</param>
     /// <param name="offset">The number of results to skip. Default is 0.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation. The value of the TResult parameter contains the search results as a string.</returns>
-    [KernelFunction, Description("Perform a web search.")]
+    [KernelFunction, Description("Perform a search for content related to the specified query.")]
     public async Task<string> SearchAsync(
         [Description("Search query")] string query,
         [Description("Number of results")] int count = 1,

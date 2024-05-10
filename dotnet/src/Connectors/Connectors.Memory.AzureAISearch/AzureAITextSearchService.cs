@@ -59,7 +59,7 @@ public sealed class AzureAITextSearchService : ITextSearchService
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings, CancellationToken cancellationToken = default) where T : class
+    public async Task<KernelSearchResults<T>> SearchAsync<T>(string query, SearchExecutionSettings? searchSettings, Kernel? kernel = null, CancellationToken cancellationToken = default) where T : class
     {
         Verify.NotNullOrWhiteSpace(query);
         Verify.NotNull(searchSettings);
