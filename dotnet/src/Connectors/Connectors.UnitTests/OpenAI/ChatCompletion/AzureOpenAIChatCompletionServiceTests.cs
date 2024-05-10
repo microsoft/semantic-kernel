@@ -913,6 +913,102 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
     }
 
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingAutoFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
+
+        var chatCompletion = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal("auto", optionsJson.GetProperty("tool_choice").ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingRequiredFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+        ]);
+
+        var chatCompletion = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingNoneFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+        ]);
+
+        var chatCompletion = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+
+        this._messageHandlerStub.ResponsesToReturn.Add(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        });
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContents[0]!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("NonInvocableTool", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("none", optionsJson.GetProperty("tool_choice").ToString());
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -27,7 +28,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
-    private readonly OpenAIFunction _timepluginDate, _timepluginNow;
+    private readonly KernelPlugin _plugin;
+    private readonly KernelFunction _timepluginDate, _timepluginNow;
     private readonly OpenAIPromptExecutionSettings _executionSettings;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
@@ -37,18 +39,21 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
 
-        IList<KernelFunctionMetadata> functions = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
+        this._plugin = KernelPluginFactory.CreateFromFunctions("TimePlugin", new[]
         {
             KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.Date.ToString(format, CultureInfo.InvariantCulture), "Date", "TimePlugin.Date"),
             KernelFunctionFactory.CreateFromMethod((string? format = null) => DateTime.Now.ToString(format, CultureInfo.InvariantCulture), "Now", "TimePlugin.Now"),
-        }).GetFunctionsMetadata();
+        });
 
-        this._timepluginDate = functions[0].ToOpenAIFunction();
-        this._timepluginNow = functions[1].ToOpenAIFunction();
+        this._timepluginDate = this._plugin.ElementAt(0);
+        this._timepluginNow = this._plugin.ElementAt(1);
 
         this._executionSettings = new()
         {
-            ToolCallBehavior = ToolCallBehavior.EnableFunctions([this._timepluginDate, this._timepluginNow])
+            ToolCallBehavior = ToolCallBehavior.EnableFunctions([
+                this._timepluginDate.Metadata.ToOpenAIFunction(),
+                this._timepluginNow.Metadata.ToOpenAIFunction()
+            ])
         };
     }
 
@@ -130,7 +135,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(ChatCompletionResponse) };
-        this._executionSettings.ToolCallBehavior = ToolCallBehavior.RequireFunction(this._timepluginNow);
+        this._executionSettings.ToolCallBehavior = ToolCallBehavior.RequireFunction(this._timepluginNow.Metadata.ToOpenAIFunction());
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync([], this._executionSettings);
@@ -554,6 +559,95 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal("tool", assistantMessage2.GetProperty("role").GetString());
         Assert.Equal("sunny", assistantMessage2.GetProperty("content").GetString());
         Assert.Equal("2", assistantMessage2.GetProperty("tool_call_id").GetString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingAutoFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.Add(this._plugin);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
+        Assert.Equal("auto", optionsJson.GetProperty("tool_choice").ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingRequiredFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [this._timepluginDate]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice() };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tool_choice").GetProperty("function").GetProperty("name").ToString());
+    }
+
+    [Fact]
+    public async Task ItCreatesCorrectFunctionToolCallsWhenUsingNoneFunctionChoiceBehaviorAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromFunctions("TimePlugin", [this._timepluginDate]);
+
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent(ChatCompletionResponse)
+        };
+
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("NonInvocableTool", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("none", optionsJson.GetProperty("tool_choice").ToString());
     }
 
     public void Dispose()
