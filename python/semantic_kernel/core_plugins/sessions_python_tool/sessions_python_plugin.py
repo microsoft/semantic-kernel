@@ -9,12 +9,13 @@ from io import BufferedReader, BytesIO
 from typing import Annotated, Any, Awaitable, Callable
 
 import httpx
-from pydantic import field_validator, ValidationError
+from pydantic import ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
-    SessionsPythonSettings, ACASessionsSettings,
+    ACASessionsSettings,
+    SessionsPythonSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException

@@ -12,6 +12,7 @@ from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
+from semantic_kernel.connectors.memory.memory_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
@@ -19,14 +20,13 @@ from semantic_kernel.connectors.memory.redis.utils import (
     serialize_record_to_redis,
 )
 from semantic_kernel.exceptions import (
+    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import RedisSettings
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -67,7 +67,8 @@ class RedisMemoryStore(MemoryStoreBase):
             vector_type {str} -- Vector type, defaults to FLOAT32
             vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
             query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables, defaults to False
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+                environment variables, defaults to False
         """
         try:
             redis_settings = RedisSettings(use_env_settings_file=use_env_settings_file)

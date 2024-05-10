@@ -1,18 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
-
 from google.generativeai.types import ChatResponse, MessageDict
 
 from semantic_kernel.connectors.ai.google_palm import GooglePalmChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import GooglePalmChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
 
 def test_google_palm_chat_completion_init(google_palm_unit_test_env) -> None:
     ai_model_id = "test_model_id"

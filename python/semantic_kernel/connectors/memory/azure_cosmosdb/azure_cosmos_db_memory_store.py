@@ -13,10 +13,10 @@ from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
     get_mongodb_search_client,
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.connectors.memory.memory_settings import AzureCosmosDBSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import AzureCosmosDBSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 

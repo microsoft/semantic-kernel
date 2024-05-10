@@ -10,10 +10,10 @@ from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceResponseException
-from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -29,7 +29,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a
+                fallback to environment variables. (Optional)
         """
         try:
             google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)

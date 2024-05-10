@@ -50,9 +50,7 @@ async def main():
     )
     kernel.add_service(chat_service)
 
-    python_code_interpreter = SessionsPythonTool(
-        auth_callback=auth_callback
-    )
+    python_code_interpreter = SessionsPythonTool(auth_callback=auth_callback)
 
     sessions_tool = kernel.add_plugin(python_code_interpreter, "PythonCodeInterpreter")
 

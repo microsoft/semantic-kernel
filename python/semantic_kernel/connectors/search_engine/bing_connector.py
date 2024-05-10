@@ -7,9 +7,9 @@ from typing import List
 import aiohttp
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
-from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class BingConnector(ConnectorBase):
 
     _api_key: str
 
-    def __init__(self, use_env_settings_file:bool=False) -> None:
+    def __init__(self, use_env_settings_file: bool = False) -> None:
         try:
             bing_settings = BingSettings(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:

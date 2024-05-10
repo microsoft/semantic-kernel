@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
 from semantic_kernel.prompt_template import PromptTemplateConfig
-
 
 
 async def main():

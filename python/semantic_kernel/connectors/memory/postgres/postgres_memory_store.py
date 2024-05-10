@@ -12,15 +12,15 @@ from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.memory_settings import PostgresSettings
 from semantic_kernel.exceptions import (
+    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import PostgresSettings
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000

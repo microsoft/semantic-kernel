@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-
 from typing import Annotated
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior

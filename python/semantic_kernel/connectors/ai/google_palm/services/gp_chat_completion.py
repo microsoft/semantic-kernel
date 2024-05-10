@@ -1,13 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
-from typing import Annotated, Any, List, Optional, Tuple
+from typing import Annotated, Any, List, Tuple
 
-from pydantic import ValidationError
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
-from pydantic import PrivateAttr, StringConstraints
+from pydantic import PrivateAttr, StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
@@ -15,13 +13,13 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
     GooglePalmPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
-from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -47,7 +45,8 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             message_history {ChatHistory | None} -- The message history to use for context. (Optional)
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+                environment variables. (Optional)
         """
         try:
             google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)

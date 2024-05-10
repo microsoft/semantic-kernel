@@ -2,8 +2,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
-
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
 

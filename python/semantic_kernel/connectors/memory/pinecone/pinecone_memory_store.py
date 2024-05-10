@@ -7,11 +7,13 @@ from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
 )
 from semantic_kernel.exceptions import (
+    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceInvalidRequestError,
     ServiceResourceNotFoundError,
@@ -19,8 +21,6 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 # Limitations set by Pinecone at https://docs.pinecone.io/reference/known-limitations
 MAX_DIMENSIONALITY = 20000
@@ -55,7 +55,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(

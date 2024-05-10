@@ -4,7 +4,6 @@ import asyncio
 
 from azure.identity import ClientSecretCredential
 from bookings_plugin.bookings_plugin import BookingsPlugin
-from .booking_sample_settings import BookingSampleSettings
 from msgraph import GraphServiceClient
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -16,6 +15,8 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
+from .booking_sample_settings import BookingSampleSettings
+
 kernel = Kernel()
 
 service_id = "open_ai"
@@ -26,9 +27,7 @@ booking_sample_settings = BookingSampleSettings()
 tenant_id = booking_sample_settings.tenant_id
 client_id = booking_sample_settings.client_id
 client_secret = booking_sample_settings.client_secret
-client_secret_credential = ClientSecretCredential(
-    tenant_id=tenant_id, client_id=client_id, client_secret=client_secret
-)
+client_secret_credential = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
 
 graph_client = GraphServiceClient(credentials=client_secret_credential, scopes=["https://graph.microsoft.com/.default"])
 

@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
@@ -43,7 +42,7 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
         assert azure_text_completion.client.default_headers[key] == value
 
 
-#TODO: remove test if we keep a default text deployment name?
+# TODO: remove test if we keep a default text deployment name?
 # @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 # def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
 #     with pytest.raises(ServiceInitializationError):
@@ -60,6 +59,7 @@ def test_azure_text_completion_init_with_empty_api_key(azure_openai_unit_test_en
 def test_azure_text_completion_init_with_empty_endpoint_and_base_url(azure_openai_unit_test_env) -> None:
     with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
+
 
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
 def test_azure_text_completion_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
@@ -94,7 +94,8 @@ async def test_azure_text_completion_call_with_parameters(mock_create, azure_ope
 @pytest.mark.asyncio
 @patch.object(AsyncCompletions, "create", new_callable=AsyncMock)
 async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
-    mock_create, azure_openai_unit_test_env,
+    mock_create,
+    azure_openai_unit_test_env,
 ) -> None:
     prompt = "hello world"
     complete_prompt_execution_settings = OpenAITextPromptExecutionSettings()

@@ -11,11 +11,10 @@ async def main():
     kernel = Kernel()
 
     service_id = "default"
-    kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo")
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
     embedding_gen = OpenAITextEmbedding(
-        service_id="ada", ai_model_id="text-embedding-ada-002",
+        service_id="ada",
+        ai_model_id="text-embedding-ada-002",
     )
 
     kernel.add_service(embedding_gen)

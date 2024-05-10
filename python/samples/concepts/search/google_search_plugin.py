@@ -16,9 +16,7 @@ load_dotenv()
 
 async def main():
     kernel = Kernel()
-    kernel.add_service(
-        OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo")
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo"))
 
     """
     Instantiate a Google Connector

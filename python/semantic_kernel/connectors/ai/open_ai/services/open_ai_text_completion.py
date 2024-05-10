@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Dict, Mapping, Optional, overload
+from typing import Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError

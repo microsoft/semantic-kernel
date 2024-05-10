@@ -33,7 +33,8 @@ def _prepare_input_chat(chat: ChatHistory):
 async def chat_request_example(kernel: Kernel):
     service_id = "chat_service"
     openai_chat_completion = OpenAIChatCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo",
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo",
     )
     kernel.add_service(openai_chat_completion)
 
@@ -113,7 +114,8 @@ async def chat_request_example(kernel: Kernel):
 async def text_complete_request_example(kernel: Kernel):
     service_id = "text_service"
     openai_text_completion = OpenAITextCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct",
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo-instruct",
     )
     kernel.add_service(openai_text_completion)
 

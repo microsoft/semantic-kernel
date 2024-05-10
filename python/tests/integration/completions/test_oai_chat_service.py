@@ -8,10 +8,11 @@ from test_utils import retry
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
+
 
 @pytest.mark.asyncio
 async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models):
@@ -47,7 +48,8 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
 
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
-            service_id="chat-gpt", ai_model_id="gpt-3.5-turbo-1106",
+            service_id="chat-gpt",
+            ai_model_id="gpt-3.5-turbo-1106",
         ),
     )
 
@@ -85,7 +87,8 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
 
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
-            service_id="chat-gpt", ai_model_id="gpt-3.5-turbo-1106",
+            service_id="chat-gpt",
+            ai_model_id="gpt-3.5-turbo-1106",
         ),
     )
 

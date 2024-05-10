@@ -1,17 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from semantic_kernel.kernel_pydantic import HttpsUrl
+
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.kernel_pydantic import HttpsUrl
+
 
 class AzureOpenAISettings(BaseSettings):
     """AzureOpenAI model settings
 
-    The settings are first loaded from environment variables with the prefix 'AZURE_OPENAI_'. If the environment variables
-    are not found, the settings are loaded from a .env file with the encoding 'utf-8'. If the settings are not found in
-    the .env file, the settings are ignored; however, validation will fail alerting that the settings are missing.
+    The settings are first loaded from environment variables with the prefix 'AZURE_OPENAI_'.
+    If the environment variables are not found, the settings can be loaded from a .env file
+    with the encoding 'utf-8'. If the settings are not found in the .env file, the settings
+    are ignored; however, validation will fail alerting that the settings are missing.
 
     Required settings for prefix 'AZURE_OPENAI_' are:
     - deployment_name: str - The name of the Azure deployment. This value
@@ -35,15 +37,20 @@ class AzureOpenAISettings(BaseSettings):
                 If both base_url and endpoint are supplied, base_url will be used.
     - api_version: str | None - The API version to use. The default value is "2023-05-15".
     """
+
     use_env_settings_file: bool = False
 
-    model_config = SettingsConfigDict(env_prefix='AZURE_OPENAI_', env_file='.env' if use_env_settings_file else None, env_file_encoding='utf-8', extra='ignore')
+    model_config = SettingsConfigDict(
+        env_prefix="AZURE_OPENAI_",
+        env_file=".env" if use_env_settings_file else None,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     chat_deployment_name: str = "gpt-35-turbo"
     text_deployment_name: str = "gpt-35-turbo-instruct"
-    embedding_deployment_name: str = "text-embedding-ada-002" # TODO don't have this as default
+    embedding_deployment_name: str = "text-embedding-ada-002"  # TODO don't have this as default
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr = None
     api_version: str = DEFAULT_AZURE_API_VERSION
-

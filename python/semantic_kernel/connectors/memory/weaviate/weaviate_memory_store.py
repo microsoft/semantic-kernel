@@ -2,19 +2,16 @@
 
 import asyncio
 import logging
-from dataclasses import dataclass
 from typing import List, Tuple
 
 import numpy as np
-from pydantic import ValidationError
 import weaviate
-from weaviate.embedded import EmbeddedOptions
+from pydantic import ValidationError
 
-from semantic_kernel.exceptions import ServiceInitializationError
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.connectors.memory.memory_settings import WeaviateSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -112,7 +109,6 @@ class WeaviateMemoryStore(MemoryStoreBase):
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
     def __init__(self, use_env_settings_file: bool = False):
-
         """Initializes a new instance of the WeaviateMemoryStore
 
         Optional parameters:
@@ -136,7 +132,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
             if self.settings.api_key:
                 return weaviate.Client(
                     url=self.settings.url,
-                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key.get_secret_value())
+                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key.get_secret_value()),
                 )
             else:
                 return weaviate.Client(url=self.settings.url)

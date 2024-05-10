@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Dict, Mapping, Optional, overload
+from typing import Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
 
@@ -30,7 +30,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        use_env_settings_file: bool = False
+        use_env_settings_file: bool = False,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.

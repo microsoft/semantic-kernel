@@ -9,9 +9,10 @@ import httpx
 from aiohttp import ClientSession
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.memory.memory_settings import AzureKeyVaultSettings
 from semantic_kernel.connectors.openai_plugin import OpenAIAuthenticationType, OpenAIFunctionExecutionParameters
 from semantic_kernel.functions import KernelPlugin
-from semantic_kernel.connectors.memory.memory_settings import AzureKeyVaultSettings
+
 
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 import pytest
 from openai import AsyncAzureOpenAI
@@ -12,12 +11,13 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
     AzureChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
+
 
 @pytest.mark.asyncio
 async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai_models):
@@ -51,9 +51,7 @@ async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(
-    setup_tldr_function_for_oai_models
-):
+async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     azure_openai_settings = AzureOpenAISettings()

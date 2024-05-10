@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.functions import KernelArguments
@@ -26,9 +27,8 @@ logging.basicConfig(level=logging.DEBUG)
 kernel = sk.Kernel()
 
 # Create the data source settings
-
-# TODO Fix this with pydantic settings
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+azure_ai_search_settings = AzureAISearchSettings(use_env_settings_file=False)
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
 

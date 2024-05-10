@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
+from semantic_kernel.connectors.memory.memory_settings import MongoDBAtlasSettings
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
     DEFAULT_SEARCH_INDEX_NAME,
@@ -20,11 +21,9 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
-from semantic_kernel.exceptions import ServiceResourceNotFoundError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import MongoDBAtlasSettings
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 

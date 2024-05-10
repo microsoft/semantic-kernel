@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import warnings
 from typing import TYPE_CHECKING, Callable, List
 from unittest.mock import Mock
@@ -177,12 +176,14 @@ def enable_debug_mode():
 @pytest.fixture
 def exclude_list(request):
     """Fixture that returns a list of environment variables to exclude."""
-    return request.param if hasattr(request, 'param') else []
+    return request.param if hasattr(request, "param") else []
+
 
 @pytest.fixture
 def override_env_param_dict(request):
     """Fixture that returns a dict of environment variables to override."""
-    return request.param if hasattr(request, 'param') else {}
+    return request.param if hasattr(request, "param") else {}
+
 
 @pytest.fixture()
 def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):

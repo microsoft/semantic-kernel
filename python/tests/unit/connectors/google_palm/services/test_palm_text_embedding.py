@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
     GooglePalmTextEmbedding,

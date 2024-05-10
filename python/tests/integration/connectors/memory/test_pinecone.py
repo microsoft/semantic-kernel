@@ -1,17 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 import time
 
 import numpy as np
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
 
 try:
     import pinecone  # noqa: F401

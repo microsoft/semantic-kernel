@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import os
 
 import pytest
 from openai import AsyncOpenAI
@@ -7,18 +6,17 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
+
 
 @pytest.mark.asyncio
 async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     kernel.add_service(
-        sk_oai.OpenAITextCompletion(
-            service_id="text-completion", ai_model_id="gpt-3.5-turbo-instruct"
-        ),
+        sk_oai.OpenAITextCompletion(service_id="text-completion", ai_model_id="gpt-3.5-turbo-instruct"),
     )
 
     exec_settings = PromptExecutionSettings(
@@ -44,9 +42,7 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
 
 
 @pytest.mark.asyncio
-async def test_oai_text_completion_with_plugins_with_provided_client(
-    setup_tldr_function_for_oai_models
-):
+async def test_oai_text_completion_with_plugins_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     openai_settings = OpenAISettings()

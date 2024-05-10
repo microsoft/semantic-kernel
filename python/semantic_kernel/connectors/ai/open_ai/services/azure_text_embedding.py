@@ -7,7 +7,7 @@ from typing import Mapping
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -20,7 +20,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
 from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 

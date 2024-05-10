@@ -4,7 +4,6 @@ import logging
 import uuid
 from inspect import isawaitable
 from typing import List, Optional, Tuple
-from pydantic import ValidationError
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -19,6 +18,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
@@ -30,10 +30,10 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 

@@ -17,9 +17,7 @@ async def main():
     kernel = Kernel()
 
     service_id = "chat-gpt"
-    kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo")
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
 
     plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
     plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="FunPlugin")

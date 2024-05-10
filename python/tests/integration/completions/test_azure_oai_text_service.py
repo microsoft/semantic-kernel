@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 import pytest
 from openai import AsyncAzureOpenAI
@@ -8,15 +7,16 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
+
 
 @pytest.mark.asyncio
 async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    service_id="text_completion"
+    service_id = "text_completion"
 
     # Configure LLM service
     kernel.add_service(
@@ -47,9 +47,7 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
-    setup_tldr_function_for_oai_models
-):
+async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     azure_openai_settings = AzureOpenAISettings()
@@ -62,7 +60,7 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
         default_headers={"Test-User-X-ID": "test"},
     )
 
-    service_id="text_completion"
+    service_id = "text_completion"
 
     # Configure LLM service
     kernel.add_service(

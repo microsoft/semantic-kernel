@@ -7,15 +7,16 @@ from typing import List, Optional, Tuple
 import aiohttp
 from numpy import ndarray
 from pydantic import ValidationError
+
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
+from semantic_kernel.connectors.memory.memory_settings import AstraDBSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.connectors.memory.memory_settings import AstraDBSettings
 
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
@@ -51,7 +52,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
             session -- Optional session parameter
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a
+                fallback to environment variables. (Optional)
         """
         try:
             astradb_settings = AstraDBSettings(use_env_settings_file=use_env_settings_file)

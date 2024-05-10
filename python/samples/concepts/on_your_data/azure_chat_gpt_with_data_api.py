@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
+from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
@@ -17,16 +18,11 @@ from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 kernel = Kernel()
 logging.basicConfig(level=logging.INFO)
 
-# Load Azure OpenAI Settings
-aoai_settings = azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
-
 # For example, AI Search index may contain the following document:
 
 # Emily and David, two passionate scientists, met during a research expedition to Antarctica.
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
-
-azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 
 # Depending on the index that you use, you might need to enable the below
 # and adapt it so that it accurately reflects your index.
@@ -39,8 +35,9 @@ azure_ai_search_settings = azure_aisearch_settings_from_dot_env_as_dict()
 # }
 
 # Create the data source settings
+azure_ai_search_settings = AzureAISearchSettings(use_env_settings_file=False)
 
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 

@@ -6,10 +6,10 @@ import uuid
 from enum import Enum
 
 from pydantic import Field
-
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from semantic_kernel.kernel_pydantic import HttpsUrl
+
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel
+
 
 class CodeInputType(str, Enum):
     """Code input type."""
@@ -41,19 +41,15 @@ class ACASessionsSettings(BaseSettings):
     Required:
     - pool_management_endpoint: HttpsUrl - The URL of the Azure Container Apps pool management endpoint.
     """
+
     use_env_settings_file: bool = False
     pool_management_endpoint: HttpsUrl
-    model_config = SettingsConfigDict(env_prefix='ACA_', env_file_encoding='utf-8', extra='ignore')
+    model_config = SettingsConfigDict(env_prefix="ACA_", env_file_encoding="utf-8", extra="ignore")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if self.use_env_settings_file:
             # Update model_config dynamically to include .env file if needed
             self.__config__.model_config = SettingsConfigDict(
-                env_prefix='ACA_',
-                env_file='.env',
-                env_file_encoding='utf-8',
-                extra='ignore'
+                env_prefix="ACA_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
             )
-
-

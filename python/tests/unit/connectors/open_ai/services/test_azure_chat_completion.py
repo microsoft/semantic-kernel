@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import os
 from unittest.mock import AsyncMock, patch
 
 import openai
-import os
 import pytest
 from httpx import Request, Response
 from openai import AsyncAzureOpenAI
 from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -142,7 +141,8 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
 async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined(
-    mock_create, azure_openai_unit_test_env,
+    mock_create,
+    azure_openai_unit_test_env,
 ) -> None:
     prompt = "hello world"
     messages = [{"role": "user", "content": prompt}]
@@ -453,7 +453,9 @@ async def test_azure_chat_completion_bad_request_non_content_filter(
 
 @pytest.mark.asyncio
 @patch.object(AsyncChatCompletions, "create")
-async def test_azure_chat_completion_no_kernel_provided_throws_error(mock_create, azure_openai_unit_test_env, chat_history: ChatHistory) -> None:
+async def test_azure_chat_completion_no_kernel_provided_throws_error(
+    mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
+) -> None:
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(

@@ -3,8 +3,8 @@
 import os
 import time
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
 from semantic_kernel.connectors.memory.memory_settings import AstraDBSettings
@@ -33,6 +33,7 @@ async def retry(func, retries=1):
 def slow_down_tests():
     yield
     time.sleep(3)
+
 
 @pytest.fixture(scope="session")
 def get_astradb_config():

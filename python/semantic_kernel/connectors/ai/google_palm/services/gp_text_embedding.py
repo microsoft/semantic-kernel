@@ -8,8 +8,8 @@ from numpy import array, ndarray
 from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
 from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
+from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)

@@ -4,12 +4,10 @@ import logging
 from typing import (
     Dict,
     Mapping,
-    Optional,
-    overload,
 )
 
-from pydantic import ValidationError
 from openai import AsyncOpenAI
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
@@ -46,7 +44,8 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to environment variables. (Optional)
+            use_env_settings_file {bool} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
         try:
             openai_settings = OpenAISettings(use_env_settings_file=use_env_settings_file)

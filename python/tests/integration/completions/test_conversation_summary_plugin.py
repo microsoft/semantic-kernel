@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 import pytest
 from test_utils import retry
@@ -66,7 +65,8 @@ async def test_oai_summarize_conversation_using_plugin(
 
     kernel.add_service(
         sk_oai.OpenAITextCompletion(
-            service_id="conversation_summary", ai_model_id="gpt-3.5-turbo-instruct",
+            service_id="conversation_summary",
+            ai_model_id="gpt-3.5-turbo-instruct",
         ),
     )
 
