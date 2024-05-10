@@ -22,6 +22,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     private readonly MongoClient _mongoClient;
     private readonly IMongoDatabase _mongoDatabase;
     private readonly AzureCosmosDBMongoDBConfig _config;
+    private readonly bool _disposing;
 
     /// <summary>
     /// Initiates a AzureCosmosDBMongoDBMemoryStore instance using a Azure CosmosDB Mongo vCore connection string
@@ -41,6 +42,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         settings.ApplicationName = this._config.ApplicationName;
         this._mongoClient = new MongoClient(settings);
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._disposing = true;
     }
 
     /// <summary>
@@ -56,6 +58,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         this._config = config;
         this._mongoClient = mongoClient;
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._disposing = false;
     }
 
     /// <inheritdoc/>
@@ -304,7 +307,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     public void Dispose()
     {
-        this.Dispose(true);
+        this.Dispose(this._disposing);
         GC.SuppressFinalize(this);
     }
 
