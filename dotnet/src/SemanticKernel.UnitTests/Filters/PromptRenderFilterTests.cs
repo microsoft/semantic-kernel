@@ -236,4 +236,32 @@ public class PromptRenderFilterTests : FilterBaseTest
         // Assert
         mockTextGeneration.Verify(m => m.GetTextContentsAsync("", It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
+
+    [Fact]
+    public async Task PromptFilterCanOverrideFunctionResultAsync()
+    {
+        // Arrange
+        var mockTextGeneration = this.GetMockTextGeneration();
+        var function = KernelFunctionFactory.CreateFromPrompt("Prompt");
+
+        var kernel = this.GetKernelWithFilters(textGenerationService: mockTextGeneration.Object,
+            onPromptRender: async (context, next) =>
+            {
+                await next(context);
+
+                context.Result = new FunctionResult(context.Function, "Result from prompt filter");
+            },
+            onFunctionInvocation: async (context, next) =>
+            {
+                await next(context);
+            });
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        mockTextGeneration.Verify(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Never());
+
+        Assert.Equal("Result from prompt filter", result.ToString());
+    }
 }
