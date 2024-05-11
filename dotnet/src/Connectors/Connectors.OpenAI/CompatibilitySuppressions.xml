@@ -45,6 +45,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextEmbeddingGenerationService.#ctor(System.String,Azure.AI.OpenAI.OpenAIClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAITextEmbeddingGenerationService.#ctor(System.String,System.String,System.String,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILoggerFactory)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
@@ -94,7 +101,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextEmbeddingGeneration(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.String,System.String)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.OpenAIServiceCollectionExtensions.AddOpenAITextEmbeddingGeneration(Microsoft.SemanticKernel.IKernelBuilder,System.String,Azure.AI.OpenAI.OpenAIClient,System.String)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
