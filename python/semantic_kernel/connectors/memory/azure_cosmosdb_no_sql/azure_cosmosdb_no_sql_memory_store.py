@@ -6,10 +6,10 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
 from numpy import ndarray
+from python.semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-
-from python.semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
@@ -108,7 +108,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         query = "SELECT * FROM c WHERE c._id IN @ids"
         parameters = [{"name": "@ids", "value": keys}]
 
-        query_iterable = self.container.query_items(query)
+        query_iterable = self.container.query_items(query, parameters=parameters)
         all_results = []
         pages = query_iterable.by_page()
         async for items in await pages.__anext__():
@@ -131,14 +131,15 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         for key in keys:
             self.container.delete_item(key)
 
-    async def get_nearest_matches_async(self, collection_name: str, embedding: ndarray, limit: int,
-                                        min_relevance_score: float, with_embeddings: bool) -> List[
-        Tuple[MemoryRecord, float]]:
+    async def get_nearest_matches_async(
+        self, collection_name: str, embedding: ndarray, limit: int, min_relevance_score: float, with_embeddings: bool
+    ) -> List[Tuple[MemoryRecord, float]]:
         embedding_key = self.vector_embedding_policy["vectorEmbeddings"][0]["path"]
-        query = ("SELECT TOP {} c._id, c.{}, c.text, c.description, c.additional_metadata, "
-                 "c.timestamp, VectorDistance(c.{}, {}) AS SimilarityScore FROM c ORDER BY "
-                 "VectorDistance(c.{}, {})".format(limit, embedding_key, embedding_key, embedding, embedding_key,
-                                                   embedding))
+        query = (
+            "SELECT TOP {} c._id, c.{}, c.text, c.description, c.additional_metadata, "
+            "c.timestamp, VectorDistance(c.{}, {}) AS SimilarityScore FROM c ORDER BY "
+            "VectorDistance(c.{}, {})".format(limit, embedding_key, embedding_key, embedding, embedding_key, embedding)
+        )
 
         items = [item async for item in self.container.query_items(query=query)]
         nearest_results = []
@@ -157,13 +158,16 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             nearest_results.append((result, score))
         return nearest_results
 
-    async def get_nearest_match_async(self, collection_name: str, embedding: ndarray, min_relevance_score: float,
-                                      with_embedding: bool) -> Tuple[MemoryRecord, float]:
-        nearest_results = await self.get_nearest_matches_async(collection_name=collection_name,
-                                                               embedding=embedding,
-                                                               limit=1,
-                                                               min_relevance_score=min_relevance_score,
-                                                               with_embeddings=with_embedding, )
+    async def get_nearest_match_async(
+        self, collection_name: str, embedding: ndarray, min_relevance_score: float, with_embedding: bool
+    ) -> Tuple[MemoryRecord, float]:
+        nearest_results = await self.get_nearest_matches_async(
+            collection_name=collection_name,
+            embedding=embedding,
+            limit=1,
+            min_relevance_score=min_relevance_score,
+            with_embeddings=with_embedding,
+        )
         if len(nearest_results) > 0:
             return nearest_results[0]
         else:
