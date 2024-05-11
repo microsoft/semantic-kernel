@@ -26,9 +26,9 @@ class AzureAISearchSettings(BaseModelSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector
 
     Required:
-    - api_key: SecretStr - Azure AI Search API key
-    - endpoint: HttpsUrl - Azure AI Search endpoint
-    - index_name: str - Azure AI Search index name
+    - api_key: SecretStr - Azure AI Search API key (Env var AZURE_AI_SEARCH_API_KEY)
+    - endpoint: HttpsUrl - Azure AI Search endpoint (Env var AZURE_AI_SEARCH_ENDPOINT)
+    - index_name: str - Azure AI Search index name (Env var AZURE_AI_SEARCH_INDEX_NAME)
     """
 
     api_key: SecretStr
@@ -54,6 +54,7 @@ class AzureCosmosDBSettings(BaseModelSettings):
 
     Required:
     - connection_string: str - Azure CosmosDB connection string
+        (Env var COSMOSDB_CONNECTION_STRING)
     """
 
     api: str
@@ -68,8 +69,11 @@ class AzureKeyVaultSettings(BaseModelSettings):
 
     Required:
     - vault_url: HttpsUrl - Azure Key Vault URL
+        (Env var AZURE_KEY_VAULT_VAULT_URL)
     - client_id: str - Azure Key Vault client ID
+        (Env var AZURE_KEY_VAULT_CLIENT_ID)
     - client_secret: SecretStr - Azure Key Vault client secret
+        (Env var AZURE_KEY_VAULT_CLIENT_SECRET)
     """
 
     endpoint: HttpsUrl
@@ -85,9 +89,13 @@ class AstraDBSettings(BaseModelSettings):
 
     Required:
     - app_token: SecretStr - AstraDB token
+        (Env var ASTRADB_APP_TOKEN)
     - db_id: str - AstraDB database ID
+        (Env var ASTRADB_DB_ID)
     - region: str - AstraDB region
+        (Env var ASTRADB_REGION)
     - keyspace: str - AstraDB keyspace
+        (Env var ASTRADB_KEYSPACE)
     """
 
     app_token: SecretStr
@@ -104,6 +112,7 @@ class MongoDBAtlasSettings(BaseModelSettings):
 
     Required:
     - connection_string: str - MongoDB Atlas connection string
+        (Env var MONGODB_ATLAS_CONNECTION_STRING)
     """
 
     connection_string: SecretStr
@@ -117,6 +126,7 @@ class PineconeSettings(BaseModelSettings):
 
     Required:
     - api_key: SecretStr - Pinecone API key
+        (Env var PINECONE_API_KEY)
     """
 
     api_key: SecretStr
@@ -130,6 +140,7 @@ class PostgresSettings(BaseModelSettings):
 
     Required:
     - connection_string: str - Postgres connection string
+        (Env var POSTGRES_CONNECTION_STRING)
     """
 
     connection_string: SecretStr | PostgresDsn
@@ -143,6 +154,7 @@ class RedisSettings(BaseModelSettings):
 
     Required:
     - connection_string: str - Redis connection string
+        (Env var REDIS_CONNECTION_STRING)
     """
 
     connection_string: SecretStr
@@ -155,9 +167,10 @@ class WeaviateSettings(BaseModelSettings):
     """Weaviate model settings
 
     Required:
-    - url: HttpsUrl - Weaviate URL
-    - api_key: SecretStr - Weaviate token
+    - url: HttpsUrl - Weaviate URL (Env var WEAVIATE_URL)
+    - api_key: SecretStr - Weaviate token (Env var WEAVIATE_API_KEY)
     - use_embed: bool - Whether to use the client embedding options
+        (Env var WEAVIATE_USE_EMBED)
     """
 
     url: HttpsUrl

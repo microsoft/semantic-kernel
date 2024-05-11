@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-import os
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
@@ -15,10 +14,13 @@ class OpenAISettings(BaseSettings):
 
     Required settings for prefix 'OPENAI_' are:
     - api_key: SecretStr - OpenAI API key, see https://platform.openai.com/account/api-keys
+        (Env var OPENAI_API_KEY)
 
     Optional settings for prefix 'OPENAI_' are:
     - org_id: str | None - This is usually optional unless your account belongs to multiple organizations.
-    - ai_model_id: str | None - The OpenAI model ID to use. If not provided, the default model (gpt-3.5-turbo) is used.
+        (Env var OPENAI_ORG_ID)
+    - ai_model_id: str | None - The OpenAI model ID to use. If not provided, the default model
+        (gpt-3.5-turbo) is used. (Env var OPENAI_AI_MODEL_ID)
     """
 
     use_env_settings_file: bool = False
@@ -37,8 +39,4 @@ class OpenAISettings(BaseSettings):
     def create(cls, **kwargs):
         if kwargs.pop("use_env_settings_file", False):
             cls.Config.env_file = ".env"
-        print("Environment variables:")
-        for key, value in os.environ.items():
-            if key.startswith("OPEN"):
-                print(f"{key}: {value}")
         return cls(**kwargs)

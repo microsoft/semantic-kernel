@@ -17,14 +17,28 @@ class AzureOpenAISettings(BaseSettings):
     are ignored; however, validation will fail alerting that the settings are missing.
 
     Required settings for prefix 'AZURE_OPENAI_' are:
-    - deployment_name: str - The name of the Azure deployment. This value
+    - chat_deployment_name: str - The name of the Azure Chat deployment. This value
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
                 Resource Management > Deployments in the Azure portal or, alternatively,
                 under Management > Deployments in Azure OpenAI Studio.
+                (Env var AZURE_OPENAI_CHAT_DEPLOYMENT_NAME)
+    - text_deployment_name: str - The name of the Azure Text deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+                (Env var AZURE_OPENAI_TEXT_DEPLOYMENT_NAME)
+    - embedding_deployment_name: str - The name of the Azure Embedding deployment. This value
+                will correspond to the custom name you chose for your deployment
+                when you deployed a model. This value can be found under
+                Resource Management > Deployments in the Azure portal or, alternatively,
+                under Management > Deployments in Azure OpenAI Studio.
+                (Env var AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME)
     - api_key: SecretStr - The API key for the Azure deployment. This value can be
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
+                (Env var AZURE_OPENAI_API_KEY)
 
     Optional settings for prefix 'AZURE_OPENAI_' are:
     - base_url: HttpsUrl | None - base_url: The url of the Azure deployment. This value
@@ -32,11 +46,14 @@ class AzureOpenAISettings(BaseSettings):
                 your resource from the Azure portal, the base_url consists of the endpoint,
                 followed by /openai/deployments/{deployment_name}/,
                 use endpoint if you only want to supply the endpoint.
+                (Env var AZURE_OPENAI_BASE_URL)
     - endpoint: HttpsUrl - The endpoint of the Azure deployment. This value
                 can be found in the Keys & Endpoint section when examining
                 your resource from the Azure portal, the endpoint should end in openai.azure.com.
                 If both base_url and endpoint are supplied, base_url will be used.
+                (Env var AZURE_OPENAI_ENDPOINT)
     - api_version: str | None - The API version to use. The default value is "2023-05-15".
+                (Env var AZURE_OPENAI_API_VERSION)
     """
 
     use_env_settings_file: bool = False

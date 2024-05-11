@@ -14,6 +14,7 @@ class GooglePalmSettings(BaseSettings):
 
     Required settings for prefix 'GOOGLE_PALM_' are:
     - api_key: SecretStr - GooglePalm API key, see https://developers.generativeai.google/products/palm
+        (Env var GOOGLE_PALM_API_KEY)
 
     Optional settings:
     - use_env_settings_file: bool - Use the environment settings file as a fallback to environment variables. (Optional)

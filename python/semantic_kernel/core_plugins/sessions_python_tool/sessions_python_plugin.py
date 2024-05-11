@@ -52,10 +52,11 @@ class SessionsPythonTool(KernelBaseModel):
             http_client = httpx.AsyncClient()
 
         try:
-            aca_settings = ACASessionsSettings(use_env_settings_file=use_env_settings_file)
+            aca_settings = ACASessionsSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
             raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
+
         endpoint = aca_settings.pool_management_endpoint
 
         super().__init__(
