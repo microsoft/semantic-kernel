@@ -58,7 +58,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             use_env_settings_file {bool} -- Use the environment settings file as a fallback to
         """
         try:
-            azure_openai_settings = AzureOpenAISettings(use_env_settings_file=use_env_settings_file)
+            azure_openai_settings = AzureOpenAISettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Failed to validate AzureOpenAISettings: {e}")
             raise ServiceInitializationError("Failed to validate AzureOpenAISettings") from e

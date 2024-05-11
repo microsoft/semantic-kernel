@@ -94,7 +94,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         if cosmos_api == "mongo-vcore":
 
             try:
-                cosmosdb_settings = AzureCosmosDBSettings(use_env_settings_file=use_env_settings_file)
+                cosmosdb_settings = AzureCosmosDBSettings.create(use_env_settings_file=use_env_settings_file)
             except ValidationError as e:
                 logger.error(f"Error initializing AzureCosmosDBSettings: {e}")
                 raise MemoryConnectorInitializationError("Error initializing AzureCosmosDBSettings") from e

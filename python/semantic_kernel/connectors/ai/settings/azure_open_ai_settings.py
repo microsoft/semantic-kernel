@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -39,14 +40,6 @@ class AzureOpenAISettings(BaseSettings):
     """
 
     use_env_settings_file: bool = False
-
-    model_config = SettingsConfigDict(
-        env_prefix="AZURE_OPENAI_",
-        env_file=".env" if use_env_settings_file else None,
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
     chat_deployment_name: str = "gpt-35-turbo"
     text_deployment_name: str = "gpt-35-turbo-instruct"
     embedding_deployment_name: str = "text-embedding-ada-002"  # TODO don't have this as default
@@ -54,3 +47,16 @@ class AzureOpenAISettings(BaseSettings):
     base_url: HttpsUrl | None = None
     api_key: SecretStr = None
     api_version: str = DEFAULT_AZURE_API_VERSION
+
+    class Config:
+        env_prefix = "AZURE_OPENAI_"
+        env_file = None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
+
+    @classmethod
+    def create(cls, **kwargs):
+        if kwargs.pop("use_env_settings_file", False):
+            cls.Config.env_file = ".env"
+        return cls(**kwargs)

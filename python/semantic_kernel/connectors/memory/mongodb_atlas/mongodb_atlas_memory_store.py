@@ -46,7 +46,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         use_env_settings_file: bool = False,
     ):
         try:
-            mongodb_settings = MongoDBAtlasSettings(use_env_settings_file=use_env_settings_file)
+            mongodb_settings = MongoDBAtlasSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing MongoDBAtlasSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing MongoDBAtlasSettings") from e

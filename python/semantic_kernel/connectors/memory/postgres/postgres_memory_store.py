@@ -60,7 +60,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 to environment variables. (Optional)
         """
         try:
-            postgres_settings = PostgresSettings(use_env_settings_file=use_env_settings_file)
+            postgres_settings = PostgresSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing PostgresSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing PostgresSettings") from e

@@ -49,7 +49,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
                 environment variables. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings(use_env_settings_file=use_env_settings_file)
+            azure_openai_settings = AzureOpenAISettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Failed to initialize AzureTextCompletion service: {e}")
             raise ServiceInitializationError("Failed to initialize AzureTextCompletion service") from e

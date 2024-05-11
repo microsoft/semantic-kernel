@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class GooglePalmSettings(BaseSettings):
@@ -22,12 +22,15 @@ class GooglePalmSettings(BaseSettings):
     use_env_settings_file: bool = False
     api_key: SecretStr = None
 
-    model_config = SettingsConfigDict(env_prefix="GOOGLE_PALM_", env_file_encoding="utf-8", extra="ignore")
+    class Config:
+        env_prefix = "GOOGLE_PALM_"
+        env_file = None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.use_env_settings_file:
-            # Update model_config dynamically to include .env file if needed
-            self.__config__.model_config = SettingsConfigDict(
-                env_prefix="GOOGLE_PALM", env_file=".env", env_file_encoding="utf-8", extra="ignore"
-            )
+    @classmethod
+    def create(cls, **kwargs):
+        if kwargs.pop("use_env_settings_file", False):
+            cls.Config.env_file = ".env"
+        return cls(**kwargs)

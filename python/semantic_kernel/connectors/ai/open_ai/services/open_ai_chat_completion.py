@@ -48,7 +48,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 to environment variables. (Optional)
         """
         try:
-            openai_settings = OpenAISettings(use_env_settings_file=use_env_settings_file)
+            openai_settings = OpenAISettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error loading OpenAI settings: {e}")
             raise ServiceInitializationError("Error loading OpenAI settings") from e

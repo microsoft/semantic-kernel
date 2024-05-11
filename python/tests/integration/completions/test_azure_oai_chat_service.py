@@ -54,7 +54,7 @@ async def test_azure_e2e_chat_completion_with_plugin(setup_tldr_function_for_oai
 async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    azure_openai_settings = AzureOpenAISettings()
+    azure_openai_settings = AzureOpenAISettings.create()
 
     client = AsyncAzureOpenAI(
         azure_endpoint=azure_openai_settings.endpoint,
@@ -94,7 +94,7 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(setup_t
 
 @pytest.mark.asyncio
 async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
-    azure_openai_settings = AzureOpenAISettings()
+    azure_openai_settings = AzureOpenAISettings.create()
 
     client = AsyncAzureOpenAI(
         azure_endpoint=azure_openai_settings.endpoint,
@@ -144,7 +144,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel):
-    azure_openai_settings = AzureOpenAISettings()
+    azure_openai_settings = AzureOpenAISettings.create()
 
     client = AsyncAzureOpenAI(
         azure_endpoint=azure_openai_settings.endpoint,

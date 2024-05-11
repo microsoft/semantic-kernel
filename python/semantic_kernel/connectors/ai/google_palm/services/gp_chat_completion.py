@@ -49,7 +49,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 environment variables. (Optional)
         """
         try:
-            google_palm_settings = GooglePalmSettings(use_env_settings_file=use_env_settings_file)
+            google_palm_settings = GooglePalmSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error loading Google Palm settings: {e}")
             raise ServiceInitializationError("Error loading Google Palm settings") from e

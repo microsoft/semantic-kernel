@@ -4,6 +4,7 @@ import logging
 from typing import Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
     OpenAIConfigBase,
@@ -15,6 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
     OpenAITextEmbeddingBase,
 )
 from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -25,8 +27,6 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     def __init__(
         self,
         ai_model_id: str,
-        api_key: Optional[str] = None,
-        org_id: Optional[str] = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
@@ -38,18 +38,18 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         Arguments:
             ai_model_id {str} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
             default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
             use_env_settings_file {bool} -- Use the environment settings file as
                 a fallback to environment variables. (Optional)
         """
-        openai_settings = OpenAISettings(use_env_settings_file=use_env_settings_file)
+        try:
+            openai_settings = OpenAISettings.create(use_env_settings_file=True)
+        except ValidationError as e:
+            logger.error(f"Error loading OpenAI settings: {e}")
+            raise ServiceInitializationError("Error loading OpenAI settings") from e
+
         api_key = openai_settings.api_key.get_secret_value()
         org_id = openai_settings.org_id
 

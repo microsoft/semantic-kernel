@@ -50,7 +50,7 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
 async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    azure_openai_settings = AzureOpenAISettings()
+    azure_openai_settings = AzureOpenAISettings.create()
 
     client = AsyncAzureOpenAI(
         azure_endpoint=azure_openai_settings.endpoint,

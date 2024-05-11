@@ -1,30 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from pydantic import PostgresDsn, SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 
 class BaseModelSettings(BaseSettings):
-    """Base model settings with shared configuration.
-
-    The settings are first loaded from environment variables with the provided prefix. If the
-    environment variables are not found, the settings can be loaded from a .env file with the
-    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
-    however, validation will fail alerting that the settings are missing.
-    """
-
     use_env_settings_file: bool = False
 
-    model_config = SettingsConfigDict(env_file=None, env_file_encoding="utf-8", extra="ignore")
+    class Config:
+        env_file = None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.use_env_settings_file:
-            self.__config__.model_config = SettingsConfigDict(
-                env_file=".env", env_file_encoding="utf-8", extra="ignore"
-            )
+    @classmethod
+    def create(cls, **kwargs):
+        if kwargs.pop("use_env_settings_file", False):
+            cls.Config.env_file = ".env"
+        return cls(**kwargs)
 
 
 class AzureAISearchSettings(BaseModelSettings):
@@ -36,10 +31,22 @@ class AzureAISearchSettings(BaseModelSettings):
     - index_name: str - Azure AI Search index name
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "AZURE_AI_SEARCH_"})
     api_key: SecretStr
     endpoint: HttpsUrl
     index_name: str
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "AZURE_AI_SEARCH_"
+
+    def model_dump(self):
+        """
+        Custom method to dump model data in the required format.
+        """
+        return {
+            "api_key": self.api_key.get_secret_value(),
+            "endpoint": str(self.endpoint),
+            "index_name": self.index_name,
+        }
 
 
 class AzureCosmosDBSettings(BaseModelSettings):
@@ -49,9 +56,11 @@ class AzureCosmosDBSettings(BaseModelSettings):
     - connection_string: str - Azure CosmosDB connection string
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "COSMOSDB_"})
     api: str
     connection_string: SecretStr
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "COSMOSDB_"
 
 
 class AzureKeyVaultSettings(BaseModelSettings):
@@ -63,10 +72,12 @@ class AzureKeyVaultSettings(BaseModelSettings):
     - client_secret: SecretStr - Azure Key Vault client secret
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "AZURE_KEYVAULT_"})
     endpoint: HttpsUrl
     client_id: str
     client_secret: SecretStr
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "AZURE_KEY_VAULT_"
 
 
 class AstraDBSettings(BaseModelSettings):
@@ -79,11 +90,13 @@ class AstraDBSettings(BaseModelSettings):
     - keyspace: str - AstraDB keyspace
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "ASTRADB_"})
     app_token: SecretStr
     db_id: str
     region: str
     keyspace: str
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "ASTRADB_"
 
 
 class MongoDBAtlasSettings(BaseModelSettings):
@@ -93,8 +106,10 @@ class MongoDBAtlasSettings(BaseModelSettings):
     - connection_string: str - MongoDB Atlas connection string
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "MONGODB_ATLAS_"})
     connection_string: SecretStr
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "MONGODB_ATLAS_"
 
 
 class PineconeSettings(BaseModelSettings):
@@ -104,8 +119,10 @@ class PineconeSettings(BaseModelSettings):
     - api_key: SecretStr - Pinecone API key
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "PINECONE_"})
     api_key: SecretStr
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "PINECONE_"
 
 
 class PostgresSettings(BaseModelSettings):
@@ -115,8 +132,10 @@ class PostgresSettings(BaseModelSettings):
     - connection_string: str - Postgres connection string
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "POSTGRES_"})
     connection_string: SecretStr | PostgresDsn
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "POSTGRES_"
 
 
 class RedisSettings(BaseModelSettings):
@@ -126,8 +145,10 @@ class RedisSettings(BaseModelSettings):
     - connection_string: str - Redis connection string
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "REDIS_"})
     connection_string: SecretStr
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "REDIS_"
 
 
 class WeaviateSettings(BaseModelSettings):
@@ -139,10 +160,12 @@ class WeaviateSettings(BaseModelSettings):
     - use_embed: bool - Whether to use the client embedding options
     """
 
-    model_config = BaseModelSettings.model_config.copy(update={"env_prefix": "WEAVIATE_"})
     url: HttpsUrl
     api_key: SecretStr
     use_embed: bool = False
+
+    class Config(BaseModelSettings.Config):
+        env_prefix = "WEAVIATE_"
 
     def validate_settings(self):
         if not self.use_embed and not self.url:

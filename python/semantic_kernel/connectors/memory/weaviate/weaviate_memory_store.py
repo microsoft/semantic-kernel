@@ -116,7 +116,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         """
 
         try:
-            weaviate_settings = WeaviateSettings(use_env_settings_file=use_env_settings_file)
+            weaviate_settings = WeaviateSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing WeaviateSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing WeaviateSettings") from e

@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
 from semantic_kernel.connectors.memory import AzureCognitiveSearchMemoryStore
+from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.memory import SemanticTextMemory
@@ -29,8 +29,7 @@ async def populate_memory(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = os.getenv["AZURE_AISEARCH_URL"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = os.getenv["AZURE_AISEARCH_API_KEY"]
+    azure_ai_search_settings = AzureAISearchSettings(use_env_settings_file=False)
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
@@ -47,7 +46,9 @@ async def main() -> None:
     )
 
     acs_connector = AzureCognitiveSearchMemoryStore(
-        vector_size, AZURE_COGNITIVE_SEARCH_ENDPOINT, AZURE_COGNITIVE_SEARCH_ADMIN_KEY
+        vector_size=vector_size,
+        search_endpoint=azure_ai_search_settings.endpoint,
+        admin_key=azure_ai_search_settings.api_key,
     )
 
     memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)

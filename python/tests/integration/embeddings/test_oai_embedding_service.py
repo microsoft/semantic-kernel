@@ -33,7 +33,7 @@ async def test_oai_embedding_service(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_oai_embedding_service_with_provided_client(kernel: Kernel):
-    openai_settings = OpenAISettings()
+    openai_settings = OpenAISettings.create()
     api_key = openai_settings.api_key.get_secret_value()
     org_id = openai_settings.org_id
 

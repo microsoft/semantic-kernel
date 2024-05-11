@@ -65,7 +65,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             )
 
         try:
-            pinecone_settings = PineconeSettings(use_env_settings_file=use_env_settings_file)
+            pinecone_settings = PineconeSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing PineconeSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing PineconeSettings") from e

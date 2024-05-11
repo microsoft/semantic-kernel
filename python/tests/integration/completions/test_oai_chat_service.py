@@ -127,7 +127,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
 async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    openai_settings = OpenAISettings()
+    openai_settings = OpenAISettings.create(use_env_settings_file=True)
     api_key = openai_settings.api_key.get_secret_value()
     org_id = openai_settings.org_id
 
@@ -208,7 +208,7 @@ async def test_azure_oai_chat_stream_service_with_plugins(setup_tldr_function_fo
 async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 
-    openai_settings = OpenAISettings()
+    openai_settings = OpenAISettings.create(use_env_settings_file=True)
     api_key = openai_settings.api_key.get_secret_value()
     org_id = openai_settings.org_id
 
@@ -245,7 +245,7 @@ async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_mod
 async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 
-    openai_settings = OpenAISettings()
+    openai_settings = OpenAISettings.create(use_env_settings_file=True)
     api_key = openai_settings.api_key.get_secret_value()
     org_id = openai_settings.org_id
 

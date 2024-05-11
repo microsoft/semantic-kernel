@@ -69,7 +69,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 await memory.<...>
         """
         try:
-            acs_memory_settings = AzureAISearchSettings(use_env_settings_file=use_env_settings_file)
+            acs_memory_settings = AzureAISearchSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing AzureAISearchSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing AzureAISearchSettings") from e

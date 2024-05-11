@@ -56,7 +56,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 fallback to environment variables. (Optional)
         """
         try:
-            astradb_settings = AstraDBSettings(use_env_settings_file=use_env_settings_file)
+            astradb_settings = AstraDBSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error validating AstraDBSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing AstraDBSettings") from e

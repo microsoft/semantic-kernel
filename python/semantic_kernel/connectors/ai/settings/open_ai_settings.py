@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
+import os
 
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class OpenAISettings(BaseSettings):
@@ -25,12 +26,19 @@ class OpenAISettings(BaseSettings):
     api_key: SecretStr
     ai_model_id: str = "gpt-3.5-turbo"
 
-    model_config = SettingsConfigDict(env_prefix="OPENAI_", env_file_encoding="utf-8", extra="ignore")
+    class Config:
+        env_prefix = "OPENAI_"
+        env_file = None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.use_env_settings_file:
-            # Update model_config dynamically to include .env file if needed
-            self.__config__.model_config = SettingsConfigDict(
-                env_prefix="OPENAI_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
-            )
+    @classmethod
+    def create(cls, **kwargs):
+        if kwargs.pop("use_env_settings_file", False):
+            cls.Config.env_file = ".env"
+        print("Environment variables:")
+        for key, value in os.environ.items():
+            if key.startswith("OPEN"):
+                print(f"{key}: {value}")
+        return cls(**kwargs)

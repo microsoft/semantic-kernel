@@ -51,7 +51,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 
         """
         try:
-            azure_openai_settings = AzureOpenAISettings(use_env_settings_file=use_env_settings_file)
+            azure_openai_settings = AzureOpenAISettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error loading Azure OpenAI settings: {e}")
             raise ServiceInitializationError("Error loading Azure OpenAI settings") from e

@@ -71,7 +71,7 @@ class RedisMemoryStore(MemoryStoreBase):
                 environment variables, defaults to False
         """
         try:
-            redis_settings = RedisSettings(use_env_settings_file=use_env_settings_file)
+            redis_settings = RedisSettings.create(use_env_settings_file=use_env_settings_file)
         except ValidationError as e:
             logger.error(f"Error initializing RedisSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing RedisSettings") from e
