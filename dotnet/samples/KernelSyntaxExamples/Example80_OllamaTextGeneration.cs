@@ -47,8 +47,7 @@ public class Example80_OllamaTextGeneration : BaseTest
 
         string prompt = "Describe what is GIT and why it is useful. Use simple words. Description should be long.";
         var function = kernel.CreateFunctionFromPrompt(prompt);
-        await foreach (string text in kernel.InvokeStreamingAsync<string>(function,
-                           new KernelArguments(new OllamaPromptExecutionSettings() { MaxTokens = 600 })))
+        await foreach (string text in kernel.InvokeStreamingAsync<string>(function))
         {
             this.Write(text);
         }
@@ -65,8 +64,7 @@ Write a short story about a dragon and a knight.
 Story should be funny and creative.
 Write the story in Spanish.";
 
-        await foreach (string text in kernel.InvokePromptStreamingAsync<string>(prompt,
-                           new KernelArguments(new OllamaPromptExecutionSettings() { MaxTokens = 600 })))
+        await foreach (string text in kernel.InvokePromptStreamingAsync<string>(prompt))
         {
             this.Write(text);
         }
@@ -102,8 +100,7 @@ Event: {{$input}}
     {
         this.WriteLine("======== Simple Prompt ========");
 
-        string? response = await kernel.InvokePromptAsync<string>("Hi Ollama, what can you do for me?",
-            new KernelArguments(new OllamaPromptExecutionSettings() { MaxTokens = 120 }));
+        string? response = await kernel.InvokePromptAsync<string>("Hi Ollama, what can you do for me?");
         this.WriteLine(response);
     }
 

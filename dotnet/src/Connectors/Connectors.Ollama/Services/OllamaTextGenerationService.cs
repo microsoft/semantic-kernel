@@ -6,10 +6,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Ollama.Core;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
+using OllamaSharp;
 
 namespace Microsoft.SemanticKernel.Connectors.Ollama;
 
@@ -35,28 +36,30 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
     {
         Verify.NotNullOrWhiteSpace(model);
 
-        this.Client = new OllamaClient(
-            modelId: model,
-            baseUri: baseUri,
-#pragma warning disable CA2000
-            httpClient: HttpClientProvider.GetHttpClient(httpClient),
-#pragma warning restore CA2000
-            logger: loggerFactory?.CreateLogger(typeof(OllamaChatCompletionService))
-        );
+        this.Client = new OllamaApiClient(baseUri, model);
 
         this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
     }
 
-    private OllamaClient Client { get; }
+    private OllamaApiClient Client { get; }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => this.AttributesInternal;
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.GenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var completionResponse = await this.Client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+
+        TextContent stc = new TextContent(completionResponse.Response);
+        return new List<TextContent> { stc };
+    }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this.Client.StreamGenerateTextAsync(prompt, executionSettings, cancellationToken);
+    public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    {
+        var completionResponse = await this.Client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+
+        yield return new StreamingTextContent(completionResponse.Response);
+    }
 }
