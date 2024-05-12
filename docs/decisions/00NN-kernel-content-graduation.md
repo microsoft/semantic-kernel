@@ -421,6 +421,6 @@ public class AnnotationContent : KernelContent
 - `BinaryContent`: TBD
 - `ImageContent`: TBD
 - `AudioContent`: TBD
-- `FunctionCallContent`: TBD
-- `FunctionResultContent`: TBD
-- `FileReferenceContent` and `AnnotationContent`: TBD
+- `FunctionCallContent`: Graduate as is.
+- `FunctionResultContent`: Change `Id` to `CallId`.
+- `FileReferenceContent` and `AnnotationContent`: No changes, continue as experimental.

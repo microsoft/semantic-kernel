@@ -118,3 +118,8 @@ public class BinaryContent : KernelContent
         throw new KernelException("Null content");
     }
 }
+
+
+public class NewStream : Stream
+{
+}
