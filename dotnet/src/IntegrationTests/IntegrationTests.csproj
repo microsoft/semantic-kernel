@@ -20,6 +20,10 @@
     <Compile Remove="Planners\PlanTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="CrossLanguage\Data\PromptWithChatRolesTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.json" />
+    <None Remove="CrossLanguage\Data\SimplePromptTest.json" />
     <None Remove="prompts\GenerateStoryHandlebars.yaml" />
     <None Remove="skills\FunSkill\Joke\config.json" />
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
@@ -68,6 +72,7 @@
     <ProjectReference Include="..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +85,15 @@
     <None Update="testsettings.development.json" Condition="Exists('testsettings.development.json')">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Content Include="CrossLanguage\Data\PromptWithChatRolesTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithSimpleVariableTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Plugins\instacart-ai-plugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -104,6 +118,12 @@
     <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CrossLanguage\Data\SimplePromptTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

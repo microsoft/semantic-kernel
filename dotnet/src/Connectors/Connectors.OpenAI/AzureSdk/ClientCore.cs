@@ -325,7 +325,7 @@ internal abstract class ClientCore
             // Make the request.
             var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
             this.CaptureUsageDetails(responseData.Usage);
-            if (responseData.Choices.Count == 0)
+            if (responseData.Choices is null || responseData.Choices.Count == 0)
             {
                 throw new KernelException("Chat completions not found");
             }
