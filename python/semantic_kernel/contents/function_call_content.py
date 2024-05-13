@@ -73,7 +73,7 @@ class FunctionCallContent(KernelContent):
         parts = self.split_name()
         return {"plugin_name": parts[0], "function_name": parts[1]}
 
-    def to_element(self, allow_unsafe_content: bool = False) -> Element:
+    def to_element(self) -> Element:
         """Convert the function call to an Element."""
         element = Element(FUNCTION_CALL_CONTENT_TAG)
         if self.id:

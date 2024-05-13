@@ -122,7 +122,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel, get_aoai_co
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo-0613"
+        deployment_name = "gpt-35-turbo"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")
@@ -182,7 +182,7 @@ async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel, g
     if "Python_Integration_Tests" in os.environ:
         deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
     else:
-        deployment_name = "gpt-35-turbo-0613"
+        deployment_name = "gpt-35-turbo"
 
     print("* Service: Azure OpenAI Chat Completion")
     print(f"* Endpoint: {endpoint}")

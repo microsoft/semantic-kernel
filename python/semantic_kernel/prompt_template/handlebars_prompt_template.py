@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
@@ -28,15 +28,17 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
     if not found, the literal value is returned.
 
     Args:
-        PromptTemplateConfig: The prompt template configuration
+        prompt_template_config (PromptTemplateConfig): The prompt template configuration
             This is checked if the template format is 'handlebars'
+        allow_unsafe_content (bool = False): Allow unsafe content throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unparsed input.
 
     Raises:
         ValueError: If the template format is not 'handlebars'
         HandlebarsTemplateSyntaxError: If the handlebars template has a syntax error
     """
 
-    allow_unsafe_content: bool = False
     _template_compiler: Any = PrivateAttr()
 
     @field_validator("prompt_template_config")
@@ -75,7 +77,10 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
             return ""
         if arguments is None:
             arguments = KernelArguments()
-        helpers = {}
+
+        arguments = self._get_allowed_unsafe_arguments(arguments)
+        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
+        helpers: dict[str, Callable[..., Any]] = {}
         for plugin in kernel.plugins.values():
             helpers.update(
                 {
@@ -84,7 +89,7 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
                         kernel,
                         arguments,
                         self.prompt_template_config.template_format,
-                        self.allow_unsafe_content,
+                        allow_unsafe_function_output,
                     )
                     for function in plugin
                 }
@@ -93,7 +98,7 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
 
         try:
             return self._template_compiler(
-                self._get_checked_arguments(arguments, self.prompt_template_config),
+                arguments,
                 helpers=helpers,
             )
         except PybarsError as exc:

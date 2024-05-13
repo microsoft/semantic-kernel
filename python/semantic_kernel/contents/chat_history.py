@@ -221,11 +221,11 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
-    def to_prompt(self, allow_unsafe_content: bool = False) -> str:
+    def to_prompt(self) -> str:
         """Return a string representation of the history."""
         chat_history_xml = Element(CHAT_HISTORY_TAG)
         for message in self.messages:
-            chat_history_xml.append(message.to_element(allow_unsafe_content=allow_unsafe_content))
+            chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
     def __iter__(self) -> Generator[ChatMessageContent, None, None]:  # type: ignore

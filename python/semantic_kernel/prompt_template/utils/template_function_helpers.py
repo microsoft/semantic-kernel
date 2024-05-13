@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 from urllib.parse import quote
 
 import nest_asyncio
@@ -24,7 +24,7 @@ def create_template_helper_from_function(
     base_arguments: "KernelArguments",
     template_format: Literal["handlebars", "jinja2"],
     allow_unsafe_content: bool = False,
-) -> Callable:
+) -> Callable[..., Any]:
     """Create a helper function for both the Handlebars and Jinja2 templating engines from a kernel function."""
     if not getattr(asyncio, "_nest_patched", False):
         nest_asyncio.apply()

@@ -21,7 +21,7 @@ class KernelContent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def to_element(self, allow_unsafe_content: bool = False) -> Any:
+    def to_element(self) -> Any:
         pass
 
     @classmethod

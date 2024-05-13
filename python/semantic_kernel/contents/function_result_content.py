@@ -54,7 +54,7 @@ class FunctionResultContent(KernelContent):
     def __str__(self) -> str:
         return self.result
 
-    def to_element(self, allow_unsafe_content: bool = False) -> Element:
+    def to_element(self) -> Element:
         """Convert the instance to an Element."""
         element = Element(FUNCTION_RESULT_CONTENT_TAG)
         element.set("id", self.id)

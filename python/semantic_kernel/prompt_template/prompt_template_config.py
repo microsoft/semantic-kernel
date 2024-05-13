@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
 import logging
-from typing import Dict, List, Optional, TypeVar, Union
+from typing import Dict, List, Optional, Self, TypeVar, Union
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -24,6 +23,14 @@ class PromptTemplateConfig(KernelBaseModel):
     input_variables: List[InputVariable] = Field(default_factory=list)
     allow_unsafe_content: bool = False
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def check_input_variables(self) -> Self:
+        """Verify that input variable default values are string only"""
+        for variable in self.input_variables:
+            if variable.default and not isinstance(variable.default, str):
+                raise ValueError(f"Default value for input variable {variable.name} must be a string.")
+        return self
 
     @field_validator("execution_settings", mode="before")
     @classmethod
@@ -67,22 +74,13 @@ class PromptTemplateConfig(KernelBaseModel):
         """Create a PromptTemplateConfig instance from a JSON string."""
         if not json_str:
             raise ValueError("json_str is empty")
-
         try:
-            parsed_json = json.loads(json_str)
-            config = PromptTemplateConfig(**parsed_json)
+            return cls.model_validate_json(json_str)
         except Exception as e:
             raise ValueError(
                 "Unable to deserialize PromptTemplateConfig from the "
                 f"specified JSON string: {json_str} with exception: {e}"
             )
-
-        # Verify that input variable default values are string only
-        for variable in config.input_variables:
-            if variable.default and not isinstance(variable.default, str):
-                raise ValueError(f"Default value for input variable {variable.name} must be a string for {config.name}")
-
-        return config
 
     @classmethod
     def restore(

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 from xml.etree.ElementTree import Element
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG
@@ -33,13 +33,10 @@ class TextContent(KernelContent):
     def __str__(self) -> str:
         return self.text
 
-    def to_element(self, allow_unsafe_content: bool = False) -> Element:
+    def to_element(self) -> Element:
         """Convert the instance to an Element."""
         element = Element(TEXT_CONTENT_TAG)
-        if allow_unsafe_content:
-            element.text = self.text
-        else:
-            element.text = quote(self.text)
+        element.text = self.text
         if self.encoding:
             element.set("encoding", self.encoding)
         return element

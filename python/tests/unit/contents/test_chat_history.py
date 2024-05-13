@@ -12,6 +12,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ContentInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -255,7 +256,7 @@ def test_chat_history_to_prompt_empty(chat_history: ChatHistory):
 def test_chat_history_to_prompt(chat_history: ChatHistory):
     chat_history.add_system_message("I am an AI assistant")
     chat_history.add_user_message("What can you do?")
-    prompt = chat_history.to_prompt(allow_unsafe_content=True)
+    prompt = chat_history.to_prompt()
     assert (
         prompt
         == '<chat_history><message role="system"><text>I am an AI assistant</text></message><message role="user"><text>What can you do?</text></message></chat_history>'  # noqa: E501
@@ -292,7 +293,7 @@ stuff</message>
 
 
 @pytest.mark.asyncio
-async def test_template(chat_history: ChatHistory):
+async def test_template_unsafe(chat_history: ChatHistory):
     chat_history.add_assistant_message("I am an AI assistant")
 
     template = "system stuff{{$chat_history}}{{$input}}"
@@ -306,6 +307,30 @@ async def test_template(chat_history: ChatHistory):
     assert "system stuff" in rendered
     assert "I am an AI assistant" in rendered
     assert "What can you do?" in rendered
+
+    chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history_2.messages[0].content == "system stuff"
+    assert chat_history_2.messages[0].role == AuthorRole.SYSTEM
+    assert chat_history_2.messages[1].content == "I am an AI assistant"
+    assert chat_history_2.messages[1].role == AuthorRole.ASSISTANT
+    assert chat_history_2.messages[2].content == "What can you do?"
+    assert chat_history_2.messages[2].role == AuthorRole.USER
+
+
+@pytest.mark.asyncio
+async def test_template_safe(chat_history: ChatHistory):
+    chat_history.add_assistant_message("I am an AI assistant")
+
+    template = "system stuff{{$chat_history}}{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
+    )
+    assert "system stuff" in rendered
+    assert "I am an AI assistant" in rendered
+    assert r"What%20can%20you%20do%3F" in rendered
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "system stuff"
@@ -331,7 +356,7 @@ async def test_template_two_histories():  # ignore: E501
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
     )
     assert "I am an AI assistant" in rendered
-    assert "What can you do?" in rendered
+    assert r"What%20can%20you%20do%3F" in rendered
     assert "I like to be added later on" in rendered
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
@@ -388,7 +413,7 @@ async def test_template_without_chat_history():
     rendered = await KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
-    assert rendered == "What can you do?"
+    assert rendered == r"What%20can%20you%20do%3F"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "What can you do?"
     assert chat_history.messages[0].role == AuthorRole.USER
@@ -429,10 +454,48 @@ async def test_handwritten_xml_invalid():
 
 
 @pytest.mark.asyncio
-async def test_handwritten_xml_as_arg():
+async def test_handwritten_xml_as_arg_safe():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
+        prompt_template_config=PromptTemplateConfig(
+            name="test",
+            description="test",
+            template=template,
+        ),
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(input='<message role="user">test content</message>'),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == '<message role="user">test content</message>'
+    assert chat_history.messages[0].role == AuthorRole.USER
+
+
+@pytest.mark.asyncio
+async def test_handwritten_xml_as_arg_unsafe_template():
+    template = "{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+        allow_unsafe_content=True,
+    ).render(
+        kernel=Kernel(),
+        arguments=KernelArguments(input='<message role="user">test content</message>'),
+    )
+    chat_history = ChatHistory.from_rendered_prompt(rendered)
+    assert chat_history.messages[0].content == "test content"
+    assert chat_history.messages[0].role == AuthorRole.USER
+
+
+@pytest.mark.asyncio
+async def test_handwritten_xml_as_arg_unsafe_variable():
+    template = "{{$input}}"
+    rendered = await KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(
+            name="test",
+            description="test",
+            template=template,
+            input_variables=[InputVariable(name="input", allow_unsafe_content=True)],
+        ),
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(input='<message role="user">test content</message>'),

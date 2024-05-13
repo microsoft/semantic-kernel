@@ -13,7 +13,6 @@ from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
@@ -24,6 +23,20 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class KernelPromptTemplate(PromptTemplateBase):
+    """Create a Kernel prompt template.
+
+    Arguments:
+        prompt_template_config (PromptTemplateConfig): The prompt template configuration
+            This includes the actual template to use.
+        allow_unsafe_content (bool = False): Allow unsafe content throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unparsed input.
+
+    Raises:
+        ValueError: If the template format is not 'semantic-kernel'
+        TemplateSyntaxError: If the template has a syntax error
+    """
+
     _blocks: List[Block] = PrivateAttr(default_factory=list)
 
     @field_validator("prompt_template_config")
@@ -111,13 +124,10 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks: List[str] = []
+
+        arguments = self._get_allowed_unsafe_arguments(arguments)
+        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
         for block in blocks:
-            if isinstance(block, VarBlock):
-                if self.prompt_template_config.allow_unsafe_content:
-                    rendered_blocks.append(block.render(kernel, arguments))
-                else:
-                    rendered_blocks.append(quote(block.render(kernel, arguments)))
-                continue
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(kernel, arguments))
                 continue
@@ -127,56 +137,7 @@ class KernelPromptTemplate(PromptTemplateBase):
                 except CodeBlockRenderException as exc:
                     logger.error(f"Error rendering code block: {exc}")
                     raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
-                rendered_blocks.append(
-                    rendered if self.prompt_template_config.allow_unsafe_content else quote(rendered)
-                )
+                rendered_blocks.append(rendered if allow_unsafe_function_output else quote(rendered))
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt
-
-    def render_variables(
-        self, blocks: List[Block], kernel: "Kernel", arguments: Optional["KernelArguments"] = None
-    ) -> List[Block]:
-        """
-        Given a list of blocks, render the Variable Blocks, replacing
-        placeholders with the actual value in memory.
-
-        :param blocks: List of blocks, typically all the blocks found in a template
-        :param variables: Container of all the temporary variables known to the kernel
-        :return: An updated list of blocks where Variable Blocks have rendered to
-            Text Blocks
-        """
-        from semantic_kernel.template_engine.blocks.text_block import TextBlock
-
-        logger.debug("Rendering variables")
-
-        rendered_blocks: List[Block] = []
-        for block in blocks:
-            if block.type == BlockTypes.VARIABLE:
-                rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
-                continue
-            rendered_blocks.append(block)
-        return rendered_blocks
-
-    async def render_code(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> List[Block]:
-        """
-        Given a list of blocks, render the Code Blocks, executing the
-        functions and replacing placeholders with the functions result.
-
-        :param blocks: List of blocks, typically all the blocks found in a template
-        :param execution_context: Access into the current kernel execution context
-        :return: An updated list of blocks where Code Blocks have rendered to
-            Text Blocks
-        """
-        from semantic_kernel.template_engine.blocks.text_block import TextBlock
-
-        logger.debug("Rendering code")
-
-        rendered_blocks: List[Block] = []
-        for block in blocks:
-            if block.type == BlockTypes.CODE:
-                rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
-                continue
-            rendered_blocks.append(block)
-
-        return rendered_blocks

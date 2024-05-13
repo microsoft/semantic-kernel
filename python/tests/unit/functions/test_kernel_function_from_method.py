@@ -2,6 +2,8 @@
 import sys
 from typing import Any, AsyncGenerator, Iterable, Optional, Union
 
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
+
 if sys.version_info >= (3, 9):
     from typing import Annotated
 else:
@@ -140,7 +142,7 @@ async def test_invoke_non_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+        assert isinstance(partial_result.metadata[METADATA_EXCEPTION_KEY], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -155,7 +157,7 @@ async def test_invoke_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+        assert isinstance(partial_result.metadata[METADATA_EXCEPTION_KEY], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -225,7 +227,7 @@ async def test_required_param_not_supplied():
     func = KernelFunction.from_method(my_function, "test")
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
-    assert isinstance(result.metadata["exception"], FunctionExecutionException)
+    assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], FunctionExecutionException)
 
 
 @pytest.mark.asyncio

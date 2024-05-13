@@ -21,27 +21,43 @@ class PromptTemplateBase(KernelBaseModel, ABC):
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
         pass
 
-    def _get_checked_arguments(
+    def _get_allowed_unsafe_arguments(
         self,
         arguments: "KernelArguments",
-        prompt_template_config: "PromptTemplateConfig",
-    ):
-        """
-        Validate the arguments against the prompt template.
+    ) -> "KernelArguments":
+        """Get the allowed unsafe arguments.
+
+        If the prompt template allows unsafe content, then we do not encode the arguments.
+        Otherwise, each argument is checked against the input variables to see if it allowed to be unencoded.
+        Only works on string variables.
 
         Args:
             arguments: The kernel arguments
-            allow_unsafe_content: Allow unsafe content in the prompt template
         """
+        if self.allow_unsafe_content:
+            return arguments
+
         from semantic_kernel.functions.kernel_arguments import KernelArguments
 
         new_args = KernelArguments(settings=arguments.execution_settings)
         for name, value in arguments.items():
-            if isinstance(value, str) and self._should_encode(name, prompt_template_config.input_variables):
+            if isinstance(value, str) and self._should_encode(name, self.prompt_template_config.input_variables):
                 new_args[name] = quote(value)
             else:
                 new_args[name] = value
         return new_args
+
+    def _get_allow_unsafe_function_output(self) -> bool:
+        """Get the allow_unsafe_function_output flag.
+
+        If the prompt template allows unsafe content, then we do not encode the function output,
+        unless explicitly allowed by the prompt template config
+
+        """
+        allow_unsafe_function_output = self.allow_unsafe_content
+        if self.prompt_template_config.allow_unsafe_content:
+            allow_unsafe_function_output = True
+        return allow_unsafe_function_output
 
     def _should_encode(self, name: str, input_variables: list["InputVariable"]) -> bool:
         """
@@ -58,8 +74,6 @@ class PromptTemplateBase(KernelBaseModel, ABC):
             name: The variable name
             input_variables: The input variables
         """
-        if self.allow_unsafe_content:
-            return False
         for variable in input_variables:
             if variable.name == name:
                 return not variable.allow_unsafe_content

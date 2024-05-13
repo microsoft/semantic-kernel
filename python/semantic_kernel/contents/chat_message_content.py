@@ -209,7 +209,7 @@ class ChatMessageContent(KernelContent):
         """Get the content of the response as a string."""
         return self.content or ""
 
-    def to_element(self, allow_unsafe_content: bool = False) -> "Element":
+    def to_element(self) -> "Element":
         """Convert the ChatMessageContent to an XML Element.
 
         Args:
@@ -227,7 +227,7 @@ class ChatMessageContent(KernelContent):
                 value = value.value
             root.set(field, value)
         for index, item in enumerate(self.items):
-            root.insert(index, item.to_element(allow_unsafe_content=allow_unsafe_content))
+            root.insert(index, item.to_element())
         return root
 
     @classmethod
@@ -269,7 +269,7 @@ class ChatMessageContent(KernelContent):
             str - The prompt from the ChatMessageContent.
         """
 
-        root = self.to_element(allow_unsafe_content=allow_unsafe_content)
+        root = self.to_element()
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 
     def to_dict(self, role_key: str = "role", content_key: str = "content") -> dict[str, Any]:

@@ -57,9 +57,8 @@ class TestPromptTemplateEngine:
         arguments = KernelArguments(input=input, winner=winner)
         # Act
         result = await KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
-            )
+            prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+            allow_unsafe_content=True,
         ).render(kernel, arguments)
         # Assert
         expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
