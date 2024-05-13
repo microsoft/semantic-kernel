@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -34,9 +35,6 @@ public class BinaryContent : KernelContent
 
         set => this.SetUri(value);
     }
-
-    // OR Serializing will trigger cascading async calls.
-    // ?? this.GetCachedUriDataFromByteArray(GetCachedByteArrayContentAsync().GetAwaiter().GetResult()) // 
 
     /// <summary>
     /// Indicates whether the content can be read. If false content usually must be referenced by URI.
@@ -70,6 +68,200 @@ public class BinaryContent : KernelContent
 
         // If the Uri is not a DataUri, then we need to get from byteArray (caching if needed) to generate it.
         return this.GetCachedUriDataFromByteArray(await this.GetCachedByteArrayContentAsync().ConfigureAwait(false));
+    }
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
+    /// </summary>
+    /// <param name="dataUri">The Uri of the content.</param>
+    /// <remarks>
+    /// This constructor should be used for serialization purposes only.
+    /// </remarks>
+    [JsonConstructor]
+    public BinaryContent(
+        // Uri type has a ushort size limit check which inviabilizes its usage Data Uri scenarios.
+        string dataUri)
+        : base(null, null, null)
+        => this.SetUri(dataUri);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
+    /// </summary>
+    /// <param name="dataUri">The Uri of the content.</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    public BinaryContent(
+        // Uri type has a ushort size limit check which inviabilizes its usage Data Uri scenarios.
+        string dataUri,
+        object? innerContent,
+        string? modelId,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+        => this.SetUri(dataUri);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a Uri.
+    /// </summary>
+    /// <param name="referenceUri">The Uri of the content.</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    public BinaryContent(
+        Uri referenceUri,
+        object? innerContent,
+        string? modelId,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : this(referenceUri.ToString(), innerContent, modelId, metadata)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a byte array provider.
+    /// </summary>
+    /// <param name="byteArrayProvider">The asynchronous stream provider.</param>
+    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    /// <remarks>
+    /// To be serializeable the content needs to be retrieved first.
+    /// </remarks>
+    public BinaryContent(
+        Func<Task<ReadOnlyMemory<byte>>> byteArrayProvider,
+        string mimeType,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
+        Verify.NotNull(byteArrayProvider, nameof(byteArrayProvider));
+
+        this.MimeType = mimeType;
+        this._byteArrayProvider = byteArrayProvider;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a byte array.
+    /// </summary>
+    /// <param name="byteArray">Byte array content</param>
+    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="metadata">Additional metadata</param>
+    public BinaryContent(
+        ReadOnlyMemory<byte> byteArray,
+        string mimeType,
+        string? modelId = null,
+        object? innerContent = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
+        Verify.NotNull(byteArray, nameof(byteArray));
+
+        this.MimeType = mimeType;
+        this._cachedByteArrayContent = byteArray;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a stream provider.
+    /// </summary>
+    /// <param name="streamProvider">The asynchronous stream provider.</param>
+    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    /// <remarks>
+    /// The <see cref="Stream"/> is accessed and immediately disposed as soon the content is cached and generated.
+    /// To be serializeable the content needs to be retrieved first.
+    /// </remarks>
+    public BinaryContent(
+        Func<Task<Stream>> streamProvider,
+        string mimeType,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
+        Verify.NotNull(streamProvider, nameof(streamProvider));
+
+        this.MimeType = mimeType;
+        this._streamProvider = streamProvider;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a stream provider.
+    /// </summary>
+    /// <param name="stream">The content stream.</param>
+    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
+    /// <param name="metadata">Additional metadata</param>
+    /// <remarks>
+    /// The <see cref="Stream"/> is accessed and immediately disposed as soon the content is cached and generated.
+    /// </remarks>
+    public BinaryContent(
+        Stream stream,
+        string mimeType,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
+        Verify.NotNull(stream, nameof(stream));
+
+        this.MimeType = mimeType;
+        this._cachedByteArrayContent = this.GetByteArrayFromStream(stream);
+        stream.Dispose();
+    }
+
+    /// <summary>
+    /// The content stream
+    /// </summary>
+    public Task<ReadOnlyMemory<byte>> GetByteArrayAsync()
+        => this.GetCachedByteArrayContentAsync();
+
+    /// <summary>
+    /// Set the Uri of the content.
+    /// </summary>
+    /// <param name="uri">Content Uri</param>
+    public void SetUri(string uri)
+    {
+        Verify.NotNullOrWhiteSpace(uri, nameof(uri));
+
+        bool isDataUri = uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true;
+
+        // Overriding the Uri will invalidate any provider and previously cached content.
+        if (this._cachedByteArrayContent is not null)
+        {
+            this._cachedByteArrayContent = null;
+        }
+
+        if (this._streamProvider is not null)
+        {
+            this._streamProvider = null;
+        }
+
+        if (this._byteArrayProvider is not null)
+        {
+            this._byteArrayProvider = null;
+        }
+
+        if (!isDataUri)
+        {
+            this._referencedUri = new Uri(uri);
+        }
+        else
+        {
+            // Get the mime type from the data uri.
+            base.MimeType = uri.Substring(5, uri.IndexOf(";", StringComparison.OrdinalIgnoreCase) - 5);
+            this._cachedUriData = uri;
+        }
     }
 
     private string GetCachedUriDataFromByteArray(ReadOnlyMemory<byte> cachedByteArray)
@@ -131,148 +323,4 @@ public class BinaryContent : KernelContent
         stream.Dispose();
         return memoryStream.ToArray();
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
-    /// </summary>
-    [JsonConstructor]
-    public BinaryContent(
-        // Uri type has a ushort size limit check which inviabilizes its usage Data Uri scenarios.
-        string uri,
-        string? modelId,
-        object? innerContent,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        this.SetUri(uri);
-    }
-
-    /// <summary>
-    /// Set the Uri of the content.
-    /// </summary>
-    /// <param name="uri">Content Uri</param>
-    public void SetUri(string uri)
-    {
-        Verify.NotNullOrWhiteSpace(uri, nameof(uri));
-
-        bool isDataUri = uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true;
-
-        // Overriding the Uri will invalidate any provider and previously cached content.
-        if (this._cachedByteArrayContent is not null)
-        {
-            this._cachedByteArrayContent = null;
-        }
-
-        if (this._streamProvider is not null)
-        {
-            this._streamProvider = null;
-        }
-
-        if (this._byteArrayProvider is not null)
-        {
-            this._byteArrayProvider = null;
-        }
-
-        if (!isDataUri)
-        {
-            this._referencedUri = new Uri(uri);
-        }
-        else
-        {
-            this._cachedUriData = uri;
-        }
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryContent"/> class for a byte array provider.
-    /// </summary>
-    /// <param name="byteArrayProvider">The asynchronous stream provider.</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <remarks>
-    /// To be serializeable the content needs to be retrieved first.
-    /// </remarks>
-    public BinaryContent(
-        Func<Task<ReadOnlyMemory<byte>>> byteArrayProvider,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        Verify.NotNull(byteArrayProvider, nameof(byteArrayProvider));
-
-        this._byteArrayProvider = byteArrayProvider;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a byte array.
-    /// </summary>
-    /// <param name="byteArray">Byte array content</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    public BinaryContent(
-        ReadOnlyMemory<byte> byteArray,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        Verify.NotNull(byteArray, nameof(byteArray));
-
-        this._cachedByteArrayContent = byteArray;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a stream provider.
-    /// </summary>
-    /// <param name="streamProvider">The asynchronous stream provider.</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <remarks>
-    /// The <see cref="Stream"/> is accessed and immediately disposed as soon the content is cached and generated.
-    /// To be serializeable the content needs to be retrieved first.
-    /// </remarks>
-    public BinaryContent(
-        Func<Task<Stream>> streamProvider,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        Verify.NotNull(streamProvider, nameof(streamProvider));
-
-        this._streamProvider = streamProvider;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BinaryContent"/> class from a stream provider.
-    /// </summary>
-    /// <param name="stream">The content stream.</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <remarks>
-    /// The <see cref="Stream"/> is accessed and immediately disposed as soon the content is cached and generated.
-    /// </remarks>
-    public BinaryContent(
-        Stream stream,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
-    {
-        Verify.NotNull(stream, nameof(stream));
-
-        this._cachedByteArrayContent = this.GetByteArrayFromStream(stream);
-        stream.Dispose();
-    }
-
-    /// <summary>
-    /// The content stream
-    /// </summary>
-    public Task<ReadOnlyMemory<byte>> GetByteArrayAsync()
-        => this.GetCachedByteArrayContentAsync();
 }
