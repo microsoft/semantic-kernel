@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
 /// </summary>
-public static class KernelPluginFactory
+public static partial class KernelPluginFactory
 {
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -105,14 +106,28 @@ public static class KernelPluginFactory
     /// <summary>Creates a name for a plugin based on its type name.</summary>
     private static string CreatePluginName(Type type)
     {
-        string name = type.Name;
+        string name = type.ToString();
 
-        int genericParamIndex = name.IndexOf('`');
-        if (genericParamIndex >= 0)
+        // Remove the namespace
+        if (type.Namespace is string ns &&
+            name.StartsWith(ns, StringComparison.Ordinal) &&
+            name.Length > ns.Length + 1 &&
+            name[ns.Length] == '.')
         {
-            name = name.Substring(0, genericParamIndex);
+            name = name.Substring(ns.Length + 1);
         }
 
-        return KernelFunctionFromMethod.SanitizeMetadataName(name);
+        // Replace invalid characters
+        name = InvalidPluginNameCharactersRegex().Replace(name, "_");
+
+        return name;
     }
+
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidPluginNameCharactersRegex();
+#else
+    private static Regex InvalidPluginNameCharactersRegex() => s_invalidPluginNameCharactersRegex;
+    private static readonly Regex s_invalidPluginNameCharactersRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 }
