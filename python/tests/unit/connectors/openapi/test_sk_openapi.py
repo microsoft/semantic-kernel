@@ -323,7 +323,7 @@ def openapi_runner_with_auth_callback():
 
 
 @pytest.mark.asyncio
-@patch("aiohttp.ClientSession.request")
+@patch("httpx.AsyncClient.request")
 async def test_run_operation_with_auth_callback(mock_request, openapi_runner_with_auth_callback):
     runner, operations = openapi_runner_with_auth_callback
     operation = operations["addTodo"]
@@ -331,12 +331,13 @@ async def test_run_operation_with_auth_callback(mock_request, openapi_runner_wit
     request_body = {"title": "Buy milk", "completed": False}
 
     mock_response = AsyncMock()
-    mock_response.status = 200
-    mock_request.return_value.__aenter__.return_value = mock_response
+    mock_response.status_code = 200
+    mock_response.text = "response text"
+    mock_request.return_value = mock_response
 
     assert operation.server_url == "http://urloverride.com"
     response = await runner.run_operation(operation, headers=headers, request_body=request_body)
-    assert response is not None
+    assert response == "response text"
 
     _, kwargs = mock_request.call_args
 
@@ -344,29 +345,39 @@ async def test_run_operation_with_auth_callback(mock_request, openapi_runner_wit
     assert kwargs["headers"]["Authorization"] == "Bearer dummy-token"
 
 
-@patch("aiohttp.ClientSession.request")
 @pytest.mark.asyncio
+@patch("httpx.AsyncClient.request")
 async def test_run_operation_with_url_override(mock_request, openapi_runner_with_url_override):
     runner, operations = openapi_runner_with_url_override
     operation = operations["addTodo"]
     headers = {"Authorization": "Bearer abc123"}
     request_body = {"title": "Buy milk", "completed": False}
-    mock_request.return_value.__aenter__.return_value.text.return_value = 200
+
+    mock_response = AsyncMock()
+    mock_response.status_code = 200
+    mock_response.text = "response text"  # Simulate the text attribute directly
+    mock_request.return_value = mock_response
+
     assert operation.server_url == "http://urloverride.com"
     response = await runner.run_operation(operation, headers=headers, request_body=request_body)
-    assert response == 200
+    assert response == "response text"
 
 
-@patch("aiohttp.ClientSession.request")
 @pytest.mark.asyncio
+@patch("httpx.AsyncClient.request")
 async def test_run_operation_with_valid_request(mock_request, openapi_runner):
     runner, operations = openapi_runner
     operation = operations["addTodo"]
     headers = {"Authorization": "Bearer abc123"}
     request_body = {"title": "Buy milk", "completed": False}
-    mock_request.return_value.__aenter__.return_value.text.return_value = 200
+
+    mock_response = AsyncMock()
+    mock_response.status_code = 200
+    mock_response.text = "response text"
+    mock_request.return_value = mock_response
+
     response = await runner.run_operation(operation, headers=headers, request_body=request_body)
-    assert response == 200
+    assert response == "response text"
 
 
 @patch("aiohttp.ClientSession.request")
