@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
-        <artifactId>semantickernel-samples-parent</artifactId>
+        <artifactId>semantickernel-demos</artifactId>
         <version>1.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
