@@ -1,4 +1,3 @@
-import sys
 from typing import TYPE_CHECKING, Annotated, Any, AsyncGenerator, AsyncIterable, Optional, Union
 
 import pytest
@@ -173,11 +172,10 @@ def test_kernel_function_return_type_annotated():
     assert not my_func.__kernel_function_streaming__
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_kernel_function_return_type_streaming():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_return_type_streaming")
-    assert my_func.__kernel_function_return_type__ == "str, Any"
+    assert my_func.__kernel_function_return_type__ in ("str, Any", "str, typing.Any")
     assert my_func.__kernel_function_return_description__ == "test return"
     assert my_func.__kernel_function_return_required__
     assert my_func.__kernel_function_streaming__
