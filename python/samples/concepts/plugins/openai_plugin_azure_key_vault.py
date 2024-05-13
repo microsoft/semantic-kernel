@@ -17,7 +17,7 @@ from semantic_kernel.utils.settings import azure_key_vault_settings_from_dot_env
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""
     result = await kernel.invoke(
-        functions=plugin["SetSecret"],
+        function=plugin["SetSecret"],
         path_params={"secret-name": "Foo"},
         query_params={"api-version": "7.0"},
         request_body={"value": "Bar", "enabled": True},
@@ -30,10 +30,11 @@ async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
 async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Gets a secret from the Azure Key Vault."""
     result = await kernel.invoke(
-        functions=plugin["GetSecret"],
-        path_params={"secret-name ": "Foo"},
+        function=plugin["GetSecret"],
+        path_params={"secret-name": "Foo"},
         query_params={"api-version": "7.0"},
         headers={},
+        request_body={},
     )
 
     print(f"Secret retrieved from Key Vault: {result}")
@@ -136,12 +137,13 @@ async def main():
     kernel = Kernel()
 
     openai_spec_file = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "resources", "open_ai_plugins", "akv-openai.json"
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
     )
     with open(openai_spec_file, "r") as file:
         openai_spec = file.read()
 
     http_client = httpx.AsyncClient()
+    http_client.headers["Test-X-ID"] = "1234"
 
     plugin = await kernel.add_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",
@@ -155,6 +157,7 @@ async def main():
     )
 
     await add_secret_to_key_vault(kernel, plugin)
+    await get_secret_from_key_vault(kernel, plugin)
 
 
 if __name__ == "__main__":
