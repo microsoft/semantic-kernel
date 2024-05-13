@@ -197,7 +197,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         // Act & Assert
         var content = service.GetFileContent("file-id");
-        var result = await content.GetContentAsync();
+        var result = await content.GetByteArrayAsync();
         Assert.Equal(data.ToArray(), result.ToArray());
     }
 

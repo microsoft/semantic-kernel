@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -155,7 +156,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ItCanBeSerializeAndDeserialized()
+    public async Task ItCanBeSerializeAndDeserializedAsync()
     {
         // Arrange
         var items = new ChatMessageContentItemCollection
@@ -253,7 +254,7 @@ public class ChatMessageContentTests
 
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
         Assert.NotNull(binaryContent);
-        Assert.True(binaryContent.Content?.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
+        Assert.True((await binaryContent.GetByteArrayAsync()).Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
         Assert.Equal("mime-type-3", binaryContent.MimeType);
         Assert.NotNull(binaryContent.Metadata);

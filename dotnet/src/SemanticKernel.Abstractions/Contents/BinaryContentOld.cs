@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// Provides access to binary content.
 /// </summary>
 [Experimental("SKEXP0010")]
-public class BinaryContent : KernelContent
+public class BinaryContentOld : KernelContent
 {
     private readonly Func<Task<Stream>>? _streamProvider;
 
@@ -26,7 +26,7 @@ public class BinaryContent : KernelContent
     /// Initializes a new instance of the <see cref="BinaryContent"/> class.
     /// </summary>
     [JsonConstructor]
-    public BinaryContent()
+    public BinaryContentOld()
     {
     }
 
@@ -37,7 +37,7 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
-    public BinaryContent(
+    public BinaryContentOld(
         ReadOnlyMemory<byte> content,
         string? modelId = null,
         object? innerContent = null,
@@ -61,7 +61,7 @@ public class BinaryContent : KernelContent
     /// the <see cref="GetStreamAsync"/> or <see cref="GetContentAsync"/>
     /// accessor methods.
     /// </remarks>
-    public BinaryContent(
+    public BinaryContentOld(
         Func<Task<Stream>> streamProvider,
         string? modelId = null,
         object? innerContent = null,
@@ -117,9 +117,4 @@ public class BinaryContent : KernelContent
 
         throw new KernelException("Null content");
     }
-}
-
-
-public class NewStream : Stream
-{
 }

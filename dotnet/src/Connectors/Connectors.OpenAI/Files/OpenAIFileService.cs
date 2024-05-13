@@ -156,8 +156,7 @@ public sealed class OpenAIFileService
 
         using var formData = new MultipartFormDataContent();
         using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentStream = await fileContent.GetStreamAsync().ConfigureAwait(false);
-        using var contentFile = new StreamContent(contentStream);
+        using var contentFile = new ByteArrayContent((await fileContent.GetByteArrayAsync().ConfigureAwait(false)).ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 

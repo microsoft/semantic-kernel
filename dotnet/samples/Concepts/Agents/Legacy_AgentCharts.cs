@@ -73,8 +73,7 @@ Sum      426  1622     856 2904
                     Console.WriteLine($"# {message.Role}: {path}");
                     var content = fileService.GetFileContent(message.Content);
                     await using var outputStream = File.OpenWrite(filename);
-                    await using var inputStream = await content.GetStreamAsync();
-                    await inputStream.CopyToAsync(outputStream);
+                    await outputStream.WriteAsync(await content.GetByteArrayAsync());
                     Process.Start(
                         new ProcessStartInfo
                         {

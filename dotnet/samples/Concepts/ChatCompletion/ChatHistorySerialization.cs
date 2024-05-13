@@ -17,7 +17,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
     /// with <see cref="ChatMessageContent"/> having SK various content types as items.
     /// </summary>
     [Fact]
-    public void SerializeChatHistoryWithSKContentTypes()
+    public async Task SerializeChatHistoryWithSKContentTypesAsync()
     {
         int[] data = [1, 2, 3];
 
@@ -49,7 +49,8 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
         Console.WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        Console.WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Content!.Value.Span)}");
+        var binaryContent = Encoding.UTF8.GetString((await (deserializedMessage.Items![2]! as BinaryContent)!.GetByteArrayAsync()).Span);
+        Console.WriteLine($"Binary content: {binaryContent}");
 
         Console.WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
 
