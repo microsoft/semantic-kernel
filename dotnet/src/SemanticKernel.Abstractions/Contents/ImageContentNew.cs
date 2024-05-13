@@ -36,23 +36,19 @@ public sealed class ImageContentV2 : BinaryContent
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
-    /// <param name="data">The Data used as DataUri for the image.</param>
+    /// <param name="byteArray">The Data used as DataUri for the image.</param>
+    /// <param name="mimeType">The mime type of the image</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
     public ImageContentV2(
-        ReadOnlyMemory<byte> data,
+        ReadOnlyMemory<byte> byteArray,
+        string mimeType,
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(data, innerContent, modelId, metadata)
+        : base(byteArray, mimeType, innerContent, modelId, metadata)
     {
-        if (data!.IsEmpty)
-        {
-            throw new ArgumentException("Data cannot be empty", nameof(data));
-        }
-
-        this.Data = data;
     }
 
     /// <summary>
