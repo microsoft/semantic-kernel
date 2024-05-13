@@ -143,7 +143,6 @@ async def main():
         openai_spec = file.read()
 
     http_client = httpx.AsyncClient()
-    http_client.headers["Test-X-ID"] = "1234"
 
     plugin = await kernel.add_plugin_from_openai(
         plugin_name="AzureKeyVaultPlugin",
