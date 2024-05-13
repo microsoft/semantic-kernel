@@ -157,7 +157,7 @@ public class Contents_ImageV2Content(ITestOutputHelper output) : BaseTest(output
 
         Console.WriteLine($"Serialized Content: {serialized}");
 
-        var deserializedContent = JsonSerializer.Deserialize<ImageContentV2>(serialized);
+        var deserializedContent = JsonSerializer.Deserialize<ImageContentNext>((string)serialized);
 
         Console.WriteLine($"Deserialized Content ToString: {deserializedContent}");
 
