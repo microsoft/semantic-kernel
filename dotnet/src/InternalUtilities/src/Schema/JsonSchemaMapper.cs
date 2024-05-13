@@ -173,6 +173,7 @@ static partial class JsonSchemaMapper
         string? title = null,
         string? description = null,
         bool isNullableReferenceType = false,
+        bool isNullableOfTElement = false,
         JsonConverter? customConverter = null,
         bool hasDefaultValue = false,
         JsonNode? defaultValue = null,
@@ -186,7 +187,7 @@ static partial class JsonSchemaMapper
         JsonConverter effectiveConverter = customConverter ?? typeInfo.Converter;
         JsonNumberHandling? effectiveNumberHandling = customNumberHandling ?? typeInfo.NumberHandling;
         bool emitsTypeDiscriminator = derivedTypeDiscriminator?.Value is not null;
-        bool isCacheable = !emitsTypeDiscriminator && description is null && !hasDefaultValue;
+        bool isCacheable = !emitsTypeDiscriminator && description is null && !hasDefaultValue && !isNullableOfTElement;
 
         if (!IsBuiltInConverter(effectiveConverter))
         {
@@ -220,7 +221,8 @@ static partial class JsonSchemaMapper
                 defaultValue: defaultValue,
                 customNumberHandling: customNumberHandling,
                 customConverter: customConverter,
-                parentNullableOfT: type);
+                parentNullableOfT: type,
+                isNullableOfTElement: true);
         }
 
         if (isCacheable && typeInfo.Kind != JsonTypeInfoKind.None)
@@ -409,15 +411,15 @@ static partial class JsonSchemaMapper
 
                     state.Push(property.Name);
                     JsonObject propertySchema = MapJsonSchemaCore(
-                        propertyTypeInfo,
-                        ref state,
+                        typeInfo: propertyTypeInfo,
+                        state: ref state,
                         title: null,
-                        propertyDescription,
-                        isPropertyNullableReferenceType,
-                        property.CustomConverter,
-                        propertyHasDefaultValue,
-                        propertyDefaultValue,
-                        propertyNumberHandling);
+                        description: propertyDescription,
+                        isNullableReferenceType: isPropertyNullableReferenceType,
+                        customConverter: property.CustomConverter,
+                        hasDefaultValue: propertyHasDefaultValue,
+                        defaultValue: propertyDefaultValue,
+                        customNumberHandling: propertyNumberHandling);
 
                     state.Pop();
 
