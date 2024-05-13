@@ -49,7 +49,7 @@ public static class KernelPluginFactory
     {
         Verify.NotNull(target);
 
-        pluginName ??= target.GetType().Name;
+        pluginName ??= CreatePluginName(target.GetType());
         Verify.ValidPluginName(pluginName);
 
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
@@ -101,4 +101,18 @@ public static class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
         new DefaultKernelPlugin(pluginName, description, functions);
+
+    /// <summary>Creates a name for a plugin based on its type name.</summary>
+    private static string CreatePluginName(Type type)
+    {
+        string name = type.Name;
+
+        int genericParamIndex = name.IndexOf('`');
+        if (genericParamIndex >= 0)
+        {
+            name = name.Substring(0, genericParamIndex);
+        }
+
+        return KernelFunctionFromMethod.SanitizeMetadataName(name);
+    }
 }
