@@ -1,7 +1,9 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Run all the syntax examples.
@@ -11,38 +13,56 @@ import java.util.List;
  * README</a> for configuring your environment to run the examples.
  */
 public class RunAll {
-    public interface MainMethod {
-        void run(String[] args) throws Exception;
-    }
 
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
-                Example01_NativeFunctions::main,
-                Example02_Pipeline::main,
-                Example03_Variables::main,
-                Example04_CombineLLMPromptsAndNativeCode::main,
-                Example05_InlineFunctionDefinition::main,
-                Example06_TemplateLanguage::main,
-                Example08_RetryHandler::main,
-                Example09_FunctionTypes::main,
-                Example12_SequentialPlanner::main,
-                Example13_ConversationSummarySkill::main,
-                Example14_SemanticMemory::main,
-                Example15_MemorySkill::main,
-                Example17_ChatGPT::main,
-                Example25_ReadOnlyMemoryStore::main,
-                Example28_ActionPlanner::main,
-                Example29_Tokenizer::main,
-                Example33_StreamingChat::main,
-                Example51_StepwisePlanner::main
-        );
+            Example01_NativeFunctions::main,
+            Example03_Arguments::main,
+            Example05_InlineFunctionDefinition::main,
+            Example06_TemplateLanguage::main,
+            Example08_RetryHandler::main,
+            Example09_FunctionTypes::main,
+            Example10_DescribeAllPluginsAndFunctions::main,
+            //Example11_WebSearchQueries::main,
+            Example13_ConversationSummaryPlugin::main,
+            Example17_ChatGPT::main,
+            //Example26_AADAuth::main,
 
+            Example27_PromptFunctionsUsingChatGPT::main,
+            Example30_ChatWithPrompts::main,
+            Example33_Chat::main,
+            Example41_HttpClientUsage::main,
+            Example43_GetModelResult::main,
+            Example44_MultiChatCompletion::main,
+            Example49_LogitBias::main,
+            Example55_TextChunker::main,
+            Example56_TemplateMethodFunctionsWithMultipleArguments::main,
+            Example57_KernelHooks::main,
+            Example58_ConfigureExecutionSettings::main,
+            Example60_AdvancedMethodFunctions::main,
+            Example61_MultipleLLMs::main,
+            Example62_CustomAIServiceSelector::main,
+            Example63_ChatCompletionPrompts::main,
+            Example64_MultiplePromptTemplates::main,
+            Example69_MutableKernelPlugin::main);
+
+        Scanner scanner = new Scanner(System.in);
         mains.forEach(mainMethod -> {
             try {
+
+                System.out.println("========================================");
                 mainMethod.run(args);
+
+                System.out.println("Press any key to continue...");
+                scanner.nextLine();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    public interface MainMethod {
+
+        void run(String[] args) throws Exception;
     }
 }

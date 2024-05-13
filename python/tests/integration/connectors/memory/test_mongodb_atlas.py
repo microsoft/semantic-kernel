@@ -205,18 +205,34 @@ async def test_collection_knn_match(nearest_match_store, memory_record_gen):
     assert score
 
 
+@pytest.mark.asyncio
+async def test_collection_knn_match_with_score(nearest_match_store, memory_record_gen):
+    mem = memory_record_gen(7)
+    await nearest_match_store.upsert(READ_ONLY_COLLECTION, mem)
+    result, score = await nearest_match_store.get_nearest_match(
+        collection_name=READ_ONLY_COLLECTION,
+        embedding=mem._embedding,
+        with_embedding=True,
+        min_relevance_score=0.0,
+    )
+    is_equal_memory_record(mem, result, True)
+    assert score
+
+
 async def knn_matcher(
     nearest_match_store,
     test_collection,
     mems,
     query_limit,
     expected_limit,
+    min_relevance_score,
 ):
     results_and_scores = await nearest_match_store.get_nearest_matches(
         collection_name=test_collection,
         embedding=mems["2"]._embedding,
         limit=query_limit,
         with_embeddings=True,
+        min_relevance_score=min_relevance_score,
     )
     assert len(results_and_scores) == expected_limit
     scores = [score for _, score in results_and_scores]
@@ -235,4 +251,19 @@ async def test_collection_knn_matches(nearest_match_store, memory_record_gen):
         mems,
         query_limit=2,
         expected_limit=2,
+        min_relevance_score=None,
+    )
+
+
+@pytest.mark.asyncio
+async def test_collection_knn_matches_with_score(nearest_match_store, memory_record_gen):
+    mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
+    await nearest_match_store.upsert_batch(READ_ONLY_COLLECTION, mems.values())
+    await knn_matcher(
+        nearest_match_store,
+        READ_ONLY_COLLECTION,
+        mems,
+        query_limit=2,
+        expected_limit=2,
+        min_relevance_score=0.0,
     )

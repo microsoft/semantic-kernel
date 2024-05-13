@@ -3,13 +3,12 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Plugins.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Plugins.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0050,SKEXP0051,SKEXP0052,SKEXP0053,SKEXP0054</NoWarn>
+    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0050</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />

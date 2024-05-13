@@ -22,6 +22,9 @@
     <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  <EmbeddedResource Include="Handlebars\CreatePlanPromptPartials\**\*.handlebars">  
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>  
+  </EmbeddedResource>  
   </ItemGroup>
 
   <ItemGroup>

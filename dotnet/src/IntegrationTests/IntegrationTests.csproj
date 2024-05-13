@@ -2,11 +2,10 @@
   <PropertyGroup>
     <AssemblyName>IntegrationTests</AssemblyName>
     <RootNamespace>SemanticKernel.IntegrationTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0004,SKEXP0010,SKEXP0011,SKEXP0012,SKEXP0020,SKEXP0021,SKEXP0022,SKEXP0023,SKEXP0024,SKEXP0025,SKEXP0026,SKEXP0027,SKEXP0028,SKEXP0029,SKEXP0030,SKEXP0031,SKEXP0032,SKEXP0042,SKEXP0050,SKEXP0054,SKEXP0060,SKEXP0061</NoWarn>
+    <NoWarn>CA2007,CA1861,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0070,SKEXP0110</NoWarn>
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -46,8 +45,13 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
@@ -55,6 +59,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" />
@@ -66,12 +71,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Use newest available compiler to handle newer source-generating libraries used in the examples. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
-  </ItemGroup>
-  
-  <ItemGroup>
+    <None Update="testsettings.development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -79,6 +81,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="Plugins\instacart-ai-plugin.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Plugins\repair-service.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -99,5 +104,11 @@
     <EmbeddedResource Include="skills\FunSkill\Joke\skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

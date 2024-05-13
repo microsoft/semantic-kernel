@@ -48,7 +48,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddSingleton(factory.Object);
         Kernel kernel = builder.Build();
 
-        kernel.ImportPluginFromFunctions("jk", functions: new[] { kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun") });
+        kernel.ImportPluginFromFunctions("jk", functions: [kernel.CreateFunctionFromPrompt(promptTemplate: "Tell me a joke", functionName: "joker", description: "Nice fun")]);
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Plugins.TryGetFunction("jk", "joker", out _));
@@ -56,22 +56,20 @@ public class KernelFunctionFromPromptTests
     }
 
     [Theory]
-    [InlineData(null, "Assistant is a large language model.")]
+    [InlineData(null, null)]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string? providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string? providedSystemChatPrompt, string? expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextGeneration = new Mock<ITextGenerationService>();
         var fakeTextContent = new TextContent("llmResult");
 
-        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("x", mockTextGeneration.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
         var openAIExecutionSettings = providedSystemChatPrompt is null
             ? new OpenAIPromptExecutionSettings()
             : new OpenAIPromptExecutionSettings
@@ -79,6 +77,7 @@ public class KernelFunctionFromPromptTests
                 ChatSystemPrompt = providedSystemChatPrompt
             };
 
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(openAIExecutionSettings);
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -97,16 +96,15 @@ public class KernelFunctionFromPromptTests
         var mockTextGeneration2 = new Mock<ITextGenerationService>();
         var fakeTextContent = new TextContent("llmResult");
 
-        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
-        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { fakeTextContent });
+        mockTextGeneration1.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
+        mockTextGeneration2.Setup(c => c.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([fakeTextContent]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddKeyedSingleton("service1", mockTextGeneration1.Object);
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service1");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -130,8 +128,7 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddKeyedSingleton("service2", mockTextGeneration2.Object);
         Kernel kernel = builder.Build();
 
-        var promptConfig = new PromptTemplateConfig();
-        promptConfig.Template = "template";
+        var promptConfig = new PromptTemplateConfig("template");
         promptConfig.AddExecutionSettings(new PromptExecutionSettings(), "service3");
         var func = kernel.CreateFunctionFromPrompt(promptConfig);
 
@@ -150,10 +147,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(@"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
-        ");
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
 
         // Act + Assert
         await kernel.InvokeAsync(function);
@@ -172,10 +169,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<ITextGenerationService>((sp) => fakeService);
         Kernel kernel = builder.Build();
 
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(@"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
-        ");
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt("""
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """);
 
         // Act + Assert
         await foreach (var chunk in kernel.InvokeStreamingAsync(function))
@@ -193,16 +190,16 @@ public class KernelFunctionFromPromptTests
     {
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TextContent>() { new("something") });
+            .ReturnsAsync([new("something")]);
 
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
         Kernel kernel = builder.Build();
 
-        var inputPrompt = @"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
-        ";
+        var inputPrompt = """
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """;
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(inputPrompt);
 
@@ -227,10 +224,10 @@ public class KernelFunctionFromPromptTests
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
         Kernel kernel = builder.Build();
 
-        var inputPrompt = @"
-            <message role=""system"">You are a helpful assistant.</message>
-            <message role=""user"">How many 20 cents can I get from 1 dollar?</message>
-        ";
+        var inputPrompt = """
+            <message role="system">You are a helpful assistant.</message>
+            <message role="user">How many 20 cents can I get from 1 dollar?</message>
+            """;
 
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt(inputPrompt);
 
@@ -251,7 +248,7 @@ public class KernelFunctionFromPromptTests
     {
         var mockService = new Mock<ITextGenerationService>();
         var mockResult = mockService.Setup(s => s.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TextContent>() { new("something") });
+            .ReturnsAsync([new("something")]);
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockService.Object);
@@ -271,7 +268,7 @@ public class KernelFunctionFromPromptTests
     {
         var mockService = new Mock<IChatCompletionService>();
         var mockResult = mockService.Setup(s => s.GetChatMessageContentsAsync(It.IsAny<ChatHistory>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent>() { new(AuthorRole.User, "something") });
+            .ReturnsAsync([new(AuthorRole.User, "something")]);
 
         KernelBuilder builder = new();
         builder.Services.AddTransient<IChatCompletionService>((sp) => mockService.Object);
@@ -386,7 +383,7 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         KernelBuilder builder = new();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextCompletion.Object);
         Kernel kernel = builder.Build();
@@ -407,7 +404,7 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         KernelBuilder builder = new();
         builder.Services.AddTransient<ITextGenerationService>((sp) => mockTextCompletion.Object);
         Kernel kernel = builder.Build();
@@ -428,7 +425,7 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent = new TextContent("Result");
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         KernelBuilder builder = new();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion.Object);
         Kernel kernel = builder.Build();
@@ -449,10 +446,10 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent1 = new TextContent("Result1");
         var mockTextCompletion1 = new Mock<ITextGenerationService>();
-        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent1]);
         var mockTextContent2 = new TextContent("Result2");
         var mockTextCompletion2 = new Mock<ITextGenerationService>();
-        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent2]);
 
         KernelBuilder builder = new();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
@@ -479,10 +476,10 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent1 = new TextContent("Result1");
         var mockTextCompletion1 = new Mock<ITextGenerationService>();
-        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent1]);
         var mockTextContent2 = new TextContent("Result2");
         var mockTextCompletion2 = new Mock<ITextGenerationService>();
-        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent2]);
 
         KernelBuilder builder = new();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
@@ -492,14 +489,14 @@ public class KernelFunctionFromPromptTests
         KernelFunction function = KernelFunctionFactory.CreateFromPrompt("Prompt");
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service1", new OpenAIPromptExecutionSettings { MaxTokens = 1000 } }
         };
         var result1 = await kernel.InvokeAsync(function, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service2", new OpenAIPromptExecutionSettings { MaxTokens = 2000 } }
@@ -519,10 +516,10 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent1 = new TextContent("Result1");
         var mockTextCompletion1 = new Mock<ITextGenerationService>();
-        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent1]);
         var mockTextContent2 = new TextContent("Result2");
         var mockTextCompletion2 = new Mock<ITextGenerationService>();
-        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent2]);
 
         KernelBuilder builder = new();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
@@ -533,14 +530,14 @@ public class KernelFunctionFromPromptTests
         KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Template = "Prompt2", ExecutionSettings = new() { ["service2"] = new OpenAIPromptExecutionSettings { MaxTokens = 2000 } } });
 
         // Act
-        KernelArguments arguments1 = new();
+        KernelArguments arguments1 = [];
         arguments1.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service2", new OpenAIPromptExecutionSettings { MaxTokens = 2000 } }
         };
         var result1 = await kernel.InvokeAsync(function1, arguments1);
 
-        KernelArguments arguments2 = new();
+        KernelArguments arguments2 = [];
         arguments2.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
         {
             { "service1", new OpenAIPromptExecutionSettings { MaxTokens = 1000 } }
@@ -560,10 +557,10 @@ public class KernelFunctionFromPromptTests
         // Arrange
         var mockTextContent1 = new TextContent("Result1");
         var mockTextCompletion1 = new Mock<ITextGenerationService>();
-        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent1 });
+        mockTextCompletion1.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent1]);
         var mockTextContent2 = new TextContent("Result2");
         var mockTextCompletion2 = new Mock<ITextGenerationService>();
-        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent2 });
+        mockTextCompletion2.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent2]);
 
         KernelBuilder builder = new();
         builder.Services.AddKeyedSingleton<ITextGenerationService>("service1", mockTextCompletion1.Object);
@@ -573,7 +570,7 @@ public class KernelFunctionFromPromptTests
         KernelFunction function1 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt1", Template = "Prompt1", ExecutionSettings = new() { ["service1"] = new OpenAIPromptExecutionSettings { MaxTokens = 1000 } } });
         KernelFunction function2 = KernelFunctionFactory.CreateFromPrompt(new PromptTemplateConfig { Name = "Prompt2", Template = "Prompt2 {{MyPrompts.Prompt1}}", ExecutionSettings = new() { ["service2"] = new OpenAIPromptExecutionSettings { MaxTokens = 2000 } } });
 
-        kernel.ImportPluginFromFunctions("MyPrompts", new[] { function1, function2 });
+        kernel.ImportPluginFromFunctions("MyPrompts", [function1, function2]);
 
         // Act
         var result = await kernel.InvokeAsync(function2);
@@ -676,7 +673,7 @@ public class KernelFunctionFromPromptTests
         {
             this.ChatHistory = chatHistory;
 
-            return Task.FromResult<IReadOnlyList<ChatMessageContent>>(new List<ChatMessageContent> { new(AuthorRole.Assistant, "Something") });
+            return Task.FromResult<IReadOnlyList<ChatMessageContent>>([new(AuthorRole.Assistant, "Something")]);
         }
 
 #pragma warning disable IDE0036 // Order modifiers

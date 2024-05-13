@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +58,15 @@ public abstract class KernelFunction
     public string Name => this.Metadata.Name;
 
     /// <summary>
+    /// Gets the name of the plugin this function was added to.
+    /// </summary>
+    /// <remarks>
+    /// The plugin name will be null if the function has not been added to a plugin.
+    /// When a function is added to a plugin it will be cloned and the plugin name will be set.
+    /// </remarks>
+    public string? PluginName => this.Metadata.PluginName;
+
+    /// <summary>
     /// Gets a description of the function.
     /// </summary>
     /// <remarks>
@@ -73,7 +84,10 @@ public abstract class KernelFunction
     /// <summary>
     /// Gets the prompt execution settings.
     /// </summary>
-    internal IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+    /// <remarks>
+    /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -87,17 +101,43 @@ public abstract class KernelFunction
     /// overridden by settings passed into the invocation of the function.
     /// </param>
     internal KernelFunction(string name, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
+        : this(name, null, description, parameters, returnParameter, executionSettings)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelFunction"/> class.
+    /// </summary>
+    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
+    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="parameters">The metadata describing the parameters to the function.</param>
+    /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
+    /// <param name="executionSettings">
+    /// The <see cref="PromptExecutionSettings"/> to use with the function. These will apply unless they've been
+    /// overridden by settings passed into the invocation of the function.
+    /// </param>
+    /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
+    internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
         Verify.ParametersUniqueness(parameters);
 
         this.Metadata = new KernelFunctionMetadata(name)
         {
+            PluginName = pluginName,
             Description = description,
             Parameters = parameters,
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
+            AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
         };
-        this.ExecutionSettings = executionSettings;
+
+        if (executionSettings is not null)
+        {
+            this.ExecutionSettings = executionSettings.ToDictionary(
+                entry => entry.Key,
+                entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
+        }
     }
 
     /// <summary>
@@ -108,7 +148,6 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     public async Task<FunctionResult> InvokeAsync(
         Kernel kernel,
         KernelArguments? arguments = null,
@@ -120,13 +159,13 @@ public abstract class KernelFunction
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
         // Ensure arguments are initialized.
-        arguments ??= new KernelArguments();
+        arguments ??= [];
         logger.LogFunctionInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
-        FunctionResult? functionResult = null;
+        FunctionResult functionResult = new(this, culture: kernel.Culture);
         try
         {
             // Quick check for cancellation after logging about function start but before doing any real work.
@@ -137,29 +176,24 @@ public abstract class KernelFunction
             var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-            // Invoke pre-invocation filter. If it requests cancellation, throw.
-            var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
-
             if (invokingEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
             }
 
-            if (invokingContext?.Cancel is true)
+            var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, async (context) =>
             {
-                throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
-            }
+                // Invoking the function and updating context with result.
+                context.Result = functionResult = await this.InvokeCoreAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
 
-            // Invoke the function.
-            functionResult = await this.InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+            // Apply any changes from the function filters context to final result.
+            functionResult = invocationContext.Result;
 
             // Invoke the post-invocation event handler. If it requests cancellation, throw.
 #pragma warning disable CS0618 // Events are deprecated
             var invokedEventArgs = kernel.OnFunctionInvoked(this, arguments, functionResult);
 #pragma warning restore CS0618 // Events are deprecated
-
-            // Invoke the post-invocation filter. If it requests cancellation, throw.
-            var invokedContext = kernel.OnFunctionInvokedFilter(arguments, functionResult);
 
             if (invokedEventArgs is not null)
             {
@@ -167,24 +201,13 @@ public abstract class KernelFunction
                 functionResult = new FunctionResult(this, invokedEventArgs.ResultValue, functionResult.Culture, invokedEventArgs.Metadata ?? functionResult.Metadata);
             }
 
-            if (invokedContext is not null)
-            {
-                // Apply any changes from the function filters to final result.
-                functionResult = new FunctionResult(this, invokedContext.ResultValue, functionResult.Culture, invokedContext.Metadata ?? functionResult.Metadata);
-            }
-
             if (invokedEventArgs?.Cancel is true)
             {
                 throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoked)} event handler requested cancellation after function invocation.");
             }
 
-            if (invokedContext?.Cancel is true)
-            {
-                throw new OperationCanceledException("A function filter requested cancellation after function invocation.");
-            }
-
             logger.LogFunctionInvokedSuccess(this.Name);
-            logger.LogFunctionResultValue(functionResult.Value);
+            logger.LogFunctionResultValue(functionResult);
 
             return functionResult;
         }
@@ -211,7 +234,6 @@ public abstract class KernelFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution, cast to <typeparamref name="TResult"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
-    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
     /// <exception cref="InvalidCastException">The function's result could not be cast to <typeparamref name="TResult"/>.</exception>
     public async Task<TResult?> InvokeAsync<TResult>(
         Kernel kernel,
@@ -262,12 +284,13 @@ public abstract class KernelFunction
         using var activity = s_activitySource.StartActivity(this.Name);
         ILogger logger = kernel.LoggerFactory.CreateLogger(this.Name) ?? NullLogger.Instance;
 
-        arguments ??= new KernelArguments();
+        arguments ??= [];
         logger.LogFunctionStreamingInvoking(this.Name);
         logger.LogFunctionArguments(arguments);
 
         TagList tags = new() { { MeasurementFunctionTagName, this.Name } };
         long startingTimestamp = Stopwatch.GetTimestamp();
+
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -281,21 +304,27 @@ public abstract class KernelFunction
                 var invokingEventArgs = kernel.OnFunctionInvoking(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-                // Invoke pre-invocation filter. If it requests cancellation, throw.
-                var invokingContext = kernel.OnFunctionInvokingFilter(this, arguments);
-
                 if (invokingEventArgs?.Cancel is true)
                 {
                     throw new OperationCanceledException($"A {nameof(Kernel)}.{nameof(Kernel.FunctionInvoking)} event handler requested cancellation before function invocation.");
                 }
 
-                if (invokingContext?.Cancel is true)
-                {
-                    throw new OperationCanceledException("A function filter requested cancellation before function invocation.");
-                }
+                FunctionResult functionResult = new(this, culture: kernel.Culture);
 
-                // Invoke the function and get its streaming enumerator.
-                enumerator = this.InvokeStreamingCoreAsync<TResult>(kernel, arguments, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                var invocationContext = await kernel.OnFunctionInvocationAsync(this, arguments, functionResult, (context) =>
+                {
+                    // Invoke the function and get its streaming enumerable.
+                    var enumerable = this.InvokeStreamingCoreAsync<TResult>(kernel, context.Arguments, cancellationToken);
+
+                    // Update context with enumerable as result value.
+                    context.Result = new FunctionResult(this, enumerable, kernel.Culture);
+
+                    return Task.CompletedTask;
+                }).ConfigureAwait(false);
+
+                // Apply changes from the function filters to final result.
+                var enumerable = invocationContext.Result.GetValue<IAsyncEnumerable<TResult>>() ?? AsyncEnumerable.Empty<TResult>();
+                enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
 
                 // yielding within a try/catch isn't currently supported, so we break out of the try block
                 // in order to then wrap the actual MoveNextAsync in its own try/catch and allow the yielding
@@ -330,8 +359,6 @@ public abstract class KernelFunction
                     yield return enumerator.Current;
                 }
             }
-
-            // The FunctionInvoked hook and filter are not used when streaming.
         }
         finally
         {
@@ -341,6 +368,17 @@ public abstract class KernelFunction
             logger.LogFunctionStreamingComplete(duration.TotalSeconds);
         }
     }
+
+    /// <summary>
+    /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
+    /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
+    /// </summary>
+    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// <remarks>
+    /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
+    /// a function to a <see cref="KernelPlugin"/>.
+    /// </remarks>
+    public abstract KernelFunction Clone(string pluginName);
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.

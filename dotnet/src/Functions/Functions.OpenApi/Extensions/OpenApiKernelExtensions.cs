@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -200,6 +201,12 @@ public static class OpenApiKernelExtensions
 
     #region private
 
+    /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
+    private const string OperationExtensionsMethodKey = "method";
+
+    /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
+    private const string OperationExtensionsMetadataKey = "operation-extensions";
+
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
         Kernel kernel,
         string pluginName,
@@ -258,7 +265,7 @@ public static class OpenApiKernelExtensions
     /// <param name="documentUri">The URI of OpenAPI document.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     /// <returns>An instance of <see cref="KernelFunctionFromPrompt"/> class.</returns>
-    private static KernelFunction CreateRestApiFunction(
+    internal static KernelFunction CreateRestApiFunction(
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
@@ -327,19 +334,31 @@ public static class OpenApiKernelExtensions
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 IsRequired = p.IsRequired,
                 ParameterType = p.Type switch { "string" => typeof(string), "boolean" => typeof(bool), _ => null },
-                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($"{{\"type\":\"{p.Type}\"}}")),
+                Schema = p.Schema ?? (p.Type is null ? null : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}""")),
             })
             .ToList();
 
         var returnParameter = operation.GetDefaultReturnParameter();
 
+        // Add unstructured metadata, specific to Open API, to the metadata property bag.
+        var additionalMetadata = new Dictionary<string, object?>();
+        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant());
+        if (operation.Extensions is { Count: > 0 })
+        {
+            additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
+        }
+
         return KernelFunctionFactory.CreateFromMethod(
             method: ExecuteAsync,
-            parameters: parameters,
-            returnParameter: returnParameter,
-            description: operation.Description,
-            functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            loggerFactory: loggerFactory);
+            new KernelFunctionFromMethodOptions
+            {
+                FunctionName = ConvertOperationIdToValidFunctionName(operation.Id, logger),
+                Description = operation.Description,
+                Parameters = parameters,
+                ReturnParameter = returnParameter,
+                LoggerFactory = loggerFactory,
+                AdditionalMetadata = new ReadOnlyDictionary<string, object?>(additionalMetadata),
+            });
     }
 
     /// <summary>
@@ -374,7 +393,7 @@ public static class OpenApiKernelExtensions
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
-        logger.LogInformation("Operation name \"{0}\" converted to \"{1}\" to comply with SK Function name requirements. Use \"{2}\" when invoking function.", operationId, result, result);
+        logger.LogInformation("""Operation name "{0}" converted to "{1}" to comply with SK Function name requirements. Use "{2}" when invoking function.""", operationId, result, result);
 
         return result;
     }

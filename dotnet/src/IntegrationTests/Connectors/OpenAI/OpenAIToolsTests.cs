@@ -3,33 +3,24 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticKernel.IntegrationTests.Planners.Stepwise;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class OpenAIToolsTests : IDisposable
+public sealed class OpenAIToolsTests : BaseIntegrationTest
 {
-    public OpenAIToolsTests(ITestOutputHelper output)
-    {
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
-            .Build();
-    }
-
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsAsync()
     {
         // Arrange
@@ -38,14 +29,13 @@ public sealed class OpenAIToolsTests : IDisposable
 
         var invokedFunctions = new List<string>();
 
-#pragma warning disable CS0618 // Events are deprecated
-        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        var filter = new FakeFunctionFilter(async (context, next) =>
         {
-            invokedFunctions.Add(e.Function.Name);
-        }
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+        });
 
-        kernel.FunctionInvoking += MyInvokingHandler;
-#pragma warning restore CS0618 // Events are deprecated
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -56,7 +46,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("GetCurrentUtcTime", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsStreamingAsync()
     {
         // Arrange
@@ -65,14 +55,13 @@ public sealed class OpenAIToolsTests : IDisposable
 
         var invokedFunctions = new List<string>();
 
-#pragma warning disable CS0618 // Events are deprecated
-        void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
+        var filter = new FakeFunctionFilter(async (context, next) =>
         {
-            invokedFunctions.Add($"{e.Function.Name}({string.Join(", ", e.Arguments)})");
-        }
+            invokedFunctions.Add($"{context.Function.Name}({string.Join(", ", context.Arguments)})");
+            await next(context);
+        });
 
-        kernel.FunctionInvoking += MyInvokingHandler;
-#pragma warning restore CS0618 // Events are deprecated
+        kernel.FunctionInvocationFilters.Add(filter);
 
         // Act
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
@@ -91,7 +80,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("InterpretValue([value, 3])", invokedFunctions);
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithComplexTypeParametersAsync()
     {
         // Arrange
@@ -107,7 +96,7 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("42.8", result.GetValue<string>(), StringComparison.InvariantCulture); // The WeatherPlugin always returns 42.8 for Dublin, Ireland.
     }
 
-    [Fact]
+    [Fact(Skip = "OpenAI is throttling requests. Switch this test to use Azure OpenAI.")]
     public async Task CanAutoInvokeKernelFunctionsWithPrimitiveTypeParametersAsync()
     {
         // Arrange
@@ -123,25 +112,367 @@ public sealed class OpenAIToolsTests : IDisposable
         Assert.Contains("10", result.GetValue<string>(), StringComparison.InvariantCulture);
     }
 
-    private Kernel InitializeKernel()
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionFromPromptAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+
+        var promptFunction = KernelFunctionFactory.CreateFromPrompt(
+            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            functionName: "FindLatestNews",
+            description: "Searches for the latest news.");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
+            "NewsProvider",
+            "Delivers up-to-date news content.",
+            [promptFunction]));
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var result = await kernel.InvokePromptAsync("Show me the latest news as they are.", new(settings));
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Transportation", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CanAutoInvokeKernelFunctionFromPromptStreamingAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+
+        var promptFunction = KernelFunctionFactory.CreateFromPrompt(
+            "Your role is always to return this text - 'A Game-Changer for the Transportation Industry'. Don't ask for more details or context.",
+            functionName: "FindLatestNews",
+            description: "Searches for the latest news.");
+
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions(
+            "NewsProvider",
+            "Delivers up-to-date news content.",
+            [promptFunction]));
+
+        // Act
+        OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var streamingResult = kernel.InvokePromptStreamingAsync("Show me the latest news as they are.", new(settings));
+
+        var builder = new StringBuilder();
+
+        await foreach (var update in streamingResult)
+        {
+            builder.Append(update.ToString());
+        }
+
+        var result = builder.ToString();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Transportation", result, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ConnectorSpecificChatMessageContentClassesCanBeUsedForManualFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Current way of handling function calls manually using connector specific chat message content class.
+        var toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+
+        while (toolCalls.Count > 0)
+        {
+            // Adding LLM function call request to chat history
+            chatHistory.Add(result);
+
+            // Iterating over the requested function calls and invoking them
+            foreach (var toolCall in toolCalls)
+            {
+                string content = kernel.Plugins.TryGetFunctionAndArguments(toolCall, out KernelFunction? function, out KernelArguments? arguments) ?
+                    JsonSerializer.Serialize((await function.InvokeAsync(kernel, arguments)).GetValue<object>()) :
+                    "Unable to find function. Please try again!";
+
+                // Adding the result of the function call to the chat history
+                chatHistory.Add(new ChatMessageContent(
+                    AuthorRole.Tool,
+                    content,
+                    metadata: new Dictionary<string, object?>(1) { { OpenAIChatMessageContent.ToolIdProperty, toolCall.Id } }));
+            }
+
+            // Sending the functions invocation results back to the LLM to get the final response
+            result = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+            toolCalls = ((OpenAIChatMessageContent)result).ToolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList();
+        }
+
+        // Assert
+        Assert.Contains("rain", result.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForManualFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+
+        while (functionCalls.Length != 0)
+        {
+            // Adding function call from LLM to chat history
+            chatHistory.Add(messageContent);
+
+            // Iterating over the requested function calls and invoking them
+            foreach (var functionCall in functionCalls)
+            {
+                var result = await functionCall.InvokeAsync(kernel);
+
+                chatHistory.Add(result.ToChatMessage());
+            }
+
+            // Sending the functions invocation results to the LLM to get the final response
+            messageContent = await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+        }
+
+        // Assert
+        Assert.Contains("rain", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact(Skip = "The test is temporarily disabled until a more stable solution is found.")]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanPassFunctionExceptionToConnectorAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("If you are unable to answer the question for whatever reason, please add the 'error' keyword to the response.");
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var completionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+
+        while (functionCalls.Length != 0)
+        {
+            // Adding function call from LLM to chat history
+            chatHistory.Add(messageContent);
+
+            // Iterating over the requested function calls and invoking them
+            foreach (var functionCall in functionCalls)
+            {
+                // Simulating an exception
+                var exception = new OperationCanceledException("The operation was canceled due to timeout.");
+
+                chatHistory.Add(new FunctionResultContent(functionCall, exception).ToChatMessage());
+            }
+
+            // Sending the functions execution results back to the LLM to get the final response
+            messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+        }
+
+        // Assert
+        Assert.NotNull(messageContent.Content);
+
+        Assert.Contains("error", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesSupportSimulatedFunctionCallsAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("if there's a tornado warning, please add the 'tornado' keyword to the response.");
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var completionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        var functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+
+        while (functionCalls.Length > 0)
+        {
+            // Adding function call from LLM to chat history
+            chatHistory.Add(messageContent);
+
+            // Iterating over the requested function calls and invoking them
+            foreach (var functionCall in functionCalls)
+            {
+                var result = await functionCall.InvokeAsync(kernel);
+
+                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { result });
+            }
+
+            // Adding a simulated function call to the connector response message
+            var simulatedFunctionCall = new FunctionCallContent("weather-alert", id: "call_123");
+            messageContent.Items.Add(simulatedFunctionCall);
+
+            // Adding a simulated function result to chat history
+            var simulatedFunctionResult = "A Tornado Watch has been issued, with potential for severe thunderstorms causing unusual sky colors like green, yellow, or dark gray. Stay informed and follow safety instructions from authorities.";
+            chatHistory.Add(new FunctionResultContent(simulatedFunctionCall, simulatedFunctionResult).ToChatMessage());
+
+            // Sending the functions invocation results back to the LLM to get the final response
+            messageContent = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+            functionCalls = FunctionCallContent.GetFunctionCalls(messageContent).ToArray();
+        }
+
+        // Assert
+        Assert.Contains("tornado", messageContent.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItFailsIfNoFunctionResultProvidedAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
+
+        var completionService = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        var result = await completionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        chatHistory.Add(result);
+
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => completionService.GetChatMessageContentAsync(chatHistory, settings, kernel));
+
+        // Assert
+        Assert.Contains("'tool_calls' must be followed by tool", exception.Message, StringComparison.InvariantCulture);
+    }
+
+    [Fact]
+    public async Task ConnectorAgnosticFunctionCallingModelClassesCanBeUsedForAutoFunctionCallingAsync()
+    {
+        // Arrange
+        var kernel = this.InitializeKernel(importHelperPlugin: true);
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+        var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+
+        var sut = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Act
+        await sut.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Equal(5, chatHistory.Count);
+
+        var userMessage = chatHistory[0];
+        Assert.Equal(AuthorRole.User, userMessage.Role);
+
+        // LLM requested the current time.
+        var getCurrentTimeFunctionCallRequestMessage = chatHistory[1];
+        Assert.Equal(AuthorRole.Assistant, getCurrentTimeFunctionCallRequestMessage.Role);
+
+        var getCurrentTimeFunctionCallRequest = getCurrentTimeFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallRequest.PluginName);
+        Assert.NotNull(getCurrentTimeFunctionCallRequest.Id);
+
+        // Connector invoked the GetCurrentUtcTime function and added result to chat history.
+        var getCurrentTimeFunctionCallResultMessage = chatHistory[2];
+        Assert.Equal(AuthorRole.Tool, getCurrentTimeFunctionCallResultMessage.Role);
+        Assert.Single(getCurrentTimeFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
+        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.Id);
+        Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
+
+        // LLM requested the weather for Boston.
+        var getWeatherForCityFunctionCallRequestMessage = chatHistory[3];
+        Assert.Equal(AuthorRole.Assistant, getWeatherForCityFunctionCallRequestMessage.Role);
+
+        var getWeatherForCityFunctionCallRequest = getWeatherForCityFunctionCallRequestMessage.Items.OfType<FunctionCallContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallRequest.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallRequest.PluginName);
+        Assert.NotNull(getWeatherForCityFunctionCallRequest.Id);
+
+        // Connector invoked the Get_Weather_For_City function and added result to chat history.
+        var getWeatherForCityFunctionCallResultMessage = chatHistory[4];
+        Assert.Equal(AuthorRole.Tool, getWeatherForCityFunctionCallResultMessage.Role);
+        Assert.Single(getWeatherForCityFunctionCallResultMessage.Items.OfType<TextContent>()); // Current function calling model adds TextContent item representing the result of the function call.
+
+        var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
+        Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
+        Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
+        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.Id);
+        Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
+    }
+
+    private Kernel InitializeKernel(bool importHelperPlugin = false)
     {
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("Planners:OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        IKernelBuilder builder = Kernel.CreateBuilder()
+        IKernelBuilder builder = this.CreateKernelBuilder()
             .AddOpenAIChatCompletion(
                 modelId: openAIConfiguration.ModelId,
                 apiKey: openAIConfiguration.ApiKey);
 
         var kernel = builder.Build();
 
+        if (importHelperPlugin)
+        {
+            kernel.ImportPluginFromFunctions("HelperFunctions", new[]
+            {
+                kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
+                kernel.CreateFunctionFromMethod((string cityName) =>
+                    cityName switch
+                    {
+                        "Boston" => "61 and rainy",
+                        _ => "31 and snowing",
+                    }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
+            });
+        }
+
         return kernel;
     }
 
-    private readonly RedirectOutput _testOutputHelper;
-    private readonly IConfigurationRoot _configuration;
-
-    public void Dispose() => this._testOutputHelper.Dispose();
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<FunctionCallingStepwisePlannerTests>()
+        .Build();
 
     /// <summary>
     /// A plugin that returns the current time.
@@ -201,4 +532,22 @@ public sealed class OpenAIToolsTests : IDisposable
         public string Name { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
     }
+
+    #region private
+
+    private sealed class FakeFunctionFilter : IFunctionInvocationFilter
+    {
+        private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation;
+
+        public FakeFunctionFilter(
+            Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null)
+        {
+            this._onFunctionInvocation = onFunctionInvocation;
+        }
+
+        public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
+            this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
+
+    #endregion
 }

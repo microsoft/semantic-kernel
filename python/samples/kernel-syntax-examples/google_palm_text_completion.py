@@ -2,27 +2,25 @@
 
 import asyncio
 
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.google_palm as sk_gp
-from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
-    GooglePalmPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.google_palm import GooglePalmTextCompletion, GooglePalmTextPromptExecutionSettings
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
 
 
 async def text_completion_example_complete(kernel, api_key, user_mssg, settings):
     """
     Complete a text prompt using the Google PaLM model and print the results.
     """
-    palm_text_completion = sk_gp.GooglePalmTextCompletion("models/text-bison-001", api_key)
-    kernel.add_text_completion_service("models/text-bison-001", palm_text_completion)
+    palm_text_completion = GooglePalmTextCompletion("models/text-bison-001", api_key)
+    kernel.add_service(palm_text_completion)
     answer = await palm_text_completion.complete(user_mssg, settings)
     return answer
 
 
 async def main() -> None:
-    kernel = sk.Kernel()
-    apikey = sk.google_palm_settings_from_dot_env()
-    settings = GooglePalmPromptExecutionSettings()
+    kernel = Kernel()
+    apikey = google_palm_settings_from_dot_env()
+    settings = GooglePalmTextPromptExecutionSettings()
 
     user_mssg1 = (
         "Sam has three boxes, each containing a certain number of coins. "

@@ -3,7 +3,6 @@
 from semantic_kernel.core_plugins.conversation_summary_plugin import (
     ConversationSummaryPlugin,
 )
-from semantic_kernel.core_plugins.file_io_plugin import FileIOPlugin
 from semantic_kernel.core_plugins.http_plugin import HttpPlugin
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
@@ -14,7 +13,6 @@ from semantic_kernel.core_plugins.web_search_engine_plugin import WebSearchEngin
 __all__ = [
     "TextMemoryPlugin",
     "TextPlugin",
-    "FileIOPlugin",
     "TimePlugin",
     "HttpPlugin",
     "ConversationSummaryPlugin",

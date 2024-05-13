@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
 
-from semantic_kernel.plugin_definition import kernel_function, kernel_function_context_parameter
+if sys.version_info >= (3, 9):
+    from typing import Annotated
+else:
+    from typing_extensions import Annotated
+
+from semantic_kernel.functions import kernel_function
 
 # TODO: this fake plugin is temporal usage.
 # C# supports import plugin from samples dir by using test helper and python should do the same
@@ -15,11 +21,12 @@ class WriterPluginFake:
     def translate(self, language: str) -> str:
         return f"Translate: {language}"
 
-    @kernel_function(description="Write an outline for a novel", name="NovelOutline")
-    @kernel_function_context_parameter(
-        name="endMarker",
-        description="The marker to use to end each chapter.",
-        default_value="<!--===ENDPART===-->",
-    )
-    def write_novel_outline(self, input: str) -> str:
+    @kernel_function(name="NovelOutline")
+    def write_novel_outline(
+        self,
+        input: Annotated[str, "The input of the function"],
+        name: Annotated[str, "The name of the function"] = "endMarker",
+        description: Annotated[str, "The marker to use to end each chapter"] = "Write an outline for a novel.",
+        default_value: Annotated[str, "The default value used for the function"] = "<!--===ENDPART===-->",
+    ) -> str:
         return f"Novel outline: {input}"

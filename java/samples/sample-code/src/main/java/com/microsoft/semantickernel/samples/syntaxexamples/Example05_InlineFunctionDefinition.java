@@ -1,84 +1,113 @@
 // Copyright (c) Microsoft. All rights reserved.
-
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
-import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import java.time.LocalDateTime;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
-/**
- * Demonstrates using prompt templates to define functions.
- * <p>
- * Refer to the <a href=
- * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
- * README</a> for configuring your environment to run the examples.
- */
 public class Example05_InlineFunctionDefinition {
-  public static void main(String[] args) throws ConfigurationException {
-    OpenAIAsyncClient client = SamplesConfig.getClient();
 
-    TextCompletion textCompletion = SKBuilders.textCompletion()
-        .withModelId("davinci-002")
-        .withOpenAIClient(client)
-        .build();
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
-    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+    // Only required if AZURE_CLIENT_KEY is set
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
 
-    System.out.println("======== Inline Function Definition ========");
+    public static void main(String[] args) throws ConfigurationException {
 
-    // Function defined using few-shot design pattern
-    String functionDefinition = """
-                    Generate a creative reason or excuse for the given event.
-                    Be creative and be funny. Let your imagination run wild.
-                    
-                    Event: I am running late.
-                    Excuse: I was being held ransom by giraffe gangsters.
-                    
-                    Event: I haven't been to the gym for a year
-                    Excuse: I've been too busy training my pet dragon.
-                    
-                    Event: {{$input}}
-                """.stripIndent();
+        OpenAIAsyncClient client;
 
-    // Create function via builder
-    var excuseFunction = SKBuilders
-        .completionFunctions()
-        .withKernel(kernel)
-        .withPromptTemplate(functionDefinition)
-        .withRequestSettings(
-            SKBuilders.completionRequestSettings()
-                .temperature(0.4)
-                .topP(1)
-                .maxTokens(100)
-                .build())
-        .build();
+        if (AZURE_CLIENT_KEY != null) {
+            client = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
+        } else {
+            client = new OpenAIClientBuilder()
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
+        }
 
+        TextGenerationService textGenerationService = TextGenerationService.builder()
+            .withOpenAIAsyncClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
-    var result = excuseFunction.invokeAsync("I missed the F1 final race").block();
-    System.out.println(result.getResult());
+        Kernel kernel = Kernel.builder()
+            .withAIService(TextGenerationService.class, textGenerationService)
+            .build();
 
-    result = excuseFunction.invokeAsync("sorry I forgot your birthday").block();
-    System.out.println(result.getResult());
+        System.out.println("======== Inline Function Definition ========");
 
-    // Create function via kernel
-    var fixedFunction = kernel.
-        getSemanticFunctionBuilder()
-        .withPromptTemplate("Translate this date " +
-            DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
-        .withRequestSettings(
-            SKBuilders.completionRequestSettings()
-                .temperature(0.4)
-                .topP(1)
-                .maxTokens(100)
-                .build())
-        .build();
+        // Function defined using few-shot design pattern
+        String promptTemplate = """
+                Generate a creative reason or excuse for the given event.
+                Be creative and be funny. Let your imagination run wild.
 
-    System.out.println(fixedFunction.invokeAsync().block().getResult());
-  }
+                Event: I am running late.
+                Excuse: I was being held ransom by giraffe gangsters.
+
+                Event: I haven't been to the gym for a year
+                Excuse: I've been too busy training my pet dragon.
+
+                Event: {{$input}}
+            """.stripIndent();
+
+        var excuseFunction = KernelFunctionFromPrompt.builder()
+            .withTemplate(promptTemplate)
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
+                    .withTemperature(0.4)
+                    .withTopP(1)
+                    .withMaxTokens(100)
+                    .build())
+            .build();
+
+        var result = kernel
+            .invokeAsync(excuseFunction)
+            .withArguments(
+                KernelFunctionArguments.builder()
+                    .withInput("I missed the F1 final race")
+                    .build())
+            .block();
+        System.out.println(result.getResult());
+
+        result = kernel.invokeAsync(excuseFunction)
+            .withArguments(
+                KernelFunctionArguments.builder()
+                    .withInput("sorry I forgot your birthday")
+                    .build())
+            .block();
+        System.out.println(result.getResult());
+
+        var date = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC)
+            .format(Instant.ofEpochSecond(1));
+        var message = "Translate this date " + date + " to French format";
+        var fixedFunction = KernelFunction.createFromPrompt(message)
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
+                    .withMaxTokens(100)
+                    .build())
+            .build();
+
+        FunctionResult<?> fixedFunctionResult = kernel
+            .invokeAsync(fixedFunction)
+            .block();
+        System.out.println(fixedFunctionResult.getResult());
+
+    }
 }
