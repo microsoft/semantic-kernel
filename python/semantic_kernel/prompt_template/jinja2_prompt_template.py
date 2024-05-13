@@ -3,7 +3,8 @@
 import logging
 from typing import TYPE_CHECKING, Any, Optional
 
-from jinja2 import BaseLoader, Environment, TemplateError
+from jinja2 import BaseLoader, TemplateError
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
 from semantic_kernel.exceptions import Jinja2TemplateRenderException, Jinja2TemplateSyntaxError
@@ -43,7 +44,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         Jinja2TemplateSyntaxError: If there is a syntax error in the Jinja2 template.
     """
 
-    _env: Environment = PrivateAttr()
+    _env: ImmutableSandboxedEnvironment = PrivateAttr()
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -57,7 +58,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             self._env = None
             return
         try:
-            self._env = Environment(loader=BaseLoader())
+            self._env = ImmutableSandboxedEnvironment(loader=BaseLoader())
         except TemplateError as e:
             logger.error(f"Invalid jinja2 template: {self.prompt_template_config.template}")
             raise Jinja2TemplateSyntaxError(f"Invalid jinja2 template: {self.prompt_template_config.template}") from e

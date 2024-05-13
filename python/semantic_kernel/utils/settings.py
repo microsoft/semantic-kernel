@@ -104,32 +104,19 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def pinecone_settings_from_dot_env() -> str:
     """
-    Reads the Pinecone API key and Environment from the .env file.
+    Reads the Pinecone API key from the .env file.
     Returns:
-        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+        str: The Pinecone API key
     """
 
-    api_key, environment = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("PINECONE_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("PINECONE_ENVIRONMENT"):
-                parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
 
     assert api_key, "Pinecone API key not found in .env file"
-    assert environment, "Pinecone environment not found in .env file"
 
-    return api_key, environment
+    return api_key
 
 
 def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
@@ -364,3 +351,27 @@ def booking_sample_settings_from_dot_env_as_dict() -> dict[str, str]:
     """
     client_id, tenant_id, client_secret = booking_sample_settings_from_dot_env()
     return {"client_id": client_id, "tenant_id": tenant_id, "client_secret": client_secret}
+
+
+def azure_container_apps_settings_from_dot_env() -> str:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        str: Azure Container Apps pool management connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("ACA_POOL_MANAGEMENT_ENDPOINT", None)
+
+    assert connection_string is not None, "Azure Container Apps connection string not found in .env file"
+
+    return connection_string
+
+
+def azure_container_apps_settings_from_dot_env_as_dict() -> dict[str, str]:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        Dict[str, str]: Azure Container Apps environment variables
+    """
+    pool_management_endpoint = azure_container_apps_settings_from_dot_env()
+    return {"pool_management_endpoint": pool_management_endpoint}
