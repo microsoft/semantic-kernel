@@ -31,7 +31,7 @@ internal static class WordprocessingDocumentEx
         var body = mainPart.Document.Body ?? throw new InvalidOperationException("The document body is missing.");
 
         var paras = body.Descendants<Paragraph>();
-        if (paras != null)
+        if (paras is not null)
         {
             foreach (Paragraph para in paras)
             {

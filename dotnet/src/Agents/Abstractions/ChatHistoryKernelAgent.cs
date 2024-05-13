@@ -14,7 +14,7 @@ public abstract class ChatHistoryKernelAgent : KernelAgent, IChatHistoryHandler
     /// <inheritdoc/>
     protected internal sealed override IEnumerable<string> GetChannelKeys()
     {
-        yield return typeof(ChatHistoryChannel).FullName;
+        yield return typeof(ChatHistoryChannel).FullName!;
     }
 
     /// <inheritdoc/>

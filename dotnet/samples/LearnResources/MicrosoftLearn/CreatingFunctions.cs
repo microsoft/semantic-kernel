@@ -55,7 +55,7 @@ public class CreatingFunctions(ITestOutputHelper output) : LearnBaseTest(["What 
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             history.AddUserMessage(userInput);
 

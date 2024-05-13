@@ -89,7 +89,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
             DefaultValue = "1",
             ParameterType = typeof(int),
             IsRequired = false,
-            Schema = schema != null ? KernelJsonSchema.Parse(schema) : null,
+            Schema = schema is not null ? KernelJsonSchema.Parse(schema) : null,
         };
 
         var sut = new KernelFunctionMetadata("foo")
