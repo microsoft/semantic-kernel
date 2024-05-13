@@ -95,7 +95,7 @@ internal sealed class ChatRun
             // Enumerate completed messages
             var newMessageIds =
                 steps.Data
-                    .Where(s => s.StepDetails.MessageCreation != null)
+                    .Where(s => s.StepDetails.MessageCreation is not null)
                     .Select(s => (s.StepDetails.MessageCreation!.MessageId, s.CompletedAt))
                     .Where(t => !processedMessageIds.Contains(t.MessageId))
                     .OrderBy(t => t.CompletedAt)

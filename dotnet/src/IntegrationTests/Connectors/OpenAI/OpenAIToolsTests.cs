@@ -331,7 +331,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
             {
                 var result = await functionCall.InvokeAsync(kernel);
 
-                chatHistory.AddMessage(AuthorRole.Tool, new ChatMessageContentItemCollection() { result });
+                chatHistory.AddMessage(AuthorRole.Tool, [result]);
             }
 
             // Adding a simulated function call to the connector response message
@@ -452,8 +452,8 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
 
         if (importHelperPlugin)
         {
-            kernel.ImportPluginFromFunctions("HelperFunctions", new[]
-            {
+            kernel.ImportPluginFromFunctions("HelperFunctions",
+            [
                 kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcTime", "Retrieves the current time in UTC."),
                 kernel.CreateFunctionFromMethod((string cityName) =>
                     cityName switch
@@ -461,7 +461,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
                         "Boston" => "61 and rainy",
                         _ => "31 and snowing",
                     }, "Get_Weather_For_City", "Gets the current weather for the specified city"),
-            });
+            ]);
         }
 
         return kernel;
