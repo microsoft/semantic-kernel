@@ -183,7 +183,11 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
         while (!reader.EndOfStream)
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+            var body = await reader.ReadLineAsync(
+#if NET
+                cancellationToken
+#endif
+                ).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(body))
             {

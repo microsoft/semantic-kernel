@@ -12,7 +12,7 @@ public class FunctionResultContentTests
 
     public FunctionResultContentTests()
     {
-        this._callContent = new FunctionCallContent("f1", "p1", "id", []);
+        this._callContent = new FunctionCallContent("f1", "p1", "id");
     }
 
     [Fact]

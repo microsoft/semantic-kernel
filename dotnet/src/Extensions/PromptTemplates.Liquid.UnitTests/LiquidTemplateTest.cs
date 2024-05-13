@@ -590,7 +590,7 @@ public class LiquidTemplateTest
         var target = new LiquidPromptTemplate(config);
 
         // Act
-        var prompt = await target.RenderAsync(new Kernel(), new KernelArguments());
+        var prompt = await target.RenderAsync(new Kernel());
 
         // Assert   
         Assert.Equal("Foo Bar Baz", prompt);
