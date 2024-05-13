@@ -18,9 +18,9 @@ public class BinaryContent : KernelContent
 {
     private Func<Task<(Stream Stream, string? MimeType)>>? _streamProvider;
     private Func<Task<(ReadOnlyMemory<byte> ByteArray, string? MimeType)>>? _byteArrayProvider;
-    private ReadOnlyMemory<byte>? _cachedByteArrayContent;
     private string? _cachedUriData;
     private Uri? _referencedUri;
+    private ReadOnlyMemory<byte>? _cachedByteArrayContent;
 
     /// <summary>
     /// Gets the Uri of the content.
@@ -151,7 +151,7 @@ public class BinaryContent : KernelContent
     /// <param name="metadata">Additional metadata</param>
     public BinaryContent(
         ReadOnlyMemory<byte> byteArray,
-        string mimeType,
+        string? mimeType,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
@@ -264,6 +264,28 @@ public class BinaryContent : KernelContent
         }
     }
 
+    /// <summary>
+    /// This method should be used as a setter of a byte array when a specialization needs it.
+    /// </summary>
+    /// <param name="byteArray">The byte array content</param>
+    protected void SetCachedContent(ReadOnlyMemory<byte> byteArray)
+    {
+        // Overriding the content will invalidate any previously cached content.
+        this._referencedUri = null;
+        this._cachedUriData = null;
+
+        this._cachedByteArrayContent = byteArray;
+    }
+
+    /// <summary>
+    /// This method should be used as a getter of a byte array when a specialization needs it.
+    /// </summary>
+    /// <returns>Returns the byte array content</returns>
+#pragma warning disable CA1024 // Use properties where appropriate
+    protected ReadOnlyMemory<byte>? GetCachedContent()
+#pragma warning restore CA1024 // Use properties where appropriate
+        => this._cachedByteArrayContent;
+
     private string GetCachedUriDataFromByteArray(ReadOnlyMemory<byte> cachedByteArray)
     {
         if (this.MimeType is null)
@@ -298,7 +320,6 @@ public class BinaryContent : KernelContent
             if (this._streamProvider is not null)
             {
                 (this._cachedByteArrayContent, this.MimeType) = await this.GetByteArrayFromStreamProviderAsync().ConfigureAwait(false);
-                return this._cachedByteArrayContent.Value;
             }
             else
             {
