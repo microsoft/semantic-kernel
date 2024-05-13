@@ -41,7 +41,10 @@ class AIServiceSelector:
         if not execution_settings_dict:
             execution_settings_dict = {"default": PromptExecutionSettings()}
         for service_id, settings in execution_settings_dict.items():
-            service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
+            try:
+                service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
+            except KernelServiceNotFoundError:
+                continue
             if service:
                 service_settings = service.get_prompt_execution_settings_from_settings(settings)
                 return service, service_settings

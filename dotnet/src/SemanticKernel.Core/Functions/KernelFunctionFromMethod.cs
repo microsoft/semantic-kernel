@@ -149,8 +149,6 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         }
 
         throw new NotSupportedException($"Streaming function {this.Name} does not support type {typeof(TResult)}");
-
-        // We don't invoke the hook here as the InvokeCoreAsync will do that for us
     }
 
     /// <inheritdoc/>
@@ -456,7 +454,7 @@ internal sealed class KernelFunctionFromMethod : KernelFunction
         var parameterView = new KernelParameterMetadata(name)
         {
             Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-            DefaultValue = parameter.DefaultValue?.ToString(),
+            DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue?.ToString() : null,
             IsRequired = !parameter.IsOptional,
             ParameterType = type,
         };

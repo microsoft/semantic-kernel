@@ -115,7 +115,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
 
-    /// <inheritdoc/>j
+    /// <inheritdoc/>
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -132,23 +132,25 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0612 // Events are deprecated
 
-        if (result.RenderedContext?.Cancel is true)
+        // Return function result if it was set in prompt filter.
+        if (result.FunctionResult is not null)
         {
-            throw new OperationCanceledException("A prompt filter requested cancellation after prompt rendering.");
+            result.FunctionResult.RenderedPrompt = result.RenderedPrompt;
+            return result.FunctionResult;
         }
 
         if (result.AIService is IChatCompletionService chatCompletion)
         {
             var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
-            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
         {
             var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
-            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
@@ -171,11 +173,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             yield break;
         }
 #pragma warning restore CS0612 // Events are deprecated
-
-        if (result.RenderedContext?.Cancel is true)
-        {
-            yield break;
-        }
 
         IAsyncEnumerable<StreamingKernelContent>? asyncReference = null;
 
@@ -318,7 +315,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     private async Task<PromptRenderingResult> RenderPromptAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         var serviceSelector = kernel.ServiceSelector;
+
         IAIService? aiService;
+        string renderedPrompt = string.Empty;
 
         // Try to use IChatCompletionService.
         if (serviceSelector.TrySelectAIService<IChatCompletionService>(
@@ -340,13 +339,27 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         kernel.OnPromptRendering(this, arguments);
 #pragma warning restore CS0618 // Events are deprecated
 
-        kernel.OnPromptRenderingFilter(this, arguments);
-
-        var renderedPrompt = await this._promptTemplate.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
-
-        if (this._logger.IsEnabled(LogLevel.Trace))
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, async (context) =>
         {
-            this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+            renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+            }
+
+            context.RenderedPrompt = renderedPrompt;
+        }).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(renderingContext.RenderedPrompt) &&
+            !string.Equals(renderingContext.RenderedPrompt, renderedPrompt, StringComparison.OrdinalIgnoreCase))
+        {
+            renderedPrompt = renderingContext.RenderedPrompt!;
+
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderingContext.RenderedPrompt);
+            }
         }
 
 #pragma warning disable CS0618 // Events are deprecated
@@ -365,30 +378,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0618 // Events are deprecated
 
-        var renderedContext = kernel.OnPromptRenderedFilter(this, arguments, renderedPrompt);
-
-        if (renderedContext is not null &&
-            !renderedContext.Cancel &&
-            renderedContext.RenderedPrompt != renderedPrompt)
-        {
-            renderedPrompt = renderedContext.RenderedPrompt;
-
-            if (this._logger.IsEnabled(LogLevel.Trace))
-            {
-                this._logger.LogTrace("Rendered prompt changed by prompt filter: {Prompt}", renderedContext.RenderedPrompt);
-            }
-        }
-
         return new(aiService, renderedPrompt)
         {
             ExecutionSettings = executionSettings,
             RenderedEventArgs = renderedEventArgs,
-            RenderedContext = renderedContext
+            FunctionResult = renderingContext.Result
         };
     }
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
+    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
     /// <summary>
     /// Captures usage details, including token information.

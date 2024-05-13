@@ -20,6 +20,7 @@ class FunctionCallContent(KernelContent):
     """Class to hold a function call response."""
 
     id: str | None
+    index: int | None = None
     name: str | None = None
     arguments: str | None = None
 
@@ -32,8 +33,11 @@ class FunctionCallContent(KernelContent):
             return self
         if self.id and other.id and self.id != other.id:
             raise ValueError("Function calls have different ids.")
+        if self.index != other.index:
+            raise ValueError("Function calls have different indexes.")
         return FunctionCallContent(
             id=self.id or other.id,
+            index=self.index or other.index,
             name=self.name or other.name,
             arguments=(self.arguments or "") + (other.arguments or ""),
         )

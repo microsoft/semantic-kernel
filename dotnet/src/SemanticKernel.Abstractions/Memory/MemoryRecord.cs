@@ -87,7 +87,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="key">Optional existing database key.</param>
-    /// <param name="timestamp">optional timestamp.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord LocalRecord(
         string id,

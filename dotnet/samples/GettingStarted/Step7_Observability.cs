@@ -1,15 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using Examples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using RepoUtils;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace GettingStarted;
 
@@ -31,16 +25,16 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Add filter using DI
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
-        kernelBuilder.Services.AddSingleton<IFunctionFilter, MyFunctionFilter>();
+        kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, MyFunctionFilter>();
 
         Kernel kernel = kernelBuilder.Build();
 
         // Add filter without DI
-        kernel.PromptFilters.Add(new MyPromptFilter(this.Output));
+        kernel.PromptRenderFilters.Add(new MyPromptFilter(this.Output));
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -63,19 +57,19 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         // Handler which is called before a function is invoked
         void MyInvokingHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            WriteLine($"Invoking {e.Function.Name}");
+            Console.WriteLine($"Invoking {e.Function.Name}");
         }
 
         // Handler which is called before a prompt is rendered
         void MyRenderingHandler(object? sender, PromptRenderingEventArgs e)
         {
-            WriteLine($"Rendering prompt for {e.Function.Name}");
+            Console.WriteLine($"Rendering prompt for {e.Function.Name}");
         }
 
         // Handler which is called after a prompt is rendered
         void MyRenderedHandler(object? sender, PromptRenderedEventArgs e)
         {
-            WriteLine($"Rendered prompt: {e.RenderedPrompt}");
+            Console.WriteLine($"Rendered prompt: {e.RenderedPrompt}");
         }
 
         // Handler which is called after a function is invoked
@@ -83,7 +77,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
         {
             if (e.Result.Metadata is not null && e.Result.Metadata.ContainsKey("Usage"))
             {
-                WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
+                Console.WriteLine($"Token usage: {e.Result.Metadata?["Usage"]?.AsJson()}");
             }
         }
 
@@ -95,7 +89,7 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
 
         // Invoke the kernel with a prompt and allow the AI to automatically invoke functions
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("How many days until Christmas? Explain your thinking.", new(settings)));
     }
 
     /// <summary>
@@ -111,41 +105,39 @@ public sealed class Step7_Observability(ITestOutputHelper output) : BaseTest(out
     /// <summary>
     /// Function filter for observability.
     /// </summary>
-    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionFilter
+    private sealed class MyFunctionFilter(ITestOutputHelper output) : IFunctionInvocationFilter
     {
         private readonly ITestOutputHelper _output = output;
 
-        public void OnFunctionInvoked(FunctionInvokedContext context)
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
         {
-            var metadata = context.Result.Metadata;
+            this._output.WriteLine($"Invoking {context.Function.Name}");
+
+            await next(context);
+
+            var metadata = context.Result?.Metadata;
 
             if (metadata is not null && metadata.ContainsKey("Usage"))
             {
                 this._output.WriteLine($"Token usage: {metadata["Usage"]?.AsJson()}");
             }
         }
-
-        public void OnFunctionInvoking(FunctionInvokingContext context)
-        {
-            this._output.WriteLine($"Invoking {context.Function.Name}");
-        }
     }
 
     /// <summary>
     /// Prompt filter for observability.
     /// </summary>
-    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptFilter
+    private sealed class MyPromptFilter(ITestOutputHelper output) : IPromptRenderFilter
     {
         private readonly ITestOutputHelper _output = output;
 
-        public void OnPromptRendered(PromptRenderedContext context)
-        {
-            this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
-        }
-
-        public void OnPromptRendering(PromptRenderingContext context)
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
         {
             this._output.WriteLine($"Rendering prompt for {context.Function.Name}");
+
+            await next(context);
+
+            this._output.WriteLine($"Rendered prompt: {context.RenderedPrompt}");
         }
     }
 }
