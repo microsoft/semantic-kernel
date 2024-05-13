@@ -50,27 +50,4 @@ public sealed class ImageContentV2 : BinaryContent
         : base(byteArray, mimeType, innerContent, modelId, metadata)
     {
     }
-
-    /// <summary>
-    /// Returns the string representation of the image.
-    /// In-memory images will be represented as DataUri
-    /// Remote Uri images will be represented as is
-    /// </summary>
-    /// <remarks>
-    /// When Data is provided it takes precedence over URI
-    /// </remarks>
-    public override string ToString()
-    {
-        return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
-    }
-
-    private string? BuildDataUri()
-    {
-        if (this.Data is null || string.IsNullOrEmpty(this.MimeType))
-        {
-            return null;
-        }
-
-        return $"data:{this.MimeType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
-    }
 }

@@ -25,7 +25,11 @@ public class OpenAIAssistant_Retrieval(ITestOutputHelper output) : BaseTest(outp
 
         OpenAIFileReference uploadFile =
             await fileService.UploadContentAsync(
-                new BinaryContent(() => Task.FromResult(EmbeddedResource.ReadStream("travelinfo.txt")!)),
+                new BinaryContent(
+                    () => Task.FromResult<(Stream, string?)>(
+                        (EmbeddedResource.ReadStream("travelinfo.txt")!, "text/plain")
+                    )
+                ),
                 new OpenAIFileUploadExecutionSettings("travelinfo.txt", OpenAIFilePurpose.Assistants));
 
         Console.WriteLine(this.ApiKey);

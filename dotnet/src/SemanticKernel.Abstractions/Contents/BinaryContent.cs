@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
@@ -17,8 +16,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class BinaryContent : KernelContent
 {
-    private Func<Task<Stream>>? _streamProvider;
-    private Func<Task<ReadOnlyMemory<byte>>>? _byteArrayProvider;
+    private Func<Task<(Stream Stream, string? MimeType)>>? _streamProvider;
+    private Func<Task<(ReadOnlyMemory<byte> ByteArray, string? MimeType)>>? _byteArrayProvider;
     private ReadOnlyMemory<byte>? _cachedByteArrayContent;
     private string? _cachedUriData;
     private Uri? _referencedUri;
@@ -70,7 +69,6 @@ public class BinaryContent : KernelContent
         return this.GetCachedUriDataFromByteArray(await this.GetCachedByteArrayContentAsync().ConfigureAwait(false));
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
     /// </summary>
@@ -80,7 +78,7 @@ public class BinaryContent : KernelContent
     /// </remarks>
     [JsonConstructor]
     public BinaryContent(
-        // Uri type has a ushort size limit check which inviabilizes its usage Data Uri scenarios.
+        // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
         string dataUri)
         : base(null, null, null)
         => this.SetUri(dataUri);
@@ -93,7 +91,7 @@ public class BinaryContent : KernelContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
     public BinaryContent(
-        // Uri type has a ushort size limit check which inviabilizes its usage Data Uri scenarios.
+        // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
         string dataUri,
         object? innerContent,
         string? modelId,
@@ -104,10 +102,13 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a Uri.
     /// </summary>
-    /// <param name="referenceUri">The Uri of the content.</param>
+    /// <param name="referenceUri">The uri of a referenced content.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
+    /// <remarks>
+    /// Prefer using this method for non-datauri references.
+    /// </remarks>
     public BinaryContent(
         Uri referenceUri,
         object? innerContent,
@@ -120,8 +121,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a byte array provider.
     /// </summary>
-    /// <param name="byteArrayProvider">The asynchronous stream provider.</param>
-    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="byteArrayProvider">The asynchronous byte array and mime type provider.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
@@ -129,17 +129,14 @@ public class BinaryContent : KernelContent
     /// To be serializeable the content needs to be retrieved first.
     /// </remarks>
     public BinaryContent(
-        Func<Task<ReadOnlyMemory<byte>>> byteArrayProvider,
-        string mimeType,
+        Func<Task<(ReadOnlyMemory<byte> ByteArray, string? MimeType)>> byteArrayProvider,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
         Verify.NotNull(byteArrayProvider, nameof(byteArrayProvider));
 
-        this.MimeType = mimeType;
         this._byteArrayProvider = byteArrayProvider;
     }
 
@@ -148,14 +145,14 @@ public class BinaryContent : KernelContent
     /// </summary>
     /// <param name="byteArray">Byte array content</param>
     /// <param name="mimeType">The mime type of the content</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
+    /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
     public BinaryContent(
         ReadOnlyMemory<byte> byteArray,
         string mimeType,
-        string? modelId = null,
         object? innerContent = null,
+        string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
@@ -169,8 +166,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class from a stream provider.
     /// </summary>
-    /// <param name="streamProvider">The asynchronous stream provider.</param>
-    /// <param name="mimeType">The mime type of the content</param>
+    /// <param name="streamProvider">The asynchronous stream and mime type provider.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
@@ -179,17 +175,14 @@ public class BinaryContent : KernelContent
     /// To be serializeable the content needs to be retrieved first.
     /// </remarks>
     public BinaryContent(
-        Func<Task<Stream>> streamProvider,
-        string mimeType,
+        Func<Task<(Stream Stream, string? MimeType)>> streamProvider,
         object? innerContent = null,
         string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
         Verify.NotNull(streamProvider, nameof(streamProvider));
 
-        this.MimeType = mimeType;
         this._streamProvider = streamProvider;
     }
 
@@ -259,19 +252,20 @@ public class BinaryContent : KernelContent
         else
         {
             // Get the mime type from the data uri.
-            base.MimeType = uri.Substring(5, uri.IndexOf(";", StringComparison.OrdinalIgnoreCase) - 5);
+            this.MimeType = uri.Substring(5, uri.IndexOf(";", StringComparison.OrdinalIgnoreCase) - 5);
             this._cachedUriData = uri;
         }
     }
 
     private string GetCachedUriDataFromByteArray(ReadOnlyMemory<byte> cachedByteArray)
     {
-        if (base.MimeType is null)
+        if (this.MimeType is null)
         {
+            // May consider defaulting to application/octet-stream if not provided.
             throw new InvalidOperationException("MimeType for the content is not set.");
         }
 
-        this._cachedUriData = $"data:{base.MimeType};base64," + Convert.ToBase64String(cachedByteArray.ToArray());
+        this._cachedUriData = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.ToArray());
         return this._cachedUriData;
     }
 
@@ -291,12 +285,12 @@ public class BinaryContent : KernelContent
             else
             if (this._byteArrayProvider is not null)
             {
-                this._cachedByteArrayContent = await this._byteArrayProvider().ConfigureAwait(false);
+                (this._cachedByteArrayContent, this.MimeType) = await this._byteArrayProvider().ConfigureAwait(false);
             }
             else
             if (this._streamProvider is not null)
             {
-                this._cachedByteArrayContent = await this.GetByteArrayFromStreamProviderAsync().ConfigureAwait(false);
+                (this._cachedByteArrayContent, this.MimeType) = await this.GetByteArrayFromStreamProviderAsync().ConfigureAwait(false);
                 return this._cachedByteArrayContent.Value;
             }
             else
@@ -308,12 +302,15 @@ public class BinaryContent : KernelContent
         return this._cachedByteArrayContent.Value;
     }
 
-    private async Task<ReadOnlyMemory<byte>> GetByteArrayFromStreamProviderAsync()
+    private async Task<(ReadOnlyMemory<byte> ByteArray, string? MimeType)> GetByteArrayFromStreamProviderAsync()
     {
-        using var stream = await this._streamProvider!().ConfigureAwait(false);
-        using var memoryStream = new MemoryStream();
-        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-        return memoryStream.ToArray();
+        (var stream, string? mimeType) = await this._streamProvider!().ConfigureAwait(false);
+        using (stream)
+        {
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+            return (memoryStream.ToArray(), mimeType);
+        }
     }
 
     private ReadOnlyMemory<byte> GetByteArrayFromStream(Stream stream)
@@ -323,4 +320,8 @@ public class BinaryContent : KernelContent
         stream.Dispose();
         return memoryStream.ToArray();
     }
+
+    /// <inheritdoc/>
+    public override string ToString()
+        => this.Uri;
 }

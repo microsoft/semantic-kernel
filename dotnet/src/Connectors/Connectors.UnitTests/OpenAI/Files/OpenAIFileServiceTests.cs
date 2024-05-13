@@ -236,7 +236,7 @@ public sealed class OpenAIFileServiceTests : IDisposable
 
         stream.Position = 0;
 
-        var content = new BinaryContent(() => Task.FromResult<Stream>(stream));
+        var content = new BinaryContent(() => Task.FromResult<(Stream, string?)>((stream, "text/plain")));
 
         // Act & Assert
         if (isFailedRequest)

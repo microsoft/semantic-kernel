@@ -190,7 +190,7 @@ public sealed class OpenAIFileService
             };
     }
 
-    private async Task<Stream> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
+    private async Task<(Stream Stream, string? MimeType)> StreamGetRequestAsync(string url, CancellationToken cancellationToken)
     {
         using var request = HttpRequest.CreateGetRequest(this.PrepareUrl(url));
         this.AddRequestHeaders(request);
@@ -198,9 +198,10 @@ public sealed class OpenAIFileService
         try
         {
             return
-                new HttpResponseStream(
+                (new HttpResponseStream(
                     await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
-                    response);
+                    response),
+                    response.Content.Headers.ContentType.MediaType);
         }
         catch
         {

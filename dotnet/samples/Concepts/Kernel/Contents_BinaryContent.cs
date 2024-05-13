@@ -3,7 +3,7 @@
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 
-namespace Kernel;
+namespace KernelExamples;
 public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact] public Task UsingRawBinaryContents()

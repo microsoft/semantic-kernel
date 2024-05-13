@@ -27,9 +27,9 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
             [
                 new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
                 new ImageContent(new Uri("https://fake-random-test-host:123")),
-                new BinaryContent(new BinaryData(data)),
+                new BinaryContent(new BinaryData(data), "application/octet-stream"),
 #pragma warning disable SKEXP0001
-                new AudioContent(new BinaryData(data))
+                new AudioContent(new BinaryData(data), "application/octet-stream")
 #pragma warning restore SKEXP0001
             ]
         };
