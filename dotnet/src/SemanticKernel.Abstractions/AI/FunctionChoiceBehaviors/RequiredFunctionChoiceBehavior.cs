@@ -108,7 +108,8 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         // Handle functions provided via constructor as function instances.
         if (this._functions is { } functions && functions.Any())
         {
-            // Make sure that every function can be found in the kernel.
+            // Ensure that every function in auto-invocation mode is present in the kernel, allowing the service to look it up for invocation later.  
+            // For manual invocation, there is no need to check if the function is available in the kernel, as the caller that registered it already has its instance.
             if (autoInvoke)
             {
                 foreach (var function in functions)
