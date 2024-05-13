@@ -25,7 +25,7 @@ public static class KernelPluginFactory
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
@@ -42,7 +42,7 @@ public static class KernelPluginFactory
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
@@ -52,7 +52,7 @@ public static class KernelPluginFactory
         pluginName ??= target.GetType().Name;
         Verify.ValidPluginName(pluginName);
 
-        MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 
         // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
         var functions = new List<KernelFunction>();
@@ -65,7 +65,7 @@ public static class KernelPluginFactory
         }
         if (functions.Count == 0)
         {
-            throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
+            throw new ArgumentException($"The {target.GetType()} instance doesn't implement any [KernelFunction]-attributed methods.");
         }
 
         if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
