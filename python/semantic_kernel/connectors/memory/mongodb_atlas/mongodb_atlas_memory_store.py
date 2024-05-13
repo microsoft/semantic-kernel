@@ -11,7 +11,6 @@ from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
-from semantic_kernel.connectors.memory.memory_settings import MongoDBAtlasSettings
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
     DEFAULT_SEARCH_INDEX_NAME,
@@ -43,10 +42,12 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         connection_string: str | None = None,
         database_name: str | None = None,
         read_preference: ReadPreference | None = ReadPreference.PRIMARY,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ):
+        from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
+
         try:
-            mongodb_settings = MongoDBAtlasSettings.create(use_env_settings_file=use_env_settings_file)
+            mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error initializing MongoDBAtlasSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing MongoDBAtlasSettings") from e

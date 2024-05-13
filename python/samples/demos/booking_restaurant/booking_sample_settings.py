@@ -22,7 +22,7 @@ class BookingSampleSettings(BaseSettings):
     For more information on these required settings, please see the sample's README.md file.
     """
 
-    use_env_settings_file: bool = False
+    env_file_path: str | None = None
     client_id: str
     tenant_id: str
     client_secret: SecretStr
@@ -38,6 +38,8 @@ class BookingSampleSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
-        if kwargs.pop("use_env_settings_file", False):
-            cls.Config.env_file = ".env"
+        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+            cls.Config.env_file = kwargs["env_file_path"]
+        else:
+            cls.Config.env_file = None
         return cls(**kwargs)

@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -28,10 +28,12 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
     def __init__(
         self,
         ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
         service_id: Optional[str] = None,
         default_headers: Optional[Mapping[str, str]] = None,
         async_client: Optional[AsyncOpenAI] = None,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """
         Initialize an OpenAITextCompletion service.
@@ -39,23 +41,29 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         Arguments:
             ai_model_id {str | None} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
+            service_id {str | None} -- Service ID tied to the execution settings.
+            api_key {str | None} -- The optional API key to use. If provided will override,
+                the env vars or .env file value.
+            org_id {str | None} -- The optional org ID to use. If provided will override,
+                the env vars or .env file value.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(use_env_settings_file=True)
+            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error loading OpenAI settings: {e}")
             raise ServiceInitializationError("Error loading OpenAI settings") from e
-        api_key = openai_settings.api_key.get_secret_value()
-        org_id = openai_settings.org_id
-        model_id = ai_model_id or openai_settings.ai_model_id
+
+        api_key = api_key or openai_settings.api_key.get_secret_value() if openai_settings.api_key else None
+        org_id = org_id or openai_settings.org_id
+        ai_model_id = ai_model_id or openai_settings.ai_model_id
 
         super().__init__(
-            ai_model_id=model_id,
+            ai_model_id=ai_model_id,
             api_key=api_key,
             org_id=org_id,
             service_id=service_id,
@@ -75,8 +83,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         if "default_headers" in settings and isinstance(settings["default_headers"], str):
             settings["default_headers"] = json.loads(settings["default_headers"])
         return OpenAITextCompletion(
-            ai_model_id=settings["ai_model_id"],
+            ai_model_id=settings.get("ai_model_id", None),
+            api_key=settings.get("api_key", None),
+            org_id=settings.get("org_id", None),
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
-            use_env_settings_file=settings.get("use_env_settings_file", False),
+            env_file_path=settings.get("env_file_path", None),
         )

@@ -20,7 +20,7 @@ class GooglePalmSettings(BaseSettings):
     - use_env_settings_file: bool - Use the environment settings file as a fallback to environment variables. (Optional)
     """
 
-    use_env_settings_file: bool = False
+    env_file_path: str | None = None
     api_key: SecretStr = None
 
     class Config:
@@ -32,6 +32,8 @@ class GooglePalmSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
-        if kwargs.pop("use_env_settings_file", False):
-            cls.Config.env_file = ".env"
+        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+            cls.Config.env_file = kwargs["env_file_path"]
+        else:
+            cls.Config.env_file = None
         return cls(**kwargs)

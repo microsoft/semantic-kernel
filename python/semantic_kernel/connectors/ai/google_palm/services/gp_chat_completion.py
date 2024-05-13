@@ -12,8 +12,8 @@ from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings impo
     GooglePalmChatPromptExecutionSettings,
     GooglePalmPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -35,8 +35,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def __init__(
         self,
         ai_model_id: str,
+        api_key: str | None = None,
         message_history: ChatHistory | None = None,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -44,16 +45,18 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
+            api_key {str | None} -- The optional API key to use. If not provided, will be read from either
+                the env vars or the .env settings file
             message_history {ChatHistory | None} -- The message history to use for context. (Optional)
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         try:
-            google_palm_settings = GooglePalmSettings.create(use_env_settings_file=use_env_settings_file)
+            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error loading Google Palm settings: {e}")
             raise ServiceInitializationError("Error loading Google Palm settings") from e
-        api_key = google_palm_settings.api_key.get_secret_value()
+        api_key = api_key or google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None
 
         super().__init__(
             ai_model_id=ai_model_id,

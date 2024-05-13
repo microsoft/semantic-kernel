@@ -12,7 +12,7 @@ from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
-from semantic_kernel.connectors.memory.memory_settings import RedisSettings
+from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
@@ -53,7 +53,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -67,11 +67,11 @@ class RedisMemoryStore(MemoryStoreBase):
             vector_type {str} -- Vector type, defaults to FLOAT32
             vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
             query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables, defaults to False
         """
         try:
-            redis_settings = RedisSettings.create(use_env_settings_file=use_env_settings_file)
+            redis_settings = RedisSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error initializing RedisSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing RedisSettings") from e

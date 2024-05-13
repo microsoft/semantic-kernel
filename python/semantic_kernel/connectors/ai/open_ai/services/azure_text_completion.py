@@ -16,7 +16,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
-from semantic_kernel.connectors.ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
@@ -29,35 +29,59 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     def __init__(
         self,
         service_id: str | None = None,
+        api_key: str | None = None,
+        deployment_name: str | None = None,
+        endpoint: str | None = None,
+        base_url: str | None = None,
+        api_version: str | None = None,
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
 
         Arguments:
             service_id: The service ID for the Azure deployment. (Optional)
+            api_key  {str | None}: The optional api key. If provided, will override the value in the
+                env vars or .env file.
+            deployment_name  {str | None}: The optional deployment. If provided, will override the value
+                (text_deployment_name) in the env vars or .env file.
+            endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+                in the env vars or .env file.
+            base_url {str | None}: The optional deployment base_url. If provided will override the value
+                in the env vars or .env file.
+            api_version {str | None}: The optional deployment api version. If provided will override the value
+                in the env vars or .env file.
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback to
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(use_env_settings_file=use_env_settings_file)
+            azure_openai_settings = AzureOpenAISettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Failed to initialize AzureTextCompletion service: {e}")
             raise ServiceInitializationError("Failed to initialize AzureTextCompletion service") from e
-        base_url = azure_openai_settings.base_url
-        endpoint = azure_openai_settings.endpoint
-        deployment_name = azure_openai_settings.text_deployment_name
-        api_version = azure_openai_settings.api_version
-        api_key = azure_openai_settings.api_key.get_secret_value()
+
+        base_url = base_url or str(azure_openai_settings.base_url) if azure_openai_settings.base_url else None
+        endpoint = endpoint or str(azure_openai_settings.endpoint) if azure_openai_settings.endpoint else None
+        deployment_name = deployment_name or azure_openai_settings.text_deployment_name
+        api_version = api_version or azure_openai_settings.api_version
+        api_key = api_key or azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None
+
+        if not base_url and not endpoint:
+            raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
+
+        if base_url and isinstance(base_url, str):
+            base_url = HttpsUrl(base_url)
+        if endpoint and deployment_name:
+            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
 
         super().__init__(
             deployment_name=deployment_name,
@@ -86,8 +110,13 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 
         return AzureTextCompletion(
             service_id=settings.get("service_id"),
+            api_key=settings.get("api_key", None),
+            deployment_name=settings.get("deployment_name", None),
+            endpoint=settings.get("endpoint", None),
+            base_url=settings.get("base_url", None),
+            api_version=settings.get("api_version", None),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            use_env_settings_file=settings.get("use_env_settings_file", False),
+            env_file_path=settings.get("use_env_settings_file", None),
         )

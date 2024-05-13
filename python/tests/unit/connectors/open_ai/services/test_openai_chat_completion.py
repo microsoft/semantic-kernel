@@ -43,11 +43,10 @@ def test_open_ai_chat_completion_init_with_default_header(openai_unit_test_env) 
         assert open_ai_chat_completion.client.default_headers[key] == value
 
 
-# TODO, if we keep a default model id, do we need this test?
-# @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
-# def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) -> None:
-#     with pytest.raises(ValidationError, match="ai_model_id"):
-#         OpenAIChatCompletion()
+@pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
+def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) -> None:
+    with pytest.raises(ServiceInitializationError):
+        OpenAIChatCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)

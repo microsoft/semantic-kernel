@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
@@ -42,11 +43,10 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
         assert azure_text_completion.client.default_headers[key] == value
 
 
-# TODO: remove test if we keep a default text deployment name?
-# @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
-# def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-#     with pytest.raises(ServiceInitializationError):
-#         AzureTextCompletion()
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
+def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ValidationError):
+        AzureTextCompletion()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)
@@ -137,7 +137,7 @@ def test_azure_text_completion_serialize(azure_openai_unit_test_env) -> None:
     azure_text_completion = AzureTextCompletion.from_dict(settings)
     dumped_settings = azure_text_completion.to_dict()
     assert dumped_settings["ai_model_id"] == settings["deployment_name"]
-    assert settings["base_url"] in str(dumped_settings["base_url"])
+    assert settings["endpoint"] in str(dumped_settings["base_url"])
     assert settings["deployment_name"] in str(dumped_settings["base_url"])
     assert settings["api_key"] == dumped_settings["api_key"]
     assert settings["api_version"] == dumped_settings["api_version"]

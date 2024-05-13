@@ -41,7 +41,7 @@ class SessionsPythonTool(KernelBaseModel):
         auth_callback: Callable[..., Awaitable[Any]],
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
@@ -52,7 +52,7 @@ class SessionsPythonTool(KernelBaseModel):
             http_client = httpx.AsyncClient()
 
         try:
-            aca_settings = ACASessionsSettings.create(use_env_settings_file=use_env_settings_file)
+            aca_settings = ACASessionsSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
             raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e

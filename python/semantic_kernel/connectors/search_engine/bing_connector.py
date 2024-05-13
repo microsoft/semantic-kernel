@@ -21,13 +21,22 @@ class BingConnector(ConnectorBase):
 
     _api_key: str
 
-    def __init__(self, use_env_settings_file: bool = False) -> None:
+    def __init__(self, api_key: str | None = None, env_file_path: str | None = None) -> None:
+        """Initializes a new instance of the BingConnector class.
+
+        Arguments:
+            api_key {str | None}: The Bing Search API key. If provided, will override
+                the value in the env vars or .env file.
+            env_file_path {str | None}: The optional path to the .env file. If provided,
+                the settings are read from this file path location.
+        """
         try:
-            bing_settings = BingSettings(use_env_settings_file=use_env_settings_file)
+            bing_settings = BingSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error loading Bing settings: {e}. The API key cannot be null.")
             raise ServiceInitializationError("Error loading Bing settings. The API key cannot be null.") from e
-        self._api_key = bing_settings.api_key.get_secret_value()
+        self._api_key = api_key or bing_settings.api_key.get_secret_value() if bing_settings.api_key else None
+        assert self._api_key, "API key cannot be 'None' or empty."
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
         """

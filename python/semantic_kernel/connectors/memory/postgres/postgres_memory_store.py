@@ -12,7 +12,7 @@ from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.memory_settings import PostgresSettings
+from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
     MemoryConnectorInitializationError,
     ServiceInitializationError,
@@ -44,7 +44,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -56,11 +56,11 @@ class PostgresMemoryStore(MemoryStoreBase):
             schema {str} -- The schema to use. (default: {"public"})\n
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
                 Expected format '-7:00'. Uses the local timezone offset when not provided.\n
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback
+            env_file_path {str | None} -- Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
         try:
-            postgres_settings = PostgresSettings.create(use_env_settings_file=use_env_settings_file)
+            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error initializing PostgresSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing PostgresSettings") from e

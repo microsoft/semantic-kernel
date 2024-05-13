@@ -5,7 +5,7 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
-from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.memory import SemanticTextMemory
 

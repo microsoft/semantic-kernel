@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, call, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.embeddings import AsyncEmbeddings
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
@@ -21,11 +22,10 @@ def test_azure_text_embedding_init(azure_openai_unit_test_env) -> None:
     assert isinstance(azure_text_embedding, EmbeddingGeneratorBase)
 
 
-# TODO, keep this test if we remove the default deployment name?
-# @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]], indirect=True)
-# def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-#     with pytest.raises(ServiceInitializationError):
-#         AzureTextEmbedding()
+@pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"]], indirect=True)
+def test_azure_text_embedding_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
+    with pytest.raises(ValidationError):
+        AzureTextEmbedding()
 
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_API_KEY"]], indirect=True)

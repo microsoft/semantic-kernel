@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone import PineconeMemoryStore
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 

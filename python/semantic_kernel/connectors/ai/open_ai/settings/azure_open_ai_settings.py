@@ -16,7 +16,7 @@ class AzureOpenAISettings(BaseSettings):
     with the encoding 'utf-8'. If the settings are not found in the .env file, the settings
     are ignored; however, validation will fail alerting that the settings are missing.
 
-    Required settings for prefix 'AZURE_OPENAI_' are:
+    Optional settings for prefix 'AZURE_OPENAI_' are:
     - chat_deployment_name: str - The name of the Azure Chat deployment. This value
                 will correspond to the custom name you chose for your deployment
                 when you deployed a model. This value can be found under
@@ -39,8 +39,6 @@ class AzureOpenAISettings(BaseSettings):
                 found in the Keys & Endpoint section when examining your resource in
                 the Azure portal. You can use either KEY1 or KEY2.
                 (Env var AZURE_OPENAI_API_KEY)
-
-    Optional settings for prefix 'AZURE_OPENAI_' are:
     - base_url: HttpsUrl | None - base_url: The url of the Azure deployment. This value
                 can be found in the Keys & Endpoint section when examining
                 your resource from the Azure portal, the base_url consists of the endpoint,
@@ -54,15 +52,16 @@ class AzureOpenAISettings(BaseSettings):
                 (Env var AZURE_OPENAI_ENDPOINT)
     - api_version: str | None - The API version to use. The default value is "2023-05-15".
                 (Env var AZURE_OPENAI_API_VERSION)
+    - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
-    use_env_settings_file: bool = False
-    chat_deployment_name: str = "gpt-35-turbo"
-    text_deployment_name: str = "gpt-35-turbo-instruct"
-    embedding_deployment_name: str = "text-embedding-ada-002"  # TODO don't have this as default
+    env_file_path: str | None = None
+    chat_deployment_name: str | None = None
+    text_deployment_name: str | None = None
+    embedding_deployment_name: str | None = None
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
-    api_key: SecretStr = None
+    api_key: SecretStr | None = None
     api_version: str = DEFAULT_AZURE_API_VERSION
 
     class Config:
@@ -74,6 +73,8 @@ class AzureOpenAISettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
-        if kwargs.pop("use_env_settings_file", False):
-            cls.Config.env_file = ".env"
+        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+            cls.Config.env_file = kwargs["env_file_path"]
+        else:
+            cls.Config.env_file = None
         return cls(**kwargs)

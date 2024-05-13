@@ -7,13 +7,13 @@ from numpy import ndarray
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmosdb_settings import AzureCosmosDBSettings
 from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
     get_mongodb_search_client,
 )
 from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
-from semantic_kernel.connectors.memory.memory_settings import AzureCosmosDBSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -86,7 +86,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         m,
         ef_construction,
         ef_search,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
@@ -94,7 +94,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         if cosmos_api == "mongo-vcore":
 
             try:
-                cosmosdb_settings = AzureCosmosDBSettings.create(use_env_settings_file=use_env_settings_file)
+                cosmosdb_settings = AzureCosmosDBSettings.create(env_file_path=env_file_path)
             except ValidationError as e:
                 logger.error(f"Error initializing AzureCosmosDBSettings: {e}")
                 raise MemoryConnectorInitializationError("Error initializing AzureCosmosDBSettings") from e

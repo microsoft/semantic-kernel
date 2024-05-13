@@ -30,7 +30,6 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
-from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -49,7 +48,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         admin_key: str | None = None,
         azure_credentials: AzureKeyCredential | None = None,
         token_credentials: TokenCredential | None = None,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
@@ -61,25 +60,29 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             azure_credentials {AzureKeyCredential | None} -- Azure Cognitive Search credentials (default: {None}).
             token_credentials {TokenCredential | None}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
-            use_env_settings_file {bool}                  -- Use the environment settings file as a fallback
+            env_file_path {str | None}                  -- Use the environment settings file as a fallback
                                                                 to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
+        from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
+
         try:
-            acs_memory_settings = AzureAISearchSettings.create(use_env_settings_file=use_env_settings_file)
+            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error initializing AzureAISearchSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing AzureAISearchSettings") from e
 
-        admin_key = admin_key or acs_memory_settings.api_key.get_secret_value()
+        admin_key = admin_key or acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None
+        assert admin_key, "The ACS admin_key is required to connect to Azure Cognitive Search."
         search_endpoint = search_endpoint or acs_memory_settings.endpoint
+        assert search_endpoint, "The ACS endpoint is required to connect to Azure Cognitive Search."
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
-            search_endpoint, admin_key, azure_credentials, token_credentials
+            str(search_endpoint), admin_key, azure_credentials, token_credentials
         )
 
     async def close(self):

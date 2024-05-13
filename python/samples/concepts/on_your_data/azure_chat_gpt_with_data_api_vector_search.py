@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
     ExtraBody,
 )
-from semantic_kernel.connectors.memory.memory_settings import AzureAISearchSettings
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel

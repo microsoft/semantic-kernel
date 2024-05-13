@@ -7,7 +7,7 @@ from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.memory_settings import PineconeSettings
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
@@ -48,14 +48,14 @@ class PineconeMemoryStore(MemoryStoreBase):
         self,
         api_key: str,
         default_dimensionality: int,
-        use_env_settings_file: bool = False,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
-            use_env_settings_file {bool} -- Use the environment settings file as a fallback
+            env_file_path {str | None} -- Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
@@ -65,12 +65,13 @@ class PineconeMemoryStore(MemoryStoreBase):
             )
 
         try:
-            pinecone_settings = PineconeSettings.create(use_env_settings_file=use_env_settings_file)
+            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error initializing PineconeSettings: {e}")
             raise MemoryConnectorInitializationError("Error initializing PineconeSettings") from e
 
-        api_key = api_key or pinecone_settings.api_key.get_secret_value()
+        api_key = api_key or pinecone_settings.api_key.get_secret_value() if pinecone_settings.api_key else None
+        assert api_key, "The Pinecone api_key cannot be None."
 
         self._pinecone_api_key = api_key
         self._default_dimensionality = default_dimensionality

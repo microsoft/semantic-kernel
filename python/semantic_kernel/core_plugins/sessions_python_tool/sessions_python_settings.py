@@ -43,7 +43,7 @@ class ACASessionsSettings(BaseSettings):
         (Env var ACA_POOL_MANAGEMENT_ENDPOINT)
     """
 
-    use_env_settings_file: bool = False
+    env_file_path: str | None = None
     pool_management_endpoint: HttpsUrl
 
     class Config:
@@ -55,6 +55,8 @@ class ACASessionsSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
-        if kwargs.pop("use_env_settings_file", False):
-            cls.Config.env_file = ".env"
+        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+            cls.Config.env_file = kwargs["env_file_path"]
+        else:
+            cls.Config.env_file = None
         return cls(**kwargs)
