@@ -19,6 +19,10 @@ namespace Microsoft.SemanticKernel;
 /// or <see cref="MethodInfo"/> referencing the method directly.
 /// </para>
 /// <para>
+/// Method visibility does not impact whether a method may be imported. Any method tagged with this attribute, regardless
+/// of whether it's public or not, will be imported.
+/// </para>
+/// <para>
 /// A description of the method should be supplied using the <see cref="DescriptionAttribute"/>.
 /// That description will be used both with LLM prompts and embedding comparisons; the quality of
 /// the description affects the planner's ability to reason about complex tasks. A <see cref="DescriptionAttribute"/>
