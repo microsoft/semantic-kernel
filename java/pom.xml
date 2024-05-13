@@ -62,6 +62,7 @@
         <project.github.repository>microsoft/semantic-kernel</project.github.repository>
         <repository.url>git@github.com:${project.github.repository}.git</repository.url>
         <spotbugs.version>4.8.3</spotbugs.version>
+        <compilingJdk8>false</compilingJdk8>
     </properties>
 
     <modules>
@@ -566,6 +567,7 @@
             <properties>
                 <maven.compiler.source>1.8</maven.compiler.source>
                 <maven.compiler.target>1.8</maven.compiler.target>
+                <compilingJdk8>true</compilingJdk8>
             </properties>
         </profile>
         <profile>
@@ -643,6 +645,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <skip>${compilingJdk8}</skip>
                             <java>
                                 <eclipse>
                                     <version>4.30</version>
