@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-sample-code</artifactId>
+            <artifactId>semantickernel-syntax-examples</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

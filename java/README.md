@@ -16,7 +16,7 @@ and frameworks.
 ## Quickstart
 
 To get an idea of how to use the Semantic Kernel for Java, you can check
-the [syntax examples](samples/sample-code/src/main/java/com/microsoft/semantickernel/samples/syntaxexamples) folder for
+the [syntax-examples](samples/semantickernel-concepts/semantickernel-syntax-examples/src/main/java/com/microsoft/semantickernel/samples/syntaxexamples) folder for
 examples of common AI-enabled scenarios.
 
 ## Get started

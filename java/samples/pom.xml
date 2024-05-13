@@ -15,9 +15,10 @@
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
 
     <modules>
-        <module>sample-code</module>
-        <module>semantickernel-openapi-plugin</module>
-        <module>booking-agent-m365</module>
+        <module>semantickernel-concepts</module>
+        <module>semantickernel-demos</module>
+        <module>semantickernel-learn-resources</module>
+        <module>semantickernel-sample-plugins</module>
     </modules>
 
     <properties>
