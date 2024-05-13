@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.samples.syntaxexamples.Example03_Arguments.StaticTextPlugin;
+import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example03_Arguments.StaticTextPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
