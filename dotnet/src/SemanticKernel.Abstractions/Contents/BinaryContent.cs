@@ -25,6 +25,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Gets the Uri of the content.
     /// </summary>
+    [JsonPropertyOrder(100)] // Ensuring Uri is serialized last for better visibility of other properties.
     public string Uri
     {
         get => this._referencedUri?.ToString()
@@ -72,16 +73,16 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
     /// </summary>
-    /// <param name="dataUri">The Uri of the content.</param>
+    /// <param name="uri">The serialized uri of the content.</param>
     /// <remarks>
     /// This constructor should be used for serialization purposes only.
     /// </remarks>
     [JsonConstructor]
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
-        string dataUri)
+        string uri)
         : base(null, null, null)
-        => this.SetUri(dataUri);
+        => this.SetUri(uri);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
@@ -93,8 +94,8 @@ public class BinaryContent : KernelContent
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
         string dataUri,
-        object? innerContent,
-        string? modelId,
+        object? innerContent = null,
+        string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
         => this.SetUri(dataUri);
@@ -111,8 +112,8 @@ public class BinaryContent : KernelContent
     /// </remarks>
     public BinaryContent(
         Uri referenceUri,
-        object? innerContent,
-        string? modelId,
+        object? innerContent = null,
+        string? modelId = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
         : this(referenceUri.ToString(), innerContent, modelId, metadata)
     {
@@ -247,10 +248,16 @@ public class BinaryContent : KernelContent
 
         if (!isDataUri)
         {
+            // Clear the data uri.
+            this._cachedUriData = null;
+
             this._referencedUri = new Uri(uri);
         }
         else
         {
+            // Clear the referenced Uri.
+            this._referencedUri = null;
+
             // Get the mime type from the data uri.
             this.MimeType = uri.Substring(5, uri.IndexOf(";", StringComparison.OrdinalIgnoreCase) - 5);
             this._cachedUriData = uri;

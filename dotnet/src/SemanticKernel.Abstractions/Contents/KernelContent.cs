@@ -27,6 +27,12 @@ namespace Microsoft.SemanticKernel;
 public abstract class KernelContent
 {
     /// <summary>
+    /// MIME type of the content.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
+
+    /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
     /// </summary>
     /// <remarks>
@@ -46,12 +52,6 @@ public abstract class KernelContent
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
-
-    /// <summary>
-    /// MIME type of the content.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MimeType { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
