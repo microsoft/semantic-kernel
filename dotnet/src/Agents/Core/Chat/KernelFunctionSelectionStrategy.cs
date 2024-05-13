@@ -83,7 +83,7 @@ public class KernelFunctionSelectionStrategy(KernelFunction function, Kernel ker
         }
 
         return
-            agents.Where(a => (a.Name ?? a.Id) == agentName).FirstOrDefault() ??
+            agents.FirstOrDefault(a => (a.Name ?? a.Id) == agentName) ??
             throw new KernelException($"Agent Failure - Strategy unable to select next agent: {agentName}");
     }
 }

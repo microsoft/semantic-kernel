@@ -1171,7 +1171,7 @@ public sealed class KernelFunctionFromMethodTests1
         var function = KernelFunctionFactory.CreateFromMethod(TestAsyncEnumerableTypeAsync);
 
         // Act
-        FunctionResult result = await function.InvokeAsync(this._kernel, []);
+        FunctionResult result = await function.InvokeAsync(this._kernel);
 
         // Assert
         Assert.NotNull(result);

@@ -46,7 +46,7 @@ public sealed class TestConfiguration
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
-        if (s_instance == null)
+        if (s_instance is null)
         {
             throw new InvalidOperationException(
                 "TestConfiguration must be initialized with a call to Initialize(IConfigurationRoot) before accessing configuration values.");
