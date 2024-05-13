@@ -20,7 +20,6 @@ from semantic_kernel.connectors.memory.redis.utils import (
     serialize_record_to_redis,
 )
 from semantic_kernel.exceptions import (
-    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
@@ -70,13 +69,17 @@ class RedisMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables, defaults to False
         """
+        redis_settings = None
         try:
             redis_settings = RedisSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing RedisSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing RedisSettings") from e
+            logger.warning(f"Failed to load Redis pydantic settings: {e}")
 
-        connection_string = connection_string or redis_settings.connection_string.get_secret_value()
+        connection_string = connection_string or (
+            redis_settings.connection_string.get_secret_value()
+            if redis_settings and redis_settings.connection_string
+            else None
+        )
 
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")

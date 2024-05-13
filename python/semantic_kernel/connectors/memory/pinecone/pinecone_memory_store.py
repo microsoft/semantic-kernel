@@ -13,7 +13,6 @@ from semantic_kernel.connectors.memory.pinecone.utils import (
     parse_payload,
 )
 from semantic_kernel.exceptions import (
-    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceInvalidRequestError,
     ServiceResourceNotFoundError,
@@ -64,13 +63,15 @@ class PineconeMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
+        pinecone_settings = None
         try:
             pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing PineconeSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing PineconeSettings") from e
+            logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
 
-        api_key = api_key or pinecone_settings.api_key.get_secret_value() if pinecone_settings.api_key else None
+        api_key = api_key or (
+            pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
+        )
         assert api_key, "The Pinecone api_key cannot be None."
 
         self._pinecone_api_key = api_key

@@ -12,16 +12,14 @@ class GooglePalmSettings(BaseSettings):
     encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
     however, validation will fail alerting that the settings are missing.
 
-    Required settings for prefix 'GOOGLE_PALM_' are:
+    Optional settings for prefix 'GOOGLE_PALM_' are:
     - api_key: SecretStr - GooglePalm API key, see https://developers.generativeai.google/products/palm
         (Env var GOOGLE_PALM_API_KEY)
-
-    Optional settings:
-    - use_env_settings_file: bool - Use the environment settings file as a fallback to environment variables. (Optional)
+    - env_file_path: {str | None} - Use the environment settings file as a fallback to environment variables. (Optional)
     """
 
     env_file_path: str | None = None
-    api_key: SecretStr = None
+    api_key: SecretStr | None = None
 
     class Config:
         env_prefix = "GOOGLE_PALM_"

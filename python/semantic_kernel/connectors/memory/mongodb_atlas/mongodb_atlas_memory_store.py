@@ -20,7 +20,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
-from semantic_kernel.exceptions import MemoryConnectorInitializationError, ServiceResourceNotFoundError
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -46,12 +46,17 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     ):
         from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
 
+        mongodb_settings = None
         try:
             mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing MongoDBAtlasSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing MongoDBAtlasSettings") from e
-        connection_string = connection_string or mongodb_settings.connection_string.get_secret_value()
+            logger.warning(f"Failed to load the MongoDBAtlas pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            mongodb_settings.connection_string.get_secret_value()
+            if mongodb_settings and mongodb_settings.connection_string
+            else None
+        )
 
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             connection_string,

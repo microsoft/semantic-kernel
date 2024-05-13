@@ -17,7 +17,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
     OpenAITextCompletionBase,
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -55,12 +54,15 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         try:
             openai_settings = OpenAISettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error loading OpenAI settings: {e}")
-            raise ServiceInitializationError("Error loading OpenAI settings") from e
+            logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
 
-        api_key = api_key or openai_settings.api_key.get_secret_value() if openai_settings.api_key else None
-        org_id = org_id or openai_settings.org_id
-        ai_model_id = ai_model_id or openai_settings.ai_model_id
+        api_key = api_key or (
+            openai_settings.api_key.get_secret_value() if openai_settings and openai_settings.api_key else None
+        )
+        org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
+        ai_model_id = ai_model_id or (
+            openai_settings.ai_model_id if openai_settings and openai_settings.ai_model_id else None
+        )
 
         super().__init__(
             ai_model_id=ai_model_id,

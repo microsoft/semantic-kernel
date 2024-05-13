@@ -93,13 +93,17 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
 
+            cosmosdb_settings = None
             try:
                 cosmosdb_settings = AzureCosmosDBSettings.create(env_file_path=env_file_path)
             except ValidationError as e:
-                logger.error(f"Error initializing AzureCosmosDBSettings: {e}")
-                raise MemoryConnectorInitializationError("Error initializing AzureCosmosDBSettings") from e
+                logger.warning(f"Failed to load AzureCosmosDB pydantic settings: {e}")
 
-            cosmos_connstr = cosmos_connstr or cosmosdb_settings.connection_string.get_secret_value()
+            cosmos_connstr = cosmos_connstr or (
+                cosmosdb_settings.connection_string.get_secret_value()
+                if cosmosdb_settings and cosmosdb_settings.connection_string
+                else None
+            )
 
             mongodb_client = get_mongodb_search_client(cosmos_connstr, application_name)
             database = mongodb_client[database_name]

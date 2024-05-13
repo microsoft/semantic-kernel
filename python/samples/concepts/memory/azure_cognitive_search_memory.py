@@ -43,7 +43,7 @@ async def search_acs_memory_questions(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    azure_ai_search_settings = AzureAISearchSettings(use_env_settings_file=False)
+    azure_ai_search_settings = AzureAISearchSettings()
 
     vector_size = 1536
 

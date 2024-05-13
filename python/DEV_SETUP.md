@@ -26,13 +26,13 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-You will then configure the Text/ChatCompletion class with the keyword argument `use_env_settings_file`:
+You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
 ```python
-chat_completion = OpenAIChatCompletion(service_id="test", use_env_settings_file=True)
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
 ```
 
-This optional `use_env_settings_file` flag will allow pydantic settings to use the `.env` file as a fallback to read the settings.
+This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
 
 If using the second method, we suggest adding a copy of the `.env` file under these folders:
 

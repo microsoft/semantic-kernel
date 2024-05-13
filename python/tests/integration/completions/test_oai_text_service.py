@@ -45,7 +45,7 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
 async def test_oai_text_completion_with_plugins_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    openai_settings = OpenAISettings.create(use_env_settings_file=True)
+    openai_settings = OpenAISettings.create()
     api_key = openai_settings.api_key.get_secret_value()
     org_id = openai_settings.org_id
 

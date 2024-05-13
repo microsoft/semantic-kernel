@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.DEBUG)
 # Bonded by their love for the natural world and shared curiosity, they uncovered a
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
-azure_ai_search_settings = AzureAISearchSettings(use_env_settings_file=False)
+azure_ai_search_settings = AzureAISearchSettings()
 
 # This example index has fields "title", "chunk", and "vector".
 # Add fields mapping to the settings.

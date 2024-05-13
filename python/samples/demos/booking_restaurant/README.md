@@ -43,10 +43,10 @@ Please make sure your either your environment variables or your .env file contai
 - "BOOKING_SAMPLE_BUSINESS_ID"
 - "BOOKING_SAMPLE_SERVICE_ID"
 
-If wanting to use the `.env` file, you must pass the `use_env_settings_file` flag as true:
+If wanting to use the `.env` file, you must pass the `env_file_path` parameter with a valid path:
 
 ```python
-booking_sample_settings = BookingSampleSettings(use_env_settings_file=use_env_settings_file)
+booking_sample_settings = BookingSampleSettings(env_file_path=env_file_path)
 ```
 
 This will tell Pydantic settings to also load the `.env` file instead of just trying to load environment variables.

@@ -69,15 +69,21 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
         from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
 
+        acs_memory_settings = None
         try:
             acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing AzureAISearchSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing AzureAISearchSettings") from e
+            logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
 
-        admin_key = admin_key or acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None
+        admin_key = admin_key or (
+            acs_memory_settings.api_key.get_secret_value()
+            if acs_memory_settings and acs_memory_settings.api_key
+            else None
+        )
         assert admin_key, "The ACS admin_key is required to connect to Azure Cognitive Search."
-        search_endpoint = search_endpoint or acs_memory_settings.endpoint
+        search_endpoint = search_endpoint or (
+            acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
+        )
         assert search_endpoint, "The ACS endpoint is required to connect to Azure Cognitive Search."
 
         self._vector_size = vector_size

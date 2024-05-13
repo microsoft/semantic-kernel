@@ -10,7 +10,6 @@ import weaviate
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -124,11 +123,11 @@ class WeaviateMemoryStore(MemoryStoreBase):
         """
 
         # Initialize settings from environment variables or defaults defined in WeaviateSettings
+        weaviate_settings = None
         try:
             weaviate_settings = WeaviateSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing WeaviateSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing WeaviateSettings") from e
+            logger.warning(f"Failed to load WeaviateSettings pydantic settings: {e}")
 
         # Override settings with provided config if available
         if config:
@@ -146,9 +145,14 @@ class WeaviateMemoryStore(MemoryStoreBase):
         This function allows for manual overriding of settings from the config parameter.
         """
         return WeaviateSettings(
-            url=config.url or str(default_settings.url) if default_settings.url else None,
-            api_key=config.api_key or default_settings.api_key.get_secret_value() if default_settings.api_key else None,
-            use_embed=config.use_embed if config.use_embed is not None else default_settings.use_embed,
+            url=config.url or (str(default_settings.url) if default_settings and default_settings.url else None),
+            api_key=config.api_key
+            or (default_settings.api_key.get_secret_value() if default_settings and default_settings.api_key else None),
+            use_embed=(
+                config.use_embed
+                if config.use_embed is not None
+                else (default_settings.use_embed if default_settings and default_settings.use_embed else False)
+            ),
         )
 
     def _initialize_client(self) -> weaviate.Client:

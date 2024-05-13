@@ -72,17 +72,27 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             async_client {AsyncAzureOpenAI | None} -- An existing client to use. (Optional)
             env_file_path {str | None} -- Use the environment settings file as a fallback to using env vars.
         """
+        azure_openai_settings = None
         try:
             azure_openai_settings = AzureOpenAISettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Failed to validate AzureOpenAISettings: {e}")
-            raise ServiceInitializationError("Failed to validate AzureOpenAISettings") from e
+            logger.warning(f"Failed to load AzureOpenAI pydantic settings: {e}")
 
-        base_url = base_url or str(azure_openai_settings.base_url) if azure_openai_settings.base_url else None
-        endpoint = endpoint or str(azure_openai_settings.endpoint) if azure_openai_settings.endpoint else None
-        deployment_name = deployment_name or azure_openai_settings.chat_deployment_name
-        api_version = api_version or azure_openai_settings.api_version
-        api_key = api_key or azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None
+        base_url = base_url or (
+            str(azure_openai_settings.base_url) if azure_openai_settings and azure_openai_settings.base_url else None
+        )
+        endpoint = endpoint or (
+            str(azure_openai_settings.endpoint) if azure_openai_settings and azure_openai_settings.endpoint else None
+        )
+        deployment_name = deployment_name or (
+            azure_openai_settings.chat_deployment_name if azure_openai_settings else None
+        )
+        api_version = api_version or (azure_openai_settings.api_version if azure_openai_settings else None)
+        api_key = api_key or (
+            azure_openai_settings.api_key.get_secret_value()
+            if azure_openai_settings and azure_openai_settings.api_key
+            else None
+        )
 
         if not base_url and not endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")

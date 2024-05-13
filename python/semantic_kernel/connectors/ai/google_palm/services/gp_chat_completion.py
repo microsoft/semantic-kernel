@@ -20,7 +20,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -51,12 +50,17 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
+        google_palm_settings = None
         try:
             google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error loading Google Palm settings: {e}")
-            raise ServiceInitializationError("Error loading Google Palm settings") from e
-        api_key = api_key or google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None
+            logger.warning(f"Error loading Google Palm pydantic settings: {e}")
+
+        api_key = api_key or (
+            google_palm_settings.api_key.get_secret_value()
+            if google_palm_settings and google_palm_settings.api_key
+            else None
+        )
 
         super().__init__(
             ai_model_id=ai_model_id,

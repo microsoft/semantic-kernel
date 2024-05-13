@@ -10,7 +10,6 @@ from pydantic import StringConstraints, ValidationError
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -33,9 +32,13 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         try:
             google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error loading Google Palm settings: {e}")
-            raise ServiceInitializationError("Error loading Google Palm settings") from e
-        api_key = google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None
+            logger.error(f"Error loading Google Palm pydantic settings: {e}")
+
+        api_key = api_key or (
+            google_palm_settings.api_key.get_secret_value()
+            if google_palm_settings and google_palm_settings.api_key
+            else None
+        )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:

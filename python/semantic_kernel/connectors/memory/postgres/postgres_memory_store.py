@@ -14,7 +14,6 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
-    MemoryConnectorInitializationError,
     ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
@@ -59,13 +58,17 @@ class PostgresMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
+        postgres_settings = None
         try:
             postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error initializing PostgresSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing PostgresSettings") from e
+            logger.warning(f"Failed to load Postgres pydantic settings: {e}")
 
-        connection_string = connection_string or postgres_settings.connection_string.get_secret_value()
+        connection_string = connection_string or (
+            postgres_settings.connection_string.get_secret_value()
+            if postgres_settings and postgres_settings.connection_string
+            else None
+        )
 
         self._check_dimensionality(default_dimensionality)
 

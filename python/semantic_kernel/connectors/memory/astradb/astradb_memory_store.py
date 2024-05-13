@@ -55,20 +55,26 @@ class AstraDBMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a
                 fallback to environment variables. (Optional)
         """
+        astradb_settings = None
         try:
             astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error validating AstraDBSettings: {e}")
-            raise MemoryConnectorInitializationError("Error initializing AstraDBSettings") from e
+            logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
 
         # Load the settings and validate
-        astra_application_token = astra_application_token or astradb_settings.app_token.get_secret_value()
+        astra_application_token = astra_application_token or (
+            astradb_settings.app_token.get_secret_value() if astradb_settings and astradb_settings.app_token else None
+        )
         assert astra_application_token is not None, "The astra_application_token cannot be None."
-        astra_id = astra_id or astradb_settings.db_id
+        astra_id = astra_id or (astradb_settings.db_id if astradb_settings and astradb_settings.db_id else None)
         assert astra_id is not None, "The astra_id cannot be None."
-        astra_region = astra_region or astradb_settings.region
+        astra_region = astra_region or (
+            astradb_settings.region if astradb_settings and astradb_settings.region else None
+        )
         assert astra_region is not None, "The astra_region cannot be None."
-        keyspace_name = keyspace_name or astradb_settings.keyspace
+        keyspace_name = keyspace_name or (
+            astradb_settings.keyspace if astradb_settings and astradb_settings.keyspace else None
+        )
         assert keyspace_name is not None, "The keyspace_name cannot be None."
 
         self._embedding_dim = embedding_dim

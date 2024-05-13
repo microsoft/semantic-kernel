@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions import ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -30,12 +30,15 @@ class BingConnector(ConnectorBase):
             env_file_path {str | None}: The optional path to the .env file. If provided,
                 the settings are read from this file path location.
         """
+        bing_settings = None
         try:
             bing_settings = BingSettings(env_file_path=env_file_path)
         except ValidationError as e:
-            logger.error(f"Error loading Bing settings: {e}. The API key cannot be null.")
-            raise ServiceInitializationError("Error loading Bing settings. The API key cannot be null.") from e
-        self._api_key = api_key or bing_settings.api_key.get_secret_value() if bing_settings.api_key else None
+            logger.warning(f"Failed to load the Bing pydantic settings: {e}.")
+
+        self._api_key = api_key or (
+            bing_settings.api_key.get_secret_value() if bing_settings and bing_settings.api_key else None
+        )
         assert self._api_key, "API key cannot be 'None' or empty."
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:

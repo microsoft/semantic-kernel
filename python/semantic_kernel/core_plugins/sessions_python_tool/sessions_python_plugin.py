@@ -39,6 +39,7 @@ class SessionsPythonTool(KernelBaseModel):
     def __init__(
         self,
         auth_callback: Callable[..., Awaitable[Any]],
+        pool_management_endpoint: str | None = None,
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
         env_file_path: str | None = None,
@@ -57,7 +58,7 @@ class SessionsPythonTool(KernelBaseModel):
             logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
             raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
 
-        endpoint = aca_settings.pool_management_endpoint
+        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
 
         super().__init__(
             pool_management_endpoint=endpoint,
