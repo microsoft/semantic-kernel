@@ -1016,12 +1016,12 @@ internal abstract class ClientCore
 
         if (!string.IsNullOrWhiteSpace(executionSettings.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
-            options.Messages.AddRange(GetRequestMessages(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt), executionSettings));
+            options.Messages.AddRange(GetRequestMessages(new ChatMessageContent(AuthorRole.System, executionSettings!.ChatSystemPrompt), executionSettings.ToolCallBehavior));
         }
 
         foreach (var message in chatHistory)
         {
-            options.Messages.AddRange(GetRequestMessages(message, executionSettings));
+            options.Messages.AddRange(GetRequestMessages(message, executionSettings.ToolCallBehavior));
         }
 
         return options;
@@ -1090,7 +1090,7 @@ internal abstract class ClientCore
                     continue;
                 }
 
-                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, executionSettings.ToolCallBehavior);
+                var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 
                 toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
             }
