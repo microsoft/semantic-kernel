@@ -42,14 +42,14 @@ internal sealed class ChatMessage : IChatMessage
         var content = model.Content.First();
 
         this.Annotations =
-            content.Text == null ?
+            content.Text is null ?
                 Array.Empty<IAnnotation>() :
                 content.Text.Annotations.Select(a => new Annotation(a.Text, a.StartIndex, a.EndIndex, a.FileCitation?.FileId ?? a.FilePath!.FileId, a.FileCitation?.Quote)).ToArray();
 
         this.Id = model.Id;
         this.AgentId = string.IsNullOrWhiteSpace(model.AssistantId) ? null : model.AssistantId;
         this.Role = model.Role;
-        this.ContentType = content.Text == null ? ChatMessageType.Image : ChatMessageType.Text;
+        this.ContentType = content.Text is null ? ChatMessageType.Image : ChatMessageType.Text;
         this.Content = content.Text?.Value ?? content.Image?.FileId ?? string.Empty;
         this.Properties = new ReadOnlyDictionary<string, object>(model.Metadata);
     }

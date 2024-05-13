@@ -625,13 +625,15 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -640,7 +642,8 @@ public static class OpenAIServiceCollectionExtensions
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
 
         return builder;
     }
@@ -652,12 +655,14 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="modelId">The OpenAI model id.</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        int? dimensions = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -666,7 +671,8 @@ public static class OpenAIServiceCollectionExtensions
             new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions));
     }
 
     #endregion

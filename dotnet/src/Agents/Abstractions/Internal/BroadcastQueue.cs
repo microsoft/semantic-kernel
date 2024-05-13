@@ -73,7 +73,7 @@ internal sealed class BroadcastQueue
     {
         // Either won race with Enqueue or lost race with ReceiveAsync.
         // Missing queue is synchronized by definition.
-        if (!this._queues.TryGetValue(channelRef.Hash, out QueueReference queueRef))
+        if (!this._queues.TryGetValue(channelRef.Hash, out QueueReference? queueRef))
         {
             return;
         }
@@ -89,7 +89,7 @@ internal sealed class BroadcastQueue
                 isEmpty = queueRef.IsEmpty;
 
                 // Propagate prior failure (inform caller of synchronization issue)
-                if (queueRef.ReceiveFailure != null)
+                if (queueRef.ReceiveFailure is not null)
                 {
                     Exception failure = queueRef.ReceiveFailure;
                     queueRef.ReceiveFailure = null;
@@ -155,7 +155,7 @@ internal sealed class BroadcastQueue
             lock (queueRef.QueueLock)
             {
                 // Propagate failure or update queue
-                if (failure != null)
+                if (failure is not null)
                 {
                     queueRef.ReceiveFailure = failure;
                     break; // Failure on non-empty queue means, still not empty.

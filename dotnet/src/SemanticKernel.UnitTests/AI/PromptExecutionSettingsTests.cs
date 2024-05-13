@@ -56,5 +56,8 @@ public class PromptExecutionSettingsTests
         Assert.NotNull(executionSettings.ExtensionData);
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData.Add("results_per_prompt", 2));
         Assert.Throws<NotSupportedException>(() => executionSettings.ExtensionData["temperature"] = 1);
+
+        executionSettings!.Freeze(); // idempotent
+        Assert.True(executionSettings.IsFrozen);
     }
 }
