@@ -1,14 +1,9 @@
 import sys
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, AsyncGenerator, Optional, Union
 
 import pytest
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
-from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
+from semantic_kernel.functions.kernel_function_decorator import _parse_parameter, kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -257,11 +252,17 @@ def test_kernel_function_no_typing():
         (Annotated[Optional[Union[str, int]], "test"], "test", ["str", "int"], False),
         (str, None, "str", True),
         (Union[str, int, float, "KernelArguments"], None, ["str", "int", "float", "KernelArguments"], True),
+        (
+            Annotated[dict | str | None, "A dictionary of path parameters"],
+            "A dictionary of path parameters",
+            "dict, str",
+            False,
+        ),
     ],
 )
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_annotation_parsing(annotation, description, type_, is_required):
-    annotations = _parse_annotation(annotation)
+    annotations = _parse_parameter("test", annotation)
 
     assert description == annotations.get("description")
     if isinstance(type_, list):
