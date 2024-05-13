@@ -22,7 +22,7 @@ examples of common AI-enabled scenarios.
 ## Get started
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
-an [Open AI API Key](https://openai.com/api/)
+an [Open AI API Key](https://platform.openai.com/)
 or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 ### Requirements
@@ -116,4 +116,3 @@ This project is licensed under the [MIT License](../LICENSE).
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
-

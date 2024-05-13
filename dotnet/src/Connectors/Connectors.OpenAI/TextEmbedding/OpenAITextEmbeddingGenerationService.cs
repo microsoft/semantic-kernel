@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI text embedding service.
 /// </summary>
-[Experimental("SKEXP0011")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly OpenAIClientCore _core;
@@ -36,7 +36,12 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
     }

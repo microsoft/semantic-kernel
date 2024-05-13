@@ -11,6 +11,11 @@ from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
 
+from semantic_kernel.exceptions import (
+    ServiceInitializationError,
+    ServiceResourceNotFoundError,
+    ServiceResponseException,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -151,7 +156,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -176,7 +181,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
                 result = cur.fetchone()
                 if result is None:
-                    raise Exception("Upsert failed")
+                    raise ServiceResponseException("Upsert failed")
                 return result[0]
 
     async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
@@ -192,7 +197,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.nextset()
                 cur.executemany(
                     SQL(
@@ -226,7 +231,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                 while cur.nextset():
                     results.append(cur.fetchone())
                 if None in results:
-                    raise Exception("Upsert failed")
+                    raise ServiceResponseException("Upsert failed")
                 return [result[0] for result in results if result is not None]
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
@@ -243,7 +248,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -259,12 +264,12 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
                 result = cur.fetchone()
                 if result is None:
-                    raise KeyError("Key not found")
+                    raise ServiceResourceNotFoundError("Key not found")
                 return MemoryRecord.local_record(
                     id=result[0],
-                    embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                    if with_embedding
-                    else np.array([]),
+                    embedding=(
+                        np.fromstring(result[1].strip("[]"), dtype=float, sep=",") if with_embedding else np.array([])
+                    ),
                     text=result[2]["text"],
                     description=result[2]["description"],
                     additional_metadata=result[2]["additional_metadata"],
@@ -287,7 +292,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -305,9 +310,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                 return [
                     MemoryRecord.local_record(
                         id=result[0],
-                        embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                        if with_embeddings
-                        else np.array([]),
+                        embedding=(
+                            np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                            if with_embeddings
+                            else np.array([])
+                        ),
                         text=result[2]["text"],
                         description=result[2]["description"],
                         additional_metadata=result[2]["additional_metadata"],
@@ -329,7 +336,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -353,7 +360,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -387,7 +394,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         with self._connection_pool.connection() as conn:
             with conn.cursor() as cur:
                 if not await self.__does_collection_exist(cur, collection_name):
-                    raise Exception(f"Collection '{collection_name}' does not exist")
+                    raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
                 cur.execute(
                     SQL(
                         """
@@ -419,9 +426,11 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (
                         MemoryRecord.local_record(
                             id=result[0],
-                            embedding=np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
-                            if with_embeddings
-                            else np.array([]),
+                            embedding=(
+                                np.fromstring(result[1].strip("[]"), dtype=float, sep=",")
+                                if with_embeddings
+                                else np.array([])
+                            ),
                             text=result[2]["text"],
                             description=result[2]["description"],
                             additional_metadata=result[2]["additional_metadata"],
@@ -459,7 +468,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             with_embeddings=with_embedding,
         )
         if len(results) == 0:
-            raise Exception("No match found")
+            raise ServiceResourceNotFoundError("No match found")
         return results[0]
 
     async def __does_collection_exist(self, cur: Cursor, collection_name: str) -> bool:
@@ -479,11 +488,11 @@ class PostgresMemoryStore(MemoryStoreBase):
 
     def _check_dimensionality(self, dimension_num):
         if dimension_num > MAX_DIMENSIONALITY:
-            raise ValueError(
+            raise ServiceInitializationError(
                 f"Dimensionality of {dimension_num} exceeds " + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         if dimension_num <= 0:
-            raise ValueError("Dimensionality must be a positive integer. ")
+            raise ServiceInitializationError("Dimensionality must be a positive integer. ")
 
     def __serialize_metadata(self, record: MemoryRecord) -> str:
         return json.dumps(

@@ -159,7 +159,7 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("input_variables")]
     public List<InputVariable> InputVariables
     {
-        get => this._inputVariables ??= new();
+        get => this._inputVariables ??= [];
         set
         {
             Verify.NotNull(value);
@@ -182,13 +182,26 @@ public sealed class PromptTemplateConfig
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
     {
-        get => this._executionSettings ??= new();
+        get => this._executionSettings ??= [];
         set
         {
             Verify.NotNull(value);
             this._executionSettings = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to allow unsafe content.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the return values from functions is treated as safe content and will not be HTML encoded.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_unsafe_content")]
+    public bool AllowUnsafeContent { get; set; } = false;
 
     /// <summary>
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
@@ -225,7 +238,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     internal IReadOnlyList<KernelParameterMetadata> GetKernelParametersMetadata()
     {
-        KernelParameterMetadata[] result = Array.Empty<KernelParameterMetadata>();
+        KernelParameterMetadata[] result = [];
         if (this._inputVariables is List<InputVariable> inputVariables)
         {
             result = new KernelParameterMetadata[inputVariables.Count];

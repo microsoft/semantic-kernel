@@ -4,6 +4,15 @@ from typing import Dict, List, Optional
 import aiohttp
 
 from semantic_kernel.connectors.memory.astradb.utils import AsyncSession
+from semantic_kernel.connectors.telemetry import APP_INFO
+from semantic_kernel.exceptions import ServiceResponseException
+
+ASTRA_CALLER_IDENTITY: str
+SEMANTIC_KERNEL_VERSION = APP_INFO.get("Semantic-Kernel-Version")
+if SEMANTIC_KERNEL_VERSION:
+    ASTRA_CALLER_IDENTITY = f"semantic-kernel/{SEMANTIC_KERNEL_VERSION}"
+else:
+    ASTRA_CALLER_IDENTITY = "semantic-kernel"
 
 
 class AstraClient:
@@ -30,6 +39,7 @@ class AstraClient:
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
+            "User-Agent": ASTRA_CALLER_IDENTITY,
         }
         self._session = session
 
@@ -39,11 +49,11 @@ class AstraClient:
                 if response.status == 200:
                     response_dict = await response.json()
                     if "errors" in response_dict:
-                        raise Exception(f"Astra DB request error - {response_dict['errors']}")
+                        raise ServiceResponseException(f"Astra DB request error - {response_dict['errors']}")
                     else:
                         return response_dict
                 else:
-                    raise Exception(f"Astra DB not available. Status : {response}")
+                    raise ServiceResponseException(f"Astra DB not available. Status : {response}")
 
     async def find_collections(self, include_detail: bool = True):
         query = {"findCollections": {"options": {"explain": include_detail}}}

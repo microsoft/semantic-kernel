@@ -10,10 +10,11 @@ namespace Microsoft.SemanticKernel.Http;
 /// Associate a response stream with its parent response for parity in life-cycle management.
 /// </summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "This class is an internal utility.")]
-internal sealed class HttpResponseStream : Stream
+[ExcludeFromCodeCoverage]
+internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage response) : Stream
 {
-    private readonly Stream _stream;
-    private readonly HttpResponseMessage _response;
+    private readonly Stream _stream = stream;
+    private readonly HttpResponseMessage _response = response;
 
     public override bool CanRead => this._stream.CanRead;
 
@@ -48,12 +49,6 @@ internal sealed class HttpResponseStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         this._stream.Write(buffer, offset, count);
-    }
-
-    public HttpResponseStream(Stream stream, HttpResponseMessage response)
-    {
-        this._stream = stream;
-        this._response = response;
     }
 
     protected override void Dispose(bool disposing)

@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "description": "Test Description",
+  "template_format": "handlebars",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 123,
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "presence_penalty": 0.0,
+      "frequency_penalty": 2.0
+    }
+  }
+}

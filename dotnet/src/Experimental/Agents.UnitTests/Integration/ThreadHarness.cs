@@ -19,7 +19,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests.Integration;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class ThreadHarness
+public sealed class ThreadHarness(ITestOutputHelper output)
 {
 #if DISABLEHOST
     private const string SkipReason = "Harness only for local/dev environment";
@@ -27,15 +27,7 @@ public sealed class ThreadHarness
     private const string SkipReason = null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public ThreadHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Verify creation and retrieval of thread.
@@ -67,5 +59,33 @@ public sealed class ThreadHarness
         await context.DeleteThreadModelAsync(thread.Id).ConfigureAwait(true);
 
         await Assert.ThrowsAsync<HttpOperationException>(() => context.GetThreadModelAsync(thread.Id)).ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Verify retrieval of thread messages
+    /// </summary>
+    [Fact(Skip = SkipReason)]
+    public async Task GetThreadAsync()
+    {
+        var threadId = "<your thread-id>";
+
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
+        var thread = await ChatThread.GetAsync(context, threadId);
+
+        int index = 0;
+        string? messageId = null;
+        while (messageId != null || index == 0)
+        {
+            var messages = await thread.GetMessagesAsync(count: 100, lastMessageId: messageId).ConfigureAwait(true);
+            foreach (var message in messages)
+            {
+                ++index;
+                this._output.WriteLine($"#{index:000} [{message.Id}] {message.Role} [{message.AgentId ?? "n/a"}]");
+
+                this._output.WriteLine(message.Content);
+            }
+
+            messageId = messages.Count > 0 ? messages[messages.Count - 1].Id : null;
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class MemoryBuilder
 {
     private Func<IMemoryStore>? _memoryStoreFactory = null;

@@ -112,7 +112,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         KernelFunctionArguments arguments = preRenderingHookResult.getArguments();
 
-        // TOOD: put in method, add catch for classcastexception, fallback to noopconverter
+        // TODO: put in method, add catch for classcastexception, fallback to noopconverter
         ContextVariableType<T> variableType = contextVariableType != null
             ? contextVariableType
             : context.getContextVariableTypes().getVariableTypeForClass(

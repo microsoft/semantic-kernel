@@ -83,7 +83,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         List<KernelFunctionMetadata> metadata = new(this.FunctionCount);
         foreach (KernelFunction function in this)
         {
-            metadata.Add(new KernelFunctionMetadata(function.Metadata) { PluginName = this.Name });
+            metadata.Add(function.Metadata);
         }
 
         return metadata;
@@ -96,16 +96,14 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
     /// <summary>Debugger type proxy for the kernel plugin.</summary>
-    private sealed class TypeProxy
+    private sealed class TypeProxy(KernelPlugin plugin)
     {
-        private readonly KernelPlugin _plugin;
-
-        public TypeProxy(KernelPlugin plugin) => this._plugin = plugin;
+        private readonly KernelPlugin _plugin = plugin;
 
         public string Name => this._plugin.Name;
 
         public string Description => this._plugin.Description;
 
-        public KernelFunction[] Functions => this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        public KernelFunction[] Functions => [.. this._plugin.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)];
     }
 }

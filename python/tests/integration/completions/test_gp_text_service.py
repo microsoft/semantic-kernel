@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-import semantic_kernel as sk
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 pytestmark = [
     pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"),
@@ -20,8 +20,10 @@ pytestmark = [
 async def test_text2text_generation_input_str(setup_gp_text_completion_function):
     kernel, text2text_function, simple_input = setup_gp_text_completion_function
 
+    arguments = KernelArguments(input=simple_input, input2="")
+
     # Complete input string and print
-    summary = await kernel.run(text2text_function, input_str=simple_input)
+    summary = await kernel.invoke(text2text_function, arguments)
 
     output = str(summary).strip()
     print(f"Completion using input string: '{output}'")
@@ -29,82 +31,24 @@ async def test_text2text_generation_input_str(setup_gp_text_completion_function)
 
 
 @pytest.mark.asyncio
-async def test_text2text_generation_input_vars(setup_gp_text_completion_function):
+async def test_text2text_generation_empty_input_arguments(setup_gp_text_completion_function):
     kernel, text2text_function, simple_input = setup_gp_text_completion_function
 
-    # Complete input as context variable and print
-    context_vars = sk.ContextVariables(simple_input)
-    summary = await kernel.run(text2text_function, input_vars=context_vars)
+    arguments = KernelArguments(input=simple_input, input2="")
+    summary = await kernel.invoke(text2text_function, arguments)
 
     output = str(summary).strip()
-    print(f"Completion using context variables: '{output}'")
+    print(f"Completion using arguments: '{output}'")
     assert len(output) > 0
 
 
 @pytest.mark.asyncio
-async def test_text2text_generation_input_context(setup_gp_text_completion_function):
+async def test_text2text_generation_input_arguments_provided(setup_gp_text_completion_function):
     kernel, text2text_function, simple_input = setup_gp_text_completion_function
 
-    # Complete input context and print
-    context = kernel.create_new_context()
-    context["input"] = simple_input
-    summary = await kernel.run(text2text_function, input_context=context)
+    arguments = KernelArguments(input=simple_input, input2="running and")
+    summary = await kernel.invoke(text2text_function, arguments)
 
     output = str(summary).strip()
-    print(f"Completion using input context: '{output}'")
-    assert len(output) > 0
-
-
-@pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_vars(
-    setup_gp_text_completion_function,
-):
-    kernel, text2text_function, simple_input = setup_gp_text_completion_function
-
-    # Complete input context with additional variables and print
-    context = kernel.create_new_context()
-    context["input"] = simple_input
-    context_vars = sk.ContextVariables("running and")
-    summary = await kernel.run(text2text_function, input_context=context, input_vars=context_vars)
-
-    output = str(summary).strip()
-    print(f"Completion using context and additional variables: '{output}'")
-    assert len(output) > 0
-
-
-@pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_str(
-    setup_gp_text_completion_function,
-):
-    kernel, text2text_function, simple_input = setup_gp_text_completion_function
-
-    # Complete input context with additional input string and print
-    context = kernel.create_new_context()
-    context["input"] = simple_input
-    summary = await kernel.run(text2text_function, input_context=context, input_str="running and")
-
-    output = str(summary).strip()
-    print(f"Completion using context and additional string: '{output}'")
-    assert len(output) > 0
-
-
-@pytest.mark.asyncio
-async def test_text2text_generation_input_context_with_vars_and_str(
-    setup_gp_text_completion_function,
-):
-    kernel, text2text_function, simple_input = setup_gp_text_completion_function
-
-    # Complete input context with additional variables and string and print
-    context = kernel.create_new_context()
-    context["input"] = simple_input
-    context_vars = sk.ContextVariables(variables={"input2": "running and"})
-    summary = await kernel.run(
-        text2text_function,
-        input_context=context,
-        input_vars=context_vars,
-        input_str="new text",
-    )
-
-    output = str(summary).strip()
-    print(f"Completion using context, additional variables, and additional string: '{output}'")
+    print(f"Completion using input arguments: '{output}'")
     assert len(output) > 0

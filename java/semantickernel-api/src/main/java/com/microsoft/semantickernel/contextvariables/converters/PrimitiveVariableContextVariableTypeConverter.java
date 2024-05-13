@@ -10,7 +10,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
- * A {@link ContextVariableTypeConverter} for primative variables.
+ * A {@link ContextVariableTypeConverter} for primitive variables.
  *
  * @param <T> the type of the variable
  */
@@ -24,7 +24,7 @@ public class PrimitiveVariableContextVariableTypeConverter<T> extends
      *
      * @param clazz            the class
      * @param fromPromptString the function to convert from a prompt string
-     * @param fromObject       the function to convert from an object to primative
+     * @param fromObject       the function to convert from an object to primitive
      */
     public PrimitiveVariableContextVariableTypeConverter(
         Class<T> clazz,
