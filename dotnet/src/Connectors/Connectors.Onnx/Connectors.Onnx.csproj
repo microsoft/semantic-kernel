@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Onnx</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
@@ -21,7 +21,6 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
 
     <PackageReference Include="FastBertTokenizer" />
-    <PackageReference Include="Microsoft.Bcl.Numerics" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>

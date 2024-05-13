@@ -28,8 +28,10 @@ public sealed class HuggingFaceStreamingChatCompletionTests : IDisposable
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(HuggingFaceTestHelper.GetTestResponse("chatcompletion_test_stream_response.txt"));
 
-        this._httpClient = new HttpClient(this._messageHandlerStub, false);
-        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host/fake-path");
+        this._httpClient = new HttpClient(this._messageHandlerStub, false)
+        {
+            BaseAddress = new Uri("https://fake-random-test-host/fake-path")
+        };
     }
 
     [Fact]

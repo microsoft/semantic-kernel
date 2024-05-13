@@ -1106,11 +1106,11 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static IEnumerable<ChatRequestMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+    private static List<ChatRequestMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
         {
-            return new[] { new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName } };
+            return [new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName }];
         }
 
         if (message.Role == AuthorRole.Tool)
@@ -1120,12 +1120,12 @@ internal abstract class ClientCore
             if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
                 toolId?.ToString() is string toolIdString)
             {
-                return new[] { new ChatRequestToolMessage(message.Content, toolIdString) };
+                return [new ChatRequestToolMessage(message.Content, toolIdString)];
             }
 
             // Handling function results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            List<ChatRequestToolMessage>? toolMessages = null;
+            List<ChatRequestMessage>? toolMessages = null;
             foreach (var item in message.Items)
             {
                 if (item is not FunctionResultContent resultContent)
@@ -1158,16 +1158,16 @@ internal abstract class ClientCore
         {
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new[] { new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName } };
+                return [new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName }];
             }
 
-            return new[] {new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+            return [new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
             {
                 TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                 ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
-            { Name = message.AuthorName }};
+            { Name = message.AuthorName }];
         }
 
         if (message.Role == AuthorRole.Assistant)
@@ -1228,7 +1228,7 @@ internal abstract class ClientCore
                 asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
-            return new[] { asstMessage };
+            return [asstMessage];
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");

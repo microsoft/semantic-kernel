@@ -44,7 +44,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
 
-        arguments = this.GetVariables(kernel, arguments);
+        arguments = this.GetVariables(arguments);
         var handlebarsInstance = HandlebarsDotNet.Handlebars.Create();
 
         // Register kernel, system, and any custom helpers
@@ -71,7 +71,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         CancellationToken cancellationToken = default)
     {
         // Add SK's built-in system helpers
-        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments, this._options);
+        KernelSystemHelpers.Register(handlebarsInstance, kernel, arguments);
 
         // Add built-in helpers from the HandlebarsDotNet library
         HandlebarsHelpers.Register(handlebarsInstance, optionsCallback: options =>
@@ -96,13 +96,13 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private KernelArguments GetVariables(Kernel kernel, KernelArguments? arguments)
+    private KernelArguments GetVariables(KernelArguments? arguments)
     {
         KernelArguments result = [];
 
         foreach (var p in this._promptModel.InputVariables)
         {
-            if (p.Default == null || (p.Default is string stringDefault && stringDefault.Length == 0))
+            if (p.Default is null || (p.Default is string stringDefault && stringDefault.Length == 0))
             {
                 continue;
             }
