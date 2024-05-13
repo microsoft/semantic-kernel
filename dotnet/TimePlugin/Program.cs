@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 #pragma warning disable CA1050 // Declare types in namespaces
 
+using System.ComponentModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using System.ComponentModel;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
