@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <EnablePackageValidation>false</EnablePackageValidation>
     <IsPackable>false</IsPackable>
     <VersionSuffix>alpha</VersionSuffix>

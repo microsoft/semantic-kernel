@@ -15,14 +15,14 @@ public sealed class ComplexParamsDictionaryPlugin
 {
     public const string PluginName = nameof(ComplexParamsDictionaryPlugin);
 
-    private readonly List<DictionaryEntry> _dictionary = new()
-        {
+    private readonly List<DictionaryEntry> _dictionary =
+        [
             new DictionaryEntry("apple", "a round fruit with red, green, or yellow skin and a white flesh"),
             new DictionaryEntry("book", "a set of printed or written pages bound together along one edge"),
             new DictionaryEntry("cat", "a small furry animal with whiskers and a long tail that is often kept as a pet"),
             new DictionaryEntry("dog", "a domesticated animal with four legs, a tail, and a keen sense of smell that is often used for hunting or companionship"),
             new DictionaryEntry("elephant", "a large gray mammal with a long trunk, tusks, and ears that lives in Africa and Asia")
-        };
+        ];
 
     [KernelFunction, Description("Gets a random word from a dictionary of common words and their definitions.")]
     public DictionaryEntry GetRandomEntry()
