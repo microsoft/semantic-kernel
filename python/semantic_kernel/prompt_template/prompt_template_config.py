@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from typing import Dict, List, Optional, Self, TypeVar, Union
+from typing import Dict, List, Optional, TypeVar, Union
 
 from pydantic import Field, field_validator, model_validator
 
@@ -25,7 +25,7 @@ class PromptTemplateConfig(KernelBaseModel):
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     @model_validator(mode="after")
-    def check_input_variables(self) -> Self:
+    def check_input_variables(self):
         """Verify that input variable default values are string only"""
         for variable in self.input_variables:
             if variable.default and not isinstance(variable.default, str):
