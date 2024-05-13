@@ -90,13 +90,13 @@ public class FlowStep
         {
             var pluginName = kvp.Key;
             var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
-            if (globalPlugin != null)
+            if (globalPlugin is not null)
             {
                 return globalPlugin;
             }
 
             var type = kvp.Value;
-            if (type != null)
+            if (type is not null)
             {
                 try
                 {
@@ -115,7 +115,7 @@ public class FlowStep
             }
 
             return null;
-        }).Where(plugin => plugin != null).ToList()!;
+        }).Where(plugin => plugin is not null).ToList()!;
     }
 
     private static Dictionary<string, Type?> GetPluginTypes(List<string>? value)
@@ -204,7 +204,7 @@ public class FlowStep
     /// <returns></returns>
     public IEnumerable<object> LoadPlugins(Kernel kernel, Dictionary<object, string?> globalPlugins)
     {
-        if (this._pluginsFactory != null)
+        if (this._pluginsFactory is not null)
         {
             return this._pluginsFactory(kernel, globalPlugins);
         }

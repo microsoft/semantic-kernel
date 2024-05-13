@@ -379,7 +379,7 @@ public class KustoMemoryStoreTests
     {
         using var table = new DataTable();
 
-        if (data != null)
+        if (data is not null)
         {
             data = data.ToArrayIfNotAlready();
             table.Columns.Add("Column1", typeof(string));

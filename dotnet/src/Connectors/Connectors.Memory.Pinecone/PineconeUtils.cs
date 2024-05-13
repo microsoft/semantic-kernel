@@ -74,7 +74,7 @@ public static class PineconeUtils
     {
         await foreach (PineconeDocument document in documents.ConfigureAwait(false))
         {
-            if (document.Metadata == null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
+            if (document.Metadata is null || GetMetadataSize(document.Metadata) <= MaxMetadataSize)
             {
                 yield return document;
 
