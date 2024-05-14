@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Embeddings;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI;
+namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
 public abstract class TestsBase(ITestOutputHelper output)
 {
