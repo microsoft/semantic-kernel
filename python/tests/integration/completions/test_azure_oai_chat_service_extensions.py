@@ -137,7 +137,7 @@ async def create_with_data_chat_function(get_aoai_config, kernel: Kernel, create
         kernel.add_function(function_name="chat", plugin_name="plugin", prompt_template_config=prompt_template_config)
         chat_function = kernel.get_function("plugin", "chat")
         return chat_function, kernel, collection, memory_store
-    except:
+    except Exception:
         await memory_store.delete_collection(collection)
         raise
 

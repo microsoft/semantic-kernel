@@ -72,9 +72,4 @@ async def test_google_palm_text_completion_complete_call_with_parameters() -> No
         mock_gp.generate_text.assert_called_once_with(
             model=ai_model_id,
             prompt=prompt,
-            temperature=settings.temperature,
-            max_output_tokens=settings.max_output_tokens,
-            candidate_count=settings.candidate_count,
-            top_p=settings.top_p,
-            top_k=settings.top_k,
         )

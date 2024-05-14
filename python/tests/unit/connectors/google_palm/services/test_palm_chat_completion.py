@@ -79,9 +79,5 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters() 
         print(mock_gp.chat)
         mock_gp.chat.assert_called_once_with(
             model=ai_model_id,
-            temperature=settings.temperature,
-            top_p=settings.top_p,
-            top_k=settings.top_k,
-            candidate_count=settings.candidate_count,
             messages=[message.to_dict(role_key="author") for message in chats.messages],
         )

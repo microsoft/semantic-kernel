@@ -36,7 +36,6 @@ async def test_complete_chat(mock_post):
             "model": "test_model",
             "messages": [{"role": "user", "content": "test_prompt"}],
             "options": {"test": "test"},
-            "stream": False,
         },
     )
 

@@ -48,6 +48,5 @@ async def test_complete_stream(mock_post):
             "options": {"test": "test"},
             "stream": True,
             "prompt": "test_prompt",
-            "raw": False,
         },
     )
