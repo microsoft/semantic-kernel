@@ -7,6 +7,8 @@ import logging
 import sys
 from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping
 
+import httpx
+
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 
 if sys.version_info >= (3, 9):
@@ -16,7 +18,6 @@ else:
 
 from urllib.parse import urljoin, urlparse, urlunparse
 
-import aiohttp
 import requests
 from openapi_core import Spec, unmarshal_request
 from openapi_core.contrib.requests import RequestsOpenAPIRequest
@@ -263,9 +264,11 @@ class OpenApiRunner:
         self,
         parsed_openapi_document: Mapping[str, str],
         auth_callback: Callable[[Dict[str, str]], Dict[str, str]] | None = None,
+        http_client: httpx.AsyncClient | None = None,
     ):
         self.spec = Spec.from_dict(parsed_openapi_document)
         self.auth_callback = auth_callback
+        self.http_client = http_client
 
     async def run_operation(
         self,
@@ -292,15 +295,27 @@ class OpenApiRunner:
         # TODO - figure out how to validate a request that has a dynamic API
         # against a spec that has a template path
 
-        async with aiohttp.ClientSession(raise_for_status=True) as session:
-            async with session.request(
-                prepared_request.method,
-                prepared_request.url,
-                params=prepared_request.params,
-                headers=prepared_request.headers,
-                json=prepared_request.request_body,
-            ) as response:
-                return await response.text()
+        async def fetch(prepared_request):
+            async def make_request(client):
+                merged_headers = client.headers.copy()
+                merged_headers.update(prepared_request.headers)
+                response = await client.request(
+                    method=prepared_request.method,
+                    url=prepared_request.url,
+                    params=prepared_request.params,
+                    headers=merged_headers,
+                    json=prepared_request.request_body,
+                )
+                response.raise_for_status()
+                return response.text
+
+            if hasattr(self, "http_client") and self.http_client is not None:
+                return await make_request(self.http_client)
+            else:
+                async with httpx.AsyncClient() as client:
+                    return await make_request(client)
+
+        return await fetch(prepared_request)
 
 
 def create_functions_from_openapi(
@@ -325,7 +340,11 @@ def create_functions_from_openapi(
     auth_callback = None
     if execution_settings and execution_settings.auth_callback:
         auth_callback = execution_settings.auth_callback
-    openapi_runner = OpenApiRunner(parsed_openapi_document=parsed_doc, auth_callback=auth_callback)
+    openapi_runner = OpenApiRunner(
+        parsed_openapi_document=parsed_doc,
+        auth_callback=auth_callback,
+        http_client=execution_settings.http_client if execution_settings else None,
+    )
 
     return [
         _create_function_from_operation(openapi_runner, operation, plugin_name) for operation in operations.values()
@@ -347,18 +366,22 @@ def _create_function_from_operation(
         headers: Annotated[dict | str | None, "A dictionary of headers"] = None,
         request_body: Annotated[dict | str | None, "A dictionary of the request body"] = None,
     ) -> str:
+        def parse_params(param):
+            if param == "" or param is None:
+                return {}
+            if isinstance(param, str):
+                try:
+                    return json.loads(param)
+                except json.JSONDecodeError:
+                    raise ValueError(f"Invalid JSON string: {param}")
+            return param
+
         response = await runner.run_operation(
             operation,
-            path_params=(
-                json.loads(path_params) if isinstance(path_params, str) else path_params if path_params else None
-            ),
-            query_params=(
-                json.loads(query_params) if isinstance(query_params, str) else query_params if query_params else None
-            ),
-            headers=json.loads(headers) if isinstance(headers, str) else headers if headers else None,
-            request_body=(
-                json.loads(request_body) if isinstance(request_body, str) else request_body if request_body else None
-            ),
+            path_params=parse_params(path_params),
+            query_params=parse_params(query_params),
+            headers=parse_params(headers),
+            request_body=parse_params(request_body),
         )
         return response
 

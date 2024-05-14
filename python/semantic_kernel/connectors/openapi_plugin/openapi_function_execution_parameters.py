@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Awaitable, Callable, List
 from urllib.parse import urlparse
 
+import httpx
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -15,7 +16,7 @@ AuthCallbackType = Callable[..., Awaitable[Any]]
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 
-    http_client: Any | None = None
+    http_client: httpx.AsyncClient | None = None
     auth_callback: AuthCallbackType | None = None
     server_url_override: str | None = None
     ignore_non_compliant_errors: bool = False
