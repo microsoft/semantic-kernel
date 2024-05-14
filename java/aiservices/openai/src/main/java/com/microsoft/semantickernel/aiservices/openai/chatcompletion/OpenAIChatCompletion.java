@@ -69,9 +69,10 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
     protected OpenAIChatCompletion(
         OpenAIAsyncClient client,
+        String deploymentName,
         String modelId,
         @Nullable String serviceId) {
-        super(client, serviceId, modelId);
+        super(client, serviceId, modelId, deploymentName);
     }
 
     /**
@@ -151,7 +152,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             .getOptions();
 
         Mono<List<? extends ChatMessageContent>> result = getClient()
-            .getChatCompletionsWithResponse(getModelId(), options,
+            .getChatCompletionsWithResponse(getDeploymentName(), options,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
                 if (completionsResult.getStatusCode() >= 400) {
@@ -746,7 +747,12 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                     "OpenAI model id must be provided");
             }
 
-            return new OpenAIChatCompletion(client, modelId, serviceId);
+            if (deploymentName == null) {
+                LOGGER.debug("Deployment name is not provided, using model id as deployment name");
+                deploymentName = modelId;
+            }
+
+            return new OpenAIChatCompletion(client,deploymentName,  modelId, serviceId);
         }
     }
 }

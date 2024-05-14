@@ -17,15 +17,31 @@ public abstract class OpenAiServiceBuilder<T, U extends OpenAiServiceBuilder<T, 
     protected OpenAIAsyncClient client;
     @Nullable
     protected String serviceId;
+    @Nullable
+    protected String deploymentName;
 
     /**
-     * Sets the model ID for the service
+     * Sets the model ID for the service.
+     * <p>
+     * If no deployment name is provided, it will be assumed that this model ID is also the
+     * deployment name.
      *
      * @param modelId The model ID
      * @return The builder
      */
     public U withModelId(String modelId) {
         this.modelId = modelId;
+        return (U) this;
+    }
+
+    /**
+     * Sets the deployment name for the service if required.
+     *
+     * @param deploymentName The deployment name
+     * @return The builder
+     */
+    public U withDeploymentName(String deploymentName) {
+        this.deploymentName = deploymentName;
         return (U) this;
     }
 

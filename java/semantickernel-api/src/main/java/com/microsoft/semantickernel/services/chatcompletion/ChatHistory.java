@@ -17,26 +17,13 @@ import javax.annotation.Nullable;
  */
 public class ChatHistory implements Iterable<ChatMessageContent<?>> {
 
-    private final static String DEFAULT_CHAT_SYSTEM_PROMPT = "Assistant is a large language model.";
-
     private final List<ChatMessageContent<?>> chatMessageContents;
 
     /**
-     * The default constructor adds an "Assistant is a large language model." system message to the
-     * chat history
+     * The default constructor
      */
     public ChatHistory() {
-        this(true);
-    }
-
-    /**
-     * Constructor that can add the default system instructions to the chat history.
-     *
-     * @param addDefaultSystemPrompt If true, the default system prompt will be added to the chat,
-     *                               otherwise empty
-     */
-    public ChatHistory(boolean addDefaultSystemPrompt) {
-        this(addDefaultSystemPrompt ? DEFAULT_CHAT_SYSTEM_PROMPT : null);
+        this((String) null);
     }
 
     /**
@@ -47,7 +34,6 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
     public ChatHistory(@Nullable String instructions) {
         this.chatMessageContents = new ArrayList<>();
         if (instructions != null) {
-
             this.chatMessageContents.add(
                 new ChatMessageContent<>(
                     AuthorRole.SYSTEM,
