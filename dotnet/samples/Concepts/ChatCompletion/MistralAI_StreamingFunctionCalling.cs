@@ -10,7 +10,7 @@ namespace ChatCompletion;
 /// <summary>
 /// Demonstrates the use of function calling and streaming with MistralAI.
 /// </summary>
-public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper output) : BaseTest(output)
+public sealed class MistralAI_StreamingFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -18,7 +18,7 @@ public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper outpu
         // Create a kernel with MistralAI chat completion  and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddMistralChatCompletion(
-                model: TestConfiguration.MistralAI.ChatModelId!,
+                modelId: TestConfiguration.MistralAI.ChatModelId!,
                 apiKey: TestConfiguration.MistralAI.ApiKey!);
         kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
         Kernel kernel = kernelBuilder.Build();

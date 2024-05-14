@@ -607,16 +607,8 @@ internal sealed class MistralClient
 
                 messages ??= [];
 
-                var toolCall = new MistralToolCall()
-                {
-                    Id = resultContent.Id,
-                    Function = new MistralFunction(
-                        resultContent.FunctionName ?? string.Empty, // FunctionResultContent allows null function names
-                        resultContent.PluginName)
-                };
-
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
-                messages.Add(new MistralChatMessage(content.Role.ToString(), stringResult) { ToolCalls = new List<MistralToolCall> { toolCall } });
+                messages.Add(new MistralChatMessage(content.Role.ToString(), stringResult));
             }
             if (messages is not null)
             {

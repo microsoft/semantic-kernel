@@ -96,4 +96,34 @@ public abstract class BaseTest
     {
         this.Output.WriteLine(target ?? string.Empty);
     }
+
+    protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
+    {
+        private readonly ITestOutputHelper _output = output;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Log the request details
+            if (request.Content is not null)
+            {
+                var content = await request.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine(content);
+            }
+
+            // Call the next handler in the pipeline
+            var response = await base.SendAsync(request, cancellationToken);
+
+            if (response.Content is not null)
+            {
+                // Log the response details
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                this._output.WriteLine(responseContent);
+            }
+
+            // Log the response details
+            this._output.WriteLine("");
+
+            return response;
+        }
+    }
 }
