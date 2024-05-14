@@ -86,8 +86,8 @@ internal sealed class HuggingFaceMessageApiClient
         request.Stream = true;
 
         using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
-        HttpResponseMessage httpResponseMessage;
-        Stream responseStream;
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
         try
         {
             using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
@@ -98,6 +98,8 @@ internal sealed class HuggingFaceMessageApiClient
         catch (Exception ex)
         {
             activity?.SetError(ex);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
             throw;
         }
 
@@ -108,8 +110,8 @@ internal sealed class HuggingFaceMessageApiClient
         }
 
         activity?.EndStreaming();
-        httpResponseMessage.Dispose();
-        responseStream.Dispose();
+        httpResponseMessage?.Dispose();
+        responseStream?.Dispose();
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> CompleteChatMessageAsync(

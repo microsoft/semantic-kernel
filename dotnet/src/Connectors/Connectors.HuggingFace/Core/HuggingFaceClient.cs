@@ -170,8 +170,8 @@ internal sealed class HuggingFaceClient
         request.Stream = true;
 
         using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
-        HttpResponseMessage httpResponseMessage;
-        Stream responseStream;
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
         try
         {
             using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
@@ -182,6 +182,8 @@ internal sealed class HuggingFaceClient
         catch (Exception ex)
         {
             activity?.SetError(ex);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
             throw;
         }
 
@@ -192,8 +194,8 @@ internal sealed class HuggingFaceClient
         }
 
         activity?.EndStreaming();
-        httpResponseMessage.Dispose();
-        responseStream.Dispose();
+        httpResponseMessage?.Dispose();
+        responseStream?.Dispose();
     }
 
     private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)

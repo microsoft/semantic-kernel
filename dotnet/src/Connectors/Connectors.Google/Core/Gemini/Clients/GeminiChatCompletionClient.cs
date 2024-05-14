@@ -229,8 +229,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             using (var activity = ModelDiagnostics.StartCompletionActivity(
                 this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
             {
-                HttpResponseMessage httpResponseMessage;
-                Stream responseStream;
+                HttpResponseMessage? httpResponseMessage = null;
+                Stream? responseStream = null;
                 try
                 {
                     using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
@@ -241,6 +241,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 catch (Exception ex)
                 {
                     activity?.SetError(ex);
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
                     throw;
                 }
 
@@ -251,8 +253,8 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 }
 
                 activity?.EndStreaming();
-                httpResponseMessage.Dispose();
-                responseStream.Dispose();
+                httpResponseMessage?.Dispose();
+                responseStream?.Dispose();
             }
 
             if (!state.AutoInvoke)
