@@ -17,7 +17,7 @@ from semantic_kernel.utils.settings import azure_key_vault_settings_from_dot_env
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""
     result = await kernel.invoke(
-        functions=plugin["SetSecret"],
+        function=plugin["SetSecret"],
         path_params={"secret-name": "Foo"},
         query_params={"api-version": "7.0"},
         request_body={"value": "Bar", "enabled": True},
@@ -30,10 +30,11 @@ async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
 async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Gets a secret from the Azure Key Vault."""
     result = await kernel.invoke(
-        functions=plugin["GetSecret"],
-        path_params={"secret-name ": "Foo"},
+        function=plugin["GetSecret"],
+        path_params={"secret-name": "Foo"},
         query_params={"api-version": "7.0"},
         headers={},
+        request_body={},
     )
 
     print(f"Secret retrieved from Key Vault: {result}")
@@ -153,6 +154,7 @@ async def main():
     )
 
     await add_secret_to_key_vault(kernel, plugin)
+    await get_secret_from_key_vault(kernel, plugin)
 
 
 if __name__ == "__main__":

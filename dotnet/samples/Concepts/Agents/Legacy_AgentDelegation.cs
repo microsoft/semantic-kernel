@@ -29,7 +29,7 @@ public class Legacy_AgentDelegation(ITestOutputHelper output) : BaseTest(output)
     {
         Console.WriteLine("======== Example71_AgentDelegation ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
+        if (TestConfiguration.OpenAI.ApiKey is null)
         {
             Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;

@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import logging
-from functools import wraps
-from inspect import Parameter, Signature, isasyncgenfunction, isgeneratorfunction, signature
-from typing import Any, Callable
+from inspect import get_annotations, isasyncgenfunction, isclass, isgeneratorfunction, signature
+from typing import Any, Callable, ForwardRef
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
@@ -14,9 +13,10 @@ def kernel_function(
     func: Callable[..., object] | None = None,
     name: str | None = None,
     description: str | None = None,
-) -> Callable[..., object]:
+) -> Callable[..., Any]:
     """
-    Decorator for kernel functions.
+    Decorator for kernel functions, can be used directly as @kernel_function
+    or with parameters @kernel_function(name='function', description='I am a function.').
 
     This decorator is used to mark a function as a kernel function. It also provides metadata for the function.
     The name and description can be left empty, and then the function name and docstring will be used.
@@ -37,87 +37,98 @@ def kernel_function(
     and that is stored as a bool in __kernel_function_streaming__.
 
     Args:
-        name (Optional[str]) -- The name of the function, if not supplied, the function name will be used.
-        description (Optional[str]) -- The description of the function,
+        name (str | None) -- The name of the function, if not supplied, the function name will be used.
+        description (str | None) -- The description of the function,
             if not supplied, the function docstring will be used, can be None.
 
     """
 
-    @wraps(wrapped=func)  # type: ignore
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
-        func.__kernel_function__ = True  # type: ignore
-        func.__kernel_function_description__ = description or func.__doc__  # type: ignore
-        func.__kernel_function_name__ = name or func.__name__  # type: ignore
-        func.__kernel_function_streaming__ = isasyncgenfunction(func) or isgeneratorfunction(func)  # type: ignore
-        logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")  # type: ignore
-
+        setattr(func, "__kernel_function__", True)
+        setattr(func, "__kernel_function_description__", description or func.__doc__)
+        setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
+        setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
+        logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
         func_sig = signature(func)
-        logger.debug(f"{func_sig=}")
-        func.__kernel_function_parameters__ = [  # type: ignore
-            _parse_parameter(param) for param in func_sig.parameters.values() if param.name != "self"
-        ]
+        annotations = {name: None for name, _ in func_sig.parameters.items() if name != "self"}
+        try:
+            annotations.update(get_annotations(func, eval_str=True))
+        except Exception as ex:
+            logger.error(f"Failed to get annotations for function {func.__name__}: {ex}")
+        logger.debug(f"{annotations=}")
+        setattr(
+            func,
+            "__kernel_function_parameters__",
+            [_parse_parameter(name, param) for name, param in annotations.items() if name != "return"],
+        )
+        defaults = getattr(func, "__defaults__", None)
+        logger.debug(f"{defaults=}")
+        assert hasattr(func, "__kernel_function_parameters__")
+        if defaults:
+            for index, default in enumerate(defaults):
+                if default is None:
+                    continue
+                if func.__kernel_function_parameters__[index]:
+                    func.__kernel_function_parameters__[index]["default_value"] = default
+                    func.__kernel_function_parameters__[index]["is_required"] = False
         return_param_dict = {}
-        if func_sig.return_annotation != Signature.empty:
-            return_param_dict = _parse_annotation(func_sig.return_annotation)
-        func.__kernel_function_return_type__ = return_param_dict.get("type_", "None")  # type: ignore
-        func.__kernel_function_return_description__ = return_param_dict.get("description", "")  # type: ignore
-        func.__kernel_function_return_required__ = return_param_dict.get("is_required", False)  # type: ignore
+        if "return" in annotations:
+            return_param_dict = _parse_parameter("return", annotations["return"])
+        setattr(func, "__kernel_function_return_type__", return_param_dict.get("type_", "None"))
+        setattr(func, "__kernel_function_return_description__", return_param_dict.get("description", ""))
+        setattr(func, "__kernel_function_return_required__", return_param_dict.get("is_required", False))
         return func
 
     if func:
         return decorator(func)
-    return decorator  # type: ignore
+    return decorator
 
 
-def _parse_parameter(param: Parameter) -> dict[str, Any]:
-    logger.debug(f"Parsing param: {param}")
-    ret = {}
-    if param != Parameter.empty:
-        ret = _parse_annotation(param.annotation)
-    ret["name"] = param.name
-    if param.default != Parameter.empty:
-        ret["default_value"] = param.default
-    return ret
-
-
-def _parse_annotation(annotation: Parameter) -> dict[str, Any]:
-    logger.debug(f"Parsing annotation: {annotation}")
-    if annotation == Signature.empty:
-        return {"type_": "Any", "is_required": True}
-    if isinstance(annotation, str):
-        return {"type_": annotation, "is_required": True}
-    logger.debug(f"{annotation=}")
-    ret = _parse_internal_annotation(annotation, True)
-    if hasattr(annotation, "__metadata__") and annotation.__metadata__:  # type: ignore
-        ret["description"] = annotation.__metadata__[0]  # type: ignore
-    return ret
-
-
-def _parse_internal_annotation(annotation: Parameter, required: bool) -> dict[str, Any]:
-    logger.debug(f"Internal {annotation=}")
-    if hasattr(annotation, "__forward_arg__"):
-        return {"type_": annotation.__forward_arg__, "is_required": required}  # type: ignore
-    if getattr(annotation, "__name__", None) == "Optional":
-        required = False
-    if hasattr(annotation, "__args__"):
-        results = [_parse_internal_annotation(arg, required) for arg in annotation.__args__]  # type: ignore
-        type_objects = [
-            result["type_object"]
-            for result in results
-            if "type_object" in result and result["type_object"] is not NoneType
-        ]
-        str_results = [result["type_"] for result in results]
-        if "NoneType" in str_results:
-            str_results.remove("NoneType")
-            required = False
-        else:
-            required = not (any(not result["is_required"] for result in results))
-        ret = {"type_": ", ".join(str_results), "is_required": required}
-        if type_objects and len(type_objects) == 1:
-            ret["type_object"] = type_objects[0]
+def _parse_parameter(name: str, param: Any) -> dict[str, Any]:
+    logger.debug(f"Parsing param: {name}")
+    logger.debug(f"Parsing annotation: {param}")
+    ret: dict[str, Any] = {"name": name}
+    if not param:
+        ret["type_"] = "Any"
+        ret["is_required"] = True
         return ret
-    return {
-        "type_": getattr(annotation, "__name__", ""),
-        "type_object": annotation,
-        "is_required": required,
-    }
+    if not isinstance(param, str):
+        if hasattr(param, "default"):
+            ret["default_value"] = param.default
+            ret["is_required"] = False
+        else:
+            ret["is_required"] = True
+        if hasattr(param, "__metadata__"):
+            ret["description"] = param.__metadata__[0]
+        if hasattr(param, "__origin__"):
+            ret.update(_parse_parameter(name, param.__origin__))
+        if hasattr(param, "__args__"):
+            args = []
+            for arg in param.__args__:
+                if arg == NoneType:
+                    ret["is_required"] = False
+                    ret["default_value"] = None
+                    continue
+                if isinstance(arg, ForwardRef):
+                    arg = arg.__forward_arg__
+                args.append(_parse_parameter(name, arg))
+            if ret.get("type_") in ["list", "dict"]:
+                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
+            elif len(args) > 1:
+                ret["type_"] = ", ".join([arg["type_"] for arg in args])
+            else:
+                ret["type_"] = args[0]["type_"]
+                ret["type_object"] = args[0].get("type_object", None)
+                if def_value := args[0].get("default_value", None):
+                    ret["default_value"] = def_value
+        elif isclass(param):
+            ret["type_"] = param.__name__
+            ret["type_object"] = param
+        else:
+            ret["type_"] = str(param).replace(" |", ",")
+    else:
+        if "|" in param:
+            param = param.replace(" |", ",")
+        ret["type_"] = param
+        ret["is_required"] = True
+    return ret
