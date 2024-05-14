@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.AI.OpenAI;
@@ -137,7 +136,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("seed")]
     public long? Seed
     {
@@ -156,7 +154,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <remarks>
     /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {

@@ -99,7 +99,6 @@ public sealed class KernelFunctionMetadata
     }
 
     /// <summary>Gets optional metadata in addition to the named properties already available on this class.</summary>
-    [Experimental("SKEXP0001")]
     public ReadOnlyDictionary<string, object?> AdditionalProperties
     {
         get => this._additionalProperties ??= s_emptyDictionary;
