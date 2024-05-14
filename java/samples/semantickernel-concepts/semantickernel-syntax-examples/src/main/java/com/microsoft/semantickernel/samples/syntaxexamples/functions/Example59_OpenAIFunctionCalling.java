@@ -129,10 +129,8 @@ public class Example59_OpenAIFunctionCalling {
         chatHistory.addUserMessage(
             "Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
-        List<ChatMessageContent<?>> messages;
-
         while (true) {
-            messages = chat.getChatMessageContentsAsync(
+            var messages = chat.getChatMessageContentsAsync(
                 chatHistory,
                 kernel,
                 InvocationContext.builder()
