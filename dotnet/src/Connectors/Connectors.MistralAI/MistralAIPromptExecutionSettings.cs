@@ -126,7 +126,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     /// <item>To disable all tool calling, set the property to null (the default).</item>
     /// <item>
     /// To allow the model to request one of any number of functions, set the property to an
-    /// instance returned from <see cref="MistralAIToolCallBehavior.EnableFunctions"/>, called with
+    /// instance returned from <see cref="MistralAIToolCallBehavior.RequiredFunctions"/>, called with
     /// a list of the functions available.
     /// </item>
     /// <item>
@@ -192,9 +192,7 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return new MistralAIPromptExecutionSettings()
-            {
-            };
+            return new MistralAIPromptExecutionSettings();
         }
 
         if (executionSettings is MistralAIPromptExecutionSettings settings)
