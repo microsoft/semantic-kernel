@@ -138,11 +138,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                         choice_index=0, inner_content=new_text, text=new_text, ai_model_id=self.ai_model_id
                     )
                 ]
-
-            thread.join()
-
         except Exception as e:
             raise ServiceResponseException("Hugging Face completion failed", e) from e
+        finally:
+            thread.join()
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
         """Create a request settings object."""
