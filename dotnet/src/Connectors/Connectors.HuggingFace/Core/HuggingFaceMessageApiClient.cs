@@ -103,15 +103,20 @@ internal sealed class HuggingFaceMessageApiClient
             throw;
         }
 
-        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        try
         {
-            activity?.AddStreamingContent(streamingChatContent);
-            yield return streamingChatContent;
+            await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+            {
+                activity?.AddStreamingContent(streamingChatContent);
+                yield return streamingChatContent;
+            }
         }
-
-        activity?.EndStreaming();
-        httpResponseMessage?.Dispose();
-        responseStream?.Dispose();
+        finally
+        {
+            activity?.EndStreaming();
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+        }
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> CompleteChatMessageAsync(

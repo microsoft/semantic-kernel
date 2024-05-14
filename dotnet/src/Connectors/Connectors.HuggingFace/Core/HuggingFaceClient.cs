@@ -187,15 +187,20 @@ internal sealed class HuggingFaceClient
             throw;
         }
 
-        await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        try
         {
-            activity?.AddStreamingContent(streamingTextContent);
-            yield return streamingTextContent;
+            await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+            {
+                activity?.AddStreamingContent(streamingTextContent);
+                yield return streamingTextContent;
+            }
         }
-
-        activity?.EndStreaming();
-        httpResponseMessage?.Dispose();
-        responseStream?.Dispose();
+        finally
+        {
+            activity?.EndStreaming();
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+        }
     }
 
     private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)

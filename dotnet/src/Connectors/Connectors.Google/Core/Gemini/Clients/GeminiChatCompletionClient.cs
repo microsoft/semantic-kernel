@@ -246,15 +246,20 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     throw;
                 }
 
-                await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+                try
                 {
-                    activity?.AddStreamingContent(messageContent);
-                    yield return messageContent;
+                    await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+                    {
+                        activity?.AddStreamingContent(messageContent);
+                        yield return messageContent;
+                    }
                 }
-
-                activity?.EndStreaming();
-                httpResponseMessage?.Dispose();
-                responseStream?.Dispose();
+                finally
+                {
+                    activity?.EndStreaming();
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
+                }
             }
 
             if (!state.AutoInvoke)
