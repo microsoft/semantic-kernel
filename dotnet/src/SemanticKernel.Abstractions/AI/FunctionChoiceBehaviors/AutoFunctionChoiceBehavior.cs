@@ -20,11 +20,6 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
-    /// List of the fully qualified names of the functions that the model can choose from.
-    /// </summary>
-    private readonly IEnumerable<string>? _functionFQNs;
-
-    /// <summary>
     /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
     /// </summary>
     public const string TypeDiscriminator = "auto";
@@ -44,6 +39,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
         this._functions = functions;
+        this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
     }
 
     /// <summary>
@@ -55,25 +51,14 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// the same function over and over. To disable auto invocation, this can be set to 0.
     /// </remarks>
     [JsonPropertyName("maximumAutoInvokeAttempts")]
-    public int MaximumAutoInvokeAttempts { get; init; } = DefaultMaximumAutoInvokeAttempts;
+    public int MaximumAutoInvokeAttempts { get; set; } = DefaultMaximumAutoInvokeAttempts;
 
     /// <summary>
     /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
     /// </summary>
     [JsonPropertyName("functions")]
-    public IEnumerable<string>? Functions
-    {
-        get => this._functionFQNs;
-        init
-        {
-            if (value?.Count() > 0 && this._functions?.Count() > 0)
-            {
-                throw new KernelException("Functions are already provided via the constructor.");
-            }
-
-            this._functionFQNs = value;
-        }
-    }
+    [JsonConverter(typeof(FunctionNameFormatJsonConverter))]
+    public IList<string>? Functions { get; set; }
 
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
@@ -93,39 +78,37 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         List<KernelFunction>? availableFunctions = null;
         bool allowAnyRequestedKernelFunction = false;
 
-        // Handle functions provided via constructor as function instances.
-        if (this._functions is { } functions && functions.Any())
-        {
-            // Make sure that every function can be found in the kernel.
-            if (autoInvoke)
-            {
-                foreach (var function in functions)
-                {
-                    if (!context.Kernel!.Plugins.TryGetFunction(function.PluginName, function.Name, out _))
-                    {
-                        throw new KernelException($"The specified function {function.PluginName}.{function.Name} is not available in the kernel.");
-                    }
-                }
-            }
-
-            availableFunctions = functions.ToList();
-        }
         // Handle functions provided via the 'Functions' property as function fully qualified names.
-        else if (this.Functions is { } functionFQNs && functionFQNs.Any())
+        if (this.Functions is { } functionFQNs && functionFQNs.Any())
         {
             availableFunctions = [];
 
             foreach (var functionFQN in functionFQNs)
             {
-                // Make sure that every function can be found in the kernel.
-                var name = FunctionName.Parse(functionFQN, FunctionNameSeparator);
+                var nameParts = FunctionName.Parse(functionFQN);
 
-                if (!context.Kernel!.Plugins.TryGetFunction(name.PluginName, name.Name, out var function))
+                // Check if the function is available in the kernel. If it is, then connectors can find it for auto-invocation later.
+                if (context.Kernel!.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
+                {
+                    availableFunctions.Add(function);
+                    continue;
+                }
+
+                // If auto-invocation is requested and no function is found in the kernel, fail early.
+                if (autoInvoke)
                 {
                     throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
                 }
 
-                availableFunctions.Add(function);
+                // Check if the function instance was provided via the constructor for manual-invocation.
+                function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
+                if (function is not null)
+                {
+                    availableFunctions.Add(function);
+                    continue;
+                }
+
+                throw new KernelException($"No instance of the specified function {functionFQN} is found.");
             }
         }
         // Provide all functions from the kernel.

@@ -27,8 +27,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     {
         s_deserializer ??= new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination in the WithTypeDiscriminatingNodeDeserializer method below.
-                                         // Otherwise, the "Property '{name}' not found on type '{type.FullName}'" exception is thrown.
+            .WithTypeConverter(new FunctionChoiceBehaviorTypesConverter())
             .WithTypeDiscriminatingNodeDeserializer((options) =>
             {
 #pragma warning disable SKEXP0001

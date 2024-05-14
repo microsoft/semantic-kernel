@@ -49,7 +49,7 @@ public class KernelFunctionMarkdownTests
 
         Assert.NotNull(autoFunctionChoiceBehavior.Functions);
         Assert.Single(autoFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1.f1", autoFunctionChoiceBehavior.Functions.First());
+        Assert.Equal("p1-f1", autoFunctionChoiceBehavior.Functions.First());
         Assert.Equal(8, autoFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
 
         // RequiredFunctionCallChoice for service2
@@ -60,7 +60,7 @@ public class KernelFunctionMarkdownTests
         Assert.NotNull(requiredFunctionChoiceBehavior);
         Assert.NotNull(requiredFunctionChoiceBehavior.Functions);
         Assert.Single(requiredFunctionChoiceBehavior.Functions);
-        Assert.Equal("p1.f1", requiredFunctionChoiceBehavior.Functions.First());
+        Assert.Equal("p1-f1", requiredFunctionChoiceBehavior.Functions.First());
         Assert.Equal(2, requiredFunctionChoiceBehavior.MaximumUseAttempts);
 
         // NoneFunctionCallChoice for service3

@@ -52,7 +52,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
 
         var autoFunctionChoiceBehavior = service1ExecutionSettings.FunctionChoiceBehavior as AutoFunctionChoiceBehavior;
         Assert.NotNull(autoFunctionChoiceBehavior?.Functions);
-        Assert.Equal("p1.f1", autoFunctionChoiceBehavior.Functions.Single());
+        Assert.Equal("p1-f1", autoFunctionChoiceBehavior.Functions.Single());
         Assert.Equal(9, autoFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
 
         // Service with required function choice behavior
@@ -60,7 +60,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
 
         var requiredFunctionChoiceBehavior = service2ExecutionSettings.FunctionChoiceBehavior as RequiredFunctionChoiceBehavior;
         Assert.NotNull(requiredFunctionChoiceBehavior?.Functions);
-        Assert.Equal("p2.f2", requiredFunctionChoiceBehavior.Functions.Single());
+        Assert.Equal("p2-f2", requiredFunctionChoiceBehavior.Functions.Single());
         Assert.Equal(6, requiredFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
         Assert.Equal(3, requiredFunctionChoiceBehavior.MaximumUseAttempts);
 

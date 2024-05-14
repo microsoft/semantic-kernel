@@ -16,9 +16,6 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0001")]
 public abstract class FunctionChoiceBehavior
 {
-    /// <summary>The separator used to separate plugin name and function name.</summary>
-    protected const string FunctionNameSeparator = ".";
-
     /// <summary>
     /// The default maximum number of function auto-invokes that can be made in a single user request.
     /// </summary>

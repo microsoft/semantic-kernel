@@ -175,7 +175,7 @@ public class PromptTemplateConfigTests
         Assert.NotNull(autoFunctionCallChoice);
 
         Assert.NotNull(autoFunctionCallChoice.Functions);
-        Assert.Equal("p1.f1", autoFunctionCallChoice.Functions.Single());
+        Assert.Equal("p1-f1", autoFunctionCallChoice.Functions.Single());
 
         Assert.Equal(12, autoFunctionCallChoice.MaximumAutoInvokeAttempts);
     }
@@ -215,7 +215,7 @@ public class PromptTemplateConfigTests
         Assert.NotNull(requiredFunctionCallChoice);
 
         Assert.NotNull(requiredFunctionCallChoice.Functions);
-        Assert.Equal("p1.f1", requiredFunctionCallChoice.Functions.Single());
+        Assert.Equal("p1-f1", requiredFunctionCallChoice.Functions.Single());
 
         Assert.Equal(11, requiredFunctionCallChoice.MaximumAutoInvokeAttempts);
         Assert.Equal(2, requiredFunctionCallChoice.MaximumUseAttempts);
