@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -106,15 +107,34 @@ public static partial class KernelPluginFactory
     /// <summary>Creates a name for a plugin based on its type name.</summary>
     private static string CreatePluginName(Type type)
     {
-        string name = type.ToString();
-
-        // Remove the namespace
-        if (type.Namespace is string ns &&
-            name.StartsWith(ns, StringComparison.Ordinal) &&
-            name.Length > ns.Length + 1 &&
-            name[ns.Length] == '.')
+        string name = type.Name;
+        if (type.IsGenericType)
         {
-            name = name.Substring(ns.Length + 1);
+            // Simple representation of generic arguments, without recurring into their generics
+            var builder = new StringBuilder();
+            AppendWithoutArity(builder, name);
+
+            Type[] genericArgs = type.GetGenericArguments();
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                builder.Append('_');
+                AppendWithoutArity(builder, genericArgs[i].Name);
+            }
+
+            name = builder.ToString();
+
+            static void AppendWithoutArity(StringBuilder builder, string name)
+            {
+                int tickPos = name.IndexOf('`');
+                if (tickPos >= 0)
+                {
+                    builder.Append(name, 0, tickPos);
+                }
+                else
+                {
+                    builder.Append(name);
+                }
+            }
         }
 
         // Replace invalid characters

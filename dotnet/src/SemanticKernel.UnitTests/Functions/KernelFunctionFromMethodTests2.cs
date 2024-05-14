@@ -122,7 +122,7 @@ public sealed class KernelFunctionFromMethodTests2
 
         async Task Validate(KernelPlugin plugin)
         {
-            Assert.Equal("KernelFunctionFromMethodTests2_GenericPlugin_1_System_Int32_", plugin.Name);
+            Assert.Equal("GenericPlugin_Int32", plugin.Name);
             Assert.Equal(3, plugin.FunctionCount);
             foreach (KernelFunction function in plugin)
             {
