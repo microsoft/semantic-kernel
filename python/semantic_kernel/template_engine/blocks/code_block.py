@@ -11,15 +11,13 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundE
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
-    from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
-    from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
-    from semantic_kernel.template_engine.blocks.val_block import ValBlock
-    from semantic_kernel.template_engine.blocks.var_block import VarBlock
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -51,7 +49,7 @@ class CodeBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.CODE
-    tokens: list["VarBlock | ValBlock | NamedArgBlock | FunctionIdBlock"] = Field(default_factory=list)
+    tokens: list[Block] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -151,7 +149,7 @@ these will be ignored."
             )
         for index, token in enumerate(self.tokens[1:], start=1):
             logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
-            rendered_value = token.render(kernel, arguments)
+            rendered_value = token.render(kernel, arguments)  # type: ignore
             if not isinstance(token, NamedArgBlock) and index == 1:
                 arguments[function_metadata.parameters[0].name] = rendered_value
                 continue
