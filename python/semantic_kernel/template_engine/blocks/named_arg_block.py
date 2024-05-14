@@ -55,9 +55,9 @@ class NamedArgBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.NAMED_ARG
-    name: Optional[str] = None
-    value: Optional[ValBlock] = None
-    variable: Optional[VarBlock] = None
+    name: str | None = None
+    value: ValBlock | None = None
+    variable: VarBlock | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -89,7 +89,7 @@ class NamedArgBlock(Block):
 
     def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
         if self.value:
-            return self.value.render(kernel, arguments)
+            return self.value.render()
         if arguments is None:
             return ""
         if self.variable:
