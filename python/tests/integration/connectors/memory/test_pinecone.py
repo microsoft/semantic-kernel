@@ -44,7 +44,7 @@ def slow_down_tests():
 @pytest.fixture(scope="session")
 def api_key():
     try:
-        pinecone_settings = PineconeSettings()
+        pinecone_settings = PineconeSettings.create()
         return pinecone_settings.api_key.get_secret_value()
     except ValidationError:
         pytest.skip("Pinecone API key not found in env vars.")

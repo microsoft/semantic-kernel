@@ -4,7 +4,6 @@ import asyncio
 import platform
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.redis import RedisMemoryStore
 from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
@@ -29,13 +28,13 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="session")
 def connection_string():
     try:
-        postgres_settings = RedisSettings.create()
-        return postgres_settings.connection_string.get_secret_value()
-    except ValidationError:
-        pass
-
-    if not postgres_settings and postgres_settings.connection_string:
-        return "redis://localhost:6379"
+        redis_settings = RedisSettings.create()
+        if redis_settings.connection_string:
+            return redis_settings.connection_string.get_secret_value()
+        else:
+            return "redis://localhost:6379"
+    except Exception:
+        pytest.skip("Redis connection string not found in env vars.")
 
 
 @pytest.fixture
