@@ -39,7 +39,7 @@ public class SerializingPrompts {
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("MODEL_ID", "gpt-3.5-turbo");
 
-    private static final String PLUGINS_DIR = "java/samples/semantickernel-syntax-examples/src/main/resources/Plugins";
+    private static final String PLUGINS_DIR = "java/samples/semantickernel-learn-resources/src/main/resources/Plugins";
 
     public static void main(String[] args) throws IOException {
         System.out.println("======== Serializing Prompts ========");
