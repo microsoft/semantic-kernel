@@ -154,6 +154,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <remarks>
     /// Possible values are: "json_object", "text", <see cref="ChatCompletionsResponseFormat"/> object.
     /// </remarks>
+    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {
