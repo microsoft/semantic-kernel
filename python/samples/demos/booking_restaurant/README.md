@@ -35,7 +35,7 @@ This sample uses function calling capable models and has been tested with the fo
 
 ## Configuring the sample
 
-Please make sure your either your environment variables or your .env file contains the following:
+Please make sure either your environment variables or your .env file contains the following:
 
 - "BOOKING_SAMPLE_CLIENT_ID"
 - "BOOKING_SAMPLE_TENANT_ID"
