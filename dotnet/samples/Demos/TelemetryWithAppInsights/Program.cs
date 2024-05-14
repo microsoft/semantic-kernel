@@ -267,7 +267,6 @@ public sealed class Program
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
         builder.Plugins.AddFromType<WeatherPlugin>();
-        builder.Plugins.AddFromType<LocationPlugin>();
 
         return builder.Build();
     }
@@ -339,12 +338,6 @@ public sealed class Program
     {
         [KernelFunction]
         public string GetWeather(string location) => $"Weather in {location} is 70°F.";
-    }
-
-    public sealed class LocationPlugin
-    {
-        [KernelFunction]
-        public string GetCurrentLocation() => "Seattle";
     }
 
     #endregion
