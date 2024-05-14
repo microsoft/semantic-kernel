@@ -246,13 +246,28 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     throw;
                 }
 
+                var responseEnumerator = this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken)
+                    .ConfigureAwait(false)
+                    .GetAsyncEnumerator();
                 try
                 {
-                    await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+                    while (true)
                     {
-                        activity?.AddStreamingContent(messageContent);
-                        yield return messageContent;
+                        try
+                        {
+                            if (!await responseEnumerator.MoveNextAsync())
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            activity?.SetError(ex);
+                            throw;
+                        }
                     }
+
+                    yield return responseEnumerator.Current;
                 }
                 finally
                 {

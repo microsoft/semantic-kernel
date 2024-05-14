@@ -103,12 +103,27 @@ internal sealed class HuggingFaceMessageApiClient
             throw;
         }
 
+        var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
+            .ConfigureAwait(false)
+            .GetAsyncEnumerator();
         try
         {
-            await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+            while (true)
             {
-                activity?.AddStreamingContent(streamingChatContent);
-                yield return streamingChatContent;
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    throw;
+                }
+
+                yield return responseEnumerator.Current;
             }
         }
         finally
