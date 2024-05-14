@@ -6,10 +6,13 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import java.util.List;
+import java.util.function.Function;
 
 // In .net this is streaming, this is a non-streaming example
 public class Example33_Chat {
@@ -73,9 +76,7 @@ public class Example33_Chat {
         System.out.print(AuthorRole.ASSISTANT + ": ");
 
         String message = reply
-            .map(it -> {
-                return it.get(0);
-            })
+            .mapNotNull(CollectionUtil::getLastOrNull)
             .doOnNext(streamingChatMessage -> {
                 String content = streamingChatMessage.getContent();
                 System.out.print(content);

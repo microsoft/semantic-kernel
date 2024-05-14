@@ -46,8 +46,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param chatMessageContents The chat message contents to add to the chat history
      */
-    public ChatHistory(List<ChatMessageContent<?>> chatMessageContents) {
-        this.chatMessageContents = new ArrayList<>(chatMessageContents);
+    public ChatHistory(List<? extends ChatMessageContent> chatMessageContents) {
+        this.chatMessageContents = new ArrayList(chatMessageContents);
     }
 
     /**
@@ -167,4 +167,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
         addMessage(AuthorRole.SYSTEM, content);
     }
 
+    public void addAll(List<ChatMessageContent<?>> messages) {
+        chatMessageContents.addAll(messages);
+    }
 }

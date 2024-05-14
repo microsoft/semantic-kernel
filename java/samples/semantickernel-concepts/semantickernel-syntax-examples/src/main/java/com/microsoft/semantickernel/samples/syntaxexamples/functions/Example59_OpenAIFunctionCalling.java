@@ -9,9 +9,8 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
-import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -24,11 +23,11 @@ import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunction
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Example59_OpenAIFunctionCalling {
 
@@ -121,7 +120,6 @@ public class Example59_OpenAIFunctionCalling {
             .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .block();
-
         System.out.println(result.getResult());
 
         System.out.println("======== Example 2: Use manual function calling ========");
@@ -130,35 +128,34 @@ public class Example59_OpenAIFunctionCalling {
         chatHistory.addUserMessage(
             "Given the current time of day and weather, what is the likely color of the sky in Boston?");
 
+        List<ChatMessageContent<?>> messages;
+
         while (true) {
-            var messages = chat.getChatMessageContentsAsync(
+            messages = chat.getChatMessageContentsAsync(
                 chatHistory,
                 kernel,
                 InvocationContext.builder()
-                    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build())
+                    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
+                    .returnOnlyNewContent(false)
+                    .build())
                 .block();
 
-            messages.stream()
-                .filter(it -> it.getContent() != null)
-                .forEach(it -> System.out.println(it.getContent()));
+            chatHistory = new ChatHistory(messages);
 
-            List<OpenAIFunctionToolCall> toolCalls = messages.stream()
-                .filter(it -> it instanceof OpenAIChatMessageContent)
-                .map(it -> (OpenAIChatMessageContent<?>) it)
-                .map(OpenAIChatMessageContent::getToolCall)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+            ChatMessageContent<?> lastMessage = CollectionUtil.getLastOrNull(messages);
 
-            if (toolCalls.isEmpty()) {
+            List<OpenAIFunctionToolCall> toolCalls = null;
+
+            if (lastMessage instanceof OpenAIChatMessageContent) {
+                toolCalls = ((OpenAIChatMessageContent<?>) lastMessage).getToolCall();
+            }
+
+            if (toolCalls == null || toolCalls.isEmpty()) {
                 break;
             }
 
-            messages.stream()
-                .forEach(it -> chatHistory.addMessage(it));
-
-            for (var toolCall : toolCalls) {
-
-                String content = null;
+            for (OpenAIFunctionToolCall toolCall : toolCalls) {
+                String content;
                 try {
                     // getFunction will throw an exception if the function is not found
                     var fn = kernel.getFunction(toolCall.getPluginName(),
@@ -174,13 +171,14 @@ public class Example59_OpenAIFunctionCalling {
                     AuthorRole.TOOL,
                     content,
                     StandardCharsets.UTF_8,
-                    new FunctionResultMetadata(new CaseInsensitiveMap<>() {
-                        {
-                            put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
-                        }
-                    }));
+                    FunctionResultMetadata.build(toolCall.getId()));
             }
         }
+
+        chatHistory.getMessages().stream()
+            .filter(it -> it.getContent() != null)
+            .forEach(it -> System.out.println(it.getContent()));
+
     }
 
 }

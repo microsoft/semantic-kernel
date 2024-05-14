@@ -23,6 +23,7 @@ public class InvocationContext {
     @Nullable
     private final ToolCallBehavior toolCallBehavior;
     private final ContextVariableTypes contextVariableTypes;
+    private final boolean returnOnlyNewMessages;
 
     /**
      * Create a new instance of InvocationContext.
@@ -36,10 +37,12 @@ public class InvocationContext {
         @Nullable KernelHooks hooks,
         @Nullable PromptExecutionSettings promptExecutionSettings,
         @Nullable ToolCallBehavior toolCallBehavior,
-        @Nullable ContextVariableTypes contextVariableTypes) {
+        @Nullable ContextVariableTypes contextVariableTypes,
+        boolean returnOnlyNewMessages) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
         this.toolCallBehavior = toolCallBehavior;
+        this.returnOnlyNewMessages = returnOnlyNewMessages;
         if (contextVariableTypes == null) {
             this.contextVariableTypes = new ContextVariableTypes();
         } else {
@@ -55,6 +58,7 @@ public class InvocationContext {
         this.promptExecutionSettings = null;
         this.toolCallBehavior = null;
         this.contextVariableTypes = new ContextVariableTypes();
+        this.returnOnlyNewMessages = false;
     }
 
     /**
@@ -68,11 +72,13 @@ public class InvocationContext {
             this.promptExecutionSettings = null;
             this.toolCallBehavior = null;
             this.contextVariableTypes = new ContextVariableTypes();
+            this.returnOnlyNewMessages = false;
         } else {
             this.hooks = context.hooks;
             this.promptExecutionSettings = context.promptExecutionSettings;
             this.toolCallBehavior = context.toolCallBehavior;
             this.contextVariableTypes = context.contextVariableTypes;
+            this.returnOnlyNewMessages = context.returnOnlyNewMessages;
         }
     }
 
@@ -152,6 +158,19 @@ public class InvocationContext {
     }
 
     /**
+     * For services that append new content to an existing history (such as chat completions), if
+     * true this will only return the newly generated data. If false, the entire history will be
+     * returned.
+     *
+     * <p>Default is true.
+     *
+     * @return this {@link Builder}
+     */
+    public boolean isReturnOnlyNewMessages() {
+        return returnOnlyNewMessages;
+    }
+
+    /**
      * Builder for {@link InvocationContext}.
      */
     public static class Builder implements SemanticKernelBuilder<InvocationContext> {
@@ -163,6 +182,7 @@ public class InvocationContext {
         private PromptExecutionSettings promptExecutionSettings;
         @Nullable
         private ToolCallBehavior toolCallBehavior;
+        private boolean returnOnlyNewMessages = true;
 
         /**
          * Add kernel hooks to the builder.
@@ -223,10 +243,26 @@ public class InvocationContext {
             return this;
         }
 
+        /**
+         * For services that append new content to an existing history (such as chat completions),
+         * if true this will only return the newly generated data. If false, the entire history will
+         * be returned.
+         *
+         * <p>Default is true.
+         *
+         * @param returnOnlyNewMessages true to return only new messages, false to return the entire
+         *                              history
+         * @return this {@link Builder}
+         */
+        public Builder returnOnlyNewContent(boolean returnOnlyNewMessages) {
+            this.returnOnlyNewMessages = returnOnlyNewMessages;
+            return this;
+        }
+
         @Override
         public InvocationContext build() {
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
-                contextVariableTypes);
+                contextVariableTypes, returnOnlyNewMessages);
         }
     }
 

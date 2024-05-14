@@ -15,6 +15,7 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -85,14 +86,14 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) result.get(0))
+        List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) CollectionUtil.getLastOrNull(result))
             .getToolCall();
 
         Assertions.assertNotNull(toolCalls);
         Assertions.assertEquals(1, toolCalls.size());
-        Assertions.assertEquals("apluginname", toolCalls.get(0).getPluginName());
-        Assertions.assertEquals("doIt", toolCalls.get(0).getFunctionName());
-        Assertions.assertEquals("call_abc123", toolCalls.get(0).getId());
+        Assertions.assertEquals("apluginname", CollectionUtil.getLastOrNull(toolCalls).getPluginName());
+        Assertions.assertEquals("doIt", CollectionUtil.getLastOrNull(toolCalls).getFunctionName());
+        Assertions.assertEquals("call_abc123", CollectionUtil.getLastOrNull(toolCalls).getId());
 
         Mockito.verify(testPlugin, Mockito.times(0)).doIt();
     }
@@ -134,7 +135,7 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(result.get(0).getContent().contains("tool call done"));
+        Assertions.assertTrue(CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
         Mockito.verify(testPlugin, Mockito.times(1)).doIt();
 
         result = chatCompletionService
@@ -147,7 +148,8 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(result.get(0).getContent().contains("tool call done"));
+        Assertions.assertTrue(
+            CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
         Mockito.verify(testPlugin, Mockito.times(2)).doIt();
 
         result = chatCompletionService
@@ -160,7 +162,7 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(result.get(0).getContent().contains("tool call done"));
+        Assertions.assertTrue(CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
         Mockito.verify(testPlugin, Mockito.times(3)).doIt();
     }
 

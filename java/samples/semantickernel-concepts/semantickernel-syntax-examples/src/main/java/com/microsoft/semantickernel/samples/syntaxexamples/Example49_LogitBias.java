@@ -92,7 +92,9 @@ public class Example49_LogitBias {
 
         var replyMessage = openAIChatCompletion.getChatMessageContentsAsync(chatHistory,
             kernel, invocationContext).block();
-        replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
+
+        chatHistory = new ChatHistory(replyMessage);
+
         messageOutputAsync(chatHistory);
 
         chatHistory.addUserMessage(
@@ -101,7 +103,7 @@ public class Example49_LogitBias {
 
         replyMessage = openAIChatCompletion.getChatMessageContentsAsync(chatHistory,
             kernel, invocationContext).block();
-        replyMessage.forEach(message -> chatHistory.addAssistantMessage(message.getContent()));
+        chatHistory = new ChatHistory(replyMessage);
         messageOutputAsync(chatHistory);
 
     }
