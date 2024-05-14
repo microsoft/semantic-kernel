@@ -145,16 +145,16 @@ internal static class ModelDiagnostics
     /// <returns>The activity with the completion token usage set for chaining</returns>
     public static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
 
-    #region Private
     /// <summary>
     /// Check if model diagnostics is enabled
     /// Model diagnostics is enabled if either EnableModelDiagnostics or EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
-    private static bool IsModelDiagnosticsEnabled()
+    public static bool IsModelDiagnosticsEnabled()
     {
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
+    #region Private
     private static void AddOptionalTags(Activity? activity, PromptExecutionSettings? executionSettings)
     {
         if (activity is null || executionSettings?.ExtensionData is null)

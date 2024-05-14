@@ -207,6 +207,7 @@ internal sealed class HuggingFaceClient
                     throw;
                 }
 
+                activity?.AddStreamingContent(responseEnumerator.Current);
                 yield return responseEnumerator.Current;
             }
         }

@@ -267,6 +267,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                         }
                     }
 
+                    activity?.AddStreamingContent(responseEnumerator.Current);
                     yield return responseEnumerator.Current;
                 }
                 finally

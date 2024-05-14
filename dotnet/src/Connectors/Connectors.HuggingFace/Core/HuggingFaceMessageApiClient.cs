@@ -123,6 +123,7 @@ internal sealed class HuggingFaceMessageApiClient
                     throw;
                 }
 
+                activity?.AddStreamingContent(responseEnumerator.Current);
                 yield return responseEnumerator.Current;
             }
         }
