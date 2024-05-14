@@ -147,7 +147,7 @@ public abstract class MistralAIToolCallBehavior
             // and then fail to do so, so we fail before we get to that point. This is an error
             // on the consumers behalf: if they specify auto-invocation with any functions, they must
             // specify the kernel and the kernel must contain those functions.
-            bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+            bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
             if (autoInvoke && kernel is null)
             {
                 throw new KernelException($"Auto-invocation with {nameof(KernelFunctions)} is not supported when no kernel is provided.");
@@ -188,7 +188,7 @@ public abstract class MistralAIToolCallBehavior
             bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
             if (autoInvoke && kernel is null)
             {
-                throw new KernelException($"Auto-invocation with {nameof(RequiredFunctions)} is not supported when no kernel is provided.");
+                throw new KernelException($"Auto-invocation with {nameof(AnyFunction)} is not supported when no kernel is provided.");
             }
 
             foreach (var metadata in this._kernelFunctionMetadata)

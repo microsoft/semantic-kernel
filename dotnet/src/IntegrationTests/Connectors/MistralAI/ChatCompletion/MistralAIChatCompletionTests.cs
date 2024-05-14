@@ -71,8 +71,8 @@ public sealed class MistralAIChatCompletionTests
             .Build();
 
         const string ChatPrompt = """
-            <message role=""system"">Respond in French.</message>
-            <message role=""user"">What is the best French cheese?</message>
+            <message role="system">Respond in French.</message>
+            <message role="user">What is the best French cheese?</message>
         """;
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(ChatPrompt, this._executionSettings);
 
