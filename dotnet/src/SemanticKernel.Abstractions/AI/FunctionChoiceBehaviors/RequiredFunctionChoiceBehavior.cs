@@ -87,13 +87,13 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
         }
 
-        List<KernelFunction>? requiredFunctions = null;
+        List<KernelFunction>? availableFunctions = null;
         bool allowAnyRequestedKernelFunction = false;
 
         // Handle functions provided via the 'Functions' property as function fully qualified names.
         if (this.Functions is { } functionFQNs && functionFQNs.Any())
         {
-            requiredFunctions = [];
+            availableFunctions = [];
 
             foreach (var functionFQN in functionFQNs)
             {
@@ -102,7 +102,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                 // Check if the function is available in the kernel. If it is, then connectors can find it for auto-invocation later.
                 if (context.Kernel!.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var function))
                 {
-                    requiredFunctions.Add(function);
+                    availableFunctions.Add(function);
                     continue;
                 }
 
@@ -116,7 +116,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                 function = this._functions?.FirstOrDefault(f => f.Name == nameParts.Name && f.PluginName == nameParts.PluginName);
                 if (function is not null)
                 {
-                    requiredFunctions.Add(function);
+                    availableFunctions.Add(function);
                     continue;
                 }
 
@@ -130,14 +130,15 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
             foreach (var plugin in context.Kernel.Plugins)
             {
-                requiredFunctions ??= [];
-                requiredFunctions.AddRange(plugin);
+                availableFunctions ??= [];
+                availableFunctions.AddRange(plugin);
             }
         }
 
         return new FunctionChoiceBehaviorConfiguration()
         {
-            RequiredFunctions = requiredFunctions,
+            Choice = FunctionChoice.Required,
+            Functions = availableFunctions,
             MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
             MaximumUseAttempts = this.MaximumUseAttempts,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction

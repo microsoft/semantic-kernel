@@ -18,7 +18,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void ItShouldAdvertiseNeitherAvailableNorRequiredFunctions()
+    public void ItShouldAdvertiseNoFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -32,8 +32,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
-        Assert.Null(config.RequiredFunctions);
+        Assert.Null(config.Functions);
     }
 
     private static KernelPlugin GetTestPlugin()

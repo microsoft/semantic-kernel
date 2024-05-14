@@ -125,7 +125,8 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 
         return new FunctionChoiceBehaviorConfiguration()
         {
-            AvailableFunctions = availableFunctions,
+            Choice = FunctionChoice.Auto,
+            Functions = availableFunctions,
             MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };

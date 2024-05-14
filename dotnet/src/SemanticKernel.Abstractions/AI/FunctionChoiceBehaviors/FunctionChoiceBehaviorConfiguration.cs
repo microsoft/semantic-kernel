@@ -12,14 +12,14 @@ namespace Microsoft.SemanticKernel;
 public sealed class FunctionChoiceBehaviorConfiguration
 {
     /// <summary>
-    /// The functions that are available for the model to call.
+    /// Represents an AI model's decision-making strategy for calling functions.
     /// </summary>
-    public IEnumerable<KernelFunction>? AvailableFunctions { get; init; }
+    public FunctionChoice Choice { get; init; }
 
     /// <summary>
-    /// The functions that the model is required to call.
+    /// The functions available for AI model.
     /// </summary>
-    public IEnumerable<KernelFunction>? RequiredFunctions { get; init; }
+    public IEnumerable<KernelFunction>? Functions { get; init; }
 
     /// <summary>
     /// The maximum number of function auto-invokes that can be made in a single user request.

@@ -1458,37 +1458,46 @@ internal abstract class ClientCore
             return result;
         }
 
-        // If we have a required function, it means we want to force LLM to invoke that function.
-        if (config.RequiredFunctions is { } requiredFunctions && requiredFunctions.Any())
+        if (config.Choice == FunctionChoice.Auto)
         {
-            if (requiredFunctions.Count() > 1)
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+
+            if (config.Functions is { } functions)
             {
-                throw new KernelException("Only one required function is allowed.");
+                foreach (var function in functions)
+                {
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+                }
             }
-
-            var functionDefinition = requiredFunctions.First().Metadata.ToOpenAIFunction().ToFunctionDefinition();
-
-            chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
-            chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
 
             return result;
         }
 
-        // If we have available functions, we want LLM to choose which function(s) to call.
-        if (config.AvailableFunctions is { } availableFunctions && availableFunctions.Any())
+        if (config.Choice == FunctionChoice.Required)
         {
-            chatOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
-
-            foreach (var function in availableFunctions)
+            if (config.Functions is { } functions && functions.Any())
             {
-                var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                if (functions.Count() > 1)
+                {
+                    throw new KernelException("Only one required function is allowed.");
+                }
+
+                var functionDefinition = functions.First().Metadata.ToOpenAIFunction().ToFunctionDefinition();
+
+                chatOptions.ToolChoice = new ChatCompletionsToolChoice(functionDefinition);
                 chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
             }
 
             return result;
         }
 
-        return result;
+        if (config.Choice == FunctionChoice.None)
+        {
+            return result;
+        }
+
+        throw new KernelException($"Unsupported function choice '{config.Choice}'.");
     }
 
     private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCallingFromToolCallBehavior(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, ToolCallBehavior toolCallBehavior)

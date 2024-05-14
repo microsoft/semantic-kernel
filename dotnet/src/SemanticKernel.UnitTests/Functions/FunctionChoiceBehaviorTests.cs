@@ -49,7 +49,7 @@ public sealed class FunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void AutoFunctionChoiceShouldAdvertiseKernelFunctionsAsAvailableOnes()
+    public void AutoFunctionChoiceShouldAdvertiseKernelFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -63,17 +63,15 @@ public sealed class FunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.RequiredFunctions);
-
-        Assert.NotNull(config.AvailableFunctions);
-        Assert.Equal(3, config.AvailableFunctions.Count());
-        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
-        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function3");
+        Assert.NotNull(config.Functions);
+        Assert.Equal(3, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
     [Fact]
-    public void AutoFunctionChoiceShouldAdvertiseProvidedFunctionsAsAvailableOnes()
+    public void AutoFunctionChoiceShouldAdvertiseProvidedFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -87,12 +85,10 @@ public sealed class FunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.RequiredFunctions);
-
-        Assert.NotNull(config.AvailableFunctions);
-        Assert.Equal(2, config.AvailableFunctions.Count());
-        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
+        Assert.NotNull(config.Functions);
+        Assert.Equal(2, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
 
     [Fact]
@@ -130,7 +126,7 @@ public sealed class FunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void RequiredFunctionChoiceShouldAdvertiseKernelFunctionsAsRequiredOnes()
+    public void RequiredFunctionChoiceShouldAdvertiseKernelFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -144,17 +140,15 @@ public sealed class FunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
-
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(3, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function3");
+        Assert.NotNull(config.Functions);
+        Assert.Equal(3, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
     [Fact]
-    public void RequiredFunctionChoiceShouldAdvertiseProvidedFunctionsAsRequiredOnes()
+    public void RequiredFunctionChoiceShouldAdvertiseProvidedFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -168,12 +162,10 @@ public sealed class FunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
-
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(2, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
+        Assert.NotNull(config.Functions);
+        Assert.Equal(2, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
     }
 
     [Fact]
@@ -225,8 +217,7 @@ public sealed class FunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
-        Assert.Null(config.RequiredFunctions);
+        Assert.Null(config.Functions);
     }
 
     private static KernelPlugin GetTestPlugin()
