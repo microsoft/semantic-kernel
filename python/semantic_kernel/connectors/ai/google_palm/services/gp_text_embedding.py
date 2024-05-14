@@ -39,6 +39,11 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             if google_palm_settings and google_palm_settings.api_key
             else None
         )
+        ai_model_id = ai_model_id or (
+            google_palm_settings.embedding_model_id
+            if google_palm_settings and google_palm_settings.embedding_model_id
+            else None
+        )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:

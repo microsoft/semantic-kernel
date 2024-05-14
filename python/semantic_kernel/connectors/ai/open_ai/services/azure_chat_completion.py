@@ -12,6 +12,7 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -93,6 +94,9 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             if azure_openai_settings and azure_openai_settings.api_key
             else None
         )
+
+        if api_version is None:
+            api_version = DEFAULT_AZURE_API_VERSION
 
         if not base_url and not endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")

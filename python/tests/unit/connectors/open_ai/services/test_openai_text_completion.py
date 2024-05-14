@@ -12,7 +12,7 @@ def test_open_ai_text_completion_init(openai_unit_test_env) -> None:
     # Test successful initialization
     open_ai_text_completion = OpenAITextCompletion()
 
-    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_AI_MODEL_ID"]
+    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
     assert isinstance(open_ai_text_completion, TextCompletionClientBase)
 
 
@@ -33,7 +33,7 @@ def test_open_ai_text_completion_init_with_default_header(openai_unit_test_env) 
         default_headers=default_headers,
     )
 
-    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_AI_MODEL_ID"]
+    assert open_ai_text_completion.ai_model_id == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
     assert isinstance(open_ai_text_completion, TextCompletionClientBase)
     for key, value in default_headers.items():
         assert key in open_ai_text_completion.client.default_headers
@@ -50,14 +50,14 @@ def test_open_ai_text_completion_serialize(openai_unit_test_env) -> None:
     default_headers = {"X-Unit-Test": "test-guid"}
 
     settings = {
-        "ai_model_id": openai_unit_test_env["OPENAI_AI_MODEL_ID"],
+        "ai_model_id": openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
         "api_key": openai_unit_test_env["OPENAI_API_KEY"],
         "default_headers": default_headers,
     }
 
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
-    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_AI_MODEL_ID"]
+    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
     assert dumped_settings["api_key"] == openai_unit_test_env["OPENAI_API_KEY"]
     # Assert that the default header we added is present in the dumped_settings default headers
     for key, value in default_headers.items():
@@ -67,13 +67,13 @@ def test_open_ai_text_completion_serialize(openai_unit_test_env) -> None:
 
 def test_open_ai_text_completion_serialize_with_org_id(openai_unit_test_env) -> None:
     settings = {
-        "ai_model_id": openai_unit_test_env["OPENAI_AI_MODEL_ID"],
+        "ai_model_id": openai_unit_test_env["OPENAI_TEXT_MODEL_ID"],
         "api_key": openai_unit_test_env["OPENAI_API_KEY"],
         "org_id": openai_unit_test_env["OPENAI_ORG_ID"],
     }
 
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
-    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_AI_MODEL_ID"]
+    assert dumped_settings["ai_model_id"] == openai_unit_test_env["OPENAI_TEXT_MODEL_ID"]
     assert dumped_settings["api_key"] == openai_unit_test_env["OPENAI_API_KEY"]
     assert dumped_settings["org_id"] == openai_unit_test_env["OPENAI_ORG_ID"]

@@ -63,7 +63,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         )
         org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
         ai_model_id = ai_model_id or (
-            openai_settings.ai_model_id if openai_settings and openai_settings.ai_model_id else None
+            openai_settings.chat_model_id if openai_settings and openai_settings.chat_model_id else None
         )
 
         super().__init__(

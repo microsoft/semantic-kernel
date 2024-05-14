@@ -16,10 +16,19 @@ class GooglePalmSettings(BaseSettings):
     - api_key: SecretStr - GooglePalm API key, see https://developers.generativeai.google/products/palm
         (Env var GOOGLE_PALM_API_KEY)
     - env_file_path: {str | None} - Use the environment settings file as a fallback to environment variables. (Optional)
+    - chat_model_id: str | None - The GooglePalm chat model ID to use.
+        (Env var GOOGLE_PALM_CHAT_MODEL_ID)
+    - text_model_id: str | None - The GooglePalm text model ID to use.
+        (Env var GOOGLE_PALM_TEXT_MODEL_ID)
+    - embedding_model_id: str | None - The GooglePalm embedding model ID to use.
+        (Env var GOOGLE_PALM_EMBEDDING_MODEL_ID)
     """
 
     env_file_path: str | None = None
     api_key: SecretStr | None = None
+    chat_model_id: str | None = None
+    text_model_id: str | None = None
+    embedding_model_id: str | None = None
 
     class Config:
         env_prefix = "GOOGLE_PALM_"
