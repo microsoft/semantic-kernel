@@ -11,7 +11,9 @@ from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.template_engine.blocks.block import Block
-from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.code_block import CodeBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
+from semantic_kernel.template_engine.blocks.var_block import VarBlock
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 if TYPE_CHECKING:
@@ -39,25 +41,27 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         # Enumerate every block in the template, adding any variables that are referenced.
         for block in self._blocks:
-            if block.type == BlockTypes.VARIABLE:
+            if isinstance(block, VarBlock):
                 # Add all variables from variable blocks, e.g. "{{$a}}".
                 self._add_if_missing(block.name, seen)
                 continue
-            if block.type == BlockTypes.CODE:
+            if isinstance(block, CodeBlock):
                 for sub_block in block.tokens:
-                    if sub_block.type == BlockTypes.VARIABLE:
+                    if isinstance(sub_block, VarBlock):
                         # Add all variables from code blocks, e.g. "{{p.bar $b}}".
                         self._add_if_missing(sub_block.name, seen)
                         continue
-                    if sub_block.type == BlockTypes.NAMED_ARG and sub_block.variable:
+                    if isinstance(sub_block, NamedArgBlock) and sub_block.variable:
                         # Add all variables from named arguments, e.g. "{{p.bar b = $b}}".
                         # represents a named argument for a function call.
                         # For example, in the template {{ MyPlugin.MyFunction var1=$boo }}, var1=$boo
                         # is a named arg block.
                         self._add_if_missing(sub_block.variable.name, seen)
 
-    def _add_if_missing(self, variable_name: str, seen: Optional[set] = None):
+    def _add_if_missing(self, variable_name: str | None, seen: Optional[set] = None):
         # Convert variable_name to lower case to handle case-insensitivity
+        if not seen:
+            seen = set()
         if variable_name and variable_name.lower() not in seen:
             seen.add(variable_name.lower())
             self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))
@@ -141,7 +145,7 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         rendered_blocks: List[Block] = []
         for block in blocks:
-            if block.type == BlockTypes.VARIABLE:
+            if isinstance(block, VarBlock):
                 rendered_blocks.append(TextBlock.from_text(block.render(kernel, arguments)))
                 continue
             rendered_blocks.append(block)
@@ -164,7 +168,7 @@ class KernelPromptTemplate(PromptTemplateBase):
 
         rendered_blocks: List[Block] = []
         for block in blocks:
-            if block.type == BlockTypes.CODE:
+            if isinstance(block, CodeBlock):
                 rendered_blocks.append(TextBlock.from_text(await block.render_code(kernel, arguments)))
                 continue
             rendered_blocks.append(block)

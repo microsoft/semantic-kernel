@@ -2,11 +2,15 @@
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Callable
 
 import nest_asyncio
 
-from semantic_kernel.prompt_template.const import HANDLEBARS_TEMPLATE_FORMAT_NAME
+from semantic_kernel.prompt_template.const import (
+    HANDLEBARS_TEMPLATE_FORMAT_NAME,
+    JINJA2_TEMPLATE_FORMAT_NAME,
+    TEMPLATE_FORMAT_TYPES,
+)
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -21,9 +25,12 @@ def create_template_helper_from_function(
     function: "KernelFunction",
     kernel: "Kernel",
     base_arguments: "KernelArguments",
-    template_format: Literal["handlebars", "jinja2"],
+    template_format: TEMPLATE_FORMAT_TYPES,
 ) -> Callable:
     """Create a helper function for both the Handlebars and Jinja2 templating engines from a kernel function."""
+    if template_format not in [JINJA2_TEMPLATE_FORMAT_NAME, HANDLEBARS_TEMPLATE_FORMAT_NAME]:
+        raise ValueError(f"Invalid template format: {template_format}")
+
     if not getattr(asyncio, "_nest_patched", False):
         nest_asyncio.apply()
 

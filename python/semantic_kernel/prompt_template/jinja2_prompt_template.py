@@ -44,7 +44,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         Jinja2TemplateSyntaxError: If there is a syntax error in the Jinja2 template.
     """
 
-    _env: ImmutableSandboxedEnvironment = PrivateAttr()
+    _env: ImmutableSandboxedEnvironment | None = PrivateAttr()
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -95,6 +95,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                 }
             )
         try:
+            assert self.prompt_template_config.template is not None
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
             return template.render(**arguments)
         except TemplateError as exc:
