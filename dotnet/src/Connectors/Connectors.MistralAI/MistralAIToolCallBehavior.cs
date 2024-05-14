@@ -211,6 +211,15 @@ public abstract class MistralAIToolCallBehavior
                 request.AddTool(ToMistralTool(functionMetadata));
             }
         }
+
+        /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
+        /// <remarks>
+        /// Unlike <see cref="KernelFunctions"/>, this must use 1 as the maximum
+        /// use attempts. Otherwise, every call back to the model _requires_ it to invoke the function (as opposed
+        /// to allows it), which means we end up doing the same work over and over and over until the maximum is reached.
+        /// Thus for "requires", we must send the tool information only once.
+        /// </remarks>
+        internal override int MaximumUseAttempts => 1;
     }
 
     /// <summary>

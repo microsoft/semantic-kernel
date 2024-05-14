@@ -9,7 +9,7 @@ namespace ChatCompletion;
 /// <summary>
 /// Demonstrates the use of chat prompts with MistralAI.
 /// </summary>
-public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(output)
+public sealed class MistralAI_ChatPrompt(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -29,7 +29,7 @@ public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(o
 
         foreach (var message in response)
         {
-            WriteLine(message.Content);
+            Console.WriteLine(message.Content);
         }
     }
 
@@ -51,7 +51,7 @@ public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(o
 
         await foreach (var update in streamingChat)
         {
-            Write(update);
+            Console.Write(update);
         }
     }
 
@@ -65,7 +65,7 @@ public sealed class MistralAI_Chat_Prompt(ITestOutputHelper output) : BaseTest(o
 
         var kernel = Kernel.CreateBuilder()
             .AddMistralChatCompletion(
-                model: TestConfiguration.MistralAI.ChatModelId,
+                modelId: TestConfiguration.MistralAI.ChatModelId,
                 apiKey: TestConfiguration.MistralAI.ApiKey)
             .Build();
 

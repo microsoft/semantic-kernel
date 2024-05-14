@@ -22,24 +22,24 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
     /// <summary>
     /// Initializes a new instance of the <see cref="MistralAIChatCompletionService"/> class.
     /// </summary>
-    /// <param name="model">The MistralAI model for the text generation service.</param>
+    /// <param name="modelId">The MistralAI modelId for the text generation service.</param>
     /// <param name="apiKey">API key for accessing the MistralAI service.</param>
     /// <param name="endpoint">Optional  uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the MistralAI API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
-    public MistralAIChatCompletionService(string model, string apiKey, Uri? endpoint = null, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null)
+    public MistralAIChatCompletionService(string modelId, string apiKey, Uri? endpoint = null, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         this.Client = new MistralClient(
-        modelId: model,
+        modelId: modelId,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
-        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, model);
+        this.AttributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
     }
 
     /// <inheritdoc/>
