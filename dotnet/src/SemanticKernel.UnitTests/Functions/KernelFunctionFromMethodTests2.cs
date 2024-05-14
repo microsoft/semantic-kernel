@@ -26,8 +26,8 @@ public sealed class KernelFunctionFromMethodTests2
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
         MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not ("GetType" or "Equals" or "GetHashCode" or "ToString" or "Finalize" or "MemberwiseClone"))
             .ToArray();
 
         KernelFunction[] functions = (from method in methods select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
@@ -43,8 +43,8 @@ public sealed class KernelFunctionFromMethodTests2
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
         MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not ("GetType" or "Equals" or "GetHashCode" or "ToString" or "Finalize" or "MemberwiseClone"))
             .ToArray();
 
         KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
@@ -329,13 +329,13 @@ public sealed class KernelFunctionFromMethodTests2
         }
 
         [KernelFunction]
-        public string? Type05Nullable(string? input = null)
+        private string? Type05Nullable(string? input = null)
         {
             return "";
         }
 
         [KernelFunction]
-        public string? Type05EmptyDefault(string? input = "")
+        internal string? Type05EmptyDefault(string? input = "")
         {
             return "";
         }
