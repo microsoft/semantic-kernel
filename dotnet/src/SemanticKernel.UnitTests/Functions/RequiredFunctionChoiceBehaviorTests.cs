@@ -213,7 +213,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(choiceBehavior.Functions);
-        Assert.Equal(2, choiceBehavior.Functions.Count());
+        Assert.Equal(2, choiceBehavior.Functions.Count);
 
         Assert.Equal("MyPlugin-Function1", choiceBehavior.Functions.ElementAt(0));
         Assert.Equal("MyPlugin-Function2", choiceBehavior.Functions.ElementAt(1));
