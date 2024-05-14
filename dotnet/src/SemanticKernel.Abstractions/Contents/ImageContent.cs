@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class ImageContent : BinaryContent
 {
+    private bool _uriWasSetAsDataUri = false;
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
@@ -39,7 +40,8 @@ public sealed class ImageContent : BinaryContent
             modelId,
             metadata)
     {
-        if (uri.ToString().StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        // For BinaryContent, Uri and DataUri can be set independently 
+        if (uri?.ToString().StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true)
         {
             this.DataUri = uri.ToString();
         }
@@ -69,12 +71,6 @@ public sealed class ImageContent : BinaryContent
             modelId,
             metadata)
     {
-        if (data!.IsEmpty)
-        {
-            throw new ArgumentException("Data cannot be empty", nameof(data));
-        }
-
-        this.Data = data;
     }
 
     /// <summary>

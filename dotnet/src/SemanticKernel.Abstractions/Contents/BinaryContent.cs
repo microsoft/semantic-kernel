@@ -61,7 +61,9 @@ public class BinaryContent : KernelContent
     [JsonConstructor]
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
+#pragma warning disable CA1054 // URI-like parameters should not be strings
         string? dataUri = null,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
         string? mimeType = null,
         Uri? uri = null,
         object? innerContent = null,
@@ -91,8 +93,11 @@ public class BinaryContent : KernelContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(innerContent, modelId, metadata)
     {
-        Verify.NotNullOrWhiteSpace(mimeType, nameof(mimeType));
         Verify.NotNull(data, nameof(data));
+        if (data.IsEmpty)
+        {
+            throw new ArgumentException("Data cannot be empty", nameof(data));
+        }
 
         this.MimeType = mimeType;
         this.Data = data;

@@ -68,7 +68,8 @@ public sealed class ImageContentTests
         var data = BinaryData.Empty;
 
         // Assert
-        Assert.Throws<ArgumentException>(() => new ImageContent(data) { MimeType = "text/plain" });
+        Assert.Throws<ArgumentException>(()
+            => new ImageContent(data) { MimeType = "text/plain" });
     }
 
     [Fact]
