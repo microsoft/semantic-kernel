@@ -194,9 +194,43 @@ internal static class ModelDiagnostics
 
             sb.Append("{\"role\": \"");
             sb.Append(message.Role);
-            sb.Append("\", \"content\": \"");
+            sb.Append("\", \"content\": ");
             sb.Append(JsonSerializer.Serialize(message.Content));
-            sb.Append("\"}");
+            sb.Append(", \"tool_calls\": ");
+            sb.Append(ToOpenAIFormat(message.Items));
+            sb.Append('}');
+
+            isFirst = false;
+        }
+        sb.Append(']');
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Convert tool calls to a string aligned with the OpenAI format
+    /// </summary>
+    private static string ToOpenAIFormat(ChatMessageContentItemCollection chatMessageContentItems)
+    {
+        var sb = new StringBuilder();
+        sb.Append('[');
+        var isFirst = true;
+        foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
+        {
+            if (!isFirst)
+            {
+                // Append a comma and a newline to separate the elements after the previous one.
+                // This can avoid adding an unnecessary comma after the last element.
+                sb.Append(", \n");
+            }
+
+            sb.Append("{\"id\": \"");
+            sb.Append(functionCall.Id);
+            sb.Append("\", \"function\": {\"arguments\": ");
+            sb.Append(JsonSerializer.Serialize(functionCall.Arguments));
+            sb.Append(", \"name\": \"");
+            sb.Append(functionCall.FunctionName);
+            sb.Append("\"}, \"type\": \"function\"}");
 
             isFirst = false;
         }
