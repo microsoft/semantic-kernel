@@ -18,6 +18,7 @@ using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
@@ -29,6 +30,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 internal abstract class ClientCore
 {
+    private const string ModelProvider = "openai";
     private const int MaxResultsPerPrompt = 128;
 
     /// <summary>
@@ -69,6 +71,8 @@ internal abstract class ClientCore
     /// OpenAI / Azure OpenAI Client
     /// </summary>
     internal abstract OpenAIClient Client { get; }
+
+    internal Uri? Endpoint { get; set; } = null;
 
     /// <summary>
     /// Logger instance
@@ -132,15 +136,39 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(text, textExecutionSettings, this.DeploymentOrModelName);
 
-        var responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
-        if (responseData.Choices.Count == 0)
+        Completions? responseData = null;
+        List<TextContent> responseContent;
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, text, executionSettings))
         {
-            throw new KernelException("Text completions not found");
+            try
+            {
+                responseData = (await RunRequestAsync(() => this.Client.GetCompletionsAsync(options, cancellationToken)).ConfigureAwait(false)).Value;
+                if (responseData.Choices.Count == 0)
+                {
+                    throw new KernelException("Text completions not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                activity?.SetError(ex);
+                if (responseData != null)
+                {
+                    // Capture available metadata even if the operation failed.
+                    activity?
+                        .SetResponseId(responseData.Id)
+                        .SetPromptTokenUsage(responseData.Usage.PromptTokens)
+                        .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                }
+                throw;
+            }
+
+            responseContent = responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
+            activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
         this.CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(choice => new TextContent(choice.Text, this.DeploymentOrModelName, choice, Encoding.UTF8, GetTextChoiceMetadata(responseData, choice))).ToList();
+        return responseContent;
     }
 
     internal async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -323,18 +351,42 @@ internal abstract class ClientCore
         for (int requestIndex = 1; ; requestIndex++)
         {
             // Make the request.
-            var responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
-            this.CaptureUsageDetails(responseData.Usage);
-            if (responseData.Choices.Count == 0)
+            ChatCompletions? responseData = null;
+            List<OpenAIChatMessageContent> responseContent;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
             {
-                throw new KernelException("Chat completions not found");
+                try
+                {
+                    responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
+                    this.CaptureUsageDetails(responseData.Usage);
+                    if (responseData.Choices.Count == 0)
+                    {
+                        throw new KernelException("Chat completions not found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    if (responseData != null)
+                    {
+                        // Capture available metadata even if the operation failed.
+                        activity?
+                            .SetResponseId(responseData.Id)
+                            .SetPromptTokenUsage(responseData.Usage.PromptTokens)
+                            .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
+                    }
+                    throw;
+                }
+
+                responseContent = responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).ToList();
+                activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return responseData.Choices.Select(chatChoice => this.GetChatMessage(chatChoice, responseData)).ToList();
+                return responseContent;
             }
 
             Debug.Assert(kernel is not null);
@@ -1054,11 +1106,11 @@ internal abstract class ClientCore
         throw new NotImplementedException($"Role {chatRole} is not implemented");
     }
 
-    private static IEnumerable<ChatRequestMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
+    private static List<ChatRequestMessage> GetRequestMessages(ChatMessageContent message, ToolCallBehavior? toolCallBehavior)
     {
         if (message.Role == AuthorRole.System)
         {
-            return new[] { new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName } };
+            return [new ChatRequestSystemMessage(message.Content) { Name = message.AuthorName }];
         }
 
         if (message.Role == AuthorRole.Tool)
@@ -1068,12 +1120,12 @@ internal abstract class ClientCore
             if (message.Metadata?.TryGetValue(OpenAIChatMessageContent.ToolIdProperty, out object? toolId) is true &&
                 toolId?.ToString() is string toolIdString)
             {
-                return new[] { new ChatRequestToolMessage(message.Content, toolIdString) };
+                return [new ChatRequestToolMessage(message.Content, toolIdString)];
             }
 
             // Handling function results represented by the FunctionResultContent type.
             // Example: new ChatMessageContent(AuthorRole.Tool, items: new ChatMessageContentItemCollection { new FunctionResultContent(functionCall, result) })
-            List<ChatRequestToolMessage>? toolMessages = null;
+            List<ChatRequestMessage>? toolMessages = null;
             foreach (var item in message.Items)
             {
                 if (item is not FunctionResultContent resultContent)
@@ -1106,16 +1158,16 @@ internal abstract class ClientCore
         {
             if (message.Items is { Count: 1 } && message.Items.FirstOrDefault() is TextContent textContent)
             {
-                return new[] { new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName } };
+                return [new ChatRequestUserMessage(textContent.Text) { Name = message.AuthorName }];
             }
 
-            return new[] {new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
+            return [new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
             {
                 TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
                 ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
-            { Name = message.AuthorName }};
+            { Name = message.AuthorName }];
         }
 
         if (message.Role == AuthorRole.Assistant)
@@ -1176,7 +1228,7 @@ internal abstract class ClientCore
                 asstMessage.ToolCalls.Add(new ChatCompletionsFunctionToolCall(callRequest.Id, FunctionName.ToFullyQualifiedName(callRequest.FunctionName, callRequest.PluginName, OpenAIFunction.NameSeparator), argument ?? string.Empty));
             }
 
-            return new[] { asstMessage };
+            return [asstMessage];
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");

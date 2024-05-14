@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase
 {
+    private const string ModelProvider = "google";
     private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
@@ -161,11 +163,29 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
-                    this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
-                .ConfigureAwait(false);
+            GeminiResponse geminiResponse;
+            List<GeminiChatMessageContent> chatResponses;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
+            {
+                try
+                {
+                    geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
+                            this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
+                        .ConfigureAwait(false);
+                    chatResponses = this.ProcessChatResponse(geminiResponse);
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    throw;
+                }
 
-            var chatResponses = this.ProcessChatResponse(geminiResponse);
+                activity?.SetCompletionResponse(
+                    chatResponses,
+                    geminiResponse.UsageMetadata?.PromptTokenCount,
+                    geminiResponse.UsageMetadata?.CandidatesTokenCount);
+            }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
@@ -293,7 +313,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
         finally
         {
-            if (chatResponsesEnumerator != null)
+            if (chatResponsesEnumerator is not null)
             {
                 await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
             }
@@ -420,7 +440,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
             content: errorMessage ?? string.Empty,
             modelId: this._modelId,
-            calledToolResult: functionResponse != null ? new(tool, functionResponse) : null,
+            calledToolResult: functionResponse is not null ? new(tool, functionResponse) : null,
             metadata: null);
         chat.Add(message);
         request.AddChatMessage(message);
@@ -527,9 +547,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates == null || geminiResponse.Candidates.Count == 0)
+        if (geminiResponse.Candidates is null || geminiResponse.Candidates.Count == 0)
         {
-            if (geminiResponse.PromptFeedback?.BlockReason != null)
+            if (geminiResponse.PromptFeedback?.BlockReason is not null)
             {
                 // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
                 throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
@@ -569,7 +589,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
     {
-        if (message.CalledToolResult != null)
+        if (message.CalledToolResult is not null)
         {
             return new GeminiStreamingChatMessageContent(
                 role: message.Role,
@@ -580,7 +600,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 choiceIndex: message.Metadata!.Index);
         }
 
-        if (message.ToolCalls != null)
+        if (message.ToolCalls is not null)
         {
             return new GeminiStreamingChatMessageContent(
                 role: message.Role,

@@ -110,7 +110,7 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }

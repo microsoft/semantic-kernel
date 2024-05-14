@@ -106,7 +106,7 @@ public static class FlowSerializer
         public string? FlowName { get; set; }
     }
 
-    private class FlowModel : FlowStepModel
+    private sealed class FlowModel : FlowStepModel
     {
         public string Name { get; set; } = string.Empty;
 

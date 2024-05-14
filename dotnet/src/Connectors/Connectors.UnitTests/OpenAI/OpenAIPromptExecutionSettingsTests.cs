@@ -225,6 +225,9 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.TopP = 1);
         Assert.Throws<NotSupportedException>(() => executionSettings.StopSequences?.Add("STOP"));
         Assert.Throws<NotSupportedException>(() => executionSettings.TokenSelectionBiases?.Add(5, 6));
+
+        executionSettings!.Freeze(); // idempotent
+        Assert.True(executionSettings.IsFrozen);
     }
 
     [Fact]
