@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable CA1056 // URI-like properties should not be strings
-#pragma warning disable CA1055 // URI-like return values should not be strings
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -101,15 +98,6 @@ public class BinaryContent : KernelContent
         this.Data = data;
     }
 
-    /// <summary>
-    /// This is solely for ImageContent retro compatibility
-    /// </summary>
-    /// <returns>Returns the byte array content</returns>
-#pragma warning disable CA1024 // Use properties where appropriate
-    internal protected ReadOnlyMemory<byte>? GetImageCachedContent()
-#pragma warning restore CA1024 // Use properties where appropriate
-        => this._cachedData;
-
     private void SetDataUri(string? dataUri)
     {
         if (dataUri is null)
@@ -191,5 +179,11 @@ public class BinaryContent : KernelContent
         }
 
         return this._cachedData!.Value;
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this);
     }
 }

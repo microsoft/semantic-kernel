@@ -67,7 +67,8 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Serialized Content Before: {serialized}");
         Console.WriteLine($"Content ToString Before: {content}");
 
-        content.DataUri = "https://fake-random-test-host:123";
+        content.Uri = new Uri("https://fake-random-test-host:123");
+        content.DataUri = null;
 
         Assert.False(content.CanRead());
 
