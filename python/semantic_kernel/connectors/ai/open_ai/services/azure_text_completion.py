@@ -7,6 +7,7 @@ from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
     AzureOpenAIConfigBase,
 )
@@ -84,6 +85,9 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             if azure_openai_settings and azure_openai_settings.api_key
             else None
         )
+
+        if api_version is None:
+            api_version = DEFAULT_AZURE_API_VERSION
 
         if not base_url and not endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")

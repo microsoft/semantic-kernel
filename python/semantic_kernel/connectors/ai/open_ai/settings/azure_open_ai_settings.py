@@ -4,7 +4,6 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.kernel_pydantic import HttpsUrl
 
 
@@ -50,7 +49,7 @@ class AzureOpenAISettings(BaseSettings):
                 your resource from the Azure portal, the endpoint should end in openai.azure.com.
                 If both base_url and endpoint are supplied, base_url will be used.
                 (Env var AZURE_OPENAI_ENDPOINT)
-    - api_version: str | None - The API version to use. The default value is "2023-05-15".
+    - api_version: str | None - The API version to use. The default value is "2024-02-01".
                 (Env var AZURE_OPENAI_API_VERSION)
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
@@ -62,7 +61,7 @@ class AzureOpenAISettings(BaseSettings):
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
-    api_version: str = DEFAULT_AZURE_API_VERSION
+    api_version: str | None = None
 
     class Config:
         env_prefix = "AZURE_OPENAI_"
