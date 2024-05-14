@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -66,5 +67,56 @@ public sealed class OpenAIAudioToTextExecutionSettingsTests
         Assert.Equal("prompt", settings.Prompt);
         Assert.Equal("text", settings.ResponseFormat);
         Assert.Equal(0.2f, settings.Temperature);
+    }
+
+    [Fact]
+    public void ItClonesAllProperties()
+    {
+        var settings = new OpenAIAudioToTextExecutionSettings()
+        {
+            ModelId = "model_id",
+            Language = "en",
+            Prompt = "prompt",
+            ResponseFormat = "text",
+            Temperature = 0.2f,
+            Filename = "something.mp3",
+        };
+
+        var clone = (OpenAIAudioToTextExecutionSettings)settings.Clone();
+        Assert.NotSame(settings, clone);
+
+        Assert.Equal("model_id", clone.ModelId);
+        Assert.Equal("en", clone.Language);
+        Assert.Equal("prompt", clone.Prompt);
+        Assert.Equal("text", clone.ResponseFormat);
+        Assert.Equal(0.2f, clone.Temperature);
+        Assert.Equal("something.mp3", clone.Filename);
+    }
+
+    [Fact]
+    public void ItFreezesAndPreventsMutation()
+    {
+        var settings = new OpenAIAudioToTextExecutionSettings()
+        {
+            ModelId = "model_id",
+            Language = "en",
+            Prompt = "prompt",
+            ResponseFormat = "text",
+            Temperature = 0.2f,
+            Filename = "something.mp3",
+        };
+
+        settings.Freeze();
+        Assert.True(settings.IsFrozen);
+
+        Assert.Throws<InvalidOperationException>(() => settings.ModelId = "new_model");
+        Assert.Throws<InvalidOperationException>(() => settings.Language = "some_format");
+        Assert.Throws<InvalidOperationException>(() => settings.Prompt = "prompt");
+        Assert.Throws<InvalidOperationException>(() => settings.ResponseFormat = "something");
+        Assert.Throws<InvalidOperationException>(() => settings.Temperature = 0.2f);
+        Assert.Throws<InvalidOperationException>(() => settings.Filename = "something");
+
+        settings.Freeze(); // idempotent
+        Assert.True(settings.IsFrozen);
     }
 }

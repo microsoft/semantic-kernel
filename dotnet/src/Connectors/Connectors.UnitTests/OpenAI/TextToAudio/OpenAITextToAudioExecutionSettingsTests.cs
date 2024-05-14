@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -60,5 +61,48 @@ public sealed class OpenAITextToAudioExecutionSettingsTests
         Assert.Equal("voice", settings.Voice);
         Assert.Equal("mp3", settings.ResponseFormat);
         Assert.Equal(1.2f, settings.Speed);
+    }
+
+    [Fact]
+    public void ItClonesAllProperties()
+    {
+        var textToAudioSettings = new OpenAITextToAudioExecutionSettings()
+        {
+            ModelId = "some_model",
+            ResponseFormat = "some_format",
+            Speed = 3.14f,
+            Voice = "something"
+        };
+
+        var clone = (OpenAITextToAudioExecutionSettings)textToAudioSettings.Clone();
+        Assert.NotSame(textToAudioSettings, clone);
+
+        Assert.Equal("some_model", clone.ModelId);
+        Assert.Equal("some_format", clone.ResponseFormat);
+        Assert.Equal(3.14f, clone.Speed);
+        Assert.Equal("something", clone.Voice);
+    }
+
+    [Fact]
+    public void ItFreezesAndPreventsMutation()
+    {
+        var textToAudioSettings = new OpenAITextToAudioExecutionSettings()
+        {
+            ModelId = "some_model",
+            ResponseFormat = "some_format",
+            Speed = 3.14f,
+            Voice = "something"
+        };
+
+        textToAudioSettings.Freeze();
+        Assert.True(textToAudioSettings.IsFrozen);
+
+        Assert.Throws<InvalidOperationException>(() => textToAudioSettings.ModelId = "new_model");
+        Assert.Throws<InvalidOperationException>(() => textToAudioSettings.ResponseFormat = "some_format");
+        Assert.Throws<InvalidOperationException>(() => textToAudioSettings.Speed = 3.14f);
+        Assert.Throws<InvalidOperationException>(() => textToAudioSettings.Voice = "something");
+
+        textToAudioSettings.Freeze(); // idempotent
+        Assert.True(textToAudioSettings.IsFrozen);
     }
 }

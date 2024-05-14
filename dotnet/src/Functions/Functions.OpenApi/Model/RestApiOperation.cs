@@ -16,7 +16,7 @@ public sealed class RestApiOperation
     /// <summary>
     /// A static empty dictionary to default to when none is provided.
     /// </summary>
-    private static readonly Dictionary<string, object?> s_emptyDictionary = new();
+    private static readonly Dictionary<string, object?> s_emptyDictionary = [];
 
     /// <summary>
     /// Gets the name of an artificial parameter to be used for operation having "text/plain" payload media type.
