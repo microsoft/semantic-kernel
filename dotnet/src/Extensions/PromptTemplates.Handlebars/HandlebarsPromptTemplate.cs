@@ -142,7 +142,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowUnsafeContent;
+                return !inputVariable.AllowDangerouslySetContent;
             }
         }
 

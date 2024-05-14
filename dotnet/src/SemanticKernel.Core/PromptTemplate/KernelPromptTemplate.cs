@@ -43,8 +43,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
-        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name));
+        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowDangerouslySetContent;
+        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowDangerouslySetContent).Select(iv => iv.Name));
     }
 
     /// <inheritdoc/>

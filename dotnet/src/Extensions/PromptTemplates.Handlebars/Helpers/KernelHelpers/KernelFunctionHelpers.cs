@@ -38,7 +38,7 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowUnsafeContent || promptConfig.AllowUnsafeContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowUnsafeContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
         }
     }
 

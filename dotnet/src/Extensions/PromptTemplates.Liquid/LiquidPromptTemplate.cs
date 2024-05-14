@@ -69,7 +69,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             foreach (string implicitVariable in SimpleVariablesVisitor.InferInputs(this._liquidTemplate))
             {
-                config.InputVariables.Add(new() { Name = implicitVariable, AllowUnsafeContent = config.AllowUnsafeContent });
+                config.InputVariables.Add(new() { Name = implicitVariable, AllowDangerouslySetContent = config.AllowDangerouslySetContent });
             }
         }
 
@@ -201,7 +201,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowUnsafeContent;
+                return !inputVariable.AllowDangerouslySetContent;
             }
         }
 
