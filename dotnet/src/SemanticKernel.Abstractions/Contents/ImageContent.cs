@@ -12,32 +12,10 @@ namespace Microsoft.SemanticKernel;
 public sealed class ImageContent : BinaryContent
 {
     /// <summary>
-    /// The URI of image.
-    /// </summary>
-    // Hiding is not intended as Uri type does not support scenarios for large DataUri but the base.Uri does as a string.
-#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
-    public Uri? Uri
-#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
-    {
-        get => new(base.Uri);
-        set => base.Uri = value!.ToString();
-    }
-
-    /// <summary>
-    /// The image data.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ReadOnlyMemory<byte>? Data
-    {
-        get => this.GetCachedContent();
-        set => this.SetCachedContent(value!.Value);
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
     [JsonConstructor]
-    public ImageContent() : base("about:blank")
+    public ImageContent()
     {
     }
 
@@ -53,8 +31,22 @@ public sealed class ImageContent : BinaryContent
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(uri, innerContent, modelId, metadata)
+        : base(
+            dataUri: null,
+            mimeType: null,
+            uri: null,
+            innerContent,
+            modelId,
+            metadata)
     {
+        if (uri.ToString().StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            this.DataUri = uri.ToString();
+        }
+        else
+        {
+            this.Uri = uri;
+        }
     }
 
     /// <summary>
@@ -69,7 +61,13 @@ public sealed class ImageContent : BinaryContent
         string? modelId = null,
         object? innerContent = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(data, mimeType: null, innerContent, modelId, metadata)
+        : base(
+            data: data,
+            mimeType: null,
+            uri: null,
+            innerContent,
+            modelId,
+            metadata)
     {
         if (data!.IsEmpty)
         {

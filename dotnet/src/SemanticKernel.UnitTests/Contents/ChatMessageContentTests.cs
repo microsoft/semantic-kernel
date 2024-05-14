@@ -254,7 +254,7 @@ public class ChatMessageContentTests
 
         var binaryContent = deserializedMessage.Items[2] as BinaryContent;
         Assert.NotNull(binaryContent);
-        Assert.True((await binaryContent.GetByteArrayAsync()).Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
+        Assert.True(binaryContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 })));
         Assert.Equal("model-3", binaryContent.ModelId);
         Assert.Equal("mime-type-3", binaryContent.MimeType);
         Assert.NotNull(binaryContent.Metadata);

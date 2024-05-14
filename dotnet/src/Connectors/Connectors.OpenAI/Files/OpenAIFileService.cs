@@ -109,11 +109,18 @@ public sealed class OpenAIFileService
     /// <remarks>
     /// Files uploaded with <see cref="OpenAIFilePurpose.Assistants"/> do not support content retrieval.
     /// </remarks>
-    public BinaryContent GetFileContent(string id, CancellationToken cancellationToken = default)
+    public async Task<BinaryContent> GetFileContentAsync(string id, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(id, nameof(id));
+        var (stream, mimetype) = await this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken).ConfigureAwait(false);
 
-        return new BinaryContent(() => this.StreamGetRequestAsync($"{this._serviceUri}/{id}/content", cancellationToken));
+        using (stream)
+        {
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+            return new BinaryContent(memoryStream.ToArray(), mimetype);
+        }
     }
 
     /// <summary>
@@ -156,7 +163,7 @@ public sealed class OpenAIFileService
 
         using var formData = new MultipartFormDataContent();
         using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentFile = new ByteArrayContent((await fileContent.GetByteArrayAsync().ConfigureAwait(false)).ToArray());
+        using var contentFile = new ByteArrayContent(fileContent.Data!.Value.ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 

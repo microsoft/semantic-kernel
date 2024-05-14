@@ -301,7 +301,11 @@ internal abstract class ClientCore
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(content.Data);
+        var audioData = content.Data!.Value;
+        if (audioData.IsEmpty)
+        {
+            throw new ArgumentException("Audio data cannot be empty", nameof(content));
+        }
 
         OpenAIAudioToTextExecutionSettings? audioExecutionSettings = OpenAIAudioToTextExecutionSettings.FromExecutionSettings(executionSettings);
 
@@ -309,7 +313,7 @@ internal abstract class ClientCore
 
         var audioOptions = new AudioTranscriptionOptions
         {
-            AudioData = BinaryData.FromBytes(content.Data.Value),
+            AudioData = BinaryData.FromBytes(audioData),
             DeploymentName = this.DeploymentOrModelName,
             Filename = audioExecutionSettings.Filename,
             Language = audioExecutionSettings.Language,

@@ -25,7 +25,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task UriSerialization()
     {
-        var content = new BinaryContent(new Uri("https://fake-random-test-host:123"));
+        var content = new BinaryContent(uri: new Uri("https://fake-random-test-host:123"));
         var serialized = JsonSerializer.Serialize(content);
 
         Console.WriteLine($"Content ToString: {content}");
@@ -40,12 +40,12 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task TransformNonReadableInAReadable()
     {
-        var content = new BinaryContent(new Uri("https://fake-random-test-host:123"));
+        var content = new BinaryContent(uri: new Uri("https://fake-random-test-host:123"));
         var serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content Before: {serialized}");
         Console.WriteLine($"Content ToString Before: {content}");
 
-        content.Uri = "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==";
+        content.DataUri = "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==";
 
         Assert.True(content.CanRead());
 
@@ -67,7 +67,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Serialized Content Before: {serialized}");
         Console.WriteLine($"Content ToString Before: {content}");
 
-        content.Uri = "https://fake-random-test-host:123";
+        content.DataUri = "https://fake-random-test-host:123";
 
         Assert.False(content.CanRead());
 
@@ -81,14 +81,12 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         return Task.CompletedTask;
     }
 
-
     [Fact]
     public async Task ByteArrayProviderAsync()
     {
-        async static Task<(ReadOnlyMemory<byte> content, string mimeType)> Provider() => (Encoding.UTF8.GetBytes("This is a text content"), "text/plain");
-        var content = new BinaryContent(Provider!);
+        var content = new BinaryContent(Encoding.UTF8.GetBytes("This is a text content"), "text/plain");
 
-        var byteArray = await content.GetByteArrayAsync();
+        var byteArray = content.Data!;
         Console.WriteLine($"ByteArray: {byteArray}");
 
         // Should be possible to serialize after the content is retrieved once.
@@ -102,13 +100,13 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine($"Deserialized Content ToString: {deserializedContent}");
 
-        var deserializedContentArray = await deserializedContent.GetByteArrayAsync();
+        var deserializedContentArray = deserializedContent.Data;
 
         Console.WriteLine($"Deserialized ByteArray: {byteArray}");
     }
 
     [Fact]
-    public async Task StreamProviderAsync()
+    public async Task SmartStreamProviderAsync()
     {
         int invocations = 0;
         Stream? streamForProvider = null;
@@ -119,7 +117,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
             return (streamForProvider, "text/plain");
         }
 
-        var content = new BinaryContent(Provider!);
+        var content = new SmartBinaryContent(Provider!);
 
         await content.GetByteArrayAsync();
         await content.GetByteArrayAsync();
@@ -133,7 +131,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Content ToString: {content}");
         Console.WriteLine($"Serialized Content: {serialized}");
 
-        var deserializedContent = JsonSerializer.Deserialize<BinaryContent>(serialized)!;
+        var deserializedContent = JsonSerializer.Deserialize<SmartBinaryContent>(serialized)!;
 
         Console.WriteLine($"Deserialized Content ToString: {deserializedContent}");
 
@@ -150,7 +148,7 @@ public class Contents_ImageV2Content(ITestOutputHelper output) : BaseTest(output
     [Fact]
     public Task Serialization()
     {
-        var content = new ImageContentV2(new Uri("https://fake-random-test-host:123"));
+        var content = new ImageContentNext(uri: new Uri("https://fake-random-test-host:123"));
         var serialized = JsonSerializer.Serialize(content);
 
         Console.WriteLine($"Content ToString: {content}");

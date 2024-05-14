@@ -28,9 +28,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
                 new TextContent("Discuss the potential long-term consequences for the Earth's ecosystem as well."),
                 new ImageContent(new Uri("https://fake-random-test-host:123")),
                 new BinaryContent(new BinaryData(data), "application/octet-stream"),
-#pragma warning disable SKEXP0001
                 new AudioContent(new BinaryData(data), "application/octet-stream")
-#pragma warning restore SKEXP0001
             ]
         };
 
@@ -49,8 +47,7 @@ public class ChatHistorySerialization(ITestOutputHelper output) : BaseTest(outpu
 
         Console.WriteLine($"Image content: {(deserializedMessage.Items![1]! as ImageContent)!.Uri}");
 
-        var binaryContent = Encoding.UTF8.GetString((await (deserializedMessage.Items![2]! as BinaryContent)!.GetByteArrayAsync()).Span);
-        Console.WriteLine($"Binary content: {binaryContent}");
+        Console.WriteLine($"Binary content: {Encoding.UTF8.GetString((deserializedMessage.Items![2]! as BinaryContent)!.Data!.Value.Span)}");
 
         Console.WriteLine($"Audio content: {Encoding.UTF8.GetString((deserializedMessage.Items![3]! as AudioContent)!.Data!.Value.Span)}");
 
