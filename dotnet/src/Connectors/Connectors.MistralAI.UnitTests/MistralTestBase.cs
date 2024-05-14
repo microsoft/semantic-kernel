@@ -62,7 +62,6 @@ public abstract class MistralTestBase : IDisposable
     }
     #endregion
 
-
     public sealed class AssertingDelegatingHandler : DelegatingHandler
     {
         public Uri RequestUri { get; init; }

@@ -425,7 +425,7 @@ public sealed class MistralClientTests : MistralTestBase
     }
 
     #region internal classes
-    internal sealed class WeatherPlugin
+    public sealed class WeatherPlugin
     {
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
