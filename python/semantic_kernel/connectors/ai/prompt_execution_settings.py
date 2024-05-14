@@ -45,7 +45,7 @@ class PromptExecutionSettings(KernelBaseModel):
         """Prepare the settings as a dictionary for sending to the AI service.
 
         By default, this method excludes the service_id and extension_data fields.
-        As well as any fields that are None.
+        As well as any fields that are None, and any fields that are the default value.
         """
         return self.model_dump(
             exclude={
@@ -53,6 +53,7 @@ class PromptExecutionSettings(KernelBaseModel):
                 "extension_data",
             },
             exclude_none=True,
+            exclude_defaults=True,
             by_alias=True,
         )
 

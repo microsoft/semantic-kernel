@@ -17,7 +17,7 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 def test_default_openai_chat_prompt_execution_settings():
     settings = OpenAIChatPromptExecutionSettings()
-    assert settings.temperature == 0.0
+    assert settings.temperature == 1.0
     assert settings.top_p == 1.0
     assert settings.presence_penalty == 0.0
     assert settings.frequency_penalty == 0.0
@@ -55,7 +55,7 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.service_id == "test_service"
-    assert chat_settings.temperature == 0.0
+    assert chat_settings.temperature == 1.0
     assert chat_settings.top_p == 1.0
     assert chat_settings.presence_penalty == 0.0
     assert chat_settings.frequency_penalty == 0.0
@@ -190,7 +190,6 @@ def test_create_options():
     assert options["stop"] == ["\n"]
     assert options["n"] == 2
     assert options["logit_bias"] == {"1": 1}
-    assert not options["stream"]
 
 
 def test_create_options_azure_data():

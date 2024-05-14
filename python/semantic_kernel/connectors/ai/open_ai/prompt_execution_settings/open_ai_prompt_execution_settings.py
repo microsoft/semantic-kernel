@@ -25,7 +25,7 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     seed: Optional[int] = None
     stop: Optional[Union[str, List[str]]] = None
     stream: bool = False
-    temperature: float = Field(0.0, ge=0.0, le=2.0)
+    temperature: float = Field(1.0, ge=0.0, le=2.0)
     top_p: float = Field(1.0, ge=0.0, le=1.0)
     user: Optional[str] = None
 
