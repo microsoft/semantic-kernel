@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using SemanticKernel.UnitTests;
 
 namespace SemanticKernel.IntegrationTests.CrossLanguage;
@@ -55,19 +56,76 @@ internal sealed class KernelRequestTracer : IDisposable
         return System.Text.Encoding.UTF8.GetString(this._httpMessageHandlerStub?.RequestContent ?? Array.Empty<byte>());
     }
 
-    public static async Task InvokePromptStreamingAsync(Kernel kernel, string prompt, KernelArguments? args = null)
+    public static async Task RunPromptAsync(Kernel kernel, bool isInline, bool isStreaming, string templateFormat, string prompt, KernelArguments? args = null)
     {
-        try
+        if (isInline)
         {
-            await foreach (var update in kernel.InvokePromptStreamingAsync<ChatMessageContent>(prompt, arguments: args))
+            if (isStreaming)
             {
-                // Do nothing with received response
+                try
+                {
+                    await foreach (var update in kernel.InvokePromptStreamingAsync<ChatMessageContent>(prompt, arguments: args))
+                    {
+                        // Do nothing with received response
+                    }
+                }
+                catch (NotSupportedException)
+                {
+                    // Ignore this exception
+                }
+            }
+            else
+            {
+                await kernel.InvokePromptAsync<ChatMessageContent>(prompt, args);
             }
         }
-        catch (NotSupportedException)
+        else
         {
-            // Ignore this exception
+            var promptTemplateFactory = new AggregatorPromptTemplateFactory(
+                                                new KernelPromptTemplateFactory(),
+                                                new HandlebarsPromptTemplateFactory());
+
+            var function = kernel.CreateFunctionFromPrompt(
+                                promptConfig: new PromptTemplateConfig()
+                                {
+                                    Template = prompt,
+                                    TemplateFormat = templateFormat,
+                                    Name = "MyFunction",
+                                },
+                                promptTemplateFactory: promptTemplateFactory
+                            );
+
+            if (isStreaming)
+            {
+                try
+                {
+                    await foreach (var update in kernel.InvokeStreamingAsync(function, arguments: args))
+                    {
+                        // Do nothing with received response
+                    }
+                }
+                catch (NotSupportedException)
+                {
+                    // Ignore this exception
+                }
+            }
+            else
+            {
+                await kernel.InvokeAsync(function, args);
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        this.DisposeHttpResources();
+        GC.SuppressFinalize(this);
+    }
+
+    private void DisposeHttpResources()
+    {
+        this._httpClient?.Dispose();
+        this._httpMessageHandlerStub?.Dispose();
     }
 
     private void ResetHttpComponents()
@@ -81,17 +139,5 @@ internal sealed class KernelRequestTracer : IDisposable
                                         Encoding.UTF8, "application/json")
         };
         this._httpClient = new HttpClient(this._httpMessageHandlerStub);
-    }
-
-    public void Dispose()
-    {
-        this.DisposeHttpResources();
-        GC.SuppressFinalize(this);
-    }
-
-    private void DisposeHttpResources()
-    {
-        this._httpClient?.Dispose();
-        this._httpMessageHandlerStub?.Dispose();
     }
 }

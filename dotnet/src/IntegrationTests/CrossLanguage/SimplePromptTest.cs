@@ -10,24 +10,22 @@ namespace SemanticKernel.IntegrationTests.CrossLanguage;
 
 public class SimplePromptTest
 {
+    private const string Prompt = "Can you help me tell the time in Seattle right now?";
+
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SimplePromptAsync(bool isStreaming)
+    [InlineData(true, false, "semantic-kernel", Prompt)]
+    [InlineData(true, true, "semantic-kernel", Prompt)]
+    [InlineData(false, false, "semantic-kernel", Prompt)]
+    [InlineData(false, true, "semantic-kernel", Prompt)]
+    [InlineData(false, false, "handlebars", Prompt)]
+    [InlineData(false, true, "handlebars", Prompt)]
+    public async Task SimplePromptAsync(bool isInline, bool isStreaming, string templateFormat, string prompt)
     {
-        const string Prompt = "Can you help me tell the time in Seattle right now?";
-
         using var kernelProvider = new KernelRequestTracer();
-
         Kernel kernel = kernelProvider.GetNewKernel();
-        if (isStreaming)
-        {
-            await KernelRequestTracer.InvokePromptStreamingAsync(kernel, Prompt);
-        }
-        else
-        {
-            await kernel.InvokePromptAsync<ChatMessageContent>(Prompt);
-        }
+
+        await KernelRequestTracer.RunPromptAsync(kernel, isInline, isStreaming, templateFormat, prompt);
+
         string requestContent = kernelProvider.GetRequestContent();
         JsonNode? obtainedObject = JsonNode.Parse(requestContent);
         Assert.NotNull(obtainedObject);

@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="CrossLanguage\Data\PromptWithChatRolesTest.json" />
+    <None Remove="CrossLanguage\Data\PromptWithComplexObjectsTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithHelperFunctionsTest.json" />
     <None Remove="CrossLanguage\Data\PromptWithSimpleVariableTest.json" />
     <None Remove="CrossLanguage\Data\SimplePromptTest.json" />
@@ -86,6 +87,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="CrossLanguage\Data\PromptWithChatRolesTest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CrossLanguage\Data\PromptWithComplexObjectsTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="CrossLanguage\Data\PromptWithHelperFunctionsTest.json">
