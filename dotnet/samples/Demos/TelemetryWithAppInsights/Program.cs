@@ -158,20 +158,26 @@ public sealed class Program
 
     private static async Task RunChatAsync(Kernel kernel)
     {
+        // Using non-streaming to get the poem.
         var poem = await kernel.InvokeAsync<string>(
             "WriterPlugin",
             "ShortPoem",
             new KernelArguments { ["input"] = "Write a poem about John Doe." });
-        var translatedPoem = await kernel.InvokeAsync<string>(
+        Console.WriteLine($"Poem:\n{poem}\n\n");
+
+        // Use streaming to translate the poem.
+        Console.WriteLine("Translated Poem:");
+        await foreach (var update in kernel.InvokeStreamingAsync<string>(
             "WriterPlugin",
             "Translate",
             new KernelArguments
             {
                 ["input"] = poem,
                 ["language"] = "Italian"
-            });
-
-        Console.WriteLine($"Poem:\n{poem}\n\nTranslated Poem:\n{translatedPoem}");
+            }))
+        {
+            Console.Write(update);
+        }
     }
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)

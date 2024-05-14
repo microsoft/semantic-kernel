@@ -85,18 +85,31 @@ internal sealed class HuggingFaceMessageApiClient
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-
-        using var response = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
+        HttpResponseMessage httpResponseMessage;
+        Stream responseStream;
+        try
+        {
+            using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
+            // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
+            httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
 
         await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
+            activity?.AddStreamingContent(streamingChatContent);
             yield return streamingChatContent;
         }
+
+        activity?.EndStreaming();
+        httpResponseMessage.Dispose();
+        responseStream.Dispose();
     }
 
     internal async Task<IReadOnlyList<ChatMessageContent>> CompleteChatMessageAsync(

@@ -169,18 +169,31 @@ internal sealed class HuggingFaceClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
-
-        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
+        HttpResponseMessage httpResponseMessage;
+        Stream responseStream;
+        try
+        {
+            using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+            // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
+            httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
 
         await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
         {
+            activity?.AddStreamingContent(streamingTextContent);
             yield return streamingTextContent;
         }
+
+        activity?.EndStreaming();
+        httpResponseMessage.Dispose();
+        responseStream.Dispose();
     }
 
     private async IAsyncEnumerable<StreamingTextContent> ProcessTextResponseStreamAsync(Stream stream, string modelId, [EnumeratorCancellation] CancellationToken cancellationToken)

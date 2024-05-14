@@ -226,15 +226,33 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
-            using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-                .ConfigureAwait(false);
-            using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-                .ConfigureAwait(false);
-
-            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
             {
-                yield return messageContent;
+                HttpResponseMessage httpResponseMessage;
+                Stream responseStream;
+                try
+                {
+                    using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
+                    // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
+                    httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                    responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    throw;
+                }
+
+                await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+                {
+                    activity?.AddStreamingContent(messageContent);
+                    yield return messageContent;
+                }
+
+                activity?.EndStreaming();
+                httpResponseMessage.Dispose();
+                responseStream.Dispose();
             }
 
             if (!state.AutoInvoke)
