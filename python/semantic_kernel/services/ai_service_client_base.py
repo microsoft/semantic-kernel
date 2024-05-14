@@ -2,7 +2,7 @@
 
 import sys
 from abc import ABC
-from typing import Optional
+from typing import Optional, Type
 
 if sys.version_info >= (3, 9):
     from typing import Annotated
@@ -34,7 +34,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
         if not self.service_id:
             self.service_id = self.ai_model_id
 
-    def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
+    def get_prompt_execution_settings_class(self) -> Type["PromptExecutionSettings"]:
         """Get the request settings class."""
         return PromptExecutionSettings  # pragma: no cover
 

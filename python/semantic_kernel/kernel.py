@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
+AI_SERVICE_TYPES = TypeVar("AI_SERVICE_TYPES", bound=AIServiceClientBase)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -847,8 +848,8 @@ class Kernel(KernelBaseModel):
     def get_service(
         self,
         service_id: str | None = None,
-        type: Type[ALL_SERVICE_TYPES] | None = None,
-    ) -> "AIServiceClientBase":
+        type: Type[AI_SERVICE_TYPES] | tuple[Type[AI_SERVICE_TYPES], ...] | None = None,
+    ) -> AI_SERVICE_TYPES:
         """Get a service by service_id and type.
 
         Type is optional and when not supplied, no checks are done.
@@ -866,32 +867,30 @@ class Kernel(KernelBaseModel):
             type (Type[ALL_SERVICE_TYPES] | None): The type of the service, if None, no checks are done.
 
         Returns:
-            ALL_SERVICE_TYPES: The service.
+            AI_SERVICE_TYPES: The service.
 
         Raises:
             ValueError: If no service is found that matches the type.
 
         """
-        service: "AIServiceClientBase | None" = None
+        service: AI_SERVICE_TYPES | None = None
         if not service_id or service_id == "default":
             if not type:
-                if default_service := self.services.get("default"):
-                    return default_service
-                return list(self.services.values())[0]
+                type = AIServiceClientBase  # type: ignore
             if default_service := self.services.get("default"):
-                if isinstance(default_service, type):
-                    return default_service
-            for service in self.services.values():
-                if isinstance(service, type):
-                    return service
+                if isinstance(default_service, type):  # type: ignore
+                    return default_service  # type: ignore
+            for service in self.services.values():  # type: ignore
+                if isinstance(service, type):  # type: ignore
+                    return service  # type: ignore
             raise KernelServiceNotFoundError(f"No service found of type {type}")
-        if not (service := self.services.get(service_id)):
+        if not (service := self.services.get(service_id)):  # type: ignore
             raise KernelServiceNotFoundError(f"Service with service_id '{service_id}' does not exist")
         if type and not isinstance(service, type):
             raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
-        return service
+        return service  # type: ignore
 
-    def get_services_by_type(self, type: Type[ALL_SERVICE_TYPES]) -> dict[str, "AIServiceClientBase"]:
+    def get_services_by_type(self, type: Type[AI_SERVICE_TYPES]) -> dict[str, AI_SERVICE_TYPES]:
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
 
     def get_prompt_execution_settings_from_service_id(

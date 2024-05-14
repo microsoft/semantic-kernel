@@ -24,7 +24,7 @@ class AIServiceSelector:
 
     def select_ai_service(
         self, kernel: "Kernel", function: "KernelFunction", arguments: KernelArguments
-    ) -> Tuple["ALL_COMPLETION_SERVICE_TYPES", PromptExecutionSettings]:
+    ) -> Tuple["ALL_COMPLETION_SERVICE_TYPES", "PromptExecutionSettings"]:
         """Select a AI Service on a first come, first served basis,
         starting with execution settings in the arguments,
         followed by the execution settings from the function.
@@ -42,10 +42,10 @@ class AIServiceSelector:
             execution_settings_dict = {"default": PromptExecutionSettings()}
         for service_id, settings in execution_settings_dict.items():
             try:
-                service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))
+                service = kernel.get_service(service_id, type=(TextCompletionClientBase, ChatCompletionClientBase))  # type: ignore
             except KernelServiceNotFoundError:
                 continue
-            if service:
+            if service is not None:
                 service_settings = service.get_prompt_execution_settings_from_settings(settings)
-                return service, service_settings
+                return service, service_settings  # type: ignore
         raise KernelServiceNotFoundError("No service found.")
