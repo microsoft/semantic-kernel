@@ -13,7 +13,7 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def _get_template_language_tests() -> List[Tuple[str, str]]:
+def _get_template_language_tests(safe: bool = True) -> List[Tuple[str, str]]:
     path = __file__
     path = os.path.dirname(path)
 
@@ -30,6 +30,9 @@ def _get_template_language_tests() -> List[Tuple[str, str]]:
         if not key:
             key = raw_line
         else:
+            if "," in raw_line:
+                raw_line = (raw_line.split(",")[0 if safe else 1].strip()) + "\n"
+
             test_data.append((key, raw_line))
             key = ""
 
@@ -145,8 +148,30 @@ class TestPromptTemplateEngine:
         assert '== a"b != 123 ==' == result
 
     @mark.asyncio
-    @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests()])
-    async def test_it_handle_edge_cases(self, kernel: Kernel, template: str, expected_result: str):
+    @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests(safe=False)])
+    async def test_it_handle_edge_cases_unsafe(self, kernel: Kernel, template: str, expected_result: str):
+        # Arrange
+        kernel.add_plugin(MyPlugin(), "my_plugin")
+
+        # Act
+        if expected_result.startswith("ERROR"):
+            with raises(TemplateSyntaxError):
+                await KernelPromptTemplate(
+                    prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+                    allow_unsafe_content=True,
+                ).render(kernel, KernelArguments())
+        else:
+            result = await KernelPromptTemplate(
+                prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
+                allow_unsafe_content=True,
+            ).render(kernel, KernelArguments())
+
+            # Assert
+            assert expected_result == result
+
+    @mark.asyncio
+    @mark.parametrize("template,expected_result", [(t, r) for t, r in _get_template_language_tests(safe=True)])
+    async def test_it_handle_edge_cases_safe(self, kernel: Kernel, template: str, expected_result: str):
         # Arrange
         kernel.add_plugin(MyPlugin(), "my_plugin")
 
@@ -155,13 +180,17 @@ class TestPromptTemplateEngine:
             with raises(TemplateSyntaxError):
                 await KernelPromptTemplate(
                     prompt_template_config=PromptTemplateConfig(
-                        name="test", description="test", template=template, allow_unsafe_content=True
+                        name="test",
+                        description="test",
+                        template=template,
                     )
                 ).render(kernel, KernelArguments())
         else:
             result = await KernelPromptTemplate(
                 prompt_template_config=PromptTemplateConfig(
-                    name="test", description="test", template=template, allow_unsafe_content=True
+                    name="test",
+                    description="test",
+                    template=template,
                 )
             ).render(kernel, KernelArguments())
 
