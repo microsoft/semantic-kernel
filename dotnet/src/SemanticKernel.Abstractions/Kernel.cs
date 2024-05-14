@@ -114,6 +114,9 @@ public sealed class Kernel
             FunctionInvoked = this.FunctionInvoked,
             PromptRendering = this.PromptRendering,
             PromptRendered = this.PromptRendered,
+            _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
+            _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
+            _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
