@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.UnitTests.AI.FunctionChoiceBehaviors;
 
 /// <summary>
 /// Unit tests for <see cref="NoneFunctionChoiceBehavior"/>

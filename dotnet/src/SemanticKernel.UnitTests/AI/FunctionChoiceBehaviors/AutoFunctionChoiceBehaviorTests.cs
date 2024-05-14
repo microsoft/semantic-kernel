@@ -5,76 +5,76 @@ using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.UnitTests.AI.FunctionChoiceBehaviors;
 
 /// <summary>
-/// Unit tests for <see cref="RequiredFunctionChoiceBehavior"/>
+/// Unit tests for <see cref="AutoFunctionChoiceBehavior"/>
 /// </summary>
-public sealed class RequiredFunctionChoiceBehaviorTests
+public sealed class AutoFunctionChoiceBehaviorTests
 {
     private readonly Kernel _kernel;
 
-    public RequiredFunctionChoiceBehaviorTests()
+    public AutoFunctionChoiceBehaviorTests()
     {
         this._kernel = new Kernel();
     }
 
     [Fact]
-    public void ItShouldAdvertiseAllKernelFunctionsAsRequiredOnes()
+    public void ItShouldAdvertiseAllKernelFunctionsAsAvailableOnes()
     {
         // Arrange
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior();
+        var choiceBehavior = new AutoFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
+        Assert.Null(config.RequiredFunctions);
 
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(3, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function3");
+        Assert.NotNull(config.AvailableFunctions);
+        Assert.Equal(3, config.AvailableFunctions.Count());
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function3");
     }
 
     [Fact]
-    public void ItShouldAdvertiseOnlyFunctionsSuppliedViaConstructorAsRequiredOnes()
+    public void ItShouldAdvertiseOnlyFunctionsSuppliedViaConstructorAsAvailableOnes()
     {
         // Arrange
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
+        Assert.Null(config.RequiredFunctions);
 
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(2, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
+        Assert.NotNull(config.AvailableFunctions);
+        Assert.Equal(2, config.AvailableFunctions.Count());
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
     }
 
     [Fact]
-    public void ItShouldAdvertiseOnlyFunctionsSuppliedInFunctionsPropertyAsRequiredOnes()
+    public void ItShouldAdvertiseOnlyFunctionsSuppliedInFunctionsPropertyAsAvailableOnes()
     {
         // Arrange
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             Functions = ["MyPlugin-Function1", "MyPlugin-Function2"]
         };
@@ -84,22 +84,22 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
+        Assert.Null(config.RequiredFunctions);
 
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(2, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
+        Assert.NotNull(config.AvailableFunctions);
+        Assert.Equal(2, config.AvailableFunctions.Count());
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
     }
 
     [Fact]
-    public void ItShouldAdvertiseOnlyFunctionsSuppliedViaConstructorAsRequiredOnesForManualInvocation()
+    public void ItShouldAdvertiseOnlyFunctionsSuppliedViaConstructorAsAvailableOnesForManualInvocation()
     {
         // Arrange
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)])
+        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)])
         {
             MaximumAutoInvokeAttempts = 0
         };
@@ -109,23 +109,23 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
+        Assert.Null(config.RequiredFunctions);
 
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(2, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
+        Assert.NotNull(config.AvailableFunctions);
+        Assert.Equal(2, config.AvailableFunctions.Count());
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
     }
 
     [Fact]
-    public void ItShouldAdvertiseAllKernelFunctionsAsRequiredOnesForManualInvocation()
+    public void ItShouldAdvertiseAllKernelFunctionsAsAvailableOnesForManualInvocation()
     {
         // Arrange
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             MaximumAutoInvokeAttempts = 0
         };
@@ -135,13 +135,13 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.AvailableFunctions);
+        Assert.Null(config.RequiredFunctions);
 
-        Assert.NotNull(config.RequiredFunctions);
-        Assert.Equal(3, config.RequiredFunctions.Count());
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function1");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function2");
-        Assert.Contains(config.RequiredFunctions, f => f.Name == "Function3");
+        Assert.NotNull(config.AvailableFunctions);
+        Assert.Equal(3, config.AvailableFunctions.Count());
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function1");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function2");
+        Assert.Contains(config.AvailableFunctions, f => f.Name == "Function3");
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior();
+        var choiceBehavior = new AutoFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -169,7 +169,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             MaximumAutoInvokeAttempts = 8
         };
@@ -189,7 +189,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             MaximumAutoInvokeAttempts = 0
         };
@@ -209,7 +209,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         // Assert
         Assert.NotNull(choiceBehavior.Functions);
@@ -226,7 +226,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             MaximumAutoInvokeAttempts = 8
         };
@@ -237,7 +237,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
             choiceBehavior.GetConfiguration(new() { Kernel = null });
         });
 
-        Assert.Equal("Auto-invocation for Required choice behavior is not supported when no kernel is provided.", exception.Message);
+        Assert.Equal("Auto-invocation for Auto choice behavior is not supported when no kernel is provided.", exception.Message);
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0)])
+        var choiceBehavior = new AutoFunctionChoiceBehavior([plugin.ElementAt(0)])
         {
             MaximumAutoInvokeAttempts = 5
         };
@@ -267,7 +267,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new AutoFunctionChoiceBehavior()
         {
             MaximumAutoInvokeAttempts = 0,
             Functions = ["MyPlugin-NonKernelFunction"]
@@ -290,7 +290,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior();
+        var choiceBehavior = new AutoFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -307,50 +307,13 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(1)]);
+        var choiceBehavior = new AutoFunctionChoiceBehavior(functions: [plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
         Assert.False(config.AllowAnyRequestedKernelFunction);
-    }
-
-    [Fact]
-    public void ItShouldHaveOneMaxUseAttemptsByDefault()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior();
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.Equal(1, config.MaximumUseAttempts);
-    }
-
-    [Fact]
-    public void ItShouldAllowChangingMaxUseAttempts()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumUseAttempts = 2
-        };
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.Equal(2, config.MaximumUseAttempts);
     }
 
     private static KernelPlugin GetTestPlugin()

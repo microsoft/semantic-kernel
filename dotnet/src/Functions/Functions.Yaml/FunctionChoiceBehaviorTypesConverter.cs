@@ -23,12 +23,12 @@ internal sealed class FunctionChoiceBehaviorTypesConverter : IYamlTypeConverter
     /// <inheritdoc/>
     public bool Accepts(Type type)
     {
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001
         return
             type == typeof(AutoFunctionChoiceBehavior) ||
             type == typeof(RequiredFunctionChoiceBehavior) ||
             type == typeof(NoneFunctionChoiceBehavior);
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001
     }
 
     public object? ReadYaml(IParser parser, Type type)
@@ -38,7 +38,7 @@ internal sealed class FunctionChoiceBehaviorTypesConverter : IYamlTypeConverter
             .IgnoreUnmatchedProperties() // Required to ignore the 'type' property used as type discrimination. Otherwise, the "Property 'type' not found on type '{type.FullName}'" exception is thrown.
             .Build();
 
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0001
         if (type == typeof(AutoFunctionChoiceBehavior))
         {
             var behavior = s_deserializer.Deserialize<AutoFunctionChoiceBehavior>(parser);
@@ -57,7 +57,7 @@ internal sealed class FunctionChoiceBehaviorTypesConverter : IYamlTypeConverter
         }
 
         throw new YamlException($"Unexpected type '{type.FullName}' for function choice behavior.");
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0001
     }
 
     /// <inheritdoc/>
