@@ -424,7 +424,6 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
-    #region internal classes
     public sealed class WeatherPlugin
     {
         [KernelFunction]
@@ -460,7 +459,7 @@ public sealed class MistralClientTests : MistralTestBase
         Blue
     }
 
-    internal sealed class FakeFunctionFilter(
+    private sealed class FakeFunctionFilter(
         Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? onFunctionInvocation = null) : IFunctionInvocationFilter
     {
         private readonly Func<FunctionInvocationContext, Func<FunctionInvocationContext, Task>, Task>? _onFunctionInvocation = onFunctionInvocation;
@@ -469,7 +468,7 @@ public sealed class MistralClientTests : MistralTestBase
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 
-    internal sealed class FakeAutoFunctionFilter(
+    private sealed class FakeAutoFunctionFilter(
         Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation = null) : IAutoFunctionInvocationFilter
     {
         private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? _onAutoFunctionInvocation = onAutoFunctionInvocation;
@@ -477,5 +476,4 @@ public sealed class MistralClientTests : MistralTestBase
         public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
             this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
-    #endregion
 }

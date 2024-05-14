@@ -29,7 +29,7 @@ public sealed class MistralAI_ChatPrompt(ITestOutputHelper output) : BaseTest(ou
 
         foreach (var message in response)
         {
-            WriteLine(message.Content);
+            Console.WriteLine(message.Content);
         }
     }
 
@@ -51,7 +51,7 @@ public sealed class MistralAI_ChatPrompt(ITestOutputHelper output) : BaseTest(ou
 
         await foreach (var update in streamingChat)
         {
-            Write(update);
+            Console.Write(update);
         }
     }
 

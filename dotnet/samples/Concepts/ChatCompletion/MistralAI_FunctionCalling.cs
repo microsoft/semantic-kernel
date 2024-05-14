@@ -39,7 +39,7 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 
     [Fact]
@@ -71,8 +71,8 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
         var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
-        WriteLine(result1[0].Content);
-        WriteLine(result2[0].Content);
+        Console.WriteLine(result1[0].Content);
+        Console.WriteLine(result2[0].Content);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 
     [Fact]
@@ -156,15 +156,15 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
         Kernel kernel = kernelBuilder.Build();
 
         // Invoke chat prompt with auto invocation of functions enabled
-        const string ChatPrompt = @"
-            <message role=""user"">Create a lime and scarlet colored widget for me.</message>
-        ";
+        const string ChatPrompt = """
+            <message role="user">Create a lime and scarlet colored widget for me.</message>
+        """;
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 
     public sealed class WeatherPlugin
@@ -173,7 +173,7 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+        ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
 
     public sealed class WidgetFactory

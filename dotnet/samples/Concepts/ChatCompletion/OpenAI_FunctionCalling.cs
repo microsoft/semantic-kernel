@@ -35,7 +35,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
             ChatPrompt, executionSettings);
         var chatPromptResult = await kernel.InvokeAsync(chatSemanticFunction);
 
-        WriteLine(chatPromptResult);
+        Console.WriteLine(chatPromptResult);
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
         var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
-        WriteLine(result1[0].Content);
-        WriteLine(result2[0].Content);
+        Console.WriteLine(result1[0].Content);
+        Console.WriteLine(result2[0].Content);
     }
 
     public sealed class WeatherPlugin
@@ -77,6 +77,6 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+        ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
 }
