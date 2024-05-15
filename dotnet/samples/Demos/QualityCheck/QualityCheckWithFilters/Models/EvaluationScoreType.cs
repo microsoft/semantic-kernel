@@ -19,8 +19,6 @@ internal readonly struct EvaluationScoreType(string endpoint) : IEquatable<Evalu
     public static bool operator ==(EvaluationScoreType left, EvaluationScoreType right) => left.Equals(right);
     public static bool operator !=(EvaluationScoreType left, EvaluationScoreType right) => !(left == right);
 
-    // public static implicit operator string(EvaluationScoreType type) => type.Endpoint;
-
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is EvaluationScoreType other && this == other;
 
