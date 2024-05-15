@@ -37,6 +37,15 @@ public class Program
         // Abstractive summary: [METEOR] Score: 0.1661
         // Random summary: [METEOR] Score: 0.0035
         // Exception occurred during function invocation: METEOR summary evaluation score (0.0035) is lower than threshold (0.1)
+
+        await TranslationEvaluationAsync(threshold: 0.4);
+
+        // Output:
+        // Text to translate: Berlin ist die Hauptstadt der Deutschland.
+        // Translation: Berlin is the capital of Germany - [COMET] Score: 0.8695
+        // Translation: Berlin capital Germany is of The - [COMET] Score: 0.4724
+        // Translation: This is random translation - [COMET] Score: 0.3525
+        // Exception occurred during function invocation: COMET translation evaluation score (0.3525) is lower than threshold (0.4)
     }
 
     #region Scenarios
@@ -79,13 +88,50 @@ public class Program
             This is random text.
             """;
 
-        var builder = Kernel.CreateBuilder();
-
-        builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
+        var builder = GetKernelBuilder(scoreType, threshold);
 
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("extractive-summary-model", ExtractiveSummary));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("abstractive-summary-model", AbstractiveSummary));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("random-summary-model", RandomSummary));
+
+        var kernel = builder.Build();
+
+        await InvokeAsync(kernel, TextToSummarize, "extractive-summary-model");
+        await InvokeAsync(kernel, TextToSummarize, "abstractive-summary-model");
+        await InvokeAsync(kernel, TextToSummarize, "random-summary-model");
+    }
+
+    private static async Task TranslationEvaluationAsync(double threshold)
+    {
+        EvaluationScoreType scoreType = EvaluationScoreType.COMET;
+
+        const string TextToTranslate = "Berlin ist die Hauptstadt der Deutschland.";
+        const string Translation1 = "Berlin is the capital of Germany.";
+        const string Translation2 = "Berlin capital Germany is of The.";
+        const string Translation3 = "This is random translation.";
+
+        var builder = GetKernelBuilder(scoreType, threshold);
+
+        builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-1-model", Translation1));
+        builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-2-model", Translation2));
+        builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-3-model", Translation3));
+
+        var kernel = builder.Build();
+
+        await InvokeAsync(kernel, TextToTranslate, "translation-1-model");
+        await InvokeAsync(kernel, TextToTranslate, "translation-2-model");
+        await InvokeAsync(kernel, TextToTranslate, "translation-3-model");
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private static IKernelBuilder GetKernelBuilder(EvaluationScoreType scoreType, double threshold)
+    {
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
 
         builder.Services.AddHttpClient("default", client => { client.BaseAddress = new Uri("http://localhost:8080"); });
 
@@ -101,16 +147,8 @@ public class Program
                 sp.GetRequiredService<ILogger<Program>>(),
                 threshold));
 
-        var kernel = builder.Build();
-
-        await InvokeAsync(kernel, TextToSummarize, "extractive-summary-model");
-        await InvokeAsync(kernel, TextToSummarize, "abstractive-summary-model");
-        await InvokeAsync(kernel, TextToSummarize, "random-summary-model");
+        return builder;
     }
-
-    #endregion
-
-    #region Helpers
 
     private static async Task InvokeAsync(Kernel kernel, string input, string modelId)
     {

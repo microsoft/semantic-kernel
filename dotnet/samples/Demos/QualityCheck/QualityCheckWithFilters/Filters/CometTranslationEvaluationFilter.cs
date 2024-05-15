@@ -19,6 +19,8 @@ internal sealed class CometTranslationEvaluationFilter(
         var sourceText = context.Result.RenderedPrompt!;
         var translation = context.Result.ToString();
 
+        logger.LogInformation("Translation: {Translation}", translation);
+
         var request = new TranslationEvaluationRequest { Sources = [sourceText], Translations = [translation] };
         var response = await evaluationService.EvaluateAsync<TranslationEvaluationRequest, CometTranslationEvaluationResponse>(request);
 
