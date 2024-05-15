@@ -330,7 +330,7 @@ async def test_template_safe(chat_history: ChatHistory):
     )
     assert "system stuff" in rendered
     assert "I am an AI assistant" in rendered
-    assert r"What%20can%20you%20do%3F" in rendered
+    assert "What can you do?" in rendered
 
     chat_history_2 = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history_2.messages[0].content == "system stuff"
@@ -356,7 +356,7 @@ async def test_template_two_histories():  # ignore: E501
         arguments=KernelArguments(chat_history1=chat_history1, chat_history2=chat_history2, input="What can you do?"),
     )
     assert "I am an AI assistant" in rendered
-    assert r"What%20can%20you%20do%3F" in rendered
+    assert "What can you do?" in rendered
     assert "I like to be added later on" in rendered
 
     chat_history_out = ChatHistory.from_rendered_prompt(rendered)
@@ -413,7 +413,7 @@ async def test_template_without_chat_history():
     rendered = await KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
     ).render(kernel=Kernel(), arguments=KernelArguments(input="What can you do?"))
-    assert rendered == r"What%20can%20you%20do%3F"
+    assert rendered == "What can you do?"
     chat_history = ChatHistory.from_rendered_prompt(rendered)
     assert chat_history.messages[0].content == "What can you do?"
     assert chat_history.messages[0].role == AuthorRole.USER
