@@ -657,16 +657,19 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     {
         // Arrange
         var kernel = new Kernel();
-        kernel.Plugins.AddFromFunctions("TimePlugin", [this._timepluginDate]);
+        kernel.Plugins.AddFromFunctions("TimePlugin", [
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Date"),
+            KernelFunctionFactory.CreateFromMethod(() => { }, "Now")
+        ]);
 
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        var chatCompletion = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
             Content = new StringContent(ChatCompletionResponse)
         };
 
-        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None };
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice() };
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
@@ -676,8 +679,10 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.NotNull(actualRequestContent);
 
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.Equal(1, optionsJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("NonInvocableTool", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal(2, optionsJson.GetProperty("tools").GetArrayLength());
+        Assert.Equal("TimePlugin-Date", optionsJson.GetProperty("tools")[0].GetProperty("function").GetProperty("name").GetString());
+        Assert.Equal("TimePlugin-Now", optionsJson.GetProperty("tools")[1].GetProperty("function").GetProperty("name").GetString());
+
         Assert.Equal("none", optionsJson.GetProperty("tool_choice").ToString());
     }
 

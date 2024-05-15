@@ -32,7 +32,7 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
-    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/> derivatives.</returns>
+    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     public static FunctionChoiceBehavior AutoFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new AutoFunctionChoiceBehavior(functions ?? [])
@@ -47,7 +47,7 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
-    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/> derivatives.</returns>
+    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     public static FunctionChoiceBehavior RequiredFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
     {
         return new RequiredFunctionChoiceBehavior(functions ?? [])
@@ -57,11 +57,19 @@ public abstract class FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that does not provides any <see cref="Kernel"/>'s plugins' function information to the model.
+    /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior forces the model to not call any functions and only generate a user-facing message.
     /// </summary>
-    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/> derivatives.</returns>
-    public static FunctionChoiceBehavior None { get; } = new NoneFunctionChoiceBehavior();
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
+    /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
+    /// <remarks>
+    /// Although this behavior prevents the model from calling any functions, the model can use the provided function information
+    /// to describe how it would complete the prompt if it had the ability to call the functions.
+    /// </remarks>
+    public static FunctionChoiceBehavior NoneFunctionChoice(IEnumerable<KernelFunction>? functions = null)
+    {
+        return new NoneFunctionChoiceBehavior(functions ?? []);
+    }
 
     /// <summary>Returns the configuration specified by the <see cref="FunctionChoiceBehavior"/>.</summary>
     /// <param name="context">The caller context.</param>

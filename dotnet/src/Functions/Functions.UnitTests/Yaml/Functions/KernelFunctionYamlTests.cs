@@ -115,6 +115,8 @@ public class KernelFunctionYamlTests
 
         var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
         Assert.NotNull(noneFunctionChoiceBehavior);
+        Assert.NotNull(noneFunctionChoiceBehavior?.Functions);
+        Assert.Equal("p3-f3", noneFunctionChoiceBehavior.Functions.Single());
     }
 
     [Fact]
@@ -221,6 +223,8 @@ public class KernelFunctionYamlTests
             stop_sequences:    [ "foo", "bar", "baz" ]
             function_choice_behavior:
               type: none
+              functions:
+              - p3.f3
         """;
 
     private readonly string _yamlWithCustomSettings = """

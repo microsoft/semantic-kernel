@@ -247,7 +247,7 @@ public class OpenAIPromptExecutionSettingsTests
     public void ItRestoresOriginalFunctionChoiceBehavior()
     {
         // Arrange
-        var functionChoiceBehavior = FunctionChoiceBehavior.None;
+        var functionChoiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice();
 
         var originalExecutionSettings = new PromptExecutionSettings();
         originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;

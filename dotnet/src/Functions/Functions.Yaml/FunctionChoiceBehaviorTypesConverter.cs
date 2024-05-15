@@ -53,7 +53,9 @@ internal sealed class FunctionChoiceBehaviorTypesConverter : IYamlTypeConverter
         }
         else if (type == typeof(NoneFunctionChoiceBehavior))
         {
-            return s_deserializer.Deserialize<NoneFunctionChoiceBehavior>(parser);
+            var behavior = s_deserializer.Deserialize<NoneFunctionChoiceBehavior>(parser);
+            behavior.Functions = ConvertFunctionNames(behavior.Functions);
+            return behavior;
         }
 
         throw new YamlException($"Unexpected type '{type.FullName}' for function choice behavior.");

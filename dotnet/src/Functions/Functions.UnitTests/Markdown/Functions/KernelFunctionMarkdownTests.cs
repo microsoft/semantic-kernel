@@ -69,6 +69,9 @@ public class KernelFunctionMarkdownTests
 
         var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
         Assert.NotNull(noneFunctionChoiceBehavior);
+        Assert.NotNull(noneFunctionChoiceBehavior.Functions);
+        Assert.Single(noneFunctionChoiceBehavior.Functions);
+        Assert.Equal("p1-f1", noneFunctionChoiceBehavior.Functions.First());
     }
 
     [Fact]
@@ -99,7 +102,7 @@ public class KernelFunctionMarkdownTests
                 "function_choice_behavior": {
                     "type": "auto",
                     "functions": ["p1.f1"],
-                    "maximumAutoInvokeAttempts": 8
+                    "maximum_auto_invoke_attempts": 8
                 }
             }
         }
@@ -113,7 +116,7 @@ public class KernelFunctionMarkdownTests
                 "function_choice_behavior": {
                     "type": "required",
                     "functions": ["p1.f1"],
-                    "maximumUseAttempts": 2
+                    "maximum_use_attempts": 2
                 }
             }
         }
@@ -125,7 +128,8 @@ public class KernelFunctionMarkdownTests
                 "model_id": "gpt3.5-turbo",
                 "temperature": 0.8,
                 "function_choice_behavior": {
-                    "type": "none"
+                    "type": "none",
+                    "functions": ["p1.f1"]
                 }
             }
         }

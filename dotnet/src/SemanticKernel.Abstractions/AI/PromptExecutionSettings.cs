@@ -57,17 +57,18 @@ public class PromptExecutionSettings
     /// </item>
     /// <item>
     /// To force the model to always call one or more functions, set the property to an instance returned
-    /// from <see cref="FunctionChoiceBehavior.RequiredFunctionChoice"/> method.
-    /// Pass list of the functions when calling the method.
+    /// from <see cref="FunctionChoiceBehavior.RequiredFunctionChoice"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
     /// </item>
     /// <item>
     /// To force the model to not call any functions and only generate a user-facing message, set the property to an instance returned
-    /// from <see cref="FunctionChoiceBehavior.None"/> property.
+    /// from <see cref="FunctionChoiceBehavior.NoneFunctionChoice"/> property. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// To limit the functions available, pass a list of the functions when calling the method.
     /// </item>
     /// </list>
     /// For all the behaviors that presume the model to call functions, auto-invoke behavior may be selected. If the service
     /// sends a request for a function call, if auto-invoke has been requested, the client will attempt to
-    /// resolve that function from the functions available in the <see cref="Kernel"/>, and if found, rather
+    /// resolve that function from the functions available, and if found, rather
     /// than returning the response back to the caller, it will handle the request automatically, invoking
     /// the function, and sending back the result. The intermediate messages will be retained in the provided <see cref="ChatHistory"/>.
     /// </remarks>

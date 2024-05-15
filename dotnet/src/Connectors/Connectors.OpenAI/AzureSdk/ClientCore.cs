@@ -1400,6 +1400,15 @@ internal abstract class ClientCore
     /// <param name="requestIndex">Request sequence index of automatic function invocation process.</param>
     private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, OpenAIPromptExecutionSettings executionSettings, ChatCompletionsOptions chatOptions, int requestIndex)
     {
+        (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? result = null;
+
+        // If neither behavior specified, we don't need to do anything.
+        if (executionSettings.FunctionChoiceBehavior is null && executionSettings.ToolCallBehavior is null)
+        {
+            return result;
+        }
+
+        // If both behaviors are specified, we can't handle that.
         if (executionSettings.FunctionChoiceBehavior is not null && executionSettings.ToolCallBehavior is not null)
         {
             throw new ArgumentException($"{nameof(executionSettings.ToolCallBehavior)} and {nameof(executionSettings.FunctionChoiceBehavior)} cannot be used together.");
@@ -1409,33 +1418,30 @@ internal abstract class ClientCore
         chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
         chatOptions.Tools.Clear();
 
-        (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? result = null;
-
         // Handling new tool behavior represented by `PromptExecutionSettings.FunctionChoiceBehavior` property.
         if (executionSettings.FunctionChoiceBehavior is { } functionChoiceBehavior)
         {
-            result = this.ConfigureFunctionCallingFromFunctionChoiceBehavior(kernel, chatOptions, requestIndex, functionChoiceBehavior);
+            result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, functionChoiceBehavior);
         }
         // Handling old-style tool call behavior represented by `OpenAIPromptExecutionSettings.ToolCallBehavior` property.
         else if (executionSettings.ToolCallBehavior is { } toolCallBehavior)
         {
-            result = this.ConfigureFunctionCallingFromToolCallBehavior(kernel, chatOptions, requestIndex, toolCallBehavior);
+            result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, toolCallBehavior);
         }
 
         // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
         // if we don't send any tools in subsequent requests, even if we say not to use any.
-        // Similarly, if we say not to use any tool (ToolChoice = ChatCompletionsToolChoice.None) for the first request,
+        // Similarly, if we say not to use any tool (ToolChoice = ChatCompletionsToolChoice.None) and dont provide any for the first request,
         // the service fails with "'tool_choice' is only allowed when 'tools' are specified."
-        if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None)
+        if (chatOptions.ToolChoice == ChatCompletionsToolChoice.None && chatOptions.Tools.Count == 0)
         {
-            Debug.Assert(chatOptions.Tools.Count == 0);
             chatOptions.Tools.Add(s_nonInvocableFunctionTool);
         }
 
         return result;
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCallingFromFunctionChoiceBehavior(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, FunctionChoiceBehavior functionChoiceBehavior)
     {
         // Regenerate the tool list as necessary and getting other call behavior properties. The invocation of the function(s) could have augmented
         // what functions are available in the kernel.
@@ -1494,13 +1500,24 @@ internal abstract class ClientCore
 
         if (config.Choice == FunctionChoice.None)
         {
+            chatOptions.ToolChoice = ChatCompletionsToolChoice.None;
+
+            if (config.Functions is { } functions)
+            {
+                foreach (var function in functions)
+                {
+                    var functionDefinition = function.Metadata.ToOpenAIFunction().ToFunctionDefinition();
+                    chatOptions.Tools.Add(new ChatCompletionsFunctionToolDefinition(functionDefinition));
+                }
+            }
+
             return result;
         }
 
-        throw new KernelException($"Unsupported function choice '{config.Choice}'.");
+        throw new NotSupportedException($"Unsupported function choice '{config.Choice}'.");
     }
 
-    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCallingFromToolCallBehavior(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, ToolCallBehavior toolCallBehavior)
+    private (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts)? ConfigureFunctionCalling(Kernel? kernel, ChatCompletionsOptions chatOptions, int requestIndex, ToolCallBehavior toolCallBehavior)
     {
         if (requestIndex >= toolCallBehavior.MaximumUseAttempts)
         {

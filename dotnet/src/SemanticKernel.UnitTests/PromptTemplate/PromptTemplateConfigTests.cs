@@ -154,7 +154,7 @@ public class PromptTemplateConfigTests
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
                     "type": "auto",
-                    "maximumAutoInvokeAttempts": 12,
+                    "maximum_auto_invoke_attempts": 12,
                     "functions":["p1.f1"]
                   }
                 }
@@ -192,8 +192,8 @@ public class PromptTemplateConfigTests
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
                     "type": "required",
-                    "maximumAutoInvokeAttempts": 11,
-                    "maximumUseAttempts": 2,
+                    "maximum_auto_invoke_attempts": 11,
+                    "maximum_use_attempts": 2,
                     "functions":["p1.f1"]
                   }
                 }
@@ -232,7 +232,7 @@ public class PromptTemplateConfigTests
                 "default": {
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
-                    "type": "none",
+                    "type": "none"
                   }
                 }
               }
@@ -248,7 +248,8 @@ public class PromptTemplateConfigTests
 
         var executionSettings = promptTemplateConfig.ExecutionSettings.Single().Value;
 
-        Assert.IsType<NoneFunctionChoiceBehavior>(executionSettings.FunctionChoiceBehavior);
+        var noneFunctionCallChoice = executionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
+        Assert.NotNull(noneFunctionCallChoice);
     }
 
     [Fact]

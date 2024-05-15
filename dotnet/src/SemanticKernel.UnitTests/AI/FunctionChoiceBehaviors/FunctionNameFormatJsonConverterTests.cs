@@ -16,7 +16,7 @@ public class FunctionNameFormatJsonConverterTests
             {
                 "type": "auto",
                 "functions": ["p1.f1"],
-                "maximumAutoInvokeAttempts": 8
+                "maximum_auto_invoke_attempts": 8
             }
             """;
 
@@ -38,8 +38,8 @@ public class FunctionNameFormatJsonConverterTests
             {
                 "type": "required",
                 "functions": ["p1.f1"],
-                "maximumUseAttempts": 2,
-                "maximumAutoInvokeAttempts": 8
+                "maximum_use_attempts": 2,
+                "maximum_auto_invoke_attempts": 8
             }
             """;
 

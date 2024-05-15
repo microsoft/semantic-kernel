@@ -42,7 +42,7 @@ public sealed class FunctionChoiceBehaviorTests
     public void NoneFunctionChoiceShouldBeUsed()
     {
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.None;
+        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice();
 
         // Assert
         Assert.IsType<NoneFunctionChoiceBehavior>(choiceBehavior);
@@ -203,21 +203,45 @@ public sealed class FunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void NoneFunctionChoiceShouldAdvertiseNoFunctions()
+    public void NoneFunctionChoiceShouldAdvertiseProvidedFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.None;
+        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice([plugin.ElementAt(0), plugin.ElementAt(2)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.Functions);
+        Assert.NotNull(config.Functions);
+        Assert.Equal(2, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
+    }
+
+    [Fact]
+    public void NoneFunctionChoiceShouldAdvertiseAllKernelFunctions()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+        this._kernel.Plugins.Add(plugin);
+
+        // Act
+        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice();
+
+        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.NotNull(config.Functions);
+        Assert.Equal(3, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
     private static KernelPlugin GetTestPlugin()

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using Microsoft.SemanticKernel;
 using Xunit;
 
@@ -18,7 +19,7 @@ public sealed class NoneFunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void ItShouldAdvertiseNoFunctions()
+    public void ItShouldAdvertiseKernelFunctions()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -32,7 +33,31 @@ public sealed class NoneFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
 
-        Assert.Null(config.Functions);
+        Assert.NotNull(config.Functions);
+        Assert.Equal(3, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function2");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
+    }
+
+    [Fact]
+    public void ItShouldAdvertiseFunctionsIfSpecified()
+    {
+        // Arrange
+        var plugin = GetTestPlugin();
+
+        // Act
+        var choiceBehavior = new NoneFunctionChoiceBehavior([plugin.ElementAt(0), plugin.ElementAt(2)]);
+
+        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
+
+        // Assert
+        Assert.NotNull(config);
+
+        Assert.NotNull(config.Functions);
+        Assert.Equal(2, config.Functions.Count());
+        Assert.Contains(config.Functions, f => f.Name == "Function1");
+        Assert.Contains(config.Functions, f => f.Name == "Function3");
     }
 
     private static KernelPlugin GetTestPlugin()

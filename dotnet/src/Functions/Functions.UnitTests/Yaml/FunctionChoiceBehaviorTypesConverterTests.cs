@@ -77,13 +77,17 @@ public sealed class FunctionChoiceBehaviorTypesConverterTests
             .Build();
 
         var yaml = """
-            type: none
+            type: none,
+            functions:
+            - p1.f1
             """;
 
         // Act
-        var behavior = deserializer.Deserialize<AutoFunctionChoiceBehavior>(yaml);
+        var behavior = deserializer.Deserialize<NoneFunctionChoiceBehavior>(yaml);
 
         // Assert
-        Assert.Null(behavior.Functions);
+        Assert.NotNull(behavior.Functions);
+        Assert.Single(behavior.Functions);
+        Assert.Equal("p1-f1", behavior.Functions.Single());
     }
 }

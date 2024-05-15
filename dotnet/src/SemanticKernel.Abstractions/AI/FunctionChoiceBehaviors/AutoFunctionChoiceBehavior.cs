@@ -50,7 +50,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
     /// the same function over and over. To disable auto invocation, this can be set to 0.
     /// </remarks>
-    [JsonPropertyName("maximumAutoInvokeAttempts")]
+    [JsonPropertyName("maximum_auto_invoke_attempts")]
     public int MaximumAutoInvokeAttempts { get; set; } = DefaultMaximumAutoInvokeAttempts;
 
     /// <summary>

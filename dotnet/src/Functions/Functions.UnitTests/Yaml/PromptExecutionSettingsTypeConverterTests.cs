@@ -69,6 +69,8 @@ public sealed class PromptExecutionSettingsTypeConverterTests
 
         var noneFunctionChoiceBehavior = service3ExecutionSettings.FunctionChoiceBehavior as NoneFunctionChoiceBehavior;
         Assert.NotNull(noneFunctionChoiceBehavior);
+        Assert.NotNull(noneFunctionChoiceBehavior?.Functions);
+        Assert.Equal("p3-f3", noneFunctionChoiceBehavior.Functions.Single());
     }
 
     private readonly string _yaml = """
@@ -121,5 +123,7 @@ public sealed class PromptExecutionSettingsTypeConverterTests
             stop_sequences:    [ "foo", "bar", "baz" ]
             function_choice_behavior:
               type: none
+              functions:
+              - p3.f3
         """;
 }
