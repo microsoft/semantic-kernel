@@ -30,9 +30,9 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
     Args:
         prompt_template_config (PromptTemplateConfig): The prompt template configuration
             This is checked if the template format is 'handlebars'
-        allow_unsafe_content (bool = False): Allow unsafe content throughout, this overrides
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
             the same settings in the prompt template config and input variables.
-            This reverts the behavior to unparsed input.
+            This reverts the behavior to unencoded input.
 
     Raises:
         ValueError: If the template format is not 'handlebars'

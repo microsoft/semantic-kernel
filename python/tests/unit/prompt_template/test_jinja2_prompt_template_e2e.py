@@ -17,7 +17,7 @@ def create_jinja2_prompt_template(template: str) -> Jinja2PromptTemplate:
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="jinja2"
         ),
-        allow_unsafe_content=True,
+        allow_dangerously_set_content=True,
     )
 
 

@@ -61,7 +61,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
-            allow_unsafe_content=True,
+            allow_dangerously_set_content=True,
         ).render(kernel, arguments)
         # Assert
         expected = template.replace("{{$input}}", input).replace("{{  $winner }}", winner)
@@ -76,7 +76,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
+                name="test", description="test", template=template, allow_dangerously_set_content=True
             )
         ).render(kernel, None)
 
@@ -93,7 +93,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
+                name="test", description="test", template=template, allow_dangerously_set_content=True
             )
         ).render(kernel, arguments)
 
@@ -109,7 +109,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
+                name="test", description="test", template=template, allow_dangerously_set_content=True
             )
         ).render(kernel, None)
 
@@ -124,7 +124,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
+                name="test", description="test", template=template, allow_dangerously_set_content=True
             )
         ).render(kernel, None)
 
@@ -140,7 +140,7 @@ class TestPromptTemplateEngine:
         # Act
         result = await KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(
-                name="test", description="test", template=template, allow_unsafe_content=True
+                name="test", description="test", template=template, allow_dangerously_set_content=True
             )
         ).render(kernel, None)
 
@@ -158,12 +158,12 @@ class TestPromptTemplateEngine:
             with raises(TemplateSyntaxError):
                 await KernelPromptTemplate(
                     prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
-                    allow_unsafe_content=True,
+                    allow_dangerously_set_content=True,
                 ).render(kernel, KernelArguments())
         else:
             result = await KernelPromptTemplate(
                 prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
-                allow_unsafe_content=True,
+                allow_dangerously_set_content=True,
             ).render(kernel, KernelArguments())
 
             # Assert

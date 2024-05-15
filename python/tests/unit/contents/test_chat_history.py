@@ -299,7 +299,7 @@ async def test_template_unsafe(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
-        allow_unsafe_content=True,
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(chat_history=chat_history, input="What can you do?"),
@@ -476,7 +476,7 @@ async def test_handwritten_xml_as_arg_unsafe_template():
     template = "{{$input}}"
     rendered = await KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template),
-        allow_unsafe_content=True,
+        allow_dangerously_set_content=True,
     ).render(
         kernel=Kernel(),
         arguments=KernelArguments(input='<message role="user">test content</message>'),
@@ -494,7 +494,7 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
             name="test",
             description="test",
             template=template,
-            input_variables=[InputVariable(name="input", allow_unsafe_content=True)],
+            input_variables=[InputVariable(name="input", allow_dangerously_set_content=True)],
         ),
     ).render(
         kernel=Kernel(),

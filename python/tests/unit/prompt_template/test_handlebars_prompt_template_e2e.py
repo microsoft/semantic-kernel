@@ -17,7 +17,7 @@ def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="handlebars"
         ),
-        allow_unsafe_content=True,
+        allow_dangerously_set_content=True,
     )
 
 

@@ -38,9 +38,9 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         prompt_template_config (PromptTemplateConfig): The configuration object for the prompt template.
             This should specify the template format as 'jinja2' and include any necessary
             configuration details required for rendering the template.
-        allow_unsafe_content (bool = False): Allow unsafe content throughout, this overrides
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
             the same settings in the prompt template config and input variables.
-            This reverts the behavior to unparsed input.
+            This reverts the behavior to unencoded input.
 
     Raises:
         ValueError: If the template format specified in the configuration is not 'jinja2'.

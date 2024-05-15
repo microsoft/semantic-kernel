@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class PromptTemplateBase(KernelBaseModel, ABC):
     prompt_template_config: PromptTemplateConfig
-    allow_unsafe_content: bool = False
+    allow_dangerously_set_content: bool = False
 
     @abstractmethod
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
@@ -34,7 +34,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         Args:
             arguments: The kernel arguments
         """
-        if self.allow_unsafe_content:
+        if self.allow_dangerously_set_content:
             return arguments
 
         from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -54,8 +54,8 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         unless explicitly allowed by the prompt template config
 
         """
-        allow_unsafe_function_output = self.allow_unsafe_content
-        if self.prompt_template_config.allow_unsafe_content:
+        allow_unsafe_function_output = self.allow_dangerously_set_content
+        if self.prompt_template_config.allow_dangerously_set_content:
             allow_unsafe_function_output = True
         return allow_unsafe_function_output
 
@@ -76,5 +76,5 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         """
         for variable in input_variables:
             if variable.name == name:
-                return not variable.allow_unsafe_content
+                return not variable.allow_dangerously_set_content
         return True

@@ -262,7 +262,7 @@ class ChatMessageContent(KernelContent):
             kwargs.pop("choice_index")
         return cls(**kwargs)
 
-    def to_prompt(self, allow_unsafe_content: bool = False) -> str:
+    def to_prompt(self) -> str:
         """Convert the ChatMessageContent to a prompt.
 
         Returns:

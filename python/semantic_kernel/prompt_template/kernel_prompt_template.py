@@ -28,9 +28,9 @@ class KernelPromptTemplate(PromptTemplateBase):
     Arguments:
         prompt_template_config (PromptTemplateConfig): The prompt template configuration
             This includes the actual template to use.
-        allow_unsafe_content (bool = False): Allow unsafe content throughout, this overrides
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
             the same settings in the prompt template config and input variables.
-            This reverts the behavior to unparsed input.
+            This reverts the behavior to unencoded input.
 
     Raises:
         ValueError: If the template format is not 'semantic-kernel'

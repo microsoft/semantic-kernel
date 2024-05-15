@@ -137,7 +137,6 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// If specified, the system will make a best effort to sample deterministically such that repeated requests with the
     /// same seed and parameters should return the same result. Determinism is not guaranteed.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("seed")]
     public long? Seed
     {
