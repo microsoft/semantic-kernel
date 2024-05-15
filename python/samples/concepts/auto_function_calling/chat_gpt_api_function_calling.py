@@ -122,7 +122,7 @@ async def handle_streaming(
     streamed_chunks: List[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], FunctionCallContent
+            message[0], ChatMessageContent
         ):
             streamed_chunks.append(message[0])
         else:
