@@ -5,29 +5,20 @@ from __future__ import annotations
 import json
 import logging
 import re
-import sys
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Tuple
 from urllib.parse import urlencode, urljoin, urlparse, urlunparse
 
 import httpx
-
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
-from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-
-if sys.version_info >= (3, 9):
-    pass
-else:
-    pass
-
-
 from openapi_core import Spec
 from prance import ResolvingParser
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, PluginInitializationError
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
