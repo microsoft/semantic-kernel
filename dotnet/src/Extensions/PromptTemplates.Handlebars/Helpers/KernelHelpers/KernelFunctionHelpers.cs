@@ -24,7 +24,7 @@ internal static class KernelFunctionHelpers
     /// <param name="kernel">Kernel instance.</param>
     /// <param name="executionContext">Kernel arguments maintained as the executing context.</param>
     /// <param name="promptConfig">The associated prompt template configuration.</param>
-    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow unsafe dangerously set content</param>
     /// <param name="nameDelimiter">The character used to delimit the plugin name and function name in a Handlebars template.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public static void Register(
@@ -32,13 +32,13 @@ internal static class KernelFunctionHelpers
         Kernel kernel,
         KernelArguments executionContext,
         PromptTemplateConfig promptConfig,
-        bool allowUnsafeContent,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowUnsafeContent || promptConfig.AllowUnsafeContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
         }
     }
 
@@ -49,7 +49,7 @@ internal static class KernelFunctionHelpers
         KernelArguments executionContext,
         IHandlebars handlebarsInstance,
         KernelFunctionMetadata functionMetadata,
-        bool allowUnsafeContent,
+        bool allowDangerouslySetContent,
         string nameDelimiter,
         CancellationToken cancellationToken)
     {
@@ -82,7 +82,7 @@ internal static class KernelFunctionHelpers
                 // Invoke the function and write the result to the template
                 var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
 
-                if (!allowUnsafeContent && result is string resultAsString)
+                if (!allowDangerouslySetContent && result is string resultAsString)
                 {
                     result = HttpUtility.HtmlEncode(resultAsString);
                 }
