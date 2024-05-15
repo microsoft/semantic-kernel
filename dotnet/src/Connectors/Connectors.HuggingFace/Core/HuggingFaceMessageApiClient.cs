@@ -85,17 +85,53 @@ internal sealed class HuggingFaceMessageApiClient
         var request = this.CreateChatRequest(chatHistory, executionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-
-        using var response = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
-
-        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
+        try
         {
-            yield return streamingChatContent;
+            using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
+            httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            throw;
+        }
+
+        var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    throw;
+                }
+
+                streamedContents?.Add(responseEnumerator.Current);
+                yield return responseEnumerator.Current;
+            }
+        }
+        finally
+        {
+            activity?.EndStreaming(streamedContents);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 

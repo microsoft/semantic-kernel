@@ -52,7 +52,7 @@ public sealed class SafeChatPrompts : BaseTest, IDisposable
         {
             ["input"] = "<text>What is Washington?</text>",
         };
-        var factory = new KernelPromptTemplateFactory() { AllowUnsafeContent = true };
+        var factory = new KernelPromptTemplateFactory() { AllowDangerouslySetContent = true };
         var function = KernelFunctionFactory.CreateFromPrompt(promptConfig, factory);
         Console.WriteLine(await RenderPromptAsync(promptConfig, kernelArguments, factory));
         Console.WriteLine(await this._kernel.InvokeAsync(function, kernelArguments));
@@ -92,8 +92,8 @@ public sealed class SafeChatPrompts : BaseTest, IDisposable
         var promptConfig = new PromptTemplateConfig(chatPrompt)
         {
             InputVariables = [
-                new() { Name = "system_message", AllowUnsafeContent = true },
-                new() { Name = "input", AllowUnsafeContent = true }
+                new() { Name = "system_message", AllowDangerouslySetContent = true },
+                new() { Name = "input", AllowDangerouslySetContent = true }
             ]
         };
         var kernelArguments = new KernelArguments()
