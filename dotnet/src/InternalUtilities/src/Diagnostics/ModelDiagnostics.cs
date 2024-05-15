@@ -39,15 +39,25 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
-        => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
+    public static Activity? StartCompletionActivity<T>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        string prompt,
+        T? executionSettings
+    ) where T : PromptExecutionSettings => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
 
     /// <summary>
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
-        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
+    public static Activity? StartCompletionActivity<T>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        ChatHistory chatHistory,
+        T? executionSettings
+    ) where T : PromptExecutionSettings => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
     /// Set the text completion response for a given activity.
@@ -109,16 +119,23 @@ internal static class ModelDiagnostics
     }
 
     #region Private
-    private static void AddOptionalTags(Activity? activity, PromptExecutionSettings? executionSettings)
+    private static void AddOptionalTags<T>(Activity? activity, T? executionSettings) where T : PromptExecutionSettings
     {
-        if (activity is null || executionSettings?.ExtensionData is null)
+        if (activity is null || executionSettings is null)
+        {
+            return;
+        }
+
+        // Serialize and deserialize the execution settings to get the extension data
+        var deserializedSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(JsonSerializer.Serialize(executionSettings));
+        if (deserializedSettings is null || deserializedSettings.ExtensionData is null)
         {
             return;
         }
 
         void TryAddTag(string key, string tag)
         {
-            if (executionSettings.ExtensionData.TryGetValue(key, out var value))
+            if (deserializedSettings.ExtensionData.TryGetValue(key, out var value))
             {
                 activity.SetTag(tag, value);
             }
@@ -194,13 +211,13 @@ internal static class ModelDiagnostics
     /// Start a completion activity and return the activity.
     /// The `formatPrompt` delegate won't be invoked if events are disabled.
     /// </summary>
-    private static Activity? StartCompletionActivity<T>(
+    private static Activity? StartCompletionActivity<T1, T2>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
-        T prompt,
-        PromptExecutionSettings? executionSettings,
-        Func<T, string> formatPrompt)
+        T1 prompt,
+        T2? executionSettings,
+        Func<T1, string> formatPrompt) where T2 : PromptExecutionSettings
     {
         if (!IsModelDiagnosticsEnabled())
         {

@@ -166,7 +166,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             GeminiResponse geminiResponse;
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
                 try
                 {
@@ -227,7 +227,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         for (state.Iteration = 1; ; state.Iteration++)
         {
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
                 HttpResponseMessage? httpResponseMessage = null;
                 Stream? responseStream = null;

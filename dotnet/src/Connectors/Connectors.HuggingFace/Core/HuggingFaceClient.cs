@@ -134,7 +134,8 @@ internal sealed class HuggingFaceClient
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, huggingFaceExecutionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
         TextGenerationResponse response;
@@ -169,7 +170,8 @@ internal sealed class HuggingFaceClient
         var request = this.CreateTextRequest(prompt, executionSettings);
         request.Stream = true;
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, huggingFaceExecutionSettings);
         HttpResponseMessage? httpResponseMessage = null;
         Stream? responseStream = null;
         try
