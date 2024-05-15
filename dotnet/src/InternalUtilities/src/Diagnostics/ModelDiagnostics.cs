@@ -26,7 +26,6 @@ internal static class ModelDiagnostics
 {
     private static readonly string s_namespace = typeof(ModelDiagnostics).Namespace!;
     private static readonly ActivitySource s_activitySource = new(s_namespace);
-    private static readonly ActivityListener s_activityListener = new();
 
     private const string EnableDiagnosticsSwitch = "Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics";
     private const string EnableSensitiveEventsSwitch = "Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive";
@@ -35,26 +34,6 @@ internal static class ModelDiagnostics
 
     private static readonly bool s_enableDiagnostics = AppContextSwitchHelper.GetConfigValue(EnableDiagnosticsSwitch, EnableDiagnosticsEnvVar);
     private static readonly bool s_enableSensitiveEvents = AppContextSwitchHelper.GetConfigValue(EnableSensitiveEventsSwitch, EnableSensitiveEventsEnvVar);
-
-    /// <summary>
-    /// Stores streaming text content for activities of streaming completions.
-    /// </summary>
-    private static readonly Dictionary<string, List<StreamingKernelContent>> s_streamingContents = [];
-
-    static ModelDiagnostics()
-    {
-        s_activityListener.ShouldListenTo = activitySource => activitySource.Name == s_namespace;
-        s_activityListener.ActivityStopped = activity =>
-        {
-            // Called when an activity is stopped. Clean up the streaming content in case `EndStreaming` is not called.
-            // This action needs to be idempotent as the event may be fired multiple times.
-            if (activity.Id is not null)
-            {
-                s_streamingContents.Remove(activity.Id);
-            }
-        };
-        ActivitySource.AddActivityListener(s_activityListener);
-    }
 
     /// <summary>
     /// Start a text completion activity for a given model.
@@ -85,39 +64,14 @@ internal static class ModelDiagnostics
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
 
     /// <summary>
-    /// Add streaming content to the activity.
-    /// </summary>
-    /// <param name="activity">The activity to add the streaming content</param>
-    /// <param name="content">The streaming content</param>
-    public static void AddStreamingContent<T>(this Activity activity, T content) where T : StreamingKernelContent
-    {
-        if (IsModelDiagnosticsEnabled() && activity.Id is not null)
-        {
-            if (!s_streamingContents.TryGetValue(activity.Id, out var contents))
-            {
-                contents = [];
-                s_streamingContents[activity.Id] = contents;
-            }
-
-            contents.Add(content);
-        }
-    }
-
-    /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
-    public static void EndStreaming(this Activity activity, int? promptTokens = null, int? completionTokens = null)
+    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent> contents, int? promptTokens = null, int? completionTokens = null)
     {
         if (activity.Id is not null && IsModelDiagnosticsEnabled())
         {
-            if (s_streamingContents.TryGetValue(activity.Id, out var contents))
-            {
-                var choices = OrganizeStreamingContent(contents);
-                SetCompletionResponse(activity, choices, promptTokens, completionTokens);
-            }
-
-            // Remove the streaming content after it's processed
-            s_streamingContents.Remove(activity.Id);
+            var choices = OrganizeStreamingContent(contents);
+            SetCompletionResponse(activity, choices, promptTokens, completionTokens);
         }
     }
 

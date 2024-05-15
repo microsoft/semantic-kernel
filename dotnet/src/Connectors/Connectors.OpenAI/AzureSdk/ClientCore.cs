@@ -196,17 +196,39 @@ internal abstract class ClientCore
             throw;
         }
 
-        await foreach (Completions completions in response.ConfigureAwait(false))
+        var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+        List<OpenAIStreamingTextContent> streamedContents = [];
+        try
         {
-            foreach (Choice choice in completions.Choices)
+            while (true)
             {
-                var openAIStreamingTextContent = new OpenAIStreamingTextContent(choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
-                activity?.AddStreamingContent(openAIStreamingTextContent);
-                yield return openAIStreamingTextContent;
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    throw;
+                }
+
+                Completions completions = responseEnumerator.Current;
+                foreach (Choice choice in completions.Choices)
+                {
+                    var openAIStreamingTextContent = new OpenAIStreamingTextContent(
+                        choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
+                    streamedContents.Add(openAIStreamingTextContent);
+                    yield return openAIStreamingTextContent;
+                }
             }
         }
-
-        activity?.EndStreaming();
+        finally
+        {
+            activity?.EndStreaming(streamedContents);
+        }
     }
 
     private static Dictionary<string, object?> GetTextChoiceMetadata(Completions completions, Choice choice)
@@ -654,30 +676,51 @@ internal abstract class ClientCore
                     throw;
                 }
 
-                await foreach (StreamingChatCompletionsUpdate update in response.ConfigureAwait(false))
+                var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+                List<OpenAIStreamingChatMessageContent> streamedContents = [];
+                try
                 {
-                    metadata = GetResponseMetadata(update);
-                    streamedRole ??= update.Role;
-                    streamedName ??= update.AuthorName;
-                    finishReason = update.FinishReason ?? default;
-
-                    // If we're intending to invoke function calls, we need to consume that function call information.
-                    if (autoInvoke)
+                    while (true)
                     {
-                        if (update.ContentUpdate is { Length: > 0 } contentUpdate)
+                        try
                         {
-                            (contentBuilder ??= new()).Append(contentUpdate);
+                            if (!await responseEnumerator.MoveNextAsync())
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            activity?.SetError(ex);
+                            throw;
                         }
 
-                        OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                        StreamingChatCompletionsUpdate update = responseEnumerator.Current;
+                        metadata = GetResponseMetadata(update);
+                        streamedRole ??= update.Role;
+                        streamedName ??= update.AuthorName;
+                        finishReason = update.FinishReason ?? default;
+
+                        // If we're intending to invoke function calls, we need to consume that function call information.
+                        if (autoInvoke)
+                        {
+                            if (update.ContentUpdate is { Length: > 0 } contentUpdate)
+                            {
+                                (contentBuilder ??= new()).Append(contentUpdate);
+                            }
+
+                            OpenAIFunctionToolCall.TrackStreamingToolingUpdate(update.ToolCallUpdate, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                        }
+
+                        var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
+                        streamedContents.Add(openAIStreamingChatMessageContent);
+                        yield return openAIStreamingChatMessageContent;
                     }
-
-                    var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
-                    activity?.AddStreamingContent(openAIStreamingChatMessageContent);
-                    yield return openAIStreamingChatMessageContent;
                 }
-
-                activity?.EndStreaming();
+                finally
+                {
+                    activity?.EndStreaming(streamedContents);
+                }
             }
 
             // If we don't have a function to invoke, we're done.

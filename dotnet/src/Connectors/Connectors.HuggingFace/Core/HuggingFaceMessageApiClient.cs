@@ -106,6 +106,7 @@ internal sealed class HuggingFaceMessageApiClient
         var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
             .ConfigureAwait(false)
             .GetAsyncEnumerator();
+        List<StreamingChatMessageContent> streamedContents = [];
         try
         {
             while (true)
@@ -123,13 +124,13 @@ internal sealed class HuggingFaceMessageApiClient
                     throw;
                 }
 
-                activity?.AddStreamingContent(responseEnumerator.Current);
+                streamedContents.Add(responseEnumerator.Current);
                 yield return responseEnumerator.Current;
             }
         }
         finally
         {
-            activity?.EndStreaming();
+            activity?.EndStreaming(streamedContents);
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
         }

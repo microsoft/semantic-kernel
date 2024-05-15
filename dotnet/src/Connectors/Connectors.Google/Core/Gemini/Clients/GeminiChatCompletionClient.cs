@@ -249,6 +249,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 var responseEnumerator = this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken)
                     .ConfigureAwait(false)
                     .GetAsyncEnumerator();
+                List<StreamingChatMessageContent> streamedContents = [];
                 try
                 {
                     while (true)
@@ -265,14 +266,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                             activity?.SetError(ex);
                             throw;
                         }
-                    }
 
-                    activity?.AddStreamingContent(responseEnumerator.Current);
-                    yield return responseEnumerator.Current;
+                        streamedContents.Add(responseEnumerator.Current);
+                        yield return responseEnumerator.Current;
+                    }
                 }
                 finally
                 {
-                    activity?.EndStreaming();
+                    activity?.EndStreaming(streamedContents);
                     httpResponseMessage?.Dispose();
                     responseStream?.Dispose();
                 }
