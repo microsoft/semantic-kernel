@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from html import escape
 from typing import TYPE_CHECKING, Any, List, Optional
-from urllib.parse import quote
 
 from pydantic import PrivateAttr, field_validator
 
@@ -125,7 +125,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks: List[str] = []
 
-        arguments = self._get_allowed_unsafe_arguments(arguments)
+        arguments = self._get_trusted_arguments(arguments)
         allow_unsafe_function_output = self._get_allow_unsafe_function_output()
         for block in blocks:
             if isinstance(block, TextRenderer):
@@ -137,7 +137,7 @@ class KernelPromptTemplate(PromptTemplateBase):
                 except CodeBlockRenderException as exc:
                     logger.error(f"Error rendering code block: {exc}")
                     raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
-                rendered_blocks.append(rendered if allow_unsafe_function_output else quote(rendered))
+                rendered_blocks.append(rendered if allow_unsafe_function_output else escape(rendered))
         prompt = "".join(rendered_blocks)
         logger.debug(f"Rendered prompt: {prompt}")
         return prompt

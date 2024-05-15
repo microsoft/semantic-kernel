@@ -80,7 +80,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         if arguments is None:
             arguments = KernelArguments()
 
-        arguments = self._get_allowed_unsafe_arguments(arguments)
+        arguments = self._get_trusted_arguments(arguments)
         allow_unsafe_function_output = self._get_allow_unsafe_function_output()
         helpers: dict[str, Callable[..., Any]] = {}
         helpers.update(JINJA2_SYSTEM_HELPERS)

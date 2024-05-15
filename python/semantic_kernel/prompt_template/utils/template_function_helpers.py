@@ -2,8 +2,8 @@
 
 import asyncio
 import logging
+from html import escape
 from typing import TYPE_CHECKING, Any, Callable, Literal
-from urllib.parse import quote
 
 import nest_asyncio
 
@@ -53,6 +53,6 @@ def create_template_helper_from_function(
         result = asyncio.run(function.invoke(kernel=kernel, arguments=arguments))
         if allow_dangerously_set_content:
             return result
-        return quote(str(result))
+        return escape(str(result))
 
     return func

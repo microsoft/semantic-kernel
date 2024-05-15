@@ -109,9 +109,9 @@ Chosen option: "HTML encode all inserted content by default.", because it meets 
 This solution work as follows:
 
 1. By default inserted content is treated as unsafe and will be encoded.
-    1. By default `HttpUtility.HtmlEncode` in dotnet and `urllib.parse.quote` in Python are used to encode all inserted content.
+    1. By default `HttpUtility.HtmlEncode` in dotnet and `html.escape` in Python are used to encode all inserted content.
 1. When the prompt is parsed into Chat History the text content will be automatically decoded.
-    1. By default `HttpUtility.HtmlDecode` in dotnet and `urllib.parse.unquote` in Python are used to decode all Chat History content.
+    1. By default `HttpUtility.HtmlDecode` in dotnet and `html.unescape` in Python are used to decode all Chat History content.
 1. Developers can opt out as follows:
     1. Set `AllowUnsafeContent = true` for the `PromptTemplateConfig` to allow function call return values to be trusted.
     1. Set `AllowUnsafeContent = true` for the `InputVariable` to allow a specific input variable to be trusted.

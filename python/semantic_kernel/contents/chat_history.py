@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import logging
 from functools import singledispatchmethod
+from html import unescape
 from typing import Any, Generator
-from urllib.parse import unquote
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
@@ -250,16 +250,16 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
-        prompt_tag = "prompt"
+        prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError:
             logger.info(f"Could not parse prompt {prompt} as xml, treating as text")
-            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unquote(prompt))])
+            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unquote(xml_prompt.text.strip())))
+            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
@@ -267,7 +267,7 @@ class ChatHistory(KernelBaseModel):
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unquote(item.tail.strip())))
+                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)

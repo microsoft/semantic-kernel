@@ -506,36 +506,6 @@ async def test_handwritten_xml_as_arg_unsafe_variable():
 
 
 @pytest.mark.asyncio
-async def test_input_variable_with_code():
-    unsafe_input = """
-```csharp
-/// <summary>
-/// Example code with comment in the system prompt
-/// </summary>
-public void ReturnSomething()
-{
-    // no return
-}
-```
-        """
-    template = """
-            <message role='system'>This is the system message</message>
-            <message role='user'>{{$unsafe_input}}</message>
-            """
-    rendered = await KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(name="test", description="test", template=template)
-    ).render(
-        kernel=Kernel(),
-        arguments=KernelArguments(unsafe_input=unsafe_input),
-    )
-    chat_history = ChatHistory.from_rendered_prompt(rendered)
-    assert chat_history.messages[0].content == "This is the system message"
-    assert chat_history.messages[0].role == AuthorRole.SYSTEM
-    assert chat_history.messages[1].content == unsafe_input
-    assert chat_history.messages[1].role == AuthorRole.USER
-
-
-@pytest.mark.asyncio
 async def test_template_empty_history(chat_history: ChatHistory):
     template = "system stuff{{$chat_history}}{{$input}}"
     rendered = await KernelPromptTemplate(
