@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -11,7 +12,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI.Gemini;
+namespace SemanticKernel.IntegrationTests.Connectors.Google.Gemini;
 
 public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : TestsBase(output)
 {
@@ -291,6 +292,64 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
         Assert.Contains("5", content, StringComparison.OrdinalIgnoreCase);
     }
 
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var timeProvider = new FakeTimeProvider();
+        timeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2024, 4, 24))); // Wednesday
+        var timePlugin = new TimePlugin(timeProvider);
+        kernel.ImportPluginFromObject(timePlugin, nameof(TimePlugin));
+        var sut = this.GetChatService(serviceType);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("When was last friday? Show the date in format DD.MM.YYYY for example: 15.07.2019");
+        var executionSettings = new GeminiPromptExecutionSettings()
+        {
+            MaxTokens = 2000,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+        };
+
+        // Act
+        var response = await sut.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        this.Output.WriteLine(response.Content);
+        Assert.Contains("19.04.2024", response.Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatStreamingAutoInvokeShouldCallFunctionWithEnumParameterAndReturnResponseAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var timeProvider = new FakeTimeProvider();
+        timeProvider.SetUtcNow(new DateTimeOffset(new DateTime(2024, 4, 24))); // Wednesday
+        var timePlugin = new TimePlugin(timeProvider);
+        kernel.ImportPluginFromObject(timePlugin, nameof(TimePlugin));
+        var sut = this.GetChatService(serviceType);
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("When was last friday? Show the date in format DD.MM.YYYY for example: 15.07.2019");
+        var executionSettings = new GeminiPromptExecutionSettings()
+        {
+            MaxTokens = 2000,
+            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+        };
+
+        // Act
+        var responses = await sut.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel)
+            .ToListAsync();
+
+        // Assert
+        string content = string.Concat(responses.Select(c => c.Content));
+        this.Output.WriteLine(content);
+        Assert.Contains("19.04.2024", content, StringComparison.OrdinalIgnoreCase);
+    }
+
     public sealed class CustomerPlugin
     {
         [KernelFunction(nameof(GetCustomers))]
@@ -340,6 +399,37 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
 #pragma warning restore CA1024
         {
             return DateTime.Now.Date;
+        }
+    }
+
+    public sealed class TimePlugin
+    {
+        private readonly TimeProvider _timeProvider;
+
+        public TimePlugin(TimeProvider timeProvider)
+        {
+            this._timeProvider = timeProvider;
+        }
+
+        [KernelFunction]
+        [Description("Get the date of the last day matching the supplied week day name in English. Example: Che giorno era 'Martedi' scorso -> dateMatchingLastDayName 'Tuesday' => Tuesday, 16 May, 2023")]
+        public string DateMatchingLastDayName(
+            [Description("The day name to match")] DayOfWeek input,
+            IFormatProvider? formatProvider = null)
+        {
+            DateTimeOffset dateTime = this._timeProvider.GetUtcNow();
+
+            // Walk backwards from the previous day for up to a week to find the matching day
+            for (int i = 1; i <= 7; ++i)
+            {
+                dateTime = dateTime.AddDays(-1);
+                if (dateTime.DayOfWeek == input)
+                {
+                    break;
+                }
+            }
+
+            return dateTime.ToString("D", formatProvider);
         }
     }
 
