@@ -48,7 +48,6 @@ public sealed class Program
             .AddSource("Microsoft.SemanticKernel*")
             .AddSource("Telemetry.Example")
             .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
-            .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
             .Build();
 
         using var meterProvider = Sdk.CreateMeterProviderBuilder()
