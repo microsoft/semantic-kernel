@@ -228,6 +228,7 @@ internal abstract class ClientCore
         finally
         {
             activity?.EndStreaming(streamedContents);
+            await responseEnumerator.DisposeAsync();
         }
     }
 
@@ -720,6 +721,7 @@ internal abstract class ClientCore
                 finally
                 {
                     activity?.EndStreaming(streamedContents);
+                    await responseEnumerator.DisposeAsync();
                 }
             }
 
