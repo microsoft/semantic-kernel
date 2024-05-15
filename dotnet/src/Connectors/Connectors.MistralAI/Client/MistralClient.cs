@@ -87,7 +87,7 @@ internal sealed class MistralClient
             }
             if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                this._logger.LogTrace("Function call requests: {Requests}", string.Join(", ", chatChoice.ToolCalls.Select(tc => $"{tc.Function?.Name}({tc.Function?.Parameters})")));
+                this._logger.LogTrace("Function call requests: {Requests}", string.Join(", ", chatChoice.ToolCalls!.Select(tc => $"{tc.Function?.Name}({tc.Function?.Parameters})")));
             }
 
             Debug.Assert(kernel is not null);
@@ -254,7 +254,7 @@ internal sealed class MistralClient
                     if (chatChoice.IsToolCall)
                     {
                         // Create a copy of the tool calls to avoid modifying the original list
-                        toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls);
+                        toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls!);
 
                         // Add the original assistant message to the chatRequest; this is required for the service
                         // to understand the tool call responses. Also add the result message to the caller's chat
@@ -480,7 +480,7 @@ internal sealed class MistralClient
 
         var response = await this.SendRequestAsync<TextEmbeddingResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        return response.Data.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).ToList();
+        return response.Data!.Select(item => new ReadOnlyMemory<float>([.. item.Embedding])).ToList();
     }
 
     #region private
@@ -688,7 +688,7 @@ internal sealed class MistralClient
 
     private List<ChatMessageContent> ToChatMessageContent(string modelId, ChatCompletionResponse response)
     {
-        return response.Choices.Select(chatChoice => this.ToChatMessageContent(modelId, response, chatChoice)).ToList();
+        return response.Choices!.Select(chatChoice => this.ToChatMessageContent(modelId, response, chatChoice)).ToList();
     }
 
     private ChatMessageContent ToChatMessageContent(string modelId, ChatCompletionResponse response, MistralChatChoice chatChoice)

@@ -171,7 +171,7 @@ public abstract class MistralAIToolCallBehavior
     {
         private readonly IEnumerable<KernelFunctionMetadata>? _kernelFunctionMetadata = functions.Select(f => f.Metadata);
 
-        public override string ToString() => $"{nameof(AnyFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._kernelFunctionMetadata.Select(f => f.Name))}";
+        public override string ToString() => $"{nameof(AnyFunction)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._kernelFunctionMetadata!.Select(f => f.Name))}";
 
         internal override void ConfigureRequest(Kernel? kernel, ChatCompletionRequest request)
         {
