@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the result of a function call.
 /// </summary>
-[Experimental("SKEXP0001")]
 public sealed class FunctionResultContent : KernelContent
 {
     /// <summary>

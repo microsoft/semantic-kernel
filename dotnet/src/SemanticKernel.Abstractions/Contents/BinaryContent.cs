@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+#pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable CA1055 // URI-like parameters should not be strings
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -12,20 +16,26 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class BinaryContent : KernelContent
 {
-    private string? _cachedUriData;
+    private string? _cachedDataUri;
     private ReadOnlyMemory<byte>? _cachedData;
+    private Uri? _referencedUri;
 
     /// <summary>
     /// Gets the referenced Uri of the content.
     /// </summary>
+    [JsonPropertyName("uri")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Uri? Uri { get; set; }
+    public virtual Uri? Uri
+    {
+        get => this.GetUri();
+        set => this.SetUri(value);
+    }
 
     /// <summary>
     /// Gets the DataUri of the content.
     /// </summary>
-    [JsonPropertyOrder(100), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
-    public string? DataUri
+    [JsonIgnore]
+    public virtual string? DataUri
     {
         get => this.GetDataUri();
         set => this.SetDataUri(value);
@@ -34,8 +44,9 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Gets the byte array data of the content.
     /// </summary>
-    [JsonIgnore]
-    public ReadOnlyMemory<byte>? Data
+    [JsonPropertyName("data")]
+    [JsonPropertyOrder(100), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
+    public virtual ReadOnlyMemory<byte>? Data
     {
         get => this.GetData();
         set => this.SetData(value);
@@ -47,24 +58,43 @@ public class BinaryContent : KernelContent
     /// <returns>True if the content can be read, false otherwise.</returns>
     public bool CanRead()
         => this._cachedData is not null
-        || this._cachedUriData is not null;
+        || this._cachedDataUri is not null;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class with no content.
+    /// </summary>
+    /// <remarks>
+    /// Should be used only for serialization purposes.
+    /// </remarks>
+    [JsonConstructor]
+    public BinaryContent()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BinaryContent"/> class referring to an external uri.
+    /// </summary>
+    public BinaryContent(Uri? uri = null,
+        object? innerContent = null,
+        string? modelId = null,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(innerContent, modelId, metadata)
+    {
+        this.Uri = uri;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
     /// </summary>
     /// <param name="dataUri">The Uri of the content.</param>
-    /// <param name="mimeType">The mime type of the content</param>
     /// <param name="uri">The uri reference of the content.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="metadata">Additional metadata</param>
-    [JsonConstructor]
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
-#pragma warning disable CA1054 // URI-like parameters should not be strings
-        string? dataUri = null,
-#pragma warning restore CA1054 // URI-like parameters should not be strings
-        string? mimeType = null,
+        // <see href="https://github.com/dotnet/runtime/issues/96544"/>
+        string? dataUri,
         Uri? uri = null,
         object? innerContent = null,
         string? modelId = null,
@@ -101,13 +131,40 @@ public class BinaryContent : KernelContent
 
         this.MimeType = mimeType;
         this.Data = data;
+        this.Uri = uri;
     }
 
+    /// <summary>
+    /// Sets the Uri of the content.
+    /// </summary>
+    /// <param name="uri">Target Uri</param>
+    private void SetUri(Uri? uri)
+    {
+        if (uri?.Scheme == "data")
+        {
+            throw new InvalidOperationException("For DataUri contents, use DataUri property.");
+        }
+
+        this._referencedUri = uri;
+    }
+
+    /// <summary>
+    /// Gets the Uri of the content.
+    /// </summary>
+    /// <returns>Uri of the content</returns>
+    private Uri? GetUri()
+        => this._referencedUri;
+
+    /// <summary>
+    /// Sets the DataUri of the content.
+    /// </summary>
+    /// <param name="dataUri">DataUri of the content</param>
+    /// <exception cref="ArgumentException"></exception>
     private void SetDataUri(string? dataUri)
     {
         if (dataUri is null)
         {
-            this._cachedUriData = null;
+            this._cachedDataUri = null;
 
             // Invalidate the current bytearray
             this._cachedData = null;
@@ -120,29 +177,39 @@ public class BinaryContent : KernelContent
             throw new ArgumentException("Invalid data uri", nameof(dataUri));
         }
 
-        this._cachedUriData = dataUri;
+        // Gets the mimetype from the DataUri and automatically sets it.
+        this.MimeType = dataUri.Substring(5, dataUri.IndexOf(';') - 5);
+
+        this._cachedDataUri = dataUri;
 
         // Invalidate the current bytearray
         this._cachedData = null;
     }
 
-    private void SetData(ReadOnlyMemory<byte>? byteArray)
+    /// <summary>
+    /// Sets the byte array data content.
+    /// </summary>
+    /// <param name="data">Byte array data content</param>
+    private void SetData(ReadOnlyMemory<byte>? data)
     {
         // Overriding the content will invalidate the previous dataUri
-        this._cachedUriData = null;
-        this._cachedData = byteArray;
+        this._cachedDataUri = null;
+        this._cachedData = data;
     }
 
+    /// <summary>
+    /// Gets the byte array data content.
+    /// </summary>
+    /// <returns>The byte array data content</returns>
     private ReadOnlyMemory<byte>? GetData()
     {
-        if (!this.CanRead())
-        {
-            return null;
-        }
-
-        return this._cachedData;
+        return this.GetCachedByteArrayContent();
     }
 
+    /// <summary>
+    /// Gets the DataUri of the content.
+    /// </summary>
+    /// <returns></returns>
     private string? GetDataUri()
     {
         if (!this.CanRead())
@@ -150,45 +217,43 @@ public class BinaryContent : KernelContent
             return null;
         }
 
-        if (this._cachedUriData is not null)
+        if (this._cachedDataUri is not null)
         {
-            return this._cachedUriData;
+            return this._cachedDataUri;
         }
 
         // If the Uri is not a DataUri, then we need to get from byteArray (caching if needed) to generate it.
         return this.GetCachedUriDataFromByteArray(this.GetCachedByteArrayContent());
     }
 
-    private string GetCachedUriDataFromByteArray(ReadOnlyMemory<byte> cachedByteArray)
+    private string? GetCachedUriDataFromByteArray(ReadOnlyMemory<byte>? cachedByteArray)
     {
+        if (cachedByteArray is null)
+        {
+            return null;
+        }
+
         if (this.MimeType is null)
         {
             // May consider defaulting to application/octet-stream if not provided.
-            throw new InvalidOperationException("MimeType for the content is not set.");
+            throw new InvalidOperationException("Can't get the data uri with without a mime type defined for the content.");
         }
 
-        this._cachedUriData = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.ToArray());
-        return this._cachedUriData;
+        this._cachedDataUri = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
+        return this._cachedDataUri;
     }
 
-    private ReadOnlyMemory<byte> GetCachedByteArrayContent()
+    private ReadOnlyMemory<byte>? GetCachedByteArrayContent()
     {
-        if (!this.CanRead())
+        if (this._cachedData is null && this._cachedDataUri is not null)
         {
-            throw new NotSupportedException("Byte array content cannot be generated as the content does not support the read operation.");
+            this._cachedData = Convert.FromBase64String(this._cachedDataUri!.Substring(this._cachedDataUri.IndexOf(',') + 1));
         }
 
-        if (this._cachedData is null)
-        {
-            this._cachedData = Convert.FromBase64String(this._cachedUriData!.Substring(this._cachedUriData.IndexOf(',') + 1));
-        }
-
-        return this._cachedData!.Value;
+        return this._cachedData;
     }
 
     /// <inheritdoc/>
     public override string ToString()
-    {
-        return JsonSerializer.Serialize(this);
-    }
+        => JsonSerializer.Serialize(this);
 }

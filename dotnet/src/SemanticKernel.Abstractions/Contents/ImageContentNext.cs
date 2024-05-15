@@ -40,7 +40,6 @@ public sealed class ImageContentNext : BinaryContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             dataUri,
-            mimeType,
             uri,
             innerContent,
             modelId,

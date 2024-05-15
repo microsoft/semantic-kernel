@@ -25,7 +25,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task UriSerialization()
     {
-        var content = new BinaryContent(uri: new Uri("https://fake-random-test-host:123"));
+        var content = new BinaryContent(new Uri("https://fake-random-test-host:123"));
         var serialized = JsonSerializer.Serialize(content);
 
         Console.WriteLine($"Content ToString: {content}");
@@ -40,7 +40,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task TransformNonReadableInAReadable()
     {
-        var content = new BinaryContent(uri: new Uri("https://fake-random-test-host:123"));
+        var content = new BinaryContent(new Uri("https://fake-random-test-host:123"));
         var serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content Before: {serialized}");
         Console.WriteLine($"Content ToString Before: {content}");
@@ -62,7 +62,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public Task TransformReadableInANonReadable()
     {
-        var content = new BinaryContent("data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==");
+        var content = new BinaryContent(dataUri: "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==");
         var serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content Before: {serialized}");
         Console.WriteLine($"Content ToString Before: {content}");

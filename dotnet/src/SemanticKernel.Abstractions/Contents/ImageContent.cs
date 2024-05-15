@@ -9,9 +9,27 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents image content.
 /// </summary>
+// To be retrocompatible with the non-experimental ImageContent it needs to have a different behavior
+// than the base class BinaryContent breaking the Liskov Substitution Principle (LSP).
 public sealed class ImageContent : BinaryContent
 {
-    private bool _uriWasSetAsDataUri = false;
+    private string? _dataUri;
+
+    /// <inheritdoc />
+    public override Uri? Uri { get; set; }
+
+    /// <inheritdoc />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public override ReadOnlyMemory<byte>? Data { get; set; }
+
+    /// <inheritdoc />
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public override string? DataUri
+    {
+        get => this.GetDataUri();
+        set => this.SetDataUri(value);
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
@@ -34,21 +52,12 @@ public sealed class ImageContent : BinaryContent
         IReadOnlyDictionary<string, object?>? metadata = null)
         : base(
             dataUri: null,
-            mimeType: null,
             uri: null,
             innerContent,
             modelId,
             metadata)
     {
-        // For BinaryContent, Uri and DataUri can be set independently 
-        if (uri?.ToString().StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true)
-        {
-            this.DataUri = uri.ToString();
-        }
-        else
-        {
-            this.Uri = uri;
-        }
+        this.Uri = uri;
     }
 
     /// <summary>
@@ -83,16 +92,50 @@ public sealed class ImageContent : BinaryContent
     /// </remarks>
     public override string ToString()
     {
-        return this.BuildDataUri() ?? this.Uri?.ToString() ?? string.Empty;
+        return this.GetDataUri() ?? this.Uri?.ToString() ?? string.Empty;
     }
 
-    private string? BuildDataUri()
+    private string? GetDataUri()
     {
+        if (this._dataUri is not null)
+        {
+            return this._dataUri;
+        }
+
         if (this.Data is null || string.IsNullOrEmpty(this.MimeType))
         {
             return null;
         }
 
         return $"data:{this.MimeType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
+    }
+
+    private void SetDataUri(string? dataUri)
+    {
+        if (dataUri is null)
+        {
+            this._dataUri = null;
+            return;
+        }
+
+        var isDataUri = dataUri?.StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true;
+        if (!isDataUri)
+        {
+            throw new ArgumentException("Invalid data uri", nameof(dataUri));
+        }
+
+        this._dataUri = dataUri;
+
+        try
+        {
+            this.Uri = new Uri(dataUri);
+        }
+        catch (UriFormatException)
+        {
+            // If the dataUri is too big this will fail and no Uri will be set to the property.
+        }
+
+        // Do not reset the Data and MimeTypes like Binary would do to keep consistency
+        // with the Uri and Data individualities.
     }
 }
