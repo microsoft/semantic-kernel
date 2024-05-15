@@ -68,7 +68,7 @@ internal static class ModelDiagnostics
     /// </summary>
     public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent> contents, int? promptTokens = null, int? completionTokens = null)
     {
-        if (activity.Id is not null && IsModelDiagnosticsEnabled())
+        if (IsModelDiagnosticsEnabled())
         {
             var choices = OrganizeStreamingContent(contents);
             SetCompletionResponse(activity, choices, promptTokens, completionTokens);

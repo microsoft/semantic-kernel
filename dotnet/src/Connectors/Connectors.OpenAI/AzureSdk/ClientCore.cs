@@ -185,7 +185,7 @@ internal abstract class ClientCore
 
         using var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, prompt, executionSettings);
 
-        StreamingResponse<Completions>? response;
+        StreamingResponse<Completions> response;
         try
         {
             response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
@@ -662,10 +662,10 @@ internal abstract class ClientCore
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
 
-            // Make the request.
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
             {
-                StreamingResponse<StreamingChatCompletionsUpdate>? response;
+                // Make the request.
+                StreamingResponse<StreamingChatCompletionsUpdate> response;
                 try
                 {
                     response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
