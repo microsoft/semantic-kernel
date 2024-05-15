@@ -16,7 +16,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Mistral AI connectors</Title>
-    <Description>Semantic Kernel connectors for Mistral. Contains clients for text generation and text embedding generation.</Description>
+    <Description>Semantic Kernel connectors for Mistral. Contains services for chat completion and text embedding generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>

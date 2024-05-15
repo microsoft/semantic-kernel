@@ -10,20 +10,18 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI;
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
 /// </summary>
-public static class MistralAIPluginCollectionExtensions
+internal static class MistralAIPluginCollectionExtensions
 {
     /// <summary>
     /// Given an <see cref="MistralFunction"/> object, tries to retrieve the corresponding <see cref="KernelFunction"/> and populate <see cref="KernelArguments"/> with its parameters.
     /// </summary>
     /// <param name="plugins">The plugins.</param>
-    /// <param name="kernel">The <see cref="Kernel"/> instance</param>
     /// <param name="functionToolCall">The <see cref="MistralFunction"/> object.</param>
     /// <param name="function">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/></param>
     /// <param name="arguments">When this method returns, the arguments for the function; otherwise, <see langword="null"/></param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>
     internal static bool TryGetFunctionAndArguments(
         this IReadOnlyKernelPluginCollection plugins,
-        Kernel kernel,
         MistralFunction functionToolCall,
         [NotNullWhen(true)] out KernelFunction? function,
         out KernelArguments? arguments)
@@ -40,7 +38,7 @@ public static class MistralAIPluginCollectionExtensions
 
                 if (functionArguments is not null)
                 {
-                    arguments = new KernelArguments();
+                    arguments = [];
 
                     foreach (var key in functionArguments.Keys)
                     {
