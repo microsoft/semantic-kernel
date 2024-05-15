@@ -29,7 +29,7 @@ public class HandlebarsPlanning(ITestOutputHelper output) : BaseTest(output)
         string chatModelId = TestConfiguration.AzureOpenAI.ChatModelId;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
-        if (apiKey == null || chatDeploymentName == null || chatModelId == null || endpoint == null)
+        if (apiKey is null || chatDeploymentName is null || chatModelId is null || endpoint is null)
         {
             Console.WriteLine("Azure endpoint, apiKey, deploymentName, or modelId not found. Skipping example.");
             return null;

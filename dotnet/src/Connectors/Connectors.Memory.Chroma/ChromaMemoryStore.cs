@@ -84,7 +84,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         var collection = await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        return collection != null;
+        return collection is not null;
     }
 
     /// <inheritdoc />
@@ -299,7 +299,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], JsonOptionsCache.Default) : string.Empty;
+        var serializedMetadata = metadatas is not null ? JsonSerializer.Serialize(metadatas[recordIndex], JsonOptionsCache.Default) : string.Empty;
 
         return
             JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, JsonOptionsCache.Default) ??
@@ -308,12 +308,12 @@ public class ChromaMemoryStore : IMemoryStore
 
     private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
     {
-        return embeddings != null ? embeddings[recordIndex] : ReadOnlyMemory<float>.Empty;
+        return embeddings is not null ? embeddings[recordIndex] : ReadOnlyMemory<float>.Empty;
     }
 
     private double GetSimilarityScore(List<double>? distances, int recordIndex)
     {
-        var similarityScore = distances != null ? 1.0 / (1.0 + distances[recordIndex]) : default;
+        var similarityScore = distances is not null ? 1.0 / (1.0 + distances[recordIndex]) : default;
 
         if (similarityScore < 0)
         {
