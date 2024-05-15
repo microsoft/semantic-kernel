@@ -20,8 +20,12 @@ public class KernelPluginTests
         {
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function1"),
             KernelFunctionFactory.CreateFromMethod(() => { }, "Function2"),
-            KernelFunctionFactory.CreateFromMethod(() => { }, "Function3"),
+            KernelFunctionFactory.CreateFromPrompt("some prompt", functionName: "Function3"),
         };
+
+        Assert.Equal("Function1", functions[0].ToString());
+        Assert.Equal("Function2", functions[1].ToString());
+        Assert.Equal("Function3", functions[2].ToString());
 
         plugin = KernelPluginFactory.CreateFromFunctions("name", null, null);
         Assert.Equal("name", plugin.Name);
@@ -34,6 +38,10 @@ public class KernelPluginTests
         Assert.Equal(3, plugin.FunctionCount);
         Assert.All(functions, f => Assert.True(plugin.Contains(f)));
 
+        Assert.Equal("name.Function1", plugin["Function1"].ToString());
+        Assert.Equal("name.Function2", plugin["Function2"].ToString());
+        Assert.Equal("name.Function3", plugin["Function3"].ToString());
+
         plugin = KernelPluginFactory.CreateFromFunctions("name", "description");
         Assert.Equal("name", plugin.Name);
         Assert.Equal("description", plugin.Description);
@@ -44,6 +52,10 @@ public class KernelPluginTests
         Assert.Equal("description", plugin.Description);
         Assert.Equal(3, plugin.FunctionCount);
         Assert.All(functions, f => Assert.True(plugin.Contains(f)));
+
+        Assert.Equal("name.Function1", plugin["Function1"].ToString());
+        Assert.Equal("name.Function2", plugin["Function2"].ToString());
+        Assert.Equal("name.Function3", plugin["Function3"].ToString());
     }
 
     [Fact]
