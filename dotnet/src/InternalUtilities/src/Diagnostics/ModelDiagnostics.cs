@@ -39,25 +39,27 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity<T>(
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
         string prompt,
-        T? executionSettings
-    ) where T : PromptExecutionSettings => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
+        => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
 
     /// <summary>
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity<T>(
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
         ChatHistory chatHistory,
-        T? executionSettings
-    ) where T : PromptExecutionSettings => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
+        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
     /// Set the text completion response for a given activity.
@@ -119,7 +121,8 @@ internal static class ModelDiagnostics
     }
 
     #region Private
-    private static void AddOptionalTags<T>(Activity? activity, T? executionSettings) where T : PromptExecutionSettings
+    private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
+        where TPromptExecutionSettings : PromptExecutionSettings
     {
         if (activity is null || executionSettings is null)
         {
@@ -211,13 +214,13 @@ internal static class ModelDiagnostics
     /// Start a completion activity and return the activity.
     /// The `formatPrompt` delegate won't be invoked if events are disabled.
     /// </summary>
-    private static Activity? StartCompletionActivity<T1, T2>(
+    private static Activity? StartCompletionActivity<TPrompt, TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
-        T1 prompt,
-        T2? executionSettings,
-        Func<T1, string> formatPrompt) where T2 : PromptExecutionSettings
+        TPrompt prompt,
+        TPromptExecutionSettings? executionSettings,
+        Func<TPrompt, string> formatPrompt) where TPromptExecutionSettings : PromptExecutionSettings
     {
         if (!IsModelDiagnosticsEnabled())
         {
