@@ -675,7 +675,7 @@ internal sealed class MistralClient
         try
         {
             T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-            return deserializedResponse is null ? throw new JsonException("Response is null") : deserializedResponse;
+            return deserializedResponse ?? throw new JsonException("Response is null");
         }
         catch (JsonException exc)
         {
