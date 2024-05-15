@@ -323,7 +323,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
         const int AutoInvokeResponsesCount = 6;
 
         int functionCallCount = 0;
@@ -501,7 +501,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
         const int AutoInvokeResponsesCount = 6;
 
         int functionCallCount = 0;
