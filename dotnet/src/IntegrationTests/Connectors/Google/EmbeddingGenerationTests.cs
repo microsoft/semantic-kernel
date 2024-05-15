@@ -6,7 +6,7 @@ using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Connectors.GoogleVertexAI;
+namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
 public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBase(output)
 {
