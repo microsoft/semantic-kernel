@@ -10,7 +10,7 @@ from typing import Any, Callable, Coroutine
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
-from semantic_kernel.hooks.function.function_hook_context_base import FunctionContext
+from semantic_kernel.filters.function.function_context import FunctionContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict
 
@@ -55,7 +55,16 @@ async def main() -> None:
         parent_directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), plugin_name="chat"
     )
     history = ChatHistoryHooked()
-    kernel.add_filter(history)
+
+    @kernel.filter("function_invocation")
+    async def exception_catch_filter(context, next):
+        try:
+            await next(context)
+        except Exception as e:
+            logger.info(e)
+            raise e
+
+    kernel.add_filter("function_invocation", history)
 
     chatting = True
     while chatting:

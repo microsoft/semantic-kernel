@@ -21,6 +21,7 @@ from semantic_kernel.contents.streaming_content_mixin import StreamingContentMix
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.filters.function.function_context import FunctionContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
@@ -144,20 +145,16 @@ through prompt_template_config or in the prompt_template."
             data["prompt_execution_settings"] = {s.service_id or "default": s for s in prompt_execution_settings}
         return data
 
-    async def _invoke_internal(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
+    async def _invoke_internal(self, function_context: FunctionContext) -> None:
         """Invokes the function with the given arguments."""
-        arguments = self.add_default_values(arguments)
-        service, execution_settings = kernel.select_ai_service(self, arguments)
+        self.add_default_values(function_context.arguments)
+        service, execution_settings = function_context.kernel.select_ai_service(self, function_context.arguments)
 
         # pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
         # if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
         #     arguments = pre_prompt_context.arguments
 
-        prompt = await self.prompt_template.render(kernel, arguments)
+        prompt = await self.prompt_template.render(function_context.kernel, function_context.arguments)
 
         # post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
         # if post_prompt_context is not None:
@@ -166,21 +163,23 @@ through prompt_template_config or in the prompt_template."
         #     prompt = post_prompt_context.rendered_prompt
 
         if isinstance(service, ChatCompletionClientBase):
-            return await self._handle_complete_chat(
-                kernel=kernel,
+            function_context.result = await self._handle_complete_chat(
+                kernel=function_context.kernel,
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=arguments,
+                arguments=function_context.arguments,
             )
+            return
 
         if isinstance(service, TextCompletionClientBase):
-            return await self._handle_text_complete(
+            function_context.result = await self._handle_text_complete(
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=arguments,
+                arguments=function_context.arguments,
             )
+            return
 
         raise ValueError(f"Service `{type(service).__name__}` is not a valid AI service")
 
@@ -337,12 +336,11 @@ through prompt_template_config or in the prompt_template."
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
-    def add_default_values(self, arguments: KernelArguments) -> KernelArguments:
+    def add_default_values(self, arguments: KernelArguments) -> None:
         """Gathers the function parameters from the arguments."""
         for parameter in self.prompt_template.prompt_template_config.input_variables:
             if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
                 arguments[parameter.name] = parameter.default
-        return arguments
 
     @classmethod
     def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:

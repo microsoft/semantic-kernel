@@ -10,12 +10,12 @@ import pytest
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.filters import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.hooks import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.utils.settings import (

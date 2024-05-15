@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 
-class KernelHookContextBase(KernelBaseModel):
+class KernelFilterContextBase(KernelBaseModel):
     """Base class for Kernel Hook Contexts."""
 
     function: "KernelFunction"

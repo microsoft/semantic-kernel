@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Literal, Type, TypeVar, Union
 
@@ -19,15 +20,12 @@ from semantic_kernel.exceptions import (
     ServiceInvalidTypeError,
     TemplateSyntaxError,
 )
+from semantic_kernel.filters.kernel_filter_context_base import KernelFilterContextBase
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.hooks.prompt.post_prompt_render_context import PostPromptRenderContext
-from semantic_kernel.hooks.prompt.post_prompt_render_protocol import PostPromptRenderProtocol
-from semantic_kernel.hooks.prompt.pre_prompt_render_context import PrePromptRenderContext
-from semantic_kernel.hooks.prompt.pre_prompt_render_protocol import PrePromptRenderProtocol
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
@@ -76,7 +74,7 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    hooks: list[tuple[int, Any]] = Field(default_factory=list)
+    filters: dict[Literal["function_invocation", "prompt_render"], list[tuple[int, Any]]] = Field(default_factory=dict)
 
     def __init__(
         self,
@@ -303,246 +301,59 @@ class Kernel(KernelBaseModel):
         return await self.invoke(function=function, arguments=arguments)
 
     # endregion
-    # region Hooks
+    # region Filters
 
-    # async def _pre_function_invoke(
-    #     self,
-    #     function: KernelFunction,
-    #     arguments: KernelArguments,
-    #     metadata: dict[str, Any] = {},
-    # ) -> PreFunctionInvokeContext | None:
-    #     context = PreFunctionInvokeContext(function=function, arguments=arguments, metadata=metadata)
-    #     if not self.hooks:
-    #         return None
-    #     ran_hook = False
-    #     for hook_id, hook in self.hooks:
-    #         if not isinstance(hook, PreFunctionInvokeProtocol):
-    #             continue
-    #         try:
-    #             logger.debug(f"Running Pre Function Invoke Hook: {hook.__class__.__name__} ({hook_id=})")
-    #             await hook.pre_function_invoke(context=context)  # type: ignore
-    #             ran_hook = True
-    #         except Exception as exc:
-    #             logger.error(
-    #                 "An error occurred in the pre_function_invoke function of hook: "
-    #                 f"{hook.__class__.__name__} ({hook_id=}). "
-    #                 f"Error description: {str(exc)}"
-    #             )
-    #         else:
-    #             if context.is_cancel_requested:
-    #                 raise OperationCancelledException(
-    #                     f"Execution was cancelled on by pre_function_invoke hook, "
-    #                     f"reason: {context.cancel_reason} on function: "
-    #                     f"{function.fully_qualified_name}."
-    #                 )
-    #             if context.updated_arguments:
-    #                 logger.info(f"Arguments updated by pre_function_hook, new arguments: {context.arguments}")
-    #     return context if ran_hook else None
-
-    # async def _post_function_invoke(
-    #     self,
-    #     function: KernelFunction,
-    #     arguments: KernelArguments,
-    #     function_result: FunctionResult | None = None,
-    #     exception: Exception | None = None,
-    #     metadata: dict[str, Any] = {},
-    # ) -> PostFunctionInvokeContext | None:
-    #     context = PostFunctionInvokeContext(
-    #         function=function,
-    #         arguments=arguments,
-    #         metadata=metadata,
-    #         function_result=function_result,
-    #         exception=exception or function_result.metadata.get("exception", None) if function_result else None,
-    #     )
-    #     if not self.hooks:
-    #         return None
-    #     ran_hook = False
-    #     for hook_id, hook in self.hooks:
-    #         if not isinstance(hook, PostFunctionInvokeProtocol):
-    #             continue
-    #         try:
-    #             logger.debug(f"Running Post Function Invoke Hook: {hook.__class__.__name__} ( {hook_id=})")
-    #             await hook.post_function_invoke(context=context)  # type: ignore
-    #             ran_hook = True
-    #         except Exception as exc:
-    #             logger.error(
-    #                 "An error occurred in the post_function_invoke function of hook: "
-    #                 f"{hook.__class__.__name__} ({hook_id=}). "
-    #                 f"Error description: {str(exc)}"
-    #             )
-    #         else:
-    #             if context.is_cancel_requested:
-    #                 raise OperationCancelledException(
-    #                     f"Execution was cancelled on by post_function_invoke hook, "
-    #                     f"reason: {context.cancel_reason} on function: "
-    #                     f"{function.fully_qualified_name}."
-    #                 )
-    #             if context.updated_arguments:
-    #                 logger.info(f"Arguments updated by post_function_invoke, new arguments: {context.arguments}")
-    #             if context.is_repeat_requested:
-    #                 logger.info(
-    #                     f"Execution was repeated on by post_function_invoke hook, function: "
-    #                     f"{function.fully_qualified_name}."
-    #                 )
-
-    #     return context if ran_hook else None
-
-    async def _pre_prompt_render(
-        self, function: KernelFunction, arguments: KernelArguments, metadata: dict[str, Any] = {}
-    ) -> PrePromptRenderContext | None:
-        if not self.hooks:
-            return None
-        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
-
-        PrePromptRenderContext.model_rebuild()
-        context = PrePromptRenderContext(function=function, arguments=arguments, metadata=metadata, kernel=self)  # type: ignore
-        ran_hook = False
-        for hook_id, hook in self.hooks:
-            if not isinstance(hook, PrePromptRenderProtocol):
-                continue
-            try:
-                logger.debug(f"Running Pre Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                await hook.pre_prompt_render(context=context)  # type: ignore
-                ran_hook = True
-            except Exception as exc:
-                logger.error(
-                    "An error occurred in the pre_prompt_render function of hook: "
-                    f"{hook.__class__.__name__} ({hook_id=}). "
-                    f"Error description: {str(exc)}"
-                )
-        return context if ran_hook else None
-
-    async def _post_prompt_render(
-        self, function: KernelFunction, arguments: KernelArguments, rendered_prompt: str, metadata: dict[str, Any] = {}
-    ) -> PostPromptRenderContext | None:
-        if not self.hooks:
-            return None
-        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
-
-        PostPromptRenderContext.model_rebuild()
-        context = PostPromptRenderContext(  # type: ignore
-            function=function, arguments=arguments, metadata=metadata, kernel=self, rendered_prompt=rendered_prompt
-        )
-        ran_hook = False
-        for hook_id, hook in self.hooks:
-            if not isinstance(hook, PostPromptRenderProtocol):
-                continue
-            try:
-                logger.debug(f"Running Post Prompt Render Hook: {hook.__class__.__name__} ({hook_id=})")
-                await hook.post_prompt_render(context=context)  # type: ignore
-                ran_hook = True
-            except Exception as exc:
-                logger.error(
-                    "An error occurred in the post_prompt_render function of hook: "
-                    f"{hook.__class__.__name__} ({hook_id=}). "
-                    f"Error description: {str(exc)}"
-                )
-        return context if ran_hook else None
-
-    def add_filter(self, filter: object) -> None:
+    def add_filter(self, filter_type: Literal["function_invocation", "prompt_render"], filter: object) -> None:
         """Add a filter to the Kernel.
 
         Args:
+            filter_type (str): The type of the filter to add (function_invocation, prompt_render)
             filter (object): The filter to add
 
         """
-        self.hooks.append((id(filter), filter))
+        if filter_type not in self.filters:
+            self.filters[filter_type] = []
+        self.filters[filter_type].append((id(filter), filter))
 
-    # def add_hook(
-    #     self,
-    #     hook: object | Callable[..., Any],
-    #     hook_name: HookEnum | str | None = None,
-    #     position: int | None = None,
-    # ) -> int:
-    #     """Add a KernelHook to the Kernel.
+    def filter(
+        self, filter_type: Literal["function_invocation", "prompt_render"]
+    ) -> Callable[[KernelFilterContextBase, Callable[..., Any]], Any]:
+        def decorator(
+            func: Callable[[KernelFilterContextBase, Callable[..., Any]], Any],
+        ) -> Callable[[KernelFilterContextBase, Callable[..., Any]], Any]:
+            self.add_filter(filter_type, func)
+            return func
 
-    #     The supplied hooks are checked:
-    #     - When given a class with methods, it looks through the methods and
-    #     checks if there is at least one method that matches a hook and
-    #     it checks if they have a single parameter and nothing else.
-    #     - When given a function, it checks if the function name,
-    #     either the name of the function itself or when supplied the hook_name,
-    #     and then it checks if the function has a single parameter and nothing else.
-    #     - It does not check the type of the parameter, since the hooks are always called with a predefined context.
+        return decorator
 
-    #     Args:
-    #         hook (object | Callable[[T], None]): The hook to add
-    #         hook_name (HookEnum | None): The name of the hook, if not supplied and using a function,
-    #             the function name is used if it matches one of the hook names.
-    #         position (int | None): The position to add the hook
-
-    #     Returns:
-    #         int: The id of the added hook, if you want to be able to remove it later, keep track of this.
-
-    #     """
-    #     if callable(hook):
-    #         if hook_name is None:
-    #             if hook.__name__ not in HOOK_PROTOCOLS:
-    #                 raise HookInvalidSignatureError(
-    #                     f"Hook function {hook.__name__} does not match the expected names, "
-    #                     "should either supply a hook_name, "
-    #                     "or the name of the function needs to be one of the hooks."
-    #                 )
-    #             hook_name = HookEnum(hook.__name__)
-    #         else:
-    #             if hook_name not in HOOK_PROTOCOLS:
-    #                 raise HookInvalidSignatureError(
-    #                     f"Hook function {hook_name} does not match the expected names, "
-    #                     "should either supply a hook_name, "
-    #                     "or the name of the function needs to be one of the hooks."
-    #                 )
-    #             if not isinstance(hook_name, HookEnum):
-    #                 hook_name = HookEnum(hook_name)
-
-    #         if not hasattr(hook, "__kernel_hook__"):
-    #             hook = kernel_hook_filter()(hook)
-
-    #         sig = inspect.signature(hook)
-    #         if len(sig.parameters) != 1:
-    #             raise HookInvalidSignatureError(f"Hook function {hook_name} does not match the expected signature.")
-    #         hook_class = EmptyHook()
-    #         hook_class.__setattr__(hook_name.value, hook)
-    #         return self._add_hook(hook_class, position)
-
-    #     hook_found = False
-    #     for hook_name, protocol in HOOK_PROTOCOLS.items():
-    #         if isinstance(hook, protocol):
-    #             hook_found = True
-    #             method = getattr(hook, hook_name)
-    #             if len(inspect.signature(method).parameters) != 1:
-    #                 raise HookInvalidSignatureError(
-    #                     f"Method {hook_name} of hook {hook} does not match the expected signature."
-    #                 )
-    #             if not hasattr(method, "__kernel_hook__"):
-    #                 object.__setattr__(hook, hook_name, kernel_hook_filter()(method))
-    #     if not hook_found:
-    #         raise HookInvalidSignatureError("No hook functions found in the supplied object.")
-    #     return self._add_hook(hook, position)
-
-    # def _add_hook(self, hook: object, position: int | None = None) -> int:
-    #     """Adds a hook class to the list of hooks, at the end or at position."""
-    #     if position is not None:
-    #         self.hooks.insert(position, (id(hook), hook))
-    #     else:
-    #         self.hooks.append((id(hook), hook))
-    #     return id(hook)
-
-    def remove_hook(self, hook_id: int | None = None, position: int | None = None) -> None:
-        """Remove a KernelHook from the Kernel.
+    def remove_filter(
+        self,
+        filter_type: Literal["function_invocation", "prompt_render"] | None = None,
+        filter_id: int | None = None,
+        position: int | None = None,
+    ) -> None:
+        """Remove a filter from the Kernel.
 
         Args:
-            hook_id (int): The id of the hook to remove
+            filter_type (str | None): The type of the filter to remove (function_invocation, prompt_render)
+            filter_id (int): The id of the hook to remove
+            position (int): The position of the filter in the list
 
         """
-        if hook_id is None and position is None:
+        if filter_id is None and position is None:
             raise ValueError("Either hook_id or position should be provided.")
         if position is not None:
-            self.hooks.pop(position)
+            if filter_type is None:
+                raise ValueError("Please specify the type of filter when using position.")
+            self.filters[filter_type].pop(position)
             return
-        for i, hooks in enumerate(self.hooks):
-            if hooks[0] == hook_id:
-                self.hooks.pop(i)
-                break
+        for filter_t, filter_list in self.filters.items():
+            if filter_type and filter_t != filter_type:
+                continue
+            for i, hooks in enumerate(filter_list):
+                if hooks[0] == filter_id:
+                    filter_list.pop(i)
+                    break
 
     # endregion
     # region Plugins & Functions

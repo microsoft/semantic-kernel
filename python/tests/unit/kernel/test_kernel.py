@@ -36,7 +36,7 @@ def test_init():
     assert kernel.plugins is not None
     assert kernel.services is not None
     assert kernel.retry_mechanism is not None
-    assert kernel.hooks is not None
+    assert kernel.filters is not None
 
 
 def test_kernel_init_with_ai_service_selector():

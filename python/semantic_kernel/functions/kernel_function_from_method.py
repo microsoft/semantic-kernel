@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.filters.function.function_context import FunctionContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -91,11 +92,10 @@ class KernelFunctionFromMethod(KernelFunction):
 
     async def _invoke_internal(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
+        function_context: FunctionContext,
+    ) -> None:
         """Invoke the function with the given arguments."""
-        function_arguments = self.gather_function_parameters(kernel, arguments)
+        function_arguments = self.gather_function_parameters(function_context.kernel, function_context.arguments)
         result = self.method(**function_arguments)
         if isasyncgen(result):
             result = [x async for x in result]
@@ -105,10 +105,10 @@ class KernelFunctionFromMethod(KernelFunction):
             result = list(result)
         if isinstance(result, FunctionResult):
             return result
-        return FunctionResult(
+        function_context.result = FunctionResult(
             function=self.metadata,
             value=result,
-            metadata={"arguments": arguments, "used_arguments": function_arguments},
+            metadata={"arguments": function_context.arguments, "used_arguments": function_arguments},
         )
 
     async def _invoke_internal_stream(

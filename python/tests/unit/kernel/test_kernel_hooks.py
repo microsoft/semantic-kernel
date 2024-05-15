@@ -5,17 +5,17 @@ import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.exceptions.kernel_exceptions import HookInvalidSignatureError
+from semantic_kernel.filters import PostFunctionInvokeContext, PreFunctionInvokeContext
+from semantic_kernel.filters.kernel_hook_filter_decorator import kernel_hook_filter
+from semantic_kernel.filters.prompt.post_prompt_render_context import PostPromptRenderContext
+from semantic_kernel.filters.prompt.pre_prompt_render_context import PrePromptRenderContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.hooks import PostFunctionInvokeContext, PreFunctionInvokeContext
-from semantic_kernel.hooks.kernel_hook_filter_decorator import kernel_hook_filter
-from semantic_kernel.hooks.prompt.post_prompt_render_context import PostPromptRenderContext
-from semantic_kernel.hooks.prompt.pre_prompt_render_context import PrePromptRenderContext
 
 # region Hooks
 
 
 def test_hooks(kernel_with_hooks: Kernel):
-    assert len(kernel_with_hooks.hooks) == 2
+    assert len(kernel_with_hooks.filters) == 2
 
 
 def test_add_hook_class_without_filters(kernel: Kernel):
@@ -37,7 +37,7 @@ def test_add_hook_class_without_filters(kernel: Kernel):
 
     hook = TestHook()
     kernel.add_hook(hook)
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_class_with_filters(kernel: Kernel):
@@ -63,7 +63,7 @@ def test_add_hook_class_with_filters(kernel: Kernel):
 
     hook = TestHook()
     kernel.add_hook(hook)
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_function(kernel: Kernel):
@@ -71,7 +71,7 @@ def test_add_hook_function(kernel: Kernel):
         pass
 
     kernel.add_hook(hook, "pre_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_function_with_filter(kernel: Kernel):
@@ -80,7 +80,7 @@ def test_add_hook_function_with_filter(kernel: Kernel):
         pass
 
     kernel.add_hook(hook, "pre_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_async_function(kernel: Kernel):
@@ -88,7 +88,7 @@ def test_add_hook_async_function(kernel: Kernel):
         pass
 
     kernel.add_hook(hook, "pre_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_async_function_with_filter(kernel: Kernel):
@@ -97,7 +97,7 @@ def test_add_hook_async_function_with_filter(kernel: Kernel):
         pass
 
     kernel.add_hook(hook, "pre_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_function_name(kernel: Kernel):
@@ -105,41 +105,41 @@ def test_add_hook_function_name(kernel: Kernel):
         pass
 
     kernel.add_hook(pre_function_invoke)
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_lambda(kernel: Kernel):
     kernel.add_hook(lambda context: print("\nRun after func..."), "post_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
 
 
 def test_add_hook_with_position(kernel_with_hooks: Kernel):
     hook_id = kernel_with_hooks.add_hook(
         lambda context: print("\nRun after func..."), "post_function_invoke", position=0
     )
-    assert len(kernel_with_hooks.hooks) == 3
-    assert kernel_with_hooks.hooks[0][0] == hook_id
+    assert len(kernel_with_hooks.filters) == 3
+    assert kernel_with_hooks.filters[0][0] == hook_id
 
 
 def test_remove_hook(kernel: Kernel):
     hook_id = kernel.add_hook(lambda context: print("\nRun after func..."), "post_function_invoke")
-    assert len(kernel.hooks) == 1
-    kernel.remove_hook(hook_id)
-    assert len(kernel.hooks) == 0
+    assert len(kernel.filters) == 1
+    kernel.remove_filter(hook_id)
+    assert len(kernel.filters) == 0
 
 
 def test_remove_hook_by_position(kernel: Kernel):
     kernel.add_hook(lambda context: print("\nRun after func..."), "post_function_invoke")
-    assert len(kernel.hooks) == 1
-    kernel.remove_hook(position=0)
-    assert len(kernel.hooks) == 0
+    assert len(kernel.filters) == 1
+    kernel.remove_filter(position=0)
+    assert len(kernel.filters) == 0
 
 
 def test_remove_hook_fail(kernel: Kernel):
     kernel.add_hook(lambda context: print("\nRun after func..."), "post_function_invoke")
-    assert len(kernel.hooks) == 1
+    assert len(kernel.filters) == 1
     with pytest.raises(ValueError):
-        kernel.remove_hook()
+        kernel.remove_filter()
 
 
 @pytest.mark.asyncio

@@ -8,11 +8,11 @@ from collections.abc import AsyncGenerator
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Coroutine
 
+from semantic_kernel.filters.function.function_context import FunctionContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.hooks.function.function_hook_context_base import FunctionContext
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
@@ -164,11 +164,7 @@ class KernelFunction(KernelBaseModel):
         return await self.invoke(kernel, arguments, metadata, **kwargs)
 
     @abstractmethod
-    async def _invoke_internal(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
+    async def _invoke_internal(self, context: FunctionContext) -> None:
         pass
 
     async def invoke(
@@ -194,21 +190,17 @@ class KernelFunction(KernelBaseModel):
         KernelFunction._rebuild_context()
         function_context = FunctionContext(function=self, kernel=kernel, arguments=arguments, metadata=metadata)
 
-        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, None]]] = [self._wrap()]
+        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, None]]] = [self._invoke_internal]
         index = 0
-        for id, hook in kernel.hooks:
-            hook_func = functools.partial(hook.function_filter, next=stack[0])
+        for _, hook in kernel.filters["function_invocation"]:
+            if callable(hook):
+                hook_func = functools.partial(hook, next=stack[0])
+            else:
+                hook_func = functools.partial(hook.function_filter, next=stack[0])
             stack.append(hook_func)
             index += 1
         await stack[-1](function_context)
         return function_context.result
-
-    def _wrap(self) -> Callable[["FunctionContext"], Coroutine[Any, Any, None]]:
-        async def inner_func(function_context: "FunctionContext") -> None:
-            result = await self._invoke_internal(function_context.kernel, function_context.arguments)
-            function_context.result = result
-
-        return inner_func
 
     @staticmethod
     def _rebuild_context() -> None:
