@@ -26,7 +26,7 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
     /// Constructor for Handlebars PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
-    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
     /// <param name="options">Handlebars prompt template options</param>
     internal HandlebarsPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent = false, HandlebarsPromptTemplateOptions? options = null)
     {

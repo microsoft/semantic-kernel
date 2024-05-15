@@ -30,7 +30,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// Constructor for PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
-    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
     /// <param name="loggerFactory">Logger factory</param>
     internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent, ILoggerFactory? loggerFactory = null)
     {
