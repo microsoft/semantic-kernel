@@ -35,14 +35,20 @@ class KernelFunctionFromMethod(KernelFunction):
         method: Callable[..., Any],
         plugin_name: str | None = None,
         stream_method: Callable[..., Any] | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        additional_metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Initializes a new instance of the KernelFunctionFromMethod class
 
         Args:
             method (Callable[..., Any]): The method to be called
-            plugin_name (Optional[str]): The name of the plugin
-            stream_method (Optional[Callable[..., Any]]): The stream method for the function
+            plugin_name (str | None): The name of the plugin
+            stream_method (Callable[..., Any] | None): The stream method for the function
+            parameters (list[KernelParameterMetadata] | None): The parameters of the function
+            return_parameter (KernelParameterMetadata | None): The return parameter of the function
+            additional_metadata (dict[str, Any] | None): Additional metadata for the function
         """
         if method is None:
             raise FunctionInitializationError("Method cannot be `None`")
@@ -54,14 +60,16 @@ class KernelFunctionFromMethod(KernelFunction):
         # so no need to check before using, will raise an exception if not set
         function_name = method.__kernel_function_name__  # type: ignore
         description = method.__kernel_function_description__  # type: ignore
-        parameters = [KernelParameterMetadata(**param) for param in method.__kernel_function_parameters__]  # type: ignore
-        return_param = KernelParameterMetadata(
-            name="return",
-            description=method.__kernel_function_return_description__,  # type: ignore
-            default_value=None,
-            type=method.__kernel_function_return_type__,  # type: ignore
-            is_required=method.__kernel_function_return_required__,  # type: ignore
-        )
+        if parameters is None:
+            parameters = [KernelParameterMetadata(**param) for param in method.__kernel_function_parameters__]  # type: ignore
+        if return_parameter is None:
+            return_param = KernelParameterMetadata(
+                name="return",
+                description=method.__kernel_function_return_description__,  # type: ignore
+                default_value=None,
+                type=method.__kernel_function_return_type__,  # type: ignore
+                is_required=method.__kernel_function_return_required__,  # type: ignore
+            )
 
         try:
             metadata = KernelFunctionMetadata(
@@ -72,6 +80,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 is_prompt=False,
                 is_asynchronous=isasyncgenfunction(method) or iscoroutinefunction(method),
                 plugin_name=plugin_name,
+                additional_properties=additional_metadata if additional_metadata is not None else {},
             )
         except ValidationError as exc:
             # reraise the exception to clarify it comes from KernelFunction init
