@@ -195,7 +195,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     /// <remarks>
     /// The default is false.
-    /// When set to true the return values from functions are treated as safe content.
+    /// When set to true the return values from functions only are treated as safe content.
     /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
     /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
     /// </remarks>
