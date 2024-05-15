@@ -12,6 +12,19 @@ namespace QualityCheckWithFilters;
 
 public class Program
 {
+    /// <summary>
+    /// This example demonstrates how to evaluate LLM results on tasks such as text summarization and translation
+    /// using following metrics:
+    /// - BERTScore: https://github.com/Tiiiger/bert_score
+    /// - BLEU (BiLingual Evaluation Understudy): https://en.wikipedia.org/wiki/BLEU
+    /// - METEOR (Metric for Evaluation of Translation with Explicit ORdering): https://en.wikipedia.org/wiki/METEOR
+    /// - COMET (Crosslingual Optimized Metric for Evaluation of Translation): https://unbabel.github.io/COMET
+    /// Semantic Kernel Filters are used to perform following tasks during function invocation:
+    /// 1. Get original text to summarize/translate.
+    /// 2. Get LLM result.
+    /// 3. Call evaluation server to get specific metric score.
+    /// 4. Compare metric score to configured threshold and throw an exception if score is lower.
+    /// </summary>
     public static async Task Main()
     {
         await SummarizationEvaluationAsync(EvaluationScoreType.BERT, threshold: 0.85);
@@ -50,8 +63,15 @@ public class Program
 
     #region Scenarios
 
+    /// <summary>
+    /// This method performs summarization evaluation and compare following types of summaries:
+    /// - Extractive summary: involves selecting and extracting key sentences, phrases, or segments directly from the original text to create a summary.
+    /// - Abstractive summary: involves generating new sentences that convey the key information from the original text.
+    /// - Random summary: unrelated text to original source for comparison purposes.
+    /// </summary>
     private static async Task SummarizationEvaluationAsync(EvaluationScoreType scoreType, double threshold)
     {
+        // Define text to summarize and possible LLM summaries.
         const string TextToSummarize =
             """
             The sun rose over the horizon, casting a warm glow across the landscape.
@@ -88,36 +108,50 @@ public class Program
             This is random text.
             """;
 
+        // Get kernel builder with initial configuration.
         var builder = GetKernelBuilder(scoreType, threshold);
 
+        // It doesn't matter which LLM to use for text summarization, since the main goal is to demonstrate how to evaluate the result and compare metrics.
+        // For demonstration purposes, fake chat completion service is used to simulate LLM response with predefined summary.
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("extractive-summary-model", ExtractiveSummary));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("abstractive-summary-model", AbstractiveSummary));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("random-summary-model", RandomSummary));
 
+        // Build kernel
         var kernel = builder.Build();
 
+        // Invoke function to perform text summarization with predefined result, trigger function invocation filter and evaluate the result.
         await InvokeAsync(kernel, TextToSummarize, "extractive-summary-model");
         await InvokeAsync(kernel, TextToSummarize, "abstractive-summary-model");
         await InvokeAsync(kernel, TextToSummarize, "random-summary-model");
     }
 
+    /// <summary>
+    /// This method performs translation evaluation and compare the results.
+    /// </summary>
     private static async Task TranslationEvaluationAsync(double threshold)
     {
         EvaluationScoreType scoreType = EvaluationScoreType.COMET;
 
+        // Define text to translate and possible LLM translations.
         const string TextToTranslate = "Berlin ist die Hauptstadt der Deutschland.";
         const string Translation1 = "Berlin is the capital of Germany.";
         const string Translation2 = "Berlin capital Germany is of The.";
         const string Translation3 = "This is random translation.";
 
+        // Get kernel builder with initial configuration.
         var builder = GetKernelBuilder(scoreType, threshold);
 
+        // It doesn't matter which LLM to use for text translation, since the main goal is to demonstrate how to evaluate the result and compare metrics.
+        // For demonstration purposes, fake chat completion service is used to simulate LLM response with predefined translation.
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-1-model", Translation1));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-2-model", Translation2));
         builder.Services.AddSingleton<IChatCompletionService>(new FakeChatCompletionService("translation-3-model", Translation3));
 
+        // Build kernel
         var kernel = builder.Build();
 
+        // Invoke function to perform text translation with predefined result, trigger function invocation filter and evaluate the result.
         await InvokeAsync(kernel, TextToTranslate, "translation-1-model");
         await InvokeAsync(kernel, TextToTranslate, "translation-2-model");
         await InvokeAsync(kernel, TextToTranslate, "translation-3-model");
@@ -127,19 +161,27 @@ public class Program
 
     #region Helpers
 
+    /// <summary>
+    /// Gets kernel builder with initial configuration.
+    /// </summary>
     private static IKernelBuilder GetKernelBuilder(EvaluationScoreType scoreType, double threshold)
     {
+        // Create kernel builder
         var builder = Kernel.CreateBuilder();
 
+        // Add logging
         builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Information));
 
+        // Add default HTTP client with base address to local evaluation server
         builder.Services.AddHttpClient("default", client => { client.BaseAddress = new Uri("http://localhost:8080"); });
 
+        // Add service which performs HTTP requests to evaluation server
         builder.Services.AddSingleton<EvaluationService>(
             sp => new EvaluationService(
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("default"),
                 scoreType.Endpoint));
 
+        // Add function invocation filter to perform evaluation and compare metric score with configured threshold
         builder.Services.AddSingleton<IFunctionInvocationFilter>(
             sp => FilterFactory.Create(
                 scoreType,
@@ -150,6 +192,9 @@ public class Program
         return builder;
     }
 
+    /// <summary>
+    /// Invokes kernel function with provided input and model ID.
+    /// </summary>
     private static async Task InvokeAsync(Kernel kernel, string input, string modelId)
     {
         var logger = kernel.Services.GetRequiredService<ILogger<Program>>();

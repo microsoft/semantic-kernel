@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace QualityCheckWithFilters.Models;
 
+/// <summary>Response model for BERTScore metric: https://huggingface.co/spaces/evaluate-metric/bertscore.</summary>
 internal sealed class BertSummarizationEvaluationResponse
 {
     [JsonPropertyName("precision")]
@@ -16,6 +17,7 @@ internal sealed class BertSummarizationEvaluationResponse
     public List<double> F1 { get; set; }
 }
 
+/// <summary>Response model for BLEU metric: https://huggingface.co/spaces/evaluate-metric/bleu.</summary>
 internal sealed class BleuSummarizationEvaluationResponse
 {
     [JsonPropertyName("bleu")]
@@ -31,12 +33,14 @@ internal sealed class BleuSummarizationEvaluationResponse
     public double LengthRatio { get; set; }
 }
 
+/// <summary>Response model for METEOR metric: https://huggingface.co/spaces/evaluate-metric/meteor.</summary>
 internal sealed class MeteorSummarizationEvaluationResponse
 {
     [JsonPropertyName("meteor")]
     public double Score { get; set; }
 }
 
+/// <summary>Response model for COMET metric: https://huggingface.co/Unbabel/wmt22-cometkiwi-da.</summary>
 internal sealed class CometTranslationEvaluationResponse
 {
     [JsonPropertyName("scores")]

@@ -7,6 +7,10 @@ using QualityCheckWithFilters.Services;
 
 namespace QualityCheckWithFilters.Filters;
 
+/// <summary>
+/// Filter which performs text summarization evaluation using METEOR metric: https://huggingface.co/spaces/evaluate-metric/meteor.
+/// METEOR score ranges from 0 to 1, where higher values indicate better similarity between original text and generated summary.
+/// </summary>
 internal sealed class MeteorSummarizationEvaluationFilter(
     EvaluationService evaluationService,
     ILogger logger,

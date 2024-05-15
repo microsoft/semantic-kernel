@@ -7,6 +7,11 @@ using QualityCheckWithFilters.Services;
 
 namespace QualityCheckWithFilters.Filters;
 
+/// <summary>
+/// Filter which performs text summarization evaluation using BLEU metric: https://huggingface.co/spaces/evaluate-metric/bleu.
+/// Evaluation result contains values like score, precisions, brevity penalty and length ratio.
+/// The closer the score and precision values are to 1 - the better the quality of the summary.
+/// </summary>
 internal sealed class BleuSummarizationEvaluationFilter(
     EvaluationService evaluationService,
     ILogger logger,

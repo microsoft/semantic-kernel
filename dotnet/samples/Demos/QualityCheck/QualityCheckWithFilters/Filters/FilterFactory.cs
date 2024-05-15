@@ -7,6 +7,9 @@ using QualityCheckWithFilters.Services;
 
 namespace QualityCheckWithFilters.Filters;
 
+/// <summary>
+/// Factory class for function invocation filters based on evaluation score type.
+/// </summary>
 internal sealed class FilterFactory
 {
     private static readonly Dictionary<EvaluationScoreType, Func<EvaluationService, ILogger, double, IFunctionInvocationFilter>> s_filters = new()

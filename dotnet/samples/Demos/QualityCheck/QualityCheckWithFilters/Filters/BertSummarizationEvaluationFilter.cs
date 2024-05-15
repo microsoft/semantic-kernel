@@ -7,6 +7,11 @@ using QualityCheckWithFilters.Services;
 
 namespace QualityCheckWithFilters.Filters;
 
+/// <summary>
+/// Filter which performs text summarization evaluation using BERTScore metric: https://huggingface.co/spaces/evaluate-metric/bertscore.
+/// Evaluation result contains three values: precision, recall and F1 score.
+/// The higher F1 score - the better the quality of the summary.
+/// </summary>
 internal sealed class BertSummarizationEvaluationFilter(
     EvaluationService evaluationService,
     ILogger logger,

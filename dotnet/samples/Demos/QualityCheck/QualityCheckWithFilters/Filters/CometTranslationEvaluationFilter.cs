@@ -7,6 +7,10 @@ using QualityCheckWithFilters.Services;
 
 namespace QualityCheckWithFilters.Filters;
 
+/// <summary>
+/// Filter which performs text translation evaluation using COMET metric: https://huggingface.co/Unbabel/wmt22-cometkiwi-da.
+/// COMET score ranges from 0 to 1, where higher values indicate better translation.
+/// </summary>
 internal sealed class CometTranslationEvaluationFilter(
     EvaluationService evaluationService,
     ILogger logger,

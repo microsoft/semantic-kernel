@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace QualityCheckWithFilters.Models;
 
+/// <summary>
+/// Internal represenation of evaluation score type to configure and run examples.
+/// </summary>
 internal readonly struct EvaluationScoreType(string endpoint) : IEquatable<EvaluationScoreType>
 {
     public string Endpoint { get; } = endpoint;

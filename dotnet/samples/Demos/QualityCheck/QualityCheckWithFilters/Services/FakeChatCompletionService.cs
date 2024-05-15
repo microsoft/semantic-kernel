@@ -9,6 +9,9 @@ namespace QualityCheckWithFilters.Services;
 
 #pragma warning disable CS1998
 
+/// <summary>
+/// Fake chat completion service to simulate a call to LLM and return predefined result for demonstration purposes.
+/// </summary>
 internal sealed class FakeChatCompletionService(string modelId, string result) : IChatCompletionService
 {
     public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?> { [AIServiceExtensions.ModelIdKey] = modelId };

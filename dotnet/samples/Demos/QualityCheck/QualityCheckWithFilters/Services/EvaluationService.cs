@@ -6,6 +6,9 @@ using QualityCheckWithFilters.Models;
 
 namespace QualityCheckWithFilters.Services;
 
+/// <summary>
+/// Service which performs HTTP requests to evaluation server.
+/// </summary>
 internal sealed class EvaluationService(HttpClient httpClient, string endpoint)
 {
     public async Task<TResponse> EvaluateAsync<TRequest, TResponse>(TRequest request)
