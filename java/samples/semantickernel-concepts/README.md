@@ -134,7 +134,7 @@ var excuseFunction = KernelFunctionFromPrompt.builder()
             .withTemperature(0.4)
             .withTopP(1)
             .withMaxTokens(500)
-            .withUser("huangbaixi")
+            .withUser("bx-h")
             .build()
     )
     .withName("ExcuseGeneratorFunction")
@@ -151,13 +151,44 @@ var fixedFunction = KernelFunction
                 PromptExecutionSettings.builder()
                         .withMaxTokens(100)
                         .build())
-         // SEMANTIC_KERNEL_TEMPLATE_FORMAT is a render format for {{variable}} 
         .withTemplateFormat(PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT)
-        .withName("翻译函数")
+        .withName("translator")
         .build();
 ```
 
 > `KernelFunction.createFromPrompt(message)` is entirely equivalent to `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate)` according to the source code.
+
+> `SEMANTIC_KERNEL_TEMPLATE_FORMAT` refers to '**semantic-kernel**', which is a rendering engine for `{{$variable}}`
+> 
+> Another rendering engine is **'handlebars'**, which is used for `{{variable}}`
+> ```java
+>  runPrompt(kernel,
+>          "semantic-kernel",
+>          "Hello AI, my name is {{$name}}. What is the origin of my name?",
+>          templateFactory);
+> 
+>  runPrompt(kernel,
+>          "handlebars",
+>          "Hello AI, my name is {{name}}. What is the origin of my name?",
+>          templateFactory);
+> ```
+> ```java
+>  public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
+>                               PromptTemplateFactory templateFactory) {
+>      var function = new KernelFunctionFromPrompt.Builder<>()
+>              .withTemplate(prompt)
+>              .withTemplateFormat(templateFormat)
+>              .withPromptTemplateFactory(templateFactory)
+>              .build();
+>
+>      var arguments = KernelFunctionArguments.builder()
+>              .withVariable("name", "Bob")
+>              .build();
+>
+>      var result = kernel.invokeAsync(function).withArguments(arguments).block();
+>      System.out.println(result.getResult());
+>  }
+> ```
 
 
 ### Configuration file
