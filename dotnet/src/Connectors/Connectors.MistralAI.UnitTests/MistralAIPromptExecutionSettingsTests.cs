@@ -13,7 +13,7 @@ namespace SemanticKernel.Connectors.MistralAI.UnitTests;
 public class MistralAIPromptExecutionSettingsTests
 {
     [Fact]
-    public void FromExecutionSettingsWhenAlreadyMistralShouldReturnSameAsync()
+    public void FromExecutionSettingsWhenAlreadyMistralShouldReturnSame()
     {
         // Arrange
         var executionSettings = new MistralAIPromptExecutionSettings();

@@ -552,7 +552,7 @@ internal sealed class MistralClient
         return request;
     }
 
-    private List<MistralChatMessage> ToMistralChatMessages(ChatMessageContent content, MistralAIToolCallBehavior? toolCallBehavior)
+    internal List<MistralChatMessage> ToMistralChatMessages(ChatMessageContent content, MistralAIToolCallBehavior? toolCallBehavior)
     {
         if (content.Role == AuthorRole.Assistant)
         {

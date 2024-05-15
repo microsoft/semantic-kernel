@@ -104,7 +104,7 @@ public sealed class MistralClientTests : MistralTestBase
         var client = new MistralClient("mistral-tiny", this.HttpClient, "key");
 
         // Act
-        List<string> data = new() { "Hello", "world" };
+        List<string> data = ["Hello", "world"];
         var response = await client.GenerateEmbeddingsAsync(data, default);
 
         // Assert
@@ -424,13 +424,76 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
+    [Theory]
+    [InlineData("system", "System Content")]
+    [InlineData("user", "User Content")]
+    [InlineData("assistant", "Assistant Content")]
+    public void ValidateToMistralChatMessages(string roleLabel, string content)
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = new AuthorRole(roleLabel),
+            Content = content,
+        };
+
+        // Act
+        var messages = client.ToMistralChatMessages(chatMessage, default);
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Single(messages);
+    }
+
+    [Fact]
+    public void ValidateToMistralChatMessagesWithFunctionCallContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var content = new ChatMessageContent()
+        {
+            Role = AuthorRole.Assistant,
+            Items = [new FunctionCallContent("GetWeather"), new FunctionCallContent("GetCurrentTime")],
+        };
+
+        // Act
+        var messages = client.ToMistralChatMessages(content, default);
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Single(messages);
+    }
+
+    [Fact]
+    public void ValidateToMistralChatMessagesWithFunctionResultContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var content = new ChatMessageContent()
+        {
+            Role = AuthorRole.Tool,
+            Items = [new FunctionResultContent("12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy"), new FunctionResultContent("15:20:44")],
+        };
+
+        // Act
+        var messages = client.ToMistralChatMessages(content, default);
+
+        // Assert
+        Assert.NotNull(messages);
+        Assert.Equal(2, messages.Count);
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+        ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
 
     internal enum TemperatureUnit { Celsius, Fahrenheit }
