@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -21,6 +22,7 @@ internal sealed class HuggingFaceClient
 {
     private readonly HttpClient _httpClient;
 
+    internal string ModelProvider => "huggingface";
     internal string ModelId { get; }
     internal string? ApiKey { get; }
     internal Uri Endpoint { get; }
@@ -55,6 +57,14 @@ internal sealed class HuggingFaceClient
         }
     }
 
+    internal static void ValidateMaxNewTokens(int? maxNewTokens)
+    {
+        if (maxNewTokens is < 0)
+        {
+            throw new ArgumentException($"MaxNewTokens {maxNewTokens} is not valid, the value must be greater than or equal to zero");
+        }
+    }
+
     internal async Task<string> SendRequestAndGetStringBodyAsync(
         HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
@@ -81,13 +91,8 @@ internal sealed class HuggingFaceClient
     {
         try
         {
-            T? deserializedResponse = JsonSerializer.Deserialize<T>(body);
-            if (deserializedResponse is null)
-            {
+            return JsonSerializer.Deserialize<T>(body) ??
                 throw new JsonException("Response is null");
-            }
-
-            return deserializedResponse;
         }
         catch (JsonException exc)
         {
@@ -128,14 +133,27 @@ internal sealed class HuggingFaceClient
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
         var request = this.CreateTextRequest(prompt, executionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
-        string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        TextGenerationResponse response;
+        try
+        {
+            string body = await this.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        var response = DeserializeResponse<TextGenerationResponse>(body);
+            response = DeserializeResponse<TextGenerationResponse>(body);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            throw;
+        }
+
         var textContents = GetTextContentsFromResponse(response, modelId);
 
+        activity?.SetCompletionResponse(textContents);
         this.LogTextGenerationUsage(executionSettings);
 
         return textContents;
@@ -188,7 +206,7 @@ internal sealed class HuggingFaceClient
         PromptExecutionSettings? promptExecutionSettings)
     {
         var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
+        ValidateMaxNewTokens(huggingFaceExecutionSettings.MaxNewTokens);
         var request = TextGenerationRequest.FromPromptAndExecutionSettings(prompt, huggingFaceExecutionSettings);
         return request;
     }
@@ -267,8 +285,8 @@ internal sealed class HuggingFaceClient
         var endpoint = this.GetImageToTextGenerationEndpoint(executionSettings?.ModelId ?? this.ModelId);
 
         // Read the file into a byte array
-        var imageContent = new ByteArrayContent(content.Data?.ToArray());
-        imageContent.Headers.ContentType = new(content.MimeType);
+        var imageContent = new ByteArrayContent(content.Data?.ToArray() ?? []);
+        imageContent.Headers.ContentType = new(content.MimeType ?? string.Empty);
 
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {

@@ -41,7 +41,7 @@ public class ChatMessageContent : KernelContent
         }
         set
         {
-            if (value == null)
+            if (value is null)
             {
                 return;
             }

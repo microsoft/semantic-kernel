@@ -290,6 +290,29 @@ def test_create_with_multiple_settings():
     )
 
 
+@pytest.mark.asyncio
+async def test_create_with_multiple_settings_one_service_registered():
+    kernel = Kernel()
+    kernel.add_service(OpenAIChatCompletion(service_id="test2", ai_model_id="test", api_key="test"))
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt_template_config=PromptTemplateConfig(
+            template="test",
+            execution_settings=[
+                PromptExecutionSettings(service_id="test", temperature=0.0),
+                PromptExecutionSettings(service_id="test2", temperature=1.0),
+            ],
+        ),
+    )
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
+    ) as mock:
+        mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
+        result = await function.invoke(kernel=kernel)
+        assert str(result) == "test"
+
+
 def test_from_yaml_fail():
     with pytest.raises(FunctionInitializationError):
         KernelFunctionFromPrompt.from_yaml("template_format: something_else")

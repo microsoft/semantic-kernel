@@ -133,7 +133,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         var client = this.CreateTextGenerationClient();
         var executionSettings = new HuggingFacePromptExecutionSettings()
         {
-            MaxTokens = 102,
+            MaxTokens = null,
             Temperature = 0.45f,
             TopP = 0.6f,
             TopK = 10,
@@ -175,7 +175,7 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
             // Assert
             Assert.NotNull(textContent!.ModelId);
             Assert.Equal(expectedModel, textContent.ModelId);
-        };
+        }
     }
 
     [Fact]
@@ -184,13 +184,14 @@ public sealed class HuggingFaceStreamingTextGenerationTests : IDisposable
         // Arrange
         var client = this.CreateTextGenerationClient();
         var expectedModel = "execution-settings-model";
+
         // Act
         await foreach (var textContent in client.StreamGenerateTextAsync(SamplePrompt, executionSettings: new PromptExecutionSettings { ModelId = expectedModel }, cancellationToken: CancellationToken.None))
         {
             // Assert
             Assert.NotNull(textContent!.ModelId);
             Assert.Equal(expectedModel, textContent.ModelId);
-        };
+        }
     }
 
     [Fact]

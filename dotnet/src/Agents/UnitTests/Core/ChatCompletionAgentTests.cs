@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -54,10 +55,14 @@ public class ChatCompletionAgentTests
         var agent =
             new ChatCompletionAgent()
             {
-                Kernel = CreateKernel(mockService.Object)
+                Instructions = "test instructions",
+                Kernel = CreateKernel(mockService.Object),
+                ExecutionSettings = new(),
             };
 
-        var result = await agent.InvokeAsync([]).ToArrayAsync();
+        var result = await agent.InvokeAsync([], NullLogger.Instance).ToArrayAsync();
+
+        Assert.Single(result);
 
         mockService.Verify(
             x =>

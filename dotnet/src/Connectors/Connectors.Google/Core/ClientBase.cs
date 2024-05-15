@@ -91,7 +91,7 @@ internal abstract class ClientBase
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 
-        if (this._bearerTokenProvider != null && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
+        if (this._bearerTokenProvider is not null && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", bearerKey);
@@ -109,4 +109,19 @@ internal abstract class ClientBase
 #pragma warning restore CA2254
         }
     }
+
+    protected static string GetApiVersionSubLink(GoogleAIVersion apiVersion)
+        => apiVersion switch
+        {
+            GoogleAIVersion.V1 => "v1",
+            GoogleAIVersion.V1_Beta => "v1beta",
+            _ => throw new NotSupportedException($"Google API version {apiVersion} is not supported.")
+        };
+
+    protected static string GetApiVersionSubLink(VertexAIVersion apiVersion)
+        => apiVersion switch
+        {
+            VertexAIVersion.V1 => "v1",
+            _ => throw new NotSupportedException($"Vertex API version {apiVersion} is not supported.")
+        };
 }

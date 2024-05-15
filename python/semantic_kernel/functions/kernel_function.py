@@ -149,7 +149,7 @@ class KernelFunction(KernelBaseModel):
         arguments: KernelArguments | None = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> FunctionResult:
+    ) -> FunctionResult | None:
         """Invoke the function with the given arguments.
 
         Args:
@@ -173,7 +173,7 @@ class KernelFunction(KernelBaseModel):
         arguments: KernelArguments | None = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> "FunctionResult":
+    ) -> "FunctionResult | None":
         """Invoke the function with the given arguments.
 
         Args:
@@ -245,14 +245,14 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
-        if pre_hook_context:
-            if pre_hook_context.updated_arguments:
-                arguments = pre_hook_context.arguments
-            metadata.update(pre_hook_context.metadata)
+        # pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
+        # if pre_hook_context:
+        #     if pre_hook_context.updated_arguments:
+        #         arguments = pre_hook_context.arguments
+        #     metadata.update(pre_hook_context.metadata)
         exception = None
         try:
-            async for partial_result in self._invoke_internal_stream(kernel, arguments):
+            async for partial_result in self._invoke_internal_stream(kernel, arguments):  # type: ignore
                 if isinstance(partial_result, FunctionResult):
                     yield partial_result
                     break

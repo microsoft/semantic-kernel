@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.HuggingFace;
 /// </summary>
 public sealed class HuggingFaceChatCompletionService : IChatCompletionService
 {
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private HuggingFaceMessageApiClient Client { get; }
 
     /// <inheritdoc />

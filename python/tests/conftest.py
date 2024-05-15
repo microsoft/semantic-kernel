@@ -3,14 +3,13 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import Any, AsyncIterable, Callable, List, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, List, Union
 
 import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.filters import PostFunctionInvokeContext, PreFunctionInvokeContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -24,45 +23,41 @@ from semantic_kernel.utils.settings import (
     openai_settings_from_dot_env,
 )
 
+if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
 
 @pytest.fixture(scope="function")
-def kernel() -> Kernel:
+def kernel() -> "Kernel":
+    from semantic_kernel.kernel import Kernel
+
     return Kernel()
 
 
 @pytest.fixture(scope="session")
-def service() -> AIServiceClientBase:
+def service() -> "AIServiceClientBase":
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
     return AIServiceClientBase(service_id="service", ai_model_id="ai_model_id")
 
 
 @pytest.fixture(scope="session")
-def default_service() -> AIServiceClientBase:
+def default_service() -> "AIServiceClientBase":
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+
     return AIServiceClientBase(service_id="default", ai_model_id="ai_model_id")
 
 
 @pytest.fixture(scope="function")
-def kernel_with_service(kernel: Kernel, service: AIServiceClientBase) -> Kernel:
+def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Kernel":
     kernel.add_service(service)
     return kernel
 
 
 @pytest.fixture(scope="function")
-def kernel_with_default_service(kernel: Kernel, default_service: AIServiceClientBase) -> Kernel:
+def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
     kernel.add_service(default_service)
-    return kernel
-
-
-@pytest.fixture(scope="function")
-def kernel_with_hooks(kernel: Kernel) -> Kernel:
-    def invoking_handler(context: PreFunctionInvokeContext) -> None:
-        pass
-
-    def invoked_handler(context: PostFunctionInvokeContext) -> None:
-        pass
-
-    kernel.add_hook(invoking_handler, "pre_function_invoke")
-    kernel.add_hook(invoked_handler, "post_function_invoke")
-
     return kernel
 
 
@@ -95,7 +90,14 @@ def custom_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
-    def create_mock_function(name: str, value: str = "test") -> KernelFunction:
+    from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+    from semantic_kernel.functions.function_result import FunctionResult
+    from semantic_kernel.functions.kernel_function import KernelFunction
+
+    async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
+        yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
+
+    def create_mock_function(name: str, value: str = "test") -> "KernelFunction":
         kernel_function_metadata = KernelFunctionMetadata(
             name=name,
             plugin_name="TestPlugin",

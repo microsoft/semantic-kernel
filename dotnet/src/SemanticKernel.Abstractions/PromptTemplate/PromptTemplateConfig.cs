@@ -191,6 +191,19 @@ public sealed class PromptTemplateConfig
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to allow potentially dangerous content to be inserted into the prompt from functions.
+    /// </summary>
+    /// <remarks>
+    /// The default is false.
+    /// When set to true the return values from functions only are treated as safe content.
+    /// For prompts which are being used with a chat completion service this should be set to false to protect against prompt injection attacks.
+    /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    [JsonPropertyName("allow_dangerously_set_content")]
+    public bool AllowDangerouslySetContent { get; set; } = false;
+
+    /// <summary>
     /// Gets the default execution settings from <see cref="ExecutionSettings"/>.
     /// </summary>
     /// <remarks>

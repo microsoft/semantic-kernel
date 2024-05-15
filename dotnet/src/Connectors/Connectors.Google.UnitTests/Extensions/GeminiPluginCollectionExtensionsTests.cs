@@ -17,7 +17,7 @@ public sealed class GeminiPluginCollectionExtensionsTests
     public void TryGetFunctionAndArgumentsWithNonExistingFunctionReturnsFalse()
     {
         // Arrange
-        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", []);
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin");
         var plugins = new KernelPluginCollection([plugin]);
 
         var toolCall = new GeminiFunctionToolCall(new GeminiPart.FunctionCallPart { FunctionName = "MyPlugin-MyFunction" });

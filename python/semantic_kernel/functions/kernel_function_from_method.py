@@ -103,13 +103,13 @@ class KernelFunctionFromMethod(KernelFunction):
             result = await result
         elif isgenerator(result):
             result = list(result)
-        if isinstance(result, FunctionResult):
-            return result
-        function_context.result = FunctionResult(
-            function=self.metadata,
-            value=result,
-            metadata={"arguments": function_context.arguments, "used_arguments": function_arguments},
-        )
+        if not isinstance(result, FunctionResult):
+            result = FunctionResult(
+                function=self.metadata,
+                value=result,
+                metadata={"arguments": function_context.arguments, "used_arguments": function_arguments},
+            )
+        function_context.result = result
 
     async def _invoke_internal_stream(
         self,

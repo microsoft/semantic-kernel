@@ -33,7 +33,7 @@ internal static class Ensure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object parameter, [NotNull] string parameterName)
     {
-        if (parameter == null)
+        if (parameter is null)
         {
             throw new ArgumentNullException($"Parameter '{parameterName}' cannot be null.", parameterName);
         }

@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import Optional, Tuple, Union
 
 from dotenv import dotenv_values
 
@@ -62,12 +64,12 @@ def azure_openai_settings_from_dot_env(
 
 def azure_openai_settings_from_dot_env_as_dict(
     include_deployment: bool = True, include_api_version: bool = False
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
     Returns:
-        Dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
+        dict[str, str]: The deployment name (or empty), Azure OpenAI API key,
         endpoint and api version (or empty)
     """
     (
@@ -102,32 +104,19 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+def pinecone_settings_from_dot_env() -> str:
     """
-    Reads the Pinecone API key and Environment from the .env file.
+    Reads the Pinecone API key from the .env file.
     Returns:
-        Tuple[str, str]: The Pinecone API key, the Pinecone Environment
+        str: The Pinecone API key
     """
 
-    api_key, environment = None, None
-    with open(".env", "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            if line.startswith("PINECONE_API_KEY"):
-                parts = line.split("=")[1:]
-                api_key = "=".join(parts).strip().strip('"')
-                continue
-
-            if line.startswith("PINECONE_ENVIRONMENT"):
-                parts = line.split("=")[1:]
-                environment = "=".join(parts).strip().strip('"')
-                continue
+    config = dotenv_values(".env")
+    api_key = config.get("PINECONE_API_KEY", None)
 
     assert api_key, "Pinecone API key not found in .env file"
-    assert environment, "Pinecone environment not found in .env file"
 
-    return api_key, environment
+    return api_key
 
 
 def astradb_settings_from_dot_env() -> Tuple[str, Optional[str]]:
@@ -287,12 +276,12 @@ def azure_aisearch_settings_from_dot_env(
         return api_key, url, index_name
 
 
-def azure_aisearch_settings_from_dot_env_as_dict() -> Dict[str, str]:
+def azure_aisearch_settings_from_dot_env_as_dict() -> dict[str, str]:
     """
     Reads the Azure AI Search environment variables including index name from the .env file.
 
     Returns:
-        Dict[str, str]: the Azure AI search environment variables
+        dict[str, str]: the Azure AI search environment variables
     """
     api_key, url, index_name = azure_aisearch_settings_from_dot_env(include_index_name=True)
     return {"authentication": {"type": "api_key", "key": api_key}, "endpoint": url, "index_name": index_name}
@@ -323,12 +312,66 @@ def azure_key_vault_settings_from_dot_env(
     return endpoint, client_id
 
 
-def azure_key_vault_settings_from_dot_env_as_dict() -> Dict[str, str]:
+def azure_key_vault_settings_from_dot_env_as_dict() -> dict[str, str]:
     """
     Reads the Azure Key Vault environment variables for the .env file.
 
     Returns:
-        Dict[str, str]: Azure Key Vault environment variables
+        dict[str, str]: Azure Key Vault environment variables
     """
     endpoint, client_id, client_secret = azure_key_vault_settings_from_dot_env()
     return {"endpoint": endpoint, "client_id": client_id, "client_secret": client_secret}
+
+
+def booking_sample_settings_from_dot_env() -> Tuple[str, str, str]:
+    """
+    Reads the Booking Sample environment variables for the .env file.
+
+    Returns:
+        Tuple[str, str]: Booking Sample environment variables
+    """
+    config = dotenv_values(".env")
+    client_id = config.get("BOOKING_SAMPLE_CLIENT_ID", None)
+    tenant_id = config.get("BOOKING_SAMPLE_TENANT_ID", None)
+    client_secret = config.get("BOOKING_SAMPLE_CLIENT_SECRET", None)
+
+    assert client_id, "Booking Sample Client ID not found in .env file"
+    assert tenant_id, "Booking Sample Tenant ID not found in .env file"
+    assert client_secret, "Booking Sample Client Secret not found in .env file"
+
+    return client_id, tenant_id, client_secret
+
+
+def booking_sample_settings_from_dot_env_as_dict() -> dict[str, str]:
+    """
+    Reads the Booking Sample environment variables for the .env file.
+
+    Returns:
+        dict[str, str]: Booking Sample environment variables
+    """
+    client_id, tenant_id, client_secret = booking_sample_settings_from_dot_env()
+    return {"client_id": client_id, "tenant_id": tenant_id, "client_secret": client_secret}
+
+
+def azure_container_apps_settings_from_dot_env() -> str:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        str: Azure Container Apps pool management connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("ACA_POOL_MANAGEMENT_ENDPOINT", None)
+
+    assert connection_string is not None, "Azure Container Apps connection string not found in .env file"
+
+    return connection_string
+
+
+def azure_container_apps_settings_from_dot_env_as_dict() -> dict[str, str]:
+    """
+    Reads the Azure Container Apps environment variables from the .env file.
+    Returns:
+        Dict[str, str]: Azure Container Apps environment variables
+    """
+    pool_management_endpoint = azure_container_apps_settings_from_dot_env()
+    return {"pool_management_endpoint": pool_management_endpoint}

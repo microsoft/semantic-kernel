@@ -9,9 +9,6 @@ import yaml
 from pydantic import Field, ValidationError, model_validator
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -192,11 +189,11 @@ through prompt_template_config or in the prompt_template."
         arguments: KernelArguments,
     ) -> FunctionResult:
         """Handles the chat service call."""
-        chat_history = ChatHistory.from_rendered_prompt(prompt, service.get_chat_message_content_type())
+        chat_history = ChatHistory.from_rendered_prompt(prompt)
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
+        if hasattr(execution_settings, "function_call_behavior"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 
@@ -255,19 +252,19 @@ through prompt_template_config or in the prompt_template."
         arguments: KernelArguments,
     ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin], Any]:
         """Invokes the function stream with the given arguments."""
-        arguments = self.add_default_values(arguments)
+        self.add_default_values(arguments)
         service, execution_settings = kernel.select_ai_service(self, arguments)
 
-        pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
-        if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
-            arguments = pre_prompt_context.arguments
+        # pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
+        # if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
+        #     arguments = pre_prompt_context.arguments
 
         prompt = await self.prompt_template.render(kernel, arguments)
 
-        post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
-        if post_prompt_context is not None:
-            arguments = post_prompt_context.arguments
-            prompt = post_prompt_context.rendered_prompt
+        # post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
+        # if post_prompt_context is not None:
+        #     arguments = post_prompt_context.arguments
+        #     prompt = post_prompt_context.rendered_prompt
 
         if isinstance(service, ChatCompletionClientBase):
             async for content in self._handle_complete_chat_stream(
@@ -303,7 +300,7 @@ through prompt_template_config or in the prompt_template."
 
         # pass the kernel in for auto function calling
         kwargs: dict[str, Any] = {}
-        if isinstance(execution_settings, OpenAIChatPromptExecutionSettings):
+        if hasattr(execution_settings, "function_call_behavior"):
             kwargs["kernel"] = kernel
             kwargs["arguments"] = arguments
 

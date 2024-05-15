@@ -8,8 +8,8 @@ If you want to use some of the optional dependencies (OpenAI is installed by def
 
     python -m pip install --upgrade semantic-kernel[hugging_face]
 
-of all of them:
-    
+or all of them:
+
     python -m pip install --upgrade semantic-kernel[all]
 
 # AI Services
@@ -17,7 +17,7 @@ of all of them:
 ## OpenAI / Azure OpenAI API keys
 
 Make sure you have an
-[OpenAI API Key](https://openai.com/product/) or
+[OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 Copy those keys into a `.env` file (see the `.env.example` file):
@@ -34,13 +34,15 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import asyncio
-import semantic_kernel as sk
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
+from semantic_kernel.prompt_template import PromptTemplateConfig
+from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
-kernel = sk.Kernel()
+kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = sk.openai_settings_from_dot_env()
+api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
@@ -52,12 +54,12 @@ kernel.add_service(
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
-#       service_id="dv",
+#       service_id=service_id,
 #       deployment_name=deployment,
-#       base_url=endpoint,
+#       endpoint=endpoint,
 #       api_key=api_key
 #   )
 # )
@@ -80,7 +82,7 @@ does not conflict with the First or Second Law.
 
 Give me the TLDR in exactly 5 words."""
 
-prompt_template_config = sk.PromptTemplateConfig(
+prompt_template_config = PromptTemplateConfig(
     template=prompt,
     name="tldr",
     template_format="semantic-kernel",
@@ -101,6 +103,8 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+# If running from a jupyter-notebook:
+# await main()
 ```
 
 # **Semantic Prompt Functions** are Prompts with input parameters
@@ -144,18 +148,18 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
-- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
-- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./notebooks/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
-- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
-- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
-- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
-- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
-- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
-- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
+- [Getting started with Semantic Kernel](./samples/getting_started/00-getting-started.ipynb)
+- [Loading and configuring Semantic Kernel](./samples/getting_started/01-basic-loading-the-kernel.ipynb)
+- [Running AI prompts from file](./samples/getting_started/02-running-prompts-from-file.ipynb)
+- [Creating Prompt Functions at runtime (i.e. inline functions)](./samples/getting_started/03-prompt-function-inline.ipynb)
+- [Using Context Variables to Build a Chat Experience](./samples/getting_started/04-kernel-arguments-chat.ipynb)
+- [Introduction to planners](./samples/getting_started/05-using-the-planner.ipynb)
+- [Building Memory with Embeddings](./samples/getting_started/06-memory-and-embeddings.ipynb)
+- [Using Hugging Face for Plugins](./samples/getting_started/07-hugging-face-for-plugins.ipynb)
+- [Combining native functions and semantic functions](./samples/getting_started/08-native-function-inline.ipynb)
+- [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
+- [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
+- [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 

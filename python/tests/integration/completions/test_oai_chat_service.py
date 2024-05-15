@@ -6,7 +6,7 @@ from openai import AsyncOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.utils import get_tool_call_object
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -70,10 +70,9 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-        auto_invoke_kernel_functions=True,
-        max_auto_invoke_attempts=3,
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -115,10 +114,9 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
         max_tokens=2000,
         temperature=0.7,
         top_p=0.8,
-        tool_choice="auto",
-        tools=get_tool_call_object(kernel, {"exclude_plugin": ["ChatBot"]}),
-        auto_invoke_kernel_functions=True,
-        max_auto_invoke_attempts=3,
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=True, filters={"excluded_plugins": ["ChatBot"]}
+        ),
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -131,7 +129,7 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
     )
 
     result = None
-    async for message in kernel.invoke_stream(tldr_function, input="what is 1+1?"):
+    async for message in kernel.invoke_stream(tldr_function, input="what is 101+102?"):
         result = message[0] if not result else result + message[0]
     output = str(result)
 

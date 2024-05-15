@@ -87,7 +87,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="key">Optional existing database key.</param>
-    /// <param name="timestamp">optional timestamp.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord LocalRecord(
         string id,
@@ -131,7 +131,7 @@ public class MemoryRecord : DataEntryBase
         DateTimeOffset? timestamp = null)
     {
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-        return metadata != null
+        return metadata is not null
             ? new MemoryRecord(metadata, embedding, key, timestamp)
             : throw new KernelException("Unable to create memory record from serialized metadata");
     }
