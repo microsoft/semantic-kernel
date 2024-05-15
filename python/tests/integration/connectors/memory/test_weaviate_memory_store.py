@@ -74,12 +74,12 @@ def documents():
 @pytest.fixture
 def memory_store():
     max_attempts = 5  # the number of retry attempts
-    delay = 30  # delay in seconds between each attempt
+    delay = 3  # delay in seconds between each attempt
 
-    config = WeaviateConfig()
+    config = WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
         try:
-            store = WeaviateMemoryStore(config)
+            store = WeaviateMemoryStore(config=config)
             store.client.schema.delete_all()
         except Exception:
             if attempt < max_attempts - 1:  # it's not the final attempt
@@ -116,7 +116,8 @@ def memory_store_with_collection(memory_store, event_loop, documents):
 
 
 def test_embedded_weaviate():
-    memory_store = WeaviateMemoryStore()
+    config = WeaviateConfig(use_embed=True)
+    memory_store = WeaviateMemoryStore(config=config)
 
     assert memory_store.client._connection.embedded_db
 
