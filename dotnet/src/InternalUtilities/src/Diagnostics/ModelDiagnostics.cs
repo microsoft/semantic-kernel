@@ -66,7 +66,7 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
-    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent> contents, int? promptTokens = null, int? completionTokens = null)
+    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent>? contents, int? promptTokens = null, int? completionTokens = null)
     {
         if (IsModelDiagnosticsEnabled())
         {
@@ -151,7 +151,7 @@ internal static class ModelDiagnostics
             sb.Append("\", \"content\": ");
             sb.Append(JsonSerializer.Serialize(message.Content));
             sb.Append(", \"tool_calls\": ");
-            sb.Append(ToOpenAIFormat(message.Items));
+            ToOpenAIFormat(sb, message.Items);
             sb.Append('}');
 
             isFirst = false;
@@ -162,11 +162,10 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert tool calls to a string aligned with the OpenAI format
+    /// Helper method to convert tool calls to a string aligned with the OpenAI format
     /// </summary>
-    private static string ToOpenAIFormat(ChatMessageContentItemCollection chatMessageContentItems)
+    private static void ToOpenAIFormat(StringBuilder sb, ChatMessageContentItemCollection chatMessageContentItems)
     {
-        var sb = new StringBuilder();
         sb.Append('[');
         var isFirst = true;
         foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
@@ -189,8 +188,6 @@ internal static class ModelDiagnostics
             isFirst = false;
         }
         sb.Append(']');
-
-        return sb.ToString();
     }
 
     /// <summary>
@@ -357,9 +354,14 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Organize streaming content by choice index
     /// </summary>
-    private static Dictionary<int, List<StreamingKernelContent>> OrganizeStreamingContent(IEnumerable<StreamingKernelContent> contents)
+    private static Dictionary<int, List<StreamingKernelContent>> OrganizeStreamingContent(IEnumerable<StreamingKernelContent>? contents)
     {
         Dictionary<int, List<StreamingKernelContent>> choices = [];
+        if (contents is null)
+        {
+            return choices;
+        }
+
         foreach (var content in contents)
         {
             if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))

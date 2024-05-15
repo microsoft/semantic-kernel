@@ -91,7 +91,6 @@ internal sealed class HuggingFaceMessageApiClient
         try
         {
             using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-            // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
             httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         }
@@ -104,16 +103,15 @@ internal sealed class HuggingFaceMessageApiClient
         }
 
         var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
-            .ConfigureAwait(false)
-            .GetAsyncEnumerator();
-        List<StreamingChatMessageContent> streamedContents = [];
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
         try
         {
             while (true)
             {
                 try
                 {
-                    if (!await responseEnumerator.MoveNextAsync())
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
                     {
                         break;
                     }
@@ -124,7 +122,7 @@ internal sealed class HuggingFaceMessageApiClient
                     throw;
                 }
 
-                streamedContents.Add(responseEnumerator.Current);
+                streamedContents?.Add(responseEnumerator.Current);
                 yield return responseEnumerator.Current;
             }
         }
@@ -133,6 +131,7 @@ internal sealed class HuggingFaceMessageApiClient
             activity?.EndStreaming(streamedContents);
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 

@@ -234,7 +234,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 try
                 {
                     using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
-                    // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
                     httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
                     responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
                 }
@@ -247,16 +246,15 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 }
 
                 var responseEnumerator = this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken)
-                    .ConfigureAwait(false)
-                    .GetAsyncEnumerator();
-                List<StreamingChatMessageContent> streamedContents = [];
+                    .GetAsyncEnumerator(cancellationToken);
+                List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
                 try
                 {
                     while (true)
                     {
                         try
                         {
-                            if (!await responseEnumerator.MoveNextAsync())
+                            if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
                             {
                                 break;
                             }
@@ -267,7 +265,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                             throw;
                         }
 
-                        streamedContents.Add(responseEnumerator.Current);
+                        streamedContents?.Add(responseEnumerator.Current);
                         yield return responseEnumerator.Current;
                     }
                 }
@@ -276,6 +274,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     activity?.EndStreaming(streamedContents);
                     httpResponseMessage?.Dispose();
                     responseStream?.Dispose();
+                    await responseEnumerator.DisposeAsync().ConfigureAwait(false);
                 }
             }
 

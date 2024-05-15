@@ -94,8 +94,6 @@ public sealed class Program
         {
             await RunAzureOpenAIToolCallsAsync(kernel);
             Console.WriteLine();
-            await RunGoogleAIToolCallAsync(kernel);
-            // HuggingFace does not support tool calls yet.
         }
     }
 
@@ -215,26 +213,9 @@ public sealed class Program
         }
     }
 
-    private static async Task RunGoogleAIToolCallAsync(Kernel kernel)
-    {
-        Console.WriteLine("============= Google Gemini ToolCalls =============");
-
-        using var activity = s_activitySource.StartActivity(GoogleAIGeminiServiceKey);
-        SetTargetService(kernel, GoogleAIGeminiServiceKey);
-        try
-        {
-            await RunAutoToolCallAsync(kernel);
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            Console.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
     private static async Task RunAutoToolCallAsync(Kernel kernel)
     {
-        var result = await kernel.InvokePromptAsync("What is the weather like in Seattle?");
+        var result = await kernel.InvokePromptAsync("What is the weather like in my location?");
 
         Console.WriteLine(result);
     }
@@ -267,6 +248,7 @@ public sealed class Program
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
         builder.Plugins.AddFromType<WeatherPlugin>();
+        builder.Plugins.AddFromType<LocationPlugin>();
 
         return builder.Build();
     }
@@ -312,11 +294,7 @@ public sealed class Program
                             Temperature = 0,
                             ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
                         },
-                        GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
-                        {
-                            Temperature = 0,
-                            ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
-                        },
+                        GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings(),
                         HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings(),
                         _ => null,
                     };
@@ -338,6 +316,15 @@ public sealed class Program
     {
         [KernelFunction]
         public string GetWeather(string location) => $"Weather in {location} is 70°F.";
+    }
+
+    public sealed class LocationPlugin
+    {
+        [KernelFunction]
+        public string GetCurrentLocation()
+        {
+            return "Seattle";
+        }
     }
 
     #endregion

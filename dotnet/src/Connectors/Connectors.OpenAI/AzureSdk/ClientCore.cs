@@ -197,7 +197,7 @@ internal abstract class ClientCore
         }
 
         var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
-        List<OpenAIStreamingTextContent> streamedContents = [];
+        List<OpenAIStreamingTextContent>? streamedContents = activity is not null ? [] : null;
         try
         {
             while (true)
@@ -220,7 +220,7 @@ internal abstract class ClientCore
                 {
                     var openAIStreamingTextContent = new OpenAIStreamingTextContent(
                         choice.Text, choice.Index, this.DeploymentOrModelName, choice, GetTextChoiceMetadata(completions, choice));
-                    streamedContents.Add(openAIStreamingTextContent);
+                    streamedContents?.Add(openAIStreamingTextContent);
                     yield return openAIStreamingTextContent;
                 }
             }
@@ -677,7 +677,7 @@ internal abstract class ClientCore
                 }
 
                 var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
-                List<OpenAIStreamingChatMessageContent> streamedContents = [];
+                List<OpenAIStreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
                 try
                 {
                     while (true)
@@ -713,7 +713,7 @@ internal abstract class ClientCore
                         }
 
                         var openAIStreamingChatMessageContent = new OpenAIStreamingChatMessageContent(update, update.ChoiceIndex ?? 0, this.DeploymentOrModelName, metadata) { AuthorName = streamedName };
-                        streamedContents.Add(openAIStreamingChatMessageContent);
+                        streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
                 }

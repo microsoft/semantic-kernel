@@ -175,7 +175,6 @@ internal sealed class HuggingFaceClient
         try
         {
             using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
-            // We cannot dispose these two objects leaving the try-catch block because we need them to read the response stream
             httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         }
@@ -188,16 +187,15 @@ internal sealed class HuggingFaceClient
         }
 
         var responseEnumerator = this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken)
-            .ConfigureAwait(false)
-            .GetAsyncEnumerator();
-        List<StreamingTextContent> streamedContents = [];
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingTextContent>? streamedContents = activity is not null ? [] : null;
         try
         {
             while (true)
             {
                 try
                 {
-                    if (!await responseEnumerator.MoveNextAsync())
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
                     {
                         break;
                     }
@@ -208,7 +206,7 @@ internal sealed class HuggingFaceClient
                     throw;
                 }
 
-                streamedContents.Add(responseEnumerator.Current);
+                streamedContents?.Add(responseEnumerator.Current);
                 yield return responseEnumerator.Current;
             }
         }
@@ -217,6 +215,7 @@ internal sealed class HuggingFaceClient
             activity?.EndStreaming(streamedContents);
             httpResponseMessage?.Dispose();
             responseStream?.Dispose();
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 
