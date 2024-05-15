@@ -36,9 +36,11 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreToolCallEvent;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -104,15 +106,24 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             .map(history -> {
 
                 ChatHistory chatHistoryResult;
-                if (invocationContext != null && invocationContext.isReturnOnlyNewMessages()) {
-                    chatHistoryResult = new ChatHistory();
-                } else {
+
+                if (invocationContext != null
+                    && invocationContext.returnMode() == InvocationReturnMode.FULL_HISTORY) {
                     chatHistoryResult = new ChatHistory(chatHistory.getMessages());
+                } else {
+                    chatHistoryResult = new ChatHistory();
                 }
 
                 chatHistoryResult.addAll(
                     new ChatHistory(toOpenAIChatMessageContent(history.newMessages)));
                 chatHistoryResult.addAll(new ChatHistory(history.newChatMessageContent));
+
+                if (invocationContext != null
+                    && invocationContext.returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                    chatHistoryResult = new ChatHistory(
+                        Collections.singletonList(
+                            CollectionUtil.getLastOrNull(chatHistory.getMessages())));
+                }
 
                 return chatHistoryResult.getMessages();
             });
@@ -132,11 +143,18 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             kernel,
             invocationContext)
             .map(m -> {
-                ChatHistory mes = new ChatHistory(toOpenAIChatMessageContent(m.allMessages));
+                ChatHistory result = new ChatHistory(toOpenAIChatMessageContent(m.allMessages));
 
-                mes.addAll(new ChatHistory(m.newChatMessageContent));
+                result.addAll(new ChatHistory(m.newChatMessageContent));
 
-                return mes.getMessages();
+                if (invocationContext != null
+                    && invocationContext.returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                    result = new ChatHistory(
+                        Collections.singletonList(
+                            CollectionUtil.getLastOrNull(result.getMessages())));
+                }
+
+                return result.getMessages();
             });
     }
 

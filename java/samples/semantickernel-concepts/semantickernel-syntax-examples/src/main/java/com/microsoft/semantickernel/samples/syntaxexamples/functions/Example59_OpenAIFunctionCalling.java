@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -136,7 +137,7 @@ public class Example59_OpenAIFunctionCalling {
                 kernel,
                 InvocationContext.builder()
                     .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
-                    .returnOnlyNewContent(false)
+                    .withReturnMode(InvocationReturnMode.FULL_HISTORY)
                     .build())
                 .block();
 
