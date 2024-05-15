@@ -240,7 +240,7 @@ public sealed class MistralAIChatCompletionTests
     }
 
     [Fact] // (Skip = "This test is for manual verification.")
-    public async Task ValidateGetChatMessageContentsWithAutoInvokeAndInvocationFilterAsync()
+    public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionFilterAsync()
     {
         // Arrange
         var model = this._configuration["MistralAI:ChatModel"];
@@ -271,6 +271,68 @@ public sealed class MistralAIChatCompletionTests
         Assert.Contains("GetWeather", invokedFunctions);
     }
 
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetChatMessageContentsWithAutoInvokeAndFunctionInvocationFilterAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+        var invokedFunctions = new List<string>();
+        var filter = new FakeAutoFunctionFilter(async (context, next) =>
+        {
+            invokedFunctions.Add(context.Function.Name);
+            await next(context);
+            context.Terminate = true;
+        });
+        kernel.AutoFunctionInvocationFilters.Add(filter);
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var response = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.StartsWith("Weather in Paris", response[0].Content);
+        Assert.EndsWith("is sunny and 18 Celsius", response[0].Content);
+        Assert.Contains("GetWeather", invokedFunctions);
+    }
+
+    [Fact] // (Skip = "This test is for manual verification.")
+    public async Task ValidateGetChatMessageContentsWithAutoInvokeAndMultipleCallsAsync()
+    {
+        // Arrange
+        var model = this._configuration["MistralAI:ChatModel"];
+        var apiKey = this._configuration["MistralAI:ApiKey"];
+        var service = new MistralAIChatCompletionService(model!, apiKey!);
+        var kernel = new Kernel();
+        kernel.Plugins.AddFromType<WeatherPlugin>();
+
+        // Act
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
+        };
+        var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
+        var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+        chatHistory.AddRange(result1);
+        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
+        var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+
+        // Assert
+        Assert.NotNull(result2);
+        Assert.Single(result2);
+        Assert.Contains("Marseille", result2[0].Content);
+        Assert.Contains("sunny", result2[0].Content);
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
@@ -296,5 +358,14 @@ public sealed class MistralAIChatCompletionTests
 
         public Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next) =>
             this._onFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
+    }
+
+    private sealed class FakeAutoFunctionFilter(
+        Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? onAutoFunctionInvocation = null) : IAutoFunctionInvocationFilter
+    {
+        private readonly Func<AutoFunctionInvocationContext, Func<AutoFunctionInvocationContext, Task>, Task>? _onAutoFunctionInvocation = onAutoFunctionInvocation;
+
+        public Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next) =>
+            this._onAutoFunctionInvocation?.Invoke(context, next) ?? Task.CompletedTask;
     }
 }

@@ -35,8 +35,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
+    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />

@@ -10,7 +10,7 @@ namespace ChatCompletion;
 /// <summary>
 /// Demonstrates the use of function calling and streaming with MistralAI.
 /// </summary>
-public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper output) : BaseTest(output)
+public sealed class MistralAI_StreamingFunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task GetChatMessageContentsAsync()
@@ -18,7 +18,7 @@ public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper outpu
         // Create a kernel with MistralAI chat completion  and WeatherPlugin
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddMistralChatCompletion(
-                model: TestConfiguration.MistralAI.ChatModelId!,
+                modelId: TestConfiguration.MistralAI.ChatModelId!,
                 apiKey: TestConfiguration.MistralAI.ApiKey!);
         kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
         Kernel kernel = kernelBuilder.Build();
@@ -34,7 +34,7 @@ public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper outpu
 
         await foreach (var update in streamingChat)
         {
-            Write(update);
+            Console.Write(update);
         }
     }
 
@@ -44,6 +44,6 @@ public sealed class MistralAI_Streaming_Function_Calling(ITestOutputHelper outpu
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-            ) => "17°C\nWind: 23 KMPH\nHumidity: 59%\nMostly cloudy";
+        ) => "17°C\nWind: 23 KMPH\nHumidity: 59%\nMostly cloudy";
     }
 }

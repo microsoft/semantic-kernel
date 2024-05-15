@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel;
 
 namespace ChatPrompts;
@@ -271,30 +270,6 @@ public sealed class SafeChatPrompts : BaseTest, IDisposable
         promptTemplateFactory ??= this._promptTemplateFactory;
         var promptTemplate = promptTemplateFactory.Create(promptConfig);
         return promptTemplate.RenderAsync(this._kernel, arguments);
-    }
-
-    private sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
-    {
-        private readonly ITestOutputHelper _output = output;
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // Log the request details
-            //this._output.Console.WriteLine($"Sending HTTP request: {request.Method} {request.RequestUri}");
-            if (request.Content is not null)
-            {
-                var content = await request.Content.ReadAsStringAsync(cancellationToken);
-                this._output.WriteLine(Regex.Unescape(content));
-            }
-
-            // Call the next handler in the pipeline
-            var response = await base.SendAsync(request, cancellationToken);
-
-            // Log the response details
-            this._output.WriteLine("");
-
-            return response;
-        }
     }
     #endregion
 }
