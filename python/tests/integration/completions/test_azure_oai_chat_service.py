@@ -55,12 +55,16 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(setup_t
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.chat_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=azure_openai_settings.endpoint,
-        azure_deployment=azure_openai_settings.chat_deployment_name,
-        api_key=azure_openai_settings.api_key.get_secret_value(),
-        api_version=azure_openai_settings.api_version,
+        azure_endpoint=endpoint,
+        azure_deployment=deployment_name,
+        api_key=api_key,
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -95,12 +99,16 @@ async def test_azure_e2e_chat_completion_with_plugin_and_provided_client(setup_t
 @pytest.mark.asyncio
 async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
     azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.chat_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=azure_openai_settings.endpoint,
-        azure_deployment=azure_openai_settings.chat_deployment_name,
-        api_key=azure_openai_settings.api_key.get_secret_value(),
-        api_version=azure_openai_settings.api_version,
+        azure_endpoint=endpoint,
+        azure_deployment=deployment_name,
+        api_key=api_key,
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -145,12 +153,16 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
 @pytest.mark.asyncio
 async def test_azure_oai_chat_service_with_tool_call_streaming(kernel: Kernel):
     azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.chat_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=azure_openai_settings.endpoint,
-        azure_deployment=azure_openai_settings.chat_deployment_name,
-        api_key=azure_openai_settings.api_key.get_secret_value(),
-        api_version=azure_openai_settings.api_version,
+        azure_endpoint=endpoint,
+        azure_deployment=deployment_name,
+        api_key=api_key,
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 

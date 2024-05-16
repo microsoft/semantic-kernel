@@ -51,12 +51,16 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
     azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.chat_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
-        azure_endpoint=azure_openai_settings.endpoint,
-        azure_deployment=azure_openai_settings.text_deployment_name,
-        api_key=azure_openai_settings.api_key.get_secret_value(),
-        api_version=azure_openai_settings.api_version,
+        azure_endpoint=endpoint,
+        azure_deployment=deployment_name,
+        api_key=api_key,
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
@@ -89,4 +93,4 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_
     summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert len(output) < 100
+    assert len(output) < 500

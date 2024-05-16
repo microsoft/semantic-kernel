@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings impor
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
+from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
 
 @pytest.mark.asyncio
@@ -20,7 +21,7 @@ async def test_azure_text_embedding_service(kernel: Kernel):
 
     kernel.add_service(embeddings_gen)
 
-    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embeddings_gen)
     kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
 
     await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
