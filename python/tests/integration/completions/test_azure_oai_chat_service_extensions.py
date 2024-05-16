@@ -121,7 +121,7 @@ async def create_with_data_chat_function(kernel: Kernel, create_memory_store):
         kernel.add_function(function_name="chat", plugin_name="plugin", prompt_template_config=prompt_template_config)
         chat_function = kernel.get_function("plugin", "chat")
         return chat_function, kernel, collection, memory_store
-    except Exception:
+    except:
         await memory_store.delete_collection(collection)
         raise
 
