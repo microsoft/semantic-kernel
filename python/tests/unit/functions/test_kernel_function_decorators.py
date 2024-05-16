@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING, Annotated, Any, AsyncGenerator, AsyncIterable, Optional, Union
 
 import pytest

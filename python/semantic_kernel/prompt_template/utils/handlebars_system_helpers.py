@@ -14,7 +14,7 @@ def _messages(this, options, *args, **kwargs):
 
     if not isinstance(this.context["chat_history"], ChatHistory):
         return ""
-    return str(this.context["chat_history"])
+    return this.context["chat_history"].to_prompt()
 
 
 def _message_to_prompt(this, *args, **kwargs):

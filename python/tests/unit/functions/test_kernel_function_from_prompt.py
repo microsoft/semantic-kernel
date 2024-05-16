@@ -6,6 +6,7 @@ import pytest
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -140,9 +141,9 @@ def test_init_prompt_execution_settings_dict():
 
 
 @pytest.mark.asyncio
-async def test_invoke_chat_stream():
+async def test_invoke_chat_stream(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -152,14 +153,14 @@ async def test_invoke_chat_stream():
 
     # This part remains unchanged - for synchronous mocking example
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream"
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents"
     ) as mock:
         mock.__iter__.return_value = [
             StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
@@ -169,9 +170,9 @@ async def test_invoke_chat_stream():
 
 
 @pytest.mark.asyncio
-async def test_invoke_exception():
+async def test_invoke_exception(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -179,28 +180,28 @@ async def test_invoke_exception():
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents",
         side_effect=Exception,
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["exception"], Exception)
+        assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents",
         side_effect=Exception,
     ) as mock:
         mock.__iter__.return_value = [
             StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
         ]
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["exception"], Exception)
+            assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
 
 @pytest.mark.asyncio
-async def test_invoke_text():
+async def test_invoke_text(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -208,14 +209,14 @@ async def test_invoke_text():
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_text_contents",
     ) as mock:
         mock.return_value = [TextContent(text="test", metadata={})]
         result = await function.invoke(kernel=kernel)
         assert str(result) == "test"
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete_stream",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_streaming_text_contents",
     ) as mock:
         mock.__iter__.return_value = [TextContent(text="test", metadata={})]
         async for result in function.invoke_stream(kernel=kernel):
@@ -223,9 +224,9 @@ async def test_invoke_text():
 
 
 @pytest.mark.asyncio
-async def test_invoke_exception_text():
+async def test_invoke_exception_text(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -233,26 +234,26 @@ async def test_invoke_exception_text():
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_text_contents",
         side_effect=Exception,
     ) as mock:
         mock.return_value = [TextContent(text="test", metadata={})]
         result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["exception"], Exception)
+        assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete_stream",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_streaming_text_contents",
         side_effect=Exception,
     ) as mock:
         mock.__iter__.return_value = []
         async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata["exception"], Exception)
+            assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
 
 @pytest.mark.asyncio
-async def test_invoke_defaults():
+async def test_invoke_defaults(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -263,7 +264,7 @@ async def test_invoke_defaults():
         prompt_execution_settings=PromptExecutionSettings(service_id="test"),
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)
@@ -291,9 +292,9 @@ def test_create_with_multiple_settings():
 
 
 @pytest.mark.asyncio
-async def test_create_with_multiple_settings_one_service_registered():
+async def test_create_with_multiple_settings_one_service_registered(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test2", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test2", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -306,7 +307,7 @@ async def test_create_with_multiple_settings_one_service_registered():
         ),
     )
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat"
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_chat_message_contents"
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
         result = await function.invoke(kernel=kernel)

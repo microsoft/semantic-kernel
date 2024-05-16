@@ -6,7 +6,6 @@ import os
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, OpenAITextCompletion
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
 
 
 async def main():
@@ -18,14 +17,12 @@ async def main():
 
     # Configure AI service used by the kernel
     if useAzureOpenAI:
-        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
         kernel.add_service(
-            AzureTextCompletion(service_id=service_id, deployment_name=model, api_key=api_key, endpoint=endpoint),
+            AzureTextCompletion(service_id=service_id),
         )
     else:
-        api_key, org_id = openai_settings_from_dot_env()
         kernel.add_service(
-            OpenAITextCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+            OpenAITextCompletion(service_id=service_id, ai_model_id=model),
         )
 
     # note: using plugins from the samples folder

@@ -39,14 +39,26 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        string prompt,
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
         => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
 
     /// <summary>
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        ChatHistory chatHistory,
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
         => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
@@ -62,6 +74,18 @@ internal static class ModelDiagnostics
     /// </summary>
     public static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
         => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
+
+    /// <summary>
+    /// Notify the end of streaming for a given activity.
+    /// </summary>
+    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent>? contents, int? promptTokens = null, int? completionTokens = null)
+    {
+        if (IsModelDiagnosticsEnabled())
+        {
+            var choices = OrganizeStreamingContent(contents);
+            SetCompletionResponse(activity, choices, promptTokens, completionTokens);
+        }
+    }
 
     /// <summary>
     /// Set the response id for a given activity.
@@ -87,26 +111,34 @@ internal static class ModelDiagnostics
     /// <returns>The activity with the completion token usage set for chaining</returns>
     public static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
 
-    # region Private
     /// <summary>
     /// Check if model diagnostics is enabled
     /// Model diagnostics is enabled if either EnableModelDiagnostics or EnableSensitiveEvents is set to true and there are listeners.
     /// </summary>
-    private static bool IsModelDiagnosticsEnabled()
+    public static bool IsModelDiagnosticsEnabled()
     {
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
-    private static void AddOptionalTags(Activity? activity, PromptExecutionSettings? executionSettings)
+    #region Private
+    private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
+        where TPromptExecutionSettings : PromptExecutionSettings
     {
-        if (activity is null || executionSettings?.ExtensionData is null)
+        if (activity is null || executionSettings is null)
+        {
+            return;
+        }
+
+        // Serialize and deserialize the execution settings to get the extension data
+        var deserializedSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(JsonSerializer.Serialize(executionSettings));
+        if (deserializedSettings is null || deserializedSettings.ExtensionData is null)
         {
             return;
         }
 
         void TryAddTag(string key, string tag)
         {
-            if (executionSettings.ExtensionData.TryGetValue(key, out var value))
+            if (deserializedSettings.ExtensionData.TryGetValue(key, out var value))
             {
                 activity.SetTag(tag, value);
             }
@@ -136,9 +168,11 @@ internal static class ModelDiagnostics
 
             sb.Append("{\"role\": \"");
             sb.Append(message.Role);
-            sb.Append("\", \"content\": \"");
+            sb.Append("\", \"content\": ");
             sb.Append(JsonSerializer.Serialize(message.Content));
-            sb.Append("\"}");
+            sb.Append(", \"tool_calls\": ");
+            ToOpenAIFormat(sb, message.Items);
+            sb.Append('}');
 
             isFirst = false;
         }
@@ -148,16 +182,45 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
+    /// Helper method to convert tool calls to a string aligned with the OpenAI format
+    /// </summary>
+    private static void ToOpenAIFormat(StringBuilder sb, ChatMessageContentItemCollection chatMessageContentItems)
+    {
+        sb.Append('[');
+        var isFirst = true;
+        foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
+        {
+            if (!isFirst)
+            {
+                // Append a comma and a newline to separate the elements after the previous one.
+                // This can avoid adding an unnecessary comma after the last element.
+                sb.Append(", \n");
+            }
+
+            sb.Append("{\"id\": \"");
+            sb.Append(functionCall.Id);
+            sb.Append("\", \"function\": {\"arguments\": ");
+            sb.Append(JsonSerializer.Serialize(functionCall.Arguments));
+            sb.Append(", \"name\": \"");
+            sb.Append(functionCall.FunctionName);
+            sb.Append("\"}, \"type\": \"function\"}");
+
+            isFirst = false;
+        }
+        sb.Append(']');
+    }
+
+    /// <summary>
     /// Start a completion activity and return the activity.
     /// The `formatPrompt` delegate won't be invoked if events are disabled.
     /// </summary>
-    private static Activity? StartCompletionActivity<T>(
+    private static Activity? StartCompletionActivity<TPrompt, TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
-        T prompt,
-        PromptExecutionSettings? executionSettings,
-        Func<T, string> formatPrompt)
+        TPrompt prompt,
+        TPromptExecutionSettings? executionSettings,
+        Func<TPrompt, string> formatPrompt) where TPromptExecutionSettings : PromptExecutionSettings
     {
         if (!IsModelDiagnosticsEnabled())
         {
@@ -238,6 +301,44 @@ internal static class ModelDiagnostics
         }
     }
 
+    /// <summary>
+    /// Set the streaming completion response for a given activity.
+    /// </summary>
+    private static void SetCompletionResponse(
+        Activity activity,
+        Dictionary<int, List<StreamingKernelContent>> choices,
+        int? promptTokens,
+        int? completionTokens)
+    {
+        if (!IsModelDiagnosticsEnabled())
+        {
+            return;
+        }
+
+        // Assuming all metadata is in the last chunk of the choice
+        switch (choices.FirstOrDefault().Value.FirstOrDefault())
+        {
+            case StreamingTextContent:
+                var textCompletions = choices.Select(choiceContents =>
+                    {
+                        var lastContent = (StreamingTextContent)choiceContents.Value.Last();
+                        var text = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                        return new TextContent(text, metadata: lastContent.Metadata);
+                    }).ToList();
+                SetCompletionResponse(activity, textCompletions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}");
+                break;
+            case StreamingChatMessageContent:
+                var chatCompletions = choices.Select(choiceContents =>
+                 {
+                     var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
+                     var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                     return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
+                 }).ToList();
+                SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens, ToOpenAIFormat);
+                break;
+        };
+    }
+
     // Returns an activity for chaining
     private static Activity SetFinishReasons(this Activity activity, IEnumerable<KernelContent> completions)
     {
@@ -268,6 +369,31 @@ internal static class ModelDiagnostics
         }
 
         return activity;
+    }
+
+    /// <summary>
+    /// Organize streaming content by choice index
+    /// </summary>
+    private static Dictionary<int, List<StreamingKernelContent>> OrganizeStreamingContent(IEnumerable<StreamingKernelContent>? contents)
+    {
+        Dictionary<int, List<StreamingKernelContent>> choices = [];
+        if (contents is null)
+        {
+            return choices;
+        }
+
+        foreach (var content in contents)
+        {
+            if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
+            {
+                choiceContents = [];
+                choices[content.ChoiceIndex] = choiceContents;
+            }
+
+            choiceContents.Add(content);
+        }
+
+        return choices;
     }
 
     /// <summary>

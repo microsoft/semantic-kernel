@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
     OpenAIFunctionExecutionParameters,
 )
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
 from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -130,15 +131,15 @@ async def test_invoke_stream_functions_throws_exception(kernel: Kernel, create_m
     functions = [mock_function]
 
     function_result_with_exception = FunctionResult(
-        value="", function=mock_function.metadata, output=None, metadata={"exception": "Test Exception"}
+        value="", function=mock_function.metadata, output=None, metadata={METADATA_EXCEPTION_KEY: "Test Exception"}
     )
 
     with patch("semantic_kernel.kernel.Kernel.invoke_stream", return_value=AsyncMock()) as mocked_invoke_stream:
         mocked_invoke_stream.return_value.__aiter__.return_value = [function_result_with_exception]
 
         async for part in kernel.invoke_stream(functions, input="test"):
-            assert "exception" in part.metadata, "Expected exception metadata in the FunctionResult."
-            assert part.metadata["exception"] == "Test Exception", "The exception message does not match."
+            assert METADATA_EXCEPTION_KEY in part.metadata, "Expected exception metadata in the FunctionResult."
+            assert part.metadata[METADATA_EXCEPTION_KEY] == "Test Exception", "The exception message does not match."
             break
 
 
@@ -586,6 +587,16 @@ def test_get_service_no_id(kernel_with_service: Kernel):
 def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_service: Kernel):
     settings = kernel_with_service.get_prompt_execution_settings_from_service_id("service")
     assert settings.service_id == "service"
+
+
+# endregion
+# experimental class decorator
+
+
+def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
+    assert hasattr(experimental_plugin_class, "is_experimental")
+    assert experimental_plugin_class.is_experimental
+    assert "This class is experimental and may change in the future." in experimental_plugin_class.__doc__
 
 
 # endregion

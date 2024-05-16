@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field
 
@@ -18,6 +18,7 @@ class KernelFunctionMetadata(KernelBaseModel):
     is_prompt: bool
     is_asynchronous: Optional[bool] = Field(default=True)
     return_parameter: Optional[KernelParameterMetadata] = None
+    additional_properties: Optional[dict[str, Any]] = Field(default=None)
 
     @property
     def fully_qualified_name(self) -> str:

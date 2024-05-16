@@ -31,7 +31,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         """Create a request settings object."""
         return OpenAITextPromptExecutionSettings
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
@@ -72,7 +72,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             metadata=choice_metadata,
         )
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",

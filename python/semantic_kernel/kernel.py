@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Callable, 
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
@@ -49,6 +50,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -199,7 +201,7 @@ class Kernel(KernelBaseModel):
 
         async for stream_message in function.invoke_stream(self, arguments):
             if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get("exception", None)
+                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
             ):
                 raise KernelInvokeException(
                     f"Error occurred while invoking function: '{function.fully_qualified_name}'"
@@ -395,7 +397,7 @@ class Kernel(KernelBaseModel):
 
         async for stream_message in self.invoke_stream(function=function, arguments=arguments):
             if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get("exception", None)
+                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
             ):
                 raise KernelInvokeException(
                     f"Error occurred while invoking function: '{function.fully_qualified_name}'"
@@ -430,7 +432,9 @@ class Kernel(KernelBaseModel):
             kernel_function_metadata=kernel_function_metadata,
             arguments=arguments,
             function_result=function_result,
-            exception=exception or function_result.metadata.get("exception", None) if function_result else None,
+            exception=(
+                exception or function_result.metadata.get(METADATA_EXCEPTION_KEY, None) if function_result else None
+            ),
         )
         if self.function_invoked_handlers:
             for handler in self.function_invoked_handlers.values():
