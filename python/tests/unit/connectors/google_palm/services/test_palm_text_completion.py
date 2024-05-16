@@ -9,12 +9,8 @@ if sys.version_info >= (3, 9):
     from google.generativeai.types import Completion
     from google.generativeai.types.text_types import TextCompletion
 
-    from semantic_kernel.connectors.ai.google_palm import (
-        GooglePalmTextPromptExecutionSettings,
-    )
-    from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
-        GooglePalmTextCompletion,
-    )
+    from semantic_kernel.connectors.ai.google_palm import GooglePalmTextPromptExecutionSettings
+    from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import GooglePalmTextCompletion
 
 
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater")
@@ -66,7 +62,7 @@ async def test_google_palm_text_completion_complete_call_with_parameters() -> No
             api_key=api_key,
         )
         settings = GooglePalmTextPromptExecutionSettings()
-        response = await gp_text_completion.complete(prompt, settings)
+        response = await gp_text_completion.get_text_contents(prompt, settings)
         assert isinstance(response[0].text, str) and len(response) > 0
 
         mock_gp.generate_text.assert_called_once_with(

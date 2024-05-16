@@ -58,7 +58,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         )
         self._message_history = message_history
 
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
@@ -109,7 +109,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             content=candidate.get("content"),
         )
 
-    async def complete_chat_stream(
+    async def get_streaming_chat_message_contents(
         self,
         messages: List[Tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
@@ -117,7 +117,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ):
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
@@ -156,7 +156,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             text=candidate.get("content"),
         )
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,

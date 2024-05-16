@@ -188,7 +188,7 @@ through prompt_template_config or in the prompt_template."
             kwargs["arguments"] = arguments
 
         try:
-            completions = await service.complete_chat(
+            completions = await service.get_chat_message_contents(
                 chat_history=chat_history,
                 settings=execution_settings,
                 **kwargs,
@@ -209,7 +209,7 @@ through prompt_template_config or in the prompt_template."
     ) -> FunctionResult:
         """Handles the text service call."""
         try:
-            completions = await service.complete(prompt, execution_settings)
+            completions = await service.get_text_contents(prompt, execution_settings)
             return self._create_function_result(completions=completions, arguments=arguments, prompt=prompt)
         except Exception as exc:
             raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
@@ -286,7 +286,7 @@ through prompt_template_config or in the prompt_template."
 
         chat_history = ChatHistory.from_rendered_prompt(prompt)
         try:
-            async for partial_content in service.complete_chat_stream(
+            async for partial_content in service.get_streaming_chat_message_contents(
                 chat_history=chat_history,
                 settings=execution_settings,
                 **kwargs,
@@ -306,7 +306,9 @@ through prompt_template_config or in the prompt_template."
     ) -> AsyncGenerator[FunctionResult | list[StreamingTextContent], Any]:
         """Handles the text service call."""
         try:
-            async for partial_content in service.complete_stream(prompt=prompt, settings=execution_settings):
+            async for partial_content in service.get_streaming_text_contents(
+                prompt=prompt, settings=execution_settings
+            ):
                 yield partial_content
             return
         except Exception as e:

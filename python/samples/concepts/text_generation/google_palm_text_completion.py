@@ -13,7 +13,7 @@ async def text_completion_example_complete(kernel, api_key, user_mssg, settings)
     """
     palm_text_completion = GooglePalmTextCompletion("models/text-bison-001", api_key)
     kernel.add_service(palm_text_completion)
-    answer = await palm_text_completion.complete(user_mssg, settings)
+    answer = await palm_text_completion.get_text_contents(user_mssg, settings)
     return answer
 
 

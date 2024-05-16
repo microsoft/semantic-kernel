@@ -139,7 +139,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create) -> None:
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
@@ -179,7 +179,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
         api_version=api_version,
     )
 
-    await azure_text_completion.complete(prompt, complete_prompt_execution_settings)
+    await azure_text_completion.get_text_contents(prompt, complete_prompt_execution_settings)
 
     mock_create.assert_awaited_once_with(
         model=deployment_name,
