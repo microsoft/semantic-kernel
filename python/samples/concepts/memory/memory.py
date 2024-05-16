@@ -8,7 +8,6 @@ from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.functions import KernelFunction
 from semantic_kernel.memory import SemanticTextMemory, VolatileMemoryStore
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 collection_id = "generic"
 
@@ -83,13 +82,11 @@ async def chat(kernel: Kernel, chat_func: KernelFunction) -> bool:
 async def main() -> None:
     kernel = Kernel()
 
-    api_key, org_id = openai_settings_from_dot_env()
     service_id = "chat-gpt"
-    kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
     embedding_gen = OpenAITextEmbedding(
-        service_id="ada", ai_model_id="text-embedding-ada-002", api_key=api_key, org_id=org_id
+        service_id="ada",
+        ai_model_id="text-embedding-ada-002",
     )
     kernel.add_service(embedding_gen)
 

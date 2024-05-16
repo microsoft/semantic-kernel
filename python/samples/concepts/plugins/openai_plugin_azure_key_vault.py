@@ -7,12 +7,12 @@ from typing import Dict, Optional
 
 import httpx
 from aiohttp import ClientSession
+from azure_key_vault_settings import AzureKeyVaultSettings
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.openai_plugin import OpenAIAuthenticationType, OpenAIFunctionExecutionParameters
 from semantic_kernel.functions import KernelPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.utils.settings import azure_key_vault_settings_from_dot_env
 
 
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
@@ -125,7 +125,10 @@ async def main():
     # 4. Replace your tenant ID with the "TENANT_ID" placeholder in
     # python/samples/kernel-syntax-examples/resources/akv-openai.json
 
-    endpoint, client_id, client_secret = azure_key_vault_settings_from_dot_env()
+    azure_keyvault_settings = AzureKeyVaultSettings.create()
+    client_id = azure_keyvault_settings.client_id
+    client_secret = azure_keyvault_settings.client_secret.get_secret_value()
+    endpoint = azure_keyvault_settings.endpoint
 
     authentication_provider = OpenAIAuthenticationProvider(
         {

@@ -7,9 +7,9 @@ from typing import List, Tuple
 
 import numpy as np
 import weaviate
-from weaviate.embedded import EmbeddedOptions
+from pydantic import ValidationError
 
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -115,25 +115,59 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig, **kwargs):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
-        self.config = config
+    def __init__(self, config: WeaviateConfig | None = None, env_file_path: str | None = None):
+        """Initializes a new instance of the WeaviateMemoryStore
+
+        Optional parameters:
+        - env_file_path {str | None} -- Whether to use the environment settings (.env) file. Defaults to False.
+        """
+
+        # Initialize settings from environment variables or defaults defined in WeaviateSettings
+        weaviate_settings = None
+        try:
+            weaviate_settings = WeaviateSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load WeaviateSettings pydantic settings: {e}")
+
+        # Override settings with provided config if available
+        if config:
+            self.settings = self.merge_settings(weaviate_settings, config)
+        else:
+            self.settings = weaviate_settings
+
+        self.settings.validate_settings()
         self.client = self._initialize_client()
 
-    def _initialize_client(self):
-        if self.config.use_embed:
-            return weaviate.Client(embedded_options=EmbeddedOptions())
-        elif self.config.url:
-            if self.config.api_key:
-                return weaviate.Client(
-                    url=self.config.url,
-                    auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.config.api_key),
-                )
-            else:
-                return weaviate.Client(url=self.config.url)
-        else:
-            raise ServiceInitializationError("Weaviate config must have either url or use_embed set")
+    def merge_settings(self, default_settings: WeaviateSettings, config: WeaviateConfig) -> WeaviateSettings:
+        """
+        Merges default settings with configuration provided through WeaviateConfig.
+
+        This function allows for manual overriding of settings from the config parameter.
+        """
+        return WeaviateSettings(
+            url=config.url or (str(default_settings.url) if default_settings and default_settings.url else None),
+            api_key=config.api_key
+            or (default_settings.api_key.get_secret_value() if default_settings and default_settings.api_key else None),
+            use_embed=(
+                config.use_embed
+                if config.use_embed is not None
+                else (default_settings.use_embed if default_settings and default_settings.use_embed else False)
+            ),
+        )
+
+    def _initialize_client(self) -> weaviate.Client:
+        """
+        Initializes the Weaviate client based on the combined settings.
+        """
+        if self.settings.use_embed:
+            return weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
+
+        if self.settings.api_key:
+            return weaviate.Client(
+                url=self.settings.url, auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key)
+            )
+
+        return weaviate.Client(url=self.settings.url)
 
     async def create_collection(self, collection_name: str) -> None:
         schema = SCHEMA.copy()
