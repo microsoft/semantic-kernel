@@ -48,6 +48,13 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 
         this.RequestContents.Add(content);
 
-        return await Task.FromResult(this.ResponsesToReturn[this._callIteration - 1]);
+        try
+        {
+            return await Task.FromResult(this.ResponsesToReturn[this._callIteration - 1]);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 }
