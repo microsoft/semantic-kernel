@@ -32,7 +32,7 @@ public abstract class GeminiToolCallBehavior
     /// support, where the model can request multiple tools in a single response, it is significantly
     /// less likely that this limit is reached, as most of the time only a single request is needed.
     /// </remarks>
-    private const int DefaultMaximumAutoInvokeAttempts = 5;
+    private const int DefaultMaximumAutoInvokeAttempts = 128;
 
     /// <summary>
     /// Gets an instance that will provide all of the <see cref="Kernel"/>'s plugins' function information.

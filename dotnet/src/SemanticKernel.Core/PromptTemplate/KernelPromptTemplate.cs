@@ -30,9 +30,9 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     /// Constructor for PromptTemplate.
     /// </summary>
     /// <param name="promptConfig">Prompt template configuration</param>
-    /// <param name="allowUnsafeContent">Flag indicating whether to allow unsafe content</param>
+    /// <param name="allowDangerouslySetContent">Flag indicating whether to allow potentially dangerous content to be inserted into the prompt</param>
     /// <param name="loggerFactory">Logger factory</param>
-    internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowUnsafeContent, ILoggerFactory? loggerFactory = null)
+    internal KernelPromptTemplate(PromptTemplateConfig promptConfig, bool allowDangerouslySetContent, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(promptConfig, nameof(promptConfig));
         Verify.NotNull(promptConfig.Template, nameof(promptConfig.Template));
@@ -43,8 +43,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         this._blocks = this.ExtractBlocks(promptConfig, loggerFactory);
         AddMissingInputVariables(this._blocks, promptConfig);
 
-        this._allowUnsafeContent = allowUnsafeContent || promptConfig.AllowUnsafeContent;
-        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowUnsafeContent || iv.AllowUnsafeContent).Select(iv => iv.Name));
+        this._allowDangerouslySetContent = allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent;
+        this._safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).Select(iv => iv.Name));
     }
 
     /// <inheritdoc/>
@@ -58,7 +58,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     #region private
     private readonly ILogger _logger;
     private readonly List<Block> _blocks;
-    private readonly bool _allowUnsafeContent;
+    private readonly bool _allowDangerouslySetContent;
     private readonly HashSet<string> _safeBlocks;
 
     /// <summary>
@@ -118,7 +118,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
             if (blockResult is not null)
             {
-                if (ShouldEncodeTags(this._allowUnsafeContent, this._safeBlocks, block!))
+                if (ShouldEncodeTags(this._allowDangerouslySetContent, this._safeBlocks, block!))
                 {
                     blockResult = HttpUtility.HtmlEncode(blockResult);
                 }

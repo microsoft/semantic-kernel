@@ -30,7 +30,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
     url: HttpUrl = "http://localhost:11434/api/generate"
     session: Optional[aiohttp.ClientSession] = None
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
@@ -56,7 +56,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
                 text = inner_content["response"]
                 return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,

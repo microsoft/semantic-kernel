@@ -6,8 +6,9 @@ import uuid
 from enum import Enum
 
 from pydantic import Field
+from pydantic_settings import BaseSettings
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel
 
 
 class CodeInputType(str, Enum):
@@ -32,3 +33,30 @@ class SessionsPythonSettings(KernelBaseModel):
     python_code: str | None = Field(alias="pythonCode", default=None)
     timeout_in_sec: int | None = Field(default=100, alias="timeoutInSeconds")
     sanitize_input: bool | None = Field(default=True, alias="sanitizeInput")
+
+
+class ACASessionsSettings(BaseSettings):
+    """Azure Container Apps sessions settings.
+
+    Required:
+    - pool_management_endpoint: HttpsUrl - The URL of the Azure Container Apps pool management endpoint.
+        (Env var ACA_POOL_MANAGEMENT_ENDPOINT)
+    """
+
+    env_file_path: str | None = None
+    pool_management_endpoint: HttpsUrl
+
+    class Config:
+        env_prefix = "ACA_"
+        env_file = None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
+
+    @classmethod
+    def create(cls, **kwargs):
+        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+            cls.Config.env_file = kwargs["env_file_path"]
+        else:
+            cls.Config.env_file = None
+        return cls(**kwargs)

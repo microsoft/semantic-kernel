@@ -5,7 +5,9 @@ from typing import List, NamedTuple, Optional, Tuple
 
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
+from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
@@ -45,21 +47,33 @@ class PineconeMemoryStore(MemoryStoreBase):
         self,
         api_key: str,
         default_dimensionality: int,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
+            env_file_path {str | None} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
+
+        pinecone_settings = None
+        try:
+            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
+
+        api_key = api_key or (
+            pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
+        )
+        assert api_key, "The Pinecone api_key cannot be None."
+
         self._pinecone_api_key = api_key
         self._default_dimensionality = default_dimensionality
 
