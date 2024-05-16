@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from functools import partial
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -17,12 +18,15 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
+from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.functions.prompt_rendering_result import PromptRenderingResult
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -143,31 +147,89 @@ through prompt_template_config or in the prompt_template."
 
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
         """Invokes the function with the given arguments."""
-        self.update_arguments_with_defaults(context.arguments)
-        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
+        prompt_render_result = await self._render_prompt(context)
 
-        prompt = await self.prompt_template.render(context.kernel, context.arguments)
-
-        if isinstance(service, ChatCompletionClientBase):
+        if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             context.result = await self._handle_complete_chat(
                 kernel=context.kernel,
-                service=service,
-                execution_settings=execution_settings,
-                prompt=prompt,
+                service=prompt_render_result.ai_service,
+                execution_settings=prompt_render_result.execution_settings,
+                prompt=prompt_render_result.rendered_prompt,
                 arguments=context.arguments,
             )
             return
 
-        if isinstance(service, TextCompletionClientBase):
+        if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             context.result = await self._handle_text_complete(
-                service=service,
-                execution_settings=execution_settings,
-                prompt=prompt,
+                service=prompt_render_result.ai_service,
+                execution_settings=prompt_render_result.execution_settings,
+                prompt=prompt_render_result.rendered_prompt,
                 arguments=context.arguments,
             )
             return
 
-        raise ValueError(f"Service `{type(service).__name__}` is not a valid AI service")
+        raise ValueError(f"Service `{type(prompt_render_result.ai_service).__name__}` is not a valid AI service")
+
+    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
+        """Invokes the function stream with the given arguments."""
+        prompt_render_result = await self._render_prompt(context)
+
+        if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
+            context.result = FunctionResult(
+                function=self.metadata,
+                value=self._handle_complete_chat_stream(
+                    kernel=context.kernel,
+                    service=prompt_render_result.ai_service,
+                    execution_settings=prompt_render_result.execution_settings,
+                    prompt=prompt_render_result.rendered_prompt,
+                    arguments=context.arguments,
+                ),
+            )
+            return
+
+        if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
+            context.result = FunctionResult(
+                function=self.metadata,
+                value=self._handle_complete_text_stream(  # type: ignore
+                    service=prompt_render_result.ai_service,
+                    execution_settings=prompt_render_result.execution_settings,
+                    prompt=prompt_render_result.rendered_prompt,
+                ),
+            )
+            return
+
+        raise FunctionExecutionException(f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service")
+
+    async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
+        """Render the prompt and apply the prompt rendering filters."""
+        self.update_arguments_with_defaults(context.arguments)
+        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
+        KernelFunctionFromPrompt._rebuild_context()
+        prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
+        stack: list[Callable[[PromptRenderContext], Coroutine[Any, Any, None]]] = [self._inner_render_prompt]
+        index = 0
+        for _, filter in context.kernel.prompt_rendering_filters:
+            stack.append(partial(filter, next=stack[index]))  # type: ignore
+            index += 1
+        await stack[-1](prompt_render_context)
+        if not prompt_render_context.rendered_prompt:
+            raise PromptRenderingException("Prompt rendering failed")
+        return PromptRenderingResult(
+            rendered_prompt=prompt_render_context.rendered_prompt,
+            ai_service=service,
+            execution_settings=execution_settings,
+        )
+
+    async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
+        context.rendered_prompt = await self.prompt_template.render(context.kernel, context.arguments)
+
+    @staticmethod
+    def _rebuild_context() -> None:
+        from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
+        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+        PromptRenderContext.model_rebuild()
 
     async def _handle_complete_chat(
         self,
@@ -234,39 +296,6 @@ through prompt_template_config or in the prompt_template."
             value=completions,
             metadata=metadata,
         )
-
-    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
-        """Invokes the function stream with the given arguments."""
-        self.update_arguments_with_defaults(context.arguments)
-        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
-
-        prompt = await self.prompt_template.render(context.kernel, context.arguments)
-
-        if isinstance(service, ChatCompletionClientBase):
-            context.result = FunctionResult(
-                function=self.metadata,
-                value=self._handle_complete_chat_stream(
-                    kernel=context.kernel,
-                    service=service,
-                    execution_settings=execution_settings,
-                    prompt=prompt,
-                    arguments=context.arguments,
-                ),
-            )
-            return
-
-        if isinstance(service, TextCompletionClientBase):
-            context.result = FunctionResult(
-                function=self.metadata,
-                value=self._handle_complete_text_stream(  # type: ignore
-                    service=service,
-                    execution_settings=execution_settings,
-                    prompt=prompt,
-                ),
-            )
-            return
-
-        raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
 
     async def _handle_complete_chat_stream(
         self,

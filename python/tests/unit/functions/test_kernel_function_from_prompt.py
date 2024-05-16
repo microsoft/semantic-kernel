@@ -10,6 +10,10 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionInitializationError
+from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -344,3 +348,39 @@ def test_from_directory_config_only():
             ),
             plugin_name="test",
         )
+
+
+@pytest.mark.asyncio
+async def test_prompt_render(kernel: Kernel):
+    kernel.add_service(OpenAIChatCompletion(service_id="default", ai_model_id="test"))
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt="test",
+        template_format="semantic-kernel",
+    )
+    KernelFunction._rebuild_context()
+    context = FunctionInvocationContext(function=function, kernel=kernel, arguments=KernelArguments())
+    prompt_render_result = await function._render_prompt(context)
+    assert prompt_render_result.rendered_prompt == "test"
+
+
+@pytest.mark.asyncio
+async def test_prompt_render_with_filter(kernel: Kernel):
+    kernel.add_service(OpenAIChatCompletion(service_id="default", ai_model_id="test"))
+
+    @kernel.filter("prompt_rendering")
+    async def prompt_rendering_filter(context: PromptRenderContext, next):
+        await next(context)
+        context.rendered_prompt = f"preface {context.rendered_prompt or ''}"
+
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt="test",
+        template_format="semantic-kernel",
+    )
+    KernelFunction._rebuild_context()
+    context = FunctionInvocationContext(function=function, kernel=kernel, arguments=KernelArguments())
+    prompt_render_result = await function._render_prompt(context)
+    assert prompt_render_result.rendered_prompt == "preface test"

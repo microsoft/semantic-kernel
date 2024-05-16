@@ -252,8 +252,8 @@ class KernelFunction(KernelBaseModel):
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
         stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal_stream]
         index = 0
-        for _, hook in kernel.function_invocation_filters:
-            stack.append(functools.partial(hook, next=stack[index]))  # type: ignore
+        for _, filter in kernel.function_invocation_filters:
+            stack.append(functools.partial(filter, next=stack[index]))  # type: ignore
             index += 1
         await stack[-1](function_context)
         if function_context.result is not None:
