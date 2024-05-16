@@ -148,13 +148,13 @@ internal abstract class ClientCore
                     throw new KernelException("Text completions not found");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (activity is not null)
             {
-                activity?.SetError(ex);
+                activity.SetError(ex);
                 if (responseData != null)
                 {
                     // Capture available metadata even if the operation failed.
-                    activity?
+                    activity
                         .SetResponseId(responseData.Id)
                         .SetPromptTokenUsage(responseData.Usage.PromptTokens)
                         .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
@@ -190,9 +190,9 @@ internal abstract class ClientCore
         {
             response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (activity is not null)
         {
-            activity?.SetError(ex);
+            activity.SetError(ex);
             throw;
         }
 
@@ -209,9 +209,9 @@ internal abstract class ClientCore
                         break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -402,13 +402,13 @@ internal abstract class ClientCore
                         throw new KernelException("Chat completions not found");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     if (responseData != null)
                     {
                         // Capture available metadata even if the operation failed.
-                        activity?
+                        activity
                             .SetResponseId(responseData.Id)
                             .SetPromptTokenUsage(responseData.Usage.PromptTokens)
                             .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
@@ -671,9 +671,9 @@ internal abstract class ClientCore
                 {
                     response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -690,9 +690,9 @@ internal abstract class ClientCore
                                 break;
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (activity is not null)
                         {
-                            activity?.SetError(ex);
+                            activity.SetError(ex);
                             throw;
                         }
 

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -25,6 +26,8 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// </summary>
 internal sealed class MistralClient
 {
+    private const string ModelProvider = "mistralai";
+
     internal MistralClient(
         string modelId,
         HttpClient httpClient,
@@ -56,18 +59,56 @@ internal sealed class MistralClient
 
         for (int requestIndex = 1; ; requestIndex++)
         {
-            using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: false);
-            var responseData = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            if (responseData is null || responseData.Choices is null || responseData.Choices.Count == 0)
+            ChatCompletionResponse? responseData = null;
+            List<ChatMessageContent> responseContent;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory, mistralExecutionSettings))
             {
-                throw new KernelException("Chat completions not found");
+                try
+                {
+                    using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: false);
+                    responseData = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                    if (responseData is null || responseData.Choices is null || responseData.Choices.Count == 0)
+                    {
+                        throw new KernelException("Chat completions not found");
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+
+                    // Capture available metadata even if the operation failed.
+                    if (responseData is not null)
+                    {
+                        if (responseData.Id is string id)
+                        {
+                            activity.SetResponseId(id);
+                        }
+
+                        if (responseData.Usage is MistralUsage usage)
+                        {
+                            if (usage.PromptTokens is int promptTokens)
+                            {
+                                activity.SetPromptTokenUsage(promptTokens);
+                            }
+                            if (usage.CompletionTokens is int completionTokens)
+                            {
+                                activity.SetCompletionTokenUsage(completionTokens);
+                            }
+                        }
+                    }
+
+                    throw;
+                }
+
+                responseContent = this.ToChatMessageContent(modelId, responseData);
+                activity?.SetCompletionResponse(responseContent, responseData.Usage?.PromptTokens, responseData.Usage?.CompletionTokens);
             }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
             if (!autoInvoke || responseData.Choices.Count != 1)
             {
-                return this.ToChatMessageContent(modelId, responseData);
+                return responseContent;
             }
 
             // Get our single result and extract the function call information. If this isn't a function call, or if it is
@@ -78,7 +119,7 @@ internal sealed class MistralClient
             MistralChatChoice chatChoice = responseData.Choices[0]; // TODO Handle multiple choices
             if (!chatChoice.IsToolCall)
             {
-                return this.ToChatMessageContent(modelId, responseData);
+                return responseContent;
             }
 
             if (this._logger.IsEnabled(LogLevel.Debug))
@@ -237,35 +278,75 @@ internal sealed class MistralClient
             toolCalls?.Clear();
 
             // Stream the responses
-            var response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId, cancellationToken);
-            string? streamedRole = null;
-            await foreach (var update in response.ConfigureAwait(false))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this._endpoint, this._modelId, ModelProvider, chatHistory, mistralExecutionSettings))
             {
-                // If we're intending to invoke function calls, we need to consume that function call information.
-                if (autoInvoke)
+                // Make the request.
+                IAsyncEnumerable<StreamingChatMessageContent> response;
+                try
                 {
-                    if (update.InnerContent is not MistralChatCompletionChunk completionChunk || completionChunk.Choices is null || completionChunk.Choices?.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    MistralChatCompletionChoice chatChoice = completionChunk!.Choices![0]; // TODO Handle multiple choices
-                    streamedRole ??= chatChoice.Delta!.Role;
-                    if (chatChoice.IsToolCall)
-                    {
-                        // Create a copy of the tool calls to avoid modifying the original list
-                        toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls!);
-
-                        // Add the original assistant message to the chatRequest; this is required for the service
-                        // to understand the tool call responses. Also add the result message to the caller's chat
-                        // history: if they don't want it, they can remove it, but this makes the data available,
-                        // including metadata like usage.
-                        chatRequest.AddMessage(new MistralChatMessage(streamedRole, completionChunk.GetContent(0)) { ToolCalls = chatChoice.ToolCalls });
-                        chatHistory.Add(this.ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
-                    }
+                    response = this.StreamChatMessageContentsAsync(chatHistory, mistralExecutionSettings, chatRequest, modelId, cancellationToken);
+                }
+                catch (Exception e) when (activity is not null)
+                {
+                    activity.SetError(e);
+                    throw;
                 }
 
-                yield return update;
+                var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
+                List<StreamingKernelContent>? streamedContents = activity is not null ? [] : null;
+                string? streamedRole = null;
+                try
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await responseEnumerator.MoveNextAsync())
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex) when (activity is not null)
+                        {
+                            activity.SetError(ex);
+                            throw;
+                        }
+
+                        StreamingChatMessageContent update = responseEnumerator.Current;
+
+                        // If we're intending to invoke function calls, we need to consume that function call information.
+                        if (autoInvoke)
+                        {
+                            if (update.InnerContent is not MistralChatCompletionChunk completionChunk || completionChunk.Choices is null || completionChunk.Choices?.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            MistralChatCompletionChoice chatChoice = completionChunk!.Choices![0]; // TODO Handle multiple choices
+                            streamedRole ??= chatChoice.Delta!.Role;
+                            if (chatChoice.IsToolCall)
+                            {
+                                // Create a copy of the tool calls to avoid modifying the original list
+                                toolCalls = new List<MistralToolCall>(chatChoice.ToolCalls!);
+
+                                // Add the original assistant message to the chatRequest; this is required for the service
+                                // to understand the tool call responses. Also add the result message to the caller's chat
+                                // history: if they don't want it, they can remove it, but this makes the data available,
+                                // including metadata like usage.
+                                chatRequest.AddMessage(new MistralChatMessage(streamedRole, completionChunk.GetContent(0)) { ToolCalls = chatChoice.ToolCalls });
+                                chatHistory.Add(this.ToChatMessageContent(modelId, streamedRole!, completionChunk, chatChoice));
+                            }
+                        }
+
+                        streamedContents?.Add(update);
+                        yield return update;
+                    }
+                }
+                finally
+                {
+                    activity?.EndStreaming(streamedContents);
+                    await responseEnumerator.DisposeAsync();
+                }
             }
 
             // If we don't have a function to invoke, we're done.
