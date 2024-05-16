@@ -10,15 +10,13 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 
 @pytest.mark.asyncio
 @patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
-async def test_openai_text_embedding_calls_with_parameters(mock_create) -> None:
+async def test_openai_text_embedding_calls_with_parameters(mock_create, openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
-    api_key = "test_api_key"
     texts = ["hello world", "goodbye world"]
     embedding_dimensions = 1536
 
     openai_text_embedding = OpenAITextEmbedding(
         ai_model_id=ai_model_id,
-        api_key=api_key,
     )
 
     await openai_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)

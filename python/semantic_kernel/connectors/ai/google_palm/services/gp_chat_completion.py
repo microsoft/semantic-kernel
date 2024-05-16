@@ -1,23 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
-from typing import Any, List, Optional, Tuple
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated, Any, List, Tuple
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
-from pydantic import PrivateAttr, StringConstraints
+from pydantic import PrivateAttr, StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
     GooglePalmChatPromptExecutionSettings,
     GooglePalmPromptExecutionSettings,
 )
+from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.author_role import AuthorRole
@@ -33,14 +28,15 @@ int_to_role = {1: AuthorRole.USER, 2: AuthorRole.SYSTEM, 3: AuthorRole.ASSISTANT
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-    _message_history: Optional[ChatHistory] = PrivateAttr()
-    service_id: Optional[str] = None
+    _message_history: ChatHistory | None = PrivateAttr()
+    service_id: str | None = None
 
     def __init__(
         self,
         ai_model_id: str,
-        api_key: str,
-        message_history: Optional[ChatHistory] = None,
+        api_key: str | None = None,
+        message_history: ChatHistory | None = None,
+        env_file_path: str | None = None,
     ):
         """
         Initializes a new instance of the GooglePalmChatCompletion class.
@@ -48,10 +44,27 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         Arguments:
             ai_model_id {str} -- GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-                https://developers.generativeai.google/products/palm
-            message_history {Optional[ChatHistory]} -- The message history to use for context. (Optional)
+            api_key {str | None} -- The optional API key to use. If not provided, will be read from either
+                the env vars or the .env settings file
+            message_history {ChatHistory | None} -- The message history to use for context. (Optional)
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
+                environment variables. (Optional)
         """
+        google_palm_settings = None
+        try:
+            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Error loading Google Palm pydantic settings: {e}")
+
+        api_key = api_key or (
+            google_palm_settings.api_key.get_secret_value()
+            if google_palm_settings and google_palm_settings.api_key
+            else None
+        )
+        ai_model_id = ai_model_id or (
+            google_palm_settings.chat_model_id if google_palm_settings and google_palm_settings.chat_model_id else None
+        )
+
         super().__init__(
             ai_model_id=ai_model_id,
             api_key=api_key,

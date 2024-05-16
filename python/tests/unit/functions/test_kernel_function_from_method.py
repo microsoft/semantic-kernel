@@ -191,9 +191,9 @@ async def test_invoke_gen_async():
 
 
 @pytest.mark.asyncio
-async def test_service_execution():
+async def test_service_execution(openai_unit_test_env):
     kernel = Kernel()
-    service = OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test")
+    service = OpenAIChatCompletion(service_id="test", ai_model_id="test")
     req_settings = service.get_prompt_execution_settings_class()(service_id="test")
     req_settings.temperature = 0.5
     kernel.add_service(service)

@@ -20,10 +20,6 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import (
-    azure_container_apps_settings_from_dot_env_as_dict,
-    azure_openai_settings_from_dot_env_as_dict,
-)
 
 auth_token: AccessToken | None = None
 
@@ -56,12 +52,11 @@ kernel = Kernel()
 
 service_id = "sessions-tool"
 chat_service = AzureChatCompletion(
-    service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    service_id=service_id,
 )
 kernel.add_service(chat_service)
 
 sessions_tool = SessionsPythonTool(
-    **azure_container_apps_settings_from_dot_env_as_dict(),
     auth_callback=auth_callback,
 )
 

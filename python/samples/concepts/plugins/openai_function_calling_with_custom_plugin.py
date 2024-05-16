@@ -3,12 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
@@ -21,7 +16,6 @@ from semantic_kernel.core_plugins.time_plugin import TimePlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as_dict, openai_settings_from_dot_env
 
 
 class WeatherPlugin:
@@ -55,14 +49,12 @@ async def main():
     if use_azure_openai:
         # Please make sure your AzureOpenAI Deployment allows for function calling
         ai_service = AzureChatCompletion(
-            service_id=service_id, **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+            service_id=service_id,
         )
     else:
-        api_key, _ = openai_settings_from_dot_env()
         ai_service = OpenAIChatCompletion(
             service_id=service_id,
             ai_model_id="gpt-3.5-turbo-1106",
-            api_key=api_key,
         )
     kernel.add_service(ai_service)
 
