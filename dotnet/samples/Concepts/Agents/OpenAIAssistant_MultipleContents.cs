@@ -127,9 +127,9 @@ public class OpenAIAssistant_MultipleContents(ITestOutputHelper output) : BaseTe
             var uri = new Uri($"https://api.openai.com/v1/files/{file.Id}/content");
             var content = mimeType switch
             {
-                "image/jpeg" => new ImageContent(data, mimeType, uri: uri, innerContent: fileName, metadata: metadata),
-                "audio/wav" => new AudioContent(data, mimeType, uri, fileName, metadata: metadata),
-                _ => new BinaryContent(data, mimeType, uri, fileName, metadata: metadata)
+                "image/jpeg" => new ImageContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata },
+                "audio/wav" => new AudioContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata },
+                _ => new BinaryContent(data, mimeType) { Uri = uri, InnerContent = fileName, Metadata = metadata }
             };
 
             Console.WriteLine($"File: {fileName} - {mimeType}");
@@ -140,12 +140,5 @@ public class OpenAIAssistant_MultipleContents(ITestOutputHelper output) : BaseTe
             // Delete the test file remotely
             await openAIClient.DeleteFileAsync(file.Id);
         }
-    }
-
-    public async Task MultipleContentTypesAsync()
-    {
-        var audio = new AudioContent();
-        var image = new ImageContent();
-        var binary = new BinaryContent();
     }
 }

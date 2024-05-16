@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -9,29 +8,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents image content.
 /// </summary>
-// To be retrocompatible with the non-experimental ImageContent it needs to have a different behavior
-// than the base class BinaryContent breaking the Liskov Substitution Principle (LSP).
+#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 public class ImageContent : BinaryContent
+#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 {
-    private string? _dataUri;
-
-    [JsonPropertyName("uri")]
-    /// <inheritdoc />
-    public override Uri? Uri { get; set; }
-
-    /// <inheritdoc />
-    [JsonPropertyName("data")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public override ReadOnlyMemory<byte>? Data { get; set; }
-
-    /// <inheritdoc />
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public override string? DataUri
-    {
-        get => this.GetDataUri();
-        set => this.SetDataUri(value);
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
@@ -44,106 +24,24 @@ public class ImageContent : BinaryContent
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
     /// <param name="uri">The URI of image.</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    public ImageContent(
-        Uri uri,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(
-            dataUri: null,
-            uri: null,
-            innerContent,
-            modelId,
-            metadata)
+    public ImageContent(Uri uri) : base(uri)
     {
-        this.Uri = uri;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
-    /// <param name="data">The Data used as DataUri for the image.</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
-    /// <param name="mimeType">The MIME type of the image content.</param>
-    /// <param name="uri">Reference to the image.</param>
-    public ImageContent(
-        ReadOnlyMemory<byte> data,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null,
-
-        // Need to add as last parameters to keep consistency, prevent ambiguity errors and avoid breaking changes.
-        string? mimeType = null,
-        Uri? uri = null)
-        : base(
-            data: data,
-            mimeType: mimeType,
-            uri: uri,
-            innerContent,
-            modelId,
-            metadata)
+    /// <param name="dataUri">DataUri of the image</param>
+    public ImageContent(string? dataUri) : base(dataUri)
     {
     }
 
     /// <summary>
-    /// Returns the string representation of the image.
-    /// In-memory images will be represented as DataUri
-    /// Remote Uri images will be represented as is
+    /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
-    /// <remarks>
-    /// When Data is provided it takes precedence over URI
-    /// </remarks>
-    public override string ToString()
+    /// <param name="data">Byte array of the image</param>
+    /// <param name="mimeType">Mime type of the image</param>
+    public ImageContent(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
     {
-        return this.GetDataUri() ?? this.Uri?.ToString() ?? string.Empty;
-    }
-
-    private string? GetDataUri()
-    {
-        if (this._dataUri is not null)
-        {
-            return this._dataUri;
-        }
-
-        if (this.Data is null || string.IsNullOrEmpty(this.MimeType))
-        {
-            return null;
-        }
-
-        return $"data:{this.MimeType};base64,{Convert.ToBase64String(this.Data.Value.ToArray())}";
-    }
-
-    private void SetDataUri(string? dataUri)
-    {
-        if (dataUri is null)
-        {
-            this._dataUri = null;
-            return;
-        }
-
-        var isDataUri = dataUri?.StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true;
-        if (!isDataUri)
-        {
-            throw new ArgumentException("Invalid data uri", nameof(dataUri));
-        }
-
-        this._dataUri = dataUri;
-
-        try
-        {
-            this.Uri = new Uri(dataUri);
-        }
-        catch (UriFormatException)
-        {
-            // If the dataUri is too big this will fail and no Uri will be set to the property.
-        }
-
-        // Do not reset the Data and MimeTypes like Binary would do to keep consistency
-        // with the Uri and Data individualities.
     }
 }

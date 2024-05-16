@@ -47,7 +47,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
 
         content.DataUri = "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==";
 
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
 
         serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content After: {serialized}");
@@ -70,7 +70,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         content.Uri = new Uri("https://fake-random-test-host:123");
         content.DataUri = null;
 
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
 
         serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content After: {serialized}");
@@ -141,25 +141,5 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Deserialized ByteArray: {byteArray}");
 
         Assert.Equal(1, invocations);
-    }
-}
-
-public class Contents_ImageV2Content(ITestOutputHelper output) : BaseTest(output)
-{
-    [Fact]
-    public Task Serialization()
-    {
-        var content = new ImageContentNext(uri: new Uri("https://fake-random-test-host:123"));
-        var serialized = JsonSerializer.Serialize(content);
-
-        Console.WriteLine($"Content ToString: {content}");
-
-        Console.WriteLine($"Serialized Content: {serialized}");
-
-        var deserializedContent = JsonSerializer.Deserialize<ImageContentNext>((string)serialized);
-
-        Console.WriteLine($"Deserialized Content ToString: {deserializedContent}");
-
-        return Task.CompletedTask;
     }
 }

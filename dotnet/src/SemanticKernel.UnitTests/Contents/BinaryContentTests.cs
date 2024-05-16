@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -18,6 +17,12 @@ public sealed class BinaryContentTests
 
         Assert.Equal("{}",
             JsonSerializer.Serialize(new BinaryContent(dataUri: null)));
+
+        Assert.Equal("{}",
+            JsonSerializer.Serialize(new BinaryContent(uri: null)));
+
+        Assert.Equal("""{"uri":"http://localhost/"}""",
+            JsonSerializer.Serialize(new Uri("http://localhost/")));
 
         Assert.Equal("""{"mimeType":"application/octet-stream","data":"AQIDBA=="}""",
             JsonSerializer.Serialize(new BinaryContent(
@@ -39,7 +44,7 @@ public sealed class BinaryContentTests
         Assert.Null(content.DataUri);
         Assert.Null(content.MimeType);
         Assert.Null(content.Uri);
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
 
         // Data + MimeType only
         content = JsonSerializer.Deserialize<BinaryContent>("""{"mimeType":"application/octet-stream","data":"AQIDBA=="}""")!;
@@ -48,7 +53,7 @@ public sealed class BinaryContentTests
         Assert.NotNull(content.Data);
         Assert.Equal(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), content.Data!.Value);
         Assert.Equal("application/octet-stream", content.MimeType);
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
 
         // Uri referenced content-only 
         content = JsonSerializer.Deserialize<BinaryContent>("""{"mimeType":"application/octet-stream","uri":"http://localhost/"}""")!;
@@ -57,7 +62,7 @@ public sealed class BinaryContentTests
         Assert.Null(content.DataUri);
         Assert.Equal("application/octet-stream", content.MimeType);
         Assert.Equal(new Uri("http://localhost/"), content.Uri);
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
 
         // Using extra metadata
         content = JsonSerializer.Deserialize<BinaryContent>("""
@@ -76,7 +81,7 @@ public sealed class BinaryContentTests
         Assert.NotNull(content.Data);
         Assert.Equal(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), content.Data!.Value);
         Assert.Equal("text/plain", content.MimeType);
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
         Assert.Equal("gpt-4", content.ModelId);
         Assert.Equal("value", content.Metadata!["key"]!.ToString());
     }
@@ -85,12 +90,12 @@ public sealed class BinaryContentTests
     public void ItCanBecomeReadableAfterProvidingDataUri()
     {
         var content = new BinaryContent(new Uri("http://localhost/"));
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
         Assert.Equal("http://localhost/", content.Uri?.ToString());
         Assert.Null(content.MimeType);
 
         content.DataUri = "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==";
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
         Assert.Equal("text/plain", content.MimeType);
         Assert.Equal("http://localhost/", content.Uri!.ToString());
         Assert.Equal(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA=="), content.Data!.Value.ToArray());
@@ -100,12 +105,12 @@ public sealed class BinaryContentTests
     public void ItCanBecomeReadableAfterProvidingData()
     {
         var content = new BinaryContent(new Uri("http://localhost/"));
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
         Assert.Equal("http://localhost/", content.Uri?.ToString());
         Assert.Null(content.MimeType);
 
         content.Data = new ReadOnlyMemory<byte>(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA=="));
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
         Assert.Null(content.MimeType);
         Assert.Equal("http://localhost/", content.Uri!.ToString());
         Assert.Equal(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA=="), content.Data!.Value.ToArray());
@@ -115,10 +120,10 @@ public sealed class BinaryContentTests
     public void ItBecomesUnreadableAfterRemovingData()
     {
         var content = new BinaryContent(data: new ReadOnlyMemory<byte>(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA==")), mimeType: "text/plain");
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
 
         content.Data = null;
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
         Assert.Null(content.DataUri);
     }
 
@@ -126,10 +131,10 @@ public sealed class BinaryContentTests
     public void ItBecomesUnreadableAfterRemovingDataUri()
     {
         var content = new BinaryContent(data: new ReadOnlyMemory<byte>(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA==")), mimeType: "text/plain");
-        Assert.True(content.CanRead());
+        Assert.True(content.HasData);
 
         content.DataUri = null;
-        Assert.False(content.CanRead());
+        Assert.False(content.HasData);
         Assert.Null(content.DataUri);
     }
 
@@ -163,8 +168,8 @@ public sealed class BinaryContentTests
         // Arrange
         var content = new BinaryContent(
             data: new ReadOnlyMemory<byte>(Convert.FromBase64String("VGhpcyBpcyBhIHRleHQgY29udGVudA==")),
-            mimeType: "text/plain",
-            uri: new Uri("http://localhost/"));
+            mimeType: "text/plain")
+        { Uri = new Uri("http://localhost/") };
 
         // Act
         content.DataUri = "data:image/jpeg;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";

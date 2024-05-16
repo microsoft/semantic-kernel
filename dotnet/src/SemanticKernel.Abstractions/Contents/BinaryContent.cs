@@ -16,15 +16,15 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0010")]
 public class BinaryContent : KernelContent
 {
-    private string? _cachedDataUri;
-    private ReadOnlyMemory<byte>? _cachedData;
+    private string? _dataUri;
+    private ReadOnlyMemory<byte>? _data;
     private Uri? _referencedUri;
 
     /// <summary>
     /// The binary content.
     /// </summary>
     [JsonIgnore, Obsolete("Use Data instead")]
-    public ReadOnlyMemory<byte>? Content => Data;
+    public ReadOnlyMemory<byte>? Content => this.Data;
 
     /// <summary>
     /// Gets the referenced Uri of the content.
@@ -59,12 +59,13 @@ public class BinaryContent : KernelContent
     }
 
     /// <summary>
-    /// Indicates whether the content can be read. If false content usually must be referenced by URI.
+    /// Indicates whether the content has binary data. If false content usually must be referenced by URI.
     /// </summary>
-    /// <returns>True if the content can be read, false otherwise.</returns>
-    public bool CanRead()
-        => this._cachedData is not null
-        || this._cachedDataUri is not null;
+    /// <returns>True if the content has binary data, false otherwise.</returns>
+    [JsonIgnore]
+    public bool HasData
+        => this._data is not null
+        || this._dataUri is not null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class with no content.
@@ -116,6 +117,7 @@ public class BinaryContent : KernelContent
         this.Data = data;
     }
 
+    #region Private
     /// <summary>
     /// Sets the Uri of the content.
     /// </summary>
@@ -146,10 +148,10 @@ public class BinaryContent : KernelContent
     {
         if (dataUri is null)
         {
-            this._cachedDataUri = null;
+            this._dataUri = null;
 
             // Invalidate the current bytearray
-            this._cachedData = null;
+            this._data = null;
             return;
         }
 
@@ -162,10 +164,10 @@ public class BinaryContent : KernelContent
         // Gets the mimetype from the DataUri and automatically sets it.
         this.MimeType = dataUri.Substring(5, dataUri.IndexOf(';') - 5);
 
-        this._cachedDataUri = dataUri;
+        this._dataUri = dataUri;
 
         // Invalidate the current bytearray
-        this._cachedData = null;
+        this._data = null;
     }
 
     /// <summary>
@@ -175,8 +177,8 @@ public class BinaryContent : KernelContent
     private void SetData(ReadOnlyMemory<byte>? data)
     {
         // Overriding the content will invalidate the previous dataUri
-        this._cachedDataUri = null;
-        this._cachedData = data;
+        this._dataUri = null;
+        this._data = data;
     }
 
     /// <summary>
@@ -194,14 +196,14 @@ public class BinaryContent : KernelContent
     /// <returns></returns>
     private string? GetDataUri()
     {
-        if (!this.CanRead())
+        if (!this.HasData)
         {
             return null;
         }
 
-        if (this._cachedDataUri is not null)
+        if (this._dataUri is not null)
         {
-            return this._cachedDataUri;
+            return this._dataUri;
         }
 
         // If the Uri is not a DataUri, then we need to get from byteArray (caching if needed) to generate it.
@@ -221,17 +223,19 @@ public class BinaryContent : KernelContent
             throw new InvalidOperationException("Can't get the data uri with without a mime type defined for the content.");
         }
 
-        this._cachedDataUri = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
-        return this._cachedDataUri;
+        this._dataUri = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
+        return this._dataUri;
     }
 
     private ReadOnlyMemory<byte>? GetCachedByteArrayContent()
     {
-        if (this._cachedData is null && this._cachedDataUri is not null)
+        if (this._data is null && this._dataUri is not null)
         {
-            this._cachedData = Convert.FromBase64String(this._cachedDataUri!.Substring(this._cachedDataUri.IndexOf(',') + 1));
+            this._data = Convert.FromBase64String(this._dataUri!.Substring(this._dataUri.IndexOf(',') + 1));
         }
 
-        return this._cachedData;
+        return this._data;
     }
+
+    #endregion
 }

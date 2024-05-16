@@ -25,23 +25,23 @@ public sealed class ImageContentTests
         var result2 = content2.ToString();
 
         // Assert
-        Assert.Empty(result1);
-        Assert.Equal("https://endpoint/", result2);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result2);
     }
 
     [Fact]
-    public void ToStringForDataUriReturnsDataUriString()
+    public void ToStringForDataUriReturnsTypeString()
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data) { MimeType = "text/plain" };
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal(dataUriToExpect, result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
     [Fact]
@@ -49,18 +49,14 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content1 = new ImageContent(data)
-        {
-            MimeType = "text/plain",
-            Uri = new Uri("https://endpoint/")
-        };
+        var content1 = new ImageContent(data, "text/plain") { Uri = new Uri("https://endpoint/") };
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal(dataUriToExpect, result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
     [Fact]
@@ -71,23 +67,23 @@ public sealed class ImageContentTests
 
         // Assert
         Assert.Throws<ArgumentException>(()
-            => new ImageContent(data) { MimeType = "text/plain" });
+            => new ImageContent(data, "text/plain"));
     }
 
     [Fact]
-    public void ToStringForDataUriFromBytesReturnsDataUriString()
+    public void ToStringForDataUriFromBytesReturnsType()
     {
         // Arrange
         var bytes = System.Text.Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
-        var content1 = new ImageContent(data) { MimeType = "text/plain" };
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal(dataUriToExpect, result1);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
     [Fact]
@@ -96,47 +92,56 @@ public sealed class ImageContentTests
         // Arrange
         using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
         var data = BinaryData.FromStream(ms);
-        var content1 = new ImageContent(data) { MimeType = "text/plain" };
+        var content1 = new ImageContent(data, "text/plain");
 
         // Act
         var result1 = content1.ToString();
         var dataUriToExpect = $"data:text/plain;base64,{Convert.ToBase64String(data.ToArray())}";
 
         // Assert
-        Assert.Equal(dataUriToExpect, result1);
-
-        // Assert throws if mediatype is null
-        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms)) { MimeType = null! });
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", result1);
     }
 
     [Fact]
-    public void InMemoryImageWithoutMediaTypeReturnsEmptyString()
+    public void DataConstructorWhenDataIsEmptyShouldThrow()
     {
         // Arrange
-        var sut = new ImageContent(new byte[] { 1, 2, 3 }) { MimeType = null };
+        using var ms = new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes("this is a test"));
+
+        var data = BinaryData.FromStream(ms);
+
+        // Assert throws if mediatype is null
+        Assert.Throws<ArgumentException>(() => new ImageContent(BinaryData.FromStream(ms), mimeType: null));
+    }
+
+    [Fact]
+    public void ToStringInMemoryImageWithoutMediaTypeReturnsType()
+    {
+        // Arrange
+        var sut = new ImageContent(new byte[] { 1, 2, 3 }, mimeType: null);
 
         // Act
         var dataUrl = sut.ToString();
 
         // Assert
-        Assert.Empty(dataUrl);
+        Assert.Equal($"Microsoft.SemanticKernel.{nameof(ImageContent)}", dataUrl?.ToString());
     }
 
     // Ensure retrocompatibility with ImageContent Pre-BinaryContent Version
 
     [Theory]
-    [InlineData("", null, "")]
-    [InlineData(null, null, "")]
-    [InlineData("", "http://localhost:9090/", "http://localhost:9090/")]
-    [InlineData(null, "http://localhost:9090/", "http://localhost:9090/")]
-    [InlineData("image/png", null, "data:image/png;base64,dGhpcyBpcyBhIHRlc3Q=")]
-    [InlineData("image/png", "http://localhost:9090", "data:image/png;base64,dGhpcyBpcyBhIHRlc3Q=")]
+    [InlineData("", null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData(null, null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData("", "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData(null, "http://localhost:9090/", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData("image/png", null, $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
+    [InlineData("image/png", "http://localhost:9090", $"Microsoft.SemanticKernel.{nameof(ImageContent)}")]
     public void ToStringShouldReturn(string? mimeType, string? path, string expectedToString)
     {
         // Arrange
         var bytes = Encoding.UTF8.GetBytes("this is a test");
         var data = BinaryData.FromBytes(bytes);
-        var content1 = new ImageContent(data) { MimeType = mimeType };
+        var content1 = new ImageContent(data, mimeType);
         if (path is not null)
         {
             content1.Uri = new Uri(path);
@@ -154,24 +159,24 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data) { MimeType = "text/plain" };
+        var content = new ImageContent(data, "text/plain");
 
         // Act
-        var toStringBefore = content.ToString();
+        var serializeBefore = JsonSerializer.Serialize(content);
 
-        // Changing the mimetype to image/jpeg in the DataUri
-        content.Uri = new Uri("data:image/jpeg;base64,Q2hhVEZ1VGgzTTE2VQ==");
+        // Changing the Uri to a absolute file /foo.txt path
+        content.Uri = new Uri("file:///foo.txt");
 
-        var toStringAfter = content.ToString();
+        var serializeAfter = JsonSerializer.Serialize(content);
 
         // Assert
-        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", toStringBefore);
+        Assert.Equal("""{"mimeType":"image/jpeg","uri":"file:///foo.txt","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
 
         // No changes happen to the MimeType or Data
-        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", toStringAfter);
+        Assert.Equal("""{"mimeType":"image/jpeg","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
 
         // Uri behaves independently of other properties
-        Assert.Equal("data:image/jpeg;base64,Q2hhVEZ1VGgzTTE2VQ==", content.Uri?.ToString());
+        Assert.Equal("file:///foo.txt", content.Uri?.ToString());
 
         // Data and MimeType remain the same
         Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIHRlc3Q="), content.Data!.Value.ToArray());
@@ -184,7 +189,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data) { MimeType = "text/plain" };
+        var content = new ImageContent(data, "text/plain");
 
         // Act
         var toStringBefore = content.ToString();
@@ -216,7 +221,7 @@ public sealed class ImageContentTests
     {
         // Arrange
         var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data) { MimeType = "text/plain" };
+        var content = new ImageContent(data, "text/plain");
 
         // Act
         var toStringBefore = content.ToString();
@@ -241,7 +246,6 @@ public sealed class ImageContentTests
 
         // Data is updated
         Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIG5ldyB0ZXN0"), content.Data!.Value.ToArray());
-        Assert.Equal(newData.ToArray(), content.Data!.Value.ToArray());
     }
 
     [Fact]
@@ -251,7 +255,7 @@ public sealed class ImageContentTests
         var serialized = JsonSerializer.Serialize(content);
         var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
 
-        Assert.Equal("""{"Uri":null}""", serialized);
+        Assert.Equal("{}", serialized);
 
         Assert.NotNull(deserialized);
         Assert.Null(deserialized.Uri);
@@ -288,35 +292,5 @@ public sealed class ImageContentTests
         Assert.Null(deserialized.Metadata);
 #pragma warning restore CS8604 // Possible null reference argument.
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-    }
-
-    [Theory]
-    [InlineData("dGhpcyBpcyBhIHRlc3Q=")]
-    [InlineData("dGhpcyBpcyBhIG5ldyB0ZXN0")]
-    public void DataConstructorSerializationAndDeserializationAsExpected(string base64data)
-    {
-        var data = Convert.FromBase64String(base64data);
-        var expectedUri = new Uri("data:image/png;base64,Q2hhVEZ1VGgzTTE2VQ==");
-        var content = new ImageContent(data)
-        {
-            Uri = expectedUri
-        };
-
-        var serialized = JsonSerializer.Serialize(content);
-
-        var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
-
-        // Image content allows two distinct data in the same instance
-        Assert.Equal($"{{\"uri\":\"{expectedUri}\",\"data\":\"{base64data}\"}}", serialized);
-
-        Assert.NotNull(deserialized);
-
-        Assert.Equal(data, deserialized.Data!.Value.ToArray());
-        Assert.Equal(expectedUri, deserialized.Uri);
-
-        Assert.Null(deserialized.MimeType);
-        Assert.Null(deserialized.InnerContent);
-        Assert.Null(deserialized.ModelId);
-        Assert.Null(deserialized.Metadata);
     }
 }
