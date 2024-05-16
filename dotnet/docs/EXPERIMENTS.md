@@ -6,7 +6,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 
 ```xml
 <PropertyGroup>
-  <NoWarn>SKEXP0001,SKEXP0010</NoWarn>
+  <NoWarn>$(NoWarn);SKEXP0001,SKEXP0010</NoWarn>
 </PropertyGroup>
 ```
 

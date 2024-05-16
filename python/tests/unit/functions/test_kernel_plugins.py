@@ -511,7 +511,7 @@ async def test_from_openai_from_file(mock_parse_openai_manifest):
         plugin_name="TestOpenAIPlugin",
         plugin_str=openai_spec,
         execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(),
+            http_client=AsyncMock(spec=httpx.AsyncClient),
             auth_callback=AsyncMock(),
             server_url_override="http://localhost",
             enable_dynamic_payload=True,

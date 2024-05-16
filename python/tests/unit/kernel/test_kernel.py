@@ -5,6 +5,7 @@ import sys
 from typing import Union
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 
 from semantic_kernel import Kernel
@@ -409,7 +410,7 @@ async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel
         plugin_name="TestOpenAIPlugin",
         plugin_str=openai_spec,
         execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(),
+            http_client=AsyncMock(spec=httpx.AsyncClient),
             auth_callback=AsyncMock(),
             server_url_override="http://localhost",
             enable_dynamic_payload=True,
