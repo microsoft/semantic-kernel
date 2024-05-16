@@ -68,6 +68,9 @@ dotnet user-secrets set "GoogleAI:ApiKey" "..."
 dotnet user-secrets set "HuggingFace:ModelId" "..."
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 
+dotnet user-secrets set "MistralAI:ChatModelId" "mistral-large-latest"
+dotnet user-secrets set "MistralAI:ApiKey" "..."
+
 dotnet user-secrets set "ApplicationInsights:ConnectionString" "..."
 ```
 
