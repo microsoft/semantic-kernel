@@ -367,7 +367,7 @@ async def test_prompt_render(kernel: Kernel):
 
 
 @pytest.mark.asyncio
-async def test_prompt_render_with_filter(kernel: Kernel):
+async def test_prompt_render_with_filter(kernel: Kernel, openai_unit_test_env):
     kernel.add_service(OpenAIChatCompletion(service_id="default", ai_model_id="test"))
 
     @kernel.filter("prompt_rendering")
