@@ -175,9 +175,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                         .ConfigureAwait(false);
                     chatResponses = this.ProcessChatResponse(geminiResponse);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -259,9 +259,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                                 break;
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (activity is not null)
                         {
-                            activity?.SetError(ex);
+                            activity.SetError(ex);
                             throw;
                         }
 

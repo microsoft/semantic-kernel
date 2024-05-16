@@ -145,9 +145,9 @@ internal sealed class HuggingFaceClient
 
             response = DeserializeResponse<TextGenerationResponse>(body);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (activity is not null)
         {
-            activity?.SetError(ex);
+            activity.SetError(ex);
             throw;
         }
 
@@ -200,9 +200,9 @@ internal sealed class HuggingFaceClient
                         break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
