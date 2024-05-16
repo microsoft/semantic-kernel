@@ -77,11 +77,24 @@ public sealed class Program
         Console.WriteLine();
 
         Console.WriteLine("Write a poem about John Doe and translate it to Italian.");
-        await RunAzureOpenAIChatAsync(kernel);
+        using (var _ = s_activitySource.StartActivity("Chat"))
+        {
+            await RunAzureOpenAIChatAsync(kernel);
+            Console.WriteLine();
+            await RunGoogleAIChatAsync(kernel);
+            Console.WriteLine();
+            await RunHuggingFaceChatAsync(kernel);
+        }
+
         Console.WriteLine();
-        await RunGoogleAIChatAsync(kernel);
         Console.WriteLine();
-        await RunHuggingFaceChatAsync(kernel);
+
+        Console.WriteLine("Get weather.");
+        using (var _ = s_activitySource.StartActivity("ToolCalls"))
+        {
+            await RunAzureOpenAIToolCallsAsync(kernel);
+            Console.WriteLine();
+        }
     }
 
     #region Private
@@ -99,16 +112,17 @@ public sealed class Program
     /// </summary>
     private static readonly ActivitySource s_activitySource = new("Telemetry.Example");
 
-    private const string AzureOpenAIChatServiceKey = "AzureOpenAIChat";
-    private const string GoogleAIGeminiChatServiceKey = "GoogleAIGeminiChat";
-    private const string HuggingFaceChatServiceKey = "HuggingFaceChat";
+    private const string AzureOpenAIServiceKey = "AzureOpenAI";
+    private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
+    private const string HuggingFaceServiceKey = "HuggingFace";
 
+    #region chat completion
     private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
     {
         Console.WriteLine("============= Azure OpenAI Chat Completion =============");
 
-        using var activity = s_activitySource.StartActivity(AzureOpenAIChatServiceKey);
-        SetTargetService(kernel, AzureOpenAIChatServiceKey);
+        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
+        SetTargetService(kernel, AzureOpenAIServiceKey);
         try
         {
             await RunChatAsync(kernel);
@@ -124,8 +138,8 @@ public sealed class Program
     {
         Console.WriteLine("============= Google Gemini Chat Completion =============");
 
-        using var activity = s_activitySource.StartActivity(GoogleAIGeminiChatServiceKey);
-        SetTargetService(kernel, GoogleAIGeminiChatServiceKey);
+        using var activity = s_activitySource.StartActivity(GoogleAIGeminiServiceKey);
+        SetTargetService(kernel, GoogleAIGeminiServiceKey);
 
         try
         {
@@ -142,8 +156,8 @@ public sealed class Program
     {
         Console.WriteLine("============= HuggingFace Chat Completion =============");
 
-        using var activity = s_activitySource.StartActivity(HuggingFaceChatServiceKey);
-        SetTargetService(kernel, HuggingFaceChatServiceKey);
+        using var activity = s_activitySource.StartActivity(HuggingFaceServiceKey);
+        SetTargetService(kernel, HuggingFaceServiceKey);
 
         try
         {
@@ -158,21 +172,54 @@ public sealed class Program
 
     private static async Task RunChatAsync(Kernel kernel)
     {
+        // Using non-streaming to get the poem.
         var poem = await kernel.InvokeAsync<string>(
             "WriterPlugin",
             "ShortPoem",
             new KernelArguments { ["input"] = "Write a poem about John Doe." });
-        var translatedPoem = await kernel.InvokeAsync<string>(
+        Console.WriteLine($"Poem:\n{poem}\n");
+
+        // Use streaming to translate the poem.
+        Console.WriteLine("Translated Poem:");
+        await foreach (var update in kernel.InvokeStreamingAsync<string>(
             "WriterPlugin",
             "Translate",
             new KernelArguments
             {
                 ["input"] = poem,
                 ["language"] = "Italian"
-            });
-
-        Console.WriteLine($"Poem:\n{poem}\n\nTranslated Poem:\n{translatedPoem}");
+            }))
+        {
+            Console.Write(update);
+        }
     }
+    #endregion
+
+    #region tool calls
+    private static async Task RunAzureOpenAIToolCallsAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= Azure OpenAI ToolCalls =============");
+
+        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+        try
+        {
+            await RunAutoToolCallAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static async Task RunAutoToolCallAsync(Kernel kernel)
+    {
+        var result = await kernel.InvokePromptAsync("What is the weather like in my location?");
+
+        Console.WriteLine(result);
+    }
+    #endregion
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
@@ -187,19 +234,21 @@ public sealed class Program
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId,
                 endpoint: TestConfiguration.AzureOpenAI.Endpoint,
                 apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: AzureOpenAIChatServiceKey)
+                serviceId: AzureOpenAIServiceKey)
             .AddGoogleAIGeminiChatCompletion(
                 modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
                 apiKey: TestConfiguration.GoogleAI.ApiKey,
-                serviceId: GoogleAIGeminiChatServiceKey)
+                serviceId: GoogleAIGeminiServiceKey)
             .AddHuggingFaceChatCompletion(
                 model: TestConfiguration.HuggingFace.ModelId,
                 endpoint: new Uri("https://api-inference.huggingface.co"),
                 apiKey: TestConfiguration.HuggingFace.ApiKey,
-                serviceId: HuggingFaceChatServiceKey);
+                serviceId: HuggingFaceServiceKey);
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        builder.Plugins.AddFromType<WeatherPlugin>();
+        builder.Plugins.AddFromType<LocationPlugin>();
 
         return builder.Build();
     }
@@ -240,9 +289,13 @@ public sealed class Program
                     service = targetService;
                     serviceSettings = targetServiceKey switch
                     {
-                        AzureOpenAIChatServiceKey => new OpenAIPromptExecutionSettings(),
-                        GoogleAIGeminiChatServiceKey => new GeminiPromptExecutionSettings(),
-                        HuggingFaceChatServiceKey => new HuggingFacePromptExecutionSettings(),
+                        AzureOpenAIServiceKey => new OpenAIPromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                        },
+                        GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings(),
+                        HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings(),
                         _ => null,
                     };
 
@@ -255,5 +308,24 @@ public sealed class Program
             return false;
         }
     }
+    #endregion
+
+    #region Plugins
+
+    public sealed class WeatherPlugin
+    {
+        [KernelFunction]
+        public string GetWeather(string location) => $"Weather in {location} is 70°F.";
+    }
+
+    public sealed class LocationPlugin
+    {
+        [KernelFunction]
+        public string GetCurrentLocation()
+        {
+            return "Seattle";
+        }
+    }
+
     #endregion
 }
