@@ -141,9 +141,9 @@ def test_init_prompt_execution_settings_dict():
 
 
 @pytest.mark.asyncio
-async def test_invoke_chat_stream():
+async def test_invoke_chat_stream(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -170,9 +170,9 @@ async def test_invoke_chat_stream():
 
 
 @pytest.mark.asyncio
-async def test_invoke_exception():
+async def test_invoke_exception(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -199,9 +199,9 @@ async def test_invoke_exception():
 
 
 @pytest.mark.asyncio
-async def test_invoke_text():
+async def test_invoke_text(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -224,9 +224,9 @@ async def test_invoke_text():
 
 
 @pytest.mark.asyncio
-async def test_invoke_exception_text():
+async def test_invoke_exception_text(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAITextCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -251,9 +251,9 @@ async def test_invoke_exception_text():
 
 
 @pytest.mark.asyncio
-async def test_invoke_defaults():
+async def test_invoke_defaults(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
@@ -292,9 +292,9 @@ def test_create_with_multiple_settings():
 
 
 @pytest.mark.asyncio
-async def test_create_with_multiple_settings_one_service_registered():
+async def test_create_with_multiple_settings_one_service_registered(openai_unit_test_env):
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="test2", ai_model_id="test", api_key="test"))
+    kernel.add_service(OpenAIChatCompletion(service_id="test2", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
         plugin_name="test",
