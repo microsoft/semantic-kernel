@@ -23,14 +23,13 @@ pytestmark = [
 
 
 @pytest.mark.asyncio
-async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, get_gp_config):
+async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
-    api_key = get_gp_config
 
     print("* Service: Google PaLM Chat Completion")
     print("* Model: chat-bison-001")
     model_id = "models/chat-bison-001"
-    palm_chat_completion = sk_gp.GooglePalmChatCompletion(ai_model_id=model_id, api_key=api_key)
+    palm_chat_completion = sk_gp.GooglePalmChatCompletion(ai_model_id=model_id)
     kernel.add_service(palm_chat_completion)
 
     exec_settings = PromptExecutionSettings(
@@ -49,5 +48,4 @@ async def test_gp_chat_service_with_plugins(setup_tldr_function_for_oai_models, 
     summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    # assert "First Law" not in output and ("human" in output or "Human" in output or "preserve" in output)
     assert len(output) > 0
