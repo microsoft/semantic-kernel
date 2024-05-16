@@ -58,10 +58,10 @@ public sealed class MistralAI_ChatPrompt(ITestOutputHelper output) : BaseTest(ou
     [Fact]
     public async Task ChatPromptAsync()
     {
-        const string ChatPrompt = @"
-            <message role=""system"">Respond in French.</message>
-            <message role=""user"">What is the best French cheese?</message>
-        ";
+        const string ChatPrompt = """
+            <message role="system">Respond in French.</message>
+            <message role="user">What is the best French cheese?</message>
+        """;
 
         var kernel = Kernel.CreateBuilder()
             .AddMistralChatCompletion(

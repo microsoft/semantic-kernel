@@ -31,7 +31,6 @@ public static class MistralAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(model);
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new MistralAIChatCompletionService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(serviceProvider)));
@@ -54,7 +53,6 @@ public static class MistralAIServiceCollectionExtensions
         string? serviceId = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(model);
 
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new MistralAITextEmbeddingGenerationService(model, apiKey, endpoint, HttpClientProvider.GetHttpClient(serviceProvider)));

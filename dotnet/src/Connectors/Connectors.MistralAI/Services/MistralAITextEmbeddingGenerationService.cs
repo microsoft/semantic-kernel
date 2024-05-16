@@ -29,8 +29,6 @@ public sealed class MistralAITextEmbeddingGenerationService : ITextEmbeddingGene
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public MistralAITextEmbeddingGenerationService(string modelId, string apiKey, Uri? endpoint = null, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
-
         this.Client = new MistralClient(
             modelId: modelId,
             endpoint: endpoint ?? httpClient?.BaseAddress,
