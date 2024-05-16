@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 from xml.etree.ElementTree import Element
 
@@ -23,6 +24,16 @@ class FunctionCallContent(KernelContent):
     index: int | None = None
     name: str | None = None
     arguments: str | None = None
+
+    @cached_property
+    def function_name(self) -> str:
+        """Get the function name."""
+        return self.split_name()[1]
+
+    @cached_property
+    def plugin_name(self) -> str | None:
+        """Get the plugin name."""
+        return self.split_name()[0]
 
     def __str__(self) -> str:
         return f"{self.name}({self.arguments})"

@@ -34,7 +34,8 @@ public static class MistralAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
             new MistralAIChatCompletionService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
@@ -61,7 +62,6 @@ public static class MistralAIKernelBuilderExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
-        Verify.NotNull(modelId);
 
         builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
             new MistralAITextEmbeddingGenerationService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)));
