@@ -424,8 +424,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         try:
             func_result = await kernel.invoke(**func.split_name_dict(), arguments=args_cloned)
         except Exception as exc:
-            logger.exception(f"Error occurred while invoking function {func.name}")
-            raise ServiceInvalidResponseError(f"Error occurred while invoking function {func.name}") from exc
+            logger.exception(f"Exception occurred while invoking function {func.name}, exception: {exc}")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=result,
+                result=f"Exception occurred while invoking function {func.name}, exception: {exc}",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=result, result=func_result
         )

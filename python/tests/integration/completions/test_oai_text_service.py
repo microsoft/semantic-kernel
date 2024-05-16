@@ -1,30 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
-import os
 
 import pytest
 from openai import AsyncOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 @pytest.mark.asyncio
-async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Text Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo-instruct")
-
     kernel.add_service(
-        sk_oai.OpenAITextCompletion(
-            service_id="text-completion", ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
-        ),
+        sk_oai.OpenAITextCompletion(service_id="text-completion", ai_model_id="gpt-3.5-turbo-instruct"),
     )
 
     exec_settings = PromptExecutionSettings(
@@ -50,16 +42,12 @@ async def test_oai_text_completion_with_plugins(setup_tldr_function_for_oai_mode
 
 
 @pytest.mark.asyncio
-async def test_oai_text_completion_with_plugins_with_provided_client(
-    setup_tldr_function_for_oai_models, get_oai_config
-):
+async def test_oai_text_completion_with_plugins_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Text Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo-instruct")
+    openai_settings = OpenAISettings.create()
+    api_key = openai_settings.api_key.get_secret_value()
+    org_id = openai_settings.org_id
 
     client = AsyncOpenAI(
         api_key=api_key,
@@ -100,27 +88,13 @@ async def test_oai_text_completion_with_plugins_with_provided_client(
 
 
 @pytest.mark.asyncio
-async def test_oai_text_stream_completion_with_plugins(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_azure_oai_text_stream_completion_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
-
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAI__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo-instruct"
-
-    print("* Service: Azure OpenAI Text Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureTextCompletion(
             service_id="text_completion",
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
         ),
     )
 
