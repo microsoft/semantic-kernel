@@ -5,7 +5,7 @@ import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.utils.sk_logging import setup_logging
+from semantic_kernel.utils.logging import setup_logging
 
 
 async def main():
