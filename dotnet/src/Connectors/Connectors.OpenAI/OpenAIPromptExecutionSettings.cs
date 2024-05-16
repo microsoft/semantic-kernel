@@ -254,6 +254,39 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Whether to return log probabilities of the output tokens or not.
+    /// If true, returns the log probabilities of each output token returned in the `content` of `message`.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("logprobs")]
+    public bool? EnableLogProbabilities
+    {
+        get => this._enableLogProbabilities;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._enableLogProbabilities = value;
+        }
+    }
+
+    /// <summary>
+    /// An integer specifying the number of most likely tokens to return at each token position, each with an associated log probability.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("top_logprobs")]
+    public int? LogProbabilitiesCount
+    {
+        get => this._logProbabilitiesCount;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._logProbabilitiesCount = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -294,7 +327,9 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
             User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt
+            ChatSystemPrompt = this.ChatSystemPrompt,
+            EnableLogProbabilities = this.EnableLogProbabilities,
+            LogProbabilitiesCount = this.LogProbabilitiesCount
         };
     }
 
@@ -370,6 +405,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
+    private bool? _enableLogProbabilities;
+    private int? _logProbabilitiesCount;
 
     #endregion
 }
