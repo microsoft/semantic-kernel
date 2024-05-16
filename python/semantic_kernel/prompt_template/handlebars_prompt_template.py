@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from pybars import Compiler, PybarsError
 from pydantic import PrivateAttr, field_validator
@@ -28,8 +28,11 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
     if not found, the literal value is returned.
 
     Args:
-        PromptTemplateConfig: The prompt template configuration
+        prompt_template_config (PromptTemplateConfig): The prompt template configuration
             This is checked if the template format is 'handlebars'
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unencoded input.
 
     Raises:
         ValueError: If the template format is not 'handlebars'
@@ -74,19 +77,30 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
             return ""
         if arguments is None:
             arguments = KernelArguments()
-        helpers = {}
+
+        arguments = self._get_trusted_arguments(arguments)
+        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
+        helpers: dict[str, Callable[..., Any]] = {}
         for plugin in kernel.plugins.values():
             helpers.update(
                 {
                     function.fully_qualified_name: create_template_helper_from_function(
-                        function, kernel, arguments, self.prompt_template_config.template_format
+                        function,
+                        kernel,
+                        arguments,
+                        self.prompt_template_config.template_format,
+                        allow_unsafe_function_output,
                     )
                     for function in plugin
                 }
             )
         helpers.update(HANDLEBAR_SYSTEM_HELPERS)
+
         try:
-            return self._template_compiler(arguments, helpers=helpers)
+            return self._template_compiler(
+                arguments,
+                helpers=helpers,
+            )
         except PybarsError as exc:
             logger.error(
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"
