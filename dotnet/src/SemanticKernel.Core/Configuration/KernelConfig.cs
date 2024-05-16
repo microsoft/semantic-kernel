@@ -7,6 +7,20 @@ namespace Microsoft.SemanticKernel;
 
 public class KernelConfig
 {
+    public string TextGenerationType { get; set; } = string.Empty;
+
+    public string EmbeddingGeneratorType { get; set; } = string.Empty;
+
+    public string ChatCompletionType { get; set; } = string.Empty;
+
+    public string TextToImageType { get; set; } = string.Empty;
+
+    public string FilesType { get; set; } = string.Empty;
+
+    public string TextToAudioType { get; set; } = string.Empty;
+
+    public string AudioToTextType { get; set; } = string.Empty;
+
     /// <summary>
     /// Dependencies settings, e.g. credentials, endpoints, etc.
     /// </summary>
