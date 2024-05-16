@@ -49,7 +49,7 @@ internal abstract class ClientCore
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 5;
+    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };

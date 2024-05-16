@@ -46,7 +46,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 5;
+    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
