@@ -59,7 +59,6 @@ async def main() -> None:
             await next(context)
         except Exception as e:
             logger.info(e)
-            raise e
 
     chatting = True
     while chatting:

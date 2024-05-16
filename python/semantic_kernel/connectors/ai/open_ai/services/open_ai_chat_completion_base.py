@@ -3,7 +3,8 @@
 import asyncio
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
+from functools import partial
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -12,7 +13,6 @@ from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.open_ai.contents.function_call import FunctionCall
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
@@ -33,6 +33,10 @@ from semantic_kernel.exceptions import (
     ServiceInvalidExecutionSettingsError,
     ServiceInvalidResponseError,
 )
+from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+    AutoFunctionInvocationContext,
+)
+from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_auto_function_invocation_context
 from semantic_kernel.utils.chat import store_results
 
 if TYPE_CHECKING:
@@ -79,7 +83,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             and (kernel is None or arguments is None)
         ):
             raise ServiceInvalidExecutionSettingsError(
-                "The kernel argument and arguments are required for auto invoking OpenAI tool calls."
+                "The kernel and kernel arguments are required for auto invoking OpenAI tool calls."
             )
         # behavior for non-function calling or for enable, but not auto-invoke.
         settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
@@ -391,50 +395,81 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         logger.info(f"processing {len(result.items)} tool calls in parallel.")
         await asyncio.gather(
             *[
-                self._process_tool_call(result=tc, kernel=kernel, chat_history=chat_history, arguments=arguments)
+                self._process_tool_call(
+                    function_call=tc, kernel=kernel, chat_history=chat_history, arguments=arguments, result=result
+                )
                 for tc in result.items
             ]
         )
 
     async def _process_tool_call(
         self,
-        result: ChatMessageContent,
+        function_call: FunctionCallContent,
         kernel: "Kernel",
         chat_history: ChatHistory,
         arguments: "KernelArguments",
+        result: ChatMessageContent,
     ) -> None:
         """Processes the tool calls in the result and return it as part of the chat history."""
         args_cloned = copy(arguments)
-        func: FunctionCall | None = result
-        if not func:
+        if not function_call:
             return
         try:
-            parsed_args = func.parse_arguments()
+            parsed_args = function_call.parse_arguments()
             if parsed_args:
                 args_cloned.update(parsed_args)
         except FunctionCallInvalidArgumentsException as exc:
-            logger.exception(f"Received invalid arguments for function {func.name}: {exc}. Trying tool call again.")
+            logger.exception(
+                f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
+            )
             frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=result,
+                function_call_content=function_call,
                 result="The tool call arguments are malformed, please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return
-        logger.info(f"Calling {func.name} function with args: {func.arguments}")
-        try:
-            func_result = await kernel.invoke(**func.split_name_dict(), arguments=args_cloned)
-        except Exception as exc:
-            logger.exception(f"Exception occurred while invoking function {func.name}, exception: {exc}")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=result,
-                result=f"Exception occurred while invoking function {func.name}, exception: {exc}",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
+        logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
+        function_to_call = kernel.get_function_from_fully_qualified_function_name(function_call.name)
+        # try:
+        #     func_result = await kernel.invoke(function_to_call, arguments=args_cloned)
+        # except Exception as exc:
+        #     logger.exception(f"Exception occurred while invoking function {function_call.name}, exception: {exc}")
+        #     frc = FunctionResultContent.from_function_call_content_and_result(
+        #         function_call_content=function_call,
+        #         result=f"Exception occurred while invoking function {function_call.name}, exception: {exc}",
+        #     )
+        #     chat_history.add_message(message=frc.to_chat_message_content())
+        #     return
+
+        _rebuild_auto_function_invocation_context()
+        invocation_context = AutoFunctionInvocationContext(
+            function=function_to_call,
+            kernel=kernel,
+            arguments=args_cloned,
+            chat_history=chat_history,
+            function_count=len(result.items),
+        )
+        if function_call.index is not None:
+            invocation_context.function_sequence_index = function_call.index
+
+        stack: list[Callable[[AutoFunctionInvocationContext], Coroutine[Any, Any, None]]] = [
+            self._inner_auto_function_invoke_handler
+        ]
+        index = 0
+        for _, filter in kernel.auto_function_invocation_filters:
+            stack.append(partial(filter, next=stack[index]))  # type: ignore
+            index += 1
+        await stack[-1](invocation_context)
+        if invocation_context.terminate:
             return
         frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=result, result=func_result
+            function_call_content=function_call, result=invocation_context.function_result
         )
         chat_history.add_message(message=frc.to_chat_message_content())
+
+    async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
+        """Inner auto function invocation handler."""
+        context.function_result = await context.function.invoke(context.kernel, context.arguments)
 
 
 # endregion

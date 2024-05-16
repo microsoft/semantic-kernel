@@ -14,6 +14,7 @@ from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import (
     HANDLEBARS_TEMPLATE_FORMAT_NAME,
@@ -197,7 +198,7 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        KernelFunction._rebuild_context()
+        _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
         stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal]
@@ -207,14 +208,6 @@ class KernelFunction(KernelBaseModel):
             index += 1
         await stack[-1](function_context)
         return function_context.result
-
-    @staticmethod
-    def _rebuild_context() -> None:
-        from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
-        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
-        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
-
-        FunctionInvocationContext.model_rebuild()
 
     @abstractmethod
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
@@ -248,7 +241,7 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        KernelFunction._rebuild_context()
+        _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
         stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal_stream]
         index = 0

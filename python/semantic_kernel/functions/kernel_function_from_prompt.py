@@ -29,6 +29,7 @@ from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, Kerne
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.prompt_rendering_result import PromptRenderingResult
+from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_prompt_render_context
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -206,7 +207,7 @@ through prompt_template_config or in the prompt_template."
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
         service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
-        KernelFunctionFromPrompt._rebuild_context()
+        _rebuild_prompt_render_context()
         prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
         stack: list[Callable[[PromptRenderContext], Coroutine[Any, Any, None]]] = [self._inner_render_prompt]
         index = 0
@@ -224,14 +225,6 @@ through prompt_template_config or in the prompt_template."
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
         context.rendered_prompt = await self.prompt_template.render(context.kernel, context.arguments)
-
-    @staticmethod
-    def _rebuild_context() -> None:
-        from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
-        from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
-        from semantic_kernel.kernel import Kernel  # noqa: F403 F401
-
-        PromptRenderContext.model_rebuild()
 
     async def _handle_complete_chat(
         self,

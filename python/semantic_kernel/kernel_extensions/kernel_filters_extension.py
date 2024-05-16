@@ -10,10 +10,12 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 CALLABLE_FILTER_TYPE = Callable[[FilterContextBase, Callable[[FilterContextBase], None]], None]
 
 
-ALLOWED_FILTERS = ["function_invocation", "prompt_rendering"]
+ALLOWED_FILTERS = ["function_invocation", "prompt_rendering", "auto_function_invocation"]
+ALLOWED_FILTERS_LITERAL = Literal["function_invocation", "prompt_rendering", "auto_function_invocation"]
 FILTER_MAPPING = {
     "function_invocation": "function_invocation_filters",
     "prompt_rendering": "prompt_rendering_filters",
+    "auto_function_invocation": "auto_function_invocation_filters",
 }
 
 
@@ -22,10 +24,9 @@ class KernelFilterExtension(KernelBaseModel):
 
     function_invocation_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
     prompt_rendering_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
+    auto_function_invocation_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
 
-    def add_filter(
-        self, filter_type: Literal["function_invocation", "prompt_rendering"], filter: CALLABLE_FILTER_TYPE
-    ) -> None:
+    def add_filter(self, filter_type: ALLOWED_FILTERS_LITERAL, filter: CALLABLE_FILTER_TYPE) -> None:
         """Add a filter to the Kernel.
 
         Each filter is added to the beginning of the list of filters,
@@ -42,9 +43,7 @@ class KernelFilterExtension(KernelBaseModel):
             raise ValueError(f"filter_type must be one of {ALLOWED_FILTERS}")
         getattr(self, FILTER_MAPPING[filter_type]).insert(0, (id(filter), filter))
 
-    def filter(
-        self, filter_type: Literal["function_invocation", "prompt_rendering"]
-    ) -> Callable[[CALLABLE_FILTER_TYPE], CALLABLE_FILTER_TYPE]:
+    def filter(self, filter_type: ALLOWED_FILTERS_LITERAL) -> Callable[[CALLABLE_FILTER_TYPE], CALLABLE_FILTER_TYPE]:
         def decorator(
             func: CALLABLE_FILTER_TYPE,
         ) -> CALLABLE_FILTER_TYPE:
@@ -55,7 +54,7 @@ class KernelFilterExtension(KernelBaseModel):
 
     def remove_filter(
         self,
-        filter_type: Literal["function_invocation", "prompt_rendering"] | None = None,
+        filter_type: ALLOWED_FILTERS_LITERAL | None = None,
         filter_id: int | None = None,
         position: int | None = None,
     ) -> None:
@@ -84,3 +83,34 @@ class KernelFilterExtension(KernelBaseModel):
                 if f_id == filter_id:
                     getattr(self, filter_list).remove((f_id, _))
                     return
+
+
+def _rebuild_auto_function_invocation_context() -> None:
+    from semantic_kernel.contents.chat_history import ChatHistory  # noqa: F401
+    from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+        AutoFunctionInvocationContext,
+    )
+    from semantic_kernel.functions.function_result import FunctionResult  # noqa: F401
+    from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
+    from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+    AutoFunctionInvocationContext.model_rebuild()
+
+
+def _rebuild_function_invocation_context() -> None:
+    from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
+    from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+    FunctionInvocationContext.model_rebuild()
+
+
+def _rebuild_prompt_render_context() -> None:
+    from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+    from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
+    from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
+    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+
+    PromptRenderContext.model_rebuild()
