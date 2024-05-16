@@ -45,7 +45,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: true) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(true, [plugin.ElementAt(1)]) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -80,7 +80,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
                   type: required
                   functions:
                   - DateTimeUtils.GetCurrentDate
-                  maximum_auto_invoke_attempts: 3
             """";
 
         var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
@@ -111,58 +110,9 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(false, [plugin.ElementAt(1)]) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
-
-        // Assert
-        Assert.NotNull(result);
-
-        Assert.Empty(invokedFunctions);
-
-        var responseContent = result.GetValue<ChatMessageContent>();
-        Assert.NotNull(responseContent);
-
-        var functionCalls = FunctionCallContent.GetFunctionCalls(responseContent);
-        Assert.NotNull(functionCalls);
-        Assert.Single(functionCalls);
-
-        var functionCall = functionCalls.First();
-        Assert.Equal("DateTimeUtils", functionCall.PluginName);
-        Assert.Equal("GetCurrentDate", functionCall.FunctionName);
-    }
-
-    [Fact]
-    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionManuallyAsync()
-    {
-        // Arrange
-        this._kernel.ImportPluginFromType<DateTimeUtils>();
-
-        var invokedFunctions = new List<string>();
-
-        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-        {
-            invokedFunctions.Add(context.Function.Name);
-            await next(context);
-        });
-
-        var promptTemplate = """"
-            template_format: semantic-kernel
-            template: How many days until Christmas?
-            execution_settings:
-              default:
-                temperature: 0.1
-                function_choice_behavior:
-                  type: required
-                  functions:
-                  - DateTimeUtils.GetCurrentDate
-                  maximum_auto_invoke_attempts: 0
-            """";
-
-        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
-
-        // Act
-        var result = await this._kernel.InvokeAsync(promptFunction);
 
         // Assert
         Assert.NotNull(result);
@@ -196,7 +146,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
             await next(context);
         });
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: true) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(true, [plugin.ElementAt(1)]) };
 
         string result = "";
 
@@ -237,7 +187,6 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
                   type: required
                   functions:
                   - DateTimeUtils.GetCurrentDate
-                  maximum_auto_invoke_attempts: 3
             """";
 
         var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
@@ -274,57 +223,10 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionsForManualInvocation = new List<string>();
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(false, [plugin.ElementAt(1)]) };
 
         // Act
         await foreach (var content in this._kernel.InvokePromptStreamingAsync<OpenAIStreamingChatMessageContent>("How many days until Christmas?", new(settings)))
-        {
-            if (content.ToolCallUpdate is StreamingFunctionToolCallUpdate functionUpdate && !string.IsNullOrEmpty(functionUpdate.Name))
-            {
-                functionsForManualInvocation.Add(functionUpdate.Name);
-            }
-        }
-
-        // Assert
-        Assert.Single(functionsForManualInvocation);
-        Assert.Contains("DateTimeUtils-GetCurrentDate", functionsForManualInvocation);
-
-        Assert.Empty(invokedFunctions);
-    }
-
-    [Fact]
-    public async Task SpecifiedInPromptInstructsConnectorToInvokeKernelFunctionManuallyForStreamingAsync()
-    {
-        // Arrange
-        this._kernel.ImportPluginFromType<DateTimeUtils>();
-
-        var invokedFunctions = new List<string>();
-
-        this._autoFunctionInvocationFilter.RegisterFunctionInvocationHandler(async (context, next) =>
-        {
-            invokedFunctions.Add(context.Function.Name);
-            await next(context);
-        });
-
-        var promptTemplate = """"
-            template_format: semantic-kernel
-            template: How many days until Christmas?
-            execution_settings:
-              default:
-                temperature: 0.1
-                function_choice_behavior:
-                  type: required
-                  functions:
-                  - DateTimeUtils.GetCurrentDate
-                  maximum_auto_invoke_attempts: 0
-            """";
-
-        var promptFunction = KernelFunctionYaml.FromPromptYaml(promptTemplate);
-
-        var functionsForManualInvocation = new List<string>();
-
-        // Act
-        await foreach (var content in promptFunction.InvokeStreamingAsync<OpenAIStreamingChatMessageContent>(this._kernel))
         {
             if (content.ToolCallUpdate is StreamingFunctionToolCallUpdate functionUpdate && !string.IsNullOrEmpty(functionUpdate.Name))
             {
@@ -354,7 +256,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(false, [plugin.ElementAt(1)]) };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -391,7 +293,7 @@ public sealed class OpenAIRequiredFunctionChoiceBehaviorTests : BaseIntegrationT
 
         var functionsForManualInvocation = new List<string>();
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice([plugin.ElementAt(1)], autoInvoke: false) };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(false, [plugin.ElementAt(1)]) };
 
         // Act
         await foreach (var content in this._kernel.InvokePromptStreamingAsync<OpenAIStreamingChatMessageContent>("How many days until Christmas?", new(settings)))

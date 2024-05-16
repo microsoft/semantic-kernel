@@ -154,7 +154,6 @@ public class PromptTemplateConfigTests
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
                     "type": "auto",
-                    "maximum_auto_invoke_attempts": 12,
                     "functions":["p1.f1"]
                   }
                 }
@@ -176,8 +175,6 @@ public class PromptTemplateConfigTests
 
         Assert.NotNull(autoFunctionCallChoice.Functions);
         Assert.Equal("p1-f1", autoFunctionCallChoice.Functions.Single());
-
-        Assert.Equal(12, autoFunctionCallChoice.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -192,8 +189,6 @@ public class PromptTemplateConfigTests
                   "model_id": "gpt-4",
                   "function_choice_behavior": {
                     "type": "required",
-                    "maximum_auto_invoke_attempts": 11,
-                    "maximum_use_attempts": 2,
                     "functions":["p1.f1"]
                   }
                 }
@@ -216,9 +211,6 @@ public class PromptTemplateConfigTests
 
         Assert.NotNull(requiredFunctionCallChoice.Functions);
         Assert.Equal("p1-f1", requiredFunctionCallChoice.Functions.Single());
-
-        Assert.Equal(11, requiredFunctionCallChoice.MaximumAutoInvokeAttempts);
-        Assert.Equal(2, requiredFunctionCallChoice.MaximumUseAttempts);
     }
 
     [Fact]

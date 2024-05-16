@@ -24,36 +24,30 @@ public abstract class FunctionChoiceBehavior
     /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
     /// the same function over and over.
     /// </remarks>
-    protected const int DefaultMaximumAutoInvokeAttempts = 5;
+    protected const int DefaultMaximumAutoInvokeAttempts = 10;
 
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
     /// </summary>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior AutoFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
+    public static FunctionChoiceBehavior AutoFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
-        return new AutoFunctionChoiceBehavior(functions ?? [])
-        {
-            MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0
-        };
+        return new AutoFunctionChoiceBehavior(autoInvoke, functions);
     }
 
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
     /// </summary>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior RequiredFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true)
+    public static FunctionChoiceBehavior RequiredFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
-        return new RequiredFunctionChoiceBehavior(functions ?? [])
-        {
-            MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0
-        };
+        return new RequiredFunctionChoiceBehavior(autoInvoke, functions);
     }
 
     /// <summary>

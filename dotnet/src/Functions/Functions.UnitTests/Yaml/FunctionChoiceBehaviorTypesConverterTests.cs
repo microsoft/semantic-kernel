@@ -24,7 +24,6 @@ public sealed class FunctionChoiceBehaviorTypesConverterTests
 
         var yaml = """
             type: auto
-            maximum_auto_invoke_attempts: 9
             functions:
             - p1.f1
             """;
@@ -36,7 +35,6 @@ public sealed class FunctionChoiceBehaviorTypesConverterTests
         Assert.NotNull(behavior.Functions);
         Assert.Single(behavior.Functions);
         Assert.Equal("p1-f1", behavior.Functions.Single());
-        Assert.Equal(9, behavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -50,8 +48,6 @@ public sealed class FunctionChoiceBehaviorTypesConverterTests
 
         var yaml = """
             type: required
-            maximum_auto_invoke_attempts: 6
-            maximum_use_attempts: 3
             functions:
             - p2.f2
             """;
@@ -63,8 +59,6 @@ public sealed class FunctionChoiceBehaviorTypesConverterTests
         Assert.NotNull(behavior.Functions);
         Assert.Single(behavior.Functions);
         Assert.Equal("p2-f2", behavior.Functions.Single());
-        Assert.Equal(6, behavior.MaximumAutoInvokeAttempts);
-        Assert.Equal(3, behavior.MaximumUseAttempts);
     }
 
     [Fact]

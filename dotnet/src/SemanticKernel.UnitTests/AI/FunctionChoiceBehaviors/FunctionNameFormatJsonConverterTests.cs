@@ -15,8 +15,7 @@ public class FunctionNameFormatJsonConverterTests
         var json = """
             {
                 "type": "auto",
-                "functions": ["p1.f1"],
-                "maximum_auto_invoke_attempts": 8
+                "functions": ["p1.f1"]
             }
             """;
 
@@ -27,7 +26,6 @@ public class FunctionNameFormatJsonConverterTests
         Assert.NotNull(behavior?.Functions);
         Assert.Single(behavior.Functions);
         Assert.Equal("p1-f1", behavior.Functions.Single());
-        Assert.Equal(8, behavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -37,9 +35,7 @@ public class FunctionNameFormatJsonConverterTests
         var json = """
             {
                 "type": "required",
-                "functions": ["p1.f1"],
-                "maximum_use_attempts": 2,
-                "maximum_auto_invoke_attempts": 8
+                "functions": ["p1.f1"]
             }
             """;
 
@@ -50,7 +46,5 @@ public class FunctionNameFormatJsonConverterTests
         Assert.NotNull(behavior?.Functions);
         Assert.Single(behavior.Functions);
         Assert.Equal("p1-f1", behavior.Functions.Single());
-        Assert.Equal(8, behavior.MaximumAutoInvokeAttempts);
-        Assert.Equal(2, behavior.MaximumUseAttempts);
     }
 }

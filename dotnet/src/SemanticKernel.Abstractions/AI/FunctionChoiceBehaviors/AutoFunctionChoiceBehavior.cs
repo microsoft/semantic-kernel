@@ -20,6 +20,11 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    private readonly int _maximumAutoInvokeAttempts = DefaultMaximumAutoInvokeAttempts;
+
+    /// <summary>
     /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
     /// </summary>
     public const string TypeDiscriminator = "auto";
@@ -35,23 +40,14 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
     /// </summary>
+    /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
-    public AutoFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
+    public AutoFunctionChoiceBehavior(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
         this._functions = functions;
-        this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
+        this._maximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
-
-    /// <summary>
-    /// The maximum number of function auto-invokes that can be made in a single user request.
-    /// </summary>
-    /// <remarks>
-    /// After this number of iterations as part of a single user request is reached, auto-invocation
-    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
-    /// the same function over and over. To disable auto invocation, this can be set to 0.
-    /// </remarks>
-    [JsonPropertyName("maximum_auto_invoke_attempts")]
-    public int MaximumAutoInvokeAttempts { get; set; } = DefaultMaximumAutoInvokeAttempts;
 
     /// <summary>
     /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
@@ -63,7 +59,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
+        bool autoInvoke = this._maximumAutoInvokeAttempts > 0;
 
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -127,7 +123,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.Auto,
             Functions = availableFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
+            MaximumAutoInvokeAttempts = this._maximumAutoInvokeAttempts,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }

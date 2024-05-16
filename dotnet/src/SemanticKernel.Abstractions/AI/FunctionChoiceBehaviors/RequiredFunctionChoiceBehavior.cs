@@ -20,6 +20,11 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    private readonly int _maximumAutoInvokeAttempts = DefaultMaximumAutoInvokeAttempts;
+
+    /// <summary>
     /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
     /// </summary>
     public const string TypeDiscriminator = "required";
@@ -35,11 +40,13 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
+    /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
-    public RequiredFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
+    public RequiredFunctionChoiceBehavior(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
         this._functions = functions;
-        this.Functions = functions.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
+        this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
+        this._maximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
 
     /// <summary>
@@ -49,33 +56,10 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonConverter(typeof(FunctionNameFormatJsonConverter))]
     public IList<string>? Functions { get; set; }
 
-    /// <summary>
-    /// The maximum number of function auto-invokes that can be made in a single user request.
-    /// </summary>
-    /// <remarks>
-    /// After this number of iterations as part of a single user request is reached, auto-invocation
-    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
-    /// the same function over and over. To disable auto invocation, this can be set to 0.
-    /// </remarks>
-    [JsonPropertyName("maximum_auto_invoke_attempts")]
-    public int MaximumAutoInvokeAttempts { get; set; } = DefaultMaximumAutoInvokeAttempts;
-
-    /// <summary>
-    /// Number of requests that are part of a single user interaction that should include this functions in the request.
-    /// </summary>
-    /// <remarks>
-    /// This should be greater than or equal to <see cref="MaximumAutoInvokeAttempts"/>.
-    /// Once this limit is reached, the functions will no longer be included in subsequent requests that are part of the user operation, e.g.
-    /// if this is 1, the first request will include the functions, but the subsequent response sending back the functions' result
-    /// will not include the functions for further use.
-    /// </remarks>
-    [JsonPropertyName("maximum_use_attempts")]
-    public int MaximumUseAttempts { get; set; } = 1;
-
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        bool autoInvoke = this.MaximumAutoInvokeAttempts > 0;
+        bool autoInvoke = this._maximumAutoInvokeAttempts > 0;
 
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
@@ -139,8 +123,8 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.Required,
             Functions = availableFunctions,
-            MaximumAutoInvokeAttempts = this.MaximumAutoInvokeAttempts,
-            MaximumUseAttempts = this.MaximumUseAttempts,
+            MaximumAutoInvokeAttempts = this._maximumAutoInvokeAttempts,
+            MaximumUseAttempts = 1,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }

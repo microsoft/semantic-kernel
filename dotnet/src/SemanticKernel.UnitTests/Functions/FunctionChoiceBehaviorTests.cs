@@ -105,7 +105,7 @@ public sealed class FunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(5, config.MaximumAutoInvokeAttempts);
+        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public sealed class FunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(5, config.MaximumAutoInvokeAttempts);
+        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
     }
 
     [Fact]

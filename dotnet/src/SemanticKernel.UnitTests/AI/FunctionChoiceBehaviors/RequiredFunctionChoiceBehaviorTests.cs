@@ -93,10 +93,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior(functions: [plugin.ElementAt(0), plugin.ElementAt(1)])
-        {
-            MaximumAutoInvokeAttempts = 0
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(false, [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -117,10 +114,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumAutoInvokeAttempts = 0
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(false);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -135,7 +129,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void ItShouldHaveFiveMaxAutoInvokeAttemptsByDefault()
+    public void ItShouldHaveDefaultMaxAutoInvokeAttempts()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -148,7 +142,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(5, config.MaximumAutoInvokeAttempts);
+        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -159,16 +153,13 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumAutoInvokeAttempts = 8
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(8, config.MaximumAutoInvokeAttempts);
+        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
@@ -179,10 +170,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumAutoInvokeAttempts = 0
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(false);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -216,10 +204,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumAutoInvokeAttempts = 8
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior();
 
         // Act
         var exception = Assert.Throws<KernelException>(() =>
@@ -236,10 +221,7 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Arrange
         var plugin = GetTestPlugin();
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior([plugin.ElementAt(0)])
-        {
-            MaximumAutoInvokeAttempts = 5
-        };
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(true, [plugin.ElementAt(0)]);
 
         // Act
         var exception = Assert.Throws<KernelException>(() =>
@@ -257,9 +239,8 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
         this._kernel.Plugins.Add(plugin);
 
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
+        var choiceBehavior = new RequiredFunctionChoiceBehavior(false)
         {
-            MaximumAutoInvokeAttempts = 0,
             Functions = ["MyPlugin-NonKernelFunction"]
         };
 
@@ -321,26 +302,6 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         // Assert
         Assert.NotNull(config);
         Assert.Equal(1, config.MaximumUseAttempts);
-    }
-
-    [Fact]
-    public void ItShouldAllowChangingMaxUseAttempts()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior()
-        {
-            MaximumUseAttempts = 2
-        };
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.Equal(2, config.MaximumUseAttempts);
     }
 
     private static KernelPlugin GetTestPlugin()

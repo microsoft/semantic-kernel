@@ -50,7 +50,6 @@ public class KernelFunctionMarkdownTests
         Assert.NotNull(autoFunctionChoiceBehavior.Functions);
         Assert.Single(autoFunctionChoiceBehavior.Functions);
         Assert.Equal("p1-f1", autoFunctionChoiceBehavior.Functions.First());
-        Assert.Equal(8, autoFunctionChoiceBehavior.MaximumAutoInvokeAttempts);
 
         // RequiredFunctionCallChoice for service2
         var service2ExecutionSettings = function.ExecutionSettings["service2"];
@@ -61,7 +60,6 @@ public class KernelFunctionMarkdownTests
         Assert.NotNull(requiredFunctionChoiceBehavior.Functions);
         Assert.Single(requiredFunctionChoiceBehavior.Functions);
         Assert.Equal("p1-f1", requiredFunctionChoiceBehavior.Functions.First());
-        Assert.Equal(2, requiredFunctionChoiceBehavior.MaximumUseAttempts);
 
         // NoneFunctionCallChoice for service3
         var service3ExecutionSettings = function.ExecutionSettings["service3"];
@@ -101,8 +99,7 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.7,
                 "function_choice_behavior": {
                     "type": "auto",
-                    "functions": ["p1.f1"],
-                    "maximum_auto_invoke_attempts": 8
+                    "functions": ["p1.f1"]
                 }
             }
         }
@@ -115,8 +112,7 @@ public class KernelFunctionMarkdownTests
                 "temperature": 0.8,
                 "function_choice_behavior": {
                     "type": "required",
-                    "functions": ["p1.f1"],
-                    "maximum_use_attempts": 2
+                    "functions": ["p1.f1"]
                 }
             }
         }
