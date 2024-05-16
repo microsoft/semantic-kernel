@@ -72,6 +72,7 @@ class RestApiOperationPayload:
 class RestApiOperation:
     MEDIA_TYPE_TEXT_PLAIN = "text/plain"
     PAYLOAD_ARGUMENT_NAME = "payload"
+    CONTENT_TYPE_ARGUMENT_NAME = "content-type"
     INVALID_SYMBOLS_REGEX = re.compile(r"[^0-9A-Za-z_]+")
 
     def __init__(
@@ -200,7 +201,7 @@ class RestApiOperation:
 
     def create_payload_artificial_parameter(self, operation: RestApiOperation) -> RestApiOperationParameter:
         return RestApiOperationParameter(
-            name=RestApiOperation.PAYLOAD_ARGUMENT_NAME,
+            name=self.PAYLOAD_ARGUMENT_NAME,
             type=(
                 "string"
                 if operation.request_body
@@ -210,13 +211,13 @@ class RestApiOperation:
             is_required=True,
             location=RestApiOperationParameterLocation.BODY,
             style=RestApiOperationParameterStyle.SIMPLE,
-            description=operation.Payload.Description if operation.Payload else "REST API request body.",
-            schema=operation.Payload.Schema if operation.Payload else None,
+            description=operation.request_body.description if operation.request_body else "REST API request body.",
+            schema=operation.request_body.schema if operation.request_body else None,
         )
 
     def create_content_type_artificial_parameter(self) -> RestApiOperationParameter:
         return RestApiOperationParameter(
-            name=RestApiOperation.ContentTypeArgumentName,
+            name=self.CONTENT_TYPE_ARGUMENT_NAME,
             type="string",
             is_required=False,
             location=RestApiOperationParameterLocation.BODY,
