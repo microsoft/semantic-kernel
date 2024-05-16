@@ -10,7 +10,9 @@ if TYPE_CHECKING:
 class KernelArguments(dict):
     def __init__(
         self,
-        settings: "PromptExecutionSettings" | list["PromptExecutionSettings"] | None = None,
+        settings: (
+            "PromptExecutionSettings" | list["PromptExecutionSettings"] | dict[str, "PromptExecutionSettings"] | None
+        ) = None,
         **kwargs: Any,
     ):
         """Initializes a new instance of the KernelArguments class,
@@ -30,7 +32,9 @@ class KernelArguments(dict):
         settings_dict = None
         if settings:
             settings_dict = {}
-            if isinstance(settings, list):
+            if isinstance(settings, dict):
+                settings_dict = settings
+            elif isinstance(settings, list):
                 settings_dict = {s.service_id or "default": s for s in settings}
             else:
                 settings_dict = {settings.service_id or "default": settings}

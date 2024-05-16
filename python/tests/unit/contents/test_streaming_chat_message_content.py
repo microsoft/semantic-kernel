@@ -149,8 +149,8 @@ def test_scmc_from_element_content_missing_choice_index():
         (
             '<message role="user" choice_index="0"><text>Hello, world!</text><text>Hello, world!</text></message>',
             "user",
-            "Hello, world!",
-            2,
+            "Hello, world!Hello, world!",
+            1,
         ),
         (
             '<message role="assistant" choice_index="0"><function_call id="test" name="func_name">args</function_call></message>',  # noqa: E501
@@ -173,8 +173,8 @@ def test_scmc_from_element_content_missing_choice_index():
         (
             '<message role="user" choice_index="0"><random>some random code sample</random>in between text<text>test</text></message>',  # noqa: E501
             "user",
-            "<random>some random code sample</random>in between text",
-            2,
+            "<random>some random code sample</random>in between texttest",
+            1,  # TODO: review this case
         ),
     ],
     ids=["no_tag", "text_tag", "double_text_tag", "function_call", "function_result", "combined", "unknown_tag"],

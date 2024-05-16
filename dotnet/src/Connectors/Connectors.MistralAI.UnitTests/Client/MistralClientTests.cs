@@ -392,7 +392,7 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(response);
         Assert.Equal("12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy", response[0].Content);
         Assert.Null(response[0].ModelId);
-        Assert.Equal(1, this.DelegatingHandler.SendAsyncCallCount);
+        Assert.Equal(1, this.DelegatingHandler!.SendAsyncCallCount);
         Assert.Equal(3, chatHistory.Count);
         Assert.Contains("GetWeather", invokedFunctions);
     }
