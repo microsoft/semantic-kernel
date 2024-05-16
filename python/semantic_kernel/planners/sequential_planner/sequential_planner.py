@@ -3,6 +3,7 @@
 import os
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -100,10 +101,10 @@ class SequentialPlanner:
 
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
-        if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
+        if isinstance(plan_result, FunctionResult) and METADATA_EXCEPTION_KEY in plan_result.metadata:
             raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
-            ) from plan_result.metadata["exception"]
+            ) from plan_result.metadata[METADATA_EXCEPTION_KEY]
 
         plan_result_string = str(plan_result).strip()
 

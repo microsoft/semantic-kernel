@@ -1,19 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
-import sys
-from typing import Any, AsyncGenerator, Iterable, Optional, Union
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated, Any, AsyncGenerator, Iterable, Optional, Union
 
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -140,7 +136,7 @@ async def test_invoke_non_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+        assert isinstance(partial_result.metadata[METADATA_EXCEPTION_KEY], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -155,7 +151,7 @@ async def test_invoke_async():
     assert result.value == ""
 
     async for partial_result in native_function.invoke_stream(kernel=None, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+        assert isinstance(partial_result.metadata[METADATA_EXCEPTION_KEY], NotImplementedError)
 
 
 @pytest.mark.asyncio
@@ -189,9 +185,9 @@ async def test_invoke_gen_async():
 
 
 @pytest.mark.asyncio
-async def test_service_execution():
+async def test_service_execution(openai_unit_test_env):
     kernel = Kernel()
-    service = OpenAIChatCompletion(service_id="test", ai_model_id="test", api_key="test")
+    service = OpenAIChatCompletion(service_id="test", ai_model_id="test")
     req_settings = service.get_prompt_execution_settings_class()(service_id="test")
     req_settings.temperature = 0.5
     kernel.add_service(service)
@@ -225,7 +221,7 @@ async def test_required_param_not_supplied():
     func = KernelFunction.from_method(my_function, "test")
 
     result = await func.invoke(kernel=None, arguments=KernelArguments())
-    assert isinstance(result.metadata["exception"], FunctionExecutionException)
+    assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], FunctionExecutionException)
 
 
 @pytest.mark.asyncio
@@ -311,3 +307,8 @@ async def test_service_execution_with_complex_object_from_str_mixed_multi():
     arguments = KernelArguments(input_obj={"arg1": "test", "arg2": 5}, input_str="test2")
     result = await func.invoke(kernel, arguments)
     assert result.value == "test test2 5"
+
+
+def test_function_from_lambda():
+    func = KernelFunctionFromMethod(method=kernel_function(lambda x: x**2, name="square"), plugin_name="math")
+    assert func is not None

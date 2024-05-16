@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 import platform
 
 import pytest
 
-import semantic_kernel as sk
 from semantic_kernel.connectors.memory.redis import RedisMemoryStore
+from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 
 try:
     import redis  # noqa: F401
@@ -21,7 +20,7 @@ except ImportError:
 pytestmark = pytest.mark.skipif(not redis_installed, reason="Redis is not installed")
 
 pytestmark = pytest.mark.skipif(
-    platform.system() != "Linux" and "Python_Integration_Tests" in os.environ,
+    platform.system() != "Linux",
     reason="local redis docker container is not available on all non-Linux platforms",
 )
 
@@ -29,11 +28,13 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="session")
 def connection_string():
     try:
-        connection_string = sk.redis_settings_from_dot_env()
+        redis_settings = RedisSettings.create()
+        if redis_settings.connection_string:
+            return redis_settings.connection_string.get_secret_value()
+        else:
+            return "redis://localhost:6379"
     except Exception:
-        connection_string = "redis://localhost:6379"
-
-    return connection_string
+        pytest.skip("Redis connection string not found in env vars.")
 
 
 @pytest.fixture

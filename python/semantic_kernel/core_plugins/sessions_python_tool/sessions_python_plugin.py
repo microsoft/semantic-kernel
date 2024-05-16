@@ -9,11 +9,12 @@ from io import BufferedReader, BytesIO
 from typing import Annotated, Any, Awaitable, Callable
 
 import httpx
-from pydantic import field_validator
+from pydantic import ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
+    ACASessionsSettings,
     SessionsPythonSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
@@ -37,10 +38,11 @@ class SessionsPythonTool(KernelBaseModel):
 
     def __init__(
         self,
-        pool_management_endpoint: str,
         auth_callback: Callable[..., Awaitable[Any]],
+        pool_management_endpoint: str | None = None,
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
+        env_file_path: str | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
@@ -50,8 +52,16 @@ class SessionsPythonTool(KernelBaseModel):
         if not http_client:
             http_client = httpx.AsyncClient()
 
+        try:
+            aca_settings = ACASessionsSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
+            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
+
+        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
+
         super().__init__(
-            pool_management_endpoint=pool_management_endpoint,
+            pool_management_endpoint=endpoint,
             auth_callback=auth_callback,
             settings=settings,
             http_client=http_client,
@@ -61,6 +71,8 @@ class SessionsPythonTool(KernelBaseModel):
     @field_validator("pool_management_endpoint", mode="before")
     @classmethod
     def _validate_endpoint(cls, endpoint: str):
+        endpoint = str(endpoint)
+
         """Validates the pool management endpoint."""
         if "/python/execute" in endpoint:
             # Remove '/python/execute/' and ensure the endpoint ends with a '/'
