@@ -75,6 +75,7 @@ jobs:
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_MODEL_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
@@ -135,6 +136,7 @@ jobs:
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
           AZURE_OPENAI_EMBEDDING_MODEL_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
