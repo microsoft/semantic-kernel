@@ -16,7 +16,8 @@ def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="handlebars"
-        )
+        ),
+        allow_dangerously_set_content=True,
     )
 
 
