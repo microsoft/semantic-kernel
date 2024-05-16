@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -176,5 +177,26 @@ public sealed class BinaryContentTests
 
         // Don't change the referred Uri
         Assert.Equal("http://localhost/", content.Uri?.ToString());
+    }
+
+    [Theory]
+    [InlineData( // Data always comes last in serialization
+        """{"data": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "mimeType": "text/plain" }""",
+        """{"mimeType":"text/plain","data":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""")]    
+    [InlineData( // Does not support non-readable content
+        """{"dataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "unexpected": true }""",
+        "{}")]
+    [InlineData( // Only serializes the read/writeable properties
+        """{"dataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "mimeType": "text/plain" }""",
+        """{"mimeType":"text/plain"}""")]
+    [InlineData( // Uri comes before mimetype
+        """{"mimeType": "text/plain", "uri": "http://localhost/" }""",
+        """{"uri":"http://localhost/","mimeType":"text/plain"}""")]
+    public void ToStringShouldReturnAsExpected(string serialized, string expectedToString)
+    {
+        // Act & Assert
+        var content = JsonSerializer.Deserialize<BinaryContent>(serialized)!;
+
+        Assert.Equal(expectedToString, content.ToString());
     }
 }

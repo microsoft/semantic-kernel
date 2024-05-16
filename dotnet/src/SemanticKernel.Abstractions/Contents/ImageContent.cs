@@ -11,14 +11,16 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 // To be retrocompatible with the non-experimental ImageContent it needs to have a different behavior
 // than the base class BinaryContent breaking the Liskov Substitution Principle (LSP).
-public sealed class ImageContent : BinaryContent
+public class ImageContent : BinaryContent
 {
     private string? _dataUri;
 
+    [JsonPropertyName("uri")]
     /// <inheritdoc />
     public override Uri? Uri { get; set; }
 
     /// <inheritdoc />
+    [JsonPropertyName("data")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public override ReadOnlyMemory<byte>? Data { get; set; }
 
@@ -67,15 +69,21 @@ public sealed class ImageContent : BinaryContent
     /// <param name="modelId">The model ID used to generate the content</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
+    /// <param name="mimeType">The MIME type of the image content.</param>
+    /// <param name="uri">Reference to the image.</param>
     public ImageContent(
         ReadOnlyMemory<byte> data,
         string? modelId = null,
         object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
+        IReadOnlyDictionary<string, object?>? metadata = null,
+
+        // Need to add as last parameters to keep consistency, prevent ambiguity errors and avoid breaking changes.
+        string? mimeType = null,
+        Uri? uri = null)
         : base(
             data: data,
-            mimeType: null,
-            uri: null,
+            mimeType: mimeType,
+            uri: uri,
             innerContent,
             modelId,
             metadata)

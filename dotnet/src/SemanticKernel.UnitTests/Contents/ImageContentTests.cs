@@ -277,7 +277,7 @@ public sealed class ImageContentTests
         var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
         var expectedSerializedUri = (uri is not null) ? $"\"{uri}\"" : "null";
 
-        Assert.Equal($"{{\"Uri\":{expectedSerializedUri}}}", serialized);
+        Assert.Equal($"{{\"uri\":{expectedSerializedUri}}}", serialized);
 
         Assert.NotNull(deserialized);
         Assert.Equal(uri, deserialized.Uri);
@@ -307,7 +307,7 @@ public sealed class ImageContentTests
         var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
 
         // Image content allows two distinct data in the same instance
-        Assert.Equal($"{{\"Uri\":\"{expectedUri}\",\"Data\":\"{base64data}\"}}", serialized);
+        Assert.Equal($"{{\"uri\":\"{expectedUri}\",\"data\":\"{base64data}\"}}", serialized);
 
         Assert.NotNull(deserialized);
 

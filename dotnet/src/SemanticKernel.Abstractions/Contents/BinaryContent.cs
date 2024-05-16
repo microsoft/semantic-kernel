@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 #pragma warning disable CA1056 // URI-like properties should not be strings
@@ -14,11 +13,18 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
+[Experimental("SKEXP0010")]
 public class BinaryContent : KernelContent
 {
     private string? _cachedDataUri;
     private ReadOnlyMemory<byte>? _cachedData;
     private Uri? _referencedUri;
+
+    /// <summary>
+    /// The binary content.
+    /// </summary>
+    [JsonIgnore, Obsolete("Use Data instead")]
+    public ReadOnlyMemory<byte>? Content => Data;
 
     /// <summary>
     /// Gets the referenced Uri of the content.
@@ -74,11 +80,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class referring to an external uri.
     /// </summary>
-    public BinaryContent(Uri? uri = null,
-        object? innerContent = null,
-        string? modelId = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+    public BinaryContent(Uri? uri = null)
     {
         this.Uri = uri;
     }
@@ -87,21 +89,11 @@ public class BinaryContent : KernelContent
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
     /// </summary>
     /// <param name="dataUri">The Uri of the content.</param>
-    /// <param name="uri">The uri reference of the content.</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="metadata">Additional metadata</param>
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
         // <see href="https://github.com/dotnet/runtime/issues/96544"/>
-        string? dataUri,
-        Uri? uri = null,
-        object? innerContent = null,
-        string? modelId = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+        string? dataUri)
     {
-        this.Uri = uri;
         this.DataUri = dataUri;
     }
 
@@ -110,18 +102,9 @@ public class BinaryContent : KernelContent
     /// </summary>
     /// <param name="data">Byte array content</param>
     /// <param name="mimeType">The mime type of the content</param>
-    /// <param name="uri">The uri reference of the content.</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="modelId">The model ID used to generate the content</param>
-    /// <param name="metadata">Additional metadata</param>
     public BinaryContent(
         ReadOnlyMemory<byte> data,
-        string? mimeType,
-        Uri? uri = null,
-        object? innerContent = null,
-        string? modelId = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+        string? mimeType)
     {
         Verify.NotNull(data, nameof(data));
         if (data.IsEmpty)
@@ -131,7 +114,6 @@ public class BinaryContent : KernelContent
 
         this.MimeType = mimeType;
         this.Data = data;
-        this.Uri = uri;
     }
 
     /// <summary>
@@ -252,8 +234,4 @@ public class BinaryContent : KernelContent
 
         return this._cachedData;
     }
-
-    /// <inheritdoc/>
-    public override string ToString()
-        => JsonSerializer.Serialize(this);
 }
