@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import logging
 from importlib import metadata
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
 from motor import core, motor_asyncio
 from numpy import ndarray
+from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
@@ -22,7 +23,6 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -38,16 +38,28 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        index_name: Optional[str] = None,
-        connection_string: Optional[str] = None,
-        database_name: Optional[str] = None,
-        read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
-        **kwargs,
+        index_name: str | None = None,
+        connection_string: str | None = None,
+        database_name: str | None = None,
+        read_preference: ReadPreference | None = ReadPreference.PRIMARY,
+        env_file_path: str | None = None,
     ):
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
+
+        mongodb_settings = None
+        try:
+            mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load the MongoDBAtlas pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            mongodb_settings.connection_string.get_secret_value()
+            if mongodb_settings and mongodb_settings.connection_string
+            else None
+        )
+
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
-            connection_string or mongodb_atlas_settings_from_dot_env(),
+            connection_string,
             read_preference=read_preference,
             driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
         )

@@ -6,7 +6,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.core_plugins import TimePlugin
 from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
@@ -16,9 +15,8 @@ async def main():
     model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
     )
 
     kernel.add_plugin(TimePlugin(), "time")

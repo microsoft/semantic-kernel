@@ -17,7 +17,6 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
@@ -38,12 +37,10 @@ you will return a full answer to me as soon as possible.
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-api_key, org_id = openai_settings_from_dot_env()
 kernel.add_service(
     OpenAIChatCompletion(
         service_id="chat",
         ai_model_id="gpt-3.5-turbo-1106",
-        api_key=api_key,
     ),
 )
 
