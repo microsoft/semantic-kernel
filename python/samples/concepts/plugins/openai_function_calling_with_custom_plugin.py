@@ -116,7 +116,7 @@ async def main():
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
-        result = await chat.complete_chat(chat_history=chat_history, settings=settings)
+        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings)
         result = result[0]
 
         if result.content:

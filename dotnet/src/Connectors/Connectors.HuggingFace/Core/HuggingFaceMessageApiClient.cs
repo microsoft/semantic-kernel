@@ -82,10 +82,14 @@ internal sealed class HuggingFaceMessageApiClient
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
-        var request = this.CreateChatRequest(chatHistory, executionSettings);
+
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
+
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
         request.Stream = true;
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         HttpResponseMessage? httpResponseMessage = null;
         Stream? responseStream = null;
         try
@@ -142,9 +146,12 @@ internal sealed class HuggingFaceMessageApiClient
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
-        var request = this.CreateChatRequest(chatHistory, executionSettings);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, executionSettings);
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
         ChatCompletionResponse response;
@@ -164,12 +171,12 @@ internal sealed class HuggingFaceMessageApiClient
         var chatContents = GetChatMessageContentsFromResponse(response, modelId);
 
         activity?.SetCompletionResponse(chatContents, response.Usage?.PromptTokens, response.Usage?.CompletionTokens);
-        this.LogChatCompletionUsage(executionSettings, response);
+        this.LogChatCompletionUsage(huggingFaceExecutionSettings, response);
 
         return chatContents;
     }
 
-    private void LogChatCompletionUsage(PromptExecutionSettings? executionSettings, ChatCompletionResponse chatCompletionResponse)
+    private void LogChatCompletionUsage(HuggingFacePromptExecutionSettings executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
         if (this._clientCore.Logger.IsEnabled(LogLevel.Debug))
         {
@@ -263,11 +270,8 @@ internal sealed class HuggingFaceMessageApiClient
 
     private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
-        PromptExecutionSettings? promptExecutionSettings)
+        HuggingFacePromptExecutionSettings huggingFaceExecutionSettings)
     {
-        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
-
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
         var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
         return request;

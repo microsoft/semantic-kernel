@@ -138,10 +138,21 @@ class KernelPlugin(KernelBaseModel):
     # region Dict-like methods
 
     def __setitem__(self, key: str, value: KERNEL_FUNCTION_TYPE) -> None:
+        """Set a function in the plugin.
+
+        This function uses plugin[function_name] = function syntax.
+
+        Args:
+            key (str): The name of the function.
+            value (KernelFunction): The function to set.
+
+        """
         self.functions[key] = KernelPlugin._parse_or_copy(value, self.name)
 
     def set(self, key: str, value: KERNEL_FUNCTION_TYPE) -> None:
         """Set a function in the plugin.
+
+        This function uses plugin.set(function_name, function) syntax.
 
         Args:
             key (str): The name of the function.
@@ -151,9 +162,19 @@ class KernelPlugin(KernelBaseModel):
         self[key] = value
 
     def __getitem__(self, key: str) -> KernelFunction:
+        """Get a function from the plugin.
+
+        Using plugin[function_name] syntax.
+        """
         return self.functions[key]
 
     def get(self, key: str, default: KernelFunction | None = None) -> KernelFunction | None:
+        """Get a function from the plugin.
+
+        Args:
+            key (str): The name of the function.
+            default (KernelFunction, optional): The default function to return if the key is not found.
+        """
         return self.functions.get(key, default)
 
     def update(self, *args: Any, **kwargs: KernelFunction) -> None:

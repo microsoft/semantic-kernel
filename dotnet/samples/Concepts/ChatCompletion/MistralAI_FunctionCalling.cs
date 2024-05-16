@@ -17,23 +17,13 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AutoInvokeKernelFunctionsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddMistralChatCompletion(
-                modelId: TestConfiguration.MistralAI.ChatModelId!,
-                apiKey: TestConfiguration.MistralAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = this.CreateKernelWithWeatherPlugin();
 
         // Invoke chat prompt with auto invocation of functions enabled
-        const string ChatPrompt = @"
-            <message role=""user"">What is the weather like in Paris?</message>
-        ";
+        const string ChatPrompt = """
+            <message role="user">What is the weather like in Paris?</message>
+        """;
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
@@ -45,18 +35,8 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddMistralChatCompletion(
-                modelId: TestConfiguration.MistralAI.ChatModelId!,
-                apiKey: TestConfiguration.MistralAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = this.CreateKernelWithWeatherPlugin();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Invoke chat prompt with auto invocation of functions enabled
@@ -65,37 +45,27 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
         var executionSettings = new MistralAIPromptExecutionSettings { ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions };
-        var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
-        chatHistory.AddRange(result1);
+        var chatPromptResult1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+        chatHistory.AddRange(chatPromptResult1);
 
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
-        var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+        var chatPromptResult2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
 
-        Console.WriteLine(result1[0].Content);
-        Console.WriteLine(result2[0].Content);
+        Console.WriteLine(chatPromptResult1[0].Content);
+        Console.WriteLine(chatPromptResult2[0].Content);
     }
 
     [Fact]
     public async Task RequiredKernelFunctionsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddMistralChatCompletion(
-                modelId: TestConfiguration.MistralAI.ChatModelId!,
-                apiKey: TestConfiguration.MistralAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = this.CreateKernelWithWeatherPlugin();
         var plugin = kernel.Plugins.First();
 
         // Invoke chat prompt with auto invocation of functions enabled
-        const string ChatPrompt = @"
-            <message role=""user"">What is the weather like in Paris?</message>
-        ";
+        const string ChatPrompt = """
+            <message role="user">What is the weather like in Paris?</message>
+        """;
         var executionSettings = new MistralAIPromptExecutionSettings
         {
             ToolCallBehavior = MistralAIToolCallBehavior.RequiredFunctions(plugin, true)
@@ -110,23 +80,13 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task NoKernelFunctionsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddMistralChatCompletion(
-                modelId: TestConfiguration.MistralAI.ChatModelId!,
-                apiKey: TestConfiguration.MistralAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = this.CreateKernelWithWeatherPlugin();
 
         // Invoke chat prompt with auto invocation of functions enabled
-        const string ChatPrompt = @"
-            <message role=""user"">What is the weather like in Paris?</message>
-        ";
+        const string ChatPrompt = """
+            <message role="user">What is the weather like in Paris?</message>
+        """;
         var executionSettings = new MistralAIPromptExecutionSettings
         {
             ToolCallBehavior = MistralAIToolCallBehavior.NoKernelFunctions
@@ -141,19 +101,9 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultiplePluginsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddMistralChatCompletion(
-                modelId: TestConfiguration.MistralAI.ChatModelId!,
-                apiKey: TestConfiguration.MistralAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        kernelBuilder.Plugins.AddFromType<WidgetFactory>();
-        Kernel kernel = kernelBuilder.Build();
+        // Create a kernel with MistralAI chat completion and WeatherPlugin and WidgetPlugin
+        Kernel kernel = this.CreateKernelWithWeatherPlugin();
+        kernel.Plugins.AddFromType<WidgetPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
         const string ChatPrompt = """
@@ -176,7 +126,7 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
         ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
     }
 
-    public sealed class WidgetFactory
+    public sealed class WidgetPlugin
     {
         [KernelFunction]
         [Description("Creates a new widget of the specified type and colors")]
@@ -198,5 +148,22 @@ public sealed class MistralAI_FunctionCalling(ITestOutputHelper output) : BaseTe
 
         [Description("Use when creating a blue item.")]
         Blue
+    }
+
+    private Kernel CreateKernelWithWeatherPlugin()
+    {
+        // Create a logging handler to output HTTP requests and responses
+        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
+        HttpClient httpClient = new(handler);
+
+        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddMistralChatCompletion(
+                modelId: TestConfiguration.MistralAI.ChatModelId!,
+                apiKey: TestConfiguration.MistralAI.ApiKey!,
+                httpClient: httpClient);
+        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
+        Kernel kernel = kernelBuilder.Build();
+        return kernel;
     }
 }

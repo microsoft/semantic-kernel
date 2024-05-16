@@ -526,7 +526,7 @@ internal sealed class MistralClient
         var firstRole = chatHistory[0].Role.ToString();
         if (firstRole is not "system" && firstRole is not "user")
         {
-            throw new ArgumentException("First message in chat history should have system or user role", nameof(chatHistory));
+            throw new ArgumentException("The first message in chat history must have either the system or user role", nameof(chatHistory));
         }
     }
 
@@ -817,7 +817,7 @@ internal sealed class MistralClient
 
     private static Dictionary<string, object?> GetChatChoiceMetadata(MistralChatCompletionChunk completionChunk, MistralChatCompletionChoice chatChoice)
     {
-        return new Dictionary<string, object?>(6)
+        return new Dictionary<string, object?>(7)
         {
             { nameof(completionChunk.Id), completionChunk.Id },
             { nameof(completionChunk.Object), completionChunk.Object },

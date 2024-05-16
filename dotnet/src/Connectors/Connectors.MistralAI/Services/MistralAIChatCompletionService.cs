@@ -29,10 +29,8 @@ public sealed class MistralAIChatCompletionService : IChatCompletionService
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public MistralAIChatCompletionService(string modelId, string apiKey, Uri? endpoint = null, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
-
         this.Client = new MistralClient(
-        modelId: modelId,
+            modelId: modelId,
             endpoint: endpoint ?? httpClient?.BaseAddress,
             apiKey: apiKey,
             httpClient: HttpClientProvider.GetHttpClient(httpClient),
