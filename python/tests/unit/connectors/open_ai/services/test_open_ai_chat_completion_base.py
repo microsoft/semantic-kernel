@@ -10,7 +10,10 @@ from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageCon
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 
 
@@ -97,14 +100,22 @@ async def test_process_tool_calls():
     tool_call_mock.arguments = {"arg_name": "arg_value"}
     tool_call_mock.ai_model_id = None
     tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
     tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
     tool_call_mock.id = "test_id"
     result_mock = MagicMock(spec=ChatMessageContent)
     result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
 
+    func_mock = MagicMock(spec=KernelFunction)
+    func_mock.name = "test_function"
+    func_result = FunctionResult(
+        value="Function result", function=KernelFunctionMetadata(name="test_function", is_prompt=False)
+    )
+    func_mock.invoke = AsyncMock(return_value=func_result)
     kernel_mock = MagicMock(spec=Kernel)
-    kernel_mock.invoke = AsyncMock(return_value="Function result")
+    kernel_mock.auto_function_invocation_filters = []
+    kernel_mock.get_function_from_fully_qualified_function_name.return_value = func_mock
     arguments = KernelArguments()
 
     chat_completion_base = OpenAIChatCompletionBase(
@@ -114,7 +125,7 @@ async def test_process_tool_calls():
     with patch("semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True):
         await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
 
-    kernel_mock.invoke.assert_called_once_with(**tool_call_mock.split_name_dict(), arguments={"arg_name": "arg_value"})
+    func_mock.invoke.assert_called_once_with(kernel_mock, {"arg_name": "arg_value"})
 
     chat_history_mock.add_message.assert_called_once()
 
@@ -124,27 +135,25 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
     tool_call_mock = MagicMock(spec=FunctionCallContent)
     tool_call_mock.parse_arguments.side_effect = FunctionCallInvalidArgumentsException("Malformed arguments")
     tool_call_mock.name = "test_function"
-    tool_call_mock.arguments = "Not a valid JSON string"
-    tool_call_mock.id = "test_id"
+    tool_call_mock.arguments = {"arg_name": "arg_value"}
     tool_call_mock.ai_model_id = None
     tool_call_mock.metadata = {}
-
-    another_tool_call_mock = MagicMock(spec=FunctionCallContent)
-    another_tool_call_mock.parse_arguments.return_value = {"another_arg_name": "another_arg_value"}
-    another_tool_call_mock.name = "another_test_function"
-    another_tool_call_mock.arguments = {"another_arg_name": "another_arg_value"}
-    another_tool_call_mock.id = "another_test_id"
-    another_tool_call_mock.ai_model_id = None
-    another_tool_call_mock.metadata = {}
-
+    tool_call_mock.index = 0
+    tool_call_mock.parse_arguments.return_value = {"arg_name": "arg_value"}
+    tool_call_mock.id = "test_id"
     result_mock = MagicMock(spec=ChatMessageContent)
-    result_mock.items = [tool_call_mock, another_tool_call_mock]
-
+    result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
 
+    func_mock = MagicMock(spec=KernelFunction)
+    func_mock.name = "test_function"
+    func_result = FunctionResult(
+        value="Function result", function=KernelFunctionMetadata(name="test_function", is_prompt=False)
+    )
+    func_mock.invoke = AsyncMock(return_value=func_result)
     kernel_mock = MagicMock(spec=Kernel)
-    kernel_mock.invoke = AsyncMock(return_value="Another Function result")
-
+    kernel_mock.auto_function_invocation_filters = []
+    kernel_mock.get_function_from_fully_qualified_function_name.return_value = func_mock
     arguments = KernelArguments()
 
     chat_completion_base = OpenAIChatCompletionBase(

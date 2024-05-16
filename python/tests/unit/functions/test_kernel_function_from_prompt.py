@@ -14,9 +14,9 @@ from semantic_kernel.exceptions import FunctionInitializationError
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.prompt_template.input_variable import InputVariable
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -360,7 +360,7 @@ async def test_prompt_render(kernel: Kernel, openai_unit_test_env):
         prompt="test",
         template_format="semantic-kernel",
     )
-    KernelFunction._rebuild_context()
+    _rebuild_function_invocation_context()
     context = FunctionInvocationContext(function=function, kernel=kernel, arguments=KernelArguments())
     prompt_render_result = await function._render_prompt(context)
     assert prompt_render_result.rendered_prompt == "test"
@@ -381,7 +381,7 @@ async def test_prompt_render_with_filter(kernel: Kernel, openai_unit_test_env):
         prompt="test",
         template_format="semantic-kernel",
     )
-    KernelFunction._rebuild_context()
+    _rebuild_function_invocation_context()
     context = FunctionInvocationContext(function=function, kernel=kernel, arguments=KernelArguments())
     prompt_render_result = await function._render_prompt(context)
     assert prompt_render_result.rendered_prompt == "preface test"
