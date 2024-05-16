@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Literal, T
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -176,28 +178,16 @@ class Kernel(KernelFilterExtension):
             function = self.get_function(plugin_name, function_name)
 
         function_result: list[list["StreamingContentMixin"] | Any] = []
-        try:
-            async for stream_message in function.invoke_stream(self, arguments):
-                if isinstance(stream_message, FunctionResult) and (
-                    exception := stream_message.metadata.get("exception", None)
-                ):
-                    raise KernelInvokeException(
-                        f"Error occurred while invoking streaming function: '{function.fully_qualified_name}'"
-                    ) from exception
-                function_result.append(stream_message)
-                yield stream_message
-        except OperationCancelledException:
-            return
-        except KernelInvokeException as exc:
-            raise exc
-        except Exception as exc:
-            logger.error(
-                "Something went wrong in function streaming invocation. During function:"
-                f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
-            )
-            raise KernelInvokeException(
-                f"Error occurred while invoking streaming function: '{function.fully_qualified_name}'"
-            ) from exc
+
+        async for stream_message in function.invoke_stream(self, arguments):
+            if isinstance(stream_message, FunctionResult) and (
+                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
+            ):
+                raise KernelInvokeException(
+                    f"Error occurred while invoking function: '{function.fully_qualified_name}'"
+                ) from exception
+            function_result.append(stream_message)
+            yield stream_message
 
         if return_function_results:
             output_function_result: list["StreamingContentMixin"] = []
@@ -346,7 +336,7 @@ class Kernel(KernelFilterExtension):
 
         async for stream_message in self.invoke_stream(function=function, arguments=arguments):
             if isinstance(stream_message, FunctionResult) and (
-                exception := stream_message.metadata.get("exception", None)
+                exception := stream_message.metadata.get(METADATA_EXCEPTION_KEY, None)
             ):
                 raise KernelInvokeException(
                     f"Error occurred while invoking function: '{function.fully_qualified_name}'"
