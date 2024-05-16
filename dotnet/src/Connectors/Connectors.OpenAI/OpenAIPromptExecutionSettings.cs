@@ -260,14 +260,14 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("logprobs")]
-    public bool? EnableLogProbabilities
+    public bool? Logprobs
     {
-        get => this._enableLogProbabilities;
+        get => this._logprobs;
 
         set
         {
             this.ThrowIfFrozen();
-            this._enableLogProbabilities = value;
+            this._logprobs = value;
         }
     }
 
@@ -276,14 +276,14 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("top_logprobs")]
-    public int? LogProbabilitiesCount
+    public int? TopLogprobs
     {
-        get => this._logProbabilitiesCount;
+        get => this._topLogprobs;
 
         set
         {
             this.ThrowIfFrozen();
-            this._logProbabilitiesCount = value;
+            this._topLogprobs = value;
         }
     }
 
@@ -328,8 +328,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             ToolCallBehavior = this.ToolCallBehavior,
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
-            EnableLogProbabilities = this.EnableLogProbabilities,
-            LogProbabilitiesCount = this.LogProbabilitiesCount
+            Logprobs = this.Logprobs,
+            TopLogprobs = this.TopLogprobs
         };
     }
 
@@ -405,8 +405,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
-    private bool? _enableLogProbabilities;
-    private int? _logProbabilitiesCount;
+    private bool? _logprobs;
+    private int? _topLogprobs;
 
     #endregion
 }

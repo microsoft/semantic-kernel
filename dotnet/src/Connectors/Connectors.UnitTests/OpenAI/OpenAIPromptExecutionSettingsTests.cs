@@ -30,8 +30,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
-        Assert.Null(executionSettings.LogProbabilitiesCount);
-        Assert.Null(executionSettings.EnableLogProbabilities);
+        Assert.Null(executionSettings.TopLogprobs);
+        Assert.Null(executionSettings.Logprobs);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 
@@ -49,8 +49,8 @@ public class OpenAIPromptExecutionSettingsTests
             StopSequences = new string[] { "foo", "bar" },
             ChatSystemPrompt = "chat system prompt",
             MaxTokens = 128,
-            EnableLogProbabilities = true,
-            LogProbabilitiesCount = 5,
+            Logprobs = true,
+            TopLogprobs = 5,
             TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
         };
 
@@ -267,7 +267,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Equal(123456, executionSettings.Seed);
-        Assert.Equal(true, executionSettings.EnableLogProbabilities);
-        Assert.Equal(5, executionSettings.LogProbabilitiesCount);
+        Assert.Equal(true, executionSettings.Logprobs);
+        Assert.Equal(5, executionSettings.TopLogprobs);
     }
 }

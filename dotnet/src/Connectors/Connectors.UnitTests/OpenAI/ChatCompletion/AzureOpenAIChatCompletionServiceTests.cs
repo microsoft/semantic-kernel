@@ -162,8 +162,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             Seed = 567,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
             StopSequences = ["stop_sequence"],
-            EnableLogProbabilities = true,
-            LogProbabilitiesCount = 5
+            Logprobs = true,
+            TopLogprobs = 5
         };
 
         var chatHistory = new ChatHistory();

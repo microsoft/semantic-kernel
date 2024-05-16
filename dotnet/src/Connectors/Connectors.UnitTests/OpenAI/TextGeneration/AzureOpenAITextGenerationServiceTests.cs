@@ -127,7 +127,7 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
             ResultsPerPrompt = 5,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
             StopSequences = ["stop_sequence"],
-            LogProbabilitiesCount = 5
+            TopLogprobs = 5
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
