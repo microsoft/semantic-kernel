@@ -37,7 +37,8 @@ def test_init():
     assert kernel.plugins is not None
     assert kernel.services is not None
     assert kernel.retry_mechanism is not None
-    assert kernel.filters is not None
+    assert kernel.function_invocation_filters is not None
+    assert kernel.prompt_rendering_filters is not None
 
 
 def test_kernel_init_with_ai_service_selector():
@@ -85,10 +86,10 @@ async def test_invoke_function(kernel: Kernel, create_mock_function):
 
 @pytest.mark.asyncio
 async def test_invoke_functions_by_name(kernel: Kernel, create_mock_function):
-    mock_function = create_mock_function(name="test_function")
-    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
+    mock_function = kernel.add_function(plugin_name="test", function=create_mock_function(name="test_function"))
 
-    await kernel.invoke(function_name="test_function", plugin_name="test", arguments=KernelArguments())
+    result = await kernel.invoke(function_name="test_function", plugin_name="test", arguments=KernelArguments())
+    assert str(result) == "test"
 
     assert mock_function.call_count == 1
 
@@ -112,7 +113,7 @@ async def test_invoke_function_fail(kernel: Kernel, create_mock_function):
 @pytest.mark.asyncio
 async def test_invoke_stream_function(kernel: Kernel, create_mock_function):
     mock_function = create_mock_function(name="test_function")
-    kernel.add_plugin(KernelPlugin(name="test", functions=[mock_function]))
+    mock_function = kernel.add_function(plugin_name="test", function=mock_function)
 
     async for part in kernel.invoke_stream(mock_function, input="test"):
         assert part[0].text == "test"
@@ -160,9 +161,6 @@ async def test_invoke_prompt_no_prompt_error(kernel: Kernel):
         )
 
 
-# endregion
-# region Hooks
-# see test_kernel_hooks.py
 # endregion
 # region Plugins
 

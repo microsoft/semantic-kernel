@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from copy import copy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Literal, Type, TypeVar, Union
@@ -21,13 +20,12 @@ from semantic_kernel.exceptions import (
     ServiceInvalidTypeError,
     TemplateSyntaxError,
 )
-from semantic_kernel.filters.kernel_filter_context_base import KernelFilterContextBase
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_extensions.kernel_filters_extension import KernelFilterExtension
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -56,7 +54,7 @@ ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase"
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel(KernelBaseModel):
+class Kernel(KernelFilterExtension):
     """
     The Kernel class is the main entry point for the Semantic Kernel. It provides the ability to run
     semantic/native functions, and manage plugins, memory, and AI services.
@@ -75,7 +73,6 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    filters: dict[Literal["function_invocation", "prompt_render"], list[tuple[int, Any]]] = Field(default_factory=dict)
 
     def __init__(
         self,
@@ -368,61 +365,6 @@ class Kernel(KernelBaseModel):
                     else:
                         output_function_result[choice.choice_index] += choice
             yield FunctionResult(function=function.metadata, value=output_function_result)
-
-    # endregion
-    # region Filters
-
-    def add_filter(self, filter_type: Literal["function_invocation", "prompt_render"], filter: object) -> None:
-        """Add a filter to the Kernel.
-
-        Args:
-            filter_type (str): The type of the filter to add (function_invocation, prompt_render)
-            filter (object): The filter to add
-
-        """
-        if filter_type not in self.filters:
-            self.filters[filter_type] = []
-        self.filters[filter_type].append((id(filter), filter))
-
-    def filter(
-        self, filter_type: Literal["function_invocation", "prompt_render"]
-    ) -> Callable[[KernelFilterContextBase, Callable[..., Any]], Any]:
-        def decorator(
-            func: Callable[[KernelFilterContextBase, Callable[..., Any]], Any],
-        ) -> Callable[[KernelFilterContextBase, Callable[..., Any]], Any]:
-            self.add_filter(filter_type, func)
-            return func
-
-        return decorator  # type: ignore
-
-    def remove_filter(
-        self,
-        filter_type: Literal["function_invocation", "prompt_render"] | None = None,
-        filter_id: int | None = None,
-        position: int | None = None,
-    ) -> None:
-        """Remove a filter from the Kernel.
-
-        Args:
-            filter_type (str | None): The type of the filter to remove (function_invocation, prompt_render)
-            filter_id (int): The id of the hook to remove
-            position (int): The position of the filter in the list
-
-        """
-        if filter_id is None and position is None:
-            raise ValueError("Either hook_id or position should be provided.")
-        if position is not None:
-            if filter_type is None:
-                raise ValueError("Please specify the type of filter when using position.")
-            self.filters[filter_type].pop(position)
-            return
-        for filter_t, filter_list in self.filters.items():
-            if filter_type and filter_t != filter_type:
-                continue
-            for i, hooks in enumerate(filter_list):
-                if hooks[0] == filter_id:
-                    filter_list.pop(i)
-                    break
 
     # endregion
     # region Plugins & Functions

@@ -2,6 +2,7 @@
 import sys
 from typing import Any, AsyncGenerator, Iterable, Optional, Union
 
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 
 if sys.version_info >= (3, 9):
@@ -141,8 +142,9 @@ async def test_invoke_non_async(kernel: Kernel):
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
 
-    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+    with pytest.raises(NotImplementedError):
+        async for _ in native_function.invoke_stream(kernel=kernel, arguments=None):
+            pass
 
 
 @pytest.mark.asyncio
@@ -156,8 +158,9 @@ async def test_invoke_async(kernel: Kernel):
     result = await native_function.invoke(kernel=kernel, arguments=None)
     assert result.value == ""
 
-    async for partial_result in native_function.invoke_stream(kernel=kernel, arguments=None):
-        assert isinstance(partial_result.metadata["exception"], NotImplementedError)
+    with pytest.raises(NotImplementedError):
+        async for _ in native_function.invoke_stream(kernel=kernel, arguments=None):
+            pass
 
 
 @pytest.mark.asyncio
@@ -225,8 +228,8 @@ async def test_required_param_not_supplied(kernel: Kernel):
 
     func = KernelFunction.from_method(my_function, "test")
 
-    result = await func.invoke(kernel=kernel, arguments=KernelArguments())
-    assert isinstance(result.metadata["exception"], FunctionExecutionException)
+    with pytest.raises(FunctionExecutionException):
+        await func.invoke(kernel=kernel, arguments=KernelArguments())
 
 
 @pytest.mark.asyncio
@@ -309,3 +312,108 @@ async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel
 def test_function_from_lambda():
     func = KernelFunctionFromMethod(method=kernel_function(lambda x: x**2, name="square"), plugin_name="math")
     assert func is not None
+
+
+@pytest.mark.asyncio
+async def test_function_invocation_filters(kernel: Kernel):
+    func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
+    kernel.add_function(plugin_name="math", function=func)
+
+    pre_call_count = 0
+    post_call_count = 0
+
+    async def custom_filter(context, next):
+        nonlocal pre_call_count
+        pre_call_count += 1
+        await next(context)
+        nonlocal post_call_count
+        post_call_count += 1
+
+    kernel.add_filter("function_invocation", custom_filter)
+    result = await kernel.invoke(plugin_name="math", function_name="square", arguments=KernelArguments(input=2))
+    assert result.value == 4
+    assert pre_call_count == 1
+    assert post_call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_function_invocation_multiple_filters(kernel: Kernel):
+    call_stack = []
+
+    @kernel_function(name="square")
+    def func(input: int):
+        nonlocal call_stack
+        call_stack.append("func")
+        return input**2
+
+    kernel.add_function(plugin_name="math", function=func)
+
+    async def custom_filter1(context, next):
+        nonlocal call_stack
+        call_stack.append("custom_filter1_pre")
+        await next(context)
+        call_stack.append("custom_filter1_post")
+
+    async def custom_filter2(context, next):
+        nonlocal call_stack
+        call_stack.append("custom_filter2_pre")
+        await next(context)
+        call_stack.append("custom_filter2_post")
+
+    kernel.add_filter("function_invocation", custom_filter1)
+    kernel.add_filter("function_invocation", custom_filter2)
+    result = await kernel.invoke(plugin_name="math", function_name="square", arguments=KernelArguments(input=2))
+    assert result.value == 4
+    assert call_stack == [
+        "custom_filter1_pre",
+        "custom_filter2_pre",
+        "func",
+        "custom_filter2_post",
+        "custom_filter1_post",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_function_invocation_filters_streaming(kernel: Kernel):
+    call_stack = []
+
+    @kernel_function(name="square")
+    async def func(input: int):
+        nonlocal call_stack
+        call_stack.append("func1")
+        yield input**2
+        call_stack.append("func2")
+        yield input**3
+
+    kernel.add_function(plugin_name="math", function=func)
+
+    async def custom_filter(context, next):
+        nonlocal call_stack
+        call_stack.append("custom_filter_pre")
+        await next(context)
+
+        async def override_stream(stream):
+            nonlocal call_stack
+            async for partial in stream:
+                call_stack.append("overridden_func")
+                yield partial * 2
+
+        stream = context.result.value
+        context.result = FunctionResult(function=context.result.function, value=override_stream(stream))
+        call_stack.append("custom_filter_post")
+
+    kernel.add_filter("function_invocation", custom_filter)
+    index = 0
+    async for partial in kernel.invoke_stream(
+        plugin_name="math", function_name="square", arguments=KernelArguments(input=2)
+    ):
+        assert partial == 8 if index == 0 else 16
+        index += 1
+    assert call_stack == [
+        "custom_filter_pre",
+        "custom_filter_post",
+        "func1",
+        "overridden_func",
+        "func2",
+        "overridden_func",
+    ]

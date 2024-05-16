@@ -14,11 +14,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
-from semantic_kernel.filters.function.function_context import FunctionContext
+from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
@@ -102,7 +101,7 @@ through prompt_template_config or in the prompt_template."
                 name=function_name,
                 plugin_name=plugin_name,
                 description=description,
-                parameters=prompt_template.prompt_template_config.get_kernel_parameter_metadata(),
+                parameters=prompt_template.prompt_template_config.get_kernel_parameter_metadata(),  # type: ignore
                 is_prompt=True,
                 is_asynchronous=True,
                 return_parameter=PROMPT_RETURN_PARAM,
@@ -111,8 +110,8 @@ through prompt_template_config or in the prompt_template."
             raise FunctionInitializationError("Failed to create KernelFunctionMetadata") from exc
         super().__init__(
             metadata=metadata,
-            prompt_template=prompt_template,
-            prompt_execution_settings=prompt_execution_settings,
+            prompt_template=prompt_template,  # type: ignore
+            prompt_execution_settings=prompt_execution_settings or {},  # type: ignore
         )
 
     @model_validator(mode="before")
@@ -142,39 +141,29 @@ through prompt_template_config or in the prompt_template."
             data["prompt_execution_settings"] = {s.service_id or "default": s for s in prompt_execution_settings}
         return data
 
-    async def _invoke_internal(self, function_context: FunctionContext) -> None:
+    async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
         """Invokes the function with the given arguments."""
-        self.add_default_values(function_context.arguments)
-        service, execution_settings = function_context.kernel.select_ai_service(self, function_context.arguments)
+        self.update_arguments_with_defaults(context.arguments)
+        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
 
-        # pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
-        # if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
-        #     arguments = pre_prompt_context.arguments
-
-        prompt = await self.prompt_template.render(function_context.kernel, function_context.arguments)
-
-        # post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
-        # if post_prompt_context is not None:
-        #     if post_prompt_context.updated_arguments:
-        #         arguments = post_prompt_context.arguments
-        #     prompt = post_prompt_context.rendered_prompt
+        prompt = await self.prompt_template.render(context.kernel, context.arguments)
 
         if isinstance(service, ChatCompletionClientBase):
-            function_context.result = await self._handle_complete_chat(
-                kernel=function_context.kernel,
+            context.result = await self._handle_complete_chat(
+                kernel=context.kernel,
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=function_context.arguments,
+                arguments=context.arguments,
             )
             return
 
         if isinstance(service, TextCompletionClientBase):
-            function_context.result = await self._handle_text_complete(
+            context.result = await self._handle_text_complete(
                 service=service,
                 execution_settings=execution_settings,
                 prompt=prompt,
-                arguments=function_context.arguments,
+                arguments=context.arguments,
             )
             return
 
@@ -246,44 +235,35 @@ through prompt_template_config or in the prompt_template."
             metadata=metadata,
         )
 
-    async def _invoke_internal_stream(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin], Any]:
+    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Invokes the function stream with the given arguments."""
-        self.add_default_values(arguments)
-        service, execution_settings = kernel.select_ai_service(self, arguments)
+        self.update_arguments_with_defaults(context.arguments)
+        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
 
-        # pre_prompt_context = await kernel._pre_prompt_render(self, arguments)
-        # if pre_prompt_context is not None and pre_prompt_context.updated_arguments:
-        #     arguments = pre_prompt_context.arguments
-
-        prompt = await self.prompt_template.render(kernel, arguments)
-
-        # post_prompt_context = await kernel._post_prompt_render(self, arguments, prompt)
-        # if post_prompt_context is not None:
-        #     arguments = post_prompt_context.arguments
-        #     prompt = post_prompt_context.rendered_prompt
+        prompt = await self.prompt_template.render(context.kernel, context.arguments)
 
         if isinstance(service, ChatCompletionClientBase):
-            async for content in self._handle_complete_chat_stream(
-                kernel=kernel,
-                service=service,
-                execution_settings=execution_settings,
-                prompt=prompt,
-                arguments=arguments,
-            ):
-                yield content  # type: ignore
+            context.result = FunctionResult(
+                function=self.metadata,
+                value=self._handle_complete_chat_stream(
+                    kernel=context.kernel,
+                    service=service,
+                    execution_settings=execution_settings,
+                    prompt=prompt,
+                    arguments=context.arguments,
+                ),
+            )
             return
 
         if isinstance(service, TextCompletionClientBase):
-            async for content in self._handle_complete_text_stream(  # type: ignore
-                service=service,
-                execution_settings=execution_settings,
-                prompt=prompt,
-            ):
-                yield content  # type: ignore
+            context.result = FunctionResult(
+                function=self.metadata,
+                value=self._handle_complete_text_stream(  # type: ignore
+                    service=service,
+                    execution_settings=execution_settings,
+                    prompt=prompt,
+                ),
+            )
             return
 
         raise FunctionExecutionException(f"Service `{type(service)}` is not a valid AI service")  # pragma: no cover
@@ -333,8 +313,8 @@ through prompt_template_config or in the prompt_template."
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
             yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
 
-    def add_default_values(self, arguments: KernelArguments) -> None:
-        """Gathers the function parameters from the arguments."""
+    def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:
+        """Update any missing values with their defaults."""
         for parameter in self.prompt_template.prompt_template_config.input_variables:
             if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
                 arguments[parameter.name] = parameter.default

@@ -180,11 +180,11 @@ async def test_invoke_exception():
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat",
-        side_effect=Exception,
+        side_effect=Exception("test"),
     ) as mock:
         mock.return_value = [ChatMessageContent(role="assistant", content="test", metadata={})]
-        result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["exception"], Exception)
+        with pytest.raises(Exception, match="test"):
+            await function.invoke(kernel=kernel)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.complete_chat_stream",
@@ -234,11 +234,11 @@ async def test_invoke_exception_text():
     )
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete",
-        side_effect=Exception,
+        side_effect=Exception("test"),
     ) as mock:
         mock.return_value = [TextContent(text="test", metadata={})]
-        result = await function.invoke(kernel=kernel)
-        assert isinstance(result.metadata["exception"], Exception)
+        with pytest.raises(Exception, match="test"):
+            await function.invoke(kernel=kernel)
 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.complete_stream",

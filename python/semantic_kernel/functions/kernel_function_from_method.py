@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import logging
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from pydantic import ValidationError
 
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
-from semantic_kernel.filters.function.function_context import FunctionContext
+from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -101,10 +100,10 @@ class KernelFunctionFromMethod(KernelFunction):
 
     async def _invoke_internal(
         self,
-        function_context: FunctionContext,
+        context: FunctionInvocationContext,
     ) -> None:
         """Invoke the function with the given arguments."""
-        function_arguments = self.gather_function_parameters(function_context.kernel, function_context.arguments)
+        function_arguments = self.gather_function_parameters(context.kernel, context.arguments)
         result = self.method(**function_arguments)
         if isasyncgen(result):
             result = [x async for x in result]
@@ -116,24 +115,15 @@ class KernelFunctionFromMethod(KernelFunction):
             result = FunctionResult(
                 function=self.metadata,
                 value=result,
-                metadata={"arguments": function_context.arguments, "used_arguments": function_arguments},
+                metadata={"arguments": context.arguments, "used_arguments": function_arguments},
             )
-        function_context.result = result
+        context.result = result
 
-    async def _invoke_internal_stream(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> AsyncGenerator[list[StreamingContentMixin] | Any, Any]:
+    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
-        function_arguments = self.gather_function_parameters(kernel, arguments)
-        if isasyncgenfunction(self.stream_method):
-            async for partial_result in self.stream_method(**function_arguments):
-                yield partial_result
-        elif isgeneratorfunction(self.stream_method):
-            for partial_result in self.stream_method(**function_arguments):
-                yield partial_result
+        function_arguments = self.gather_function_parameters(context.kernel, context.arguments)
+        context.result = FunctionResult(function=self.metadata, value=self.stream_method(**function_arguments))
 
     def gather_function_parameters(self, kernel: Kernel, arguments: KernelArguments) -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""

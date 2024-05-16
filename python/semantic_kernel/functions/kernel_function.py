@@ -6,9 +6,10 @@ import logging
 from abc import abstractmethod
 from collections.abc import AsyncGenerator
 from copy import copy, deepcopy
+from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any, Callable, Coroutine
 
-from semantic_kernel.filters.function.function_context import FunctionContext
+from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -164,7 +165,16 @@ class KernelFunction(KernelBaseModel):
         return await self.invoke(kernel, arguments, metadata, **kwargs)
 
     @abstractmethod
-    async def _invoke_internal(self, context: FunctionContext) -> None:
+    async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
+        """Internal invoke method of the the function with the given arguments.
+
+        This function should be implemented by the subclass.
+        It relies on updating the context with the result from the function.
+
+        Args:
+            context (FunctionInvocationContext): The invocation context.
+
+        """
         pass
 
     async def invoke(
@@ -188,16 +198,12 @@ class KernelFunction(KernelBaseModel):
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         KernelFunction._rebuild_context()
-        function_context = FunctionContext(function=self, kernel=kernel, arguments=arguments, metadata=metadata)
+        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-        stack: list[Callable[[FunctionContext], Coroutine[Any, Any, None]]] = [self._invoke_internal]
+        stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal]
         index = 0
-        for _, hook in kernel.filters["function_invocation"]:
-            if callable(hook):
-                hook_func = functools.partial(hook, next=stack[0])
-            else:
-                hook_func = functools.partial(hook.function_filter, next=stack[0])
-            stack.append(hook_func)
+        for _, filter in kernel.function_invocation_filters:
+            stack.append(functools.partial(filter, next=stack[index]))  # type: ignore
             index += 1
         await stack[-1](function_context)
         return function_context.result
@@ -208,14 +214,10 @@ class KernelFunction(KernelBaseModel):
         from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
         from semantic_kernel.kernel import Kernel  # noqa: F403 F401
 
-        FunctionContext.model_rebuild()
+        FunctionInvocationContext.model_rebuild()
 
     @abstractmethod
-    def _invoke_internal_stream(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
+    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Internal invoke method of the the function with the given arguments.
 
         The abstract method is defined without async because otherwise the typing fails.
@@ -240,30 +242,29 @@ class KernelFunction(KernelBaseModel):
                 added to the KernelArguments.
 
         Yields:
-            KernelContent with the StreamingKernelMixin or FunctionResult -- The results of the function,
+            KernelContent with the StreamingKernelMixin or FunctionResult --
+                The results of the function,
                 if there is an error a FunctionResult is yielded.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        # pre_hook_context = await kernel._pre_function_invoke(function=self, arguments=arguments, metadata=metadata)
-        # if pre_hook_context:
-        #     if pre_hook_context.updated_arguments:
-        #         arguments = pre_hook_context.arguments
-        #     metadata.update(pre_hook_context.metadata)
-        exception = None
-        try:
-            async for partial_result in self._invoke_internal_stream(kernel, arguments):  # type: ignore
-                if isinstance(partial_result, FunctionResult):
-                    yield partial_result
-                    break
-                yield partial_result
-        except Exception as exc:
-            exception = exc
-            logger.error(f"Error occurred while invoking function {self.name}: {exception}")
-            metadata["exception"] = exception
-            metadata["arguments"] = arguments
-            yield FunctionResult(function=self.metadata, value=None, metadata=metadata)
-        # The function_invoked event is not called for stream functions.
+        KernelFunction._rebuild_context()
+        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
+        stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal_stream]
+        index = 0
+        for _, hook in kernel.function_invocation_filters:
+            stack.append(functools.partial(hook, next=stack[index]))  # type: ignore
+            index += 1
+        await stack[-1](function_context)
+        if function_context.result is not None:
+            if isasyncgen(function_context.result.value):
+                async for partial in function_context.result.value:
+                    yield partial
+            elif isgenerator(function_context.result.value):
+                for partial in function_context.result.value:
+                    yield partial
+            else:
+                yield function_context.result
 
     def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
         """Copy the function, can also override the plugin_name.

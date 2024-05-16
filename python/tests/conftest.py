@@ -3,15 +3,14 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import TYPE_CHECKING, Any, AsyncIterable, Callable, List, Union
+from typing import TYPE_CHECKING, Callable
 
 import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -90,11 +89,9 @@ def custom_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
-    from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-    from semantic_kernel.functions.function_result import FunctionResult
     from semantic_kernel.functions.kernel_function import KernelFunction
 
-    async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
+    async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
 
     def create_mock_function(name: str, value: str = "test") -> "KernelFunction":
@@ -112,28 +109,17 @@ def create_mock_function() -> Callable:
 
             async def _invoke_internal_stream(
                 self,
-                kernel: "Kernel",
-                arguments: "KernelArguments",
-            ) -> AsyncIterable[Union[FunctionResult, List[Union[StreamingContentMixin, Any]]]]:
+                context: "FunctionInvocationContext",
+            ) -> None:
                 self.call_count += 1
-                context = await kernel._pre_prompt_render(self, arguments)
-                if context:
-                    arguments = context.arguments
-                yield [StreamingTextContent(choice_index=0, text=value, metadata={})]
+                context.result = FunctionResult(
+                    function=kernel_function_metadata,
+                    value=stream_func(),
+                )
 
-            async def _invoke_internal(
-                self,
-                kernel: "Kernel",
-                arguments: "KernelArguments",
-            ) -> "FunctionResult":
+            async def _invoke_internal(self, context: "FunctionInvocationContext"):
                 self.call_count += 1
-                context = await kernel._pre_prompt_render(self, arguments)
-                if context:
-                    arguments = context.arguments
-                context = await kernel._post_prompt_render(self, arguments, rendered_prompt="")
-                if context:
-                    arguments = context.arguments
-                return FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+                context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
 
         mock_function = CustomKernelFunction(metadata=kernel_function_metadata)
 
