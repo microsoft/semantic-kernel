@@ -352,7 +352,7 @@ def test_from_directory_config_only():
 
 
 @pytest.mark.asyncio
-async def test_prompt_render(kernel: Kernel):
+async def test_prompt_render(kernel: Kernel, openai_unit_test_env):
     kernel.add_service(OpenAIChatCompletion(service_id="default", ai_model_id="test"))
     function = KernelFunctionFromPrompt(
         function_name="test",
