@@ -6,17 +6,13 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.core_plugins import MathPlugin, TextPlugin, TimePlugin
 from semantic_kernel.planners import SequentialPlanner
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
     kernel = Kernel()
-    api_key, org_id = openai_settings_from_dot_env()
 
     service_id = "gpt-3.5"
-    kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
-    )
+    kernel.add_service(OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"))
     kernel.add_plugins({"math": MathPlugin(), "time": TimePlugin(), "text": TextPlugin()})
 
     # create an instance of sequential planner.

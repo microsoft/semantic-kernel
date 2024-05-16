@@ -6,11 +6,13 @@ from typing import List, Tuple
 import numpy as np
 import redis
 from numpy import ndarray
+from pydantic import ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
+from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
@@ -50,7 +52,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -64,10 +66,21 @@ class RedisMemoryStore(MemoryStoreBase):
             vector_type {str} -- Vector type, defaults to FLOAT32
             vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
             query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
+                environment variables, defaults to False
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        redis_settings = None
+        try:
+            redis_settings = RedisSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load Redis pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            redis_settings.connection_string.get_secret_value()
+            if redis_settings and redis_settings.connection_string
+            else None
+        )
+
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")
 

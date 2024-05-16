@@ -9,7 +9,6 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITe
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 """
 Logit bias enables prioritizing certain tokens within a given output.
@@ -31,10 +30,11 @@ def _prepare_input_chat(chat: ChatHistory):
     return "".join([f"{msg.role}: {msg.content}\n" for msg in chat])
 
 
-async def chat_request_example(kernel: Kernel, api_key, org_id):
+async def chat_request_example(kernel: Kernel):
     service_id = "chat_service"
     openai_chat_completion = OpenAIChatCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo",
     )
     kernel.add_service(openai_chat_completion)
 
@@ -111,10 +111,11 @@ async def chat_request_example(kernel: Kernel, api_key, org_id):
     return chat, banned_words
 
 
-async def text_complete_request_example(kernel: Kernel, api_key, org_id):
+async def text_complete_request_example(kernel: Kernel):
     service_id = "text_service"
     openai_text_completion = OpenAITextCompletion(
-        service_id=service_id, ai_model_id="gpt-3.5-turbo-instruct", api_key=api_key, org_id=org_id
+        service_id=service_id,
+        ai_model_id="gpt-3.5-turbo-instruct",
     )
     kernel.add_service(openai_text_completion)
 
@@ -210,18 +211,17 @@ def _format_output(chat, banned_words) -> None:
 
 async def main() -> None:
     kernel = Kernel()
-    api_key, org_id = openai_settings_from_dot_env()
 
     print("Chat completion example:")
     print("------------------------")
-    chat, banned_words = await chat_request_example(kernel, api_key, org_id)
+    chat, banned_words = await chat_request_example(kernel)
     _format_output(chat, banned_words)
 
     print("------------------------")
 
     print("\nText completion example:")
     print("------------------------")
-    chat, banned_words = await text_complete_request_example(kernel, api_key, org_id)
+    chat, banned_words = await text_complete_request_example(kernel)
     _format_output(chat, banned_words)
 
     return

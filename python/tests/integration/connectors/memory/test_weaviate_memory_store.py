@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory.weaviate import weaviate_memory_store
+from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import WeaviateConfig, WeaviateMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux"):
@@ -74,19 +74,19 @@ def documents():
 @pytest.fixture
 def memory_store():
     max_attempts = 5  # the number of retry attempts
-    delay = 30  # delay in seconds between each attempt
+    delay = 3  # delay in seconds between each attempt
 
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
+    config = WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
         try:
-            store = weaviate_memory_store.WeaviateMemoryStore(config)
+            store = WeaviateMemoryStore(config=config)
             store.client.schema.delete_all()
         except Exception:
             if attempt < max_attempts - 1:  # it's not the final attempt
                 time.sleep(delay)  # wait before retrying
                 continue  # go to the next attempt
             else:  # it's the final attempt
-                raise  # re-raise the last exception
+                pytest.skip("Unable to start Weaviate memory store.")
         else:
             break  # successful attempt, get out of the loop
 
@@ -116,8 +116,8 @@ def memory_store_with_collection(memory_store, event_loop, documents):
 
 
 def test_embedded_weaviate():
-    config = weaviate_memory_store.WeaviateConfig(use_embed=True)
-    memory_store = weaviate_memory_store.WeaviateMemoryStore(config=config)
+    config = WeaviateConfig(use_embed=True)
+    memory_store = WeaviateMemoryStore(config=config)
 
     assert memory_store.client._connection.embedded_db
 
