@@ -20,9 +20,9 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     private readonly IEnumerable<KernelFunction>? _functions;
 
     /// <summary>
-    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// Indicates whether the functions should be automatically invoked by the AI service/connector.
     /// </summary>
-    private readonly int _maximumAutoInvokeAttempts = DefaultMaximumAutoInvokeAttempts;
+    private readonly bool _autoInvoke = true;
 
     /// <summary>
     /// This class type discriminator used for polymorphic deserialization of the type specified in JSON and YAML prompts.
@@ -44,9 +44,9 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
     public RequiredFunctionChoiceBehavior(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
+        this._autoInvoke = autoInvoke;
         this._functions = functions;
         this.Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName)).ToList();
-        this._maximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
 
     /// <summary>
@@ -59,14 +59,12 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        bool autoInvoke = this._maximumAutoInvokeAttempts > 0;
-
         // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
         // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
         // and then fail to do so, so we fail before we get to that point. This is an error
         // on the consumers behalf: if they specify auto-invocation with any functions, they must
         // specify the kernel and the kernel must contain those functions.
-        if (autoInvoke && context.Kernel is null)
+        if (this._autoInvoke && context.Kernel is null)
         {
             throw new KernelException("Auto-invocation for Required choice behavior is not supported when no kernel is provided.");
         }
@@ -91,7 +89,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
                 }
 
                 // If auto-invocation is requested and no function is found in the kernel, fail early.
-                if (autoInvoke)
+                if (this._autoInvoke)
                 {
                     throw new KernelException($"The specified function {functionFQN} is not available in the kernel.");
                 }
@@ -123,7 +121,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.Required,
             Functions = availableFunctions,
-            MaximumAutoInvokeAttempts = this._maximumAutoInvokeAttempts,
+            AutoInvoke = this._autoInvoke,
             MaximumUseAttempts = 1,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };

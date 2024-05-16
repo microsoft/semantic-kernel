@@ -129,7 +129,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
     }
 
     [Fact]
-    public void ItShouldHaveDefaultMaxAutoInvokeAttempts()
+    public void ItShouldAllowAutoInvocationByDefault()
     {
         // Arrange
         var plugin = GetTestPlugin();
@@ -142,24 +142,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
-    }
-
-    [Fact]
-    public void ItShouldAllowAutoInvocation()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new AutoFunctionChoiceBehavior();
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.Equal(10, config.MaximumAutoInvokeAttempts);
+        Assert.True(config.AutoInvoke);
     }
 
     [Fact]
@@ -176,7 +159,7 @@ public sealed class AutoFunctionChoiceBehaviorTests
 
         // Assert
         Assert.NotNull(config);
-        Assert.Equal(0, config.MaximumAutoInvokeAttempts);
+        Assert.False(config.AutoInvoke);
     }
 
     [Fact]

@@ -22,20 +22,14 @@ public sealed class FunctionChoiceBehaviorConfiguration
     public IEnumerable<KernelFunction>? Functions { get; init; }
 
     /// <summary>
-    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// Indicates whether the functions should be automatically invoked by the AI service/connector.
     /// </summary>
-    /// <remarks>
-    /// After this number of iterations as part of a single user request is reached, auto-invocation
-    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
-    /// the same function over and over. To disable auto invocation, this can be set to 0.
-    /// </remarks>
-    public int? MaximumAutoInvokeAttempts { get; init; }
+    public bool AutoInvoke { get; init; } = true;
 
     /// <summary>
     /// Number of requests that are part of a single user interaction that should include this functions in the request.
     /// </summary>
     /// <remarks>
-    /// This should be greater than or equal to <see cref="MaximumAutoInvokeAttempts"/>.
     /// Once this limit is reached, the functions will no longer be included in subsequent requests that are part of the user operation, e.g.
     /// if this is 1, the first request will include the functions, but the subsequent response sending back the functions' result
     /// will not include the functions for further use.

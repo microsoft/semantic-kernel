@@ -17,16 +17,6 @@ namespace Microsoft.SemanticKernel;
 public abstract class FunctionChoiceBehavior
 {
     /// <summary>
-    /// The default maximum number of function auto-invokes that can be made in a single user request.
-    /// </summary>
-    /// <remarks>
-    /// After this number of iterations as part of a single user request is reached, auto-invocation
-    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
-    /// the same function over and over.
-    /// </remarks>
-    protected const int DefaultMaximumAutoInvokeAttempts = 10;
-
-    /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
     /// </summary>

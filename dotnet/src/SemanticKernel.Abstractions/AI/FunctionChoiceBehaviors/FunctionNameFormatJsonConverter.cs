@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// A custom JSON converter for converting function names in a JSON array.
 /// This converter replaces dots used as a function name separator in prompts with hyphens when reading and back when writing.
 /// </summary>
+[Experimental("SKEXP0001")]
 public sealed class FunctionNameFormatJsonConverter : JsonConverter<IList<string>>
 {
     private const char PromptFunctionNameSeparator = '.';

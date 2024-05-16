@@ -51,6 +51,16 @@ internal abstract class ClientCore
     /// </remarks>
     private const int MaxInflightAutoInvokes = 5;
 
+    /// <summary>
+    /// The maximum number of function auto-invokes that can be made in a single user request.
+    /// </summary>
+    /// <remarks>
+    /// After this number of iterations as part of a single user request is reached, auto-invocation
+    /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
+    /// the same function over and over.
+    /// </remarks>
+    private const int MaximumAutoInvokeAttempts = 128;
+
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };
 
@@ -1527,7 +1537,7 @@ internal abstract class ClientCore
         (bool? AllowAnyRequestedKernelFunction, int? MaximumAutoInvokeAttempts) result = new()
         {
             AllowAnyRequestedKernelFunction = config.AllowAnyRequestedKernelFunction,
-            MaximumAutoInvokeAttempts = config.MaximumAutoInvokeAttempts,
+            MaximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0,
         };
 
         if (requestIndex >= config.MaximumUseAttempts)
