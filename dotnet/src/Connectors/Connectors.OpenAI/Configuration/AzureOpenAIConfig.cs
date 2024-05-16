@@ -47,11 +47,6 @@ public class AzureOpenAIConfig
     public string Deployment { get; set; } = string.Empty;
 
     /// <summary>
-    /// The max number of tokens supported by model deployed.
-    /// </summary>
-    public int MaxTokenTotal { get; set; } = 8191;
-
-    /// <summary>
     /// API key, required if Auth == APIKey.
     /// </summary>
     public string APIKey { get; set; } = string.Empty;
@@ -110,11 +105,6 @@ public class AzureOpenAIConfig
         if (string.IsNullOrWhiteSpace(this.Deployment))
         {
             throw new ConfigurationException($"Azure OpenAI: {nameof(this.Deployment)} (deployment name) is empty");
-        }
-
-        if (this.MaxTokenTotal < 1)
-        {
-            throw new ConfigurationException($"Azure OpenAI: {nameof(this.MaxTokenTotal)} cannot be less than 1");
         }
 
         if (this.EmbeddingDimensions is < 1)
