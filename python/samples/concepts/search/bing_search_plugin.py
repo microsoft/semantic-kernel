@@ -1,33 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
-
-from dotenv import load_dotenv
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env
-
-load_dotenv()
 
 
 async def main():
     kernel = Kernel()
-    deployment, key, endpoint, api_version = azure_openai_settings_from_dot_env(include_api_version=True)
     service_id = "chat-gpt"
     kernel.add_service(
         AzureChatCompletion(
             service_id=service_id,
-            deployment_name=deployment,
-            api_key=key,
-            endpoint=endpoint,
-            api_version=api_version,
         ),
     )
-    connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
+    connector = BingConnector()
     web_plugin = kernel.add_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 
     print("---------------- Question 1 -----------------\n")

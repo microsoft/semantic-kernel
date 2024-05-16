@@ -10,7 +10,9 @@ from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
+from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceResourceNotFoundError,
@@ -41,7 +43,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -52,10 +54,22 @@ class PostgresMemoryStore(MemoryStoreBase):
             max_pool {int} -- The maximum number of connections in the connection pool.\n
             schema {str} -- The schema to use. (default: {"public"})\n
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
-            Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+                Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+            env_file_path {str | None} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        postgres_settings = None
+        try:
+            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load Postgres pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            postgres_settings.connection_string.get_secret_value()
+            if postgres_settings and postgres_settings.connection_string
+            else None
+        )
+
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string

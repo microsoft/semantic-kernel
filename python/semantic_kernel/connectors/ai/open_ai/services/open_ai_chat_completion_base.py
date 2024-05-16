@@ -53,7 +53,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
@@ -100,7 +100,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
             settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
 
-    async def complete_chat_stream(
+    async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
