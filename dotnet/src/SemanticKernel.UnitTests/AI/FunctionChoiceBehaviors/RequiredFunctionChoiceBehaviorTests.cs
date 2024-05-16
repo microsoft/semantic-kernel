@@ -270,23 +270,6 @@ public sealed class RequiredFunctionChoiceBehaviorTests
         Assert.False(config.AllowAnyRequestedKernelFunction);
     }
 
-    [Fact]
-    public void ItShouldHaveOneMaxUseAttemptsByDefault()
-    {
-        // Arrange
-        var plugin = GetTestPlugin();
-        this._kernel.Plugins.Add(plugin);
-
-        // Act
-        var choiceBehavior = new RequiredFunctionChoiceBehavior();
-
-        var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(config);
-        Assert.Equal(1, config.MaximumUseAttempts);
-    }
-
     private static KernelPlugin GetTestPlugin()
     {
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { }, "Function1");

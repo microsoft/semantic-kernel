@@ -27,16 +27,6 @@ public sealed class FunctionChoiceBehaviorConfiguration
     public bool AutoInvoke { get; init; } = true;
 
     /// <summary>
-    /// Number of requests that are part of a single user interaction that should include this functions in the request.
-    /// </summary>
-    /// <remarks>
-    /// Once this limit is reached, the functions will no longer be included in subsequent requests that are part of the user operation, e.g.
-    /// if this is 1, the first request will include the functions, but the subsequent response sending back the functions' result
-    /// will not include the functions for further use.
-    /// </remarks>
-    public int? MaximumUseAttempts { get; init; }
-
-    /// <summary>
     /// Specifies whether validation against a specified list of functions is required before allowing the model to request a function from the kernel.
     /// </summary>
     public bool? AllowAnyRequestedKernelFunction { get; init; }

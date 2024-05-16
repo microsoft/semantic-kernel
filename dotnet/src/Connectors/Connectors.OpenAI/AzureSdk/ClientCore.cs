@@ -61,6 +61,16 @@ internal abstract class ClientCore
     /// </remarks>
     private const int MaximumAutoInvokeAttempts = 128;
 
+    /// <summary>
+    /// Number of requests that are part of a single user interaction that should include this functions in the request.
+    /// </summary>
+    /// <remarks>
+    /// Once this limit is reached, the functions will no longer be included in subsequent requests that are part of the user operation, e.g.
+    /// if this is 1, the first request will include the functions, but the subsequent response sending back the functions' result
+    /// will not include the functions for further use.
+    /// </remarks>
+    private const int MaximumUseAttempts = 1;
+
     /// <summary>Singleton tool used when tool call count drops to 0 but we need to supply tools to keep the service happy.</summary>
     private static readonly ChatCompletionsFunctionToolDefinition s_nonInvocableFunctionTool = new() { Name = "NonInvocableTool" };
 
@@ -1540,12 +1550,12 @@ internal abstract class ClientCore
             MaximumAutoInvokeAttempts = config.AutoInvoke ? MaximumAutoInvokeAttempts : 0,
         };
 
-        if (requestIndex >= config.MaximumUseAttempts)
+        if (config.Choice == FunctionChoice.Required && requestIndex >= MaximumUseAttempts)
         {
             // Don't add any tools as we've reached the maximum use attempts limit.
             if (this.Logger.IsEnabled(LogLevel.Debug))
             {
-                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", config.MaximumUseAttempts);
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the functions.", MaximumUseAttempts);
             }
 
             return result;

@@ -122,7 +122,6 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             Choice = FunctionChoice.Required,
             Functions = availableFunctions,
             AutoInvoke = this._autoInvoke,
-            MaximumUseAttempts = 1,
             AllowAnyRequestedKernelFunction = allowAnyRequestedKernelFunction
         };
     }
