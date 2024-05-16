@@ -101,7 +101,7 @@ public class BookingAgent {
                 .getChatMessageContentsAsync(chatHistory, kernel, invocationContext).block().get(0);
             chatHistory.addAssistantMessage(result.getContent());
 
-            System.out.println("Assistant > " + result);
+            System.out.println("System > " + result);
             System.out.println("User > ");
         }
     }

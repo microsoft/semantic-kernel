@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class BookingPlugin {
     public static final int BOOKING_HOURS = 2;
@@ -43,52 +44,61 @@ public class BookingPlugin {
         @KernelFunctionParameter(name = "customerEmail", description = "The email of the customer") String customerEmail,
         @KernelFunctionParameter(name = "customerPhone", description = "The phone of the customer") String customerPhone
         ) {
-        BookingAppointment bookingAppointment = new BookingAppointment();
-        bookingAppointment.setOdataType("#microsoft.graph.bookingAppointment");
-        bookingAppointment.setCustomerTimeZone(userTimeZone);
-        bookingAppointment.setSmsNotificationsEnabled(false);
-        DateTimeTimeZone endDateTime = new DateTimeTimeZone();
-        endDateTime.setOdataType("#microsoft.graph.dateTimeTimeZone");
-        endDateTime.setDateTime(date.plusHours(BOOKING_HOURS).toString());
-        endDateTime.setTimeZone("UTC");
-        bookingAppointment.setEndDateTime(endDateTime);
-        bookingAppointment.setIsLocationOnline(false);
-        bookingAppointment.setOptOutOfCustomerEmail(false);
-        bookingAppointment.setAnonymousJoinWebUrl(null);
-        PeriodAndDuration postBuffer = PeriodAndDuration.ofDuration(Duration.parse("PT10M"));
-        bookingAppointment.setPostBuffer(postBuffer);
-        PeriodAndDuration preBuffer = PeriodAndDuration.ofDuration(Duration.parse("PT5M"));
-        bookingAppointment.setPreBuffer(preBuffer);
-        bookingAppointment.setServiceId(serviceId);
-        Location serviceLocation = new Location();
-        serviceLocation.setOdataType("#microsoft.graph.location");
-        serviceLocation.setDisplayName(restaurant);
-        bookingAppointment.setServiceLocation(serviceLocation);
-        DateTimeTimeZone startDateTime = new DateTimeTimeZone();
-        startDateTime.setOdataType("#microsoft.graph.dateTimeTimeZone");
-        startDateTime.setDateTime(date.toString());
-        startDateTime.setTimeZone("UTC");
-        bookingAppointment.setStartDateTime(startDateTime);
-        bookingAppointment.setMaximumAttendeesCount(partySize);
-        bookingAppointment.setFilledAttendeesCount(partySize);
-        bookingAppointment.setCustomers(List.of(new BookingCustomerInformation() {
-            {
-                setOdataType("#microsoft.graph.bookingCustomerInformation");
-                new BookingCustomerInformationBase() {
-                    {
-                        setOdataType("#microsoft.graph.bookingCustomerInformationBase");
-                        setName(customerName);
-                        setEmailAddress(customerEmail);
-                        setPhone(customerPhone);
-                    }
-                };
-            }
-        }));
+        System.out.println("System > Do you want to book a table at " + restaurant + " on " + date + " for " + partySize + " people?");
+        System.out.println("System > Please confirm the booking by typing 'yes' or 'no'");
+        Scanner scanner = new Scanner(System.in);
+        String response = scanner.nextLine().toLowerCase();
 
-        graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
-            .appointments().post(bookingAppointment);
+        if (response.equals("yes")) {
+            BookingAppointment bookingAppointment = new BookingAppointment();
+            bookingAppointment.setOdataType("#microsoft.graph.bookingAppointment");
+            bookingAppointment.setCustomerTimeZone(userTimeZone);
+            bookingAppointment.setSmsNotificationsEnabled(false);
+            DateTimeTimeZone endDateTime = new DateTimeTimeZone();
+            endDateTime.setOdataType("#microsoft.graph.dateTimeTimeZone");
+            endDateTime.setDateTime(date.plusHours(BOOKING_HOURS).toString());
+            endDateTime.setTimeZone("UTC");
+            bookingAppointment.setEndDateTime(endDateTime);
+            bookingAppointment.setIsLocationOnline(false);
+            bookingAppointment.setOptOutOfCustomerEmail(false);
+            bookingAppointment.setAnonymousJoinWebUrl(null);
+            PeriodAndDuration postBuffer = PeriodAndDuration.ofDuration(Duration.parse("PT10M"));
+            bookingAppointment.setPostBuffer(postBuffer);
+            PeriodAndDuration preBuffer = PeriodAndDuration.ofDuration(Duration.parse("PT5M"));
+            bookingAppointment.setPreBuffer(preBuffer);
+            bookingAppointment.setServiceId(serviceId);
+            Location serviceLocation = new Location();
+            serviceLocation.setOdataType("#microsoft.graph.location");
+            serviceLocation.setDisplayName(restaurant);
+            bookingAppointment.setServiceLocation(serviceLocation);
+            DateTimeTimeZone startDateTime = new DateTimeTimeZone();
+            startDateTime.setOdataType("#microsoft.graph.dateTimeTimeZone");
+            startDateTime.setDateTime(date.toString());
+            startDateTime.setTimeZone("UTC");
+            bookingAppointment.setStartDateTime(startDateTime);
+            bookingAppointment.setMaximumAttendeesCount(partySize);
+            bookingAppointment.setFilledAttendeesCount(partySize);
+            bookingAppointment.setCustomers(List.of(new BookingCustomerInformation() {
+                {
+                    setOdataType("#microsoft.graph.bookingCustomerInformation");
+                    new BookingCustomerInformationBase() {
+                        {
+                            setOdataType("#microsoft.graph.bookingCustomerInformationBase");
+                            setName(customerName);
+                            setEmailAddress(customerEmail);
+                            setPhone(customerPhone);
+                        }
+                    };
+                }
+            }));
 
-        return "Successful booking";
+            graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
+                    .appointments().post(bookingAppointment);
+
+            return "Booking successful!";
+        }
+
+        return "Booking aborted by the user";
     }
 
     @DefineKernelFunction(name = "listReservations", description = "List all reservations for a customer")
@@ -137,6 +147,7 @@ public class BookingPlugin {
         @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date,
         @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
 
+        System.out.println("System > [Cancelling a reservation for " + customerName + " at " + restaurant + " on " + date + "]");
         BookingAppointment appointment = getAppointment(restaurant, customerName, date);
 
         graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
