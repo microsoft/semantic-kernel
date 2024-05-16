@@ -7,6 +7,7 @@ from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
@@ -14,17 +15,11 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo")
-
     kernel.add_service(
-        sk_oai.OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+        sk_oai.OpenAIChatCompletion(service_id="chat-gpt", ai_model_id="gpt-3.5-turbo"),
     )
 
     exec_settings = PromptExecutionSettings(
@@ -48,18 +43,13 @@ async def test_oai_chat_service_with_plugins(setup_tldr_function_for_oai_models,
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
-
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo-1106")
 
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
-            service_id="chat-gpt", ai_model_id="gpt-3.5-turbo-1106", api_key=api_key, org_id=org_id
+            service_id="chat-gpt",
+            ai_model_id="gpt-3.5-turbo-1106",
         ),
     )
 
@@ -92,18 +82,13 @@ async def test_oai_chat_service_with_tool_call(setup_tldr_function_for_oai_model
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
-
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo-1106")
 
     kernel.add_service(
         sk_oai.OpenAIChatCompletion(
-            service_id="chat-gpt", ai_model_id="gpt-3.5-turbo-1106", api_key=api_key, org_id=org_id
+            service_id="chat-gpt",
+            ai_model_id="gpt-3.5-turbo-1106",
         ),
     )
 
@@ -139,14 +124,12 @@ async def test_oai_chat_service_with_tool_call_streaming(setup_tldr_function_for
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo")
+    openai_settings = OpenAISettings.create()
+    api_key = openai_settings.api_key.get_secret_value()
+    org_id = openai_settings.org_id
 
     client = AsyncOpenAI(
         api_key=api_key,
@@ -185,24 +168,13 @@ async def test_oai_chat_service_with_plugins_with_provided_client(setup_tldr_fun
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_azure_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
-
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIChat__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo"
-
-    print("* Service: Azure OpenAI Chat Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
 
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureChatCompletion(
-            service_id="chat_completion", deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
+            service_id="chat_completion",
         ),
         overwrite=True,
     )
@@ -233,14 +205,12 @@ async def test_oai_chat_stream_service_with_plugins(setup_tldr_function_for_oai_
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo")
+    openai_settings = OpenAISettings.create()
+    api_key = openai_settings.api_key.get_secret_value()
+    org_id = openai_settings.org_id
 
     client = AsyncOpenAI(
         api_key=api_key,
@@ -272,14 +242,12 @@ async def test_oai_chat_service_with_yaml_jinja2(setup_tldr_function_for_oai_mod
 
 
 @pytest.mark.asyncio
-async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai_models, get_oai_config):
+async def test_oai_chat_service_with_yaml_handlebars(setup_tldr_function_for_oai_models):
     kernel, _, _ = setup_tldr_function_for_oai_models
 
-    api_key, org_id = get_oai_config
-
-    print("* Service: OpenAI Chat Completion")
-    print("* Endpoint: OpenAI")
-    print("* Model: gpt-3.5-turbo")
+    openai_settings = OpenAISettings.create()
+    api_key = openai_settings.api_key.get_secret_value()
+    org_id = openai_settings.org_id
 
     client = AsyncOpenAI(
         api_key=api_key,

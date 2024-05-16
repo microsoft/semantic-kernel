@@ -49,7 +49,7 @@ internal abstract class ClientCore
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 5;
+    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>
     /// The maximum number of function auto-invokes that can be made in a single user request.
