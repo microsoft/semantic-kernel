@@ -95,6 +95,20 @@ def custom_plugin_class():
 
 
 @pytest.fixture(scope="session")
+def experimental_plugin_class():
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+    from semantic_kernel.utils.experimental_decorator import experimental_class
+
+    @experimental_class
+    class ExperimentalPlugin:
+        @kernel_function(name="getLightStatus")
+        def decorated_native_function(self) -> str:
+            return "test"
+
+    return ExperimentalPlugin
+
+
+@pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
     from semantic_kernel.contents.streaming_text_content import StreamingTextContent
     from semantic_kernel.functions.function_result import FunctionResult
