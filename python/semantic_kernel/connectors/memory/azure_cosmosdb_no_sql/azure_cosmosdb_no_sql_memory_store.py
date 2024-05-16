@@ -42,7 +42,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         self.indexing_policy = indexing_policy
         self.cosmos_container_properties = cosmos_container_properties
 
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         # Create the database if it already doesn't exist
         self.database = await self.cosmos_client.create_database_if_not_exists(id=self.database_name)
 
@@ -54,20 +54,20 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             vector_embedding_policy=self.vector_embedding_policy,
         )
 
-    async def get_collections_async(self) -> List[str]:
+    async def get_collections(self) -> List[str]:
         return [container["id"] async for container in self.database.list_containers()]
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         return await self.database.delete_container(collection_name)
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         return collection_name in [container["id"] async for container in self.database.list_containers()]
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
-        result = await self.upsert_batch_async(collection_name, [record])
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
+        result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         doc_ids: List[str] = []
         for record in records:
             cosmosRecord: dict = {
@@ -84,7 +84,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             doc_ids.append(cosmosRecord["id"])
         return doc_ids
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         item = await self.container.read_item(key, partition_key=key)
         return MemoryRecord.local_record(
             id=item["id"],
@@ -95,7 +95,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             timestamp=item.get("timestamp", None),
         )
 
-    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
         query = "SELECT * FROM c WHERE ARRAY_CONTAINS(@ids, c.id)"
         parameters = [{"name": "@ids", "value": keys}]
 
@@ -113,14 +113,14 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             all_results.append(item)
         return all_results
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         await self.container.delete_item(key, partition_key=key)
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
         for key in keys:
             await self.container.delete_item(key, partition_key=key)
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self, collection_name: str, embedding: ndarray, limit: int, min_relevance_score: float, with_embeddings: bool
     ) -> List[Tuple[MemoryRecord, float]]:
         embedding_key = self.vector_embedding_policy["vectorEmbeddings"][0]["path"][1:]
@@ -149,10 +149,10 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             nearest_results.append((result, score))
         return nearest_results
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self, collection_name: str, embedding: ndarray, min_relevance_score: float, with_embedding: bool
     ) -> Tuple[MemoryRecord, float]:
-        nearest_results = await self.get_nearest_matches_async(
+        nearest_results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
