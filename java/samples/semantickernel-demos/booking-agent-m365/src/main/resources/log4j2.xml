@@ -19,7 +19,7 @@
         <Logger name="com.microsoft.semantickernel.orchestration.FunctionInvocation" level="info">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Root level="warn">
+        <Root level="error">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
