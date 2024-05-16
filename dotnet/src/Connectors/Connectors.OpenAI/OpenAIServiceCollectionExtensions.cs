@@ -1300,6 +1300,7 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     /// <remarks>
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
@@ -1308,7 +1309,8 @@ public static class OpenAIServiceCollectionExtensions
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null)
+        string? serviceId = null,
+        HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(config);
@@ -1323,7 +1325,8 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
                     serviceId: serviceId,
-                    modelId: config.Deployment);
+                    modelId: config.Deployment,
+                    httpClient: httpClient);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
@@ -1332,7 +1335,8 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
                     serviceId: serviceId,
-                    modelId: config.Deployment);
+                    modelId: config.Deployment,
+                    httpClient: httpClient);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -1341,7 +1345,8 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
                     serviceId: serviceId,
-                    modelId: config.Deployment);
+                    modelId: config.Deployment,
+                    httpClient: httpClient);
                 break;
 
             default:
