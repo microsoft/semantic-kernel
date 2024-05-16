@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+from html import unescape
 from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 import yaml
@@ -11,6 +12,7 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -209,7 +211,7 @@ through prompt_template_config or in the prompt_template."
     ) -> FunctionResult:
         """Handles the text service call."""
         try:
-            completions = await service.complete(prompt, execution_settings)
+            completions = await service.complete(unescape(prompt), execution_settings)
             return self._create_function_result(completions=completions, arguments=arguments, prompt=prompt)
         except Exception as exc:
             raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
@@ -296,7 +298,7 @@ through prompt_template_config or in the prompt_template."
             return  # Exit after processing all iterations
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: e})
 
     async def _handle_complete_text_stream(
         self,
@@ -311,7 +313,7 @@ through prompt_template_config or in the prompt_template."
             return
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e})
+            yield FunctionResult(function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: e})
 
     def add_default_values(self, arguments: KernelArguments) -> KernelArguments:
         """Gathers the function parameters from the arguments."""

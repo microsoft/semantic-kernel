@@ -16,21 +16,19 @@ def test_auth_callback():
     return "sample_token"
 
 
-def test_it_can_be_instantiated():
-    plugin = SessionsPythonTool(pool_management_endpoint="https://example.com", auth_callback=test_auth_callback)
+def test_it_can_be_instantiated(aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert plugin is not None
 
 
-def test_validate_endpoint():
-    plugin = SessionsPythonTool(
-        pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
-    )
+def test_validate_endpoint(aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert plugin is not None
-    assert plugin.pool_management_endpoint == "https://example.com/"
+    assert plugin.pool_management_endpoint == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
 
 
-def test_it_can_be_imported(kernel: Kernel):
-    plugin = SessionsPythonTool(pool_management_endpoint="https://example.com", auth_callback=test_auth_callback)
+def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert kernel.add_plugin(plugin=plugin, plugin_name="PythonCodeInterpreter")
     assert kernel.plugins["PythonCodeInterpreter"] is not None
     assert kernel.plugins["PythonCodeInterpreter"].name == "PythonCodeInterpreter"
@@ -38,7 +36,7 @@ def test_it_can_be_imported(kernel: Kernel):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_call_to_container_succeeds(mock_post):
+async def test_call_to_container_succeeds(mock_post, aca_python_sessions_unit_test_env):
     async def async_return(result):
         return result
 
@@ -54,9 +52,7 @@ async def test_call_to_container_succeeds(mock_post):
 
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
-        )
+        plugin = SessionsPythonTool(auth_callback=test_auth_callback)
         result = await plugin.execute_code("print('hello world')")
 
         assert result is not None
@@ -65,7 +61,7 @@ async def test_call_to_container_succeeds(mock_post):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_call_to_container_fails_raises_exception(mock_post):
+async def test_call_to_container_fails_raises_exception(mock_post, aca_python_sessions_unit_test_env):
     async def async_return(result):
         return result
 
@@ -79,9 +75,7 @@ async def test_call_to_container_fails_raises_exception(mock_post):
 
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/execute/", auth_callback=test_auth_callback
-        )
+        plugin = SessionsPythonTool(auth_callback=test_auth_callback)
 
         with pytest.raises(Exception):
             _ = await plugin.execute_code("print('hello world')")
@@ -89,7 +83,7 @@ async def test_call_to_container_fails_raises_exception(mock_post):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_local_path(mock_post):
+async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_test_env):
     """Test upload_file when providing a local file path."""
 
     async def async_return(result):
@@ -106,9 +100,7 @@ async def test_upload_file_with_local_path(mock_post):
         )
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
-        )
+        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
         result = await plugin.upload_file(local_file_path="test.txt", remote_file_path="uploaded_test.txt")
         assert result.filename == "test.txt"
@@ -118,7 +110,7 @@ async def test_upload_file_with_local_path(mock_post):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_buffer(mock_post):
+async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_env):
     """Test upload_file when providing file data as a BufferedReader."""
 
     async def async_return(result):
@@ -135,9 +127,7 @@ async def test_upload_file_with_buffer(mock_post):
         )
         mock_post.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
-        )
+        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
         data_buffer = BufferedReader(BytesIO(b"file data"))
 
@@ -149,7 +139,7 @@ async def test_upload_file_with_buffer(mock_post):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_list_files(mock_get):
+async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
     """Test list_files function."""
 
     async def async_return(result):
@@ -174,9 +164,7 @@ async def test_list_files(mock_get):
         )
         mock_get.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
-        )
+        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
         files = await plugin.list_files()
         assert len(files) == 2
@@ -189,7 +177,7 @@ async def test_list_files(mock_get):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_download_file_to_local(mock_get):
+async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_env):
     """Test download_file when saving to a local file path."""
 
     async def async_return(result):
@@ -209,9 +197,7 @@ async def test_download_file_to_local(mock_get):
         mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
         mock_get.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=mock_auth_callback
-        )
+        plugin = SessionsPythonTool(auth_callback=mock_auth_callback)
 
         await plugin.download_file(remote_file_path="remote_test.txt", local_file_path="local_test.txt")
         mock_get.assert_awaited_once()
@@ -221,7 +207,7 @@ async def test_download_file_to_local(mock_get):
 
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
-async def test_download_file_to_buffer(mock_get):
+async def test_download_file_to_buffer(mock_get, aca_python_sessions_unit_test_env):
     """Test download_file when returning as a BufferedReader."""
 
     async def async_return(result):
@@ -241,9 +227,7 @@ async def test_download_file_to_buffer(mock_get):
         mock_response = httpx.Response(status_code=200, content=b"file data", request=mock_request)
         mock_get.return_value = await async_return(mock_response)
 
-        plugin = SessionsPythonTool(
-            pool_management_endpoint="https://example.com/python/", auth_callback=mock_auth_callback
-        )
+        plugin = SessionsPythonTool(auth_callback=mock_auth_callback)
 
         buffer = await plugin.download_file(remote_file_path="remote_test.txt")
         assert buffer is not None
@@ -274,10 +258,8 @@ async def test_download_file_to_buffer(mock_get):
         ("  ", ""),
     ],
 )
-def test_sanitize_input(input_code, expected_output):
+def test_sanitize_input(input_code, expected_output, aca_python_sessions_unit_test_env):
     """Test the `_sanitize_input` function with various inputs."""
-    plugin = SessionsPythonTool(
-        pool_management_endpoint="https://example.com/python/", auth_callback=lambda: "sample_token"
-    )
+    plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
     sanitized_code = plugin._sanitize_input(input_code)
     assert sanitized_code == expected_output

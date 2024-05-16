@@ -2,11 +2,10 @@
 
 import asyncio
 
-from dotenv import dotenv_values
-
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextCompletion, AzureTextEmbedding
 from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognitiveSearchMemoryStore
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.core_plugins import TextMemoryPlugin
 from semantic_kernel.memory import SemanticTextMemory
 
@@ -44,12 +43,8 @@ async def search_acs_memory_questions(memory: SemanticTextMemory) -> None:
 async def main() -> None:
     kernel = Kernel()
 
-    config = dotenv_values(".env")
+    azure_ai_search_settings = AzureAISearchSettings()
 
-    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
-    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
-    AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
-    AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
     vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
@@ -57,24 +52,20 @@ async def main() -> None:
     kernel.add_service(
         AzureTextCompletion(
             service_id=text_complete_service_id,
-            deployment_name="text-embedding-ada-002",
-            endpoint=AZURE_OPENAI_ENDPOINT,
-            api_key=AZURE_OPENAI_API_KEY,
         ),
     )
     embedding_service_id = "ada"
     embedding_gen = AzureTextEmbedding(
         service_id=embedding_service_id,
-        deployment_name="text-embedding-ada-002",
-        endpoint=AZURE_OPENAI_ENDPOINT,
-        api_key=AZURE_OPENAI_API_KEY,
     )
     kernel.add_service(
         embedding_gen,
     )
 
     acs_connector = AzureCognitiveSearchMemoryStore(
-        vector_size, AZURE_COGNITIVE_SEARCH_ENDPOINT, AZURE_COGNITIVE_SEARCH_ADMIN_KEY
+        vector_size=vector_size,
+        search_endpoint=azure_ai_search_settings.endpoint,
+        admin_key=azure_ai_search_settings.api_key,
     )
 
     memory = SemanticTextMemory(storage=acs_connector, embeddings_generator=embedding_gen)

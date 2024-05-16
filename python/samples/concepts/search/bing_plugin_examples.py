@@ -8,7 +8,6 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_plugins import WebSearchEnginePlugin
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import KernelPromptTemplate, PromptTemplateConfig
-from semantic_kernel.utils.settings import bing_search_settings_from_dot_env, openai_settings_from_dot_env
 
 
 async def example1(kernel: Kernel, search_plugin_name: str):
@@ -101,15 +100,11 @@ async def main():
     model = "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
     )
 
-    bing_api_key = bing_search_settings_from_dot_env()
-    assert bing_api_key is not None
-
-    bing_connector = BingConnector(api_key=bing_api_key)
+    bing_connector = BingConnector()
     bing = WebSearchEnginePlugin(bing_connector)
     kernel.add_plugin(bing, "bing")
 

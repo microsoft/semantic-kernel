@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List
 
 from pydantic import Field, field_validator, model_validator
 
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import CodeBlockRenderException, CodeBlockTokenError
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -126,7 +127,7 @@ these will be ignored."
             arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
 
         result = await function.invoke(kernel, arguments_clone)
-        if exc := result.metadata.get("error", None):
+        if exc := result.metadata.get(METADATA_EXCEPTION_KEY, None):
             raise CodeBlockRenderException(f"Error rendering function: {function.metadata} with error: {exc}") from exc
 
         return str(result) if result else ""
