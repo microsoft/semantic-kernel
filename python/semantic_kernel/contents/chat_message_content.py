@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
+from html import unescape
 from typing import Any, Union, overload
 from xml.etree.ElementTree import Element
 
@@ -241,17 +242,21 @@ class ChatMessageContent(KernelContent):
         """
         kwargs: dict[str, Any] = {key: value for key, value in element.items()}
         items: list[KernelContent] = []
+        if element.text:
+            items.append(TextContent(text=unescape(element.text)))
         for child in element:
             if child.tag not in TAG_CONTENT_MAP:
                 logger.warning('Unknown tag "%s" in ChatMessageContent, treating as text', child.tag)
                 text = ElementTree.tostring(child, encoding="unicode", short_empty_elements=False)
-                items.append(TextContent(text=text or ""))
+                items.append(TextContent(text=unescape(text) or ""))
             else:
                 items.append(TAG_CONTENT_MAP[child.tag].from_element(child))  # type: ignore
-        if items:
+        if len(items) == 1 and isinstance(items[0], TextContent):
+            kwargs["content"] = items[0].text
+        elif all(isinstance(item, TextContent) for item in items):
+            kwargs["content"] = "".join(item.text for item in items)  # type: ignore
+        else:
             kwargs["items"] = items
-        if element.text:
-            kwargs["content"] = element.text
         if "choice_index" in kwargs and cls is ChatMessageContent:
             logger.warning(
                 "Seems like you are trying to create a StreamingChatMessageContent, "
