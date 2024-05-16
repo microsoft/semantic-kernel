@@ -17,7 +17,7 @@ public sealed class MistralAITextEmbeddingGenerationServiceTests : MistralTestBa
     public async Task ValidateGenerateEmbeddingsAsync()
     {
         // Arrange
-        var content = this.GetTestData("embeddings_response.json");
+        var content = this.GetTestResponseAsString("embeddings_response.json");
         this.DelegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/embeddings", content);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var service = new MistralAITextEmbeddingGenerationService("mistral-small-latest", "key", httpClient: this.HttpClient);

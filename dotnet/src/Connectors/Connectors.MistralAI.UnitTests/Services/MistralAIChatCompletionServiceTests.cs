@@ -19,7 +19,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
     public async Task ValidateGetChatMessageContentsAsync()
     {
         // Arrange
-        var content = this.GetTestData("chat_completions_response.json");
+        var content = this.GetTestResponseAsString("chat_completions_response.json");
         this.DelegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/chat/completions", content);
         this.HttpClient = new HttpClient(this.DelegatingHandler, false);
         var service = new MistralAIChatCompletionService("mistral-small-latest", "key", httpClient: this.HttpClient);
