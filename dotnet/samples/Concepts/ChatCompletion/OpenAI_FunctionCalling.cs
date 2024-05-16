@@ -11,25 +11,13 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
-        OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
-
-        // Create a kernel with OpenAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId!,
-                apiKey: TestConfiguration.OpenAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        Kernel kernel = CreateKernelWithWeatherPlugin();
 
         // Invoke chat prompt with auto invocation of functions enabled
-        const string ChatPrompt = @"
-            <message role=""user"">What is the weather like in Paris?</message>
-        ";
+        const string ChatPrompt = """
+            <message role="user">What is the weather like in Paris?</message>
+        """;
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
         var chatSemanticFunction = kernel.CreateFunctionFromPrompt(
             ChatPrompt, executionSettings);
@@ -41,18 +29,8 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsMultipleCallsAsync()
     {
-        // Create a logging handler to output HTTP requests and responses
-        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
-        HttpClient httpClient = new(handler);
-
         // Create a kernel with MistralAI chat completion and WeatherPlugin
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddOpenAIChatCompletion(
-                modelId: TestConfiguration.OpenAI.ChatModelId!,
-                apiKey: TestConfiguration.OpenAI.ApiKey!,
-                httpClient: httpClient);
-        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = CreateKernelWithWeatherPlugin();
         var service = kernel.GetRequiredService<IChatCompletionService>();
 
         // Invoke chat prompt with auto invocation of functions enabled
@@ -78,5 +56,22 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
         ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+    }
+
+    private Kernel CreateKernelWithWeatherPlugin()
+    {
+        // Create a logging handler to output HTTP requests and responses
+        var handler = new LoggingHandler(new HttpClientHandler(), this.Output);
+        HttpClient httpClient = new(handler);
+
+        // Create a kernel with OpenAI chat completion and WeatherPlugin
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId!,
+                apiKey: TestConfiguration.OpenAI.ApiKey!,
+                httpClient: httpClient);
+        kernelBuilder.Plugins.AddFromType<WeatherPlugin>();
+        Kernel kernel = kernelBuilder.Build();
+        return kernel;
     }
 }

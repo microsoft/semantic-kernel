@@ -23,7 +23,7 @@ public sealed class MistralAITextEmbeddingGenerationServiceTests : MistralTestBa
         var service = new MistralAITextEmbeddingGenerationService("mistral-small-latest", "key", httpClient: this.HttpClient);
 
         // Act
-        List<string> data = new() { "Hello", "world" };
+        List<string> data = ["Hello", "world"];
         var response = await service.GenerateEmbeddingsAsync(data, default);
 
         // Assert
