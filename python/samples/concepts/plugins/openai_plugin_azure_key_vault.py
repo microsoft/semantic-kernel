@@ -7,22 +7,24 @@ from typing import Dict, Optional
 
 import httpx
 from aiohttp import ClientSession
+from azure_key_vault_settings import AzureKeyVaultSettings
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.openai_plugin import OpenAIAuthenticationType, OpenAIFunctionExecutionParameters
 from semantic_kernel.functions import KernelPlugin
-
-from .azure_key_vault_settings import AzureKeyVaultSettings
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""
+    arguments = KernelArguments()
+    arguments["secret_name"] = "Foo"
+    arguments["api_version"] = "7.0"
+    arguments["value"] = "Bar"
+    arguments["enabled"] = True
     result = await kernel.invoke(
         function=plugin["SetSecret"],
-        path_params={"secret-name": "Foo"},
-        query_params={"api-version": "7.0"},
-        request_body={"value": "Bar", "enabled": True},
-        headers={},
+        arguments=arguments,
     )
 
     print(f"Secret added to Key Vault: {result}")
@@ -30,12 +32,12 @@ async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
 
 async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Gets a secret from the Azure Key Vault."""
+    arguments = KernelArguments()
+    arguments["secret_name"] = "Foo"
+    arguments["api_version"] = "7.0"
     result = await kernel.invoke(
         function=plugin["GetSecret"],
-        path_params={"secret-name": "Foo"},
-        query_params={"api-version": "7.0"},
-        headers={},
-        request_body={},
+        arguments=arguments,
     )
 
     print(f"Secret retrieved from Key Vault: {result}")
@@ -123,7 +125,7 @@ async def main():
     # 4. Replace your tenant ID with the "TENANT_ID" placeholder in
     # python/samples/kernel-syntax-examples/resources/akv-openai.json
 
-    azure_keyvault_settings = AzureKeyVaultSettings(env_file_path=None)
+    azure_keyvault_settings = AzureKeyVaultSettings.create()
     client_id = azure_keyvault_settings.client_id
     client_secret = azure_keyvault_settings.client_secret.get_secret_value()
     endpoint = azure_keyvault_settings.endpoint

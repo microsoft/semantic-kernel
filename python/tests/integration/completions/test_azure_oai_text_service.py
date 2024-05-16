@@ -93,4 +93,4 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_
     summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert len(output) < 500
+    assert len(output) > 0

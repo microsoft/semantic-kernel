@@ -3,6 +3,7 @@
 import asyncio
 
 from azure.identity import ClientSecretCredential
+from booking_sample_settings import BookingSampleSettings
 from bookings_plugin.bookings_plugin import BookingsPlugin
 from msgraph import GraphServiceClient
 from pydantic import ValidationError
@@ -16,8 +17,6 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
-
-from .booking_sample_settings import BookingSampleSettings
 
 kernel = Kernel()
 
