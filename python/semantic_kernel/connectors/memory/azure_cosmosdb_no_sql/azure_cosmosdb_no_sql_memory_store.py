@@ -10,7 +10,8 @@ from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
-
+# You can read more about vector search using AzureCosmosDBNoSQL here.
+# https://aka.ms/CosmosVectorSearch
 class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     cosmos_client: CosmosClient = None
     database: DatabaseProxy
