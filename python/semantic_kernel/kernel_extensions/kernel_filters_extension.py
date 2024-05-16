@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Callable, Literal
+from functools import partial
+from typing import Any, Callable, Coroutine, Literal
 
 from pydantic import Field
 
@@ -83,6 +84,17 @@ class KernelFilterExtension(KernelBaseModel):
                 if f_id == filter_id:
                     getattr(self, filter_list).remove((f_id, _))
                     return
+
+    def construct_call_stack(
+        self,
+        filter_type: ALLOWED_FILTERS_LITERAL,
+        inner_function: Callable[[FilterContextBase], Coroutine[Any, Any, None]],
+    ) -> Callable[[FilterContextBase], Coroutine[Any, Any, None]]:
+        stack: list[Any] = [inner_function]
+        for _, filter in getattr(self, FILTER_MAPPING[filter_type]):
+            filter_with_next = partial(filter, next=stack[0])
+            stack.insert(0, filter_with_next)
+        return stack[0]
 
 
 def _rebuild_auto_function_invocation_context() -> None:

@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-import functools
 import logging
 from abc import abstractmethod
 from collections.abc import AsyncGenerator
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
-from typing import TYPE_CHECKING, Any, Callable, Coroutine
+from typing import TYPE_CHECKING, Any, Callable
 
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
@@ -201,12 +200,12 @@ class KernelFunction(KernelBaseModel):
         _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-        stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal]
-        index = 0
-        for _, filter in kernel.function_invocation_filters:
-            stack.append(functools.partial(filter, next=stack[index]))  # type: ignore
-            index += 1
-        await stack[-1](function_context)
+        stack = kernel.construct_call_stack(
+            filter_type="function_invocation",
+            inner_function=self._invoke_internal,  # type: ignore
+        )
+        await stack(function_context)
+
         return function_context.result
 
     @abstractmethod
@@ -243,12 +242,13 @@ class KernelFunction(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         _rebuild_function_invocation_context()
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
-        stack: list[Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]]] = [self._invoke_internal_stream]
-        index = 0
-        for _, filter in kernel.function_invocation_filters:
-            stack.append(functools.partial(filter, next=stack[index]))  # type: ignore
-            index += 1
-        await stack[-1](function_context)
+
+        stack = kernel.construct_call_stack(
+            filter_type="function_invocation",
+            inner_function=self._invoke_internal_stream,  # type: ignore
+        )
+        await stack(function_context)
+
         if function_context.result is not None:
             if isasyncgen(function_context.result.value):
                 async for partial in function_context.result.value:

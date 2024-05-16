@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import logging
 import os
-from functools import partial
 from html import unescape
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Coroutine
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -13,11 +12,8 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
@@ -35,7 +31,7 @@ from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateB
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
+    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -153,21 +149,41 @@ through prompt_template_config or in the prompt_template."
         prompt_render_result = await self._render_prompt(context)
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
-            context.result = await self._handle_complete_chat(
-                kernel=context.kernel,
-                service=prompt_render_result.ai_service,
-                execution_settings=prompt_render_result.execution_settings,
-                prompt=prompt_render_result.rendered_prompt,
-                arguments=context.arguments,
+            chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
+
+            # pass the kernel in for auto function calling
+            kwargs: dict[str, Any] = {}
+            if hasattr(prompt_render_result.execution_settings, "function_call_behavior"):
+                kwargs["kernel"] = context.kernel
+                kwargs["arguments"] = context.arguments
+
+            try:
+                chat_message_contents = await prompt_render_result.ai_service.get_chat_message_contents(
+                    chat_history=chat_history,
+                    settings=prompt_render_result.execution_settings,
+                    **kwargs,
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            if not chat_message_contents:
+                raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
+
+            context.result = self._create_function_result(
+                completions=chat_message_contents, chat_history=chat_history, arguments=context.arguments
             )
             return
 
         if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
-            context.result = await self._handle_text_complete(
-                service=prompt_render_result.ai_service,
-                execution_settings=prompt_render_result.execution_settings,
-                prompt=prompt_render_result.rendered_prompt,
-                arguments=context.arguments,
+            try:
+                texts = await prompt_render_result.ai_service.get_text_contents(
+                    unescape(prompt_render_result.rendered_prompt), prompt_render_result.execution_settings
+                )
+            except Exception as exc:
+                raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
+
+            context.result = self._create_function_result(
+                completions=texts, arguments=context.arguments, prompt=prompt_render_result.rendered_prompt
             )
             return
 
@@ -178,43 +194,44 @@ through prompt_template_config or in the prompt_template."
         prompt_render_result = await self._render_prompt(context)
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
-            context.result = FunctionResult(
-                function=self.metadata,
-                value=self._handle_complete_chat_stream(
-                    kernel=context.kernel,
-                    service=prompt_render_result.ai_service,
-                    execution_settings=prompt_render_result.execution_settings,
-                    prompt=prompt_render_result.rendered_prompt,
-                    arguments=context.arguments,
-                ),
-            )
-            return
+            # pass the kernel in for auto function calling
+            kwargs: dict[str, Any] = {}
+            if hasattr(prompt_render_result.execution_settings, "function_call_behavior"):
+                kwargs["kernel"] = context.kernel
+                kwargs["arguments"] = context.arguments
 
-        if isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
-            context.result = FunctionResult(
-                function=self.metadata,
-                value=self._handle_complete_text_stream(  # type: ignore
-                    service=prompt_render_result.ai_service,
-                    execution_settings=prompt_render_result.execution_settings,
-                    prompt=prompt_render_result.rendered_prompt,
-                ),
-            )
-            return
+            chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
 
-        raise FunctionExecutionException(f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service")
+            value = prompt_render_result.ai_service.get_streaming_chat_message_contents(
+                chat_history=chat_history,
+                settings=prompt_render_result.execution_settings,
+                **kwargs,
+            )
+        elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
+            value = prompt_render_result.ai_service.get_streaming_text_contents(
+                prompt=prompt_render_result.rendered_prompt, settings=prompt_render_result.execution_settings
+            )  # type: ignore
+        else:
+            raise FunctionExecutionException(
+                f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service"
+            )
+
+        context.result = FunctionResult(function=self.metadata, value=value)
 
     async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
         service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
+
         _rebuild_prompt_render_context()
         prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
-        stack: list[Callable[[PromptRenderContext], Coroutine[Any, Any, None]]] = [self._inner_render_prompt]
-        index = 0
-        for _, filter in context.kernel.prompt_rendering_filters:
-            stack.append(partial(filter, next=stack[index]))  # type: ignore
-            index += 1
-        await stack[-1](prompt_render_context)
+
+        stack = context.kernel.construct_call_stack(
+            filter_type="prompt_rendering",
+            inner_function=self._inner_render_prompt,  # type: ignore
+        )
+        await stack(prompt_render_context)
+
         if not prompt_render_context.rendered_prompt:
             raise PromptRenderingException("Prompt rendering failed")
         return PromptRenderingResult(
@@ -225,50 +242,6 @@ through prompt_template_config or in the prompt_template."
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
         context.rendered_prompt = await self.prompt_template.render(context.kernel, context.arguments)
-
-    async def _handle_complete_chat(
-        self,
-        kernel: Kernel,
-        service: ChatCompletionClientBase,
-        execution_settings: PromptExecutionSettings,
-        prompt: str,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
-        """Handles the chat service call."""
-        chat_history = ChatHistory.from_rendered_prompt(prompt)
-
-        # pass the kernel in for auto function calling
-        kwargs: dict[str, Any] = {}
-        if hasattr(execution_settings, "function_call_behavior"):
-            kwargs["kernel"] = kernel
-            kwargs["arguments"] = arguments
-
-        try:
-            completions = await service.get_chat_message_contents(
-                chat_history=chat_history,
-                settings=execution_settings,
-                **kwargs,
-            )
-            if not completions:
-                raise FunctionExecutionException(f"No completions returned while invoking function {self.name}")
-
-            return self._create_function_result(completions=completions, chat_history=chat_history, arguments=arguments)
-        except Exception as exc:
-            raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
-
-    async def _handle_text_complete(
-        self,
-        service: TextCompletionClientBase,
-        execution_settings: PromptExecutionSettings,
-        prompt: str,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
-        """Handles the text service call."""
-        try:
-            completions = await service.get_text_contents(unescape(prompt), execution_settings)
-            return self._create_function_result(completions=completions, arguments=arguments, prompt=prompt)
-        except Exception as exc:
-            raise FunctionExecutionException(f"Error occurred while invoking function {self.name}: {exc}") from exc
 
     def _create_function_result(
         self,
@@ -291,53 +264,6 @@ through prompt_template_config or in the prompt_template."
             value=completions,
             metadata=metadata,
         )
-
-    async def _handle_complete_chat_stream(
-        self,
-        kernel: Kernel,
-        service: ChatCompletionClientBase,
-        execution_settings: PromptExecutionSettings,
-        prompt: str,
-        arguments: KernelArguments,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingChatMessageContent], Any]:
-        """Handles the chat service call."""
-
-        # pass the kernel in for auto function calling
-        kwargs: dict[str, Any] = {}
-        if hasattr(execution_settings, "function_call_behavior"):
-            kwargs["kernel"] = kernel
-            kwargs["arguments"] = arguments
-
-        chat_history = ChatHistory.from_rendered_prompt(prompt)
-        try:
-            async for partial_content in service.get_streaming_chat_message_contents(
-                chat_history=chat_history,
-                settings=execution_settings,
-                **kwargs,
-            ):
-                yield partial_content
-
-            return  # Exit after processing all iterations
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: e})
-
-    async def _handle_complete_text_stream(
-        self,
-        service: TextCompletionClientBase,
-        execution_settings: PromptExecutionSettings,
-        prompt: str,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingTextContent], Any]:
-        """Handles the text service call."""
-        try:
-            async for partial_content in service.get_streaming_text_contents(
-                prompt=prompt, settings=execution_settings
-            ):
-                yield partial_content
-            return
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: e})
 
     def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:
         """Update any missing values with their defaults."""

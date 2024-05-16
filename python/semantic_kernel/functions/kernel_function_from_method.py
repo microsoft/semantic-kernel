@@ -10,13 +10,12 @@ from pydantic import ValidationError
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
+    pass
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -103,7 +102,7 @@ class KernelFunctionFromMethod(KernelFunction):
         context: FunctionInvocationContext,
     ) -> None:
         """Invoke the function with the given arguments."""
-        function_arguments = self.gather_function_parameters(context.kernel, context.arguments)
+        function_arguments = self.gather_function_parameters(context)
         result = self.method(**function_arguments)
         if isasyncgen(result):
             result = [x async for x in result]
@@ -122,27 +121,27 @@ class KernelFunctionFromMethod(KernelFunction):
     async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         if self.stream_method is None:
             raise NotImplementedError("Stream method not implemented")
-        function_arguments = self.gather_function_parameters(context.kernel, context.arguments)
+        function_arguments = self.gather_function_parameters(context)
         context.result = FunctionResult(function=self.metadata, value=self.stream_method(**function_arguments))
 
-    def gather_function_parameters(self, kernel: Kernel, arguments: KernelArguments) -> dict[str, Any]:
+    def gather_function_parameters(self, context: FunctionInvocationContext) -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
             if param.name == "kernel":
-                function_arguments[param.name] = kernel
+                function_arguments[param.name] = context.kernel
                 continue
             if param.name == "service":
-                function_arguments[param.name] = kernel.select_ai_service(self, arguments)[0]
+                function_arguments[param.name] = context.kernel.select_ai_service(self, context.arguments)[0]
                 continue
             if param.name == "execution_settings":
-                function_arguments[param.name] = kernel.select_ai_service(self, arguments)[1]
+                function_arguments[param.name] = context.kernel.select_ai_service(self, context.arguments)[1]
                 continue
             if param.name == "arguments":
-                function_arguments[param.name] = arguments
+                function_arguments[param.name] = context.arguments
                 continue
-            if param.name in arguments:
-                value: Any = arguments[param.name]
+            if param.name in context.arguments:
+                value: Any = context.arguments[param.name]
                 if param.type_ and "," not in param.type_ and param.type_object:
                     if hasattr(param.type_object, "model_validate"):
                         try:

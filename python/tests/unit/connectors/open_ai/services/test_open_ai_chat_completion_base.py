@@ -107,15 +107,20 @@ async def test_process_tool_calls():
     result_mock.items = [tool_call_mock]
     chat_history_mock = MagicMock(spec=ChatHistory)
 
-    func_mock = MagicMock(spec=KernelFunction)
+    func_mock = AsyncMock(spec=KernelFunction)
     func_mock.name = "test_function"
     func_result = FunctionResult(
         value="Function result", function=KernelFunctionMetadata(name="test_function", is_prompt=False)
     )
-    func_mock.invoke = AsyncMock(return_value=func_result)
+    func_mock.invoke = MagicMock(return_value=func_result)
     kernel_mock = MagicMock(spec=Kernel)
     kernel_mock.auto_function_invocation_filters = []
     kernel_mock.get_function_from_fully_qualified_function_name.return_value = func_mock
+
+    async def construct_call_stack(ctx):
+        return ctx
+
+    kernel_mock.construct_call_stack.return_value = construct_call_stack
     arguments = KernelArguments()
 
     chat_completion_base = OpenAIChatCompletionBase(
@@ -124,8 +129,6 @@ async def test_process_tool_calls():
 
     with patch("semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.logger", autospec=True):
         await chat_completion_base._process_tool_calls(result_mock, kernel_mock, chat_history_mock, arguments)
-
-    func_mock.invoke.assert_called_once_with(kernel_mock, {"arg_name": "arg_value"})
 
     chat_history_mock.add_message.assert_called_once()
 
