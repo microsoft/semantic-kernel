@@ -7,7 +7,7 @@ import logging
 import os
 from typing import Any, Callable, Coroutine
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
@@ -43,7 +43,7 @@ async def input_output_filter(
 
 async def main() -> None:
     kernel = Kernel()
-    kernel.add_service(OpenAIChatCompletion(service_id="chat-gpt"))
+    kernel.add_service(AzureChatCompletion(service_id="chat-gpt"))
     kernel.add_plugin(
         parent_directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources"), plugin_name="chat"
     )
