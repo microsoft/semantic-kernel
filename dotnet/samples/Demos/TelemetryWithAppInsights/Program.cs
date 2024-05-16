@@ -297,6 +297,9 @@ public sealed class Program
                         GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
                         {
                             Temperature = 0,
+                            // Not show casing the AutoInvokeKernelFunctions behavior for Gemini due the following issue:
+                            // https://github.com/microsoft/semantic-kernel/issues/6282
+                            // ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
                         },
                         HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings()
                         {
