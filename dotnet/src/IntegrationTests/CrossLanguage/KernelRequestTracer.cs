@@ -95,24 +95,29 @@ internal sealed class KernelRequestTracer : IDisposable
                                 promptTemplateFactory: promptTemplateFactory
                             );
 
-            if (isStreaming)
+            await RunFunctionAsync(kernel, isStreaming, function, args);
+        }
+    }
+
+    public static async Task RunFunctionAsync(Kernel kernel, bool isStreaming, KernelFunction function, KernelArguments? args = null)
+    {
+        if (isStreaming)
+        {
+            try
             {
-                try
+                await foreach (var update in kernel.InvokeStreamingAsync(function, arguments: args))
                 {
-                    await foreach (var update in kernel.InvokeStreamingAsync(function, arguments: args))
-                    {
-                        // Do nothing with received response
-                    }
-                }
-                catch (NotSupportedException)
-                {
-                    // Ignore this exception
+                    // Do nothing with received response
                 }
             }
-            else
+            catch (NotSupportedException)
             {
-                await kernel.InvokeAsync(function, args);
+                // Ignore this exception
             }
+        }
+        else
+        {
+            await kernel.InvokeAsync(function, args);
         }
     }
 
