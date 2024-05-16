@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunction
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookingPlugin {
@@ -37,7 +38,11 @@ public class BookingPlugin {
     public String bookTable(
         @KernelFunctionParameter(name = "restaurant", description = "The name of the restaurant") String restaurant,
         @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date,
-        @KernelFunctionParameter(name = "partySize", description = "The number of people in the party", type = int.class) int partySize) {
+        @KernelFunctionParameter(name = "partySize", description = "The number of people in the party", type = int.class) int partySize,
+        @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName,
+        @KernelFunctionParameter(name = "customerEmail", description = "The email of the customer") String customerEmail,
+        @KernelFunctionParameter(name = "customerPhone", description = "The phone of the customer") String customerPhone
+        ) {
         BookingAppointment bookingAppointment = new BookingAppointment();
         bookingAppointment.setOdataType("#microsoft.graph.bookingAppointment");
         bookingAppointment.setCustomerTimeZone(userTimeZone);
@@ -66,94 +71,77 @@ public class BookingPlugin {
         bookingAppointment.setStartDateTime(startDateTime);
         bookingAppointment.setMaximumAttendeesCount(partySize);
         bookingAppointment.setFilledAttendeesCount(partySize);
+        bookingAppointment.setCustomers(List.of(new BookingCustomerInformation() {
+            {
+                setOdataType("#microsoft.graph.bookingCustomerInformation");
+                new BookingCustomerInformationBase() {
+                    {
+                        setOdataType("#microsoft.graph.bookingCustomerInformationBase");
+                        setName(customerName);
+                        setEmailAddress(customerEmail);
+                        setPhone(customerPhone);
+                    }
+                };
+            }
+        }));
 
         graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
             .appointments().post(bookingAppointment);
 
-        return "Successful booking at " + restaurant;
+        return "Successful booking";
     }
 
-    @DefineKernelFunction(name = "listReservations", description = "List all reservations for a restaurant", returnType = "string")
-    public String listReservations(
-        @KernelFunctionParameter(name = "restaurant", description = "The name of the restaurant") String restaurant) {
+    @DefineKernelFunction(name = "listReservations", description = "List all reservations for a customer")
+    public List<String> listReservations(
+            @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
         List<BookingAppointment> appointments = graphServiceClient.solutions().bookingBusinesses()
-            .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
+                .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
 
-        StringBuilder appointmentsList = new StringBuilder();
+        List<String> reservations = new ArrayList<>();
         for (BookingAppointment appointment : appointments) {
-            if (appointment.getServiceLocation().getDisplayName().equals(restaurant)) {
-                appointmentsList.append(appointment.getServiceLocation().getDisplayName())
-                    .append(" at ")
-                    .append(appointment.getStartDateTime().getDateTime())
-                    .append(" for ")
-                    .append(appointment.getMaximumAttendeesCount())
-                    .append(" people\n");
+            if (appointment.getCustomers() != null && !appointment.getCustomers().isEmpty() &&
+                    appointment.getCustomers().get(0).getBackingStore().get("name").equals(customerName)) {
+                String reservation = "Restaurant: " +
+                        appointment.getServiceLocation().getDisplayName() +
+                        "Date: " +
+                        appointment.getStartDateTime().getDateTime() +
+                        "Party size: " +
+                        appointment.getMaximumAttendeesCount();
+
+                reservations.add(reservation);
             }
         }
 
-        if (appointmentsList.toString().isEmpty()) {
-            return "No reservations found for " + restaurant;
-        }
-
-        return appointmentsList.toString();
+        return reservations;
     }
 
-    private BookingAppointment getAppointment(String restaurant, OffsetDateTime date) {
+    private BookingAppointment getAppointment(String restaurant, String customerName, OffsetDateTime date) {
         List<BookingAppointment> appointments = graphServiceClient.solutions().bookingBusinesses()
             .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
 
         for (BookingAppointment appointment : appointments) {
             if (appointment.getServiceLocation().getDisplayName().equals(restaurant)
-                && OffsetDateTime.parse(appointment.getStartDateTime().getDateTime())
+                    && appointment.getCustomers() != null && !appointment.getCustomers().isEmpty()
+                    && appointment.getCustomers().get(0).getBackingStore().get("name").equals(customerName)
+                    && OffsetDateTime.parse(appointment.getStartDateTime().getDateTime())
                     .equals(date)) {
                 return appointment;
             }
         }
-
         return null;
-    }
-
-    @DefineKernelFunction(name = "modifyReservation", description = "Modify an existing reservation at a restaurant", returnType = "string")
-    public String modifyReservation(
-        @KernelFunctionParameter(name = "restaurant", description = "The name of the restaurant") String restaurant,
-        @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date,
-        @KernelFunctionParameter(name = "updatedDate", description = "The updated date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime updatedDate) {
-        BookingAppointment appointment = getAppointment(restaurant, date);
-        if (appointment == null) {
-            return "No reservation found for " + restaurant + " on " + date;
-        }
-
-        appointment.setStartDateTime(new DateTimeTimeZone() {
-            {
-                setDateTime(updatedDate.toString());
-                setTimeZone("UTC");
-            }
-        });
-        appointment.setEndDateTime(new DateTimeTimeZone() {
-            {
-                setDateTime(updatedDate.plusHours(BOOKING_HOURS).toString());
-                setTimeZone("UTC");
-            }
-        });
-
-        graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
-            .appointments().byBookingAppointmentId(appointment.getId()).patch(appointment);
-
-        return "Reservation updated at " + restaurant + " from " + date + " to " + updatedDate;
     }
 
     @DefineKernelFunction(name = "cancelReservation", description = "Cancel a reservation at a restaurant", returnType = "string")
     public String cancelReservation(
         @KernelFunctionParameter(name = "restaurant", description = "The name of the restaurant") String restaurant,
-        @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date) {
-        BookingAppointment appointment = getAppointment(restaurant, date);
-        if (appointment == null) {
-            return "No reservation found for " + restaurant + " on " + date;
-        }
+        @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date,
+        @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
+
+        BookingAppointment appointment = getAppointment(restaurant, customerName, date);
 
         graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
             .appointments().byBookingAppointmentId(appointment.getId()).delete();
 
-        return "Reservation cancelled at " + restaurant + " on " + date;
+        return "Reservation cancelled";
     }
 }
