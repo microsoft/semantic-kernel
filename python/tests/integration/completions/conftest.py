@@ -84,10 +84,9 @@ def setup_summarize_conversation_using_plugin(kernel: Kernel):
 
 
 @pytest.fixture(scope="function")
-def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
-    api_key = get_gp_config
+def setup_gp_text_completion_function(kernel: Kernel):
     # Configure LLM service
-    palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001", api_key=api_key)
+    palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001")
     kernel.add_service(palm_text_completion)
 
     # Define semantic function using SK prompt template language

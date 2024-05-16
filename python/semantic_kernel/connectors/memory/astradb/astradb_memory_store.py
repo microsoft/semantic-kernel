@@ -6,13 +6,15 @@ from typing import List, Optional, Tuple
 
 import aiohttp
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
+from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
 from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -37,7 +39,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         keyspace_name: str,
         embedding_dim: int,
         similarity: str,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: aiohttp.ClientSession | None = None,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -49,13 +52,37 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
             session -- Optional session parameter
+            env_file_path {str | None} -- Use the environment settings file as a
+                fallback to environment variables. (Optional)
         """
+        astradb_settings = None
+        try:
+            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
+
+        # Load the settings and validate
+        astra_application_token = astra_application_token or (
+            astradb_settings.app_token.get_secret_value() if astradb_settings and astradb_settings.app_token else None
+        )
+        assert astra_application_token is not None, "The astra_application_token cannot be None."
+        astra_id = astra_id or (astradb_settings.db_id if astradb_settings and astradb_settings.db_id else None)
+        assert astra_id is not None, "The astra_id cannot be None."
+        astra_region = astra_region or (
+            astradb_settings.region if astradb_settings and astradb_settings.region else None
+        )
+        assert astra_region is not None, "The astra_region cannot be None."
+        keyspace_name = keyspace_name or (
+            astradb_settings.keyspace if astradb_settings and astradb_settings.keyspace else None
+        )
+        assert keyspace_name is not None, "The keyspace_name cannot be None."
+
         self._embedding_dim = embedding_dim
         self._similarity = similarity
         self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
-            raise ServiceInitializationError(
+            raise MemoryConnectorInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )

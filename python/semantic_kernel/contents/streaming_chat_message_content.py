@@ -234,6 +234,3 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         for index, item in enumerate(self.items):
             root.insert(index, item.to_element())
         return root
-        for index, item in enumerate(self.items):
-            root.insert(index, item.to_element())
-        return root

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import warnings
 from typing import TYPE_CHECKING, Callable, List
 from unittest.mock import Mock
@@ -174,44 +173,148 @@ def enable_debug_mode():
     builtins.pr = snoop.pp
 
 
-@pytest.fixture(scope="session")
-def get_aoai_config():
-    from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-        api_key = os.environ["AzureOpenAI_EastUS__ApiKey"]
-        endpoint = os.environ["AzureOpenAI_EastUS__Endpoint"]
-    else:
-        # Load credentials from .env file
-        deployment_name, api_key, endpoint = azure_openai_settings_from_dot_env()
-        deployment_name = "text-embedding-ada-002"
-
-    return deployment_name, api_key, endpoint
+@pytest.fixture
+def exclude_list(request):
+    """Fixture that returns a list of environment variables to exclude."""
+    return request.param if hasattr(request, "param") else []
 
 
-@pytest.fixture(scope="session")
-def get_oai_config():
-    from semantic_kernel.utils.settings import openai_settings_from_dot_env
-
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["OpenAI__ApiKey"]
-        org_id = None
-    else:
-        # Load credentials from .env file
-        api_key, org_id = openai_settings_from_dot_env()
-
-    return api_key, org_id
+@pytest.fixture
+def override_env_param_dict(request):
+    """Fixture that returns a dict of environment variables to override."""
+    return request.param if hasattr(request, "param") else {}
 
 
-@pytest.fixture(scope="session")
-def get_gp_config():
-    from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
+@pytest.fixture()
+def azure_openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for AzureOpenAISettings."""
+    if exclude_list is None:
+        exclude_list = []
 
-    if "Python_Integration_Tests" in os.environ:
-        api_key = os.environ["GOOGLE_PALM_API_KEY"]
-    else:
-        # Load credentials from .env file
-        api_key = google_palm_settings_from_dot_env()
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
 
-    return api_key
+    env_vars = {
+        "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": "test_chat_deployment",
+        "AZURE_OPENAI_TEXT_DEPLOYMENT_NAME": "test_text_deployment",
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "test_embedding_deployment",
+        "AZURE_OPENAI_API_KEY": "test_api_key",
+        "AZURE_OPENAI_ENDPOINT": "https://test-endpoint.com",
+        "AZURE_OPENAI_API_VERSION": "2023-03-15-preview",
+        "AZURE_OPENAI_BASE_URL": "https://test_text_deployment.test-base-url.com",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for OpenAISettings."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "OPENAI_API_KEY": "test_api_key",
+        "OPENAI_ORG_ID": "test_org_id",
+        "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
+        "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
+        "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def google_palm_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Google Palm."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "GOOGLE_PALM_API_KEY": "test_api_key",
+        "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
+        "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
+        "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for ACA Python Unit Tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/excute/",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@pytest.fixture()
+def azure_ai_search_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for ACA Python Unit Tests."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {
+        "AZURE_AI_SEARCH_API_KEY": "test-api-key",
+        "AZURE_AI_SEARCH_ENDPOINT": "https://test-endpoint.com",
+        "AZURE_AI_SEARCH_INDEX_NAME": "test-index-name",
+    }
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
