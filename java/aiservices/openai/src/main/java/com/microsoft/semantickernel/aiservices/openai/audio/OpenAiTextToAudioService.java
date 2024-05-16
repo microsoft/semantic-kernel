@@ -10,12 +10,16 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.services.audio.AudioContent;
 import com.microsoft.semantickernel.services.audio.TextToAudioExecutionSettings;
 import com.microsoft.semantickernel.services.audio.TextToAudioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
  * Provides OpenAi implementation of text to audio service.
  */
 public class OpenAiTextToAudioService extends OpenAiService implements TextToAudioService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAiTextToAudioService.class);
 
     /**
      * Creates an instance of OpenAi text to audio service.
@@ -25,8 +29,9 @@ public class OpenAiTextToAudioService extends OpenAiService implements TextToAud
      */
     public OpenAiTextToAudioService(
         OpenAIAsyncClient client,
-        String modelId) {
-        super(client, null, modelId);
+        String modelId,
+        String deploymentName) {
+        super(client, null, modelId, deploymentName);
     }
 
     @Override
@@ -36,7 +41,7 @@ public class OpenAiTextToAudioService extends OpenAiService implements TextToAud
 
         SpeechGenerationOptions options = convertOptions(text, executionSettings);
 
-        return getClient().generateSpeechFromText(getModelId(), options)
+        return getClient().generateSpeechFromText(getDeploymentName(), options)
             .map(response -> new AudioContent(response.toBytes(), getModelId()));
     }
 
@@ -86,10 +91,17 @@ public class OpenAiTextToAudioService extends OpenAiService implements TextToAud
             if (client == null) {
                 throw new SKException("OpenAI client is required");
             }
+
             if (modelId == null) {
                 throw new SKException("Model id is required");
             }
-            return new OpenAiTextToAudioService(client, modelId);
+
+            if (deploymentName == null) {
+                LOGGER.debug("Deployment name is not provided, using model id as deployment name");
+                deploymentName = modelId;
+            }
+
+            return new OpenAiTextToAudioService(client, modelId, deploymentName);
         }
     }
 }

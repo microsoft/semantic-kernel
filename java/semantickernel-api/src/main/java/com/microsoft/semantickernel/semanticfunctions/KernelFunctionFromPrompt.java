@@ -179,6 +179,10 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                             chatMessageContent.getContent());
                                 }
 
+                                if (value == null) {
+                                    return Flux.empty();
+                                }
+
                                 return Flux.just(
                                     new FunctionResult<>(
                                         new ContextVariable<>(variableType, value),
@@ -277,7 +281,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
         return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
-            .take(1).single();
+            .takeLast(1).single();
     }
 
     /**

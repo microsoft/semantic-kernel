@@ -60,12 +60,12 @@ public class SerializingPrompts {
         }
 
         // Create few-shot examples
-        ChatHistory continueConversation = new ChatHistory(false);
+        ChatHistory continueConversation = new ChatHistory();
         continueConversation.addMessage(AuthorRole.USER,
             "Can you send a very quick approval to the marketing team?");
         continueConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
         continueConversation.addMessage(AuthorRole.ASSISTANT, "ContinueConversation");
-        ChatHistory endConversation = new ChatHistory(false);
+        ChatHistory endConversation = new ChatHistory();
         endConversation.addMessage(AuthorRole.USER, "Thats all");
         endConversation.addMessage(AuthorRole.SYSTEM, "Intent:");
         endConversation.addMessage(AuthorRole.ASSISTANT, "EndConversation");

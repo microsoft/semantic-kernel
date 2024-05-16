@@ -121,7 +121,7 @@ public class FunctionsWithinPrompts_Example {
 
         Scanner scanner = new Scanner(INPUT);
 
-        ChatHistory history = new ChatHistory(false);
+        ChatHistory history = new ChatHistory();
         // Start the chat loop
         while (true) {
             // Get user input

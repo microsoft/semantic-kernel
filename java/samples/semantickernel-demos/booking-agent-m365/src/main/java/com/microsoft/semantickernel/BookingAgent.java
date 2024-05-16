@@ -9,6 +9,7 @@ import com.azure.identity.InteractiveBrowserCredential;
 import com.azure.identity.InteractiveBrowserCredentialBuilder;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -16,7 +17,7 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-
+import java.util.List;
 import java.util.Scanner;
 
 public class BookingAgent {
@@ -95,10 +96,15 @@ public class BookingAgent {
 
             chatHistory.addUserMessage(userMessage);
             InvocationContext invocationContext = InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true)).build();
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .build();
 
-            ChatMessageContent<?> result = chat
-                .getChatMessageContentsAsync(chatHistory, kernel, invocationContext).block().get(0);
+            List<ChatMessageContent<?>> messages = chat
+                .getChatMessageContentsAsync(chatHistory, kernel, invocationContext)
+                .block();
+
+            ChatMessageContent<?> result = CollectionUtil.getLastOrNull(messages);
+
             chatHistory.addAssistantMessage(result.getContent());
 
             System.out.println("System > " + result);

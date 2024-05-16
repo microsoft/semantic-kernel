@@ -336,7 +336,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 hooks,
                 promptExecutionSettings,
                 toolCallBehavior,
-                contextVariableTypes));
+                contextVariableTypes,
+                InvocationReturnMode.NEW_MESSAGES_ONLY));
     }
 
 }
