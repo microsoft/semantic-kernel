@@ -18,6 +18,11 @@ try:
 except AssertionError:
     azure_cosmosdb_no_sql_memory_store_installed = False
 
+pytest_mark = pytest.mark.skipif(
+    not azure_cosmosdb_no_sql_memory_store_installed,
+    reason="Azure CosmosDB No SQL Memory Store is not installed",
+)
+
 # Host and Key for CosmosDB No SQl
 HOST = ""
 KEY = ""
@@ -26,12 +31,6 @@ database_name = "sk_python_db"
 container_name = "sk_python_container"
 partition_key = PartitionKey(path="/id")
 cosmos_container_properties = {"partition_key": partition_key}
-
-pytest_mark = pytest.mark.skipif(
-    not azure_cosmosdb_no_sql_memory_store_installed,
-    reason="Azure CosmosDB No SQL Memory Store is not installed",
-)
-
 
 async def azure_cosmosdb_no_sql_memory_store() -> MemoryStoreBase:
     store = AzureCosmosDBNoSQLMemoryStore(
