@@ -20,6 +20,7 @@ from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -199,7 +200,11 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 )
                 chat_history_for_steps.add_message(message=frc.to_chat_message_content())
             except Exception as exc:
-                chat_history_for_steps.add_user_message(f"An error occurred during planner invocation: {exc}")
+                frc = FunctionResultContent.from_function_call_content_and_result(
+                    function_call_content=function_call_content,
+                    result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
+                )
+                chat_history_for_steps.add_message(message=frc.to_chat_message_content())
                 continue
 
         # We're done, but the model hasn't returned a final answer.
