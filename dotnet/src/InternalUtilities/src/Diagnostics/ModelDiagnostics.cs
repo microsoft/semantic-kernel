@@ -125,6 +125,12 @@ internal static class ModelDiagnostics
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
+    /// <summary>
+    /// Check if sensitive events are enabled.
+    /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
+    /// </summary>
+    public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
+
     #region Private
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
         where TPromptExecutionSettings : PromptExecutionSettings

@@ -724,7 +724,7 @@ internal abstract class ClientCore
                     toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
                         ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
-                    functionCallContents = activity is null ? null : toolCalls.Select(this.GetFunctionCallContent).ToArray();
+                    functionCallContents = ModelDiagnostics.IsSensitiveEventsEnabled() ? toolCalls.Select(this.GetFunctionCallContent).ToArray() : null;
                 }
                 finally
                 {
