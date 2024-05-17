@@ -27,7 +27,7 @@ internal sealed class HuggingFaceMessageApiClient
 {
     private readonly HuggingFaceClient _clientCore;
 
-    private static readonly string s_namespace = typeof(HuggingFaceMessageApiClient).Namespace!;
+    private static readonly string s_namespace = typeof(HuggingFaceChatCompletionService).Namespace!;
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -179,20 +179,25 @@ internal sealed class HuggingFaceMessageApiClient
 
     private void LogChatCompletionUsage(HuggingFacePromptExecutionSettings executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
-        if (this._clientCore.Logger.IsEnabled(LogLevel.Debug))
+        if (chatCompletionResponse.Usage is null)
         {
-            this._clientCore.Logger.Log(
-            LogLevel.Debug,
-            "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
-            chatCompletionResponse.Model,
-            chatCompletionResponse.Usage!.PromptTokens,
-            chatCompletionResponse.Usage!.CompletionTokens,
-            chatCompletionResponse.Usage!.TotalTokens);
+            this._clientCore.Logger.LogDebug("Token usage information unavailable.");
+            return;
         }
 
-        s_promptTokensCounter.Add(chatCompletionResponse.Usage!.PromptTokens);
-        s_completionTokensCounter.Add(chatCompletionResponse.Usage!.CompletionTokens);
-        s_totalTokensCounter.Add(chatCompletionResponse.Usage!.TotalTokens);
+        if (this._clientCore.Logger.IsEnabled(LogLevel.Information))
+        {
+            this._clientCore.Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}. ModelId: {ModelId}.",
+                chatCompletionResponse.Usage.PromptTokens,
+                chatCompletionResponse.Usage.CompletionTokens,
+                chatCompletionResponse.Usage.TotalTokens,
+                chatCompletionResponse.Model);
+        }
+
+        s_promptTokensCounter.Add(chatCompletionResponse.Usage.PromptTokens);
+        s_completionTokensCounter.Add(chatCompletionResponse.Usage.CompletionTokens);
+        s_totalTokensCounter.Add(chatCompletionResponse.Usage.TotalTokens);
     }
 
     private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response, string modelId)
