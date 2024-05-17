@@ -8,6 +8,7 @@ from pydantic import Field
 from semantic_kernel.filters.filter_context_base import FilterContextBase
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_function
 
 FILTER_CONTEXT_TYPE = TypeVar("FILTER_CONTEXT_TYPE", bound=FilterContextBase)
 CALLABLE_FILTER_TYPE = Callable[[FILTER_CONTEXT_TYPE, Callable[[FILTER_CONTEXT_TYPE], None]], None]
@@ -29,6 +30,7 @@ class KernelFilterExtension(KernelBaseModel):
     prompt_rendering_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
     auto_function_invocation_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
 
+    @experimental_function
     def add_filter(self, filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes, filter: CALLABLE_FILTER_TYPE) -> None:
         """Add a filter to the Kernel.
 
@@ -46,6 +48,7 @@ class KernelFilterExtension(KernelBaseModel):
             filter_type = FilterTypes(filter_type)
         getattr(self, FILTER_MAPPING[filter_type.value]).insert(0, (id(filter), filter))
 
+    @experimental_function
     def filter(
         self, filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes
     ) -> Callable[[CALLABLE_FILTER_TYPE], CALLABLE_FILTER_TYPE]:
@@ -59,6 +62,7 @@ class KernelFilterExtension(KernelBaseModel):
 
         return decorator
 
+    @experimental_function
     def remove_filter(
         self,
         filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes | None = None,
