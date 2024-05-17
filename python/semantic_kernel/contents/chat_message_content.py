@@ -258,10 +258,10 @@ class ChatMessageContent(KernelContent):
         else:
             kwargs["items"] = items
         if "choice_index" in kwargs and cls is ChatMessageContent:
-            logger.warning(
+            logger.info(
                 "Seems like you are trying to create a StreamingChatMessageContent, "
                 "use StreamingChatMessageContent.from_element instead, ignoring that field "
-                " and creating a ChatMessageContent instance."
+                "and creating a ChatMessageContent instance."
             )
             kwargs.pop("choice_index")
         return cls(**kwargs)
