@@ -1,3 +1,7 @@
+# 1.1.1
+
+- Upgrade azure-ai-openai to 1.0.0-beta.8
+
 # 1.1.0
 
 ### Breaking Changes

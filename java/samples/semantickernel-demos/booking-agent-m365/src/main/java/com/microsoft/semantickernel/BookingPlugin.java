@@ -42,9 +42,9 @@ public class BookingPlugin {
         @KernelFunctionParameter(name = "partySize", description = "The number of people in the party", type = int.class) int partySize,
         @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName,
         @KernelFunctionParameter(name = "customerEmail", description = "The email of the customer") String customerEmail,
-        @KernelFunctionParameter(name = "customerPhone", description = "The phone of the customer") String customerPhone
-        ) {
-        System.out.println("System > Do you want to book a table at " + restaurant + " on " + date + " for " + partySize + " people?");
+        @KernelFunctionParameter(name = "customerPhone", description = "The phone of the customer") String customerPhone) {
+        System.out.println("System > Do you want to book a table at " + restaurant + " on " + date
+            + " for " + partySize + " people?");
         System.out.println("System > Please confirm the booking by typing 'yes' or 'no'");
         Scanner scanner = new Scanner(System.in);
         String response = scanner.nextLine().toLowerCase();
@@ -92,8 +92,9 @@ public class BookingPlugin {
                 }
             }));
 
-            graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
-                    .appointments().post(bookingAppointment);
+            graphServiceClient.solutions().bookingBusinesses()
+                .byBookingBusinessId(bookingBusinessId)
+                .appointments().post(bookingAppointment);
 
             return "Booking successful!";
         }
@@ -103,20 +104,21 @@ public class BookingPlugin {
 
     @DefineKernelFunction(name = "listReservations", description = "List all reservations for a customer")
     public List<String> listReservations(
-            @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
+        @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
         List<BookingAppointment> appointments = graphServiceClient.solutions().bookingBusinesses()
-                .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
+            .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
 
         List<String> reservations = new ArrayList<>();
         for (BookingAppointment appointment : appointments) {
             if (appointment.getCustomers() != null && !appointment.getCustomers().isEmpty() &&
-                    appointment.getCustomers().get(0).getBackingStore().get("name").equals(customerName)) {
+                appointment.getCustomers().get(0).getBackingStore().get("name")
+                    .equals(customerName)) {
                 String reservation = "Restaurant: " +
-                        appointment.getServiceLocation().getDisplayName() +
-                        "Date: " +
-                        appointment.getStartDateTime().getDateTime() +
-                        "Party size: " +
-                        appointment.getMaximumAttendeesCount();
+                    appointment.getServiceLocation().getDisplayName() +
+                    "Date: " +
+                    appointment.getStartDateTime().getDateTime() +
+                    "Party size: " +
+                    appointment.getMaximumAttendeesCount();
 
                 reservations.add(reservation);
             }
@@ -125,15 +127,17 @@ public class BookingPlugin {
         return reservations;
     }
 
-    private BookingAppointment getAppointment(String restaurant, String customerName, OffsetDateTime date) {
+    private BookingAppointment getAppointment(String restaurant, String customerName,
+        OffsetDateTime date) {
         List<BookingAppointment> appointments = graphServiceClient.solutions().bookingBusinesses()
             .byBookingBusinessId(bookingBusinessId).appointments().get().getValue();
 
         for (BookingAppointment appointment : appointments) {
             if (appointment.getServiceLocation().getDisplayName().equals(restaurant)
-                    && appointment.getCustomers() != null && !appointment.getCustomers().isEmpty()
-                    && appointment.getCustomers().get(0).getBackingStore().get("name").equals(customerName)
-                    && OffsetDateTime.parse(appointment.getStartDateTime().getDateTime())
+                && appointment.getCustomers() != null && !appointment.getCustomers().isEmpty()
+                && appointment.getCustomers().get(0).getBackingStore().get("name")
+                    .equals(customerName)
+                && OffsetDateTime.parse(appointment.getStartDateTime().getDateTime())
                     .equals(date)) {
                 return appointment;
             }
@@ -147,7 +151,8 @@ public class BookingPlugin {
         @KernelFunctionParameter(name = "date", description = "The date of the reservation in UTC", type = OffsetDateTime.class) OffsetDateTime date,
         @KernelFunctionParameter(name = "customerName", description = "The name of the customer") String customerName) {
 
-        System.out.println("System > [Cancelling a reservation for " + customerName + " at " + restaurant + " on " + date + "]");
+        System.out.println("System > [Cancelling a reservation for " + customerName + " at "
+            + restaurant + " on " + date + "]");
         BookingAppointment appointment = getAppointment(restaurant, customerName, date);
 
         graphServiceClient.solutions().bookingBusinesses().byBookingBusinessId(bookingBusinessId)
