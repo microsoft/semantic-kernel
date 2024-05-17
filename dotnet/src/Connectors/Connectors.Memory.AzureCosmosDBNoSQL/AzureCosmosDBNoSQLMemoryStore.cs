@@ -42,16 +42,19 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
         IndexingPolicy indexingPolicy,
         string? applicationName = null)
+        : this(
+            new CosmosClient(
+                connectionString,
+                new CosmosClientOptions
+                {
+                    ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
+                    Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
+                }),
+            databaseName,
+            vectorEmbeddingPolicy,
+            indexingPolicy,
+            applicationName)
     {
-        var options = new CosmosClientOptions
-        {
-            ApplicationName = applicationName ?? HttpHeaderConstant.Values.UserAgent,
-            Serializer = new CosmosSystemTextJsonSerializer(JsonSerializerOptions.Default),
-        };
-        this._cosmosClient = new CosmosClient(connectionString, options);
-        this._databaseName = databaseName;
-        this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
-        this._indexingPolicy = indexingPolicy;
     }
 
     /// <summary>
@@ -71,11 +74,23 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         IndexingPolicy indexingPolicy,
         string? applicationName = null)
     {
+        if (!vectorEmbeddingPolicy.Embeddings.Any(e => e.Path == "/embedding"))
+        {
+            throw new InvalidOperationException($"""
+                In order for {nameof(GetNearestMatchAsync)} to function, {nameof(vectorEmbeddingPolicy)} should
+                contain an embedding path at /embedding. It's also recommended to include a that path in the
+                {nameof(indexingPolicy)} to improve performance and reduce cost for searches.
+                """);
+        }
         this._cosmosClient = cosmosClient;
-        this._cosmosClient.ClientOptions.ApplicationName = applicationName;
         this._databaseName = databaseName;
         this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
         this._indexingPolicy = indexingPolicy;
+
+        if (!string.IsNullOrWhiteSpace(applicationName))
+        {
+            this._cosmosClient.ClientOptions.ApplicationName = applicationName;
+        }
     }
 
     /// <inheritdoc/>
@@ -196,8 +211,10 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        const string OR = " OR ";
+
         // Optimistically create the entire query string.
-        var whereClause = string.Join(" OR ", keys.Select(k => $"(x.id = \"{k}\" AND x.key = \"{k}\")"));
+        var whereClause = string.Join(OR, keys.Select(k => $"(x.id = \"{k}\" AND x.key = \"{k}\")"));
         var queryDefinition = new QueryDefinition($"""
             SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
             FROM x
@@ -233,7 +250,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             // put a few extra for the values of the keys.
             var estimatedWhereLength = 30 * keysPerQuery;
             var localWhere = new StringBuilder(estimatedWhereLength);
-            const string OR = " OR ";
             for (var i = 0; i < segments; i++)
             {
                 localWhere.Clear();
@@ -380,7 +396,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 /// <param name="key"></param>
 /// <param name="timestamp"></param>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
-public class MemoryRecordWithSimilarityScore(
+internal class MemoryRecordWithSimilarityScore(
     MemoryRecordMetadata metadata,
     ReadOnlyMemory<float> embedding,
     string? key,
@@ -401,7 +417,7 @@ public class MemoryRecordWithSimilarityScore(
 /// Creates a new record that also serializes an "id" property.
 /// </summary>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
-public class MemoryRecordWithId : MemoryRecord
+internal class MemoryRecordWithId : MemoryRecord
 {
     /// <summary>
     /// Creates a new record that also serializes an "id" property.
@@ -425,7 +441,9 @@ public class MemoryRecordWithId : MemoryRecord
     }
 
     /// <summary>
-    /// The similarity score returned.
+    /// Serializes the the <see cref="DataEntryBase.Key"/>property as "id".
+    /// We do this because Azure Cosmos DB requires a property named "id" for
+    /// each item.
     /// </summary>
     [JsonInclude]
     [JsonPropertyName("id")]
