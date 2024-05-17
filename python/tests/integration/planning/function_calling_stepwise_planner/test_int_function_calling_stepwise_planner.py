@@ -19,15 +19,13 @@ from semantic_kernel.planners.function_calling_stepwise_planner.function_calling
 
 
 @pytest.mark.asyncio
-async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel, get_oai_config):
-    api_key, _ = get_oai_config
+async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel):
 
     service_id = "planner"
     kernel.add_service(
         OpenAIChatCompletion(
             service_id=service_id,
             ai_model_id="gpt-3.5-turbo-1106",
-            api_key=api_key,
         ),
     )
 

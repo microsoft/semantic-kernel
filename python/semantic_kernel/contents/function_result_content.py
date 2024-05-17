@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 from xml.etree.ElementTree import Element
 
@@ -43,6 +44,16 @@ class FunctionResultContent(KernelContent):
     name: str | None = None
     result: str
     encoding: str | None = None
+
+    @cached_property
+    def function_name(self) -> str:
+        """Get the function name."""
+        return self.split_name()[1]
+
+    @cached_property
+    def plugin_name(self) -> str | None:
+        """Get the plugin name."""
+        return self.split_name()[0]
 
     @field_validator("result", mode="before")
     @classmethod
@@ -101,3 +112,11 @@ class FunctionResultContent(KernelContent):
             "tool_call_id": self.id,
             "content": self.result,
         }
+
+    def split_name(self) -> list[str]:
+        """Split the name into a plugin and function name."""
+        if not self.name:
+            raise ValueError("Name is not set.")
+        if "-" not in self.name:
+            return ["", self.name]
+        return self.name.split("-", maxsplit=1)

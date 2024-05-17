@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-import json
 import logging
 from typing import Dict, List, Optional, TypeVar, Union
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
@@ -17,12 +16,35 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PromptTemplateConfig(KernelBaseModel):
+    """Configuration for a prompt template.
+
+    Args:
+        name: The name of the prompt template.
+        description: The description of the prompt template.
+        template: The template for the prompt.
+        template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
+        input_variables: The input variables for the prompt.
+        allow_dangerously_set_content (default: false): Allow content without encoding, this controls
+            if the output of functions called in the template is encoded before use.
+        execution_settings: The execution settings for the prompt.
+
+    """
+
     name: str = ""
     description: Optional[str] = ""
     template: Optional[str] = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
     input_variables: List[InputVariable] = Field(default_factory=list)
+    allow_dangerously_set_content: bool = False
     execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def check_input_variables(self):
+        """Verify that input variable default values are string only"""
+        for variable in self.input_variables:
+            if variable.default and not isinstance(variable.default, str):
+                raise ValueError(f"Default value for input variable {variable.name} must be a string.")
+        return self
 
     @field_validator("execution_settings", mode="before")
     @classmethod
@@ -66,22 +88,13 @@ class PromptTemplateConfig(KernelBaseModel):
         """Create a PromptTemplateConfig instance from a JSON string."""
         if not json_str:
             raise ValueError("json_str is empty")
-
         try:
-            parsed_json = json.loads(json_str)
-            config = PromptTemplateConfig(**parsed_json)
+            return cls.model_validate_json(json_str)
         except Exception as e:
             raise ValueError(
                 "Unable to deserialize PromptTemplateConfig from the "
                 f"specified JSON string: {json_str} with exception: {e}"
             )
-
-        # Verify that input variable default values are string only
-        for variable in config.input_variables:
-            if variable.default and not isinstance(variable.default, str):
-                raise ValueError(f"Default value for input variable {variable.name} must be a string for {config.name}")
-
-        return config
 
     @classmethod
     def restore(
@@ -92,6 +105,7 @@ class PromptTemplateConfig(KernelBaseModel):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         input_variables: List[InputVariable] = [],
         execution_settings: Dict[str, PromptExecutionSettings] = {},
+        allow_dangerously_set_content: bool = False,
     ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
 
@@ -112,4 +126,5 @@ class PromptTemplateConfig(KernelBaseModel):
             template_format=template_format,
             input_variables=input_variables,
             execution_settings=execution_settings,
+            allow_dangerously_set_content=allow_dangerously_set_content,
         )
