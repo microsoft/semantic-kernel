@@ -63,6 +63,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
+      - shell: bash
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
         uses: actions/setup-dotnet@v3
