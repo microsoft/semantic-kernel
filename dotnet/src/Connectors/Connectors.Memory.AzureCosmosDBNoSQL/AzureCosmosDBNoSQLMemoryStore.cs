@@ -139,16 +139,20 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         string collectionName,
         CancellationToken cancellationToken = default)
     {
-        await foreach (
-            var existingCollectionName in this.GetCollectionsAsync(cancellationToken)
-                .ConfigureAwait(false)
-        )
+        using var feedIterator = this.
+            _cosmosClient
+            .GetDatabase(this._databaseName)
+            .GetContainerQueryIterator<string>($"SELECT VALUE(c.id) FROM c WHERE c.id = '{collectionName}'");
+
+        while (feedIterator.HasMoreResults)
         {
-            if (existingCollectionName == collectionName)
+            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var containerName in next.Resource)
             {
                 return true;
             }
         }
+
         return false;
     }
 
