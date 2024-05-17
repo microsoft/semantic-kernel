@@ -14,7 +14,7 @@ internal sealed class ChatCompletionRequest
     public string Model { get; set; }
 
     [JsonPropertyName("messages")]
-    public IList<MistralChatMessage> Messages { get; set; } = new List<MistralChatMessage>();
+    public IList<MistralChatMessage> Messages { get; set; } = [];
 
     [JsonPropertyName("temperature")]
     public double Temperature { get; set; } = 0.7;
@@ -59,7 +59,7 @@ internal sealed class ChatCompletionRequest
     /// </summary>
     internal void AddTool(MistralTool tool)
     {
-        this.Tools ??= new List<MistralTool>();
+        this.Tools ??= [];
         this.Tools.Add(tool);
     }
 

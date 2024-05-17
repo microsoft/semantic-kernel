@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -159,7 +160,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
+        var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -222,7 +223,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var state = ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
+        var state = this.ValidateInputAndCreateChatCompletionState(chatHistory, kernel, executionSettings);
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
@@ -291,7 +292,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
     }
 
-    private static ChatCompletionState ValidateInputAndCreateChatCompletionState(
+    private ChatCompletionState ValidateInputAndCreateChatCompletionState(
         ChatHistory chatHistory,
         Kernel? kernel,
         PromptExecutionSettings? executionSettings)
@@ -301,6 +302,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         var geminiExecutionSettings = GeminiPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(geminiExecutionSettings.MaxTokens);
+
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(geminiExecutionSettings));
+        }
 
         return new ChatCompletionState()
         {
@@ -363,13 +371,20 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private async Task ProcessFunctionsAsync(ChatCompletionState state, CancellationToken cancellationToken)
     {
-        this.Log(LogLevel.Debug, "Tool requests: {Requests}", state.LastMessage!.ToolCalls!.Count);
-        this.Log(LogLevel.Trace, "Function call requests: {FunctionCall}",
-            string.Join(", ", state.LastMessage.ToolCalls.Select(ftc => ftc.ToString())));
+        if (this.Logger.IsEnabled(LogLevel.Debug))
+        {
+            this.Logger.LogDebug("Tool requests: {Requests}", state.LastMessage!.ToolCalls!.Count);
+        }
+
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("Function call requests: {FunctionCall}",
+                string.Join(", ", state.LastMessage!.ToolCalls!.Select(ftc => ftc.ToString())));
+        }
 
         // We must send back a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-        foreach (var toolCall in state.LastMessage.ToolCalls)
+        foreach (var toolCall in state.LastMessage!.ToolCalls!)
         {
             await this.ProcessSingleToolCallAsync(state, toolCall, cancellationToken).ConfigureAwait(false);
         }
@@ -380,8 +395,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts)
         {
             // Don't add any tools as we've reached the maximum attempts limit.
-            this.Log(LogLevel.Debug, "Maximum use ({MaximumUse}) reached; removing the tools.",
-                state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum use ({MaximumUse}) reached; removing the tools.",
+                    state.ExecutionSettings.ToolCallBehavior!.MaximumUseAttempts);
+            }
         }
         else
         {
@@ -394,8 +412,11 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         if (state.Iteration >= state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts)
         {
             state.AutoInvoke = false;
-            this.Log(LogLevel.Debug, "Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
-                state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug("Maximum auto-invoke ({MaximumAutoInvoke}) reached.",
+                    state.ExecutionSettings.ToolCallBehavior!.MaximumAutoInvokeAttempts);
+            }
         }
     }
 
@@ -473,9 +494,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         FunctionResult? functionResponse,
         string? errorMessage)
     {
-        if (errorMessage is not null)
+        if (errorMessage is not null && this.Logger.IsEnabled(LogLevel.Debug))
         {
-            this.Log(LogLevel.Debug, "Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
+            this.Logger.LogDebug("Failed to handle tool request ({ToolName}). {Error}", tool.FullyQualifiedName, errorMessage);
         }
 
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
@@ -690,16 +711,18 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     {
         if (metadata.TotalTokenCount <= 0)
         {
-            this.Log(LogLevel.Debug, "Gemini usage information is not available.");
+            this.Logger.LogDebug("Gemini usage information is not available.");
             return;
         }
 
-        this.Log(
-            LogLevel.Debug,
-            "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
-            metadata.CandidatesTokenCount,
-            metadata.PromptTokenCount,
-            metadata.TotalTokenCount);
+        if (this.Logger.IsEnabled(LogLevel.Debug))
+        {
+            this.Logger.LogDebug(
+                "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
+                metadata.CandidatesTokenCount,
+                metadata.PromptTokenCount,
+                metadata.TotalTokenCount);
+        }
 
         s_promptTokensCounter.Add(metadata.PromptTokenCount);
         s_completionTokensCounter.Add(metadata.CandidatesTokenCount);

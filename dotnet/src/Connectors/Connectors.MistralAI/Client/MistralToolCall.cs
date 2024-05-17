@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// <summary>
 /// Tool call for chat completion.
 /// </summary>
-internal class MistralToolCall
+internal sealed class MistralToolCall
 {
     [JsonPropertyName("id")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
