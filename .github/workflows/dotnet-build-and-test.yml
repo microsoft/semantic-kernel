@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dotnet: "8.0-jammy", os: "ubuntu-latest", configuration: Release }
+          - { dotnet: "8.0", os: "ubuntu-latest", configuration: Release }
           - {
               dotnet: "8.0",
               os: "windows-latest",
