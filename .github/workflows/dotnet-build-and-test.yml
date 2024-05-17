@@ -61,16 +61,13 @@ jobs:
             }
           - { dotnet: "8.0", os: "windows", configuration: Release }
 
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
-      env:
-        NUGET_CERT_REVOCATION_MODE: offline
-        GITHUB_ACTIONS: "true"
-
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
+      - name: Setup dotnet ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
       - name: Build dotnet solutions
         run: |
           export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
