@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// <summary>
 /// Choice for chat completion.
 /// </summary>
-internal class MistralChatChoice
+internal sealed class MistralChatChoice
 {
     [JsonPropertyName("index")]
     public int? Index { get; set; }

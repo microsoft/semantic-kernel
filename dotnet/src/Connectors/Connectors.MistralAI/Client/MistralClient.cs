@@ -605,30 +605,33 @@ internal sealed class MistralClient
             throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
         }
         var firstRole = chatHistory[0].Role.ToString();
-        if (firstRole is not "system" && firstRole is not "user")
+        if (firstRole is not "system" and not "user")
         {
             throw new ArgumentException("The first message in chat history must have either the system or user role", nameof(chatHistory));
         }
     }
 
-    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings, Kernel? kernel = null)
+    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, Kernel? kernel = null)
     {
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
+        }
+
         var request = new ChatCompletionRequest(modelId)
         {
             Stream = stream,
             Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
+            Temperature = executionSettings.Temperature,
+            TopP = executionSettings.TopP,
+            MaxTokens = executionSettings.MaxTokens,
+            SafePrompt = executionSettings.SafePrompt,
+            RandomSeed = executionSettings.RandomSeed
         };
 
-        if (executionSettings is not null)
-        {
-            request.Temperature = executionSettings.Temperature;
-            request.TopP = executionSettings.TopP;
-            request.MaxTokens = executionSettings.MaxTokens;
-            request.SafePrompt = executionSettings.SafePrompt;
-            request.RandomSeed = executionSettings.RandomSeed;
-
-            executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
-        }
+        executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
 
         return request;
     }
