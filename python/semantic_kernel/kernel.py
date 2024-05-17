@@ -4,28 +4,29 @@ from __future__ import annotations
 import logging
 from copy import copy
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Callable, Literal, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Literal, Type, TypeVar, Union
 
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelFunctionNotFoundError,
     KernelInvokeException,
     KernelPluginNotFoundError,
     KernelServiceNotFoundError,
+    OperationCancelledException,
     ServiceInvalidTypeError,
     TemplateSyntaxError,
 )
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_extensions.kernel_filters_extension import KernelFilterExtension
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
@@ -49,13 +50,14 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
+AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClientBase)
 ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
 
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class Kernel(KernelBaseModel):
+class Kernel(KernelFilterExtension):
     """
     The Kernel class is the main entry point for the Semantic Kernel. It provides the ability to run
     semantic/native functions, and manage plugins, memory, and AI services.
@@ -74,17 +76,13 @@ class Kernel(KernelBaseModel):
     services: dict[str, AIServiceClientBase] = Field(default_factory=dict)
     ai_service_selector: AIServiceSelector = Field(default_factory=AIServiceSelector)
     retry_mechanism: RetryMechanismBase = Field(default_factory=PassThroughWithoutRetry)
-    function_invoking_handlers: dict[
-        int, Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
-    ] = Field(default_factory=dict)
-    function_invoked_handlers: dict[int, Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]] = (
-        Field(default_factory=dict)
-    )
 
     def __init__(
         self,
         plugins: KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None = None,
-        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
+        services: (
+            AI_SERVICE_CLIENT_TYPE | list[AI_SERVICE_CLIENT_TYPE] | dict[str, AI_SERVICE_CLIENT_TYPE] | None
+        ) = None,
         ai_service_selector: AIServiceSelector | None = None,
         **kwargs: Any,
     ) -> None:
@@ -131,15 +129,17 @@ class Kernel(KernelBaseModel):
     @classmethod
     def rewrite_services(
         cls,
-        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
-    ) -> dict[str, AIServiceClientBase]:
+        services: (
+            AI_SERVICE_CLIENT_TYPE | list[AI_SERVICE_CLIENT_TYPE] | dict[str, AI_SERVICE_CLIENT_TYPE] | None
+        ) = None,
+    ) -> dict[str, AI_SERVICE_CLIENT_TYPE]:
         """Rewrite services to a dictionary."""
         if not services:
             return {}
         if isinstance(services, AIServiceClientBase):
-            return {services.service_id or "default": services}
+            return {services.service_id if services.service_id else "default": services}  # type: ignore
         if isinstance(services, list):
-            return {s.service_id or "default": s for s in services}
+            return {s.service_id if s.service_id else "default": s for s in services}
         return services
 
     # endregion
@@ -151,7 +151,8 @@ class Kernel(KernelBaseModel):
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        return_function_results: bool | None = False,
+        metadata: dict[str, Any] = {},
+        return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
         """Execute one or more stream functions.
@@ -166,8 +167,9 @@ class Kernel(KernelBaseModel):
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
-            return_function_results (bool | None): If True, the function results are returned in addition to
-                the streaming content, otherwise only the streaming content is returned.
+            metadata (dict[str, Any]): The metadata to pass to the function(s)
+            return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
+            in addition to the streaming content, otherwise only the streaming content is yielded.
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Yields:
@@ -180,23 +182,6 @@ class Kernel(KernelBaseModel):
                 raise KernelFunctionNotFoundError("No function(s) or function- and plugin-name provided")
             function = self.get_function(plugin_name, function_name)
 
-        function_invoking_args = self.on_function_invoking(function.metadata, arguments)
-        if function_invoking_args.is_cancel_requested:
-            logger.info(
-                f"Execution was cancelled on function invoking event of function: {function.fully_qualified_name}."
-            )
-            return
-        if function_invoking_args.updated_arguments:
-            logger.info(
-                "Arguments updated by function_invoking_handler in function, "
-                f"new arguments: {function_invoking_args.arguments}"
-            )
-            arguments = function_invoking_args.arguments
-        if function_invoking_args.is_skip_requested:
-            logger.info(
-                f"Execution was skipped on function invoking event of function: {function.fully_qualified_name}."
-            )
-            return
         function_result: list[list["StreamingContentMixin"] | Any] = []
 
         async for stream_message in function.invoke_stream(self, arguments):
@@ -227,6 +212,7 @@ class Kernel(KernelBaseModel):
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Execute one or more functions.
@@ -240,6 +226,7 @@ class Kernel(KernelBaseModel):
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
+            metadata (dict[str, Any]): The metadata to pass to the function(s)
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:
@@ -252,62 +239,22 @@ class Kernel(KernelBaseModel):
             arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function or plugin name provided")
+                raise KernelFunctionNotFoundError("No function, or function name and plugin name provided")
             function = self.get_function(plugin_name, function_name)
-        function_invoking_args = self.on_function_invoking(function.metadata, arguments)
-        if function_invoking_args.is_cancel_requested:
-            logger.info(
-                f"Execution was cancelled on function invoking event of function: {function.fully_qualified_name}."
-            )
-            return None
-        if function_invoking_args.updated_arguments:
-            logger.info(
-                f"Arguments updated by function_invoking_handler, new arguments: {function_invoking_args.arguments}"
-            )
-            arguments = function_invoking_args.arguments
-        function_result = None
-        exception = None
+
         try:
-            function_result = await function.invoke(self, arguments)
+            return await function.invoke(kernel=self, arguments=arguments, metadata=metadata)
+        except OperationCancelledException as exc:
+            logger.info(f"Operation cancelled during function invocation. Message: {exc}")
+            return None
         except Exception as exc:
             logger.error(
                 "Something went wrong in function invocation. During function invocation:"
                 f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
             )
-            exception = exc
-
-        # this allows a hook to alter the results before adding.
-        function_invoked_args = self.on_function_invoked(function.metadata, arguments, function_result, exception)
-        if function_invoked_args.exception:
             raise KernelInvokeException(
                 f"Error occurred while invoking function: '{function.fully_qualified_name}'"
-            ) from function_invoked_args.exception
-        if function_invoked_args.is_cancel_requested:
-            logger.info(
-                f"Execution was cancelled on function invoked event of function: {function.fully_qualified_name}."
-            )
-            return (
-                function_invoked_args.function_result
-                if function_invoked_args.function_result
-                else FunctionResult(function=function.metadata, value=None, metadata={})
-            )
-        if function_invoked_args.updated_arguments:
-            logger.info(
-                f"Arguments updated by function_invoked_handler in function {function.fully_qualified_name}"
-                ", new arguments: {function_invoked_args.arguments}"
-            )
-            arguments = function_invoked_args.arguments
-        if function_invoked_args.is_repeat_requested:
-            logger.info(
-                f"Execution was repeated on function invoked event of function: {function.fully_qualified_name}."
-            )
-            return await self.invoke(function=function, arguments=arguments)
-
-        return (
-            function_invoked_args.function_result
-            if function_invoked_args.function_result
-            else FunctionResult(function=function.metadata, value=None, metadata={})
-        )
+            ) from exc
 
     async def invoke_prompt(
         self,
@@ -340,8 +287,6 @@ class Kernel(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
         if not prompt:
             raise TemplateSyntaxError("The prompt is either null or empty.")
-
-        from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         function = KernelFunctionFromPrompt(
             function_name=function_name,
@@ -416,57 +361,6 @@ class Kernel(KernelBaseModel):
                     else:
                         output_function_result[choice.choice_index] += choice
             yield FunctionResult(function=function.metadata, value=output_function_result)
-
-    # endregion
-    # region Function Invoking/Invoked Events
-
-    def on_function_invoked(
-        self,
-        kernel_function_metadata: KernelFunctionMetadata,
-        arguments: KernelArguments,
-        function_result: FunctionResult | None = None,
-        exception: Exception | None = None,
-    ) -> FunctionInvokedEventArgs:
-        # TODO: include logic that uses function_result
-        args = FunctionInvokedEventArgs(
-            kernel_function_metadata=kernel_function_metadata,
-            arguments=arguments,
-            function_result=function_result,
-            exception=(
-                exception or function_result.metadata.get(METADATA_EXCEPTION_KEY, None) if function_result else None
-            ),
-        )
-        if self.function_invoked_handlers:
-            for handler in self.function_invoked_handlers.values():
-                handler(self, args)
-        return args
-
-    def on_function_invoking(
-        self, kernel_function_metadata: KernelFunctionMetadata, arguments: KernelArguments
-    ) -> FunctionInvokingEventArgs:
-        args = FunctionInvokingEventArgs(kernel_function_metadata=kernel_function_metadata, arguments=arguments)
-        if self.function_invoking_handlers:
-            for handler in self.function_invoking_handlers.values():
-                handler(self, args)
-        return args
-
-    def add_function_invoking_handler(
-        self, handler: Callable[["Kernel", FunctionInvokingEventArgs], FunctionInvokingEventArgs]
-    ) -> None:
-        self.function_invoking_handlers[id(handler)] = handler
-
-    def add_function_invoked_handler(
-        self, handler: Callable[["Kernel", FunctionInvokedEventArgs], FunctionInvokedEventArgs]
-    ) -> None:
-        self.function_invoked_handlers[id(handler)] = handler
-
-    def remove_function_invoking_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoking_handlers:
-            del self.function_invoking_handlers[id(handler)]
-
-    def remove_function_invoked_handler(self, handler: Callable) -> None:
-        if id(handler) in self.function_invoked_handlers:
-            del self.function_invoked_handlers[id(handler)]
 
     # endregion
     # region Plugins & Functions
@@ -895,8 +789,8 @@ class Kernel(KernelBaseModel):
             raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
         return service
 
-    def get_services_by_type(self, type: Type[ALL_SERVICE_TYPES]) -> dict[str, "AIServiceClientBase"]:
-        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
+    def get_services_by_type(self, type: type[ALL_SERVICE_TYPES]) -> dict[str, ALL_SERVICE_TYPES]:
+        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
 
     def get_prompt_execution_settings_from_service_id(
         self, service_id: str, type: Type[ALL_SERVICE_TYPES] | None = None
