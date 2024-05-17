@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class FilterContextBase(KernelBaseModel):
-    """Base class for Kernel Hook Contexts."""
+    """Base class for Kernel Filter Contexts."""
 
     function: "KernelFunction"
     kernel: "Kernel"

@@ -8,6 +8,7 @@ from functools import reduce
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.kernel import Kernel
 
@@ -21,7 +22,15 @@ kernel.add_plugin(
 )
 
 
-@kernel.filter("function_invocation")
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Function Invocation for streaming function.
+# You can name the function itself with arbitraty names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the function itself.
+# and code afterwards.
+# in the specific case of a filter for streaming functions, you need to override the generator
+# that is present in the function_result.value as seen below.
+@kernel.filter(FilterTypes.FUNCTION_INVOCATION)
 async def streaming_exception_handling(context, next):
     await next(context)
 

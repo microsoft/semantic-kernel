@@ -40,6 +40,7 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_auto_function_invocation_context
 
@@ -116,25 +117,26 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 return completions
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
-            try:
-                # this function either updates the chat history with the function call results
-                # or raises a the InvokeTermination through a filter,
-                # in which case the loop will break and the function calls are returned.
-                await asyncio.gather(
-                    *[
-                        self._process_function_call(
-                            function_call=function_call,
-                            chat_history=chat_history,
-                            kernel=kernel,
-                            arguments=arguments,
-                            function_call_count=fc_count,
-                            request_index=request_index,
-                            function_call_behavior=settings.function_call_behavior,
-                        )
-                        for function_call in function_calls
-                    ],
-                )
-            except InvokeTermination:
+
+            # this function either updates the chat history with the function call results
+            # or returns the context, with terminate set to True
+            # in which case the loop will break and the function calls are returned.
+            results = await asyncio.gather(
+                *[
+                    self._process_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        kernel=kernel,
+                        arguments=arguments,
+                        function_call_count=fc_count,
+                        request_index=request_index,
+                        function_call_behavior=settings.function_call_behavior,
+                    )
+                    for function_call in function_calls
+                ],
+            )
+
+            if any(result.terminate for result in results if result is not None):
                 return completions
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -213,26 +215,26 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             fc_count = len(function_calls)
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
-            try:
-                # this function either updates the chat history with the function call results
-                # or raises the InvokeTermination through a filter,
-                # in which case the loop will break and the function calls are returned.
-                # other exceptions are not caught, that is up to the developer, can be done with a filter
-                await asyncio.gather(
-                    *[
-                        self._process_function_call(
-                            function_call=function_call,
-                            chat_history=chat_history,
-                            kernel=kernel,
-                            arguments=arguments,
-                            function_call_count=fc_count,
-                            request_index=request_index,
-                            function_call_behavior=settings.function_call_behavior,
-                        )
-                        for function_call in function_calls
-                    ],
-                )
-            except InvokeTermination:
+
+            # this function either updates the chat history with the function call results
+            # or returns the context, with terminate set to True
+            # in which case the loop will break and the function calls are returned.
+            # Exceptions are not caught, that is up to the developer, can be done with a filter
+            results = await asyncio.gather(
+                *[
+                    self._process_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        kernel=kernel,
+                        arguments=arguments,
+                        function_call_count=fc_count,
+                        request_index=request_index,
+                        function_call_behavior=settings.function_call_behavior,
+                    )
+                    for function_call in function_calls
+                ],
+            )
+            if any(result.terminate for result in results if result is not None):
                 return
 
             self._update_settings(settings, chat_history, kernel=kernel)
@@ -424,7 +426,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         function_call_count: int,
         request_index: int,
         function_call_behavior: FunctionCallBehavior,
-    ) -> None:
+    ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
         args_cloned = copy(arguments)
         try:
@@ -485,15 +487,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             invocation_context.function_sequence_index = function_call.index
 
         stack = kernel.construct_call_stack(
-            filter_type="auto_function_invocation",
+            filter_type=FilterTypes.AUTO_FUNCTION_INVOCATION,
             inner_function=self._inner_auto_function_invoke_handler,
         )
         await stack(invocation_context)
 
         if invocation_context.terminate:
-            raise InvokeTermination(
-                f"Termination requested by the function call filter, during function {function_call.name} invocation."
-            )
+            return invocation_context
 
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call, result=invocation_context.function_result

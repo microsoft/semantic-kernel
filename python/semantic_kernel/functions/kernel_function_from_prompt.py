@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import os
 from html import unescape
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from typing import Any, AsyncGenerator
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -17,8 +17,9 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, KernelFunction
@@ -29,9 +30,6 @@ from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-if TYPE_CHECKING:
-    pass
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -147,6 +145,9 @@ through prompt_template_config or in the prompt_template."
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
         """Invokes the function with the given arguments."""
         prompt_render_result = await self._render_prompt(context)
+        if prompt_render_result.function_result is not None:
+            context.result = prompt_render_result.function_result
+            return
 
         if isinstance(prompt_render_result.ai_service, ChatCompletionClientBase):
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
@@ -227,7 +228,7 @@ through prompt_template_config or in the prompt_template."
         prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
 
         stack = context.kernel.construct_call_stack(
-            filter_type="prompt_rendering",
+            filter_type=FilterTypes.PROMPT_RENDERING,
             inner_function=self._inner_render_prompt,
         )
         await stack(prompt_render_context)

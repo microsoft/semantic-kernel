@@ -1,7 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-# Copyright (c) Microsoft. All rights reserved.
-
-from __future__ import annotations
 
 import asyncio
 import logging
@@ -11,12 +8,19 @@ from typing import Any, Callable, Coroutine
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.kernel import Kernel
 
 logger = logging.getLogger(__name__)
 
 
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Function Invocation for non-streaming function.
+# You can name the function itself with arbitraty names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the function itself.
+# and code afterwards.
 async def input_output_filter(
     context: FunctionInvocationContext,
     next: Callable[[FunctionInvocationContext], Coroutine[Any, Any, None]],
@@ -26,10 +30,8 @@ async def input_output_filter(
         return
     try:
         user_input = input("User:> ")
-    except KeyboardInterrupt:
-        raise OperationCancelledException("User stopped the operation")
-    except EOFError:
-        raise OperationCancelledException("User stopped the operation")
+    except (KeyboardInterrupt, EOFError) as exc:
+        raise OperationCancelledException("User stopped the operation") from exc
     if user_input == "exit":
         raise OperationCancelledException("User stopped the operation")
     context.arguments["chat_history"].add_user_message(user_input)
@@ -50,9 +52,12 @@ async def main() -> None:
     )
     history = ChatHistory()
 
+    # here we are adding two filters, one that was created earlier, and can be reused and added to other kernels
+    # and one created and added in one go through the decorator
     kernel.add_filter("function_invocation", input_output_filter)
 
-    @kernel.filter(filter_type="function_invocation")
+    # you can use both the literal term and the FilterTypes enum
+    @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
     async def exception_catch_filter(
         context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]
     ):

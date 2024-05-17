@@ -8,7 +8,8 @@ from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
 from typing import TYPE_CHECKING, Any, Callable
 
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -201,7 +202,7 @@ class KernelFunction(KernelBaseModel):
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
         stack = kernel.construct_call_stack(
-            filter_type="function_invocation",
+            filter_type=FilterTypes.FUNCTION_INVOCATION,
             inner_function=self._invoke_internal,
         )
         await stack(function_context)
@@ -244,7 +245,7 @@ class KernelFunction(KernelBaseModel):
         function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
         stack = kernel.construct_call_stack(
-            filter_type="function_invocation",
+            filter_type=FilterTypes.FUNCTION_INVOCATION,
             inner_function=self._invoke_internal_stream,
         )
         await stack(function_context)

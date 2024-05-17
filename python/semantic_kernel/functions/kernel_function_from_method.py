@@ -3,20 +3,16 @@ from __future__ import annotations
 
 import logging
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import TYPE_CHECKING, Any, Callable
+from typing import Any, Callable
 
 from pydantic import ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-
-if TYPE_CHECKING:
-    pass
-
 
 logger: logging.Logger = logging.getLogger(__name__)
 

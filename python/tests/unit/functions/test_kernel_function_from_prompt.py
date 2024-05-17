@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 from unittest.mock import patch
 
@@ -11,8 +13,8 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import FunctionInitializationError
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.kernel import Kernel

@@ -239,12 +239,13 @@ class Kernel(KernelFilterExtension):
             arguments.update(kwargs)
         if not function:
             if not function_name or not plugin_name:
-                raise KernelFunctionNotFoundError("No function, or function- and plugin name provided")
+                raise KernelFunctionNotFoundError("No function, or function name and plugin name provided")
             function = self.get_function(plugin_name, function_name)
 
         try:
             return await function.invoke(kernel=self, arguments=arguments, metadata=metadata)
-        except OperationCancelledException:
+        except OperationCancelledException as exc:
+            logger.info(f"Operation cancelled during function invocation. Message: {exc}")
             return None
         except Exception as exc:
             logger.error(

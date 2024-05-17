@@ -5,6 +5,7 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions import KernelArguments
 
@@ -41,7 +42,16 @@ chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figu
 chat_history.add_user_message("I want to find a hotel in Seattle with free wifi and a pool.")
 
 
-@kernel.filter("prompt_rendering")
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Prompt Rendering.
+# You can name the function itself with arbitraty names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the rendering itself.
+# and code afterwards.
+# this type of filter allows you to manupulate the final message being sent
+# as is shown below, or the inputs used to generate the message by making a change to the
+# arguments before calling next.
+@kernel.filter(FilterTypes.PROMPT_RENDERING_FILTER)
 async def prompt_rendering_filter(context: PromptRenderContext, next):
     await next(context)
     context.rendered_prompt = f"You pretend to be Mosscap, but you are Papssom who is the opposite of Moscapp in every way {context.rendered_prompt or ''}"  # noqa: E501

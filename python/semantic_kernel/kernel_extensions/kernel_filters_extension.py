@@ -6,18 +6,19 @@ from typing import Any, Callable, Coroutine, Literal, TypeVar
 from pydantic import Field
 
 from semantic_kernel.filters.filter_context_base import FilterContextBase
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 FILTER_CONTEXT_TYPE = TypeVar("FILTER_CONTEXT_TYPE", bound=FilterContextBase)
 CALLABLE_FILTER_TYPE = Callable[[FILTER_CONTEXT_TYPE, Callable[[FILTER_CONTEXT_TYPE], None]], None]
 
-
-ALLOWED_FILTERS = ["function_invocation", "prompt_rendering", "auto_function_invocation"]
-ALLOWED_FILTERS_LITERAL = Literal["function_invocation", "prompt_rendering", "auto_function_invocation"]
+ALLOWED_FILTERS_LITERAL = Literal[
+    FilterTypes.AUTO_FUNCTION_INVOCATION, FilterTypes.FUNCTION_INVOCATION, FilterTypes.PROMPT_RENDERING
+]
 FILTER_MAPPING = {
-    "function_invocation": "function_invocation_filters",
-    "prompt_rendering": "prompt_rendering_filters",
-    "auto_function_invocation": "auto_function_invocation_filters",
+    FilterTypes.FUNCTION_INVOCATION: "function_invocation_filters",
+    FilterTypes.PROMPT_RENDERING: "prompt_rendering_filters",
+    FilterTypes.AUTO_FUNCTION_INVOCATION: "auto_function_invocation_filters",
 }
 
 
@@ -28,7 +29,7 @@ class KernelFilterExtension(KernelBaseModel):
     prompt_rendering_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
     auto_function_invocation_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
 
-    def add_filter(self, filter_type: ALLOWED_FILTERS_LITERAL, filter: CALLABLE_FILTER_TYPE) -> None:
+    def add_filter(self, filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes, filter: CALLABLE_FILTER_TYPE) -> None:
         """Add a filter to the Kernel.
 
         Each filter is added to the beginning of the list of filters,
@@ -41,11 +42,15 @@ class KernelFilterExtension(KernelBaseModel):
             filter (object): The filter to add
 
         """
-        if filter_type not in ALLOWED_FILTERS:
-            raise ValueError(f"filter_type must be one of {ALLOWED_FILTERS}")
-        getattr(self, FILTER_MAPPING[filter_type]).insert(0, (id(filter), filter))
+        if not isinstance(filter_type, FilterTypes):
+            filter_type = FilterTypes(filter_type)
+        getattr(self, FILTER_MAPPING[filter_type.value]).insert(0, (id(filter), filter))
 
-    def filter(self, filter_type: ALLOWED_FILTERS_LITERAL) -> Callable[[CALLABLE_FILTER_TYPE], CALLABLE_FILTER_TYPE]:
+    def filter(
+        self, filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes
+    ) -> Callable[[CALLABLE_FILTER_TYPE], CALLABLE_FILTER_TYPE]:
+        """Decorator to add a filter to the Kernel."""
+
         def decorator(
             func: CALLABLE_FILTER_TYPE,
         ) -> CALLABLE_FILTER_TYPE:
@@ -56,18 +61,21 @@ class KernelFilterExtension(KernelBaseModel):
 
     def remove_filter(
         self,
-        filter_type: ALLOWED_FILTERS_LITERAL | None = None,
+        filter_type: ALLOWED_FILTERS_LITERAL | FilterTypes | None = None,
         filter_id: int | None = None,
         position: int | None = None,
     ) -> None:
         """Remove a filter from the Kernel.
 
         Args:
-            filter_type (str | None): The type of the filter to remove (function_invocation, prompt_render)
+            filter_type (str | FilterTypes | None):
+                The type of the filter to remove.
             filter_id (int): The id of the hook to remove
             position (int): The position of the filter in the list
 
         """
+        if filter_type and not isinstance(filter_type, FilterTypes):
+            filter_type = FilterTypes(filter_type)
         if filter_id is None and position is None:
             raise ValueError("Either hook_id or position should be provided.")
         if position is not None:
@@ -88,7 +96,7 @@ class KernelFilterExtension(KernelBaseModel):
 
     def construct_call_stack(
         self,
-        filter_type: ALLOWED_FILTERS_LITERAL,
+        filter_type: FilterTypes,
         inner_function: Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]],
     ) -> Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]]:
         stack: list[Any] = [inner_function]
@@ -112,16 +120,18 @@ def _rebuild_auto_function_invocation_context() -> None:
 
 
 def _rebuild_function_invocation_context() -> None:
-    from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.functions.function_result import FunctionResult  # noqa: F401
     from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
     from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
-    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+    from semantic_kernel.kernel import Kernel  # noqa: F401
 
     FunctionInvocationContext.model_rebuild()
 
 
 def _rebuild_prompt_render_context() -> None:
-    from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+    from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
+    from semantic_kernel.functions.function_result import FunctionResult  # noqa: F401
     from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
     from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
     from semantic_kernel.kernel import Kernel  # noqa: F403 F401

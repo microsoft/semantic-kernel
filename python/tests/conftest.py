@@ -1,24 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Callable
+from typing import Callable
 
 import pytest
 
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
-
-if TYPE_CHECKING:
-    from semantic_kernel.kernel import Kernel
-    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
 @pytest.fixture(scope="function")

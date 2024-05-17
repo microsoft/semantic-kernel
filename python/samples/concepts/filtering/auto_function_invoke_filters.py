@@ -2,7 +2,6 @@
 
 import asyncio
 import os
-from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -14,11 +13,9 @@ from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
 )
+from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.function_result import FunctionResult
-
-if TYPE_CHECKING:
-    pass
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -78,8 +75,16 @@ history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure ou
 arguments = KernelArguments(settings=execution_settings)
 
 
-@kernel.filter("auto_function_invocation")
+# A filter is a piece of custom code that runs at certain points in the process
+# this sample has a filter that is called during Auto Function Invocation
+# this filter will be called for each function call in the response.
+# You can name the function itself with arbitraty names, but the signature needs to be:
+# `context, next`
+# You are then free to run code before the call to the next filter or the function itself.
+# if you want to terminate the function calling sequence. set context.terminate to True
+@kernel.filter(FilterTypes.AUTO_FUNCTION_INVOCATION)
 async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+    """A filter that will be called for each function call in the response."""
     print("\nAuto function invocation filter")
     print(f"Function: {context.function.name}")
     print(f"Request sequence: {context.request_sequence_index}")

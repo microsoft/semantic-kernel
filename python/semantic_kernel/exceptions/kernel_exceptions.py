@@ -42,10 +42,6 @@ class OperationCancelledException(KernelException):
     pass
 
 
-class HookInvalidSignatureError(KernelException):
-    pass
-
-
 __all__ = [
     "KernelException",
     "KernelFunctionAlreadyExistsError",
@@ -55,5 +51,4 @@ __all__ = [
     "KernelServiceNotFoundError",
     "KernelPluginInvalidConfigurationError",
     "OperationCancelledException",
-    "HookInvalidSignatureError",
 ]
