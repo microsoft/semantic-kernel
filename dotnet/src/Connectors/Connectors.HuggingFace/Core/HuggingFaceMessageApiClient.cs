@@ -120,9 +120,9 @@ internal sealed class HuggingFaceMessageApiClient
                         break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -162,9 +162,9 @@ internal sealed class HuggingFaceMessageApiClient
 
             response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (activity is not null)
         {
-            activity?.SetError(ex);
+            activity.SetError(ex);
             throw;
         }
 
