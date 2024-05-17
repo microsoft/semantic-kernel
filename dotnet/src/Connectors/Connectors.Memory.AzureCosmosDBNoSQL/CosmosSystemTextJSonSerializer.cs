@@ -51,8 +51,7 @@ internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
 
         using (stream)
         {
-            using StreamReader reader = new(stream);
-            return JsonSerializer.Deserialize<T>(reader.ReadToEnd(), this._jsonSerializerOptions);
+            return JsonSerializer.Deserialize<T>(stream, this._jsonSerializerOptions);
         }
     }
 
