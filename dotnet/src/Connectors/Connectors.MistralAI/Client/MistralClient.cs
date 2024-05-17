@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -26,8 +27,6 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// </summary>
 internal sealed class MistralClient
 {
-    private const string ModelProvider = "mistralai";
-
     internal MistralClient(
         string modelId,
         HttpClient httpClient,
@@ -67,6 +66,7 @@ internal sealed class MistralClient
                 {
                     using var httpRequestMessage = this.CreatePost(chatRequest, endpoint, this._apiKey, stream: false);
                     responseData = await this.SendRequestAsync<ChatCompletionResponse>(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                    this.LogUsage(responseData?.Usage);
                     if (responseData is null || responseData.Choices is null || responseData.Choices.Count == 0)
                     {
                         throw new KernelException("Chat completions not found");
@@ -572,6 +572,9 @@ internal sealed class MistralClient
     private readonly ILogger _logger;
     private readonly StreamJsonParser _streamJsonParser;
 
+    /// <summary>Provider name used for diagnostics.</summary>
+    private const string ModelProvider = "mistralai";
+
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
     /// asynchronous chain of execution.
@@ -593,6 +596,63 @@ internal sealed class MistralClient
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
 
+    private static readonly string s_namespace = typeof(MistralAIChatCompletionService).Namespace!;
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static readonly Meter s_meter = new(s_namespace);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.prompt",
+            unit: "{token}",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.completion",
+            unit: "{token}",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static readonly Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: $"{s_namespace}.tokens.total",
+            unit: "{token}",
+            description: "Number of tokens used");
+
+    /// <summary>Log token usage to the logger and metrics.</summary>
+    private void LogUsage(MistralUsage? usage)
+    {
+        if (usage is null || usage.PromptTokens is null || usage.CompletionTokens is null || usage.TotalTokens is null)
+        {
+            this._logger.LogDebug("Usage information unavailable.");
+            return;
+        }
+
+        if (this._logger.IsEnabled(LogLevel.Information))
+        {
+            this._logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+                usage.PromptTokens,
+                usage.CompletionTokens,
+                usage.TotalTokens);
+        }
+
+        s_promptTokensCounter.Add(usage.PromptTokens.Value);
+        s_completionTokensCounter.Add(usage.CompletionTokens.Value);
+        s_totalTokensCounter.Add(usage.TotalTokens.Value);
+    }
+
     /// <summary>
     /// Messages are required and the first prompt role should be user or system.
     /// </summary>
@@ -605,30 +665,33 @@ internal sealed class MistralClient
             throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
         }
         var firstRole = chatHistory[0].Role.ToString();
-        if (firstRole is not "system" && firstRole is not "user")
+        if (firstRole is not "system" and not "user")
         {
             throw new ArgumentException("The first message in chat history must have either the system or user role", nameof(chatHistory));
         }
     }
 
-    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings? executionSettings, Kernel? kernel = null)
+    private ChatCompletionRequest CreateChatCompletionRequest(string modelId, bool stream, ChatHistory chatHistory, MistralAIPromptExecutionSettings executionSettings, Kernel? kernel = null)
     {
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this._logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
+        }
+
         var request = new ChatCompletionRequest(modelId)
         {
             Stream = stream,
             Messages = chatHistory.SelectMany(chatMessage => this.ToMistralChatMessages(chatMessage, executionSettings?.ToolCallBehavior)).ToList(),
+            Temperature = executionSettings.Temperature,
+            TopP = executionSettings.TopP,
+            MaxTokens = executionSettings.MaxTokens,
+            SafePrompt = executionSettings.SafePrompt,
+            RandomSeed = executionSettings.RandomSeed
         };
 
-        if (executionSettings is not null)
-        {
-            request.Temperature = executionSettings.Temperature;
-            request.TopP = executionSettings.TopP;
-            request.MaxTokens = executionSettings.MaxTokens;
-            request.SafePrompt = executionSettings.SafePrompt;
-            request.RandomSeed = executionSettings.RandomSeed;
-
-            executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
-        }
+        executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
 
         return request;
     }
