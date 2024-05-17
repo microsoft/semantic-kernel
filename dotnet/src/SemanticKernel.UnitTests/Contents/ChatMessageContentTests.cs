@@ -264,7 +264,7 @@ public class ChatMessageContentTests
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-name", functionResultContent.FunctionName);
-        Assert.Equal("function-id", functionResultContent.Id);
+        Assert.Equal("function-id", functionResultContent.CallId);
         Assert.Equal("plugin-name", functionResultContent.PluginName);
 
         var fileReferenceContent = deserializedMessage.Items[8] as FileReferenceContent;

@@ -414,7 +414,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var getCurrentTimeFunctionCallResult = getCurrentTimeFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
         Assert.Equal("GetCurrentUtcTime", getCurrentTimeFunctionCallResult.FunctionName);
         Assert.Equal("HelperFunctions", getCurrentTimeFunctionCallResult.PluginName);
-        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.Id);
+        Assert.Equal(getCurrentTimeFunctionCallRequest.Id, getCurrentTimeFunctionCallResult.CallId);
         Assert.NotNull(getCurrentTimeFunctionCallResult.Result);
 
         // LLM requested the weather for Boston.
@@ -434,7 +434,7 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         var getWeatherForCityFunctionCallResult = getWeatherForCityFunctionCallResultMessage.Items.OfType<FunctionResultContent>().Single();
         Assert.Equal("Get_Weather_For_City", getWeatherForCityFunctionCallResult.FunctionName);
         Assert.Equal("HelperFunctions", getWeatherForCityFunctionCallResult.PluginName);
-        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.Id);
+        Assert.Equal(getWeatherForCityFunctionCallRequest.Id, getWeatherForCityFunctionCallResult.CallId);
         Assert.NotNull(getWeatherForCityFunctionCallResult.Result);
     }
 

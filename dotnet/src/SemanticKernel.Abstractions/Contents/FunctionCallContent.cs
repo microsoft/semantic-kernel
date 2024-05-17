@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function call requested by LLM.
 /// </summary>
+[Experimental("SKEXP0001")]
 public sealed class FunctionCallContent : KernelContent
 {
     /// <summary>

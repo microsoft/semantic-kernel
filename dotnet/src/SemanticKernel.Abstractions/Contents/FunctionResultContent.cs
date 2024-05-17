@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -8,13 +9,14 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the result of a function call.
 /// </summary>
+[Experimental("SKEXP0001")]
 public sealed class FunctionResultContent : KernelContent
 {
     /// <summary>
     /// The function call ID.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Id { get; }
+    public string? CallId { get; }
 
     /// <summary>
     /// The plugin name.
@@ -46,7 +48,7 @@ public sealed class FunctionResultContent : KernelContent
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
-        this.Id = id;
+        this.CallId = id;
         this.Result = result;
     }
 
@@ -57,7 +59,7 @@ public sealed class FunctionResultContent : KernelContent
     /// <param name="result">The function result.</param>
     public FunctionResultContent(FunctionCallContent functionCall, object? result = null)
     {
-        this.Id = functionCall.Id;
+        this.CallId = functionCall.Id;
         this.PluginName = functionCall.PluginName;
         this.FunctionName = functionCall.FunctionName;
         this.Result = result;

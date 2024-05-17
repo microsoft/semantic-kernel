@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents audio content.
 /// </summary>
-[Experimental("SKEXP0010")]
+[Experimental("SKEXP0001")]
 public class AudioContent : BinaryContent
 {
     /// <summary>

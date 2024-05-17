@@ -1141,13 +1141,13 @@ internal abstract class ClientCore
 
                 if (resultContent.Result is Exception ex)
                 {
-                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.Id));
+                    toolMessages.Add(new ChatRequestToolMessage($"Error: Exception while invoking function. {ex.Message}", resultContent.CallId));
                     continue;
                 }
 
                 var stringResult = ProcessFunctionResult(resultContent.Result ?? string.Empty, toolCallBehavior);
 
-                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.Id));
+                toolMessages.Add(new ChatRequestToolMessage(stringResult ?? string.Empty, resultContent.CallId));
             }
 
             if (toolMessages is not null)

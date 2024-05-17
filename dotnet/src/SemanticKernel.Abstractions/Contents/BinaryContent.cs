@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides access to binary content.
 /// </summary>
-[Experimental("SKEXP0010")]
+[Experimental("SKEXP0001")]
 public class BinaryContent : KernelContent
 {
     private string? _dataUri;
