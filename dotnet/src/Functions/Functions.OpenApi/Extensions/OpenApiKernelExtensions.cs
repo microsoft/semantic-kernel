@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Provides extension methods for importing plugins exposed as OpenAPI v3 endpoints.
 /// </summary>
-public static class OpenApiKernelExtensions
+public static partial class OpenApiKernelExtensions
 {
     // TODO: Revise XML comments
 
@@ -341,8 +341,10 @@ public static class OpenApiKernelExtensions
         var returnParameter = operation.GetDefaultReturnParameter();
 
         // Add unstructured metadata, specific to Open API, to the metadata property bag.
-        var additionalMetadata = new Dictionary<string, object?>();
-        additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant());
+        var additionalMetadata = new Dictionary<string, object?>
+        {
+            { OpenApiKernelExtensions.OperationExtensionsMethodKey, operation.Method.ToString().ToUpperInvariant() }
+        };
         if (operation.Extensions is { Count: > 0 })
         {
             additionalMetadata.Add(OpenApiKernelExtensions.OperationExtensionsMetadataKey, operation.Extensions);
@@ -389,7 +391,7 @@ public static class OpenApiKernelExtensions
         foreach (string token in tokens)
         {
             // Removes all characters that are not ASCII letters, digits, and underscores.
-            string formattedToken = s_removeInvalidCharsRegex.Replace(token, "");
+            string formattedToken = RemoveInvalidCharsRegex().Replace(token, "");
             result += CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formattedToken.ToLower(CultureInfo.CurrentCulture));
         }
 
@@ -401,7 +403,13 @@ public static class OpenApiKernelExtensions
     /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]");
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex RemoveInvalidCharsRegex();
+#else
+    private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
+    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 
     #endregion
 }

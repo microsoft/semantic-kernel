@@ -7,6 +7,7 @@ from collections.abc import AsyncGenerator
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Callable
 
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -192,7 +193,7 @@ class KernelFunction(KernelBaseModel):
         except Exception as exc:
             logger.error(f"Error occurred while invoking function {self.name}: {exc}")
             return FunctionResult(
-                function=self.metadata, value=None, metadata={"exception": exc, "arguments": arguments}
+                function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: exc, "arguments": arguments}
             )
 
     @abstractmethod
@@ -234,7 +235,9 @@ class KernelFunction(KernelBaseModel):
                 yield partial_result
         except Exception as e:
             logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})
+            yield FunctionResult(
+                function=self.metadata, value=None, metadata={METADATA_EXCEPTION_KEY: e, "arguments": arguments}
+            )
 
     def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
         """Copy the function, can also override the plugin_name.

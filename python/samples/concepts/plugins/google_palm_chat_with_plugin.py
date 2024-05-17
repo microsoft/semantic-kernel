@@ -6,7 +6,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.google_palm import GooglePalmChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import google_palm_settings_from_dot_env
 
 """
 System messages prime the assistant with different personalities or behaviors.
@@ -30,9 +29,8 @@ Bartholomew "Blackbeard" Thorne.
 """
 
 kernel = Kernel()
-api_key = google_palm_settings_from_dot_env()
 service_id = "models/chat-bison-001"
-palm_chat_completion = GooglePalmChatCompletion(service_id, api_key)
+palm_chat_completion = GooglePalmChatCompletion(service_id)
 kernel.add_service(palm_chat_completion)
 
 req_settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -26,6 +27,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     public HttpResponseMessage ResponseToReturn { get; set; }
 
     public Queue<HttpResponseMessage> ResponseQueue { get; } = new();
+    public byte[]? FirstMultipartContent { get; private set; }
 
     public HttpMessageHandlerStub()
     {
@@ -40,7 +42,13 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+
+        if (request.Content is MultipartContent multipartContent)
+        {
+            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync(cancellationToken);
+        }
+
         this.ContentHeaders = request.Content?.Headers;
 
         HttpResponseMessage response =

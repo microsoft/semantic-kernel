@@ -152,7 +152,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 await asyncio.sleep(self.options.min_iteration_time_ms / 1000.0)  # convert ms to sec
             # For each step, request another completion to select a function for that step
             chat_history_for_steps.add_user_message(STEPWISE_USER_MESSAGE)
-            chat_result = await chat_completion.complete_chat(
+            chat_result = await chat_completion.get_chat_message_contents(
                 chat_history=chat_history_for_steps,
                 settings=prompt_execution_settings,
                 kernel=cloned_kernel,

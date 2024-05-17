@@ -6,11 +6,7 @@ import pytest
 from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
-from semantic_kernel.contents import (
-    ChatMessageContent,
-    StreamingChatMessageContent,
-    TextContent,
-)
+from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
@@ -44,7 +40,7 @@ async def test_complete_chat_stream(kernel: Kernel):
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
 
-        async for content in chat_completion_base.complete_chat_stream(
+        async for content in chat_completion_base.get_streaming_chat_message_contents(
             chat_history, settings, kernel=kernel, arguments=arguments
         ):
             assert content is not None
@@ -77,7 +73,9 @@ async def test_complete_chat(tool_call, kernel: Kernel):
             ai_model_id="test_model_id", service_id="test", client=MagicMock(spec=AsyncOpenAI)
         )
 
-        result = await chat_completion_base.complete_chat(chat_history, settings, kernel=kernel, arguments=arguments)
+        result = await chat_completion_base.get_chat_message_contents(
+            chat_history, settings, kernel=kernel, arguments=arguments
+        )
 
         if tool_call:
             assert result is None

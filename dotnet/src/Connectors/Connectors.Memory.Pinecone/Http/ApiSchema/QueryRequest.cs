@@ -88,7 +88,7 @@ internal sealed class QueryRequest
 
     public HttpRequestMessage Build()
     {
-        if (this.Filter != null)
+        if (this.Filter is not null)
         {
             this.Filter = PineconeUtils.ConvertFilterToPineconeFilter(this.Filter);
         }

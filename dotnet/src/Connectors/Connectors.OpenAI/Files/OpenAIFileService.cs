@@ -289,7 +289,7 @@ public sealed class OpenAIFileService
             _ => throw new KernelException($"Unknown {nameof(OpenAIFilePurpose)}: {purpose}."),
         };
 
-    private class FileInfoList
+    private sealed class FileInfoList
     {
         [JsonPropertyName("data")]
         public FileInfo[] Data { get; set; } = [];
@@ -298,7 +298,7 @@ public sealed class OpenAIFileService
         public string Object { get; set; } = "list";
     }
 
-    private class FileInfo
+    private sealed class FileInfo
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;

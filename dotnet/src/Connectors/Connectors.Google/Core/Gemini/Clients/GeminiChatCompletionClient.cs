@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 /// </summary>
 internal sealed class GeminiChatCompletionClient : ClientBase
 {
+    private const string ModelProvider = "google";
     private readonly StreamJsonParser _streamJsonParser = new();
     private readonly string _modelId;
     private readonly Uri _chatGenerationEndpoint;
@@ -44,7 +46,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 5;
+    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
@@ -161,11 +163,29 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            var geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
-                    this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
-                .ConfigureAwait(false);
+            GeminiResponse geminiResponse;
+            List<GeminiChatMessageContent> chatResponses;
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
+            {
+                try
+                {
+                    geminiResponse = await this.SendRequestAndReturnValidGeminiResponseAsync(
+                            this._chatGenerationEndpoint, state.GeminiRequest, cancellationToken)
+                        .ConfigureAwait(false);
+                    chatResponses = this.ProcessChatResponse(geminiResponse);
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
 
-            var chatResponses = this.ProcessChatResponse(geminiResponse);
+                activity?.SetCompletionResponse(
+                    chatResponses,
+                    geminiResponse.UsageMetadata?.PromptTokenCount,
+                    geminiResponse.UsageMetadata?.CandidatesTokenCount);
+            }
 
             // If we don't want to attempt to invoke any functions, just return the result.
             // Or if we are auto-invoking but we somehow end up with other than 1 choice even though only 1 was requested, similarly bail.
@@ -206,15 +226,56 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
-            using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-                .ConfigureAwait(false);
-            using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-                .ConfigureAwait(false);
-
-            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
-                yield return messageContent;
+                HttpResponseMessage? httpResponseMessage = null;
+                Stream? responseStream = null;
+                try
+                {
+                    using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
+                    httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                    responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
+                    throw;
+                }
+
+                var responseEnumerator = this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken)
+                    .GetAsyncEnumerator(cancellationToken);
+                List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+                try
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex) when (activity is not null)
+                        {
+                            activity.SetError(ex);
+                            throw;
+                        }
+
+                        streamedContents?.Add(responseEnumerator.Current);
+                        yield return responseEnumerator.Current;
+                    }
+                }
+                finally
+                {
+                    activity?.EndStreaming(streamedContents);
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
+                    await responseEnumerator.DisposeAsync().ConfigureAwait(false);
+                }
             }
 
             if (!state.AutoInvoke)
@@ -293,7 +354,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         }
         finally
         {
-            if (chatResponsesEnumerator != null)
+            if (chatResponsesEnumerator is not null)
             {
                 await chatResponsesEnumerator.DisposeAsync().ConfigureAwait(false);
             }
@@ -420,7 +481,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         var message = new GeminiChatMessageContent(AuthorRole.Tool,
             content: errorMessage ?? string.Empty,
             modelId: this._modelId,
-            calledToolResult: functionResponse != null ? new(tool, functionResponse) : null,
+            calledToolResult: functionResponse is not null ? new(tool, functionResponse) : null,
             metadata: null);
         chat.Add(message);
         request.AddChatMessage(message);
@@ -527,9 +588,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private static void ValidateGeminiResponse(GeminiResponse geminiResponse)
     {
-        if (geminiResponse.Candidates == null || geminiResponse.Candidates.Count == 0)
+        if (geminiResponse.Candidates is null || geminiResponse.Candidates.Count == 0)
         {
-            if (geminiResponse.PromptFeedback?.BlockReason != null)
+            if (geminiResponse.PromptFeedback?.BlockReason is not null)
             {
                 // TODO: Currently SK doesn't support prompt feedback/finish status, so we just throw an exception. I told SK team that we need to support it: https://github.com/microsoft/semantic-kernel/issues/4621
                 throw new KernelException("Prompt was blocked due to Gemini API safety reasons.");
@@ -569,7 +630,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiStreamingChatMessageContent GetStreamingChatContentFromChatContent(GeminiChatMessageContent message)
     {
-        if (message.CalledToolResult != null)
+        if (message.CalledToolResult is not null)
         {
             return new GeminiStreamingChatMessageContent(
                 role: message.Role,
@@ -580,7 +641,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                 choiceIndex: message.Metadata!.Index);
         }
 
-        if (message.ToolCalls != null)
+        if (message.ToolCalls is not null)
         {
             return new GeminiStreamingChatMessageContent(
                 role: message.Role,

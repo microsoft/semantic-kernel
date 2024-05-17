@@ -73,7 +73,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             generator=generator,
         )
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
@@ -103,7 +103,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             text=candidate["summary_text" if self.task == "summarization" else "generated_text"],
         )
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,

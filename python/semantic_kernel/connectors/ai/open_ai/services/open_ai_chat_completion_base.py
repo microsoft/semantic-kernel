@@ -53,7 +53,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Create a request settings object."""
         return OpenAIChatPromptExecutionSettings
 
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
@@ -100,7 +100,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
             settings = self._prepare_settings(settings, chat_history, stream_request=False, kernel=kernel)
 
-    async def complete_chat_stream(
+    async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
@@ -424,8 +424,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         try:
             func_result = await kernel.invoke(**func.split_name_dict(), arguments=args_cloned)
         except Exception as exc:
-            logger.exception(f"Error occurred while invoking function {func.name}")
-            raise ServiceInvalidResponseError(f"Error occurred while invoking function {func.name}") from exc
+            logger.exception(f"Exception occurred while invoking function {func.name}, exception: {exc}")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=result,
+                result=f"Exception occurred while invoking function {func.name}, exception: {exc}",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=result, result=func_result
         )

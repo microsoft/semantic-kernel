@@ -87,6 +87,11 @@ public static class ApiManifestKernelExtensions
             var apiDependencyDetails = apiDependency.Value;
 
             var apiDescriptionUrl = apiDependencyDetails.ApiDescriptionUrl;
+            if (apiDescriptionUrl is null)
+            {
+                logger.LogWarning("ApiDescriptionUrl is missing for API dependency: {ApiName}", apiName);
+                continue;
+            }
 
             var openApiDocumentString = await DocumentLoader.LoadDocumentFromUriAsync(new Uri(apiDescriptionUrl),
                 logger,
@@ -140,23 +145,30 @@ public static class ApiManifestKernelExtensions
                 openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
-            foreach (var path in filteredOpenApiDocument.Paths)
+            if (serverUrl is not null)
             {
-                var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
-                foreach (RestApiOperation operation in operations)
+                foreach (var path in filteredOpenApiDocument.Paths)
                 {
-                    try
+                    var operations = OpenApiDocumentParser.CreateRestApiOperations(serverUrl, path.Key, path.Value, null, logger);
+                    foreach (RestApiOperation operation in operations)
                     {
-                        logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
-                        functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
-                    {
-                        //Logging the exception and keep registering other Rest functions
-                        logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                            pluginName, operation.Id, ex.Message);
+                        try
+                        {
+                            logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                            functions.Add(OpenApiKernelExtensions.CreateRestApiFunction(pluginName, runner, operation, openApiFunctionExecutionParameters, new Uri(serverUrl), loggerFactory));
+                        }
+                        catch (Exception ex) when (!ex.IsCriticalException())
+                        {
+                            //Logging the exception and keep registering other Rest functions
+                            logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                                pluginName, operation.Id, ex.Message);
+                        }
                     }
                 }
+            }
+            else
+            {
+                logger.LogWarning("Server URI not found. Plugin: {0}", pluginName);
             }
         }
 
