@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import os
 from html import unescape
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, AsyncGenerator
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -202,7 +202,7 @@ through prompt_template_config or in the prompt_template."
 
             chat_history = ChatHistory.from_rendered_prompt(prompt_render_result.rendered_prompt)
 
-            value = prompt_render_result.ai_service.get_streaming_chat_message_contents(
+            value: AsyncGenerator = prompt_render_result.ai_service.get_streaming_chat_message_contents(
                 chat_history=chat_history,
                 settings=prompt_render_result.execution_settings,
                 **kwargs,
@@ -210,7 +210,7 @@ through prompt_template_config or in the prompt_template."
         elif isinstance(prompt_render_result.ai_service, TextCompletionClientBase):
             value = prompt_render_result.ai_service.get_streaming_text_contents(
                 prompt=prompt_render_result.rendered_prompt, settings=prompt_render_result.execution_settings
-            )  # type: ignore
+            )
         else:
             raise FunctionExecutionException(
                 f"Service `{type(prompt_render_result.ai_service)}` is not a valid AI service"
@@ -228,12 +228,12 @@ through prompt_template_config or in the prompt_template."
 
         stack = context.kernel.construct_call_stack(
             filter_type="prompt_rendering",
-            inner_function=self._inner_render_prompt,  # type: ignore
+            inner_function=self._inner_render_prompt,
         )
         await stack(prompt_render_context)
 
-        if not prompt_render_context.rendered_prompt:
-            raise PromptRenderingException("Prompt rendering failed")
+        if prompt_render_context.rendered_prompt is None:
+            raise PromptRenderingException("Prompt rendering failed, no rendered prompt was returned.")
         return PromptRenderingResult(
             rendered_prompt=prompt_render_context.rendered_prompt,
             ai_service=service,
@@ -241,6 +241,7 @@ through prompt_template_config or in the prompt_template."
         )
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:
+        """Render the prompt using the prompt template."""
         context.rendered_prompt = await self.prompt_template.render(context.kernel, context.arguments)
 
     def _create_function_result(

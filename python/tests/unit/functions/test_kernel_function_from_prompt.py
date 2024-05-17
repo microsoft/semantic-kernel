@@ -166,9 +166,7 @@ async def test_invoke_chat_stream(openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents"
     ) as mock:
-        mock.__iter__.return_value = [
-            StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
-        ]
+        mock.return_value = [StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})]
         async for result in function.invoke_stream(kernel=kernel):
             assert str(result) == "test"
 
@@ -195,11 +193,10 @@ async def test_invoke_exception(openai_unit_test_env):
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.OpenAIChatCompletion.get_streaming_chat_message_contents",
         side_effect=Exception,
     ) as mock:
-        mock.__iter__.return_value = [
-            StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})
-        ]
-        async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
+        mock.return_value = [StreamingChatMessageContent(choice_index=0, role="assistant", content="test", metadata={})]
+        with pytest.raises(Exception):
+            async for result in function.invoke_stream(kernel=kernel):
+                assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
 
 @pytest.mark.asyncio
@@ -222,7 +219,7 @@ async def test_invoke_text(openai_unit_test_env):
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_streaming_text_contents",
     ) as mock:
-        mock.__iter__.return_value = [TextContent(text="test", metadata={})]
+        mock.return_value = [TextContent(text="test", metadata={})]
         async for result in function.invoke_stream(kernel=kernel):
             assert str(result) == "test"
 
@@ -249,9 +246,10 @@ async def test_invoke_exception_text(openai_unit_test_env):
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.OpenAITextCompletion.get_streaming_text_contents",
         side_effect=Exception,
     ) as mock:
-        mock.__iter__.return_value = []
-        async for result in function.invoke_stream(kernel=kernel):
-            assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
+        mock.return_value = []
+        with pytest.raises(Exception):
+            async for result in function.invoke_stream(kernel=kernel):
+                assert isinstance(result.metadata[METADATA_EXCEPTION_KEY], Exception)
 
 
 @pytest.mark.asyncio

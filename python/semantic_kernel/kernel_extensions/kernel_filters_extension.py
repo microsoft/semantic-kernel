@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from functools import partial
-from typing import Any, Callable, Coroutine, Literal
+from typing import Any, Callable, Coroutine, Literal, TypeVar
 
 from pydantic import Field
 
 from semantic_kernel.filters.filter_context_base import FilterContextBase
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
-CALLABLE_FILTER_TYPE = Callable[[FilterContextBase, Callable[[FilterContextBase], None]], None]
+FILTER_CONTEXT_TYPE = TypeVar("FILTER_CONTEXT_TYPE", bound=FilterContextBase)
+CALLABLE_FILTER_TYPE = Callable[[FILTER_CONTEXT_TYPE, Callable[[FILTER_CONTEXT_TYPE], None]], None]
 
 
 ALLOWED_FILTERS = ["function_invocation", "prompt_rendering", "auto_function_invocation"]
@@ -88,8 +89,8 @@ class KernelFilterExtension(KernelBaseModel):
     def construct_call_stack(
         self,
         filter_type: ALLOWED_FILTERS_LITERAL,
-        inner_function: Callable[[FilterContextBase], Coroutine[Any, Any, None]],
-    ) -> Callable[[FilterContextBase], Coroutine[Any, Any, None]]:
+        inner_function: Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]],
+    ) -> Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]]:
         stack: list[Any] = [inner_function]
         for _, filter in getattr(self, FILTER_MAPPING[filter_type]):
             filter_with_next = partial(filter, next=stack[0])

@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
+AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClientBase)
 ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
 
 
@@ -79,7 +80,9 @@ class Kernel(KernelFilterExtension):
     def __init__(
         self,
         plugins: KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None = None,
-        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
+        services: (
+            AI_SERVICE_CLIENT_TYPE | list[AI_SERVICE_CLIENT_TYPE] | dict[str, AI_SERVICE_CLIENT_TYPE] | None
+        ) = None,
         ai_service_selector: AIServiceSelector | None = None,
         **kwargs: Any,
     ) -> None:
@@ -126,15 +129,17 @@ class Kernel(KernelFilterExtension):
     @classmethod
     def rewrite_services(
         cls,
-        services: AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None = None,
-    ) -> dict[str, AIServiceClientBase]:
+        services: (
+            AI_SERVICE_CLIENT_TYPE | list[AI_SERVICE_CLIENT_TYPE] | dict[str, AI_SERVICE_CLIENT_TYPE] | None
+        ) = None,
+    ) -> dict[str, AI_SERVICE_CLIENT_TYPE]:
         """Rewrite services to a dictionary."""
         if not services:
             return {}
         if isinstance(services, AIServiceClientBase):
-            return {services.service_id or "default": services}
+            return {services.service_id if services.service_id else "default": services}  # type: ignore
         if isinstance(services, list):
-            return {s.service_id or "default": s for s in services}
+            return {s.service_id if s.service_id else "default": s for s in services}
         return services
 
     # endregion
@@ -783,8 +788,8 @@ class Kernel(KernelFilterExtension):
             raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
         return service
 
-    def get_services_by_type(self, type: Type[ALL_SERVICE_TYPES]) -> dict[str, "AIServiceClientBase"]:
-        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
+    def get_services_by_type(self, type: type[ALL_SERVICE_TYPES]) -> dict[str, ALL_SERVICE_TYPES]:
+        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
 
     def get_prompt_execution_settings_from_service_id(
         self, service_id: str, type: Type[ALL_SERVICE_TYPES] | None = None

@@ -202,7 +202,7 @@ class KernelFunction(KernelBaseModel):
 
         stack = kernel.construct_call_stack(
             filter_type="function_invocation",
-            inner_function=self._invoke_internal,  # type: ignore
+            inner_function=self._invoke_internal,
         )
         await stack(function_context)
 
@@ -245,7 +245,7 @@ class KernelFunction(KernelBaseModel):
 
         stack = kernel.construct_call_stack(
             filter_type="function_invocation",
-            inner_function=self._invoke_internal_stream,  # type: ignore
+            inner_function=self._invoke_internal_stream,
         )
         await stack(function_context)
 

@@ -2,7 +2,8 @@
 
 import asyncio
 import os
-from typing import TYPE_CHECKING
+from functools import reduce
+from typing import TYPE_CHECKING, List
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -10,6 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAICh
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
     AutoFunctionInvocationContext,
@@ -18,7 +20,7 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.function_result import FunctionResult
 
 if TYPE_CHECKING:
-    pass
+    from semantic_kernel.functions import KernelFunction
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -84,6 +86,7 @@ async def auto_function_invocation_filter(context: AutoFunctionInvocationContext
     print(f"Function: {context.function.name}")
     print(f"Request sequence: {context.request_sequence_index}")
     print(f"Function sequence: {context.function_sequence_index}")
+    print(f"Total number of functions: {context.function_count}")
 
     # as an example
     function_calls = context.chat_history.messages[-1].items
@@ -118,6 +121,31 @@ def print_tool_calls(message: ChatMessageContent) -> None:
     print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
 
 
+async def handle_streaming(
+    kernel: Kernel,
+    chat_function: "KernelFunction",
+    arguments: KernelArguments,
+) -> None:
+    response = kernel.invoke_stream(
+        chat_function,
+        return_function_results=False,
+        arguments=arguments,
+    )
+
+    print("Mosscap:> ", end="")
+    streamed_chunks: List[StreamingChatMessageContent] = []
+    async for message in response:
+        streamed_chunks.append(message[0])
+        print(str(message[0]), end="")
+
+    if streamed_chunks:
+        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        print("Auto tool calls is disabled or was terminated, printing returned tool calls...")
+        print_tool_calls(streaming_chat_message)
+
+    print("\n")
+
+
 async def chat() -> bool:
     try:
         user_input = input("User:> ")
@@ -133,19 +161,7 @@ async def chat() -> bool:
         return False
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
-
-    result = await kernel.invoke(chat_function, arguments=arguments)
-
-    # If tools are used, and auto invoke tool calls is False, the response will be of type
-    # ChatMessageContent with information about the tool calls, which need to be sent
-    # back to the model to get the final response.
-    if isinstance(result.value[0].items[0], FunctionCallContent):
-        print_tool_calls(result.value[0])
-        return True
-
-    history.add_user_message(user_input)
-    history.add_assistant_message(str(result))
-    print(f"Mosscap:> {result}")
+    await handle_streaming(kernel, chat_function, arguments=arguments)
     return True
 
 

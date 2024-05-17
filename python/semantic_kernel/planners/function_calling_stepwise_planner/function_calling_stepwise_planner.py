@@ -183,7 +183,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 )
 
             try:
-                await chat_completion._process_tool_calls(
+                await chat_completion._process_function_calls(
                     result=chat_result, kernel=cloned_kernel, chat_history=chat_history_for_steps, arguments=arguments
                 )
             except Exception as exc:
