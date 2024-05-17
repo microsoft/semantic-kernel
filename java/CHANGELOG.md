@@ -1,3 +1,8 @@
+# 1.1.2
+
+- Upgrade azure-identity to 1.12.1
+- Remove fixed netty version in bom
+
 # 1.1.1
 
 - Upgrade azure-ai-openai to 1.0.0-beta.8
