@@ -112,7 +112,7 @@ static internal class DataUriParser
                 var keyValue = part.Split('=');
                 if (keyValue.Length == 2)
                 {
-                    model.Properties[keyValue[0]] = keyValue[1];
+                    model.Parameters[keyValue[0]] = keyValue[1];
                 }
 
                 continue;
@@ -153,7 +153,7 @@ static internal class DataUriParser
         /// <summary>
         /// The optional parameters of the data.
         /// </summary>
-        internal Dictionary<string, string> Properties { get; set; } = new();
+        internal Dictionary<string, string> Parameters { get; set; } = new();
 
         /// <summary>
         /// The optional format of the data. Most common is "base64".

@@ -41,14 +41,14 @@ public sealed class FunctionResultContent : KernelContent
     /// </summary>
     /// <param name="functionName">The function name.</param>
     /// <param name="pluginName">The plugin name.</param>
-    /// <param name="id">The function call ID.</param>
+    /// <param name="callId">The function call ID.</param>
     /// <param name="result">The function result.</param>
     [JsonConstructor]
-    public FunctionResultContent(string? functionName = null, string? pluginName = null, string? id = null, object? result = null)
+    public FunctionResultContent(string? functionName = null, string? pluginName = null, string? callId = null, object? result = null)
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
-        this.CallId = id;
+        this.CallId = callId;
         this.Result = result;
     }
 

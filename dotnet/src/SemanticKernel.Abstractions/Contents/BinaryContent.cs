@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -165,13 +167,45 @@ public class BinaryContent : KernelContent
         // Validate the dataUri format
         var parsedDataUri = DataUriParser.Parse(dataUri);
 
-        // Gets the mimetype from the DataUri and automatically sets it.
+        // Overwrite the mimetype to the DataUri.
         this.MimeType = parsedDataUri.MimeType;
+
+        // If parameters where provided in the data uri, updates the content metadata.
+        if (parsedDataUri.Parameters.Count != 0)
+        {
+            this.UpdateDataUriParamatersToMetadata(parsedDataUri);
+        }
 
         this._dataUri = dataUri;
 
         // Invalidate the current bytearray
         this._data = null;
+    }
+
+    private void UpdateDataUriParamatersToMetadata(DataUriParser.DataUri parsedDataUri)
+    {
+        var newMetadata = this.Metadata as Dictionary<string, object?>;
+        if (newMetadata is null)
+        {
+            // Clone the current read only metadata;
+            newMetadata = new Dictionary<string, object?>();
+            if (this.Metadata is not null)
+            {
+                foreach (var property in this.Metadata)
+                {
+                    newMetadata[property.Key] = property.Value;
+                }
+            }
+        }
+
+        // Overwrite any properties if already defined
+        foreach (var property in parsedDataUri.Parameters)
+        {
+            // Set the properties from the DataUri metadata
+            newMetadata[property.Key] = property.Value;
+        }
+
+        this.Metadata = newMetadata;
     }
 
     /// <summary>

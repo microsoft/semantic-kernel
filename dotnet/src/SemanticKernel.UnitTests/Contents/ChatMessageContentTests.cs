@@ -155,7 +155,7 @@ public class ChatMessageContentTests
     }
 
     [Fact]
-    public void ItCanBeSerializeAndDeserializedAsync()
+    public void ItCanBeSerializeAndDeserialized()
     {
         // Arrange
         ChatMessageContentItemCollection items = [

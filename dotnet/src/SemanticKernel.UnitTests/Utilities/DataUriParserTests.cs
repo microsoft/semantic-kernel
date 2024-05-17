@@ -33,13 +33,13 @@ public class DataUriParserTests(ITestOutputHelper output)
         Assert.Equal(expectedMimeType, parsed.MimeType);
         Assert.Equal(expectedData, parsed.Data);
         Assert.Equal(expectedDataFormat, parsed.DataFormat);
-        Assert.Equal(expectedParameters!.Count, parsed.Properties.Count);
+        Assert.Equal(expectedParameters!.Count, parsed.Parameters.Count);
         if (expectedParameters.Count > 0)
         {
             foreach (var kvp in expectedParameters)
             {
-                Assert.True(parsed.Properties.ContainsKey(kvp.Key));
-                Assert.Equal(kvp.Value, parsed.Properties[kvp.Key]);
+                Assert.True(parsed.Parameters.ContainsKey(kvp.Key));
+                Assert.Equal(kvp.Value, parsed.Parameters[kvp.Key]);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -226,5 +227,29 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     {
         var thrownException = Assert.Throws(exception, () => new BinaryContent(path));
         output.WriteLine(thrownException.Message);
+    }
+
+    [Theory]
+    [InlineData("data:;parameter1=value1,", "{}", """{"parameter1":"value1"}""")] // Should create extra data
+    [InlineData("data:;parameter1=value1,", """{"metadata":{"parameter1":"should override me"}}""", """{"parameter1":"value1"}""")] // Should override existing data
+    [InlineData("data:;parameter1=value1,", """{"metadata":{"parameter2":"value2"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:;parameter1=value1;parameter2=value2,data", """{"metadata":{"parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"parameter3":"existing data", "parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2","parameter3":"existing data"}""")] // Should keep previous metadata
+    public void DataUriConstructorWhenProvidingParametersUpdatesMetadataAsExpected(string path, string startingSerializedBinaryContent, string expectedSerializedMetadata)
+    {
+        // Arrange
+        var content = JsonSerializer.Deserialize<BinaryContent>(startingSerializedBinaryContent)!;
+        content.DataUri = path;
+
+        var expectedMetadata = JsonSerializer.Deserialize<Dictionary<string, object?>>(expectedSerializedMetadata)!;
+
+        // Act & Assert
+        Assert.Equal(expectedMetadata.Count, content.Metadata!.Count);
+        foreach (var kvp in expectedMetadata)
+        {
+            Assert.True(content.Metadata.ContainsKey(kvp.Key));
+            Assert.Equal(kvp.Value?.ToString(), content.Metadata[kvp.Key]?.ToString());
+        }
     }
 }
