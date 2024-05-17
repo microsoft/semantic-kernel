@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -13,76 +14,89 @@ namespace SemanticKernel.IntegrationTests.CrossLanguage;
 
 public class OpenApiTest
 {
+    private readonly JsonNode? _expectedJson;
+
+    public OpenApiTest()
+    {
+        string expectedData = File.ReadAllText("./CrossLanguage/Data/LightBulbApiTest.json");
+        this._expectedJson = JsonNode.Parse(expectedData);
+    }
+
     [Fact]
     public async Task GetLightsAsync()
     {
-        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync("GetLights", new()
+        const string Operation = "GetLights";
+
+        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync(Operation, new()
         {
             { "roomId", "1" }
         });
 
-        Assert.Equal(HttpMethod.Get, httpMessageHandlerStub.Method);
-        Assert.Equal("https://127.0.0.1/Lights?roomId=1", httpMessageHandlerStub?.RequestUri?.ToString());
+        this.AssertMethodAndUri(Operation, httpMessageHandlerStub);
     }
 
     [Fact]
     public async Task GetLightByIdAsync()
     {
-        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync("GetLightById", new()
+        const string Operation = "GetLightById";
+
+        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync(Operation, new()
         {
             { "id", "1" }
         });
 
-        Assert.Equal(HttpMethod.Get, httpMessageHandlerStub.Method);
-        Assert.Equal("https://127.0.0.1/Lights/1", httpMessageHandlerStub?.RequestUri?.ToString());
+        this.AssertMethodAndUri(Operation, httpMessageHandlerStub);
     }
 
     [Fact]
     public async Task DeleteLightByIdAsync()
     {
-        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync("DeleteLightById", new()
+        const string Operation = "DeleteLightById";
+
+        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync(Operation, new()
         {
             { "id", "1" }
         });
 
-        Assert.Equal(HttpMethod.Delete, httpMessageHandlerStub.Method);
-        Assert.Equal("https://127.0.0.1/Lights/1", httpMessageHandlerStub?.RequestUri?.ToString());
+        this.AssertMethodAndUri(Operation, httpMessageHandlerStub);
     }
 
     [Fact]
     public async Task CreateLightsAsync()
     {
-        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync("CreateLights", new()
+        const string Operation = "CreateLights";
+
+        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync(Operation, new()
         {
             { "roomId", "1" },
             { "lightName", "disco" }
         });
 
-        Assert.Equal(HttpMethod.Post, httpMessageHandlerStub.Method);
-        Assert.Equal("https://127.0.0.1/Lights?roomId=1&lightName=disco", httpMessageHandlerStub?.RequestUri?.ToString());
+        this.AssertMethodAndUri(Operation, httpMessageHandlerStub);
     }
 
     [Fact]
     public async Task PutLightByIdAsync()
     {
-        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync("PutLightById", new()
+        const string Operation = "PutLightById";
+
+        using var httpMessageHandlerStub = await this.SetUpOpenApiFunctionCallAsync(Operation, new()
         {
             { "id", "1" },
             { "hexColor", "11EE11" }
         });
 
-        Assert.Equal(HttpMethod.Put, httpMessageHandlerStub.Method);
-        Assert.True(httpMessageHandlerStub?.ContentHeaders?.ContentType?.ToString().StartsWith("application/json", System.StringComparison.InvariantCulture));
-        Assert.Equal("https://127.0.0.1/Lights/1", httpMessageHandlerStub?.RequestUri?.ToString());
+        this.AssertMethodAndUri(Operation, httpMessageHandlerStub);
 
-        string content = System.Text.Encoding.UTF8.GetString(httpMessageHandlerStub?.RequestContent ?? Array.Empty<byte>());
-        JsonNode? obtainedObject = JsonNode.Parse(content);
+        string? contentType = this._expectedJson?[Operation]?["ContentType"]?.ToString();
+        Assert.NotNull(contentType);
+        Assert.True(httpMessageHandlerStub?.ContentHeaders?.ContentType?.ToString().StartsWith(contentType, System.StringComparison.InvariantCulture));
+
+        string requestBody = System.Text.Encoding.UTF8.GetString(httpMessageHandlerStub?.RequestContent ?? Array.Empty<byte>());
+        JsonNode? obtainedObject = JsonNode.Parse(requestBody);
         Assert.NotNull(obtainedObject);
 
-        JsonNode? expectedObject = JsonNode.Parse("{\"hexColor\": \"11EE11\"}");
-        Assert.NotNull(expectedObject);
-
-        Assert.True(JsonNode.DeepEquals(obtainedObject, expectedObject));
+        Assert.True(JsonNode.DeepEquals(obtainedObject, this._expectedJson?[Operation]?["Body"]));
     }
 
     private async Task<HttpMessageHandlerStub> SetUpOpenApiFunctionCallAsync(string functionName, KernelArguments args)
@@ -99,5 +113,11 @@ public class OpenApiTest
         await KernelRequestTracer.RunFunctionAsync(kernel, isStreaming: false, function, args);
 
         return httpMessageHandlerStub;
+    }
+
+    private void AssertMethodAndUri(string operation, HttpMessageHandlerStub httpMessageHandlerStub)
+    {
+        Assert.Equal(this._expectedJson?[operation]?["Method"]?.ToString(), httpMessageHandlerStub?.Method?.ToString());
+        Assert.Equal(this._expectedJson?[operation]?["Uri"]?.ToString(), httpMessageHandlerStub?.RequestUri?.ToString());
     }
 }
