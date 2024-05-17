@@ -449,7 +449,7 @@ internal class MemoryRecordWithId : MemoryRecord
     }
 
     /// <summary>
-    /// Serializes the the <see cref="DataEntryBase.Key"/>property as "id".
+    /// Serializes the <see cref="DataEntryBase.Key"/>property as "id".
     /// We do this because Azure Cosmos DB requires a property named "id" for
     /// each item.
     /// </summary>
