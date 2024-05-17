@@ -19,6 +19,8 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function_metadata_to_openai_tool_format
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -115,7 +117,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             arguments = KernelArguments(**kwargs)
 
         try:
-            chat_completion = kernel.get_service(service_id=self.service_id)
+            chat_completion: OpenAIChatCompletion | AzureChatCompletion = kernel.get_service(service_id=self.service_id)
         except Exception as exc:
             raise PlannerInvalidConfigurationError(
                 f"The OpenAI service `{self.service_id}` is not available. Please configure the AI service."
@@ -182,13 +184,31 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     iterations=i + 1,
                 )
 
-            try:
-                await chat_completion._process_tool_calls(
-                    result=chat_result, kernel=cloned_kernel, chat_history=chat_history_for_steps, arguments=arguments
-                )
-            except Exception as exc:
-                chat_history_for_steps.add_user_message(f"An error occurred during planner invocation: {exc}")
-                continue
+            for content in chat_result.items:
+                if not isinstance(content, FunctionCallContent):
+                    continue
+                try:
+                    context = await chat_completion._process_function_call(
+                        function_call=content,
+                        result=chat_result,
+                        kernel=cloned_kernel,
+                        chat_history=chat_history_for_steps,
+                        arguments=arguments,
+                        function_call_count=1,
+                        request_index=0,
+                        function_call_behavior=prompt_execution_settings.function_call_behavior,
+                    )
+                    frc = FunctionResultContent.from_function_call_content_and_result(
+                        function_call_content=content, result=context.function_result
+                    )
+                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                except Exception as exc:
+                    frc = FunctionResultContent.from_function_call_content_and_result(
+                        function_call_content=content,
+                        result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
+                    )
+                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    continue
 
         # We're done, but the model hasn't returned a final answer.
         return FunctionCallingStepwisePlannerResult(

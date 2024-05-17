@@ -122,7 +122,7 @@ async def test_it_renders_kernel_functions_arg_from_template(kernel: Kernel, dec
     template = "Function: {{plug-getLightStatus arg1='test'}}"
     target = create_handlebars_prompt_template(template)
 
-    rendered = await target.render(kernel, KernelArguments())
+    rendered = await target.render(kernel)
     assert rendered == "Function: test"
 
 

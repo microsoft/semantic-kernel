@@ -126,7 +126,7 @@ async def main():
             break
 
         chat_history.add_message(result)
-        await chat._process_tool_calls(
+        await chat._process_function_calls(
             result=result,
             kernel=kernel,
             chat_history=chat_history,

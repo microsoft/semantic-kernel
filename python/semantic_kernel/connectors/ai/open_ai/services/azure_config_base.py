@@ -4,16 +4,10 @@ import logging
 from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
 
 from openai import AsyncAzureOpenAI
-from pydantic import validate_call
+from pydantic import ConfigDict, validate_call
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    DEFAULT_AZURE_API_VERSION,
-    USER_AGENT,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-    OpenAIModelTypes,
-)
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION, USER_AGENT
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -24,7 +18,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AzureOpenAIConfigBase(OpenAIHandler):
     """Internal class for configuring a connection to an Azure OpenAI service."""
 
-    @validate_call(config=dict(arbitrary_types_allowed=True))
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
         self,
         deployment_name: str,

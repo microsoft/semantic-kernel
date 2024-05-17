@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, List, Optional
 
 from pydantic import PrivateAttr, field_validator
 
-from semantic_kernel.exceptions import CodeBlockRenderException, TemplateRenderException
+from semantic_kernel.exceptions import TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -134,7 +134,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             if isinstance(block, CodeRenderer):
                 try:
                     rendered = await block.render_code(kernel, arguments)
-                except CodeBlockRenderException as exc:
+                except Exception as exc:
                     logger.error(f"Error rendering code block: {exc}")
                     raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
                 rendered_blocks.append(rendered if allow_unsafe_function_output else escape(rendered))
