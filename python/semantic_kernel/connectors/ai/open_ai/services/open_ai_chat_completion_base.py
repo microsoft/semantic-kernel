@@ -200,6 +200,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 or not function_call_returned
             ):
                 # no need to process function calls
+                # note that we don't check the FinishReason and instead check whether there are any tool calls,
+                # as the service may return a FinishReason of "stop" even if there are tool calls to be made,
+                # in particular if a required tool is specified.
                 return
 
             # there is one response stream in the messages, combining now to create the full completion
@@ -212,8 +215,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             logger.info(f"processing {fc_count} tool calls in parallel.")
             try:
                 # this function either updates the chat history with the function call results
-                # or raises a the InvokeTermination through a filter,
+                # or raises the InvokeTermination through a filter,
                 # in which case the loop will break and the function calls are returned.
+                # other exceptions are not caught, that is up to the developer, can be done with a filter
                 await asyncio.gather(
                     *[
                         self._process_function_call(
