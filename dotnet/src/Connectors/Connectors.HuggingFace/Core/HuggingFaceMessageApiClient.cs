@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -273,6 +274,14 @@ internal sealed class HuggingFaceMessageApiClient
         HuggingFacePromptExecutionSettings huggingFaceExecutionSettings)
     {
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
+
+        if (this._clientCore.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this._clientCore.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(huggingFaceExecutionSettings));
+        }
+
         var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
         return request;
     }
