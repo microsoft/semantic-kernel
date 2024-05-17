@@ -56,8 +56,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 }),
             databaseName,
             vectorEmbeddingPolicy,
-            indexingPolicy,
-            applicationName)
+            indexingPolicy)
     {
     }
 
@@ -70,13 +69,11 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
     /// <param name="databaseName">The database name to operate against.</param>
     /// <param name="vectorEmbeddingPolicy">The <see cref="VectorEmbeddingPolicy" /> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
     /// <param name="indexingPolicy">The <see cref="IndexingPolicy"/> to use if a collection is created. NOTE that embeddings will be stored in a property named 'embedding'.</param>
-    /// <param name="applicationName">The application name to use in requests.</param>
     public AzureCosmosDBNoSQLMemoryStore(
         CosmosClient cosmosClient,
         string databaseName,
         VectorEmbeddingPolicy vectorEmbeddingPolicy,
-        IndexingPolicy indexingPolicy,
-        string? applicationName = null)
+        IndexingPolicy indexingPolicy)
     {
         if (!vectorEmbeddingPolicy.Embeddings.Any(e => e.Path == "/embedding"))
         {
@@ -90,11 +87,6 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         this._databaseName = databaseName;
         this._vectorEmbeddingPolicy = vectorEmbeddingPolicy;
         this._indexingPolicy = indexingPolicy;
-
-        if (!string.IsNullOrWhiteSpace(applicationName))
-        {
-            this._cosmosClient.ClientOptions.ApplicationName = applicationName;
-        }
     }
 
     /// <inheritdoc/>
