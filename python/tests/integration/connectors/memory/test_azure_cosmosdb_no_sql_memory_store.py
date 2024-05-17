@@ -105,9 +105,7 @@ async def test_get_nearest_match():
     test_embedding = get_vector_items()[0].embedding.copy()
     test_embedding[0] = test_embedding[0] + 0.1
 
-    result = await store.get_nearest_match(
-        container_name, test_embedding, min_relevance_score=0.0, with_embedding=True
-    )
+    result = await store.get_nearest_match(container_name, test_embedding, min_relevance_score=0.0, with_embedding=True)
 
     assert result is not None
     assert result[1] > 0.0
