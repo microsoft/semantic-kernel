@@ -14,6 +14,10 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
+#if NET6_0_OR_GREATER
+using System.Globalization;
+#endif
+
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 /// <summary>
@@ -256,7 +260,11 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                 for (var q = i * keysPerQuery; q < (i + 1) * keysPerQuery && q < keyList.Count; q++)
                 {
                     var k = keyList[q];
+#if NET6_0_OR_GREATER
+                    localWhere.Append(CultureInfo.InvariantCulture, $"(x.id = \"{k}\" AND x.key = \"{k}\")").Append(OR);
+#else
                     localWhere.Append($"(x.id = \"{k}\" AND x.key = \"{k}\")").Append(OR);
+#endif
                 }
 
                 if (localWhere.Length >= OR.Length)
