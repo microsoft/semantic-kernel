@@ -9,6 +9,7 @@ from openai import AsyncOpenAI
 
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -24,9 +25,9 @@ simple_prompt = "Can you help me tell the time in Seattle right now?"
 sk_simple_prompt = "Can you help me tell the time in {{$city}} right now?"
 hb_simple_prompt = "Can you help me tell the time in {{city}} right now?"
 j2_simple_prompt = "Can you help me tell the time in {{city}} right now?"
-sk_prompt = '<message role="system">The current time is {{Time.Now}}</message><message role="user">Can you help me tell the time in {{$city}} right now?</message>' # noqa: E501
-hb_prompt = '<message role="system">The current time is {{Time-Now}}</message><message role="user">Can you help me tell the time in {{city}} right now?</message>' # noqa: E501
-j2_prompt = '<message role="system">The current time is {{Time_Now()}}</message><message role="user">Can you help me tell the time in {{city}} right now?</message>' # noqa: E501
+sk_prompt = '<message role="system">The current time is {{Time.Now}}</message><message role="user">Can you help me tell the time in {{$city}} right now?</message>'  # noqa: E501
+hb_prompt = '<message role="system">The current time is {{Time-Now}}</message><message role="user">Can you help me tell the time in {{city}} right now?</message>'  # noqa: E501
+j2_prompt = '<message role="system">The current time is {{Time_Now()}}</message><message role="user">Can you help me tell the time in {{city}} right now?</message>'  # noqa: E501
 
 # endregion
 
@@ -141,49 +142,49 @@ class City:
             True,
             False,
             "semantic-kernel",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             True,
             True,
             "semantic-kernel",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             False,
             "semantic-kernel",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             True,
             "semantic-kernel",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             False,
             "handlebars",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             True,
             "handlebars",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             False,
             "jinja2",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
         (
             False,
             True,
             "jinja2",
-            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>', # noqa: E501
+            '<message role="user">Can you help me tell the time in Seattle right now?</message><message role="assistant">Sure! The time in Seattle is currently 3:00 PM.</message><message role="user">What about New York?</message>',  # noqa: E501
         ),
     ],
 )
@@ -528,17 +529,157 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
 # region Test OpenAPI Plugin Load
 
+# async def setup_openapi_function_call(kernel: Kernel, function_name: str, arguments: KernelArguments):
+#     _, logging_client = get_new_client()
 
-@pytest.mark.asyncio
-async def test_load_openapi_plugin(kernel: Kernel):
+#     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
+
+
+#     request_body = None
+
+#     async def mock_request(method, url, **kwargs):
+#         nonlocal request_body
+#         request_body = kwargs.get('content')
+#         raise httpx.RequestError("Simulated request failure", request=None)
+
+#     transport = httpx.MockTransport(mock_request)
+
+#     async with httpx.AsyncClient(transport=transport) as client:
+#         plugin = kernel.add_plugin_from_openapi(
+#             plugin_name="LightControl",
+#             openapi_document_path=openapi_spec_file,
+#             execution_settings=OpenAPIFunctionExecutionParameters(
+#                 http_client=client,
+#             ),
+#         )
+
+#         assert plugin is not None
+
+#         try:
+#             await run_function(kernel=kernel, is_streaming=False, function=plugin[function_name], arguments=arguments)
+#         except Exception:
+#             # It is expected that the API call will fail, ignore
+#             pass
+
+#         return request_body
+
+
+async def setup_openapi_function_call(kernel, function_name, arguments):
     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
 
-    plugin = kernel.add_plugin_from_openapi(
-        plugin_name="LightControl",
-        openapi_document_path=openapi_spec_file,
+    request_details = None
+
+    async def mock_request(request: httpx.Request):
+        nonlocal request_details
+
+        if request.method in ["POST", "PUT"]:
+            request_body = None
+            if request.content:
+                request_body = request.content.decode()
+            elif request.stream:
+                try:
+                    stream_content = await request.stream.read()
+                    if stream_content:
+                        request_body = stream_content.decode()
+                except Exception:
+                    request_body = None
+
+            request_details = {
+                "method": request.method,
+                "url": str(request.url),
+                "body": request_body,
+                "headers": dict(request.headers),
+            }
+        else:
+            request_details = {"method": request.method, "url": str(request.url), "params": dict(request.url.params)}
+
+    transport = httpx.MockTransport(mock_request)
+
+    async with httpx.AsyncClient(transport=transport) as client:
+        plugin = kernel.add_plugin_from_openapi(
+            plugin_name="LightControl",
+            openapi_document_path=openapi_spec_file,
+            execution_settings=OpenAPIFunctionExecutionParameters(
+                http_client=client,
+            ),
+        )
+
+        assert plugin is not None
+
+        try:
+            await run_function(kernel=kernel, is_streaming=False, function=plugin[function_name], arguments=arguments)
+        except Exception:
+            # It is expected that the API call will fail, ignore
+            pass
+
+        return request_details
+
+
+@pytest.mark.asyncio
+async def test_openapi_get_lights(kernel: Kernel):
+
+    request_content = await setup_openapi_function_call(
+        kernel, function_name="GetLights", arguments=KernelArguments(roomId=1)
     )
 
-    assert plugin is not None
+    assert request_content is not None
+
+    assert request_content.get("method") == "GET"
+    assert request_content.get("url") == "https://127.0.0.1/Lights?roomId=1"
+    assert request_content.get("params") == {"roomId": "1"}
+
+
+@pytest.mark.asyncio
+async def test_openapi_get_light_by_id(kernel: Kernel):
+
+    request_content = await setup_openapi_function_call(
+        kernel, function_name="GetLightById", arguments=KernelArguments(id=1)
+    )
+
+    assert request_content is not None
+
+    assert request_content.get("method") == "GET"
+    assert request_content.get("url") == "https://127.0.0.1/Lights/1"
+
+
+@pytest.mark.asyncio
+async def test_openapi_delete_light_by_id(kernel: Kernel):
+
+    request_content = await setup_openapi_function_call(
+        kernel, function_name="DeleteLightById", arguments=KernelArguments(id=1)
+    )
+
+    assert request_content is not None
+
+    assert request_content.get("method") == "DELETE"
+    assert request_content.get("url") == "https://127.0.0.1/Lights/1"
+
+
+@pytest.mark.asyncio
+async def test_openapi_create_lights(kernel: Kernel):
+
+    request_content = await setup_openapi_function_call(
+        kernel, function_name="CreateLights", arguments=KernelArguments(roomId=1, lightName="disco")
+    )
+
+    assert request_content is not None
+
+    assert request_content.get("method") == "POST"
+    assert request_content.get("url") == "https://127.0.0.1/Lights?roomId=1&lightName=disco"
+
+
+@pytest.mark.asyncio
+async def test_openapi_put_light_by_id(kernel: Kernel):
+
+    request_content = await setup_openapi_function_call(
+        kernel, function_name="PutLightById", arguments=KernelArguments(id=1, hexColor="11EE11")
+    )
+
+    assert request_content is not None
+
+    assert request_content.get("method") == "PUT"
+    assert request_content.get("url") == "https://127.0.0.1/Lights/1"
+    assert request_content.get("body") == '{"hexColor": "11EE11"}'
 
 
 # endregion
