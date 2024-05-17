@@ -184,28 +184,31 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                     iterations=i + 1,
                 )
 
-            try:
-                context = await chat_completion._process_function_call(
-                    function_call=function_call_content,
-                    result=chat_result,
-                    kernel=cloned_kernel,
-                    chat_history=chat_history_for_steps,
-                    arguments=arguments,
-                    function_call_count=1,
-                    request_index=0,
-                    function_call_behavior=prompt_execution_settings.function_call_behavior,
-                )
-                frc = FunctionResultContent.from_function_call_content_and_result(
-                    function_call_content=function_call_content, result=context.function_result
-                )
-                chat_history_for_steps.add_message(message=frc.to_chat_message_content())
-            except Exception as exc:
-                frc = FunctionResultContent.from_function_call_content_and_result(
-                    function_call_content=function_call_content,
-                    result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
-                )
-                chat_history_for_steps.add_message(message=frc.to_chat_message_content())
-                continue
+            for content in chat_result.items:
+                if not isinstance(content, FunctionCallContent):
+                    continue
+                try:
+                    context = await chat_completion._process_function_call(
+                        function_call=content,
+                        result=chat_result,
+                        kernel=cloned_kernel,
+                        chat_history=chat_history_for_steps,
+                        arguments=arguments,
+                        function_call_count=1,
+                        request_index=0,
+                        function_call_behavior=prompt_execution_settings.function_call_behavior,
+                    )
+                    frc = FunctionResultContent.from_function_call_content_and_result(
+                        function_call_content=content, result=context.function_result
+                    )
+                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                except Exception as exc:
+                    frc = FunctionResultContent.from_function_call_content_and_result(
+                        function_call_content=content,
+                        result=TextContent(text=f"An error occurred during planner invocation: {exc}"),
+                    )
+                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    continue
 
         # We're done, but the model hasn't returned a final answer.
         return FunctionCallingStepwisePlannerResult(
