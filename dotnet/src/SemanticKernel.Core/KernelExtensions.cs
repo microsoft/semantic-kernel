@@ -18,8 +18,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>Provides extension methods for interacting with <see cref="Kernel"/> and related types.</summary>
 public static class KernelExtensions
 {
-    public static void TestMethod() { }
-
     #region CreateFunctionFromMethod
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
