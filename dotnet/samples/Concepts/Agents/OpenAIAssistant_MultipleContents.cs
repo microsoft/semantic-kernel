@@ -27,9 +27,11 @@ public class OpenAIAssistant_MultipleContents(ITestOutputHelper output) : BaseTe
         BinaryContent[] files = [
             // Audio is not supported by Assistant API
             // new AudioContent(await EmbeddedResource.ReadAllAsync("test_audio.wav")!, mimeType:"audio/wav", innerContent: "test_audio.wav"),
-            new ImageContent(await EmbeddedResource.ReadAllAsync("sample_image.jpg")!, mimeType:"image/jpeg") { InnerContent = "sample_image.jpg" },
-            new ImageContent(await EmbeddedResource.ReadAllAsync("test_image.jpg")!, mimeType:"image/jpeg") { InnerContent = "test_image.jpg" },
-            new BinaryContent(data: await EmbeddedResource.ReadAllAsync("travelinfo.txt"), mimeType: "text/plain") { InnerContent = "travelinfo.txt"
+            new ImageContent(await EmbeddedResource.ReadAllAsync("sample_image.jpg")!, mimeType: "image/jpeg") { InnerContent = "sample_image.jpg" },
+            new ImageContent(await EmbeddedResource.ReadAllAsync("test_image.jpg")!, mimeType: "image/jpeg") { InnerContent = "test_image.jpg" },
+            new BinaryContent(data: await EmbeddedResource.ReadAllAsync("travelinfo.txt"), mimeType: "text/plain")
+            {
+                InnerContent = "travelinfo.txt"
             }
         ];
 
@@ -99,9 +101,9 @@ public class OpenAIAssistant_MultipleContents(ITestOutputHelper output) : BaseTe
         OpenAIFileService fileService = new(TestConfiguration.OpenAI.ApiKey);
 
         BinaryContent[] files = [
-            new AudioContent(await EmbeddedResource.ReadAllAsync("test_audio.wav")!, mimeType:"audio/wav") { InnerContent = "test_audio.wav" },
-            new ImageContent(await EmbeddedResource.ReadAllAsync("sample_image.jpg")!, mimeType:"image/jpeg") { InnerContent = "sample_image.jpg" },
-            new ImageContent(await EmbeddedResource.ReadAllAsync("test_image.jpg")!, mimeType:"image/jpeg") { InnerContent = "test_image.jpg" },
+            new AudioContent(await EmbeddedResource.ReadAllAsync("test_audio.wav")!, mimeType: "audio/wav") { InnerContent = "test_audio.wav" },
+            new ImageContent(await EmbeddedResource.ReadAllAsync("sample_image.jpg")!, mimeType: "image/jpeg") { InnerContent = "sample_image.jpg" },
+            new ImageContent(await EmbeddedResource.ReadAllAsync("test_image.jpg")!, mimeType: "image/jpeg") { InnerContent = "test_image.jpg" },
             new BinaryContent(data: await EmbeddedResource.ReadAllAsync("travelinfo.txt"), mimeType: "text/plain") { InnerContent = "travelinfo.txt" }
         ];
 

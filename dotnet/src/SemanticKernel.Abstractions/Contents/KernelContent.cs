@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
-
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
 [JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]

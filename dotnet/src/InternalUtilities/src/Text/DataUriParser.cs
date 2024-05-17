@@ -31,7 +31,6 @@ static internal class DataUriParser
     /// <returns>Boolean value, true if the string is base64, otherwise false</returns>
     private static bool IsBase64String(string? value)
     {
-
         // The quickest test. If the value is null or is equal to 0 it is not base64
         // Base64 string's length is always divisible by four, i.e. 8, 16, 20 etc. 
         // If it is not you can return false. Quite effective
@@ -144,7 +143,7 @@ static internal class DataUriParser
     /// <summary>
     /// Represents the data URI parts.
     /// </summary>
-    internal class DataUri
+    internal sealed class DataUri
     {
         /// <summary>
         /// The mime type of the data.

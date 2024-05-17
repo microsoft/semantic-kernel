@@ -24,6 +24,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIFileService.GetFileContent(System.String,System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Connectors.OpenAI.OpenAIMemoryBuilderExtensions.WithAzureOpenAITextEmbeddingGeneration(Microsoft.SemanticKernel.Memory.MemoryBuilder,System.String,System.String,Azure.Core.TokenCredential,System.String,System.Net.Http.HttpClient)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Connectors.OpenAI.dll</Right>
