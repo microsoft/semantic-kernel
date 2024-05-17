@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -165,11 +164,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Metadata.ReturnParameter,
             this.Metadata.AdditionalProperties);
     }
-
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(

@@ -2,12 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import (
-    OllamaTextPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import (
-    OllamaTextCompletion,
-)
+from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaTextPromptExecutionSettings
+from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import OllamaTextCompletion
 from tests.unit.connectors.ollama.utils import MockResponse
 
 
@@ -22,7 +18,7 @@ def test_settings():
 async def test_complete(mock_post):
     mock_post.return_value = MockResponse(response={"response": "test_response"})
     ollama = OllamaTextCompletion(ai_model_id="test_model")
-    response = await ollama.complete(
+    response = await ollama.get_text_contents(
         "test prompt",
         OllamaTextPromptExecutionSettings(options={"test": "test"}),
     )
@@ -34,7 +30,7 @@ async def test_complete(mock_post):
 async def test_complete_stream(mock_post):
     mock_post.return_value = MockResponse(response={"response": "test_response"})
     ollama = OllamaTextCompletion(ai_model_id="test_model")
-    response = ollama.complete_stream(
+    response = ollama.get_streaming_text_contents(
         "test_prompt",
         OllamaTextPromptExecutionSettings(options={"test": "test"}),
     )

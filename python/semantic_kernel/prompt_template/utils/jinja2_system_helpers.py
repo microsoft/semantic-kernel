@@ -13,7 +13,7 @@ def _messages(chat_history):
 
     if not isinstance(chat_history, ChatHistory):
         return ""
-    return str(chat_history)
+    return chat_history.to_prompt()
 
 
 def _message_to_prompt(context):

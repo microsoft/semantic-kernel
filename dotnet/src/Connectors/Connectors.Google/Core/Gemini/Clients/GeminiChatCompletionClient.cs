@@ -46,7 +46,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
     /// </remarks>
-    private const int MaxInflightAutoInvokes = 5;
+    private const int MaxInflightAutoInvokes = 128;
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     private static readonly AsyncLocal<int> s_inflightAutoInvokes = new();
@@ -166,7 +166,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             GeminiResponse geminiResponse;
             List<GeminiChatMessageContent> chatResponses;
             using (var activity = ModelDiagnostics.StartCompletionActivity(
-                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, executionSettings))
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
                 try
                 {
@@ -175,9 +175,9 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                         .ConfigureAwait(false);
                     chatResponses = this.ProcessChatResponse(geminiResponse);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -226,15 +226,56 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         for (state.Iteration = 1; ; state.Iteration++)
         {
-            using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
-            using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-                .ConfigureAwait(false);
-            using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-                .ConfigureAwait(false);
-
-            await foreach (var messageContent in this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken).ConfigureAwait(false))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(
+                this._chatGenerationEndpoint, this._modelId, ModelProvider, chatHistory, state.ExecutionSettings))
             {
-                yield return messageContent;
+                HttpResponseMessage? httpResponseMessage = null;
+                Stream? responseStream = null;
+                try
+                {
+                    using var httpRequestMessage = await this.CreateHttpRequestAsync(state.GeminiRequest, this._chatStreamingEndpoint).ConfigureAwait(false);
+                    httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+                    responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    activity?.SetError(ex);
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
+                    throw;
+                }
+
+                var responseEnumerator = this.GetStreamingChatMessageContentsOrPopulateStateForToolCallingAsync(state, responseStream, cancellationToken)
+                    .GetAsyncEnumerator(cancellationToken);
+                List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+                try
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception ex) when (activity is not null)
+                        {
+                            activity.SetError(ex);
+                            throw;
+                        }
+
+                        streamedContents?.Add(responseEnumerator.Current);
+                        yield return responseEnumerator.Current;
+                    }
+                }
+                finally
+                {
+                    activity?.EndStreaming(streamedContents);
+                    httpResponseMessage?.Dispose();
+                    responseStream?.Dispose();
+                    await responseEnumerator.DisposeAsync().ConfigureAwait(false);
+                }
             }
 
             if (!state.AutoInvoke)

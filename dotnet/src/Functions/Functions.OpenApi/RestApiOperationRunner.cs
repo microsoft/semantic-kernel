@@ -174,13 +174,24 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
+            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
 
-        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
-        return response;
+            return response;
+        }
+        catch (HttpOperationException ex)
+        {
+            ex.RequestMethod = requestMessage.Method.Method;
+            ex.RequestUri = requestMessage.RequestUri;
+            ex.RequestPayload = payload;
+
+            throw;
+        }
     }
 
     /// <summary>

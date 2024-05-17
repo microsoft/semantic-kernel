@@ -57,7 +57,7 @@ class TestCodeBlockRendering:
     async def test_it_throws_if_a_function_call_throws(self, kernel: Kernel):
         @kernel_function(name="funcName")
         def invoke():
-            raise Exception("error")
+            raise Exception("exception")
 
         function = KernelFunctionFromMethod(
             method=invoke,

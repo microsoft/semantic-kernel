@@ -49,9 +49,11 @@
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Google\Connectors.Google.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.SqlServer\Connectors.Memory.SqlServer.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />

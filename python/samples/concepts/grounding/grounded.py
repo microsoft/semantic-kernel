@@ -5,7 +5,6 @@ from samples.utils import Colors
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env, openai_settings_from_dot_env
 
 
 def get_grounding_text():
@@ -56,22 +55,16 @@ def setup(use_azure: bool = False, plugin_name: str = "GroundingPlugin"):
 
     # Configure AI service used by the kernel
     if use_azure:
-        deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
         service_id = "chat_completion"
         kernel.add_service(
             AzureChatCompletion(
                 service_id=service_id,
-                deployment_name=deployment,
-                endpoint=endpoint,
-                api_key=api_key,
-                api_version="2023-12-01-preview",
             ),
         )
     else:
-        api_key, org_id = openai_settings_from_dot_env()
         service_id = "chat-gpt"
         kernel.add_service(
-            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id),
+            OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo"),
         )
 
     # note: using plugins from the samples folder

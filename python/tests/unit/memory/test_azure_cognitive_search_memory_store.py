@@ -11,7 +11,7 @@ from semantic_kernel.connectors.memory.azure_cognitive_search import AzureCognit
 
 
 @pytest.fixture
-def azure_cognitive_search_memory_store():
+def azure_cognitive_search_memory_store(azure_ai_search_unit_test_env):
     """Fixture to instantiate AzureCognitiveSearchMemoryStore with basic configuration."""
     store = AzureCognitiveSearchMemoryStore(
         1536, "https://test.search.windows.net", azure_credentials=AzureKeyCredential("test_key")
