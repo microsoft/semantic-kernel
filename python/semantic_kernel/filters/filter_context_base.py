@@ -17,4 +17,4 @@ class FilterContextBase(KernelBaseModel):
 
     function: "KernelFunction"
     kernel: "Kernel"
-    arguments: KernelArguments
+    arguments: "KernelArguments"
