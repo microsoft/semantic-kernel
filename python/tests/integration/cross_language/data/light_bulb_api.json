@@ -4,6 +4,11 @@
     "title": "Light Bulb API",
     "version": "v1"
   },
+  "servers": [
+    {
+      "url": "https://127.0.0.1"
+    }
+  ],
   "paths": {
     "/Lights/{id}": {
       "get": {

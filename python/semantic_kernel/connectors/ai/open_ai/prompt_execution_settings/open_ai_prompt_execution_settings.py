@@ -16,18 +16,18 @@ logger = logging.getLogger(__name__)
 class OpenAIPromptExecutionSettings(PromptExecutionSettings):
     """Common request settings for (Azure) OpenAI services."""
 
-    ai_model_id: Optional[str] = Field(None, serialization_alias="model")
-    frequency_penalty: float = Field(0.0, ge=-2.0, le=2.0)
-    logit_bias: Dict[Union[str, int], float] = Field(default_factory=dict)
-    max_tokens: int = Field(256, gt=0)
-    number_of_responses: int = Field(1, ge=1, le=128, serialization_alias="n")
-    presence_penalty: float = Field(0.0, ge=-2.0, le=2.0)
-    seed: Optional[int] = None
+    ai_model_id: str | None = Field(None, serialization_alias="model")
+    frequency_penalty: float = Field(None, ge=-2.0, le=2.0)
+    logit_bias: Dict[Union[str, int], float] | None = Field(None)
+    max_tokens: int | None = Field(None, gt=0)
+    number_of_responses: int | None = Field(None, ge=1, le=128, serialization_alias="n")
+    presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    seed: int | None = None
     stop: Optional[Union[str, List[str]]] = None
     stream: bool = False
-    temperature: float = Field(0.0, ge=0.0, le=2.0)
-    top_p: float = Field(1.0, ge=0.0, le=1.0)
-    user: Optional[str] = None
+    temperature: float | None = Field(None, ge=0.0, le=2.0)
+    top_p: float | None = Field(None, ge=0.0, le=1.0)
+    user: str | None = None
 
 
 class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
