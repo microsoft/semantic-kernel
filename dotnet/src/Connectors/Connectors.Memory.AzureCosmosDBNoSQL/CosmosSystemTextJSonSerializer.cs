@@ -59,10 +59,8 @@ internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
     public override Stream ToStream<T>(T input)
     {
         MemoryStream streamPayload = new();
-        using Utf8JsonWriter writer = new(streamPayload);
-
         JsonSerializer.Serialize(
-            writer: writer,
+            utf8Json: streamPayload,
             value: input,
             options: this._jsonSerializerOptions);
 
