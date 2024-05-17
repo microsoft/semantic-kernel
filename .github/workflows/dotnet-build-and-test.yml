@@ -121,7 +121,6 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        shell: bash
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
