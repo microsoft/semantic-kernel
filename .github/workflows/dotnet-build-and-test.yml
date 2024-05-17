@@ -52,14 +52,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dotnet: "8.0-jammy", os: "ubuntu", configuration: Release }
+          - { dotnet: "8.0-jammy", os: "ubuntu-latest", configuration: Release }
           - {
               dotnet: "8.0",
-              os: "windows",
+              os: "windows-latest",
               configuration: Debug,
               integration-tests: true,
             }
-          - { dotnet: "8.0", os: "windows", configuration: Release }
+          - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
     runs-on: ${{ matrix.os }}
     steps:
