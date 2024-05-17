@@ -158,7 +158,7 @@ internal abstract class ClientCore
 
         Completions? responseData = null;
         List<TextContent> responseContent;
-        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, prompt, executionSettings))
+        using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, prompt, textExecutionSettings))
         {
             try
             {
@@ -168,13 +168,13 @@ internal abstract class ClientCore
                     throw new KernelException("Text completions not found");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (activity is not null)
             {
-                activity?.SetError(ex);
+                activity.SetError(ex);
                 if (responseData != null)
                 {
                     // Capture available metadata even if the operation failed.
-                    activity?
+                    activity
                         .SetResponseId(responseData.Id)
                         .SetPromptTokenUsage(responseData.Usage.PromptTokens)
                         .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
@@ -203,16 +203,16 @@ internal abstract class ClientCore
 
         var options = CreateCompletionsOptions(prompt, textExecutionSettings, this.DeploymentOrModelName);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, prompt, executionSettings);
+        using var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, prompt, textExecutionSettings);
 
         StreamingResponse<Completions> response;
         try
         {
             response = await RunRequestAsync(() => this.Client.GetCompletionsStreamingAsync(options, cancellationToken)).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (activity is not null)
         {
-            activity?.SetError(ex);
+            activity.SetError(ex);
             throw;
         }
 
@@ -229,9 +229,9 @@ internal abstract class ClientCore
                         break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -414,7 +414,7 @@ internal abstract class ClientCore
             // Make the request.
             ChatCompletions? responseData = null;
             List<OpenAIChatMessageContent> responseContent;
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, chatExecutionSettings))
             {
                 try
                 {
@@ -425,13 +425,13 @@ internal abstract class ClientCore
                         throw new KernelException("Chat completions not found");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     if (responseData != null)
                     {
                         // Capture available metadata even if the operation failed.
-                        activity?
+                        activity
                             .SetResponseId(responseData.Id)
                             .SetPromptTokenUsage(responseData.Usage.PromptTokens)
                             .SetCompletionTokenUsage(responseData.Usage.CompletionTokens);
@@ -660,7 +660,7 @@ internal abstract class ClientCore
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
 
-            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, executionSettings))
+            using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, chatExecutionSettings))
             {
                 // Make the request.
                 StreamingResponse<StreamingChatCompletionsUpdate> response;
@@ -668,9 +668,9 @@ internal abstract class ClientCore
                 {
                     response = await RunRequestAsync(() => this.Client.GetChatCompletionsStreamingAsync(chatOptions, cancellationToken)).ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (activity is not null)
                 {
-                    activity?.SetError(ex);
+                    activity.SetError(ex);
                     throw;
                 }
 
@@ -687,9 +687,9 @@ internal abstract class ClientCore
                                 break;
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (activity is not null)
                         {
-                            activity?.SetError(ex);
+                            activity.SetError(ex);
                             throw;
                         }
 

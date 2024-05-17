@@ -49,7 +49,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def complete(self, prompt: str, settings: GooglePalmTextPromptExecutionSettings) -> List[TextContent]:
+    async def get_text_contents(
+        self, prompt: str, settings: GooglePalmTextPromptExecutionSettings
+    ) -> List[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -93,7 +95,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             },
         )
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: GooglePalmTextPromptExecutionSettings,

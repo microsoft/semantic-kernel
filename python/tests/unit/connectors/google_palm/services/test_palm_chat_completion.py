@@ -62,7 +62,7 @@ async def test_google_palm_text_completion_complete_chat_call_with_parameters(go
             ai_model_id=ai_model_id,
         )
         settings = GooglePalmChatPromptExecutionSettings()
-        response = await gp_chat_completion.complete_chat(chats, settings)
+        response = await gp_chat_completion.get_chat_message_contents(chats, settings)
 
         assert isinstance(response[0].content, str) and len(response) > 0
         print(mock_gp.chat)

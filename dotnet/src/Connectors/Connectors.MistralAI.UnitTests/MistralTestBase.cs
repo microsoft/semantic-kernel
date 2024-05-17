@@ -16,7 +16,7 @@ public abstract class MistralTestBase : IDisposable
     protected AssertingDelegatingHandler? DelegatingHandler { get; set; }
     protected HttpClient? HttpClient { get; set; }
 
-    protected string GetTestData(string fileName)
+    protected string GetTestResponseAsString(string fileName)
     {
         return File.ReadAllText($"./TestData/{fileName}");
     }
