@@ -336,7 +336,7 @@ internal static class ModelDiagnostics
                  }).ToList();
                 SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens, ToOpenAIFormat);
                 break;
-        };
+        }
     }
 
     // Returns an activity for chaining
