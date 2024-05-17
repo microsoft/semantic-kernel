@@ -529,40 +529,6 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
 # region Test OpenAPI Plugin Load
 
-# async def setup_openapi_function_call(kernel: Kernel, function_name: str, arguments: KernelArguments):
-#     _, logging_client = get_new_client()
-
-#     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
-
-
-#     request_body = None
-
-#     async def mock_request(method, url, **kwargs):
-#         nonlocal request_body
-#         request_body = kwargs.get('content')
-#         raise httpx.RequestError("Simulated request failure", request=None)
-
-#     transport = httpx.MockTransport(mock_request)
-
-#     async with httpx.AsyncClient(transport=transport) as client:
-#         plugin = kernel.add_plugin_from_openapi(
-#             plugin_name="LightControl",
-#             openapi_document_path=openapi_spec_file,
-#             execution_settings=OpenAPIFunctionExecutionParameters(
-#                 http_client=client,
-#             ),
-#         )
-
-#         assert plugin is not None
-
-#         try:
-#             await run_function(kernel=kernel, is_streaming=False, function=plugin[function_name], arguments=arguments)
-#         except Exception:
-#             # It is expected that the API call will fail, ignore
-#             pass
-
-#         return request_body
-
 
 async def setup_openapi_function_call(kernel, function_name, arguments):
     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
