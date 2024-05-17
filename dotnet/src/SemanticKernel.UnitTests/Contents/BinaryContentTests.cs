@@ -3,8 +3,8 @@
 using System;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SemanticKernel.UnitTests.Contents;
 
