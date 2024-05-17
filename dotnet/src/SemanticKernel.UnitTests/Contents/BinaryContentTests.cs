@@ -139,17 +139,6 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         Assert.Null(content.DataUri);
     }
 
-    [Theory]
-    [InlineData("http://localhost/")]
-    [InlineData("about:blank")]
-    [InlineData("file://c:\\temp")]
-    [InlineData("")]
-    [InlineData("invalid")]
-    public void DataUriConstructorShouldThrowWhenInvalidDataUriIsProvided(string invalidData)
-    {
-        Assert.Throws<ArgumentException>(() => new BinaryContent(dataUri: invalidData));
-    }
-
     [Fact]
     public void GetDataUriWithoutMimeTypeShouldThrow()
     {
@@ -210,8 +199,14 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     }
 
     [Theory]
+    // Other formats
+    [InlineData("http://localhost/", typeof(UriFormatException))]
+    [InlineData("about:blank", typeof(UriFormatException))]
+    [InlineData("file://c:\\temp", typeof(UriFormatException))]
+    [InlineData("invalid", typeof(UriFormatException))]
+
     // Data format validation errors
-    [InlineData("", typeof(ArgumentException))] // Empty data uri
+    [InlineData("", typeof(UriFormatException))] // Empty data uri
     [InlineData("data", typeof(UriFormatException))] // data missing colon
     [InlineData("data:", typeof(UriFormatException))] // data missing comma
     [InlineData("data:something,", typeof(UriFormatException))] // mime type without subtype

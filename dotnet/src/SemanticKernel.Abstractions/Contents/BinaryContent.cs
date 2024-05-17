@@ -159,7 +159,7 @@ public class BinaryContent : KernelContent
         var isDataUri = dataUri!.StartsWith("data:", StringComparison.OrdinalIgnoreCase) == true;
         if (!isDataUri)
         {
-            throw new ArgumentException("Invalid data uri", nameof(dataUri));
+            throw new UriFormatException("Invalid data uri. Scheme should start with \"data:\"");
         }
 
         // Validate the dataUri format
@@ -207,9 +207,12 @@ public class BinaryContent : KernelContent
 
         if (this._dataUri is not null)
         {
-            // Check if the cached dataUri has the same content type.
-            var mimeType = this._dataUri.Substring(5, this._dataUri.IndexOf(';') - 5);
-            return this._dataUri;
+            // Double check if the set MimeType matches the current dataUri.
+            var parsedDataUri = DataUriParser.Parse(this._dataUri);
+            if (string.Equals(parsedDataUri.MimeType, this.MimeType, StringComparison.OrdinalIgnoreCase))
+            {
+                return this._dataUri;
+            }
         }
 
         // If the Uri is not a DataUri, then we need to get from byteArray (caching if needed) to generate it.

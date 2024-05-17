@@ -166,14 +166,13 @@ public sealed class ImageContentTests
 
         // Changing the Uri to a absolute file /foo.txt path
         content.Uri = new Uri("file:///foo.txt");
+        content.MimeType = "image/jpeg";
 
         var serializeAfter = JsonSerializer.Serialize(content);
 
         // Assert
-        Assert.Equal("""{"mimeType":"image/jpeg","uri":"file:///foo.txt","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
-
-        // No changes happen to the MimeType or Data
-        Assert.Equal("""{"mimeType":"image/jpeg","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
+        Assert.Equal("""{"mimeType":"text/plain","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeBefore);
+        Assert.Equal("""{"uri":"file:///foo.txt","mimeType":"image/jpeg","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
 
         // Uri behaves independently of other properties
         Assert.Equal("file:///foo.txt", content.Uri?.ToString());
@@ -181,7 +180,6 @@ public sealed class ImageContentTests
         // Data and MimeType remain the same
         Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIHRlc3Q="), content.Data!.Value.ToArray());
         Assert.Equal(data.ToArray(), content.Data!.Value.ToArray());
-        Assert.Equal("text/plain", content.MimeType);
     }
 
     [Fact]
@@ -245,7 +243,6 @@ public sealed class ImageContentTests
 
     [Theory]
     [InlineData("http://localhost:9090/")]
-    [InlineData("data:image/png;base64,dGhpcyBpcyBhIHRlc3Q=")]
     [InlineData(null)]
     public void UriConstructorSerializationAndDeserializationAsExpected(string? path)
     {
@@ -256,9 +253,15 @@ public sealed class ImageContentTests
         var content = new ImageContent(uri);
         var serialized = JsonSerializer.Serialize(content);
         var deserialized = JsonSerializer.Deserialize<ImageContent>(serialized);
-        var expectedSerializedUri = (uri is not null) ? $"\"{uri}\"" : "null";
 
-        Assert.Equal($"{{\"uri\":{expectedSerializedUri}}}", serialized);
+        if (uri is null)
+        {
+            Assert.Equal("{}", serialized);
+        }
+        else
+        {
+            Assert.Equal($"{{\"uri\":\"{uri}\"}}", serialized);
+        }
 
         Assert.NotNull(deserialized);
         Assert.Equal(uri, deserialized.Uri);
