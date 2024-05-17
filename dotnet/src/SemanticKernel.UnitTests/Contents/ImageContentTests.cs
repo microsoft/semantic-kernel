@@ -195,24 +195,13 @@ public sealed class ImageContentTests
         var toStringBefore = content.ToString();
 
         // Changing the mimetype to image/jpeg in the DataUri
+        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", content.DataUri);
+
         content.MimeType = "application/json";
-
-        var toStringAfter = content.ToString();
-
-        // Assert
-        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", toStringBefore);
-
-        // Changes happen to the MimeType when generating the ToString DataUri.
-        Assert.Equal("data:application/json;base64,dGhpcyBpcyBhIHRlc3Q=", toStringAfter);
-
-        // Uri behaves independently of other properties, was not set, keeps null.
-        Assert.Null(content.Uri);
-
-        // Data remain the same
+        Assert.Equal("data:application/json;base64,dGhpcyBpcyBhIHRlc3Q=", content.DataUri);
+        Assert.Null(content.Uri); // Uri behaves independently of other properties, was not set, keeps null.
         Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIHRlc3Q="), content.Data!.Value.ToArray());
         Assert.Equal(data.ToArray(), content.Data!.Value.ToArray());
-
-        // MimeType is updated
         Assert.Equal("application/json", content.MimeType);
     }
 
@@ -220,32 +209,20 @@ public sealed class ImageContentTests
     public void UpdateDataPropertyShouldReturnAsExpected()
     {
         // Arrange
-        var data = BinaryData.FromString("this is a test");
-        var content = new ImageContent(data, "text/plain");
+        var dataUriBefore = "data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=";
+        var content = new ImageContent(dataUriBefore);
 
         // Act
-        var toStringBefore = content.ToString();
-
-        // Changing the data to "this is a new test"
         var newData = BinaryData.FromString("this is a new test");
+        dataUriBefore = content.DataUri!;
         content.Data = newData;
 
-        var toStringAfter = content.ToString();
-
         // Assert
-        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", toStringBefore);
-
-        // Changes happen to the Data when generating the ToString DataUri.
-        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIG5ldyB0ZXN0", toStringAfter);
-
-        // Uri behaves independently of other properties, was not set, keeps null.
-        Assert.Null(content.Uri);
-
-        // MimeType remain the same
-        Assert.Equal("text/plain", content.MimeType);
-
-        // Data is updated
-        Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIG5ldyB0ZXN0"), content.Data!.Value.ToArray());
+        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIHRlc3Q=", dataUriBefore);
+        Assert.Equal("data:text/plain;base64,dGhpcyBpcyBhIG5ldyB0ZXN0", content.DataUri);
+        Assert.Null(content.Uri); // Uri behaves independently of other properties, was not set, keeps null.
+        Assert.Equal("text/plain", content.MimeType); // MimeType remain the same as it was not set
+        Assert.Equal(Convert.FromBase64String("dGhpcyBpcyBhIG5ldyB0ZXN0"), content.Data!.Value.ToArray()); // Data is updated
     }
 
     [Fact]

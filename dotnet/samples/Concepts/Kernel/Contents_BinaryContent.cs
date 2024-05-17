@@ -47,7 +47,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
 
         content.DataUri = "data:text/plain;base64,VGhpcyBpcyBhIHRleHQgY29udGVudA==";
 
-        Assert.True(content.HasData);
+        Assert.True(content.CanRead);
 
         serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content After: {serialized}");
@@ -70,7 +70,7 @@ public class Contents_BinaryContent(ITestOutputHelper output) : BaseTest(output)
         content.Uri = new Uri("https://fake-random-test-host:123");
         content.DataUri = null;
 
-        Assert.False(content.HasData);
+        Assert.False(content.CanRead);
 
         serialized = JsonSerializer.Serialize(content);
         Console.WriteLine($"Serialized Content After: {serialized}");

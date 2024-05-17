@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable CA1056 // URI-like properties should not be strings
 #pragma warning disable CA1055 // URI-like parameters should not be strings
@@ -31,7 +33,7 @@ public class BinaryContent : KernelContent
     /// </summary>
     [JsonPropertyName("uri")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public virtual Uri? Uri
+    public Uri? Uri
     {
         get => this.GetUri();
         set => this.SetUri(value);
@@ -41,7 +43,7 @@ public class BinaryContent : KernelContent
     /// Gets the DataUri of the content.
     /// </summary>
     [JsonIgnore]
-    public virtual string? DataUri
+    public string? DataUri
     {
         get => this.GetDataUri();
         set => this.SetDataUri(value);
@@ -52,7 +54,7 @@ public class BinaryContent : KernelContent
     /// </summary>
     [JsonPropertyName("data")]
     [JsonPropertyOrder(100), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
-    public virtual ReadOnlyMemory<byte>? Data
+    public ReadOnlyMemory<byte>? Data
     {
         get => this.GetData();
         set => this.SetData(value);
@@ -63,7 +65,7 @@ public class BinaryContent : KernelContent
     /// </summary>
     /// <returns>True if the content has binary data, false otherwise.</returns>
     [JsonIgnore]
-    public bool HasData
+    public bool CanRead
         => this._data is not null
         || this._dataUri is not null;
 
@@ -161,8 +163,11 @@ public class BinaryContent : KernelContent
             throw new ArgumentException("Invalid data uri", nameof(dataUri));
         }
 
+        // Validate the dataUri format
+        var parsedDataUri = DataUriParser.Parse(dataUri);
+
         // Gets the mimetype from the DataUri and automatically sets it.
-        this.MimeType = dataUri.Substring(5, dataUri.IndexOf(';') - 5);
+        this.MimeType = parsedDataUri.MimeType;
 
         this._dataUri = dataUri;
 
@@ -196,13 +201,15 @@ public class BinaryContent : KernelContent
     /// <returns></returns>
     private string? GetDataUri()
     {
-        if (!this.HasData)
+        if (!this.CanRead)
         {
             return null;
         }
 
         if (this._dataUri is not null)
         {
+            // Check if the cached dataUri has the same content type.
+            var mimeType = this._dataUri.Substring(5, this._dataUri.IndexOf(';') - 5);
             return this._dataUri;
         }
 
@@ -237,5 +244,23 @@ public class BinaryContent : KernelContent
         return this._data;
     }
 
+    private bool ValidateDataUri(string dataUri)
+    {
+        // Check if the dataUri has a mimeType defined.
+        var mimeTypeIndex = dataUri.IndexOf(';');
+        if (mimeTypeIndex == -1)
+        {
+            return false;
+        }
+
+        // Check if the dataUri has a base64 content.
+        var base64Index = dataUri.IndexOf(',');
+        if (base64Index == -1)
+        {
+            return false;
+        }
+
+        return true;
+    }
     #endregion
 }
