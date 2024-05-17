@@ -166,7 +166,7 @@ internal abstract class ClientCore
             activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
-        this.CaptureUsageDetails(responseData.Usage);
+        this.LogUsage(responseData.Usage);
 
         return responseContent;
     }
@@ -396,7 +396,7 @@ internal abstract class ClientCore
                 try
                 {
                     responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
-                    this.CaptureUsageDetails(responseData.Usage);
+                    this.LogUsage(responseData.Usage);
                     if (responseData.Choices.Count == 0)
                     {
                         throw new KernelException("Chat completions not found");
@@ -1435,11 +1435,11 @@ internal abstract class ClientCore
     /// Captures usage details, including token information.
     /// </summary>
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
-    private void CaptureUsageDetails(CompletionsUsage usage)
+    private void LogUsage(CompletionsUsage usage)
     {
         if (usage is null)
         {
-            this.Logger.LogDebug("Usage information is not available.");
+            this.Logger.LogDebug("Token usage information unavailable.");
             return;
         }
 

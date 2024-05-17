@@ -29,7 +29,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     private readonly Uri _chatGenerationEndpoint;
     private readonly Uri _chatStreamingEndpoint;
 
-    private static readonly string s_namespace = typeof(GeminiChatCompletionClient).Namespace!;
+    private static readonly string s_namespace = typeof(GoogleAIGeminiChatCompletionService).Namespace!;
 
     /// <summary>
     /// The maximum number of auto-invokes that can be in-flight at any given time as part of the current
@@ -622,7 +622,28 @@ internal sealed class GeminiChatCompletionClient : ClientBase
     }
 
     private void LogUsage(List<GeminiChatMessageContent> chatMessageContents)
-        => this.LogUsageMetadata(chatMessageContents[0].Metadata!);
+    {
+        GeminiMetadata? metadata = chatMessageContents[0].Metadata;
+
+        if (metadata is null || metadata.TotalTokenCount <= 0)
+        {
+            this.Logger.LogDebug("Token usage information unavailable.");
+            return;
+        }
+
+        if (this.Logger.IsEnabled(LogLevel.Information))
+        {
+            this.Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+                metadata.PromptTokenCount,
+                metadata.CandidatesTokenCount,
+                metadata.TotalTokenCount);
+        }
+
+        s_promptTokensCounter.Add(metadata.PromptTokenCount);
+        s_completionTokensCounter.Add(metadata.CandidatesTokenCount);
+        s_totalTokensCounter.Add(metadata.TotalTokenCount);
+    }
 
     private List<GeminiChatMessageContent> GetChatMessageContentsFromResponse(GeminiResponse geminiResponse)
         => geminiResponse.Candidates!.Select(candidate => this.GetChatMessageContentFromCandidate(geminiResponse, candidate)).ToList();
@@ -706,28 +727,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
             ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
         };
-
-    private void LogUsageMetadata(GeminiMetadata metadata)
-    {
-        if (metadata.TotalTokenCount <= 0)
-        {
-            this.Logger.LogDebug("Gemini usage information is not available.");
-            return;
-        }
-
-        if (this.Logger.IsEnabled(LogLevel.Debug))
-        {
-            this.Logger.LogDebug(
-                "Gemini usage metadata: Candidates tokens: {CandidatesTokens}, Prompt tokens: {PromptTokens}, Total tokens: {TotalTokens}",
-                metadata.CandidatesTokenCount,
-                metadata.PromptTokenCount,
-                metadata.TotalTokenCount);
-        }
-
-        s_promptTokensCounter.Add(metadata.PromptTokenCount);
-        s_completionTokensCounter.Add(metadata.CandidatesTokenCount);
-        s_totalTokensCounter.Add(metadata.TotalTokenCount);
-    }
 
     private sealed class ChatCompletionState
     {
