@@ -56,7 +56,7 @@ public sealed class MistralAIChatCompletionServiceTests : MistralTestBase
         await foreach (var chunk in response)
         {
             chunks.Add(chunk);
-        };
+        }
 
         // Assert
         Assert.NotNull(response);

@@ -605,7 +605,7 @@ internal sealed class MistralClient
             throw new ArgumentException("Chat history must contain at least one message", nameof(chatHistory));
         }
         var firstRole = chatHistory[0].Role.ToString();
-        if (firstRole is not "system" && firstRole is not "user")
+        if (firstRole is not "system" and not "user")
         {
             throw new ArgumentException("The first message in chat history must have either the system or user role", nameof(chatHistory));
         }
