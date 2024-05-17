@@ -6,7 +6,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.prompt.prompt_render_context import PromptRenderContext
+from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions import KernelArguments
 
 system_message = """
@@ -48,7 +48,7 @@ chat_history.add_user_message("I want to find a hotel in Seattle with free wifi 
 # `context, next`
 # You are then free to run code before the call to the next filter or the rendering itself.
 # and code afterwards.
-# this type of filter allows you to manupulate the final message being sent
+# this type of filter allows you to manipulate the final message being sent
 # as is shown below, or the inputs used to generate the message by making a change to the
 # arguments before calling next.
 @kernel.filter(FilterTypes.PROMPT_RENDERING_FILTER)

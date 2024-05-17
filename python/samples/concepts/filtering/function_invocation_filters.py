@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.kernel_exceptions import OperationCancelledException
 from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.function.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
 from semantic_kernel.kernel import Kernel
 
 logger = logging.getLogger(__name__)
