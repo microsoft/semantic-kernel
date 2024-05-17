@@ -384,7 +384,7 @@ internal abstract class ClientCore
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         for (int requestIndex = 1; ; requestIndex++)
         {
@@ -642,7 +642,7 @@ internal abstract class ClientCore
         bool autoInvoke = kernel is not null && chatExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         StringBuilder? contentBuilder = null;
         Dictionary<int, string>? toolCallIdsByIndex = null;
@@ -1060,7 +1060,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(
+    private ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         Kernel? kernel,
@@ -1069,6 +1069,13 @@ internal abstract class ClientCore
         if (executionSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
             throw new ArgumentOutOfRangeException($"{nameof(executionSettings)}.{nameof(executionSettings.ResultsPerPrompt)}", executionSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+        }
+
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
         }
 
         var options = new ChatCompletionsOptions
@@ -1432,11 +1439,7 @@ internal abstract class ClientCore
     {
         if (usage is null)
         {
-            if (this.Logger.IsEnabled(LogLevel.Debug))
-            {
-                this.Logger.LogDebug("Usage information is not available.");
-            }
-
+            this.Logger.LogDebug("Usage information is not available.");
             return;
         }
 

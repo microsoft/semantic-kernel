@@ -48,7 +48,7 @@ public sealed class MistralAITextEmbeddingGenerationService : ITextEmbeddingGene
         => this.Client.GenerateEmbeddingsAsync(data, cancellationToken, executionSettings: null, kernel);
 
     #region private
-    private Dictionary<string, object?> AttributesInternal { get; } = new();
+    private Dictionary<string, object?> AttributesInternal { get; } = [];
     private MistralClient Client { get; }
     #endregion
 }
