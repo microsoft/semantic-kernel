@@ -78,12 +78,17 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
-    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent>? contents, int? promptTokens = null, int? completionTokens = null)
+    public static void EndStreaming(
+        this Activity activity,
+        IEnumerable<StreamingKernelContent>? contents,
+        IEnumerable<FunctionCallContent>? toolCalls = null,
+        int? promptTokens = null,
+        int? completionTokens = null)
     {
         if (IsModelDiagnosticsEnabled())
         {
             var choices = OrganizeStreamingContent(contents);
-            SetCompletionResponse(activity, choices, promptTokens, completionTokens);
+            SetCompletionResponse(activity, choices, toolCalls, promptTokens, completionTokens);
         }
     }
 
@@ -119,6 +124,12 @@ internal static class ModelDiagnostics
     {
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
+
+    /// <summary>
+    /// Check if sensitive events are enabled.
+    /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
+    /// </summary>
+    public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
 
     #region Private
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
@@ -170,8 +181,11 @@ internal static class ModelDiagnostics
             sb.Append(message.Role);
             sb.Append("\", \"content\": ");
             sb.Append(JsonSerializer.Serialize(message.Content));
-            sb.Append(", \"tool_calls\": ");
-            ToOpenAIFormat(sb, message.Items);
+            if (message.Items.OfType<FunctionCallContent>().Any())
+            {
+                sb.Append(", \"tool_calls\": ");
+                ToOpenAIFormat(sb, message.Items);
+            }
             sb.Append('}');
 
             isFirst = false;
@@ -307,6 +321,7 @@ internal static class ModelDiagnostics
     private static void SetCompletionResponse(
         Activity activity,
         Dictionary<int, List<StreamingKernelContent>> choices,
+        IEnumerable<FunctionCallContent>? toolCalls,
         int? promptTokens,
         int? completionTokens)
     {
@@ -334,6 +349,12 @@ internal static class ModelDiagnostics
                      var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
                      return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
                  }).ToList();
+                // It's currently not allowed to request multiple results per prompt while auto-invoke is enabled.
+                // Therefore, we can assume that there is only one completion per prompt when tool calls are present.
+                foreach (var functionCall in toolCalls ?? [])
+                {
+                    chatCompletions.FirstOrDefault()?.Items.Add(functionCall);
+                }
                 SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens, ToOpenAIFormat);
                 break;
         }
