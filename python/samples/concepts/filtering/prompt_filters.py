@@ -44,7 +44,7 @@ chat_history.add_user_message("I want to find a hotel in Seattle with free wifi 
 
 # A filter is a piece of custom code that runs at certain points in the process
 # this sample has a filter that is called during Prompt Rendering.
-# You can name the function itself with arbitraty names, but the signature needs to be:
+# You can name the function itself with arbitrary names, but the signature needs to be:
 # `context, next`
 # You are then free to run code before the call to the next filter or the rendering itself.
 # and code afterwards.

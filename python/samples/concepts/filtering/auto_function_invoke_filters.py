@@ -78,7 +78,7 @@ arguments = KernelArguments(settings=execution_settings)
 # A filter is a piece of custom code that runs at certain points in the process
 # this sample has a filter that is called during Auto Function Invocation
 # this filter will be called for each function call in the response.
-# You can name the function itself with arbitraty names, but the signature needs to be:
+# You can name the function itself with arbitrary names, but the signature needs to be:
 # `context, next`
 # You are then free to run code before the call to the next filter or the function itself.
 # if you want to terminate the function calling sequence. set context.terminate to True

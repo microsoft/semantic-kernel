@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # A filter is a piece of custom code that runs at certain points in the process
 # this sample has a filter that is called during Function Invocation for non-streaming function.
-# You can name the function itself with arbitraty names, but the signature needs to be:
+# You can name the function itself with arbitrary names, but the signature needs to be:
 # `context, next`
 # You are then free to run code before the call to the next filter or the function itself.
 # and code afterwards.
