@@ -264,10 +264,10 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
                     localWhere.Length -= OR.Length;
 
                     var localQueryDefinition = new QueryDefinition($"""
-                    SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
-                    FROM x
-                    WHERE {localWhere}
-                    """);
+                        SELECT x.id,x.key,x.metadata,x.timestamp{(withEmbeddings ? ",x.embedding" : "")}
+                        FROM x
+                        WHERE {localWhere}
+                        """);
                     var feedIterator = this._cosmosClient
                         .GetDatabase(this._databaseName)
                         .GetContainer(collectionName)
