@@ -26,6 +26,12 @@ pytest_mark = pytest.mark.skipif(
 # Host and Key for CosmosDB No SQl
 HOST = ""
 KEY = ""
+
+if not HOST or KEY:
+    skip_test = True
+else:
+    skip_test = False
+
 cosmos_client = CosmosClient(HOST, KEY)
 database_name = "sk_python_db"
 container_name = "sk_python_container"
@@ -46,6 +52,7 @@ async def azure_cosmosdb_no_sql_memory_store() -> MemoryStoreBase:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_create_get_drop_exists_collection():
     store = await azure_cosmosdb_no_sql_memory_store()
 
@@ -61,6 +68,7 @@ async def test_create_get_drop_exists_collection():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_upsert_and_get_and_remove():
     store = await azure_cosmosdb_no_sql_memory_store()
     await store.create_collection(collection_name=container_name)
@@ -78,6 +86,7 @@ async def test_upsert_and_get_and_remove():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_upsert_batch_and_get_batch_remove_batch():
     store = await azure_cosmosdb_no_sql_memory_store()
     await store.create_collection(collection_name=container_name)
@@ -96,6 +105,7 @@ async def test_upsert_batch_and_get_batch_remove_batch():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_get_nearest_match():
     store = await azure_cosmosdb_no_sql_memory_store()
     await store.create_collection(collection_name=container_name)
@@ -114,6 +124,7 @@ async def test_get_nearest_match():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(skip_test, reason="Skipping test because HOST or KEY is not set")
 async def test_get_nearest_matches():
     store = await azure_cosmosdb_no_sql_memory_store()
     await store.create_collection(collection_name=container_name)
