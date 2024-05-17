@@ -58,4 +58,19 @@ public class HttpOperationException : Exception
     /// Gets or sets the content of the HTTP response.
     /// </summary>
     public string? ResponseContent { get; set; }
+
+    /// <summary>
+    /// Gets the method used for the HTTP request.
+    /// </summary>
+    public string? RequestMethod { get; set; }
+
+    /// <summary>
+    /// Gets the System.Uri used for the HTTP request.
+    /// </summary>
+    public Uri? RequestUri { get; set; }
+
+    /// <summary>
+    /// Gets the payload sent in the request.
+    /// </summary>
+    public object? RequestPayload { get; set; }
 }
