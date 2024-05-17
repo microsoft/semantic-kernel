@@ -32,6 +32,7 @@ container_name = "sk_python_container"
 partition_key = PartitionKey(path="/id")
 cosmos_container_properties = {"partition_key": partition_key}
 
+
 async def azure_cosmosdb_no_sql_memory_store() -> MemoryStoreBase:
     store = AzureCosmosDBNoSQLMemoryStore(
         cosmos_client=cosmos_client,
