@@ -63,13 +63,13 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - shell: bash
       - uses: actions/checkout@v4
       - name: Setup dotnet ${{ matrix.dotnet }}
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet }}
       - name: Build dotnet solutions
+        shell: bash
         run: |
           export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
@@ -77,6 +77,7 @@ jobs:
           done
 
       - name: Run Unit Tests
+        shell: bash
         run: |
           export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
@@ -84,6 +85,7 @@ jobs:
           done
 
       - name: Run Integration Tests
+        shell: bash
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
           export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
@@ -119,6 +121,7 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
+        shell: bash
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.4
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
