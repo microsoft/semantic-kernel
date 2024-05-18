@@ -37,6 +37,35 @@ public class SKException extends RuntimeException {
         super(message, cause);
     }
 
+    public SKException(Throwable e) {
+        super(e);
+    }
+
+    /**
+     * Forms an unchecked exception, if the exception is already an SK exception, it will be
+     * unwrapped and the cause extracted.
+     *
+     * @param message The message to be displayed
+     * @param e       The exception to be thrown
+     * @return An unchecked exception
+     */
+    public static SKException build(
+        String message,
+        @Nullable Exception e) {
+
+        if (e == null) {
+            return new SKException(message);
+        }
+
+        Throwable cause = e.getCause();
+
+        if ((e instanceof SKCheckedException || e instanceof SKException) && cause != null) {
+            return new SKException(message, cause);
+        } else {
+            return new SKException(message, e);
+        }
+    }
+
     /**
      * Translate the error code into a default message format.
      *
