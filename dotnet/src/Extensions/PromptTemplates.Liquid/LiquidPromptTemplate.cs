@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,6 +18,10 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
     private static readonly FluidParser s_parser = new();
+    private static readonly TemplateOptions s_templateOptions = new()
+    {
+        MemberAccessStrategy = new UnsafeMemberAccessStrategy() { MemberNameStrategy = MemberNameStrategies.SnakeCase },
+    };
 
     private const string ReservedString = "&#58;";
     private const string ColonString = ":";
@@ -57,8 +60,12 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
         // Parse the template now so we can check for errors, understand variable usage, and
         // avoid having to parse on each render.
-        this._liquidTemplate = s_parser.Parse(config.Template) ??
-            throw new ArgumentException("The template could not be parsed.");
+        if (!s_parser.TryParse(config.Template, out this._liquidTemplate, out string error))
+        {
+            throw new ArgumentException(error is not null ?
+                $"The template could not be parsed:{Environment.NewLine}{error}" :
+                 "The template could not be parsed.");
+        }
 
         // Ideally the prompty author would have explicitly specified input variables. If they specified any,
         // assume they specified them all. If they didn't, heuristically try to find the variables, looking for
@@ -154,10 +161,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     /// </summary>
     private TemplateContext GetTemplateContext(KernelArguments? arguments)
     {
-        var ctx = new TemplateContext(new TemplateOptions()
-        {
-            MemberAccessStrategy = new UnsafeMemberAccessStrategy() { MemberNameStrategy = MemberNameStrategies.SnakeCase },
-        });
+        var ctx = new TemplateContext(s_templateOptions);
 
         foreach (var p in this._config.InputVariables)
         {
