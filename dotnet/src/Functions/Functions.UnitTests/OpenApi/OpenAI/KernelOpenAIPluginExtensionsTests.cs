@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO https://github.com/microsoft/OpenAPI.NET/issues/1635: Enable for .NET Framework when issues is addressed
 using System;
 using System.IO;
 using System.Net.Http;
@@ -92,3 +93,4 @@ public sealed class KernelOpenAIPluginExtensionsTests : IDisposable
         this._openApiDocument.Dispose();
     }
 }
+#endif

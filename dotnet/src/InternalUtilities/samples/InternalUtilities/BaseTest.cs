@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+
+#pragma warning disable CA2016
 
 public abstract class BaseTest
 {
@@ -106,7 +109,7 @@ public abstract class BaseTest
             // Log the request details
             if (request.Content is not null)
             {
-                var content = await request.Content.ReadAsStringAsync(cancellationToken);
+                var content = await request.Content.ReadAsStringAsync();
                 this._output.WriteLine(content);
             }
 
@@ -116,7 +119,7 @@ public abstract class BaseTest
             if (response.Content is not null)
             {
                 // Log the response details
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var responseContent = await response.Content.ReadAsStringAsync();
                 this._output.WriteLine(responseContent);
             }
 

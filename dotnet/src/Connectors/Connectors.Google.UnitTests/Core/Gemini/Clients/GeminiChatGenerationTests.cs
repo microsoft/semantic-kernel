@@ -71,7 +71,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
-            await File.ReadAllTextAsync(ChatTestDataFilePath));
+            File.ReadAllText(ChatTestDataFilePath));
         var client = this.CreateChatCompletionClient();
         var chatHistory = CreateSampleChatHistory();
 
@@ -115,7 +115,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
+            File.ReadAllText(ChatTestDataFilePath))!;
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.SingleOrDefault();
         Assert.NotNull(textContent);
@@ -160,7 +160,7 @@ public sealed class GeminiChatGenerationTests : IDisposable
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<GeminiResponse>(
-            await File.ReadAllTextAsync(ChatTestDataFilePath))!;
+            File.ReadAllText(ChatTestDataFilePath))!;
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.SingleOrDefault();
         Assert.NotNull(textContent);

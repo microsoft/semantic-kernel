@@ -19,7 +19,7 @@ public class BaseIntegrationTest
             c.AddStandardResilienceHandler().Configure(o =>
             {
                 o.Retry.ShouldRetryAfterHeader = true;
-                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.TooManyRequests);
+                o.Retry.ShouldHandle = args => new ValueTask<bool>(args.Outcome.Result?.StatusCode is (HttpStatusCode)429 /*TooManyRequests*/);
                 o.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
                 {
                     SamplingDuration = TimeSpan.FromSeconds(40.0), // The duration should be least double of an attempt timeout

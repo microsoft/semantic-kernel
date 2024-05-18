@@ -100,7 +100,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Assert
         List<GeminiResponse> testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
-            await File.ReadAllTextAsync(StreamTestDataFilePath))!;
+            File.ReadAllText(StreamTestDataFilePath))!;
 
         Assert.NotEmpty(chatMessageContents);
         Assert.Equal(testDataResponse.Count, chatMessageContents.Count);
@@ -128,7 +128,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
-            await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
+            File.ReadAllText(StreamTestDataFilePath))![0];
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);
@@ -174,7 +174,7 @@ public sealed class GeminiChatStreamingTests : IDisposable
 
         // Assert
         GeminiResponse testDataResponse = JsonSerializer.Deserialize<List<GeminiResponse>>(
-            await File.ReadAllTextAsync(StreamTestDataFilePath))![0];
+            File.ReadAllText(StreamTestDataFilePath))![0];
         var testDataCandidate = testDataResponse.Candidates![0];
         var textContent = chatMessageContents.FirstOrDefault();
         Assert.NotNull(textContent);

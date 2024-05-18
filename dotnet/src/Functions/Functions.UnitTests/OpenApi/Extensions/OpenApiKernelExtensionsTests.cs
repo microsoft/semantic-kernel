@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO https://github.com/microsoft/OpenAPI.NET/issues/1635: Enable for .NET Framework when issues is addressed
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -191,7 +191,7 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
     {
         // Arrange
         using var messageHandlerStub = new HttpMessageHandlerStub();
-        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
@@ -339,3 +339,4 @@ public sealed class OpenApiKernelExtensionsTests : IDisposable
 
     #endregion
 }
+#endif

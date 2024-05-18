@@ -547,7 +547,10 @@ public sealed class OpenAIToolsTests : BaseIntegrationTest
         }
     }
 
-    public record WeatherParameters(City City);
+    public class WeatherParameters(City city)
+    {
+        public City City { get; } = city;
+    }
 
     public class City
     {

@@ -85,7 +85,7 @@ public class TimePluginTests
 
     public static IEnumerable<object[]> DayOfWeekEnumerator()
     {
-        foreach (var day in Enum.GetValues<DayOfWeek>())
+        foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
         {
             yield return new object[] { day };
         }

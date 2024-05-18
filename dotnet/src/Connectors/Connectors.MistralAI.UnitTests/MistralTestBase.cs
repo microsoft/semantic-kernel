@@ -11,6 +11,9 @@ using Microsoft.SemanticKernel.Http;
 using Xunit;
 
 namespace SemanticKernel.Connectors.MistralAI.UnitTests;
+
+#pragma warning disable CA2016
+
 public abstract class MistralTestBase : IDisposable
 {
     protected AssertingDelegatingHandler? DelegatingHandler { get; set; }
@@ -94,7 +97,7 @@ public abstract class MistralTestBase : IDisposable
             Assert.Equal(this.Method, request.Method);
             Assert.Equal(this.RequestHeaders, request.Headers);
 
-            this.RequestContent = await request.Content!.ReadAsStringAsync(cancellationToken);
+            this.RequestContent = await request.Content!.ReadAsStringAsync();
 
             if (this._responseStringArray is not null)
             {

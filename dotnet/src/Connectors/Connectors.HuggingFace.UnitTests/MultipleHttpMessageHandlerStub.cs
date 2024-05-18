@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SemanticKernel.Connectors.HuggingFace.UnitTests;
 
-#pragma warning disable CA1812
+#pragma warning disable CA1812, CA2016
 
 internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
 {
@@ -36,7 +36,7 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
         this.RequestHeaders.Add(request.Headers);
         this.ContentHeaders.Add(request.Content?.Headers);
 
-        var content = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        var content = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync();
 
         this.RequestContents.Add(content);
 

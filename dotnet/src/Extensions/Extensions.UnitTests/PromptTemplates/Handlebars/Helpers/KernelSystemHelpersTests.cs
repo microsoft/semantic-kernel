@@ -3,7 +3,7 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using System.Web;
+using System.Net;
 using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
@@ -64,7 +64,7 @@ public sealed class KernelSystemHelpersTests
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("""{"name":"Alice","age":25}""", HttpUtility.HtmlDecode(result));
+        Assert.Equal("""{"name":"Alice","age":25}""", WebUtility.HtmlDecode(result));
     }
 
     [Fact]

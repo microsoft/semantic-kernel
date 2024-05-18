@@ -64,12 +64,11 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         var embeddings = await client.GenerateEmbeddingsAsync(dataToEmbed);
 
         // Assert
-        VertexAIEmbeddingResponse testDataResponse = JsonSerializer.Deserialize<VertexAIEmbeddingResponse>(
-            await File.ReadAllTextAsync(TestDataFilePath))!;
+        VertexAIEmbeddingResponse testDataResponse = JsonSerializer.Deserialize<VertexAIEmbeddingResponse>(File.ReadAllText(TestDataFilePath))!;
         Assert.NotNull(embeddings);
         Assert.Collection(embeddings,
-            values => Assert.Equal(testDataResponse.Predictions[0].Embeddings.Values, values),
-            values => Assert.Equal(testDataResponse.Predictions[1].Embeddings.Values, values));
+            values => Assert.Equal(testDataResponse.Predictions[0].Embeddings.Values.ToArray(), values.ToArray()),
+            values => Assert.Equal(testDataResponse.Predictions[1].Embeddings.Values.ToArray(), values.ToArray()));
     }
 
     [Fact]

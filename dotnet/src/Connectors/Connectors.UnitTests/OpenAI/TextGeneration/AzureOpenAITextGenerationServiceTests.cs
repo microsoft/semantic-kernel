@@ -146,10 +146,10 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
 
         Assert.Equal("Prompt", content.GetProperty("prompt")[0].GetString());
         Assert.Equal(123, content.GetProperty("max_tokens").GetInt32());
-        Assert.Equal(0.6, content.GetProperty("temperature").GetDouble());
-        Assert.Equal(0.5, content.GetProperty("top_p").GetDouble());
-        Assert.Equal(1.6, content.GetProperty("frequency_penalty").GetDouble());
-        Assert.Equal(1.2, content.GetProperty("presence_penalty").GetDouble());
+        Assert.Equal(0.6, content.GetProperty("temperature").GetDouble(), 0.0001);
+        Assert.Equal(0.5, content.GetProperty("top_p").GetDouble(), 0.0001);
+        Assert.Equal(1.6, content.GetProperty("frequency_penalty").GetDouble(), 0.0001);
+        Assert.Equal(1.2, content.GetProperty("presence_penalty").GetDouble(), 0.0001);
         Assert.Equal(5, content.GetProperty("n").GetInt32());
         Assert.Equal(5, content.GetProperty("best_of").GetInt32());
         Assert.Equal(3, content.GetProperty("logit_bias").GetProperty("2").GetInt32());

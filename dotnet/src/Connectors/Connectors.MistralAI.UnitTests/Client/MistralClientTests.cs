@@ -477,7 +477,7 @@ public sealed class MistralClientTests : MistralTestBase
         [Description("Creates a new widget of the specified type and colors")]
         public string CreateWidget([Description("The colors of the widget to be created")] WidgetColor[] widgetColors)
         {
-            var colors = string.Join('-', widgetColors.Select(c => c.GetDisplayName()).ToArray());
+            var colors = string.Join("-", widgetColors.Select(c => c.GetDisplayName()).ToArray());
             return $"Widget created with colors: {colors}";
         }
     }

@@ -16,6 +16,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 
+#pragma warning disable CA1850
+
 public class BertOnnxTextEmbeddingGenerationServiceTests
 {
     private static readonly HttpClient s_client = new();
@@ -176,9 +178,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
                     examples.Select(s => upper ? s.ToUpperInvariant() : s).ToList());
 
                 string[] sortedExamples = examples
-                    .Zip(examplesResults)
-                    .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.Second.Span))
-                    .Select(p => p.First)
+                    .Zip(examplesResults, (x, y) => (x, y))
+                    .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.y.Span))
+                    .Select(p => p.x)
                     .ToArray();
 
                 Assert.Equal(
@@ -234,9 +236,9 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
                 (await Task.WhenAll(examples.Select(e => service.GenerateEmbeddingsAsync([e])))).SelectMany(e => e).ToList();
 
             string[] sortedExamples = examples
-                .Zip(examplesResults)
-                .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.Second.Span))
-                .Select(p => p.First)
+                .Zip(examplesResults, (x,y) => (x,y))
+                .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.y.Span))
+                .Select(p => p.x)
                 .ToArray();
 
             Assert.Equal(
@@ -284,15 +286,19 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         // Rather than downloading each model on each use, try to cache it into a temporary file.
         // The file's name is computed as a hash of the url.
 
-        string name = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(url))) + ".cachedtestfile";
-        string path = Path.Join(Path.GetTempPath(), name);
+        string name;
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            name = BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(url))).Replace("-", string.Empty) + ".cachedtestfile";
+        }
+        string path = Path.Combine(Path.GetTempPath(), name);
 
         if (!File.Exists(path))
         {
-            await using Stream responseStream = await s_client.GetStreamAsync(new Uri(url));
+            using Stream responseStream = await s_client.GetStreamAsync(new Uri(url));
             try
             {
-                await using FileStream dest = File.OpenWrite(path);
+                using FileStream dest = File.OpenWrite(path);
                 await responseStream.CopyToAsync(dest);
             }
             catch

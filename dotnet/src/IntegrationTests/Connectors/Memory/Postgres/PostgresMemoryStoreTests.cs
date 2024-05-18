@@ -38,7 +38,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             throw new ArgumentNullException("Postgres memory connection string is not configured");
         }
 
-        this._connectionString = connectionString;
+        this._connectionString = connectionString!;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
         NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString)
@@ -636,13 +636,13 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
-            await using NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn);
+            using NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn);
             await command.ExecuteNonQueryAsync();
         }
 
         await using (NpgsqlConnection conn = await this._dataSource.OpenConnectionAsync())
         {
-            await using (NpgsqlCommand command = new("CREATE EXTENSION vector", conn))
+            using (NpgsqlCommand command = new("CREATE EXTENSION vector", conn))
             {
                 await command.ExecuteNonQueryAsync();
             }
@@ -655,7 +655,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using NpgsqlConnection conn = await dataSource.OpenConnectionAsync();
-        await using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
+        using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -677,7 +677,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
@@ -687,7 +687,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         return records;

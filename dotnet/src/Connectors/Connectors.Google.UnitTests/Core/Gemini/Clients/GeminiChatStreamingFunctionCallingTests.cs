@@ -32,7 +32,7 @@ public sealed class GeminiChatStreamingFunctionCallingTests : IDisposable
     {
         this._responseContent = File.ReadAllText(ChatTestDataFilePath);
         this._responseContentWithFunction = File.ReadAllText(ChatTestDataWithFunctionFilePath)
-            .Replace("%nameSeparator%", GeminiFunction.NameSeparator, StringComparison.Ordinal);
+            .Replace("%nameSeparator%", GeminiFunction.NameSeparator);
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(
             this._responseContent);

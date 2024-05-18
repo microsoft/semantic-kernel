@@ -182,7 +182,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
             c.AddStandardResilienceHandler().Configure(o =>
             {
-                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                o.Retry.ShouldHandle = args => new ValueTask<bool>(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
             });
         });
         Kernel target = this._kernelBuilder.Build();
@@ -219,7 +219,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
             // Use a standard resiliency policy, augmented to retry on 401 Unauthorized for this example
             c.AddStandardResilienceHandler().Configure(o =>
             {
-                o.Retry.ShouldHandle = args => ValueTask.FromResult(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
+                o.Retry.ShouldHandle = args => new ValueTask<bool>(args.Outcome.Result?.StatusCode is HttpStatusCode.Unauthorized);
             });
         });
 
@@ -348,7 +348,7 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join('.', Enumerable.Range(1, 40000)) }));
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["SummarizePlugin"]["Summarize"].InvokeAsync(target, new() { [InputParameterName] = string.Join(".", Enumerable.Range(1, 40000)) }));
     }
 
     [Theory(Skip = "This test is for manual verification.")]

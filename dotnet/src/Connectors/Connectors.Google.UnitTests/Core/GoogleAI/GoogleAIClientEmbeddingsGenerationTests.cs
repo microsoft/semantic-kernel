@@ -87,12 +87,11 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         var embeddings = await client.GenerateEmbeddingsAsync(dataToEmbed);
 
         // Assert
-        GoogleAIEmbeddingResponse testDataResponse = JsonSerializer.Deserialize<GoogleAIEmbeddingResponse>(
-            await File.ReadAllTextAsync(TestDataFilePath))!;
+        GoogleAIEmbeddingResponse testDataResponse = JsonSerializer.Deserialize<GoogleAIEmbeddingResponse>(File.ReadAllText(TestDataFilePath))!;
         Assert.NotNull(embeddings);
         Assert.Collection(embeddings,
-            values => Assert.Equal(testDataResponse.Embeddings[0].Values, values),
-            values => Assert.Equal(testDataResponse.Embeddings[1].Values, values));
+            values => Assert.Equal(testDataResponse.Embeddings[0].Values.ToArray(), values.ToArray()),
+            values => Assert.Equal(testDataResponse.Embeddings[1].Values.ToArray(), values.ToArray()));
     }
 
     [Fact]

@@ -91,7 +91,7 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
             throw new ArgumentNullException($"{settingValue} string is not configured");
         }
 
-        return settingValue;
+        return settingValue!;
     }
 
     private static string GetRandomName() => $"test_{Guid.NewGuid():N}";

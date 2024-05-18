@@ -2,6 +2,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -94,14 +95,15 @@ public sealed class AuthorRoleConverterTests
     {
         // Arrange
         var converter = new AuthorRoleConverter();
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
+        var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
         // Act
         converter.Write(writer, AuthorRole.User, JsonSerializerOptions.Default);
+        writer.Flush();
 
         // Assert
-        Assert.Equal("\"user\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+        Assert.Equal("\"user\""u8.ToArray(), stream.ToArray());
     }
 
     [Fact]
@@ -109,14 +111,15 @@ public sealed class AuthorRoleConverterTests
     {
         // Arrange
         var converter = new AuthorRoleConverter();
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
+        var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
         // Act
         converter.Write(writer, AuthorRole.Assistant, JsonSerializerOptions.Default);
+        writer.Flush();
 
         // Assert
-        Assert.Equal("\"model\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+        Assert.Equal("\"model\""u8.ToArray(), stream.ToArray());
     }
 
     [Fact]
@@ -124,14 +127,15 @@ public sealed class AuthorRoleConverterTests
     {
         // Arrange
         var converter = new AuthorRoleConverter();
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
+        var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
         // Act
         converter.Write(writer, AuthorRole.Tool, JsonSerializerOptions.Default);
+        writer.Flush();
 
         // Assert
-        Assert.Equal("\"function\""u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+        Assert.Equal("\"function\""u8.ToArray(), stream.ToArray());
     }
 
     [Fact]
@@ -139,14 +143,15 @@ public sealed class AuthorRoleConverterTests
     {
         // Arrange
         var converter = new AuthorRoleConverter();
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        using var writer = new Utf8JsonWriter(bufferWriter);
+        var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
         // Act
         converter.Write(writer, null, JsonSerializerOptions.Default);
+        writer.Flush();
 
         // Assert
-        Assert.Equal("null"u8, bufferWriter.GetSpan().Trim((byte)'\0'));
+        Assert.Equal("null"u8.ToArray(), stream.ToArray());
     }
 
     [Fact]
@@ -154,7 +159,8 @@ public sealed class AuthorRoleConverterTests
     {
         // Arrange
         var converter = new AuthorRoleConverter();
-        using var writer = new Utf8JsonWriter(new ArrayBufferWriter<byte>());
+        var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
         // Act
         void Act()

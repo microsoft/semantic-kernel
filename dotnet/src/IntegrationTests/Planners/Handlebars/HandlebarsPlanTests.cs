@@ -50,7 +50,7 @@ public sealed class HandlebarsPlanTests
     public async Task InvokePlanWithHallucinatedFunctionAsync()
     {
         // Arrange
-        var planWithInvalidHelper = PlanTemplate1.Replace("Foo-Combine", "Foo-HallucinatedHelper", StringComparison.CurrentCulture);
+        var planWithInvalidHelper = PlanTemplate1.Replace("Foo-Combine", "Foo-HallucinatedHelper");
 
         // Act & Assert  
         var exception = await Assert.ThrowsAsync<KernelException>(async () => await this.InvokePlanAsync(planWithInvalidHelper));

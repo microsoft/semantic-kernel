@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
@@ -27,7 +28,7 @@ public sealed class GeminiStreamResponseTests
         // Arrange
         var parser = new StreamJsonParser();
         var stream = new MemoryStream();
-        var streamExample = await File.ReadAllTextAsync(StreamTestDataFilePath);
+        var streamExample = File.ReadAllText(StreamTestDataFilePath);
         var sampleResponses = JsonSerializer.Deserialize<List<GeminiResponse>>(streamExample)!;
 
         WriteToStream(stream, streamExample);
@@ -43,7 +44,7 @@ public sealed class GeminiStreamResponseTests
 
     private static void WriteToStream(Stream stream, string input)
     {
-        using var writer = new StreamWriter(stream, leaveOpen: true);
+        using var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 0x1000, leaveOpen: true);
         writer.Write(input);
         writer.Flush();
         stream.Position = 0;

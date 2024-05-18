@@ -249,7 +249,7 @@ public class KernelParameterMetadataExtensionsTests
         var result = jsonProperties.ToJsonString();
 
         // Ensure that the line endings are consistent across different dotnet versions
-        result = result.Replace("\r\n", "\n", StringComparison.InvariantCulture);
+        result = result.Replace("\r\n", "\n");
 
         // Assert
         var expected = "{\n  \"name\": \"Alice\",\n  \"age\": 25\n}";

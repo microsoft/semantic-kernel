@@ -771,7 +771,10 @@ public class RedisMemoryStoreTests
             .ReturnsAsync(RedisResult.Create("OK", ResultType.SimpleString))
             .Callback(() =>
             {
-                this._collections.TryAdd(collection, []);
+                if (!this._collections.ContainsKey(collection))
+                {
+                    this._collections.Add(collection, []);
+                }
 
                 this._mockDatabase
                     .Setup<Task<RedisResult>>(x => x.ExecuteAsync(
@@ -972,7 +975,7 @@ public class RedisMemoryStoreTests
                 text: "text" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 1, 1 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
@@ -982,7 +985,7 @@ public class RedisMemoryStoreTests
                 sourceName: "sourceName" + i,
                 description: "description" + i,
                 embedding: new float[] { 1, 2, 3 });
-            records = records.Append(testRecord);
+            records = records.Concat([testRecord]);
         }
 
         return records;

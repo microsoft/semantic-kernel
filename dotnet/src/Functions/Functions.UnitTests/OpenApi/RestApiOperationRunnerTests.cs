@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO https://github.com/microsoft/OpenAPI.NET/issues/1635: Enable for .NET Framework when issues is addressed
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ using SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
+
+#pragma warning disable CA2016
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
@@ -60,7 +63,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItCanRunCreateAndUpdateOperationsWithJsonPayloadSuccessfullyAsync(string method)
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         var httpMethod = new HttpMethod(method);
 
@@ -305,7 +308,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldBuildJsonPayloadDynamicallyAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
@@ -316,7 +319,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             ])
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -365,7 +368,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldBuildJsonPayloadDynamicallyUsingPayloadMetadataDataTypesAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
@@ -380,7 +383,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             ])
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -450,7 +453,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldBuildJsonPayloadDynamicallyResolvingArgumentsByFullNamesAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
@@ -469,7 +472,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             ])
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -632,12 +635,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(MediaTypeNames.Text.Plain)]
-    [InlineData(MediaTypeNames.Application.Json)]
+    [InlineData("text/plain")]
+    [InlineData("application/json")]
     public async Task ItShouldUsePayloadAndContentTypeArgumentsIfDynamicPayloadBuildingIsNotRequiredAsync(string contentType)
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "text/plain");
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -676,14 +679,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldBuildJsonPayloadDynamicallyExcludingOptionalParametersIfTheirArgumentsNotProvidedAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
             new("upn", "string", false, []),
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -722,14 +725,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldBuildJsonPayloadDynamicallyIncludingOptionalParametersIfTheirArgumentsProvidedAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
             new("upn", "string", false, []),
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -768,7 +771,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         var firstParameter = new RestApiOperationParameter(
             "p1",
@@ -816,7 +819,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldAddNotRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         var firstParameter = new RestApiOperationParameter(
             "p1",
@@ -864,7 +867,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldSkipNotRequiredQueryStringParametersIfNoArgumentsProvidedAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         var firstParameter = new RestApiOperationParameter(
             "p1",
@@ -911,7 +914,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         var parameter = new RestApiOperationParameter(
             "p1",
@@ -940,8 +943,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(MediaTypeNames.Application.Json)]
-    [InlineData(MediaTypeNames.Application.Xml)]
+    [InlineData("application/json")]
+    [InlineData("application/xml")]
     [InlineData(MediaTypeNames.Text.Plain)]
     [InlineData(MediaTypeNames.Text.Html)]
     [InlineData(MediaTypeNames.Text.Xml)]
@@ -1055,7 +1058,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     public async Task ItShouldReturnRequestUriAndContentAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "application/json");
 
         List<RestApiOperationPayloadProperty> payloadProperties =
         [
@@ -1066,7 +1069,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             ])
         ];
 
-        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+        var payload = new RestApiOperationPayload("application/json", payloadProperties);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -1197,7 +1200,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         {
             this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
             };
         }
 
@@ -1206,10 +1209,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this.Method = request.Method;
             this.RequestUri = request.RequestUri;
             this.RequestHeaders = request.Headers;
-            this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+            this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync();
             this.ContentHeaders = request.Content?.Headers;
 
             return await Task.FromResult(this.ResponseToReturn);
         }
     }
 }
+#endif

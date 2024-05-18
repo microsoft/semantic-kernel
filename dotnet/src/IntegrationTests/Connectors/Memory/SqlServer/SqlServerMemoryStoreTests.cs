@@ -42,12 +42,12 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
             throw new ArgumentException("SqlServer memory connection string is not configured.");
         }
 
-        this._connectionString = connectionString;
+        this._connectionString = connectionString!;
 
         await this.CleanupDatabaseAsync();
         await this.InitializeDatabaseAsync();
 
-        this.Store = new SqlServerMemoryStore(this._connectionString, SchemaName);
+        this.Store = new SqlServerMemoryStore(this._connectionString!, SchemaName);
     }
 
     public async Task DisposeAsync()
@@ -323,18 +323,18 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
 
     private async Task InitializeDatabaseAsync()
     {
-        await using var connection = new SqlConnection(this._connectionString);
+        using var connection = new SqlConnection(this._connectionString);
         await connection.OpenAsync();
-        await using var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = $"CREATE SCHEMA {SchemaName}";
         await cmd.ExecuteNonQueryAsync();
     }
 
     private async Task CleanupDatabaseAsync()
     {
-        await using var connection = new SqlConnection(this._connectionString);
+        using var connection = new SqlConnection(this._connectionString);
         await connection.OpenAsync();
-        await using var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
             DECLARE tables_cursor CURSOR FOR
             SELECT table_name 

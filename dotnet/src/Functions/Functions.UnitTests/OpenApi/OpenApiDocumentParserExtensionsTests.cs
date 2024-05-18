@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if NET // TODO https://github.com/microsoft/OpenAPI.NET/issues/1635: Enable for .NET Framework when issues is addressed
 using System;
 using System.Globalization;
 using System.Linq;
@@ -78,3 +79,4 @@ public class OpenApiDocumentParserExtensionsTests
         Assert.Equal("{\"key1\":\"value1\",\"key2\":\"value2\"}", objectValue);
     }
 }
+#endif

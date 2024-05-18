@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable CA1812 // Internal class that is apparently never instantiated; this class is compiled in tests projects
+#pragma warning disable CA1812, CA2016
+
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 #pragma warning restore CA1812 // Internal class that is apparently never instantiated
 {
@@ -33,7 +33,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         {
-            Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json),
+            Content = new StringContent("{}", Encoding.UTF8, "application/json"),
         };
     }
 
@@ -42,11 +42,11 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
         this.Method = request.Method;
         this.RequestUri = request.RequestUri;
         this.RequestHeaders = request.Headers;
-        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync();
 
         if (request.Content is MultipartContent multipartContent)
         {
-            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync(cancellationToken);
+            this.FirstMultipartContent = await multipartContent.First().ReadAsByteArrayAsync();
         }
 
         this.ContentHeaders = request.Content?.Headers;

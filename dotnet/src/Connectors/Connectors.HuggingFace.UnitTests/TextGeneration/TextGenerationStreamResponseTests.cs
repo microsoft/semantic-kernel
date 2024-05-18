@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.HuggingFace.Core;
@@ -75,7 +76,7 @@ public class TextGenerationStreamResponseTests
 
     private static void WriteToStream(Stream stream, string input)
     {
-        using var writer = new StreamWriter(stream, leaveOpen: true);
+        using var writer = new StreamWriter(stream, Encoding.UTF8, 0x1000, leaveOpen: true);
         writer.Write(input);
         writer.Flush();
         stream.Position = 0;
