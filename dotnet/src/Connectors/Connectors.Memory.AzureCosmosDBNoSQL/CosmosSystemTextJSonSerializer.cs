@@ -3,6 +3,7 @@
 // Taken from https://github.com/Azure/azure-cosmos-dotnet-v3/pull/4332
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -13,7 +14,7 @@ namespace Microsoft.Azure.Cosmos;
 /// <summary>
 /// This class provides a default implementation of System.Text.Json Cosmos Linq Serializer.
 /// </summary>
-internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
+internal sealed class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
 {
     /// <summary>
     /// A read-only instance of <see cref="JsonSerializerOptions"/>.
@@ -32,6 +33,7 @@ internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
     }
 
     /// <inheritdoc/>
+    [return: MaybeNull]
     public override T FromStream<T>(Stream stream)
     {
         if (stream == null)
@@ -107,9 +109,9 @@ internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
     /// To handle such scenarios, please create a custom serializer which inherits from the <see cref="CosmosSystemTextJsonSerializer"/> and overrides the
     /// SerializeMemberName to add any special handling.
     /// </remarks>
-    public override string SerializeMemberName(MemberInfo memberInfo)
+    public override string? SerializeMemberName(MemberInfo memberInfo)
     {
-        JsonExtensionDataAttribute jsonExtensionDataAttribute =
+        JsonExtensionDataAttribute? jsonExtensionDataAttribute =
              memberInfo.GetCustomAttribute<JsonExtensionDataAttribute>(true);
 
         if (jsonExtensionDataAttribute != null)
@@ -117,12 +119,12 @@ internal class CosmosSystemTextJsonSerializer : CosmosLinqSerializer
             return null;
         }
 
-        JsonPropertyNameAttribute jsonPropertyNameAttribute = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(true);
+        JsonPropertyNameAttribute? jsonPropertyNameAttribute = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>(true);
+        if (jsonPropertyNameAttribute is { } && !string.IsNullOrEmpty(jsonPropertyNameAttribute.Name))
+        {
+            return jsonPropertyNameAttribute.Name;
+        }
 
-        string memberName = !string.IsNullOrEmpty(jsonPropertyNameAttribute?.Name)
-            ? jsonPropertyNameAttribute.Name
-            : memberInfo.Name;
-
-        return memberName;
+        return memberInfo.Name;
     }
 }

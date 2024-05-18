@@ -400,7 +400,9 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
 /// <param name="key"></param>
 /// <param name="timestamp"></param>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
-internal class MemoryRecordWithSimilarityScore(
+#pragma warning disable CA1812 // 'MemoryRecordWithSimilarityScore' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic). (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812)
+internal sealed class MemoryRecordWithSimilarityScore(
+#pragma warning restore CA1812
     MemoryRecordMetadata metadata,
     ReadOnlyMemory<float> embedding,
     string? key,
@@ -421,7 +423,7 @@ internal class MemoryRecordWithSimilarityScore(
 /// Creates a new record that also serializes an "id" property.
 /// </summary>
 [DebuggerDisplay("{GetDebuggerDisplay()}")]
-internal class MemoryRecordWithId : MemoryRecord
+internal sealed class MemoryRecordWithId : MemoryRecord
 {
     /// <summary>
     /// Creates a new record that also serializes an "id" property.
