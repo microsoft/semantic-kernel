@@ -63,6 +63,7 @@ redis = { version = "^4.6.0", optional = true}
 azure-search-documents = {version = "11.6.0b1", allow-prereleases = true, optional = true}
 azure-core = { version = "^1.28.0", optional = true}
 azure-identity = { version = "^1.13.0", optional = true}
+azure-cosmos = { version = "^4.7.0", optional = true}
 usearch = { version = "^2.9", optional = true}
 pyarrow = { version = ">=12.0.1,<16.0.0", optional = true}
 
@@ -86,6 +87,7 @@ optional = true
 google-generativeai = { version = ">=0.1,<0.4", markers = "python_version >= '3.9'"}
 azure-search-documents = {version = "11.6.0b1", allow-prereleases = true}
 azure-core = "^1.28.0"
+azure-cosmos = "^4.7.0"
 transformers = "^4.28.1"
 sentence-transformers = "^2.2.2"
 torch = "^2.2.0"
@@ -116,6 +118,7 @@ redis = "^4.6.0"
 azure-search-documents = {version = "11.6.0b1", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
+azure-cosmos = "^4.7.0"
 usearch = "^2.9"
 pyarrow = ">=12.0.1,<16.0.0"
 msgraph-sdk = "^1.2.0"
@@ -131,10 +134,10 @@ weaviate = ["weaviate-client"]
 pinecone = ["pinecone-client"]
 postgres = ["psycopg"]
 redis = ["redis"]
-azure = ["azure-search-documents", "azure-core", "azure-identity", "msgraph-sdk"]
+azure = ["azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "msgraph-sdk"]
 usearch = ["usearch", "pyarrow"]
 notebooks = ["ipykernel"]
-all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "usearch", "pyarrow", "ipykernel"]
+all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
 
 [tool.ruff]
 lint.select = ["E", "F", "I"]
