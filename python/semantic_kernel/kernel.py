@@ -65,9 +65,8 @@ class Kernel(KernelFilterExtension):
     Attributes:
         plugins (dict[str, KernelPlugin] | None): The plugins to be used by the kernel
         services (dict[str, AIServiceClientBase]): The services to be used by the kernel
+        ai_service_selector (AIServiceSelector): The AI service selector to be used by the kernel
         retry_mechanism (RetryMechanismBase): The retry mechanism to be used by the kernel
-        function_invoking_handlers (dict): The function invoking handlers
-        function_invoked_handlers (dict): The function invoked handlers
     """
 
     # region Init

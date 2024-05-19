@@ -13,8 +13,10 @@ from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
     CosmosDBVectorSearchType,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class MongoStoreApi(AzureCosmosDBStoreApi):
     database = None
     collection_name: str
