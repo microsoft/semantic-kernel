@@ -1050,7 +1050,7 @@ internal abstract class ClientCore
             Echo = false,
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
-            LogProbabilityCount = null,
+            LogProbabilityCount = executionSettings.TopLogprobs,
             User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
@@ -1102,7 +1102,9 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
-            User = executionSettings.User
+            User = executionSettings.User,
+            LogProbabilitiesPerToken = executionSettings.TopLogprobs,
+            EnableLogProbabilities = executionSettings.Logprobs
         };
 
         switch (executionSettings.ResponseFormat)
