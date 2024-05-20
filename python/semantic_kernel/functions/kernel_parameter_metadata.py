@@ -32,10 +32,10 @@ class KernelParameterMetadata(KernelBaseModel):
             data["schema_data"] = inferred_schema
         return data
 
-    @staticmethod
+    @classmethod
     def infer_schema(
-        type_object: Type | None, parameter_type: str | None, default_value: Any, description: str | None
-    ) -> dict[str, Any]:
+        cls, type_object: Type | None, parameter_type: str | None, default_value: Any, description: str | None
+    ) -> dict[str, Any] | None:
         schema = None
 
         if type_object is not None:

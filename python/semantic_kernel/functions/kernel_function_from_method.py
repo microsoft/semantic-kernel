@@ -124,6 +124,8 @@ class KernelFunctionFromMethod(KernelFunction):
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
+            if param.name is None:
+                raise FunctionExecutionException("Parameter name cannot be None")
             if param.name == "kernel":
                 function_arguments[param.name] = context.kernel
                 continue
