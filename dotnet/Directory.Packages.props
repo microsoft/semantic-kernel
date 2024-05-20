@@ -75,7 +75,6 @@
     <PackageVersion Include="DuckDB.NET.Data" Version="0.10.2" />
     <PackageVersion Include="MongoDB.Driver" Version="2.25.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.14" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
@@ -87,6 +86,7 @@
     <PackageVersion Include="YamlDotNet" Version="15.1.2" />
     <PackageVersion Include="Scriban" Version="5.10.0" />
     <!-- Memory stores -->
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
