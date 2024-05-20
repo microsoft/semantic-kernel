@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -173,7 +172,7 @@ public class BinaryContent : KernelContent
         // If parameters where provided in the data uri, updates the content metadata.
         if (parsedDataUri.Parameters.Count != 0)
         {
-            this.UpdateDataUriParamatersToMetadata(parsedDataUri);
+            this.UpdateDataUriParametersToMetadata(parsedDataUri);
         }
 
         this._dataUri = dataUri;
@@ -182,7 +181,7 @@ public class BinaryContent : KernelContent
         this._data = null;
     }
 
-    private void UpdateDataUriParamatersToMetadata(DataUriParser.DataUri parsedDataUri)
+    private void UpdateDataUriParametersToMetadata(DataUriParser.DataUri parsedDataUri)
     {
         var newMetadata = this.Metadata as Dictionary<string, object?>;
         if (newMetadata is null)
@@ -282,6 +281,7 @@ public class BinaryContent : KernelContent
 
     private bool ValidateDataUri(string dataUri)
     {
+#pragma warning disable CA2249 // Do not pass literals as localized parameters
         // Check if the dataUri has a mimeType defined.
         var mimeTypeIndex = dataUri.IndexOf(';');
         if (mimeTypeIndex == -1)
@@ -297,6 +297,7 @@ public class BinaryContent : KernelContent
         }
 
         return true;
+#pragma warning restore CA2249 // Do not pass literals as localized parameters
     }
     #endregion
 }

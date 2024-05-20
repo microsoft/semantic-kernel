@@ -117,8 +117,12 @@ public sealed class OpenAIFileService
         using (stream)
         {
             using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
+#if NETSTANDARD2_0
+            const int DefaultCopyBufferSize = 81920;
+            await stream.CopyToAsync(memoryStream, DefaultCopyBufferSize, cancellationToken).ConfigureAwait(false);
+#else
+            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+#endif
             return new BinaryContent(memoryStream.ToArray(), mimetype);
         }
     }
@@ -208,7 +212,7 @@ public sealed class OpenAIFileService
                 (new HttpResponseStream(
                     await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false),
                     response),
-                    response.Content.Headers.ContentType.MediaType);
+                    response.Content.Headers.ContentType?.MediaType);
         }
         catch
         {

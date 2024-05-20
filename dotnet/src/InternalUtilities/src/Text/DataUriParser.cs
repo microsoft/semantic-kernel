@@ -34,7 +34,7 @@ static internal class DataUriParser
         // The quickest test. If the value is null or is equal to 0 it is not base64
         // Base64 string's length is always divisible by four, i.e. 8, 16, 20 etc. 
         // If it is not you can return false. Quite effective
-        // Further, if it meets the above criterias, then test for spaces.
+        // Further, if it meets the above criteria, then test for spaces.
         // If it contains spaces, it is not base64
         if (value is null
             || value.Length == 0
