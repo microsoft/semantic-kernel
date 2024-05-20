@@ -5,10 +5,12 @@ from typing import Any, Dict, List, Optional, TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
+@experimental_class
 class SemanticTextMemoryBase(KernelBaseModel):
     @abstractmethod
     async def save_information(

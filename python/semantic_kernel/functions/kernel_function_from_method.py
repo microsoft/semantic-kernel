@@ -62,7 +62,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 name="return",
                 description=method.__kernel_function_return_description__,  # type: ignore
                 default_value=None,
-                type=method.__kernel_function_return_type__,  # type: ignore
+                type_=method.__kernel_function_return_type__,  # type: ignore
                 is_required=method.__kernel_function_return_required__,  # type: ignore
             )
 
@@ -124,6 +124,8 @@ class KernelFunctionFromMethod(KernelFunction):
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
+            if param.name is None:
+                raise FunctionExecutionException("Parameter name cannot be None")
             if param.name == "kernel":
                 function_arguments[param.name] = context.kernel
                 continue
@@ -148,10 +150,13 @@ class KernelFunctionFromMethod(KernelFunction):
                             ) from exc
                     else:
                         try:
-                            value = param.type_object(value)
+                            if isinstance(value, dict) and hasattr(param.type_object, "__init__"):
+                                value = param.type_object(**value)
+                            else:
+                                value = param.type_object(value)
                         except Exception as exc:
                             raise FunctionExecutionException(
-                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                                f"Parameter {param.name} is expected to be parsed to {param.type_object} but is not."
                             ) from exc
                 function_arguments[param.name] = value
                 continue

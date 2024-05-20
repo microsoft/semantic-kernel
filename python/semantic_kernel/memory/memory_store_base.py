@@ -6,8 +6,10 @@ from typing import List, Tuple
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class MemoryStoreBase(ABC):
     async def __aenter__(self):
         return self
