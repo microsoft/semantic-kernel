@@ -7,10 +7,7 @@ from typing import TYPE_CHECKING, List
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -20,6 +17,7 @@ from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
+
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -37,12 +35,7 @@ you will return a full answer to me as soon as possible.
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
-kernel.add_service(
-    OpenAIChatCompletion(
-        service_id="chat",
-        ai_model_id="gpt-3.5-turbo-1106",
-    ),
-)
+kernel.add_service(OpenAIChatCompletion(service_id="chat"))
 
 plugins_directory = os.path.join(__file__, "../../../../../prompt_template_samples/")
 # adding plugins to the kernel
@@ -67,7 +60,6 @@ chat_function = kernel.add_function(
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
-    ai_model_id="gpt-3.5-turbo-1106",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
@@ -149,7 +141,7 @@ async def chat() -> bool:
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
 
-    stream = False
+    stream = True
     if stream:
         await handle_streaming(kernel, chat_function, arguments=arguments)
     else:

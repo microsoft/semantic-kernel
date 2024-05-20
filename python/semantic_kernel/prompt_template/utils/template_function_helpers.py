@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import nest_asyncio
 
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import HANDLEBARS_TEMPLATE_FORMAT_NAME
 
 if TYPE_CHECKING:
-    from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
 
@@ -30,7 +30,10 @@ def create_template_helper_from_function(
         nest_asyncio.apply()
 
     def func(*args, **kwargs):
-        arguments = base_arguments.copy()
+        arguments = KernelArguments()
+        if base_arguments and base_arguments.execution_settings:
+            arguments.execution_settings = base_arguments.execution_settings
+        arguments.update(base_arguments)
         arguments.update(kwargs)
 
         if len(args) > 0 and template_format == HANDLEBARS_TEMPLATE_FORMAT_NAME:
