@@ -30,6 +30,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(1, executionSettings.ResultsPerPrompt);
         Assert.Null(executionSettings.StopSequences);
         Assert.Null(executionSettings.TokenSelectionBiases);
+        Assert.Null(executionSettings.TopLogprobs);
+        Assert.Null(executionSettings.Logprobs);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 
@@ -47,6 +49,8 @@ public class OpenAIPromptExecutionSettingsTests
             StopSequences = new string[] { "foo", "bar" },
             ChatSystemPrompt = "chat system prompt",
             MaxTokens = 128,
+            Logprobs = true,
+            TopLogprobs = 5,
             TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
         };
 
@@ -97,6 +101,8 @@ public class OpenAIPromptExecutionSettingsTests
                 { "max_tokens", 128 },
                 { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
                 { "seed", 123456 },
+                { "logprobs", true },
+                { "top_logprobs", 5 },
             }
         };
 
@@ -105,7 +111,6 @@ public class OpenAIPromptExecutionSettingsTests
 
         // Assert
         AssertExecutionSettings(executionSettings);
-        Assert.Equal(executionSettings.Seed, 123456);
     }
 
     [Fact]
@@ -124,7 +129,10 @@ public class OpenAIPromptExecutionSettingsTests
                 { "stop_sequences", new [] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
                 { "max_tokens", "128" },
-                { "token_selection_biases", new Dictionary<string, string>() { { "1", "2" }, { "3", "4" } } }
+                { "token_selection_biases", new Dictionary<string, string>() { { "1", "2" }, { "3", "4" } } },
+                { "seed", 123456 },
+                { "logprobs", true },
+                { "top_logprobs", 5 }
             }
         };
 
@@ -149,7 +157,10 @@ public class OpenAIPromptExecutionSettingsTests
               "stop_sequences": [ "foo", "bar" ],
               "chat_system_prompt": "chat system prompt",
               "token_selection_biases": { "1": 2, "3": 4 },
-              "max_tokens": 128
+              "max_tokens": 128,
+              "seed": 123456,
+              "logprobs": true,
+              "top_logprobs": 5
             }
             """;
         var actualSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
@@ -255,5 +266,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
         Assert.Equal(128, executionSettings.MaxTokens);
+        Assert.Equal(123456, executionSettings.Seed);
+        Assert.Equal(true, executionSettings.Logprobs);
+        Assert.Equal(5, executionSettings.TopLogprobs);
     }
 }
