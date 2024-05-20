@@ -22,7 +22,7 @@ public class SKCheckedException extends Exception {
      *
      * @param message A string that describes the error.
      */
-    protected SKCheckedException(@Nullable String message) {
+    public SKCheckedException(@Nullable String message) {
         super(message);
     }
 
@@ -33,8 +33,37 @@ public class SKCheckedException extends Exception {
      * @param message A string that describes the error.
      * @param cause   The exception that is the cause of the current exception.
      */
-    protected SKCheckedException(@Nullable String message, @Nullable Throwable cause) {
+    public SKCheckedException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
+    }
+
+    public SKCheckedException(Throwable e) {
+        super(e);
+    }
+
+    /**
+     * Forms a checked exception, if the exception is already an SK exception, it will be unwrapped
+     * and the cause extracted.
+     *
+     * @param message The message to be displayed
+     * @param e       The exception to be thrown
+     * @return A checked exception
+     */
+    public static SKCheckedException build(
+        String message,
+        @Nullable Exception e) {
+
+        if (e == null) {
+            return new SKCheckedException(message);
+        }
+
+        Throwable cause = e.getCause();
+
+        if ((e instanceof SKCheckedException || e instanceof SKException) && cause != null) {
+            return new SKCheckedException(message, cause);
+        } else {
+            return new SKCheckedException(message, e);
+        }
     }
 
     /**

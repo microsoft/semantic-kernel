@@ -1,3 +1,8 @@
+# 1.1.3
+
+- Fix bug appending plugin name to tool calls
+- Improve exception handling in OpenAIChatCompletion
+
 # 1.1.2
 
 - Upgrade azure-identity to 1.12.1
