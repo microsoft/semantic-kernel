@@ -11,7 +11,7 @@ consulted: stephentoub
 
 ## Context and Problem Statement
 
-Currently, we have many Content Types in expermental state and this ADR will give some options on how to graduate them to stable state.
+Currently, we have many Content Types in experimental state and this ADR will give some options on how to graduate them to stable state.
 
 ## Decision Drivers
 
@@ -22,13 +22,9 @@ Currently, we have many Content Types in expermental state and this ADR will giv
 
 ## BinaryContent Graduation
 
-Currently Experimental for OpenAIFileService
+This content should be by content specializations or directly for types that aren't specific, similar to "application/octet-stream" mime type.
 
-Encouraged to be used as a content for types that aren't specific. Similar to "octet-stream" in mime types.
-
-> The MIME type for octet-stream, which is used for arbitrary binary data or a stream of bytes that doesn't fit any other more specific MIME type, is application/octet-stream. This MIME type is often used as a default or fallback type, indicating that the file should be treated as pure binary data.
-
-This content works for both deferred (stream factory) and non-deferred content (byte array).
+> **Application/Octet-Stream** is the MIME used for arbitrary binary data or a stream of bytes that doesn't fit any other more specific MIME type. This MIME type is often used as a default or fallback type, indicating that the file should be treated as pure binary data.
 
 #### Current
 
@@ -46,39 +42,54 @@ public class BinaryContent : KernelContent
 
 #### Proposed
 
-- No Content property (This can clash and be misleading when specialized Binary content types are used)
-- No GetContentAsync method (This can clash and be misleading when specialized Binary content types are used)
-- Add GetBytesAsync method (To retrieve the content as byte array)
-- Add `IsRetrievable` property (To indicate if the content can be retrieved as bytes or stream)
-- Add Empty ctor for non-retrievable content
-- Add Lazy retrieval for `bytes` and `stream`
-
-**`IsRetrievable`** was selected over `IsExternal`|`IsReferenced` as a streamProvider can be provided (by the connector) to retrieve the content lazily regardless of the content being external or not.
-
-Attempting to get the content as bytes or stream when `IsRetrievable` is false will throw `KernelException("Content is not retrievable")`
-
 ```csharp
 public class BinaryContent : KernelContent
 {
-    public async Task<ReadOnlyMemory<byte>>? GetBytesAsync()
-    public async Task<Stream> GetStreamAsync()
-    bool IsRetrievable { get; } // Indicates if the content can be retrieved as bytes or stream (false for external content that requires customer to handle retrieval)
+    ReadOnlyMemory<byte>? Data { get; set; }
+    Uri? Uri { get; set; }
+    string DataUri { get; set; }
 
-    ctor(ReadOnlyMemory<byte> bytes) => this(() => Task.FromResult(bytes)) // Shortcut for byte array content
-    ctor(Func<Task<ReadOnlyMemory<byte>>> bytesProvider) // Lazy byte array content
-    ctor(Func<Task<Stream>> streamProvider) // Lazy stream content
-    ctor() // Empty ctor for non-retrievable content
+    bool CanRead { get; } // Indicates if the content can be read as bytes or data uri
+
+    ctor(Uri? referencedUri)
+    ctor(string dataUri)
+    // MimeType is not optional but nullable to encourage this information to be passed always when available.
+    ctor(ReadOnlyMemory<byte> data, string? mimeType)
+    ctor() // Empty ctor for serialization scenarios
 }
 ```
 
+- No Content property (Avoid clashing and/or misleading information if used from a specialized type context)
+
+  i.e:
+
+  - `PdfContent.Content` (Describe the text only information)
+  - `PictureContent.Content` (Exposes a `Picture` type)
+
+- Move away from deferred (lazy loaded) content providers, simpler API.
+- `GetContentAsync` removal (No more derrefed APIs)
+- Added `Data` property as setter and getter for byte array content information.
+
+  Setting this property will override the `DataUri` base64 data part.
+
+- Added `DataUri` property as setter and getter for data uri content information.
+
+  Setting this property will override the `Data` and `MimeType` properties with the current payload details.
+
+- Add `Uri` property for referenced content information. This property is does not accept not a `UriData` and only supports non-data schemes.
+- Add `CanRead` property (To indicate if the content can be read using `Data` or `DataUri` properties.)
+- Dedicated constructors for Uri, DataUri and ByteArray + MimeType creation.
+
 Pros:
 
-- Clearer API
-- Open for extension
-  - No `Content` property to clash with specialized Binary content types
-  - No `GetContentAsync` method to clash with specialized Binary content types
-- `IsRetrievable` will clearly identify if the content can be retrieved as `bytes` or `stream`
-- Allow for lazy retrieval of content on both `bytes` and `stream` types
+- With no deferred content we have simpler API and a single responsibility for contents.
+- Can be written and read in both `Data` or `DataUri` formats.
+- Can have a `Uri` reference property, which is common for specialized contexts.
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
+- Data Uri and Base64 validation checks
+- Data Uri and Data can be dinamically generated
+- `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
 
@@ -88,62 +99,40 @@ Cons:
 
 #### ImageContent
 
-`ImageContent -> BinaryContent -> KernelContent`
-
-Not all `ImageContent`s have retriveable `BinaryContent` for scenarios like this the `ImageContent` can be created with a `Uri` and `IsRetrievable` will be false like in the example below.
-
 ```csharp
 public class ImageContent : BinaryContent
 {
-    // ... Image specific properties ...
-    Uri? Uri => BuildUri(); // Dinamically build the Uri based on how the image was created
-
-    // Inheritance - Retrievable image content
-    ctor(ReadOnlyMemory<byte>? content = null) : base(content)
-    ctor(Func<Task<Stream>> streamProvider) : base(streamProvider)
-
-    // Specialized - Non-Retrievable image content
-    ctor(Uri uri) : base()
+    ctor(Uri uri) : base(uri)
+    ctor(string dataUri) : base(dataUri)
+    ctor(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
+    ctor() // serialization scenarios
 }
-```
 
-#### FileContent
-
-⚠️ Not in the scope of this ADR (Will be in new contents ADR)
-
-`FileContent` as a `KernelContent` decoration for file specific content information.
-
-```csharp
-public class FileContent : KernelContent
+public class AudioContent : BinaryContent
 {
-    // More file specific properties ...
-    public string FileName { get; set; }
-
-    // Reference to the binary content
-    public MimeType => Content.MimeType;
-    public Metadata => Content.Metadata;
-
-    // Retrievable binary file content
-    public BinaryContent Content { get; set; }
-
-    ctor(KernelContent content, string fileName, string mimeType)
+    ctor(Uri uri)
 }
-
 ```
+
+Pros:
+
+- Supports data uri large contents
+- Allows a binary ImageContent to be created using dataUrl scheme and also be referenced by a Url.
+- Supports Data Uri validation
 
 ## ImageContent Graduation
 
-⚠️ Currently this is experimental, breaking changes needed.
+⚠️ Currently this is not experimental, breaking changes needed to be graduated to stable state with potential benefits.
 
-⚠️ Can be graduated to stable state with potential benefits.
+### Problems
+
+1. Current `ImageContent` does not derive from `BinaryContent`
+2. Has an undesireable behavior allowing the same instance to have distinct `DataUri` and `Data` at the same time.
+3. `Uri` property is used for both data uri and referenced uri information
+4. `Uri` does not support large language data uri formats.
+5. Not clear to the `sk developer` whenever the content is readable or not.
 
 #### Current
-
-- Has two properties `Uri` and `Data` that are mutually exclusive.
-- Is not a `BinaryContent` type
-- Don't support `Stream` type.
-- Don't support lazy retrieval.
-- Don't have a clear way to indicate if the content is retrievable.
 
 ```csharp
 public class ImageContent : KernelContent
@@ -159,34 +148,29 @@ public class ImageContent : KernelContent
 
 #### Proposed
 
-As already shown in the `BinaryContent` section examples, the `ImageContent` can be graduated to be a `BinaryContent` specialization with `Uri` property as a dynamic property.
+As already shown in the `BinaryContent` section examples, the `ImageContent` can be graduated to be a `BinaryContent` specialization an inherit all the benefits it brings.
 
 ```csharp
 public class ImageContent : BinaryContent
 {
-    // ... Image specific properties ...
-    Uri? Uri => BuildUri(); // Dinamically build the Uri
-    // OR / AND
-    Task<Uri>? GetUriAsync() => BuildUriAsync(); // Dinamically build the Uri for lazy loading scenarios
-
-    // Retrievable image content
-    ctor(ReadOnlyMemory<byte> bytes) : base(bytes)
-    ctor(Funv<Task<ReadOnlyMemory<byte>> bytesProvider) : base(bytesProvider)
-    ctor(Func<Task<Stream>> streamProvider) : base(streamProvider)
-
-    // When Uri is not DataUrl, this will be non-retrievable content
-    ctor(Uri uri)
+    ctor(Uri uri) : base(uri)
+    ctor(string dataUri) : base(dataUri)
+    ctor(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
+    ctor() // serialization scenarios
 }
 ```
 
 Pros:
 
 - Can be used as a `BinaryContent` type
-- Can be retrieved as bytes or stream
-- Cabnbe lazily retrieved
-- Uri is a dynamic property, no more mutually exclusive `Uri` or `Data` properties
-- `IsRetrievable` will clearly identify if the content can be retrieved as `bytes`, `stream` or `DataUri`.
-- Creating with a non DataUri in the constructor will make it non-retrievable
+- Can be written and read in both `Data` or `DataUri` formats.
+- Can have a `Uri` dedicated for referenced location.
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
+- Data Uri and Base64 validation checks
+- Can be retrieved
+- Data Uri and Data can be dinamically generated
+- `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
 
@@ -194,15 +178,14 @@ Cons:
 
 ## AudioContent Graduation
 
-Similar to `ImageContent` proposal `AudioContent` can be graduated to be a `BinaryContent` specialization with `Uri` as a dynamic property.
+Similar to `ImageContent` proposal `AudioContent` can be graduated to be a `BinaryContent`.
 
 #### Current
 
-- Has no support for referenced `Uri` audio content.
-- Is not a `BinaryContent` type
-- Don't support `Stream` type.
-- Don't support lazy retrieval.
-- Don't have a clear way to indicate if the content is retrievable.
+1. Current `AudioContent` does not derive support `Uri` referenced location
+2. `Uri` property is used for both data uri and referenced uri information
+3. `Uri` does not support large language data uri formats.
+4. Not clear to the `sk developer` whenever the content is readable or not.
 
 ```csharp
 public class AudioContent : KernelContent
@@ -219,34 +202,28 @@ public class AudioContent : KernelContent
 ```csharp
 public class AudioContent : BinaryContent
 {
-    // ... Audio specific properties ...
-    Uri? Uri => BuildUri(); // Dinamically build the Uri or DataUrl for the audio
-
-    // OR / AND
-    Task<Uri>? GetUriAsync() => BuildUriAsync(); // Dinamically build the Uri for lazy loading scenarios
-
-    // Retrievable audio content
-    ctor(ReadOnlyMemory<byte> bytes) : base(bytes)
-    ctor(Funv<Task<ReadOnlyMemory<byte>> bytesProvider) : base(bytesProvider)
-    ctor(Func<Task<Stream>> streamProvider) : base(streamProvider)
-
-    // When Uri is not DataUrl, this will be non-retrievable content
-    ctor(Uri uri)
+    ctor(Uri uri) : base(uri)
+    ctor(string dataUri) : base(dataUri)
+    ctor(ReadOnlyMemory<byte> data, string? mimeType) : base(data, mimeType)
+    ctor() // serialization scenarios
 }
 ```
 
 Pros:
 
 - Can be used as a `BinaryContent` type
-- Can be retrieved as `bytes`, `stream`, or `DataUri`
-- Cab be lazily retrieved
-- Uri is a dynamic property
-- `IsRetrievable` will clearly identify if the content can be retrieved as `bytes`, `stream` or `DataUri`.
-- Creating with a non DataUri in the constructor will make it non-retrievable
+- Can be written and read in both `Data` or `DataUri` formats.
+- Can have a `Uri` dedicated for referenced location.
+- Fully serializeable.
+- Data Uri parameters support (serialization included).
+- Data Uri and Base64 validation checks
+- Can be retrieved
+- Data Uri and Data can be dinamically generated
+- `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
 
-- Experimental Breaking change for `AudioContent` consumers
+- Experimental breaking change for `AudioContent` consumers
 
 ## FunctionCallContent Graduation
 
@@ -272,17 +249,9 @@ public sealed class FunctionCallContent : KernelContent
 }
 ```
 
-### Problem
-
-It may require a dedicated ADR to the naming standardization between `FunctionCallContent` and `FunctionInvocationContent`, as we have `IAutoFunctionInvocationFilter` naming related for `FunctionCall`.
-
-Those names should be aligned between using `Call` or `Invocation` to avoid confusion, and then we can graduate to stable state.
-
-## FunctinoResultContent Graduation
+## FunctionResultContent Graduation
 
 It may require some changes although the current structure is good.
-
-⚠️ Depending on the decision between `Call` or `Invocation`, consider the same below where reades `Call`.
 
 ### Current
 
@@ -305,7 +274,7 @@ public sealed class FunctionResultContent : KernelContent
 
 ### Proposed - Option 1
 
-- Rename `Id` to `CallId` or `FunctionCallId` to avoid confusion.
+- Rename `Id` to `CallId` to avoid confusion.
 - Adjust `ctor` parameters names.
 
 ```csharp

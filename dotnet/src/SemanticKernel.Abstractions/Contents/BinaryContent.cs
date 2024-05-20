@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
@@ -192,7 +193,7 @@ public class BinaryContent : KernelContent
             {
                 foreach (var property in this.Metadata)
                 {
-                    newMetadata[property.Key] = property.Value;
+                    newMetadata[$"data-uri-{property.Key}"] = property.Value;
                 }
             }
         }
@@ -201,10 +202,30 @@ public class BinaryContent : KernelContent
         foreach (var property in parsedDataUri.Parameters)
         {
             // Set the properties from the DataUri metadata
-            newMetadata[property.Key] = property.Value;
+            newMetadata[$"data-uri-{property.Key}"] = property.Value;
         }
 
         this.Metadata = newMetadata;
+    }
+
+    private string GetDataUriParametersFromMetadata()
+    {
+        var metadata = this.Metadata;
+        if (metadata is null || metadata.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        StringBuilder parameters = new();
+        foreach (var property in metadata)
+        {
+            if (property.Key.StartsWith("data-uri-", StringComparison.OrdinalIgnoreCase))
+            {
+                parameters.Append($";{property.Key.AsSpan(9).ToString()}={property.Value}");
+            }
+        }
+
+        return parameters.ToString();
     }
 
     /// <summary>
@@ -265,7 +286,7 @@ public class BinaryContent : KernelContent
             throw new InvalidOperationException("Can't get the data uri with without a mime type defined for the content.");
         }
 
-        this._dataUri = $"data:{this.MimeType};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
+        this._dataUri = $"data:{this.MimeType}{this.GetDataUriParametersFromMetadata()};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
         return this._dataUri;
     }
 
@@ -277,27 +298,6 @@ public class BinaryContent : KernelContent
         }
 
         return this._data;
-    }
-
-    private bool ValidateDataUri(string dataUri)
-    {
-#pragma warning disable CA2249 // Do not pass literals as localized parameters
-        // Check if the dataUri has a mimeType defined.
-        var mimeTypeIndex = dataUri.IndexOf(';');
-        if (mimeTypeIndex == -1)
-        {
-            return false;
-        }
-
-        // Check if the dataUri has a base64 content.
-        var base64Index = dataUri.IndexOf(',');
-        if (base64Index == -1)
-        {
-            return false;
-        }
-
-        return true;
-#pragma warning restore CA2249 // Do not pass literals as localized parameters
     }
     #endregion
 }

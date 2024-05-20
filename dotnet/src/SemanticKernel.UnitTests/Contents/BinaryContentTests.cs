@@ -230,12 +230,12 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData("data:;parameter1=value1,", "{}", """{"parameter1":"value1"}""")] // Should create extra data
-    [InlineData("data:;parameter1=value1,", """{"metadata":{"parameter1":"should override me"}}""", """{"parameter1":"value1"}""")] // Should override existing data
-    [InlineData("data:;parameter1=value1,", """{"metadata":{"parameter2":"value2"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:;parameter1=value1;parameter2=value2,data", """{"metadata":{"parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"parameter3":"existing data", "parameter2":"should override me"}}""", """{"parameter1":"value1","parameter2":"value2","parameter3":"existing data"}""")] // Should keep previous metadata
+    [InlineData("data:;parameter1=value1,", "{}", """{"data-uri-parameter1":"value1"}""")] // Should create extra data
+    [InlineData("data:;parameter1=value1,", """{"metadata":{"data-uri-parameter1":"should override me"}}""", """{"data-uri-parameter1":"value1"}""")] // Should override existing data
+    [InlineData("data:;parameter1=value1,", """{"metadata":{"data-uri-parameter2":"value2"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:;parameter1=value1;parameter2=value2,data", """{"metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"data-uri-parameter3":"existing data", "data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2","data-uri-parameter3":"existing data"}""")] // Should keep previous metadata
     public void DataUriConstructorWhenProvidingParametersUpdatesMetadataAsExpected(string path, string startingSerializedBinaryContent, string expectedSerializedMetadata)
     {
         // Arrange
@@ -251,5 +251,24 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
             Assert.True(content.Metadata.ContainsKey(kvp.Key));
             Assert.Equal(kvp.Value?.ToString(), content.Metadata[kvp.Key]?.ToString());
         }
+    }
+
+    [Fact]
+    public void DeserializesParameterizedDataUriAsExpected()
+    {
+        // Arrange
+        var content = new BinaryContent();
+        content.Data = new ReadOnlyMemory<byte>(Convert.FromBase64String("U29tZSBkYXRh"));
+        content.MimeType = "application/json";
+        content.Metadata = new Dictionary<string, object?>
+        {
+            { "data-uri-parameter1", "value1" },
+            { "data-uri-parameter2", "value2" }
+        };
+
+        var expectedDataUri = "data:application/json;parameter1=value1;parameter2=value2;base64,U29tZSBkYXRh";
+
+        // Act & Assert
+        Assert.Equal(expectedDataUri, content.DataUri);
     }
 }
