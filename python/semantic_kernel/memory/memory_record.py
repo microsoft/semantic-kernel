@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import Optional
 
 from numpy import ndarray
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
-
+@experimental_class
 class MemoryRecord:
     _key: str
     _timestamp: Optional[datetime]
