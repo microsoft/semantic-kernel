@@ -205,7 +205,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
-        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
+        ThrowForInvalidSignatureIf(method.ContainsGenericParameters, method, "Open generic methods are not supported");
 
         if (functionName is null)
         {
@@ -789,7 +789,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
-    private static string SanitizeMetadataName(string methodName) =>
+    internal static string SanitizeMetadataName(string methodName) =>
         InvalidNameCharsRegex().Replace(methodName, "_");
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
