@@ -166,7 +166,7 @@ internal abstract class ClientCore
             activity?.SetCompletionResponse(responseContent, responseData.Usage.PromptTokens, responseData.Usage.CompletionTokens);
         }
 
-        this.CaptureUsageDetails(responseData.Usage);
+        this.LogUsage(responseData.Usage);
 
         return responseContent;
     }
@@ -384,7 +384,7 @@ internal abstract class ClientCore
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
         // Create the Azure SDK ChatCompletionOptions instance from all available information.
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         for (int requestIndex = 1; ; requestIndex++)
         {
@@ -396,7 +396,7 @@ internal abstract class ClientCore
                 try
                 {
                     responseData = (await RunRequestAsync(() => this.Client.GetChatCompletionsAsync(chatOptions, cancellationToken)).ConfigureAwait(false)).Value;
-                    this.CaptureUsageDetails(responseData.Usage);
+                    this.LogUsage(responseData.Usage);
                     if (responseData.Choices.Count == 0)
                     {
                         throw new KernelException("Chat completions not found");
@@ -642,7 +642,7 @@ internal abstract class ClientCore
         bool autoInvoke = kernel is not null && chatExecutionSettings.ToolCallBehavior?.MaximumAutoInvokeAttempts > 0 && s_inflightAutoInvokes.Value < MaxInflightAutoInvokes;
         ValidateAutoInvoke(autoInvoke, chatExecutionSettings.ResultsPerPrompt);
 
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         StringBuilder? contentBuilder = null;
         Dictionary<int, string>? toolCallIdsByIndex = null;
@@ -662,6 +662,8 @@ internal abstract class ClientCore
             string? streamedName = null;
             ChatRole? streamedRole = default;
             CompletionsFinishReason finishReason = default;
+            ChatCompletionsFunctionToolCall[]? toolCalls = null;
+            FunctionCallContent[]? functionCallContents = null;
 
             using (var activity = ModelDiagnostics.StartCompletionActivity(this.Endpoint, this.DeploymentOrModelName, ModelProvider, chat, chatExecutionSettings))
             {
@@ -717,10 +719,16 @@ internal abstract class ClientCore
                         streamedContents?.Add(openAIStreamingChatMessageContent);
                         yield return openAIStreamingChatMessageContent;
                     }
+
+                    // Translate all entries into ChatCompletionsFunctionToolCall instances.
+                    toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+                        ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                    // Translate all entries into FunctionCallContent instances for diagnostics purposes.
+                    functionCallContents = ModelDiagnostics.IsSensitiveEventsEnabled() ? toolCalls.Select(this.GetFunctionCallContent).ToArray() : null;
                 }
                 finally
                 {
-                    activity?.EndStreaming(streamedContents);
+                    activity?.EndStreaming(streamedContents, functionCallContents);
                     await responseEnumerator.DisposeAsync();
                 }
             }
@@ -738,10 +746,6 @@ internal abstract class ClientCore
             // Get any response content that was streamed.
             string content = contentBuilder?.ToString() ?? string.Empty;
 
-            // Translate all entries into ChatCompletionsFunctionToolCall instances.
-            ChatCompletionsFunctionToolCall[] toolCalls = OpenAIFunctionToolCall.ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
-                ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
-
             // Log the requests
             if (this.Logger.IsEnabled(LogLevel.Trace))
             {
@@ -755,7 +759,17 @@ internal abstract class ClientCore
             // Add the original assistant message to the chatOptions; this is required for the service
             // to understand the tool call responses.
             chatOptions.Messages.Add(GetRequestMessage(streamedRole ?? default, content, streamedName, toolCalls));
-            chat.Add(new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata) { AuthorName = streamedName });
+            // Add the result message to the caller's chat history
+            var newChatMessageContent = new OpenAIChatMessageContent(streamedRole ?? default, content, this.DeploymentOrModelName, toolCalls, metadata)
+            {
+                AuthorName = streamedName
+            };
+            // Add the tool call messages to the new chat message content for diagnostics purposes.
+            foreach (var functionCall in functionCallContents ?? [])
+            {
+                newChatMessageContent.Items.Add(functionCall);
+            }
+            chat.Add(newChatMessageContent);
 
             // Respond to each tooling request.
             for (int toolCallIndex = 0; toolCallIndex < toolCalls.Length; toolCallIndex++)
@@ -1036,7 +1050,7 @@ internal abstract class ClientCore
             Echo = false,
             ChoicesPerPrompt = executionSettings.ResultsPerPrompt,
             GenerationSampleCount = executionSettings.ResultsPerPrompt,
-            LogProbabilityCount = null,
+            LogProbabilityCount = executionSettings.TopLogprobs,
             User = executionSettings.User,
             DeploymentName = deploymentOrModelName
         };
@@ -1060,7 +1074,7 @@ internal abstract class ClientCore
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(
+    private ChatCompletionsOptions CreateChatCompletionsOptions(
         OpenAIPromptExecutionSettings executionSettings,
         ChatHistory chatHistory,
         Kernel? kernel,
@@ -1069,6 +1083,13 @@ internal abstract class ClientCore
         if (executionSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
             throw new ArgumentOutOfRangeException($"{nameof(executionSettings)}.{nameof(executionSettings.ResultsPerPrompt)}", executionSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+        }
+
+        if (this.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(executionSettings));
         }
 
         var options = new ChatCompletionsOptions
@@ -1081,7 +1102,9 @@ internal abstract class ClientCore
             ChoiceCount = executionSettings.ResultsPerPrompt,
             DeploymentName = deploymentOrModelName,
             Seed = executionSettings.Seed,
-            User = executionSettings.User
+            User = executionSettings.User,
+            LogProbabilitiesPerToken = executionSettings.TopLogprobs,
+            EnableLogProbabilities = executionSettings.Logprobs
         };
 
         switch (executionSettings.ResponseFormat)
@@ -1350,48 +1373,52 @@ internal abstract class ClientCore
             // This allows consumers to work with functions in an LLM-agnostic way.
             if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
             {
-                Exception? exception = null;
-                KernelArguments? arguments = null;
-                try
-                {
-                    arguments = JsonSerializer.Deserialize<KernelArguments>(functionToolCall.Arguments);
-                    if (arguments is not null)
-                    {
-                        // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
-                        var names = arguments.Names.ToArray();
-                        foreach (var name in names)
-                        {
-                            arguments[name] = arguments[name]?.ToString();
-                        }
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
-
-                    if (this.Logger.IsEnabled(LogLevel.Debug))
-                    {
-                        this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", functionToolCall.Name, functionToolCall.Id);
-                    }
-                }
-
-                var functionName = FunctionName.Parse(functionToolCall.Name, OpenAIFunction.NameSeparator);
-
-                var functionCallContent = new FunctionCallContent(
-                    functionName: functionName.Name,
-                    pluginName: functionName.PluginName,
-                    id: functionToolCall.Id,
-                    arguments: arguments)
-                {
-                    InnerContent = functionToolCall,
-                    Exception = exception
-                };
-
+                var functionCallContent = this.GetFunctionCallContent(functionToolCall);
                 message.Items.Add(functionCallContent);
             }
         }
 
         return message;
+    }
+
+    private FunctionCallContent GetFunctionCallContent(ChatCompletionsFunctionToolCall toolCall)
+    {
+        KernelArguments? arguments = null;
+        Exception? exception = null;
+        try
+        {
+            arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.Arguments);
+            if (arguments is not null)
+            {
+                // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
+                var names = arguments.Names.ToArray();
+                foreach (var name in names)
+                {
+                    arguments[name] = arguments[name]?.ToString();
+                }
+            }
+        }
+        catch (JsonException ex)
+        {
+            exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
+
+            if (this.Logger.IsEnabled(LogLevel.Debug))
+            {
+                this.Logger.LogDebug(ex, "Failed to deserialize function arguments ({FunctionName}/{FunctionId}).", toolCall.Name, toolCall.Id);
+            }
+        }
+
+        var functionName = FunctionName.Parse(toolCall.Name, OpenAIFunction.NameSeparator);
+
+        return new FunctionCallContent(
+            functionName: functionName.Name,
+            pluginName: functionName.PluginName,
+            id: toolCall.Id,
+            arguments: arguments)
+        {
+            InnerContent = toolCall,
+            Exception = exception
+        };
     }
 
     private static void ValidateMaxTokens(int? maxTokens)
@@ -1428,15 +1455,11 @@ internal abstract class ClientCore
     /// Captures usage details, including token information.
     /// </summary>
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
-    private void CaptureUsageDetails(CompletionsUsage usage)
+    private void LogUsage(CompletionsUsage usage)
     {
         if (usage is null)
         {
-            if (this.Logger.IsEnabled(LogLevel.Debug))
-            {
-                this.Logger.LogDebug("Usage information is not available.");
-            }
-
+            this.Logger.LogDebug("Token usage information unavailable.");
             return;
         }
 

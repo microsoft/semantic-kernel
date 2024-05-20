@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from functools import reduce
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 prompt = """
@@ -71,11 +73,17 @@ async def chat(chat_history: ChatHistory) -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.invoke(chat_function, user_input=user_input, chat_history=chat_history)
+    print("ChatBot:> ", end="")
+    streamed_chunks: list[StreamingChatMessageContent] = []
+    responses = kernel.invoke_stream(chat_function, user_input=user_input, chat_history=chat_history)
+    async for message in responses:
+        streamed_chunks.append(message[0])
+        print(str(message[0]), end="")
+    print("")
     chat_history.add_user_message(user_input)
-    chat_history.add_assistant_message(str(answer))
-
-    print(f"ChatBot:> {answer}")
+    if streamed_chunks:
+        streaming_chat_message = reduce(lambda first, second: first + second, streamed_chunks)
+        chat_history.add_message(streaming_chat_message)
     return True
 
 

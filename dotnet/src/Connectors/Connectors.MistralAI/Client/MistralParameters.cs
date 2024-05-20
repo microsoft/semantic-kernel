@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// <summary>
 /// Represents the parameters of a MistralAI function.
 /// </summary>
-internal class MistralParameters
+internal sealed class MistralParameters
 {
     /// <summary>
     /// Gets or sets the type of the parameters. This is always "object".
@@ -26,5 +26,5 @@ internal class MistralParameters
     /// Gets or sets the list of required properties.
     /// </summary>
     [JsonPropertyName("required")]
-    public IList<string> Required { get; set; } = new List<string>();
+    public IList<string> Required { get; set; } = [];
 }
