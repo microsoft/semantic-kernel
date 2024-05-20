@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from pydantic import ConfigDict
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -11,13 +13,10 @@ class KernelJsonSchema(KernelBaseModel):
     inferred: bool = False
     schema_data: dict[str, Any] | None = None
 
-    class ConfigDict:
-        """Pydantic configuration for KernelJsonSchema."""
+    model_config = ConfigDict(json_encoders={dict: lambda v: json.dumps(v, indent=2)})
 
-        json_encoders = {dict: lambda v: json.dumps(v, indent=2)}
-
-    @staticmethod
-    def parse_or_null(json_schema: str | None) -> "KernelJsonSchema" | None:
+    @classmethod
+    def parse_or_null(cls, json_schema: str | None) -> "KernelJsonSchema" | None:
         """Parses a JSON schema or returns None if the input is null or empty."""
         if json_schema and json_schema.strip():
             try:
@@ -27,8 +26,8 @@ class KernelJsonSchema(KernelBaseModel):
                 return None
         return None
 
-    @staticmethod
-    def parse(json_schema: str) -> "KernelJsonSchema":
+    @classmethod
+    def parse(cls, json_schema: str) -> "KernelJsonSchema":
         """Parses a JSON schema."""
         if not json_schema:
             raise ValueError("json_schema cannot be null or empty")
