@@ -15,5 +15,6 @@
 
     <modules>
         <module>booking-agent-m365</module>
+        <module>semantickernel-spring-starter</module>
     </modules>
 </project>

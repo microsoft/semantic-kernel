@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.azureopenai;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,7 +24,7 @@ public class SemanticKernelAutoConfigurationTest {
     public void testSemanticKernelAutoConfig() {
         ApplicationContextRunner runner = new ApplicationContextRunner();
         runner.withPropertyValues(
-            // @formatter:off
+        // @formatter:off
             "client.azureopenai.key=TEST_KEY",
             "client.azureopenai.endpoint=TEST_ENDPOINT"
             // @formatter:on
