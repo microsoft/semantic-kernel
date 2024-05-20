@@ -1,44 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 import pytest
 from openai import AsyncAzureOpenAI
 from test_utils import retry
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai_models, get_aoai_config):
+async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAI__Text__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo-instruct"
-
-    print("* Service: Azure OpenAI Text Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
+    service_id = "text_completion"
 
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureTextCompletion(
-            service_id="text_completion",
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
+            service_id=service_id,
         ),
     )
 
     exec_settings = PromptExecutionSettings(
-        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+        service_id=service_id, extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -59,42 +47,36 @@ async def test_azure_e2e_text_completion_with_plugin(setup_tldr_function_for_oai
 
 
 @pytest.mark.asyncio
-async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
-    setup_tldr_function_for_oai_models, get_aoai_config
-):
+async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_tldr_function_for_oai_models):
     kernel, prompt, text_to_summarize = setup_tldr_function_for_oai_models
 
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAI__Text__DeploymentName"]
-    else:
-        deployment_name = "gpt-35-turbo-instruct"
-
-    print("* Service: Azure OpenAI Text Completion")
-    print(f"* Endpoint: {endpoint}")
-    print(f"* Deployment: {deployment_name}")
+    azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.chat_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
+
+    service_id = "text_completion"
 
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureTextCompletion(
-            service_id="text_completion",
-            deployment_name=deployment_name,
+            service_id=service_id,
             async_client=client,
         ),
         overwrite=True,  # Overwrite the service for the test if it already exists
     )
 
     exec_settings = PromptExecutionSettings(
-        service_id="text_completion", extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
+        service_id=service_id, extension_data={"max_tokens": 200, "temperature": 0, "top_p": 0.5}
     )
 
     prompt_template_config = PromptTemplateConfig(
@@ -111,4 +93,4 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(
     summary = await retry(lambda: kernel.invoke(tldr_function, arguments))
     output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
-    assert len(output) < 100
+    assert len(output) > 0

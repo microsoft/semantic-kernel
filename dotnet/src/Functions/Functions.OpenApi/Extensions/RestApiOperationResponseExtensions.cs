@@ -47,7 +47,7 @@ public static class RestApiOperationResponseExtensions
         try
         {
             var jsonSchema = JsonSchema.FromText(JsonSerializer.Serialize(response.ExpectedSchema));
-            using var contentDoc = JsonDocument.Parse(response.Content.ToString());
+            using var contentDoc = JsonDocument.Parse(response.Content.ToString() ?? "");
             var result = jsonSchema.Evaluate(contentDoc);
             return result.IsValid;
         }
@@ -57,7 +57,7 @@ public static class RestApiOperationResponseExtensions
         }
     }
 
-    private static bool ValidateXml(RestApiOperationResponse response)
+    private static bool ValidateXml(RestApiOperationResponse _)
     {
         // todo -- implement
         return true;

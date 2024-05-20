@@ -1,15 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
-import os
 import random
 import time
 
 import numpy as np
 import pytest
 import pytest_asyncio
+from pydantic import ValidationError
 from pymongo import errors
 
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import (
     MongoDBAtlasMemoryStore,
+)
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import (
+    MongoDBAtlasSettings,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -64,11 +67,18 @@ def test_collection():
     return f"AVSTest-{random.randint(0,9999)}"
 
 
+@pytest.fixture(scope="session")
+def connection_string():
+    try:
+        mongodb_atlas_settings = MongoDBAtlasSettings.create()
+        return mongodb_atlas_settings.api_key.get_secret_value()
+    except ValidationError:
+        pytest.skip("MongoDB Atlas connection string not found in env vars.")
+
+
 @pytest_asyncio.fixture
 async def vector_search_store():
-    if "Python_Integration_Tests" in os.environ:
-        connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
-    async with MongoDBAtlasMemoryStore(connection_string=connection_string, database_name="pyMSKTest") as memory:
+    async with MongoDBAtlasMemoryStore(connection_string, database_name="pyMSKTest") as memory:
         # Delete all collections before and after
         for cname in await memory.get_collections():
             await memory.delete_collection(cname)
@@ -105,9 +115,7 @@ async def vector_search_store():
 @pytest_asyncio.fixture
 async def nearest_match_store():
     """Fixture for read only vector store; the URI for test needs atlas configured"""
-    if "Python_Integration_Tests" in os.environ:
-        connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
-    async with MongoDBAtlasMemoryStore(connection_string=connection_string, database_name="pyMSKTest") as memory:
+    async with MongoDBAtlasMemoryStore(connection_string, database_name="pyMSKTest") as memory:
         if not await memory.does_collection_exist("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "

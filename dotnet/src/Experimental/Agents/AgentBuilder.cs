@@ -262,7 +262,7 @@ public partial class AgentBuilder
     /// <returns><see cref="AgentBuilder"/> instance for fluid expression.</returns>
     public AgentBuilder WithPlugin(KernelPlugin? plugin)
     {
-        if (plugin != null)
+        if (plugin is not null)
         {
             this._plugins.Add(plugin);
         }

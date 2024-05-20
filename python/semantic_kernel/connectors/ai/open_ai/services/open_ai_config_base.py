@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Mapping, Optional
 
 from openai import AsyncOpenAI
-from pydantic import Field, validate_call
+from pydantic import ConfigDict, Field, validate_call
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
@@ -16,7 +16,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIConfigBase(OpenAIHandler):
-    @validate_call(config=dict(arbitrary_types_allowed=True))
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
         self,
         ai_model_id: str = Field(min_length=1),

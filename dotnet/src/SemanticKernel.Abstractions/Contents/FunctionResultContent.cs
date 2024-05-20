@@ -82,6 +82,6 @@ public sealed class FunctionResultContent : KernelContent
     /// <returns>The <see cref="ChatMessageContent"/> instance.</returns>
     public ChatMessageContent ToChatMessage()
     {
-        return new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection() { this });
+        return new ChatMessageContent(AuthorRole.Tool, [this]);
     }
 }

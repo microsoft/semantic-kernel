@@ -35,7 +35,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     url: HttpUrl = "http://localhost:11434/api/chat"
     session: Optional[aiohttp.ClientSession] = None
 
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
@@ -70,7 +70,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     )
                 ]
 
-    async def complete_chat_stream(
+    async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
@@ -112,7 +112,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     if body.get("done"):
                         break
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
@@ -143,7 +143,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     )
                 ]
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
