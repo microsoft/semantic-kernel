@@ -13,6 +13,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+
 @experimental_class
 class VolatileMemoryStore(MemoryStoreBase):
     _store: Dict[str, Dict[str, MemoryRecord]]

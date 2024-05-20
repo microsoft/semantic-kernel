@@ -9,6 +9,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 if TYPE_CHECKING:
     from numpy import ndarray
 
+
 @experimental_class
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     @abstractmethod

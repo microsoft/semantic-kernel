@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenA
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
+
 @experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
     async def generate_embeddings(self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Any) -> ndarray:

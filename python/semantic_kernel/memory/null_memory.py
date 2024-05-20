@@ -6,6 +6,7 @@ from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
+
 @experimental_class
 class NullMemory(SemanticTextMemoryBase):
     async def save_information(
