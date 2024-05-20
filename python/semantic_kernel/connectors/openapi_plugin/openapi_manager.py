@@ -19,7 +19,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -628,7 +628,7 @@ class OpenApiRunner:
         return await fetch()
 
 
-@experimental_class
+@experimental_function
 def create_functions_from_openapi(
     plugin_name: str,
     openapi_document_path: str,
@@ -665,6 +665,7 @@ def create_functions_from_openapi(
     ]
 
 
+@experimental_function
 def _create_function_from_operation(
     runner: OpenApiRunner,
     operation: RestApiOperation,

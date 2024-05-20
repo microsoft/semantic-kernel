@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
