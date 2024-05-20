@@ -30,7 +30,7 @@ def test_init_native_function_with_input_description():
     assert native_function.parameters[0].type_ == "str"
     assert native_function.parameters[0].is_required is True
     assert native_function.parameters[1].name == "arguments"
-    assert native_function.parameters[1].description == ""
+    assert native_function.parameters[1].description is None
     assert not native_function.parameters[1].default_value
     assert native_function.parameters[1].type_ == "KernelArguments"
     assert native_function.parameters[1].is_required is True

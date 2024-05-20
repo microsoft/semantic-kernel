@@ -20,6 +20,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 # Limitations set by Pinecone at https://docs.pinecone.io/reference/known-limitations
 MAX_DIMENSIONALITY = 20000
@@ -32,6 +33,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 

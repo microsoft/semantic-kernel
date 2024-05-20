@@ -1,18 +1,54 @@
 # Copyright (c) Microsoft. All rights reserved.
+
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Type
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.validation import FUNCTION_PARAM_NAME_REGEX
 
 
 class KernelParameterMetadata(KernelBaseModel):
-    name: str = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
-    description: str = ""
-    default_value: Any = None
-    type_: str | None = Field(default="str", alias="type")
+    name: str | None = Field(..., pattern=FUNCTION_PARAM_NAME_REGEX)
+    description: str | None = Field(None)
+    default_value: Any | None = None
+    type_: str | None = Field("str", alias="type")
     is_required: bool | None = False
-    type_object: Any = None
+    type_object: Any | None = None
+    schema_data: dict[str, Any] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def form_schema(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            type_object = data.get("type_object", None)
+            type_ = data.get("type_", None)
+            default_value = data.get("default_value", None)
+            description = data.get("description", None)
+            inferred_schema = cls.infer_schema(type_object, type_, default_value, description)
+            data["schema_data"] = inferred_schema
+        return data
+
+    @classmethod
+    def infer_schema(
+        cls, type_object: Type | None, parameter_type: str | None, default_value: Any, description: str | None
+    ) -> dict[str, Any] | None:
+        schema = None
+
+        if type_object is not None:
+            schema = KernelJsonSchemaBuilder.build(type_object, description)
+        elif parameter_type is not None:
+            string_default = str(default_value) if default_value is not None else None
+            if string_default and string_default.strip():
+                needs_space = bool(description and description.strip())
+                description = (
+                    f"{description}{' ' if needs_space else ''}(default value: {string_default})"
+                    if description
+                    else f"(default value: {string_default})"
+                )
+
+            schema = KernelJsonSchemaBuilder.build_from_type_name(parameter_type, description)
+        return schema

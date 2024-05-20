@@ -9,10 +9,12 @@ import httpx
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 
+@experimental_class
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 
