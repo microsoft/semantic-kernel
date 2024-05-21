@@ -61,7 +61,6 @@ def _double_close():
 
 
 def _array(*args, **kwargs):
-    print(f"Received args: {args}")
     return list(args)
 
 
