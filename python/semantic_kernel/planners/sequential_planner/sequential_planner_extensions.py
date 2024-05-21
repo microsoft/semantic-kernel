@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -56,7 +55,7 @@ class SequentialPlannerKernelExtension:
         kernel: Kernel,
         arguments: KernelArguments,
         config: SequentialPlannerConfig,
-        semantic_query: Optional[str] = None,
+        semantic_query: str | None = None,
     ):
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
@@ -91,9 +90,9 @@ class SequentialPlannerKernelExtension:
     @staticmethod
     async def get_relevant_functions(
         kernel: Kernel,
-        available_functions: List[KernelFunctionMetadata],
-        memories: Optional[List[MemoryQueryResult]] = None,
-    ) -> List[KernelFunctionMetadata]:
+        available_functions: list[KernelFunctionMetadata],
+        memories: list[MemoryQueryResult] | None = None,
+    ) -> list[KernelFunctionMetadata]:
         relevant_functions = []
         # TODO: cancellation
         if memories is None:
@@ -105,7 +104,7 @@ class SequentialPlannerKernelExtension:
             )
             if function is not None:
                 logger.debug(
-                    "Found relevant function. Relevance Score: {0}, Function: {1}".format(
+                    "Found relevant function. Relevance Score: {}, Function: {}".format(
                         memory_entry.relevance,
                         function.fully_qualified_name,
                     )

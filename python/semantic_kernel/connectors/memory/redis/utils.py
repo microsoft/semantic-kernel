@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import numpy as np
 from redis import Redis
@@ -25,7 +25,7 @@ def get_redis_key(collection_name: str, record_id: str) -> str:
     return f"{collection_name}:{record_id}"
 
 
-def split_redis_key(redis_key: str) -> Tuple[str, str]:
+def split_redis_key(redis_key: str) -> tuple[str, str]:
     """
     Split a Redis key into its collection name and record ID
 
@@ -39,7 +39,7 @@ def split_redis_key(redis_key: str) -> Tuple[str, str]:
     return collection, record_id
 
 
-def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> Dict[str, Any]:
+def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> dict[str, Any]:
     all_metadata = {
         "is_reference": record._is_reference,
         "external_source_name": record._external_source_name or "",
@@ -58,7 +58,7 @@ def serialize_record_to_redis(record: MemoryRecord, vector_type: np.dtype) -> Di
     return redis_mapping
 
 
-def deserialize_redis_to_record(fields: Dict[str, Any], vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
+def deserialize_redis_to_record(fields: dict[str, Any], vector_type: np.dtype, with_embedding: bool) -> MemoryRecord:
     metadata = json.loads(fields[b"metadata"])
     record = MemoryRecord(
         id=metadata["id"],

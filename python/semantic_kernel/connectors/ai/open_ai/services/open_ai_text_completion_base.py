@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Union
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 from openai import AsyncStream
 from openai.types import Completion, CompletionChoice
@@ -35,7 +36,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> List["TextContent"]:
+    ) -> list["TextContent"]:
         """Executes a completion request and returns the result.
 
         Arguments:
@@ -58,8 +59,8 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     def _create_text_content(
         self,
         response: Completion,
-        choice: Union[CompletionChoice, ChatCompletionChoice],
-        response_metadata: Dict[str, Any],
+        choice: CompletionChoice | ChatCompletionChoice,
+        response_metadata: dict[str, Any],
     ) -> "TextContent":
         """Create a text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
@@ -76,7 +77,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         self,
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
-    ) -> AsyncGenerator[List["StreamingTextContent"], Any]:
+    ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         """
         Executes a completion request and streams the result.
         Supports both chat completion and text completion.
@@ -108,7 +109,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             yield [self._create_streaming_text_content(chunk, choice, chunk_metadata) for choice in chunk.choices]
 
     def _create_streaming_text_content(
-        self, chunk: Completion, choice: Union[CompletionChoice, ChatCompletionChunk], response_metadata: Dict[str, Any]
+        self, chunk: Completion, choice: CompletionChoice | ChatCompletionChunk, response_metadata: dict[str, Any]
     ) -> "StreamingTextContent":
         """Create a streaming text content object from a choice."""
         choice_metadata = self._get_metadata_from_text_choice(choice)
@@ -122,7 +123,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             text=text,
         )
 
-    def _get_metadata_from_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_text_response(self, response: Completion) -> dict[str, Any]:
         """Get metadata from a completion response."""
         return {
             "id": response.id,
@@ -131,7 +132,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "usage": response.usage,
         }
 
-    def _get_metadata_from_streaming_text_response(self, response: Completion) -> Dict[str, Any]:
+    def _get_metadata_from_streaming_text_response(self, response: Completion) -> dict[str, Any]:
         """Get metadata from a streaming completion response."""
         return {
             "id": response.id,
@@ -139,7 +140,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
             "system_fingerprint": response.system_fingerprint,
         }
 
-    def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> Dict[str, Any]:
+    def _get_metadata_from_text_choice(self, choice: CompletionChoice) -> dict[str, Any]:
         """Get metadata from a completion choice."""
         return {
             "logprobs": getattr(choice, "logprobs", None),

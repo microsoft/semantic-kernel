@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, Annotated, Any, AsyncGenerator, AsyncIterable, Optional, Union
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import TYPE_CHECKING, Annotated, Any, Union
 
 import pytest
 
@@ -41,11 +42,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
+    def func_input_annotated_optional(self, input: Annotated[str | None, "input description"] = "test"):
         return input
 
     @kernel_function
-    def func_input_optional(self, input: Optional[str] = "test"):
+    def func_input_optional(self, input: str | None = "test"):
         return input
 
     @kernel_function
@@ -53,7 +54,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_return_type_optional(self, input: str) -> Optional[str]:
+    def func_return_type_optional(self, input: str) -> str | None:
         return input
 
     @kernel_function
@@ -69,7 +70,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_optional(self, input: Optional[InputObject] = None):
+    def func_input_object_optional(self, input: InputObject | None = None):
         return input
 
     @kernel_function
@@ -77,11 +78,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_annotated_optional(self, input: Annotated[Optional[InputObject], "input description"] = None):
+    def func_input_object_annotated_optional(self, input: Annotated[InputObject | None, "input description"] = None):
         return input
 
     @kernel_function
-    def func_input_object_union(self, input: Union[InputObject, str]):
+    def func_input_object_union(self, input: InputObject | str):
         return input
 
     @kernel_function

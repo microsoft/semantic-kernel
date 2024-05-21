@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Union, overload
@@ -163,7 +162,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         """Return the content of the response encoded in the encoding."""
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
-    def __add__(self, other: StreamingChatMessageContent) -> StreamingChatMessageContent:
+    def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,

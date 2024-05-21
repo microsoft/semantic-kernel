@@ -1,15 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
-import sys
-from typing import Any, Dict, Final
+from typing import Annotated, Any, Final
 
 from pydantic import Field
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -26,9 +20,9 @@ DEFAULT_LIMIT: Final[int] = 1
 
 class TextMemoryPlugin(KernelBaseModel):
     memory: SemanticTextMemoryBase
-    embeddings_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: Dict[str, Any] = {}) -> None:
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
         """
         Initialize a new instance of the TextMemoryPlugin
 

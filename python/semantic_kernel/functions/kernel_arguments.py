@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
@@ -11,7 +10,7 @@ class KernelArguments(dict):
     def __init__(
         self,
         settings: (
-            "PromptExecutionSettings" | list["PromptExecutionSettings"] | dict[str, "PromptExecutionSettings"] | None
+            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
         ) = None,
         **kwargs: Any,
     ):

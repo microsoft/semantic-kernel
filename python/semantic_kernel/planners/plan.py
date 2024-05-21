@@ -3,8 +3,9 @@
 import logging
 import re
 import threading
+from collections.abc import Callable
 from copy import copy
-from typing import Any, Callable, ClassVar, List, Optional, Union
+from typing import Any, ClassVar, Optional
 
 from pydantic import PrivateAttr
 
@@ -22,10 +23,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class Plan:
     _state: KernelArguments = PrivateAttr()
-    _steps: List["Plan"] = PrivateAttr()
+    _steps: list["Plan"] = PrivateAttr()
     _function: KernelFunction = PrivateAttr()
     _parameters: KernelArguments = PrivateAttr()
-    _outputs: List[str] = PrivateAttr()
+    _outputs: list[str] = PrivateAttr()
     _has_next_step: bool = PrivateAttr()
     _next_step_index: int = PrivateAttr()
     _name: str = PrivateAttr()
@@ -44,7 +45,7 @@ class Plan:
         return self._state
 
     @property
-    def steps(self) -> List["Plan"]:
+    def steps(self) -> list["Plan"]:
         return self._steps
 
     @property
@@ -88,15 +89,15 @@ class Plan:
 
     def __init__(
         self,
-        name: Optional[str] = None,
-        plugin_name: Optional[str] = None,
-        description: Optional[str] = None,
-        next_step_index: Optional[int] = None,
-        state: Optional[KernelArguments] = None,
-        parameters: Optional[KernelArguments] = None,
-        outputs: Optional[List[str]] = None,
-        steps: Optional[List["Plan"]] = None,
-        function: Optional[KernelFunction] = None,
+        name: str | None = None,
+        plugin_name: str | None = None,
+        description: str | None = None,
+        next_step_index: int | None = None,
+        state: KernelArguments | None = None,
+        parameters: KernelArguments | None = None,
+        outputs: list[str] | None = None,
+        steps: list["Plan"] | None = None,
+        function: KernelFunction | None = None,
     ) -> None:
         self._name = f"plan_{generate_random_ascii_name()}" if name is None else name
         self._plugin_name = f"p_{generate_random_ascii_name()}" if plugin_name is None else plugin_name
@@ -127,7 +128,7 @@ class Plan:
     async def invoke(
         self,
         kernel: Kernel,
-        arguments: Optional[KernelArguments] = None,
+        arguments: KernelArguments | None = None,
         # TODO: cancellation_token: CancellationToken,
     ) -> FunctionResult:
         """
@@ -149,9 +150,7 @@ class Plan:
             try:
                 result = await self._function.invoke(kernel=kernel, arguments=arguments)
             except Exception as exc:
-                logger.error(
-                    "Something went wrong in plan step {0}.{1}:'{2}'".format(self._plugin_name, self._name, exc)
-                )
+                logger.error(f"Something went wrong in plan step {self._plugin_name}.{self._name}:'{exc}'")
                 raise KernelInvokeException(
                     "Error occurred while running plan step: " + str(exc),
                     exc,
@@ -211,7 +210,7 @@ class Plan:
 
         return plan
 
-    def add_steps(self, steps: Union[List["Plan"], List[KernelFunction]]) -> None:
+    def add_steps(self, steps: list["Plan"] | list[KernelFunction]) -> None:
         for step in steps:
             if type(step) is Plan:
                 self._steps.append(step)

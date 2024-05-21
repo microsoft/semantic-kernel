@@ -2,7 +2,7 @@
 
 
 import logging
-from typing import Mapping
+from collections.abc import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
