@@ -1,7 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
 import asyncio
 from typing import Annotated
 
@@ -21,8 +19,14 @@ from semantic_kernel.kernel import Kernel
 class WeatherPlugin:
     """A sample plugin that provides weather information for cities."""
 
-    @kernel_function(name="get_weather_for_city", description="Get the weather for a city")
-    def get_weather_for_city(self, city: Annotated[str, "The input city"]) -> Annotated[str, "The output is a string"]:
+    @kernel_function(
+        name="get_weather_for_city",
+        description="Get the weather for a city"
+    )
+    def get_weather_for_city(
+        self,
+        city: Annotated[str, "The input city"]
+    ) -> Annotated[str, "The output is a string"]:
         if city == "Boston":
             return "61 and rainy"
         elif city == "London":
