@@ -48,6 +48,7 @@ public class ChatXMLPromptParser {
                 }
             } catch (SKException e) {
                 //ignore
+                chatPromptParseVisitor = chatPromptParseVisitor.reset();
             }
         }
 
@@ -111,7 +112,7 @@ public class ChatXMLPromptParser {
             XMLEventReader reader = factory.createXMLEventReader(is);
             FunctionDefinition functionDefinition = null;
             Map<String, String> parameters = new HashMap<>();
-            List<String> requiredParameters = new ArrayList<>();
+            List<String> requiredParmeters = new ArrayList<>();
             while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
                 if (event.isStartElement()) {
@@ -119,7 +120,7 @@ public class ChatXMLPromptParser {
                     if (elementName.equals("function")) {
                         assert functionDefinition == null;
                         assert parameters.isEmpty();
-                        assert requiredParameters.isEmpty();
+                        assert requiredParmeters.isEmpty();
                         String pluginName = getAttributeValue(event, "pluginName");
                         String name = getAttributeValue(event, "name");
                         String description = getAttributeValue(event, "description");
@@ -138,7 +139,7 @@ public class ChatXMLPromptParser {
 
                         String isRequired = getAttributeValue(event, "isRequired");
                         if (Boolean.parseBoolean(isRequired)) {
-                            requiredParameters.add(name);
+                            requiredParmeters.add(name);
                         }
                     }
                 } else if (event.isEndElement()) {
@@ -175,9 +176,9 @@ public class ChatXMLPromptParser {
                             });
                             // strip off trailing comma and close the properties object
                             sb.replace(sb.length() - 1, sb.length(), "}");
-                            if (!requiredParameters.isEmpty()) {
+                            if (!requiredParmeters.isEmpty()) {
                                 sb.append(", \"required\": [");
-                                requiredParameters.forEach(name -> {
+                                requiredParmeters.forEach(name -> {
                                     sb.append(String.format("\"%s\",", name));
                                 });
                                 // strip off trailing comma and close the required array
@@ -197,7 +198,7 @@ public class ChatXMLPromptParser {
                             functionDefinition.parameters);
                         functionDefinition = null;
                         parameters.clear();
-                        requiredParameters.clear();
+                        requiredParmeters.clear();
                     }
                 }
             }

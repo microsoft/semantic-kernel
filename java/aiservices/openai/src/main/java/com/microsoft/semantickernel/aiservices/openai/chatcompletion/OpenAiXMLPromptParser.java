@@ -27,68 +27,78 @@ class OpenAiXMLPromptParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAiXMLPromptParser.class);
 
+    private static class OpenAiChatPromptParseVisitor implements
+        ChatPromptParseVisitor<ParsedPrompt> {
+
+        private ParsedPrompt parsedRaw;
+        private final List<FunctionDefinition> functionDefinitions = new ArrayList<>();
+        private final List<ChatRequestMessage> messages = new ArrayList<>();
+
+        @Override
+        public ChatPromptParseVisitor<ParsedPrompt> addMessage(String role,
+            String content) {
+            messages.add(getChatRequestMessage(role, content));
+            return this;
+        }
+
+        @Override
+        public ChatPromptParseVisitor<ParsedPrompt> addFunction(
+            String name,
+            @Nullable
+            String description,
+            @Nullable
+            BinaryData parameters) {
+            FunctionDefinition function = new FunctionDefinition(name);
+
+            if (description != null) {
+                function.setDescription(description);
+            }
+
+            if (parameters != null) {
+                function.setParameters(parameters);
+            }
+
+            functionDefinitions.add(function);
+
+            return this;
+        }
+
+        @Override
+        public boolean areMessagesEmpty() {
+            return messages.isEmpty();
+        }
+
+        @Override
+        public ChatPromptParseVisitor<ParsedPrompt> fromRawPrompt(String rawPrompt) {
+            ChatRequestUserMessage message = new ChatRequestUserMessage(rawPrompt);
+
+            if (message.getName() == null) {
+                message.setName(UUID.randomUUID().toString());
+            }
+
+            this.parsedRaw = new ParsedPrompt(Collections.singletonList(message), null);
+            return this;
+        }
+
+        @Override
+        public ParsedPrompt get() {
+            if (parsedRaw != null) {
+                return parsedRaw;
+            }
+
+            return new ParsedPrompt(messages, functionDefinitions);
+        }
+
+        @Override
+        public ChatPromptParseVisitor<ParsedPrompt> reset() {
+            return new OpenAiChatPromptParseVisitor();
+        }
+
+    }
+
     public static ParsedPrompt parse(String rawPrompt) {
         ChatPromptParseVisitor<ParsedPrompt> visitor = ChatXMLPromptParser.parse(rawPrompt,
-            new ChatPromptParseVisitor<ParsedPrompt>() {
-                private ParsedPrompt parsedRaw;
-                private final List<FunctionDefinition> functionDefinitions = new ArrayList<>();
-                private final List<ChatRequestMessage> messages = new ArrayList<>();
-
-                @Override
-                public ChatPromptParseVisitor<ParsedPrompt> addMessage(String role,
-                    String content) {
-                    messages.add(getChatRequestMessage(role, content));
-                    return this;
-                }
-
-                @Override
-                public ChatPromptParseVisitor<ParsedPrompt> addFunction(
-                    String name,
-                    @Nullable
-                    String description,
-                    @Nullable
-                    BinaryData parameters) {
-                    FunctionDefinition function = new FunctionDefinition(name);
-
-                    if (description != null) {
-                        function.setDescription(description);
-                    }
-
-                    if (parameters != null) {
-                        function.setParameters(parameters);
-                    }
-
-                    functionDefinitions.add(function);
-
-                    return this;
-                }
-
-                @Override
-                public boolean areMessagesEmpty() {
-                    return messages.isEmpty();
-                }
-
-                @Override
-                public ChatPromptParseVisitor<ParsedPrompt> fromRawPrompt(String rawPrompt) {
-                    ChatRequestUserMessage message = new ChatRequestUserMessage(rawPrompt);
-
-                    if (message.getName() == null) {
-                        message.setName(UUID.randomUUID().toString());
-                    }
-
-                    this.parsedRaw = new ParsedPrompt(Collections.singletonList(message), null);
-                    return this;
-                }
-
-                @Override
-                public ParsedPrompt get() {
-                    if (parsedRaw != null) {
-                        return parsedRaw;
-                    }
-
-                    return new ParsedPrompt(messages, functionDefinitions);
-                }
-            });
+            new OpenAiChatPromptParseVisitor());
 
         return visitor.get();
 

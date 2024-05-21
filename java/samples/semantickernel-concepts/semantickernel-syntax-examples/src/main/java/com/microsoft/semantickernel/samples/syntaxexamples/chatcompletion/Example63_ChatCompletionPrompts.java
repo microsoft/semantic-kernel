@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.util.concurrent.CountDownLatch;
@@ -36,7 +37,7 @@ public class Example63_ChatCompletionPrompts {
                 .buildAsyncClient();
         }
 
-        ChatCompletionService openAIChatCompletion = ChatCompletionService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();

@@ -43,85 +43,94 @@ public class HuggingFaceXMLPromptParser {
         }
     }
 
+    private static class HuggingFaceChatPromptParseVisitor implements
+        ChatPromptParseVisitor<HuggingFaceParsedPrompt> {
+
+        private HuggingFaceParsedPrompt parsedRaw;
+        private final List<ChatMessageToolCall> functionDefinitions = new ArrayList<>();
+        private final List<ChatMessage> messages = new ArrayList<>();
+
+        @Override
+        public ChatPromptParseVisitor<HuggingFaceParsedPrompt> addMessage(
+            String role,
+            String content) {
+            messages.add(new ChatMessage(
+                role,
+                content,
+                null,
+                null));
+            return this;
+        }
+
+        @Override
+        public ChatPromptParseVisitor<HuggingFaceParsedPrompt> addFunction(
+            String name,
+            @Nullable
+            String description,
+            @Nullable
+            BinaryData parameters) {
+
+            String paramString = null;
+            if (parameters != null) {
+                paramString = parameters.toString();
+            }
+
+            ChatMessageToolCall function = new ChatMessageToolCall(
+                name,
+                null,
+                new ChatMessageFunction(
+                    description,
+                    name,
+                    paramString
+                )
+            );
+
+            functionDefinitions.add(function);
+
+            return this;
+        }
+
+        @Override
+        public boolean areMessagesEmpty() {
+            return messages.isEmpty();
+        }
+
+        @Override
+        public ChatPromptParseVisitor<HuggingFaceParsedPrompt> fromRawPrompt(
+            String rawPrompt) {
+
+            ChatMessage message = new ChatMessage(
+                "user",
+                rawPrompt,
+                null,
+                null
+            );
+
+            this.parsedRaw = new HuggingFaceParsedPrompt(Collections.singletonList(message),
+                null);
+
+            return this;
+        }
+
+        @Override
+        public HuggingFaceParsedPrompt get() {
+            if (parsedRaw != null) {
+                return parsedRaw;
+            }
+
+            return new HuggingFaceParsedPrompt(messages, functionDefinitions);
+        }
+
+        @Override
+        public ChatPromptParseVisitor<HuggingFaceParsedPrompt> reset() {
+            return new HuggingFaceChatPromptParseVisitor();
+        }
+    }
+
     public static HuggingFaceParsedPrompt parse(String rawPrompt) {
         ChatPromptParseVisitor<HuggingFaceParsedPrompt> visitor = ChatXMLPromptParser.parse(
             rawPrompt,
-            new ChatPromptParseVisitor<HuggingFaceParsedPrompt>() {
-                private HuggingFaceParsedPrompt parsedRaw;
-                private final List<ChatMessageToolCall> functionDefinitions = new ArrayList<>();
-                private final List<ChatMessage> messages = new ArrayList<>();
-
-                @Override
-                public ChatPromptParseVisitor<HuggingFaceParsedPrompt> addMessage(
-                    String role,
-                    String content) {
-                    messages.add(new ChatMessage(
-                        role,
-                        content,
-                        null,
-                        null));
-                    return this;
-                }
-
-                @Override
-                public ChatPromptParseVisitor<HuggingFaceParsedPrompt> addFunction(
-                    String name,
-                    @Nullable
-                    String description,
-                    @Nullable
-                    BinaryData parameters) {
-
-                    String paramString = null;
-                    if (parameters != null) {
-                        paramString = parameters.toString();
-                    }
-
-                    ChatMessageToolCall function = new ChatMessageToolCall(
-                        name,
-                        null,
-                        new ChatMessageFunction(
-                            description,
-                            name,
-                            paramString
-                        )
-                    );
-
-                    functionDefinitions.add(function);
-
-                    return this;
-                }
-
-                @Override
-                public boolean areMessagesEmpty() {
-                    return messages.isEmpty();
-                }
-
-                @Override
-                public ChatPromptParseVisitor<HuggingFaceParsedPrompt> fromRawPrompt(
-                    String rawPrompt) {
-
-                    ChatMessage message = new ChatMessage(
-                        "user",
-                        rawPrompt,
-                        null,
-                        null
-                    );
-
-                    this.parsedRaw = new HuggingFaceParsedPrompt(Collections.singletonList(message),
-                        null);
-
-                    return this;
-                }
-
-                @Override
-                public HuggingFaceParsedPrompt get() {
-                    if (parsedRaw != null) {
-                        return parsedRaw;
-                    }
-
-                    return new HuggingFaceParsedPrompt(messages, functionDefinitions);
-                }
-            });
+            new HuggingFaceChatPromptParseVisitor());
 
         return visitor.get();
     }

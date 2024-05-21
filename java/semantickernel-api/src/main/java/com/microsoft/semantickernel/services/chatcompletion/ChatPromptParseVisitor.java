@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.chatcompletion;
 
 import com.azure.core.util.BinaryData;
@@ -13,4 +14,6 @@ public interface ChatPromptParseVisitor<T> {
     ChatPromptParseVisitor<T> fromRawPrompt(String rawPrompt);
 
     T get();
+
+    ChatPromptParseVisitor<T> reset();
 }

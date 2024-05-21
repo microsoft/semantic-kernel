@@ -60,6 +60,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -959,7 +961,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
     /**
      * Builder for creating a new instance of {@link OpenAIChatCompletion}.
      */
-    public static class Builder extends ChatCompletionService.Builder {
+    public static class Builder extends OpenAiServiceBuilder<OpenAIChatCompletion, Builder> {
 
         @Override
         public OpenAIChatCompletion build() {

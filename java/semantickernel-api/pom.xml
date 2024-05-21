@@ -77,6 +77,11 @@
             <version>5.11.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-vertexai</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

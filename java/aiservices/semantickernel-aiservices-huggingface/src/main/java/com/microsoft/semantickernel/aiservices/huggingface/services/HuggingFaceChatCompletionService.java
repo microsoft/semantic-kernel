@@ -106,7 +106,7 @@ public class HuggingFaceChatCompletionService implements ChatCompletionService {
         @Nullable InvocationContext invocationContext) {
         HuggingFaceParsedPrompt parsed = HuggingFaceXMLPromptParser.parse(prompt);
 
-        ChatHistory history = new ChatHistory(false);
+        ChatHistory history = new ChatHistory();
         parsed.getChatRequestMessages()
             .forEach(message -> {
                 history.addMessage(AuthorRole.valueOf(message.role.toUpperCase(Locale.ROOT)),

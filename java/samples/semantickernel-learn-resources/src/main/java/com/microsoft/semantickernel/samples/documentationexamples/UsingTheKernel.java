@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.MathPlugin;
@@ -48,7 +49,7 @@ public class UsingTheKernel {
 
         // <build_kernel>
 
-        ChatCompletionService chatCompletionService = ChatCompletionService.builder()
+        ChatCompletionService chatCompletionService = OpenAIChatCompletion.builder()
             .withModelId(MODEL_ID)
             .withOpenAIAsyncClient(client)
             .build();
