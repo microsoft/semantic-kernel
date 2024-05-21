@@ -3,7 +3,7 @@
 import asyncio
 import os
 from functools import reduce
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
@@ -108,7 +108,7 @@ async def handle_streaming(
     )
 
     print("Mosscap:> ", end="")
-    streamed_chunks: List[StreamingChatMessageContent] = []
+    streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
             message[0], ChatMessageContent

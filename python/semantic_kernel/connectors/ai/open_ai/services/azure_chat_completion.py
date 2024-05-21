@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any
 from uuid import uuid4
 
 from openai import AsyncAzureOpenAI
@@ -120,7 +121,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "AzureChatCompletion":
+    def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
         """
         Initialize an Azure OpenAI service from a dictionary of settings.
 
@@ -148,7 +149,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         return AzureChatPromptExecutionSettings
 
     def _create_chat_message_content(
-        self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
+        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
     ) -> ChatMessageContent:
         """Create a Azure chat message content object from a choice."""
         content = super()._create_chat_message_content(response, choice, response_metadata)
@@ -158,7 +159,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
-        chunk_metadata: Dict[str, Any],
+        chunk_metadata: dict[str, Any],
     ) -> "StreamingChatMessageContent":
         """Create a Azure streaming chat message content object from a choice."""
         content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
@@ -186,7 +187,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             content.items.insert(1, result)
         return content
 
-    def _get_tool_message_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Optional[str]:
+    def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
         """Get the tool message from a choice."""
         if isinstance(choice, Choice):
             content = choice.message

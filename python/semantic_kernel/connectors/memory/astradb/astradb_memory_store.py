@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from typing import List, Optional, Tuple
 
 import aiohttp
 from numpy import ndarray
@@ -99,7 +98,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             session=self._session,
         )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -110,8 +109,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
-        distance_type: Optional[str] = "cosine",
+        dimension_num: int | None = None,
+        distance_type: str | None = "cosine",
     ) -> None:
         """Creates a new collection in Astra if it does not exist.
 
@@ -179,7 +178,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         return status["upsertedId"] if "upsertedId" in status else record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -217,8 +216,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         return parse_payload(documents[0])
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
@@ -251,7 +250,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         filter = {"_id": key}
         await self._client.delete_documents(collection_name, filter)
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
@@ -270,7 +269,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
         Arguments:
             collection_name {str} -- The name of the collection to get the nearest matches from.
@@ -297,7 +296,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
         Arguments:
             collection_name {str} -- The name of the collection to get the nearest matches from.

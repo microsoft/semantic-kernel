@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from inspect import get_annotations, isasyncgenfunction, isclass, isgeneratorfunction, signature
-from typing import Any, Callable, ForwardRef
+from typing import Any, ForwardRef
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)

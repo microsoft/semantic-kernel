@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -12,13 +11,13 @@ from semantic_kernel.utils.validation import FUNCTION_NAME_REGEX, PLUGIN_NAME_RE
 
 class KernelFunctionMetadata(KernelBaseModel):
     name: str = Field(pattern=FUNCTION_NAME_REGEX)
-    plugin_name: Optional[str] = Field(None, pattern=PLUGIN_NAME_REGEX)
-    description: Optional[str] = Field(default=None)
-    parameters: List[KernelParameterMetadata] = Field(default_factory=list)
+    plugin_name: str | None = Field(None, pattern=PLUGIN_NAME_REGEX)
+    description: str | None = Field(default=None)
+    parameters: list[KernelParameterMetadata] = Field(default_factory=list)
     is_prompt: bool
-    is_asynchronous: Optional[bool] = Field(default=True)
-    return_parameter: Optional[KernelParameterMetadata] = None
-    additional_properties: Optional[dict[str, Any]] = Field(default=None)
+    is_asynchronous: bool | None = Field(default=True)
+    return_parameter: KernelParameterMetadata | None = None
+    additional_properties: dict[str, Any] | None = Field(default=None)
 
     @property
     def fully_qualified_name(self) -> str:

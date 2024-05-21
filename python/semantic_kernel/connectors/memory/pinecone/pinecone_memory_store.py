@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
@@ -85,8 +85,8 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
-        distance_type: Optional[str] = "cosine",
+        dimension_num: int | None = None,
+        distance_type: str | None = "cosine",
         index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
@@ -114,7 +114,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             )
             self.collection_names_cache.add(collection_name)
 
-    async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
+    async def describe_collection(self, collection_name: str) -> IndexDescription | None:
         """Gets the description of the index.
         Arguments:
             collection_name {str} -- The name of the index to get.
@@ -190,7 +190,7 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -244,8 +244,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         return parse_payload(fetch_response.vectors[key], with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -278,7 +278,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         collection = self.pinecone.Index(collection_name)
         collection.delete([key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -302,7 +302,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -330,7 +330,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -388,7 +388,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
 
     async def __get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
     ) -> "FetchResponse":
         index = self.pinecone.Index(collection_name)
         if len(keys) > MAX_FETCH_BATCH_SIZE:

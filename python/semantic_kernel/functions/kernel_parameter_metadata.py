@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
-from typing import Any, Type
+from typing import Any
 
 from pydantic import Field, model_validator
 
@@ -34,7 +33,7 @@ class KernelParameterMetadata(KernelBaseModel):
 
     @classmethod
     def infer_schema(
-        cls, type_object: Type | None, parameter_type: str | None, default_value: Any, description: str | None
+        cls, type_object: type | None, parameter_type: str | None, default_value: Any, description: str | None
     ) -> dict[str, Any] | None:
         schema = None
 

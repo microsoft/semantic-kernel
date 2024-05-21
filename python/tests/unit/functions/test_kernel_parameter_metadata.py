@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Type
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -27,7 +27,7 @@ def test_kernel_parameter_metadata_init():
 
 class MockJsonSchemaBuilder:
     @staticmethod
-    def build(parameter_type: Type, description: str | None = None) -> dict[str, Any]:
+    def build(parameter_type: type, description: str | None = None) -> dict[str, Any]:
         return {"type": "mock_object", "description": description}
 
     @staticmethod
