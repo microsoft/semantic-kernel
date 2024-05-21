@@ -44,7 +44,7 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
         if self.best_of is not None and self.number_of_responses is not None:
             if self.best_of < self.number_of_responses:
                 raise ServiceInvalidExecutionSettingsError(
-                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses." # noqa: E501
+                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
                 )
         if (
             self.extension_data.get("best_of") is not None
@@ -52,7 +52,7 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
         ):
             if self.extension_data["best_of"] < self.extension_data["number_of_responses"]:
                 raise ServiceInvalidExecutionSettingsError(
-                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses." # noqa: E501
+                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
                 )
         return self
 
