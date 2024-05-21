@@ -27,6 +27,11 @@ In our current software development process, managing changes in the main branch
 - **Timely Feature Integration**: Small, incremental pull requests allow for quicker reviews and faster integration of features into the feature branch and make it easier to merge down into main as the code was already previously reviewed. This timeliness ensures that features are merged and ready for deployment sooner, improving the responsiveness to changes.
 - **Code Testing, Coverage and Quality**: To keep a good code quality is imperative that any new code or feature introduced to the codebase is properly tested and validated. Any new feature or code should be covered by unit tests and integration tests. The code should also be validated by our CI/CD pipeline and follow our code quality standards and guidelines.
 - **Examples**: Any new feature or code should be accompanied by examples that demonstrate how to use the new feature or code. This is important to ensure that the new feature or code is properly documented and that the community can easily understand and use it.
+- **Signing**: Any connector that will eventually become a package needs to have the package and the assembly signing enabled (Set to Publish = Publish) in the `SK-dotnet.sln` file.
+  ```
+  {Project GUID}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+  {Project GUID}.Publish|Any CPU.Build.0 = Publish|Any CPU
+  ```
 
 ### Community Feature Branch Strategy
 
@@ -154,3 +159,11 @@ As soon the feature is finished, a merge from main will be pushed into the featu
 This will normally trigger the conflicts that need to be sorted.
 That normally will be the last PR targeting the feature branch which will be followed right away by another PR from the `feature` branch targeting `main` with minimal conflicts if any.
 The merging to main might be fast (as all the intermediate feature PRs were all agreed and approved before)
+
+### Merging main branch to feature branch before finish feature
+
+The merging of the main branch into the feature branch should only be done with the command:
+
+`git checkout <feature branch> && git merge main` without --squash
+
+Merge from the main should never be done by PR to feature branch, it will cause merging history of main merge with history of PR (because PR are merged with --squash), and as a consequence it will generate strange conflicts on subsequent merges of main and also make it difficult to analyze history of feature branch.

@@ -1,4 +1,7 @@
-from typing import Any, Dict, Optional
+# Copyright (c) Microsoft. All rights reserved.
+from __future__ import annotations
+
+from typing import Any
 
 from pydantic import Field
 
@@ -14,20 +17,20 @@ class PromptExecutionSettings(KernelBaseModel):
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
     Parameters:
-        service_id (str, optional): The service ID to use for the request. Defaults to None.
+        service_id (str): The service ID to use for the request.
         extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
         kwargs (Any): Additional keyword arguments,
             these are attempted to parse into the keys of the specific prompt execution settings.
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
         update_from_prompt_execution_settings: Update the keys from another prompt execution settings object.
-        from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings object.
-    """  # noqa: E501
+        from_prompt_execution_settings: Create a prompt execution settings from another prompt execution settings.
+    """
 
-    service_id: Optional[str] = Field(None, min_length=1)
-    extension_data: Dict[str, Any] = Field(default_factory=dict)
+    service_id: str | None = Field(None, min_length=1)
+    extension_data: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, service_id: Optional[str] = None, **kwargs: Any):
+    def __init__(self, service_id: str | None = None, **kwargs: Any):
         extension_data = kwargs.pop("extension_data", {})
         extension_data.update(kwargs)
         super().__init__(service_id=service_id, extension_data=extension_data)
@@ -38,14 +41,22 @@ class PromptExecutionSettings(KernelBaseModel):
         """Get the keys of the prompt execution settings."""
         return self.model_fields.keys()
 
-    def prepare_settings_dict(self, **kwargs) -> Dict[str, Any]:
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+
+        By default, this method excludes the service_id and extension_data fields.
+        As well as any fields that are None.
+        """
         return self.model_dump(
-            exclude={"service_id", "extension_data"},
+            exclude={
+                "service_id",
+                "extension_data",
+            },
             exclude_none=True,
             by_alias=True,
         )
 
-    def update_from_prompt_execution_settings(self, config: "PromptExecutionSettings") -> None:
+    def update_from_prompt_execution_settings(self, config: PromptExecutionSettings) -> None:
         """Update the prompt execution settings from a completion config."""
         if config.service_id is not None:
             self.service_id = config.service_id
@@ -54,7 +65,7 @@ class PromptExecutionSettings(KernelBaseModel):
         self.unpack_extension_data()
 
     @classmethod
-    def from_prompt_execution_settings(cls, config: "PromptExecutionSettings") -> "PromptExecutionSettings":
+    def from_prompt_execution_settings(cls, config: PromptExecutionSettings) -> PromptExecutionSettings:
         """Create a prompt execution settings from a completion config."""
         config.pack_extension_data()
         return cls(

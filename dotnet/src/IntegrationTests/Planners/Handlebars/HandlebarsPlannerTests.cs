@@ -11,25 +11,11 @@ using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using xRetry;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Planners.Handlebars;
 
-public sealed class HandlebarsPlannerTests : IDisposable
+public sealed class HandlebarsPlannerTests
 {
-    public HandlebarsPlannerTests(ITestOutputHelper output)
-    {
-        this._testOutputHelper = new RedirectOutput(output);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<HandlebarsPlannerTests>()
-            .Build();
-    }
-
     [Theory]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "test")]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string goal, string expectedFunction, string expectedPlugin)
@@ -71,18 +57,20 @@ public sealed class HandlebarsPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true, "List each property of the default Qux object.", "## Complex types", @"### Qux:
-{
-  ""type"": ""Object"",
-  ""properties"": {
-    ""Bar"": {
-      ""type"": ""String"",
-    },
-    ""Baz"": {
-      ""type"": ""Int32"",
-    },
-  }
-}", "GetDefaultQux", "Foo")]
+    [InlineData(true, "List each property of the default Qux object.", "## Complex types", """
+        ### Qux:
+        {
+          "type": "Object",
+          "properties": {
+            "Bar": {
+              "type": "String",
+            },
+            "Baz": {
+              "type": "Int32",
+            },
+          }
+        }
+        """, "GetDefaultQux", "Foo")]
     public async Task CreatePlanWithComplexTypesDefinitionsAsync(bool useChatModel, string goal, string expectedSectionHeader, string expectedTypeHeader, string expectedFunction, string expectedPlugin)
     {
         // Arrange
@@ -129,7 +117,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         {
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                modelId: azureOpenAIConfiguration.ChatModelId!,
+                modelId: azureOpenAIConfiguration.ChatModelId,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
         }
@@ -146,7 +134,7 @@ public sealed class HandlebarsPlannerTests : IDisposable
         {
             builder.Services.AddAzureOpenAITextEmbeddingGeneration(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId!,
+                modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
                 apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey);
         }
@@ -154,8 +142,12 @@ public sealed class HandlebarsPlannerTests : IDisposable
         return builder.Build();
     }
 
-    private readonly RedirectOutput _testOutputHelper;
-    private readonly IConfigurationRoot _configuration;
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<HandlebarsPlannerTests>()
+        .Build();
 
     private static readonly HandlebarsPlannerOptions s_defaultPlannerOptions = new()
     {
@@ -168,24 +160,13 @@ public sealed class HandlebarsPlannerTests : IDisposable
 
     private sealed class Foo
     {
-        public sealed class Qux
+        public sealed class Qux(string bar, int baz)
         {
-            public string Bar { get; set; } = string.Empty;
-            public int Baz { get; set; }
-
-            public Qux(string bar, int baz)
-            {
-                this.Bar = bar;
-                this.Baz = baz;
-            }
+            public string Bar { get; set; } = bar;
+            public int Baz { get; set; } = baz;
         }
 
         [KernelFunction, Description("Returns default Qux object.")]
         public Qux GetDefaultQux() => new("bar", 42);
-    }
-
-    public void Dispose()
-    {
-        this._testOutputHelper.Dispose();
     }
 }

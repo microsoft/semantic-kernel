@@ -45,7 +45,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
         Assert.Null(actualArguments);
     }
 
@@ -64,7 +64,7 @@ public sealed class OpenAIPluginCollectionExtensionsTests
 
         // Assert
         Assert.True(result);
-        Assert.Same(function, actualFunction);
+        Assert.Equal(function.Name, actualFunction?.Name);
 
         Assert.NotNull(actualArguments);
 

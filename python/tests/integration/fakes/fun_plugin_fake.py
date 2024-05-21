@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.plugin_definition.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 # TODO: this fake plugin is temporal usage.

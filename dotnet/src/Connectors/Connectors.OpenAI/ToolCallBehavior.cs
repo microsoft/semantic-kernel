@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -87,6 +90,13 @@ public abstract class ToolCallBehavior
         this.MaximumAutoInvokeAttempts = autoInvoke ? DefaultMaximumAutoInvokeAttempts : 0;
     }
 
+    /// <summary>
+    /// Options to control tool call result serialization behavior.
+    /// </summary>
+    [Obsolete("This property is deprecated in favor of Kernel.SerializerOptions that will be introduced in one of the following releases.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public virtual JsonSerializerOptions? ToolCallResultSerializerOptions { get; set; }
+
     /// <summary>Gets how many requests are part of a single interaction should include this tool in the request.</summary>
     /// <remarks>
     /// This should be greater than or equal to <see cref="MaximumAutoInvokeAttempts"/>. It defaults to <see cref="int.MaxValue"/>.
@@ -115,7 +125,7 @@ public abstract class ToolCallBehavior
 
     /// <summary>
     /// Represents a <see cref="ToolCallBehavior"/> that will provide to the model all available functions from a
-    /// <see cref="Kernel"/> provided by the client.
+    /// <see cref="Kernel"/> provided by the client. Setting this will have no effect if no <see cref="Kernel"/> is provided.
     /// </summary>
     internal sealed class KernelFunctions : ToolCallBehavior
     {
@@ -210,11 +220,13 @@ public abstract class ToolCallBehavior
     /// <summary>Represents a <see cref="ToolCallBehavior"/> that requests the model use a specific function.</summary>
     internal sealed class RequiredFunction : ToolCallBehavior
     {
+        private readonly OpenAIFunction _function;
         private readonly ChatCompletionsFunctionToolDefinition _tool;
         private readonly ChatCompletionsToolChoice _choice;
 
         public RequiredFunction(OpenAIFunction function, bool autoInvoke) : base(autoInvoke)
         {
+            this._function = function;
             this._tool = new ChatCompletionsFunctionToolDefinition(function.ToFunctionDefinition());
             this._choice = new ChatCompletionsToolChoice(this._tool);
         }
@@ -223,6 +235,24 @@ public abstract class ToolCallBehavior
 
         internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
         {
+            bool autoInvoke = base.MaximumAutoInvokeAttempts > 0;
+
+            // If auto-invocation is specified, we need a kernel to be able to invoke the functions.
+            // Lack of a kernel is fatal: we don't want to tell the model we can handle the functions
+            // and then fail to do so, so we fail before we get to that point. This is an error
+            // on the consumers behalf: if they specify auto-invocation with any functions, they must
+            // specify the kernel and the kernel must contain those functions.
+            if (autoInvoke && kernel is null)
+            {
+                throw new KernelException($"Auto-invocation with {nameof(RequiredFunction)} is not supported when no kernel is provided.");
+            }
+
+            // Make sure that if auto-invocation is specified, the required function can be found in the kernel.
+            if (autoInvoke && !kernel!.Plugins.TryGetFunction(this._function.PluginName, this._function.FunctionName, out _))
+            {
+                throw new KernelException($"The specified {nameof(RequiredFunction)} function {this._function.FullyQualifiedName} is not available in the kernel.");
+            }
+
             options.ToolChoice = this._choice;
             options.Tools.Add(this._tool);
         }

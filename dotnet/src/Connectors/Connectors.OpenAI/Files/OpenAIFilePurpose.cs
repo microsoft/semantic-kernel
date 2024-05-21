@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Defines the purpose associated with the uploaded file.
 /// </summary>
-[Experimental("SKEXP0015")]
+[Experimental("SKEXP0010")]
 public enum OpenAIFilePurpose
 {
     /// <summary>

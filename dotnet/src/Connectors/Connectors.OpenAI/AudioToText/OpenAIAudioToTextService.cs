@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI audio-to-text service.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 public sealed class OpenAIAudioToTextService : IAudioToTextService
 {
     /// <summary>Core implementation shared by OpenAI services.</summary>
@@ -40,7 +39,12 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._core = new(modelId, apiKey, organization, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
+        this._core = new(
+            modelId: modelId,
+            apiKey: apiKey,
+            organization: organization,
+            httpClient: httpClient,
+            logger: loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
 
         this._core.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         this._core.AddAttribute(OpenAIClientCore.OrganizationKey, organization);
@@ -63,7 +67,7 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     }
 
     /// <inheritdoc/>
-    public Task<TextContent> GetTextContentAsync(
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         AudioContent content,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,

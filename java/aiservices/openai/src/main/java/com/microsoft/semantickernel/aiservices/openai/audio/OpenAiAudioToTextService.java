@@ -11,12 +11,16 @@ import com.microsoft.semantickernel.services.audio.AudioContent;
 import com.microsoft.semantickernel.services.audio.AudioToTextExecutionSettings;
 import com.microsoft.semantickernel.services.audio.AudioToTextService;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /**
  * Provides OpenAi implementation of audio to text service.
  */
 public class OpenAiAudioToTextService extends OpenAiService implements AudioToTextService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAiAudioToTextService.class);
 
     /**
      * Creates an instance of OpenAi audio to text service.
@@ -26,8 +30,9 @@ public class OpenAiAudioToTextService extends OpenAiService implements AudioToTe
      */
     public OpenAiAudioToTextService(
         OpenAIAsyncClient client,
-        String modelId) {
-        super(client, null, modelId);
+        String modelId,
+        String deploymentName) {
+        super(client, null, modelId, deploymentName);
     }
 
     @Override
@@ -41,7 +46,7 @@ public class OpenAiAudioToTextService extends OpenAiService implements AudioToTe
         // however currently this breaks the request
         return getClient()
             .getAudioTranscription(
-                getModelId(),
+                getDeploymentName(),
                 options.getFilename(),
                 options)
             .map(AudioTranscription::getText);
@@ -102,10 +107,17 @@ public class OpenAiAudioToTextService extends OpenAiService implements AudioToTe
             if (client == null) {
                 throw new SKException("OpenAI client is required");
             }
+
             if (modelId == null) {
                 throw new SKException("Model id is required");
             }
-            return new OpenAiAudioToTextService(client, modelId);
+
+            if (deploymentName == null) {
+                LOGGER.debug("Deployment name is not provided, using model id as deployment name");
+                deploymentName = modelId;
+            }
+
+            return new OpenAiAudioToTextService(client, modelId, deploymentName);
         }
     }
 }

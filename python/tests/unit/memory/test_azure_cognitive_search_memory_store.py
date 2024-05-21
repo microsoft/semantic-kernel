@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -44,7 +46,9 @@ def mock_get_index_client():
 
 @pytest.mark.asyncio
 async def test_create_collection_without_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_get_index_client
+    azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
+    mock_search_index_client,
+    mock_get_index_client,
 ):
     mock_search_index_client.return_value = SearchIndex(name="testIndex", fields=[])
     await azure_cognitive_search_memory_store.create_collection("testIndex")
@@ -58,7 +62,10 @@ async def test_create_collection_without_encryption_key(
 
 @pytest.mark.asyncio
 async def test_create_collection_with_encryption_key(
-    azure_cognitive_search_memory_store, mock_search_index_client, mock_encryption_key, mock_get_index_client
+    azure_cognitive_search_memory_store: AzureCognitiveSearchMemoryStore,
+    mock_search_index_client,
+    mock_encryption_key,
+    mock_get_index_client,
 ):
     mock_search_index_client.return_value = SearchIndex(
         name="testIndexWithEncryption", fields=[], search_resource_encryption_key=mock_encryption_key

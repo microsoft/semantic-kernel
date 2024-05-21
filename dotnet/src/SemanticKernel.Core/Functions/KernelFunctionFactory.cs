@@ -36,6 +36,18 @@ public static class KernelFunctionFactory
         CreateFromMethod(method.Method, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
 
     /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static KernelFunction CreateFromMethod(
+        Delegate method,
+        KernelFunctionFromMethodOptions? options) =>
+        CreateFromMethod(method.Method, method.Target, options);
+
+    /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
     /// </summary>
@@ -56,6 +68,21 @@ public static class KernelFunctionFactory
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null) =>
         KernelFunctionFromMethod.Create(method, target, functionName, description, parameters, returnParameter, loggerFactory);
+
+    /// <summary>
+    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
+    /// <param name="options">Optional function creation options.</param>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static KernelFunction CreateFromMethod(
+        MethodInfo method,
+        object? target,
+        KernelFunctionFromMethodOptions? options) =>
+        KernelFunctionFromMethod.Create(method, target, options);
     #endregion
 
     #region FromPrompt
@@ -115,7 +142,7 @@ public static class KernelFunctionFactory
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
-    [return: NotNullIfNotNull("settings")]
+    [return: NotNullIfNotNull(nameof(settings))]
     private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(PromptExecutionSettings? settings) =>
         settings is null ? null :
             new Dictionary<string, PromptExecutionSettings>(1)

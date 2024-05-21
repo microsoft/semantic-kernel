@@ -227,7 +227,7 @@ public class PromptExecutionSettings {
     /**
      * Presence penalty encourages the model to use a more or less diverse range of tokens in the
      * output. A higher value means that the model will try to use a greater variety of tokens in
-     * the ouput.
+     * the output.
      *
      * @return The presence penalty setting.
      */

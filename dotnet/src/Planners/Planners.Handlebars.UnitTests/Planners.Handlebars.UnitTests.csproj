@@ -3,8 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars.UnitTests</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planners.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

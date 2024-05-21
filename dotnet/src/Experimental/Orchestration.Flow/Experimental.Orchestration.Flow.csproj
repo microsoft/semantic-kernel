@@ -4,7 +4,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Experimental.Orchestration.Flow</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Experimental.Orchestration</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>Latest</LangVersion>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />

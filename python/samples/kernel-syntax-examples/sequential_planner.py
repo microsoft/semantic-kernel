@@ -1,28 +1,26 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import semantic_kernel as sk
+import asyncio
+
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.core_plugins import (
-    FileIOPlugin,
-    MathPlugin,
-    TextPlugin,
-    TimePlugin,
-)
-from semantic_kernel.planning import SequentialPlanner
+from semantic_kernel.core_plugins import MathPlugin, TextPlugin, TimePlugin
+from semantic_kernel.planners import SequentialPlanner
+from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
-    kernel = sk.Kernel()
-    api_key, org_id = sk.openai_settings_from_dot_env()
+    kernel = Kernel()
+    api_key, org_id = openai_settings_from_dot_env()
 
-    kernel.add_chat_service("gpt-3.5", OpenAIChatCompletion("gpt-3.5-turbo", api_key=api_key, org_id=org_id))
-    kernel.import_plugin(MathPlugin(), "math")
-    kernel.import_plugin(FileIOPlugin(), "fileIO")
-    kernel.import_plugin(TimePlugin(), "time")
-    kernel.import_plugin(TextPlugin(), "text")
+    service_id = "gpt-3.5"
+    kernel.add_service(
+        OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-turbo", api_key=api_key, org_id=org_id)
+    )
+    kernel.add_plugins({"math": MathPlugin(), "time": TimePlugin(), "text": TextPlugin()})
 
     # create an instance of sequential planner.
-    planner = SequentialPlanner(kernel)
+    planner = SequentialPlanner(service_id=service_id, kernel=kernel)
 
     # the ask for which the sequential planner is going to find a relevant function.
     ask = "What day of the week is today, all uppercase?"
@@ -45,6 +43,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

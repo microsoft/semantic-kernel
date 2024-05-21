@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -8,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Contents;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -16,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// Azure OpenAI text-to-audio client for HTTP operations.
 /// </summary>
-[Experimental("SKEXP0005")]
+[Experimental("SKEXP0001")]
 internal sealed class AzureOpenAITextToAudioClient
 {
     private readonly ILogger _logger;
@@ -30,7 +28,7 @@ internal sealed class AzureOpenAITextToAudioClient
     /// <summary>
     /// Storage for AI service attributes.
     /// </summary>
-    internal Dictionary<string, object?> Attributes { get; } = new();
+    internal Dictionary<string, object?> Attributes { get; } = [];
 
     /// <summary>
     /// Creates an instance of the <see cref="AzureOpenAITextToAudioClient"/> with API key auth.
@@ -63,7 +61,7 @@ internal sealed class AzureOpenAITextToAudioClient
         this._logger = logger ?? NullLogger.Instance;
     }
 
-    internal async Task<AudioContent> GetAudioContentAsync(
+    internal async Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
         string text,
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
@@ -76,11 +74,9 @@ internal sealed class AzureOpenAITextToAudioClient
 
         using var request = this.GetRequest(text, modelId, audioExecutionSettings);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false);
 
-        var binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
-
-        return new AudioContent(binaryData, modelId);
+        return [new(data, modelId)];
     }
 
     internal void AddAttribute(string key, string? value)
@@ -97,8 +93,9 @@ internal sealed class AzureOpenAITextToAudioClient
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        request.Headers.Add("User-Agent", HttpHeaderValues.UserAgent);
+        request.Headers.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         request.Headers.Add("Api-Key", this._apiKey);
+        request.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureOpenAITextToAudioClient)));
 
         try
         {

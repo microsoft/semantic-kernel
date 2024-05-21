@@ -68,7 +68,7 @@ public class KustoMemoryStoreTests
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".create table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderConstant.Values.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 
@@ -82,12 +82,11 @@ public class KustoMemoryStoreTests
         await store.DeleteCollectionAsync(CollectionName);
 
         // Assert
-        // Assert
         this._cslAdminProviderMock
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith($".drop table {CollectionName}")),
-                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderValues.UserAgent, StringComparison.Ordinal))
+                It.Is<ClientRequestProperties>(crp => string.Equals(crp.Application, HttpHeaderConstant.Values.UserAgent, StringComparison.Ordinal))
             ), Times.Once());
     }
 
@@ -102,7 +101,7 @@ public class KustoMemoryStoreTests
                 DatabaseName,
                 It.Is<string>(s => s.StartsWith(CslCommandGenerator.GenerateTablesShowCommand())),
                 It.IsAny<ClientRequestProperties>()))
-            .ReturnsAsync(CollectionToSingleColumnDataReader(new[] { CollectionName }));
+            .ReturnsAsync(CollectionToSingleColumnDataReader([CollectionName]));
 
         // Act
         var doesCollectionExist = await store.DoesCollectionExistAsync(CollectionName);
@@ -159,7 +158,7 @@ public class KustoMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
 
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
@@ -189,18 +188,17 @@ public class KustoMemoryStoreTests
         // Arrange
         var expectedMemoryRecord = this.GetRandomMemoryRecord();
         var kustoMemoryEntry = new KustoMemoryRecord(expectedMemoryRecord);
-
         this._cslQueryProviderMock
             .Setup(client => client.ExecuteQueryAsync(
                 DatabaseName,
                 It.Is<string>(s => s.Contains(CollectionName) && s.Contains(expectedMemoryRecord.Key)),
                 It.IsAny<ClientRequestProperties>(),
                 CancellationToken.None))
-            .ReturnsAsync(CollectionToDataReader(new string[][] {
-                new string[] {
+            .ReturnsAsync(CollectionToDataReader(new object[][] {
+                new object[] {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
-                    KustoSerializer.SerializeDateTimeOffset(expectedMemoryRecord.Timestamp),
+                    expectedMemoryRecord.Timestamp?.LocalDateTime!,
                     KustoSerializer.SerializeEmbedding(expectedMemoryRecord.Embedding),
                 }}));
 
@@ -237,7 +235,7 @@ public class KustoMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
 
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
@@ -377,21 +375,17 @@ public class KustoMemoryStoreTests
         return table.CreateDataReader();
     }
 
-    private static DataTableReader CollectionToDataReader(string[][] data)
+    private static DataTableReader CollectionToDataReader(object[][] data)
     {
         using var table = new DataTable();
 
         if (data != null)
         {
             data = data.ToArrayIfNotAlready();
-            if (data[0] != null)
-            {
-                for (int i = 0; i < data[0].Length; i++)
-                {
-                    table.Columns.Add($"Column{i + 1}", typeof(string));
-                }
-            }
-
+            table.Columns.Add("Column1", typeof(string));
+            table.Columns.Add("Column2", typeof(string));
+            table.Columns.Add("Column3", typeof(DateTime));
+            table.Columns.Add("Column4", typeof(string));
             for (int i = 0; i < data.Length; i++)
             {
                 table.Rows.Add(data[i]);

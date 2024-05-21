@@ -234,7 +234,7 @@ public class ContextVariableTypeConverter<T> {
 
     /**
      * A converter that does no conversion. This converter is often used as a default when no other
-     * conveter can be found for the type.
+     * converter can be found for the type.
      *
      * @param <T> the type of the context variable
      */
