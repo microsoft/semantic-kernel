@@ -24,6 +24,11 @@ public abstract class AzureOpenAIConfig
     public int? EmbeddingDimensions { get; set; }
 
     /// <summary>
+    /// Azure OpenAI API version.
+    /// </summary>
+    public string ApiVersion { get; set; } = string.Empty;
+
+    /// <summary>
     /// A local identifier for the given AI service.
     /// </summary>
     public string ServiceId { get; set; } = string.Empty;

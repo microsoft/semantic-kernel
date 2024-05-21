@@ -2040,14 +2040,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="apiVersion">Azure OpenAI API version.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
         AzureOpenAIApiKeyConfig config,
-        string? apiVersion = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2061,7 +2059,7 @@ public static class OpenAIServiceCollectionExtensions
             apiKey: config.ApiKey,
             modelId: config.Deployment,
             serviceId: config.ServiceId,
-            apiVersion: apiVersion,
+            apiVersion: config.ApiVersion,
             httpClient: httpClient);
 
         return builder;
@@ -2072,15 +2070,11 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="apiVersion">Azure OpenAI API version.</param>
-    /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
-        AzureOpenAITokenConfig config,
-        string? apiVersion = null,
-        HttpClient? httpClient = null)
+        AzureOpenAITokenConfig config)
     {
         Verify.NotNull(builder);
         Verify.NotNull(config);
@@ -2093,7 +2087,7 @@ public static class OpenAIServiceCollectionExtensions
             credentials: config.TokenCredential!,
             modelId: config.Deployment,
             serviceId: config.ServiceId,
-            apiVersion: apiVersion);
+            apiVersion: config.ApiVersion);
 
         return builder;
     }
