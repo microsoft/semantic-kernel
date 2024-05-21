@@ -43,7 +43,7 @@ public class OpenAIConfig
     /// <summary>
     /// OpenAI API key.
     /// </summary>
-    public string APIKey { get; set; } = string.Empty;
+    public string ApiKey { get; set; } = string.Empty;
 
     /// <summary>
     /// Optional OpenAI Organization ID.
@@ -62,9 +62,9 @@ public class OpenAIConfig
     /// </summary>
     public void Validate()
     {
-        if (string.IsNullOrWhiteSpace(this.APIKey))
+        if (string.IsNullOrWhiteSpace(this.ApiKey))
         {
-            throw new ConfigurationException($"OpenAI: {nameof(this.APIKey)} is empty");
+            throw new ConfigurationException($"OpenAI: {nameof(this.ApiKey)} is empty");
         }
 
         if (this.EmbeddingDimensions is < 1)

@@ -6,7 +6,6 @@ using System.Net.Http;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
@@ -224,7 +223,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextGeneration(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -232,41 +231,42 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                builder.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        builder.AddAzureOpenAITextGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                builder.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        return builder;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+    /// <summary>
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextGeneration(
+        this IKernelBuilder builder,
+        AzureOpenAITokenConfig config,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        builder.AddAzureOpenAITextGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
         return builder;
     }
@@ -280,45 +280,45 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextGeneration(
         this IServiceCollection services,
-        AzureOpenAIConfig config)
+        AzureOpenAIApiKeyConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                services.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        services.AddAzureOpenAITextGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                services.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        return services;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAITextGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+    /// <summary>
+    /// Adds an Azure OpenAI text generation service with the specified configuration.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextGeneration(
+        this IServiceCollection services,
+        AzureOpenAITokenConfig config)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        services.AddAzureOpenAITextGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
         return services;
     }
@@ -457,7 +457,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.AddOpenAITextGeneration(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -483,7 +483,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddOpenAITextGeneration(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
@@ -722,7 +722,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -730,44 +730,44 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                builder.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+        builder.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient,
+            dimensions: config.EmbeddingDimensions);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                builder.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+        return builder;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+    /// <summary>
+    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
+        this IKernelBuilder builder,
+        AzureOpenAITokenConfig config,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        builder.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credential: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient,
+            dimensions: config.EmbeddingDimensions);
 
         return builder;
     }
@@ -781,48 +781,47 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
-        AzureOpenAIConfig config)
+        AzureOpenAIApiKeyConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                services.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+        services.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            dimensions: config.EmbeddingDimensions);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                services.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+        return services;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAITextEmbeddingGeneration(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    dimensions: config.EmbeddingDimensions);
-                break;
+    /// <summary>
+    /// Adds an Azure OpenAI text embeddings service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
+        this IServiceCollection services,
+        AzureOpenAITokenConfig config)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        services.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credential: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            dimensions: config.EmbeddingDimensions);
 
         return services;
     }
@@ -977,7 +976,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.AddOpenAITextEmbeddingGeneration(
             modelId: config.EmbeddingModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient,
@@ -1004,7 +1003,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddOpenAITextEmbeddingGeneration(
             modelId: config.EmbeddingModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             dimensions: config.EmbeddingDimensions);
@@ -1303,7 +1302,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -1311,41 +1310,45 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                builder.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                builder.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        return builder;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+    /// <summary>
+    /// Adds the Azure OpenAI chat completion with data service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIChatCompletion(
+        this IKernelBuilder builder,
+        AzureOpenAITokenConfig config,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
         return builder;
     }
@@ -1362,45 +1365,48 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
-        AzureOpenAIConfig config)
+        AzureOpenAIApiKeyConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                services.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        services.AddAzureOpenAIChatCompletion(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                services.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        return services;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAIChatCompletion(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+    /// <summary>
+    /// Adds the Azure OpenAI chat completion with data service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    /// <remarks>
+    /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIChatCompletion(
+        this IServiceCollection services,
+        AzureOpenAITokenConfig config)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        services.AddAzureOpenAIChatCompletion(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
         return services;
     }
@@ -1619,7 +1625,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddOpenAIChatCompletion(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
@@ -1646,7 +1652,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.AddOpenAIChatCompletion(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -1883,7 +1889,7 @@ public static class OpenAIServiceCollectionExtensions
         config.Validate();
 
         return builder.AddOpenAITextToImage(
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -1908,7 +1914,7 @@ public static class OpenAIServiceCollectionExtensions
         config.Validate();
 
         return services.AddOpenAITextToImage(
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
@@ -1981,7 +1987,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         string? apiVersion = null)
     {
         Verify.NotNull(services);
@@ -1989,41 +1995,42 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                services.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    modelId: config.Deployment,
-                    serviceId: config.ServiceId,
-                    apiVersion: apiVersion);
-                break;
+        services.AddAzureOpenAITextToImage(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            apiVersion: apiVersion);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                services.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    modelId: config.Deployment,
-                    serviceId: config.ServiceId,
-                    apiVersion: apiVersion);
-                break;
+        return services;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    apiVersion: apiVersion);
-                break;
+    /// <summary>
+    /// Add the OpenAI Dall-E text to image service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="apiVersion">Azure OpenAI API version.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAITextToImage(
+        this IServiceCollection services,
+        AzureOpenAITokenConfig config,
+        string? apiVersion = null)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        services.AddAzureOpenAITextToImage(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            modelId: config.Deployment,
+            serviceId: config.ServiceId,
+            apiVersion: apiVersion);
 
         return services;
     }
@@ -2039,7 +2046,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         string? apiVersion = null,
         HttpClient? httpClient = null)
     {
@@ -2048,42 +2055,45 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                builder.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    modelId: config.Deployment,
-                    serviceId: config.ServiceId,
-                    apiVersion: apiVersion);
-                break;
+        builder.AddAzureOpenAITextToImage(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            modelId: config.Deployment,
+            serviceId: config.ServiceId,
+            apiVersion: apiVersion,
+            httpClient: httpClient);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                builder.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    modelId: config.Deployment,
-                    serviceId: config.ServiceId,
-                    apiVersion: apiVersion);
-                break;
+        return builder;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAITextToImage(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    modelId: config.Deployment,
-                    serviceId: config.ServiceId,
-                    apiVersion: apiVersion,
-                    httpClient: httpClient);
-                break;
+    /// <summary>
+    /// Add the OpenAI Dall-E text to image service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="apiVersion">Azure OpenAI API version.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAITextToImage(
+        this IKernelBuilder builder,
+        AzureOpenAITokenConfig config,
+        string? apiVersion = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        builder.AddAzureOpenAITextToImage(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            modelId: config.Deployment,
+            serviceId: config.ServiceId,
+            apiVersion: apiVersion);
 
         return builder;
     }
@@ -2171,7 +2181,7 @@ public static class OpenAIServiceCollectionExtensions
         config.Validate();
 
         return builder.AddOpenAIFiles(
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -2196,7 +2206,7 @@ public static class OpenAIServiceCollectionExtensions
         config.Validate();
 
         return services.AddOpenAIFiles(
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
@@ -2283,7 +2293,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIFiles(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         string? orgId = null,
         string? version = null,
         HttpClient? httpClient = null)
@@ -2293,21 +2303,13 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAIFiles(
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    orgId: orgId,
-                    version: version,
-                    serviceId: config.ServiceId,
-                    httpClient: httpClient);
-                break;
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        builder.AddAzureOpenAIFiles(
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            orgId: orgId,
+            version: version,
+            serviceId: config.ServiceId,
+            httpClient: httpClient);
 
         return builder;
     }
@@ -2323,7 +2325,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIFiles(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         string? orgId = null,
         string? version = null)
     {
@@ -2332,20 +2334,12 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAIFiles(
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    orgId: orgId,
-                    version: version,
-                    serviceId: config.ServiceId);
-                break;
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        services.AddAzureOpenAIFiles(
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            orgId: orgId,
+            version: version,
+            serviceId: config.ServiceId);
 
         return services;
     }
@@ -2438,7 +2432,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToAudio(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2446,21 +2440,13 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAITextToAudio(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        builder.AddAzureOpenAITextToAudio(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
         return builder;
     }
@@ -2475,7 +2461,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToAudio(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
@@ -2483,21 +2469,13 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAITextToAudio(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        services.AddAzureOpenAITextToAudio(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
         return services;
     }
@@ -2588,7 +2566,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.AddOpenAITextToAudio(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -2614,7 +2592,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddOpenAITextToAudio(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
@@ -2845,7 +2823,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
         this IKernelBuilder builder,
-        AzureOpenAIConfig config,
+        AzureOpenAIApiKeyConfig config,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2853,41 +2831,42 @@ public static class OpenAIServiceCollectionExtensions
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                builder.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        builder.AddAzureOpenAIAudioToText(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                builder.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+        return builder;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                builder.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment,
-                    httpClient: httpClient);
-                break;
+    /// <summary>
+    /// Adds the Azure OpenAI audio-to-text service to the list.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IKernelBuilder AddAzureOpenAIAudioToText(
+        this IKernelBuilder builder,
+        AzureOpenAITokenConfig config,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        builder.AddAzureOpenAIAudioToText(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment,
+            httpClient: httpClient);
 
         return builder;
     }
@@ -2901,45 +2880,45 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
         this IServiceCollection services,
-        AzureOpenAIConfig config)
+        AzureOpenAIApiKeyConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
 
         config.Validate();
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                services.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: new DefaultAzureCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        services.AddAzureOpenAIAudioToText(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            apiKey: config.ApiKey,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                services.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credentials: config.GetTokenCredential(),
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+        return services;
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                services.AddAzureOpenAIAudioToText(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    serviceId: config.ServiceId,
-                    modelId: config.Deployment);
-                break;
+    /// <summary>
+    /// Adds the Azure OpenAI audio-to-text service to the list.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="config">Required configuration for Azure OpenAI.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Experimental("SKEXP0010")]
+    public static IServiceCollection AddAzureOpenAIAudioToText(
+        this IServiceCollection services,
+        AzureOpenAITokenConfig config)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(config);
 
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
+        config.Validate();
+
+        services.AddAzureOpenAIAudioToText(
+            deploymentName: config.Deployment,
+            endpoint: config.Endpoint,
+            credentials: config.TokenCredential!,
+            serviceId: config.ServiceId,
+            modelId: config.Deployment);
 
         return services;
     }
@@ -3086,7 +3065,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return builder.AddOpenAIAudioToText(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId,
             httpClient: httpClient);
@@ -3112,7 +3091,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services.AddOpenAIAudioToText(
             modelId: config.TextModel,
-            apiKey: config.APIKey,
+            apiKey: config.ApiKey,
             orgId: config.OrgId,
             serviceId: serviceId);
     }
