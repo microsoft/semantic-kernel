@@ -192,7 +192,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     {
         // Arrange
         var content = JsonSerializer.Deserialize<BinaryContent>(serialized)!;
-
+         
         // Act & Assert
         var reSerialization = JsonSerializer.Serialize(content);
 
@@ -270,5 +270,17 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
 
         // Act & Assert
         Assert.Equal(expectedDataUri, content.DataUri);
+    }
+
+    [Theory]
+    [InlineData("data:application/octet-stream;utf8,01-02-03-04")]
+    public void DoNotBase64EncodeIfDataIsNotBase64(string dataUri)
+    {
+        // Arrange
+        var content = new BinaryContent();
+        content.DataUri = "data:application/octet-stream;utf8,01-02-03-04";
+
+        // Act & Assert
+        Assert.Equal("data:application/octet-stream,01-02-03-04", content.DataUri);
     }
 }

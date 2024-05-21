@@ -88,12 +88,44 @@ Pros:
 - Fully serializeable.
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
-- Data Uri and Data can be dinamically generated
+- Data Uri and Data can be dynamically generated
 - `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
 
 - Breaking change for experimental `BinaryContent` consumers
+
+### Data Uri Parameters
+
+According to [RFC 2397](https://datatracker.ietf.org/doc/html/rfc2397), the data uri scheme supports parameters
+
+Every parameter imported from the data uri will be added to the Metadata dictionary with the "data-uri-parameter-name" as key and its respetive value.
+
+#### Providing a parameterized data uri will include those parameters in the Metadata dictionary.
+
+```csharp
+var content = new BinaryContent("data:application/json;parameter1=value1;parameter2=value2;base64,SGVsbG8gV29ybGQ=");
+var parameter1 = content.Metadata["data-uri-parameter1"]; // value1
+var parameter2 = content.Metadata["data-uri-parameter2"]; // value2
+```
+
+#### Deserialization of contents will also include those parameters when getting the DataUri property.
+
+```csharp
+var json = """
+{
+    "metadata":
+    {
+        "data-uri-parameter1":"value1",
+        "data-uri-parameter2":"value2"
+    },
+    "mimeType":"application/json",
+    "data":"SGVsbG8gV29ybGQ="
+}
+""";
+var content = JsonSerializer.Deserialize<BinaryContent>(json);
+content.DataUri // "data:application/json;parameter1=value1;parameter2=value2;base64,SGVsbG8gV29ybGQ="
+```
 
 ### Specialization Examples
 
@@ -127,7 +159,7 @@ Pros:
 ### Problems
 
 1. Current `ImageContent` does not derive from `BinaryContent`
-2. Has an undesireable behavior allowing the same instance to have distinct `DataUri` and `Data` at the same time.
+2. Has an undesirable behavior allowing the same instance to have distinct `DataUri` and `Data` at the same time.
 3. `Uri` property is used for both data uri and referenced uri information
 4. `Uri` does not support large language data uri formats.
 5. Not clear to the `sk developer` whenever the content is readable or not.
@@ -169,7 +201,7 @@ Pros:
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved
-- Data Uri and Data can be dinamically generated
+- Data Uri and Data can be dynamically generated
 - `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
@@ -218,7 +250,7 @@ Pros:
 - Data Uri parameters support (serialization included).
 - Data Uri and Base64 validation checks
 - Can be retrieved
-- Data Uri and Data can be dinamically generated
+- Data Uri and Data can be dynamically generated
 - `CanRead` will clearly identify if the content can be read as `bytes` or `DataUri`.
 
 Cons:
@@ -318,7 +350,9 @@ public sealed class FunctionResultContent : KernelContent
 
 ## FileReferenceContent + AnnotationContent
 
-Those two contents were added to `SemanticKernel.Abstractions` due to Serialization convenience but are very specific to **OpenAI Assistant API** and should be into `SemanticKernel.Agents.OpenAI` and keep experimental for now.
+Those two contents were added to `SemanticKernel.Abstractions` due to Serialization convenience but are very specific to **OpenAI Assistant API** and should be kept as Experimental for now.
+
+As a graduation those should be into `SemanticKernel.Agents.OpenAI` following the suggestion below.
 
 ```csharp
 #pragma warning disable SKEXP0110
@@ -328,7 +362,7 @@ Those two contents were added to `SemanticKernel.Abstractions` due to Serializat
 public abstract class KernelContent { ... }
 ```
 
-This coupling should not be encouraged for other packages that specialize the `KernelContent` types.
+This coupling should not be encouraged for other packages that have `KernelContent` specializations.
 
 ### Solution - Usage of [JsonConverter](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/converters-how-to?pivots=dotnet-6-0#registration-sample---jsonconverter-on-a-type) Annotations
 
