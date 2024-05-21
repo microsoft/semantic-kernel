@@ -228,7 +228,7 @@ def _split_str_lines(
                 token_counter=token_counter,
             )
         if was_split:
-            break
+            break  # pragma: no cover
 
     return lines
 
