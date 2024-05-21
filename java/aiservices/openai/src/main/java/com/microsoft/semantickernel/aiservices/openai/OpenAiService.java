@@ -14,11 +14,17 @@ public abstract class OpenAiService implements AIService {
     @Nullable
     private final String serviceId;
     private final String modelId;
+    private final String deploymentName;
 
-    protected OpenAiService(OpenAIAsyncClient client, @Nullable String serviceId, String modelId) {
+    protected OpenAiService(
+        OpenAIAsyncClient client,
+        @Nullable String serviceId,
+        String modelId,
+        String deploymentName) {
         this.client = client;
         this.serviceId = serviceId;
         this.modelId = modelId;
+        this.deploymentName = deploymentName;
     }
 
     @Nullable
@@ -37,4 +43,7 @@ public abstract class OpenAiService implements AIService {
         return client;
     }
 
+    public String getDeploymentName() {
+        return deploymentName;
+    }
 }

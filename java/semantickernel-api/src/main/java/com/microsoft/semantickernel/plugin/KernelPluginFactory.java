@@ -45,20 +45,20 @@ public class KernelPluginFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelPluginFactory.class);
     private static final String CONFIG_FILE = "config.json";
     private static final String PROMPT_FILE = "skprompt.txt";
-    private static final CaseInsensitiveMap<Class<?>> PRIMATIVE_CLASS_NAMES = new CaseInsensitiveMap<>();
+    private static final CaseInsensitiveMap<Class<?>> PRIMITIVE_CLASS_NAMES = new CaseInsensitiveMap<>();
     private static final CaseInsensitiveMap<Class<?>> COMMON_CLASS_NAMES = new CaseInsensitiveMap<>();
-    private static final Map<Class<?>, Class<?>> BOXED_FROM_PRIMATIVE = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> BOXED_FROM_PRIMITIVE = new HashMap<>();
 
     static {
-        PRIMATIVE_CLASS_NAMES.put("void", void.class);
-        PRIMATIVE_CLASS_NAMES.put("int", int.class);
-        PRIMATIVE_CLASS_NAMES.put("double", double.class);
-        PRIMATIVE_CLASS_NAMES.put("boolean", boolean.class);
-        PRIMATIVE_CLASS_NAMES.put("float", float.class);
-        PRIMATIVE_CLASS_NAMES.put("long", long.class);
-        PRIMATIVE_CLASS_NAMES.put("short", short.class);
-        PRIMATIVE_CLASS_NAMES.put("byte", byte.class);
-        PRIMATIVE_CLASS_NAMES.put("char", char.class);
+        PRIMITIVE_CLASS_NAMES.put("void", void.class);
+        PRIMITIVE_CLASS_NAMES.put("int", int.class);
+        PRIMITIVE_CLASS_NAMES.put("double", double.class);
+        PRIMITIVE_CLASS_NAMES.put("boolean", boolean.class);
+        PRIMITIVE_CLASS_NAMES.put("float", float.class);
+        PRIMITIVE_CLASS_NAMES.put("long", long.class);
+        PRIMITIVE_CLASS_NAMES.put("short", short.class);
+        PRIMITIVE_CLASS_NAMES.put("byte", byte.class);
+        PRIMITIVE_CLASS_NAMES.put("char", char.class);
 
         COMMON_CLASS_NAMES.put("integer", int.class);
         COMMON_CLASS_NAMES.put("string", String.class);
@@ -66,15 +66,15 @@ public class KernelPluginFactory {
         COMMON_CLASS_NAMES.put("map", HashMap.class);
         COMMON_CLASS_NAMES.put("set", HashSet.class);
 
-        BOXED_FROM_PRIMATIVE.put(void.class, Void.class);
-        BOXED_FROM_PRIMATIVE.put(int.class, Integer.class);
-        BOXED_FROM_PRIMATIVE.put(double.class, Double.class);
-        BOXED_FROM_PRIMATIVE.put(boolean.class, Boolean.class);
-        BOXED_FROM_PRIMATIVE.put(float.class, Float.class);
-        BOXED_FROM_PRIMATIVE.put(long.class, Long.class);
-        BOXED_FROM_PRIMATIVE.put(short.class, Short.class);
-        BOXED_FROM_PRIMATIVE.put(byte.class, Byte.class);
-        BOXED_FROM_PRIMATIVE.put(char.class, Character.class);
+        BOXED_FROM_PRIMITIVE.put(void.class, Void.class);
+        BOXED_FROM_PRIMITIVE.put(int.class, Integer.class);
+        BOXED_FROM_PRIMITIVE.put(double.class, Double.class);
+        BOXED_FROM_PRIMITIVE.put(boolean.class, Boolean.class);
+        BOXED_FROM_PRIMITIVE.put(float.class, Float.class);
+        BOXED_FROM_PRIMITIVE.put(long.class, Long.class);
+        BOXED_FROM_PRIMITIVE.put(short.class, Short.class);
+        BOXED_FROM_PRIMITIVE.put(byte.class, Byte.class);
+        BOXED_FROM_PRIMITIVE.put(char.class, Character.class);
 
     }
 
@@ -205,7 +205,7 @@ public class KernelPluginFactory {
      */
     @Nullable
     private static Class<?> getCommonTypeAlias(Method method, String className) {
-        Class<?> returnType = PRIMATIVE_CLASS_NAMES.get(className);
+        Class<?> returnType = PRIMITIVE_CLASS_NAMES.get(className);
 
         if (returnType == null) {
             returnType = COMMON_CLASS_NAMES.get(className);
@@ -216,7 +216,7 @@ public class KernelPluginFactory {
         }
 
         if (returnType != null && !returnType.isAssignableFrom(method.getReturnType())) {
-            returnType = BOXED_FROM_PRIMATIVE.get(returnType);
+            returnType = BOXED_FROM_PRIMITIVE.get(returnType);
         }
 
         return returnType;
@@ -229,7 +229,7 @@ public class KernelPluginFactory {
      * @return The class for the type name.
      */
     public static Class<?> getTypeForName(String className) {
-        Class<?> clazz = PRIMATIVE_CLASS_NAMES.get(className);
+        Class<?> clazz = PRIMITIVE_CLASS_NAMES.get(className);
 
         if (clazz == null) {
             clazz = COMMON_CLASS_NAMES.get(className);

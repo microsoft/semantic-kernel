@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -7,7 +8,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to function before invocation.
 /// </summary>
-[Experimental("SKEXP0004")]
+[Experimental("SKEXP0001")]
+[Obsolete("This class is deprecated in favor of FunctionInvocationContext class, which is used in IFunctionInvocationFilter interface.")]
 public sealed class FunctionInvokingContext : FunctionFilterContext
 {
     /// <summary>

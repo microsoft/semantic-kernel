@@ -112,7 +112,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         KernelFunctionArguments arguments = preRenderingHookResult.getArguments();
 
-        // TOOD: put in method, add catch for classcastexception, fallback to noopconverter
+        // TODO: put in method, add catch for classcastexception, fallback to noopconverter
         ContextVariableType<T> variableType = contextVariableType != null
             ? contextVariableType
             : context.getContextVariableTypes().getVariableTypeForClass(
@@ -177,6 +177,10 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                                         .getConverter()
                                         .fromPromptString(
                                             chatMessageContent.getContent());
+                                }
+
+                                if (value == null) {
+                                    return Flux.empty();
                                 }
 
                                 return Flux.just(
@@ -277,7 +281,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
         return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
-            .take(1).single();
+            .takeLast(1).single();
     }
 
     /**

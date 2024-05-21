@@ -20,9 +20,9 @@ internal static class HandlebarsPlannerExtensions
     /// <param name="fileName">The name of the file to read.</param>
     /// <param name="additionalNameSpace">The name of the additional namespace.</param>
     /// <returns>The content of the file as a string.</returns>
-    public static string ReadPrompt(this HandlebarsPlanner planner, string fileName, string? additionalNameSpace = "")
+    public static string ReadPlannerPrompt(this HandlebarsPlanner planner, string fileName, string? additionalNameSpace = "")
     {
-        using var stream = planner.ReadPromptStream(fileName, additionalNameSpace);
+        using var stream = planner.ReadPlannerPromptStream(fileName, additionalNameSpace);
         using var reader = new StreamReader(stream);
 
         return reader.ReadToEnd();
@@ -35,7 +35,7 @@ internal static class HandlebarsPlannerExtensions
     /// <param name="fileName">The name of the file to read.</param>
     /// <param name="additionalNamespace">The name of the additional namespace.</param>
     /// <returns>The stream for the given file name.</returns>
-    public static Stream ReadPromptStream(this HandlebarsPlanner planner, string fileName, string? additionalNamespace = "")
+    public static Stream ReadPlannerPromptStream(this HandlebarsPlanner planner, string fileName, string? additionalNamespace = "")
     {
         var assembly = Assembly.GetExecutingAssembly();
         var plannerNamespace = planner.GetType().Namespace;
@@ -52,11 +52,16 @@ internal static class HandlebarsPlannerExtensions
     /// <param name="planner">The handlebars planner.</param>
     /// <param name="promptName">The name of the file to read.</param>
     /// <param name="additionalNamespace">The name of the additional namespace.</param>
+    /// <param name="promptOverride">Override for Create Plan prompt.</param>
     /// <returns>The constructed prompt.</returns>
-    public static string ConstructHandlebarsPrompt(this HandlebarsPlanner planner, string promptName, string? additionalNamespace = "")
+    public static string ConstructHandlebarsPrompt(
+        this HandlebarsPlanner planner,
+        string promptName,
+        string? additionalNamespace = "",
+        string? promptOverride = null)
     {
         var partials = planner.ReadAllPromptPartials(promptName, additionalNamespace);
-        var prompt = planner.ReadPrompt($"{promptName}.handlebars", additionalNamespace);
+        var prompt = !string.IsNullOrEmpty(promptOverride) ? promptOverride : planner.ReadPlannerPrompt($"{promptName}.handlebars", additionalNamespace);
         return partials + prompt;
     }
 

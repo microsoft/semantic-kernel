@@ -4,7 +4,7 @@
 
 1. **Azure OpenAI**: go to the [Azure OpenAI Quickstart](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/quickstart)
    and deploy an instance of Azure OpenAI, deploy a model like "text-davinci-003" find your Endpoint and API key.
-2. **OpenAI**: go to [OpenAI](https://openai.com/product/) to register and procure your API key.
+2. **OpenAI**: go to [OpenAI](https://platform.openai.com) to register and procure your API key.
 3. **HuggingFace API key**: see https://huggingface.co/docs/huggingface_hub/guides/inference for details.
 4. **Azure Bing Web Search API**: go to [Bing Web Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
    and select `Try Now` to get started.
@@ -44,6 +44,14 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:ServiceId" "azure-text-embedding-
 dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "text-embedding-ada-002"
 dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAIAudioToText:DeploymentName" "whisper-1"
+dotnet user-secrets set "AzureOpenAIAudioToText:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAIAudioToText:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAITextToAudio:DeploymentName" "tts-1"
+dotnet user-secrets set "AzureOpenAITextToAudio:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAITextToAudio:ApiKey" "..."
 
 dotnet user-secrets set "HuggingFace:ApiKey" "..."
 dotnet user-secrets set "Bing:ApiKey" "..."

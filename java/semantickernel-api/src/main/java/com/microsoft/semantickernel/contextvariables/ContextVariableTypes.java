@@ -110,12 +110,12 @@ public class ContextVariableTypes {
     /**
      * Add a converter to the global collection of context variable type converters.
      *
-     * @param conveter The converter to add.
+     * @param converter The converter to add.
      * @see #getGlobalVariableTypeForClass(Class)
      */
     public static void addGlobalConverter(
-        ContextVariableTypeConverter<?> conveter) {
-        DEFAULT_TYPES.putConverter(conveter);
+        ContextVariableTypeConverter<?> converter) {
+        DEFAULT_TYPES.putConverter(converter);
     }
 
     /**

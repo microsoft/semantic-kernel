@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,6 +28,8 @@ import reactor.core.publisher.Mono;
  * An OpenAI implementation of a {@link TextGenerationService}.
  */
 public class OpenAITextGenerationService extends OpenAiService implements TextGenerationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAITextGenerationService.class);
 
     /**
      * Creates a new {@link OpenAITextGenerationService}.
@@ -37,8 +41,9 @@ public class OpenAITextGenerationService extends OpenAiService implements TextGe
     protected OpenAITextGenerationService(
         OpenAIAsyncClient client,
         String modelId,
-        @Nullable String serviceId) {
-        super(client, serviceId, modelId);
+        @Nullable String serviceId,
+        String deploymentName) {
+        super(client, serviceId, modelId, deploymentName);
     }
 
     /**
@@ -76,7 +81,7 @@ public class OpenAITextGenerationService extends OpenAiService implements TextGe
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
         return getClient()
-            .getCompletionsWithResponse(getModelId(), completionsOptions,
+            .getCompletionsWithResponse(getDeploymentName(), completionsOptions,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
                 if (completionsResult.getStatusCode() >= 400) {
@@ -153,11 +158,16 @@ public class OpenAITextGenerationService extends OpenAiService implements TextGe
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                     "OpenAI model id must be provided");
             }
+            if (deploymentName == null) {
+                LOGGER.debug("Deployment name is not provided, using model id as deployment name");
+                deploymentName = modelId;
+            }
 
             return new OpenAITextGenerationService(
                 this.client,
                 this.modelId,
-                this.serviceId);
+                this.serviceId,
+                this.deploymentName);
         }
     }
 }

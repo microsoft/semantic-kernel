@@ -68,7 +68,7 @@ jobs:
           fi
 
       # Sets up the specified JDK version from the matrix
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft

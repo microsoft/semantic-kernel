@@ -36,9 +36,9 @@ public partial class AgentBuilder
     public AgentBuilder()
     {
         this._model = new AssistantModel();
-        this._plugins = new KernelPluginCollection();
+        this._plugins = [];
         this._tools = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        this._fileIds = new List<string>();
+        this._fileIds = [];
     }
 
     /// <summary>
@@ -98,13 +98,7 @@ public partial class AgentBuilder
         var restContext = new OpenAIRestContext(this._endpoint!, this._apiKey!, this._version, this._httpClientProvider);
         var model = await restContext.GetAssistantModelAsync(agentId, cancellationToken).ConfigureAwait(false);
 
-        return
-            await Agent.CreateAsync(
-                restContext,
-                model,
-                this._config,
-                this._plugins,
-                cancellationToken).ConfigureAwait(false);
+        return new Agent(model, this._config, restContext, this._plugins);
     }
 
     /// <summary>
@@ -315,5 +309,51 @@ public partial class AgentBuilder
         }
 
         return this;
+    }
+
+    /// <summary>
+    /// Retrieve defined agents from an Azure OpenAI endpoint.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="AgentReference.Id"/> can be used to retrieve a hydrated agent via <see cref="GetAsync(string, CancellationToken)"/>/
+    /// </remarks>
+    public static async Task<IList<AgentReference>> GetAzureOpenAIAgentsAsync(string endpoint, string apiKey, string? version = null)
+    {
+        endpoint = $"{endpoint}/openai";
+        version ??= "2024-02-15-preview";
+
+        var context = new OpenAIRestContext(endpoint!, apiKey, version);
+        var result = await context.ListAssistantModelsAsync().ConfigureAwait(false);
+
+        return
+           result.Select(
+               m =>
+                   new AgentReference()
+                   {
+                       Id = m.Id,
+                       Name = m.Name
+                   }).ToArray();
+    }
+
+    /// <summary>
+    /// Retrieve defined agents from OpenAI services.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="AgentReference.Id"/> can be used to retrieve a hydrated agent via <see cref="GetAsync(string, CancellationToken)"/>/
+    /// </remarks>
+    public static async Task<IList<AgentReference>> GetOpenAIAgentsAsync(string apiKey)
+    {
+        var context = new OpenAIRestContext(OpenAIBaseUrl, apiKey);
+
+        var result = await context.ListAssistantModelsAsync().ConfigureAwait(false);
+
+        return
+            result.Select(
+                m =>
+                    new AgentReference()
+                    {
+                        Id = m.Id,
+                        Name = m.Name
+                    }).ToArray();
     }
 }

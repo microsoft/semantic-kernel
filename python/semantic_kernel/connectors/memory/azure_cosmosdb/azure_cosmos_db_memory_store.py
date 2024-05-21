@@ -1,24 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 from typing import List, Tuple
 
 from numpy import ndarray
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
-    AzureCosmosDBStoreApi,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
 from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
-    get_mongodb_resources,
+    CosmosDBSimilarityType,
+    CosmosDBVectorSearchType,
+    get_mongodb_search_client,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import (
-    MongoStoreApi,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
-
-# Load environment variables
-(cosmos_api, cosmos_connstr) = azure_cosmos_db_settings_from_dot_env()
 
 
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
@@ -35,6 +29,10 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
     num_lists = None
     similarity = None
     collection_name = None
+    kind = None
+    m = None
+    ef_construction = None
+    ef_search = None
 
     def __init__(
         self,
@@ -42,47 +40,67 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         database_name: str,
         index_name: str,
         vector_dimensions: int,
-        num_lists: int,
-        similarity: str,
+        num_lists: int = 100,
+        similarity: CosmosDBSimilarityType = CosmosDBSimilarityType.COS,
+        kind: CosmosDBVectorSearchType = CosmosDBVectorSearchType.VECTOR_HNSW,
+        m: int = 16,
+        ef_construction: int = 64,
+        ef_search: int = 40,
     ):
         if vector_dimensions <= 0:
-            raise ValueError("Vector dimensions must be a positive number.")
+            raise ServiceInitializationError("Vector dimensions must be a positive number.")
         # if connection_string is None:
         #     raise ValueError("Connection String cannot be empty.")
         if database_name is None:
-            raise ValueError("Database Name cannot be empty.")
+            raise ServiceInitializationError("Database Name cannot be empty.")
         if index_name is None:
-            raise ValueError("Index Name cannot be empty.")
+            raise ServiceInitializationError("Index Name cannot be empty.")
 
         self.cosmosStore = cosmosStore
         self.index_name = index_name
         self.num_lists = num_lists
         self.similarity = similarity
+        self.kind = kind
+        self.m = m
+        self.ef_construction = ef_construction
+        self.ef_search = ef_search
 
     @staticmethod
     async def create(
+        cosmos_connstr,
+        application_name,
+        cosmos_api,
         database_name,
         collection_name,
         index_name,
         vector_dimensions,
         num_lists,
         similarity,
+        kind,
+        m,
+        ef_construction,
+        ef_search,
     ) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            mongodb_client, database = get_mongodb_resources(cosmos_connstr, database_name)
+            mongodb_client = get_mongodb_search_client(cosmos_connstr, application_name)
+            database = mongodb_client[database_name]
             apiStore = MongoStoreApi(
-                collection_name,
-                index_name,
-                vector_dimensions,
-                num_lists,
-                similarity,
-                database,
+                collection_name=collection_name,
+                index_name=index_name,
+                vector_dimensions=vector_dimensions,
+                num_lists=num_lists,
+                similarity=similarity,
+                database=database,
+                kind=kind,
+                m=m,
+                ef_construction=ef_construction,
+                ef_search=ef_search,
             )
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"API type {cosmos_api} is not supported.")
 
         store = AzureCosmosDBMemoryStore(
             apiStore,
@@ -91,6 +109,10 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             vector_dimensions,
             num_lists,
             similarity,
+            kind,
+            m,
+            ef_construction,
+            ef_search,
         )
         await store.create_collection(collection_name)
         return store

@@ -71,7 +71,7 @@ public class PromptExecutionSettingsTest {
     }
 
     @Test
-    void testJsonDeserialze() throws Exception {
+    void testJsonDeserialize() throws Exception {
         String json = "{"
             + "\"service_id\":\"custom-service\","
             + "\"max_tokens\":512,"

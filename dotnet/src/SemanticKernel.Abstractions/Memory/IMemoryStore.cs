@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// An interface for storing and retrieving indexed <see cref="MemoryRecord"/> objects in a data store.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public interface IMemoryStore
 {
     /// <summary>

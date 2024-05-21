@@ -57,11 +57,10 @@ public sealed class RequestFailedExceptionExtensionsTests
     private sealed class FakeResponse(string responseContent, int status) : Response
     {
         private readonly string _responseContent = responseContent;
-        private readonly int _status = status;
-        private readonly IEnumerable<HttpHeader> _headers = new List<HttpHeader>();
+        private readonly IEnumerable<HttpHeader> _headers = [];
 
         public override BinaryData Content => BinaryData.FromString(this._responseContent);
-        public override int Status => this._status;
+        public override int Status { get; } = status;
         public override string ReasonPhrase => "Reason Phrase";
         public override Stream? ContentStream { get => null; set => throw new NotImplementedException(); }
         public override string ClientRequestId { get => "Client Request Id"; set => throw new NotImplementedException(); }

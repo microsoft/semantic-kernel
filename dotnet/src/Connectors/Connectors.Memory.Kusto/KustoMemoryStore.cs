@@ -93,7 +93,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<MemoryRecord?> GetAsync(string collectionName, string key, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        var result = this.GetBatchAsync(collectionName, new[] { key }, withEmbedding, cancellationToken);
+        var result = this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -131,10 +131,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
-            var embedding = withEmbeddings ? reader.GetString(3) : default;
-
-            var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
+            var recordEmbedding = withEmbeddings ? reader.GetString(3) : default;
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
 
             yield return kustoRecord.ToMemoryRecord();
         }
@@ -214,19 +215,19 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
+            DateTime? timestamp = !reader.IsDBNull(2) ? reader.GetDateTime(2) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
-
-            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
-
+            var serializedMetadata = KustoSerializer.DeserializeMetadata(metadata);
+            var serializedEmbedding = KustoSerializer.DeserializeEmbedding(recordEmbedding);
+            var kustoRecord = new KustoMemoryRecord(key, serializedMetadata, serializedEmbedding, timestamp);
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
     }
 
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-        => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
+        => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -246,7 +247,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.UpsertBatchAsync(collectionName, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(collectionName, [record], cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
     }
 
@@ -327,7 +328,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
-        Application = HttpHeaderValues.UserAgent,
+        Application = HttpHeaderConstant.Values.UserAgent,
     };
 
     private bool _searchInitialized;
@@ -340,13 +341,13 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     private static readonly ColumnSchema s_embeddingColumn = new("Embedding", typeof(object).FullName);
     private static readonly ColumnSchema s_timestampColumn = new("Timestamp", typeof(DateTime).FullName);
 
-    private static readonly ColumnSchema[] s_collectionColumns = new ColumnSchema[]
-    {
+    private static readonly ColumnSchema[] s_collectionColumns =
+    [
         s_keyColumn,
         s_metadataColumn,
         s_embeddingColumn,
         s_timestampColumn
-    };
+    ];
 
     /// <summary>
     /// Converts collection name to Kusto table name.

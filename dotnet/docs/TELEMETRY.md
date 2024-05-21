@@ -86,7 +86,7 @@ TagList tags = new() { { "semantic_kernel.function.name", this.Name } };
 s_invocationDuration.Record(duration.TotalSeconds, in tags);
 ```
 
-### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/TelemetryExample/Program.cs)
+### [Examples](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Demos/TelemetryWithAppInsights/Program.cs)
 
 Depending on monitoring tool, there are different ways how to subscribe to available meters. Following example shows how to subscribe to available meters and export metrics to Application Insights using `OpenTelemetry.Sdk`:
 
