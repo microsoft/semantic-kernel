@@ -131,7 +131,7 @@ class KernelPlugin(KernelBaseModel):
     # region Dict-like methods
 
     def __setitem__(self, key: str, value: KERNEL_FUNCTION_TYPE) -> None:
-        """Set a function in the plugin.
+        """Sets a function in the plugin.
 
         This function uses plugin[function_name] = function syntax.
 
