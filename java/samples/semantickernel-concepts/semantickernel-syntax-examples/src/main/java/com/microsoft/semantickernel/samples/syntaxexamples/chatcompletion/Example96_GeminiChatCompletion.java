@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.samples.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatCompletion;

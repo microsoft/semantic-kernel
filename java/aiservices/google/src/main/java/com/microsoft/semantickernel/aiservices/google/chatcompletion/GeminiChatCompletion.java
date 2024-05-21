@@ -1,5 +1,10 @@
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
+import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
+import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
+import com.azure.core.util.BinaryData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.FunctionDeclaration;
@@ -15,10 +20,12 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.exceptions.AIException;
+import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -32,6 +39,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
 
@@ -106,42 +114,65 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 modelBuilder.setGenerationConfig(config);
             }
 
-            if (invocationContext.getToolCallBehavior() != null) {
-                ToolCallBehavior toolCallBehavior = invocationContext.getToolCallBehavior();
-
-                if (kernel != null) {
-                    Tool.Builder tool = Tool.newBuilder();
-
-                    kernel.getPlugins()
-                            .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
-                                FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
-                                functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), name));
-                                functionBuilder.setDescription(function.getDescription());
-
-                                List<InputVariable> parameters = function.getMetadata().getParameters();
-                                if (parameters != null && !parameters.isEmpty()) {
-                                    Schema.Builder parametersBuilder = Schema.newBuilder();
-
-                                    function.getMetadata().getParameters().forEach(parameter -> {
-                                        parametersBuilder.setDescription(parameter.getDescription());
-                                        parametersBuilder.setType(Type.OBJECT);
-                                    });
-
-                                    functionBuilder.setParameters(parametersBuilder.build());
-                                }
-
-                                tool.addFunctionDeclarations(functionBuilder.build());
-                            }));
-
-                    List<Tool> tools = new ArrayList<>();
-                    tools.add(tool.build());
-
+            if (invocationContext.getToolCallBehavior() != null && kernel != null) {
+                List<Tool> tools = getTools(kernel, invocationContext.getToolCallBehavior());
+                if (tools != null) {
                     modelBuilder.setTools(tools);
                 }
             }
         }
 
         return modelBuilder.build();
+    }
+
+    private Tool buildTool(KernelFunction<?> function) {
+        FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
+        functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), function.getName()));
+        functionBuilder.setDescription(function.getDescription());
+
+        List<InputVariable> parameters = function.getMetadata().getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            Schema.Builder parametersBuilder = Schema.newBuilder();
+
+            function.getMetadata().getParameters().forEach(parameter -> {
+                parametersBuilder.setDescription(parameter.getDescription());
+                parametersBuilder.setType(Type.OBJECT);
+            });
+
+            functionBuilder.setParameters(parametersBuilder.build());
+        }
+
+        return Tool.newBuilder().addFunctionDeclarations(functionBuilder.build()).build();
+    }
+
+    private List<Tool> getTools(@Nullable Kernel kernel, @Nullable ToolCallBehavior toolCallBehavior) {
+        if (kernel == null || toolCallBehavior == null) {
+            return null;
+        }
+
+        List<Tool> tools = new ArrayList<>();
+
+        // If a specific function is required to be called
+        if (toolCallBehavior instanceof ToolCallBehavior.RequiredKernelFunction) {
+            KernelFunction<?> tool = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
+                    .getRequiredFunction();
+
+            tools.add(buildTool(tool));
+        }
+        // If a set of functions are enabled to be called
+        if (toolCallBehavior instanceof ToolCallBehavior.AllowedKernelFunctions) {
+            ToolCallBehavior.AllowedKernelFunctions enabledKernelFunctions = (ToolCallBehavior.AllowedKernelFunctions) toolCallBehavior;
+
+            kernel.getPlugins().forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
+                        // check if all kernel functions are enabled or if the specific function is enabled
+                        if (enabledKernelFunctions.isAllKernelFunctionsAllowed() ||
+                                enabledKernelFunctions.isFunctionAllowed(function.getPluginName(), function.getName())) {
+                            tools.add(buildTool(function));
+                        }
+                    }));
+        }
+
+        return tools.isEmpty() ? null : tools;
     }
 
     private List<ChatMessageContent<?>> getChatMessageContentsFromResponse(GenerateContentResponse response) {

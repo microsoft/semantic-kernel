@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.samples.syntaxexamples;
+package com.microsoft.semantickernel.samples.syntaxexamples.functions;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
