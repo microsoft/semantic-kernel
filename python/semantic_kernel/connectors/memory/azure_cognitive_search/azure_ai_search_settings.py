@@ -4,8 +4,10 @@ from pydantic import SecretStr
 
 from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class AzureAISearchSettings(BaseModelSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector
 

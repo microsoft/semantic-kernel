@@ -64,7 +64,7 @@ execution_settings = OpenAIChatPromptExecutionSettings(
     temperature=0.7,
     top_p=0.8,
     function_call_behavior=FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["math"]}
+        auto_invoke=True, filters={"included_plugins": ["math", "time"]}
     ),
 )
 

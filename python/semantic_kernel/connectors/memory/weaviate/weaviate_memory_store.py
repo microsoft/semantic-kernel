@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ class WeaviateConfig:
     api_key: str = None
 
 
+@experimental_class
 class WeaviateMemoryStore(MemoryStoreBase):
     class FieldMapper:
         """

@@ -17,6 +17,7 @@ from semantic_kernel.connectors.memory.astradb.utils import (
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
@@ -28,6 +29,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AstraDBMemoryStore(MemoryStoreBase):
     """A memory store that uses Astra database as the backend."""
 

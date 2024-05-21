@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Any, List, Tuple
 
 import numpy as np
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
@@ -9,28 +9,30 @@ from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 # You can read more about vector search using AzureCosmosDBNoSQL here.
 # https://aka.ms/CosmosVectorSearch
+@experimental_class
 class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     cosmos_client: CosmosClient = None
     database: DatabaseProxy
     container: ContainerProxy
     database_name: str = None
     partition_key: str = None
-    vector_embedding_policy: [Dict[str, Any]] = None
-    indexing_policy: [Dict[str, Any]] = None
-    cosmos_container_properties: [Dict[str, Any]] = None
+    vector_embedding_policy: dict[str, Any] | None = None
+    indexing_policy: dict[str, Any] | None = None
+    cosmos_container_properties: dict[str, Any] | None = None
 
     def __init__(
         self,
         cosmos_client: CosmosClient,
         database_name: str,
         partition_key: str,
-        vector_embedding_policy: [Dict[str, Any]],
-        indexing_policy: [Dict[str, Any]],
-        cosmos_container_properties: [Dict[str, Any]],
+        vector_embedding_policy: dict[str, Any] | None = None,
+        indexing_policy: dict[str, Any] | None = None,
+        cosmos_container_properties: dict[str, Any] | None = None,
     ):
         if indexing_policy["vectorIndexes"] is None or len(indexing_policy["vectorIndexes"]) == 0:
             raise ValueError("vectorIndexes cannot be null or empty in the indexing_policy.")

@@ -19,6 +19,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
@@ -31,10 +32,12 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class RestApiOperationParameterStyle(Enum):
     SIMPLE = "simple"
 
 
+@experimental_class
 class RestApiOperationPayloadProperty:
     def __init__(
         self,
@@ -55,6 +58,7 @@ class RestApiOperationPayloadProperty:
         self.schema = schema
 
 
+@experimental_class
 class RestApiOperationPayload:
     def __init__(
         self,
@@ -69,6 +73,7 @@ class RestApiOperationPayload:
         self.schema = schema
 
 
+@experimental_class
 class RestApiOperation:
     MEDIA_TYPE_TEXT_PLAIN = "text/plain"
     PAYLOAD_ARGUMENT_NAME = "payload"
@@ -278,6 +283,7 @@ class RestApiOperation:
         ]
 
 
+@experimental_class
 class RestApiOperationParameterLocation(Enum):
     """The location of the REST API operation parameter."""
 
@@ -288,6 +294,7 @@ class RestApiOperationParameterLocation(Enum):
     BODY = "body"
 
 
+@experimental_class
 class RestApiOperationParameter:
     def __init__(
         self,
@@ -313,6 +320,7 @@ class RestApiOperationParameter:
         self.schema = schema
 
 
+@experimental_class
 class OpenApiParser:
     """
     NOTE: SK Python only supports the OpenAPI Spec >=3.0
@@ -463,6 +471,7 @@ class OpenApiParser:
         return request_objects
 
 
+@experimental_class
 class Uri:
     """The Uri class that represents the URI."""
 
@@ -474,6 +483,7 @@ class Uri:
         return f"{parsed_uri.scheme}://{parsed_uri.netloc}"
 
 
+@experimental_class
 class RestApiOperationRunOptions:
     """The options for running the REST API operation."""
 
@@ -482,6 +492,7 @@ class RestApiOperationRunOptions:
         self.api_host_url: str = api_host_url
 
 
+@experimental_class
 class OpenApiRunner:
     """The OpenApiRunner that runs the operations defined in the OpenAPI manifest"""
 
@@ -617,6 +628,7 @@ class OpenApiRunner:
         return await fetch()
 
 
+@experimental_function
 def create_functions_from_openapi(
     plugin_name: str,
     openapi_document_path: str,
@@ -653,6 +665,7 @@ def create_functions_from_openapi(
     ]
 
 
+@experimental_function
 def _create_function_from_operation(
     runner: OpenApiRunner,
     operation: RestApiOperation,

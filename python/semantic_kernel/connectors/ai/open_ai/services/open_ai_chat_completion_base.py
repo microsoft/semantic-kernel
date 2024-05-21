@@ -208,12 +208,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 return
 
             # there is one response stream in the messages, combining now to create the full completion
+            # depending on the prompt, the message may contain both function call content and others
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
             fc_count = len(function_calls)
-
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
             # this function either updates the chat history with the function call results
@@ -415,7 +415,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
     # endregion
-    # region tool calling
+    # region function calling
 
     async def _process_function_call(
         self,

@@ -5,8 +5,10 @@ from typing import Optional
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class MemoryQueryResult:
     is_reference: bool
     external_source_name: Optional[str]

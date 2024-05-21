@@ -16,10 +16,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
     OpenAITextEmbeddingBase,
 )
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
     """OpenAI Text Embedding class."""
 

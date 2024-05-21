@@ -9,10 +9,12 @@ from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     device: str
     generator: Any
