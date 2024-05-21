@@ -59,6 +59,11 @@ public class AzureOpenAIConfig
     public int? EmbeddingDimensions { get; set; }
 
     /// <summary>
+    /// A local identifier for the given AI service.
+    /// </summary>
+    public string ServiceId { get; set; } = string.Empty;
+
+    /// <summary>
     /// Set credentials manually from code.
     /// </summary>
     /// <param name="credential">Token credentials</param>

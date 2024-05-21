@@ -219,14 +219,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextGeneration(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -241,7 +239,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -251,7 +249,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -261,7 +259,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -278,13 +276,11 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextGeneration(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
-        string? serviceId = null)
+        AzureOpenAIConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
@@ -298,7 +294,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -307,7 +303,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -316,7 +312,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -721,14 +717,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -743,7 +737,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
@@ -754,7 +748,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
@@ -765,7 +759,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
@@ -783,13 +777,11 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
-        string? serviceId = null)
+        AzureOpenAIConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
@@ -803,7 +795,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -813,7 +805,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -823,7 +815,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -1303,7 +1295,6 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     /// <remarks>
@@ -1313,7 +1304,6 @@ public static class OpenAIServiceCollectionExtensions
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -1328,7 +1318,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -1338,7 +1328,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -1348,7 +1338,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -1365,7 +1355,6 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     /// <remarks>
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
@@ -1373,8 +1362,7 @@ public static class OpenAIServiceCollectionExtensions
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
-        string? serviceId = null)
+        AzureOpenAIConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
@@ -1388,7 +1376,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -1397,7 +1385,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -1406,7 +1394,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -1988,14 +1976,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="apiVersion">Azure OpenAI API version.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToImage(
         this IServiceCollection services,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         string? apiVersion = null)
     {
         Verify.NotNull(services);
@@ -2011,7 +1997,7 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
                     modelId: config.Deployment,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     apiVersion: apiVersion);
                 break;
 
@@ -2021,7 +2007,7 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
                     modelId: config.Deployment,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     apiVersion: apiVersion);
                 break;
 
@@ -2030,7 +2016,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     apiVersion: apiVersion);
                 break;
@@ -2047,7 +2033,6 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="apiVersion">Azure OpenAI API version.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
@@ -2055,7 +2040,6 @@ public static class OpenAIServiceCollectionExtensions
     public static IKernelBuilder AddAzureOpenAITextToImage(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         string? apiVersion = null,
         HttpClient? httpClient = null)
     {
@@ -2072,7 +2056,7 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
                     modelId: config.Deployment,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     apiVersion: apiVersion);
                 break;
 
@@ -2082,7 +2066,7 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
                     modelId: config.Deployment,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     apiVersion: apiVersion);
                 break;
 
@@ -2092,7 +2076,7 @@ public static class OpenAIServiceCollectionExtensions
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
                     modelId: config.Deployment,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     apiVersion: apiVersion,
                     httpClient: httpClient);
                 break;
@@ -2294,7 +2278,6 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="config">Required configuration for Azure OpenAI.</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="version">The API version to target.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
@@ -2303,7 +2286,6 @@ public static class OpenAIServiceCollectionExtensions
         AzureOpenAIConfig config,
         string? orgId = null,
         string? version = null,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2319,7 +2301,7 @@ public static class OpenAIServiceCollectionExtensions
                     apiKey: config.APIKey,
                     orgId: orgId,
                     version: version,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     httpClient: httpClient);
                 break;
 
@@ -2337,15 +2319,13 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="config">Required configuration for Azure OpenAI.</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
     /// <param name="version">The API version to target.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIFiles(
         this IServiceCollection services,
         AzureOpenAIConfig config,
         string? orgId = null,
-        string? version = null,
-        string? serviceId = null)
+        string? version = null)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
@@ -2360,7 +2340,7 @@ public static class OpenAIServiceCollectionExtensions
                     apiKey: config.APIKey,
                     orgId: orgId,
                     version: version,
-                    serviceId: serviceId);
+                    serviceId: config.ServiceId);
                 break;
 
             default:
@@ -2453,14 +2433,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAITextToAudio(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2475,7 +2453,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -2492,14 +2470,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAITextToAudio(
         this IServiceCollection services,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
@@ -2514,7 +2490,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -2864,14 +2840,12 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIAudioToText(
         this IKernelBuilder builder,
         AzureOpenAIConfig config,
-        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -2886,7 +2860,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -2896,7 +2870,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -2906,7 +2880,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment,
                     httpClient: httpClient);
                 break;
@@ -2923,13 +2897,11 @@ public static class OpenAIServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="config">Required configuration for Azure OpenAI.</param>
-    /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIAudioToText(
         this IServiceCollection services,
-        AzureOpenAIConfig config,
-        string? serviceId = null)
+        AzureOpenAIConfig config)
     {
         Verify.NotNull(services);
         Verify.NotNull(config);
@@ -2943,7 +2915,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: new DefaultAzureCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -2952,7 +2924,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     credentials: config.GetTokenCredential(),
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
@@ -2961,7 +2933,7 @@ public static class OpenAIServiceCollectionExtensions
                     deploymentName: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    serviceId: serviceId,
+                    serviceId: config.ServiceId,
                     modelId: config.Deployment);
                 break;
 
