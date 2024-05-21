@@ -196,10 +196,13 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                         request_index=0,
                         function_call_behavior=prompt_execution_settings.function_call_behavior,
                     )
-                    frc = FunctionResultContent.from_function_call_content_and_result(
-                        function_call_content=item, result=context.function_result
-                    )
-                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    if context is not None:
+                        # Only add the function result content to the chat history if the context is present
+                        # which means it wasn't added in the _process_function_call method
+                        frc = FunctionResultContent.from_function_call_content_and_result(
+                            function_call_content=item, result=context.function_result
+                        )
+                        chat_history_for_steps.add_message(message=frc.to_chat_message_content())
                 except Exception as exc:
                     frc = FunctionResultContent.from_function_call_content_and_result(
                         function_call_content=item,

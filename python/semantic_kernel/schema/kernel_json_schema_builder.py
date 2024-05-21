@@ -26,7 +26,6 @@ class KernelJsonSchemaBuilder:
     @classmethod
     def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds JSON schema for a given parameter type."""
-        print(f"Building schema for type: {parameter_type}")
 
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
@@ -56,7 +55,6 @@ class KernelJsonSchemaBuilder:
         if description:
             schema["description"] = description
 
-        print(f"Generated schema for model {model}: {schema}")
         return schema
 
     @classmethod
@@ -67,7 +65,6 @@ class KernelJsonSchemaBuilder:
         if description:
             schema["description"] = description
 
-        print(f"Generated schema from type name {parameter_type}: {schema}")
         return schema
 
     @classmethod
@@ -75,5 +72,4 @@ class KernelJsonSchemaBuilder:
         """Gets JSON schema for a given parameter type."""
         type_name = TYPE_MAPPING.get(parameter_type, "object")
         schema = {"type": type_name}
-        print(f"Generated JSON schema for type {parameter_type}: {schema}")
         return schema
