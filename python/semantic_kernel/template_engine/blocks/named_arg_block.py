@@ -55,9 +55,9 @@ class NamedArgBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.NAMED_ARG
-    name: Optional[str] = None
-    value: Optional[ValBlock] = None
-    variable: Optional[VarBlock] = None
+    name: str | None = None
+    value: ValBlock | None = None
+    variable: VarBlock | None = None
 
     @model_validator(mode="before")
     @classmethod

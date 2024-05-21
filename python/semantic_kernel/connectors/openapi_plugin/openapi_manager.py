@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
 import json
 import logging
 import re
+from collections.abc import Callable, Mapping
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Tuple
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlencode, urljoin, urlparse, urlunparse
 
 import httpx
@@ -43,7 +42,7 @@ class RestApiOperationPayloadProperty:
         self,
         name: str,
         type: str,
-        properties: RestApiOperationPayloadProperty,
+        properties: "RestApiOperationPayloadProperty",
         description: str | None = None,
         is_required: bool = False,
         default_value: Any | None = None,
@@ -63,7 +62,7 @@ class RestApiOperationPayload:
     def __init__(
         self,
         media_type: str,
-        properties: list[RestApiOperationPayloadProperty],
+        properties: list["RestApiOperationPayloadProperty"],
         description: str | None = None,
         schema: str | None = None,
     ):
@@ -88,8 +87,8 @@ class RestApiOperation:
         path: str,
         summary: str | None = None,
         description: str | None = None,
-        params: list[RestApiOperationParameter] | None = None,
-        request_body: RestApiOperationPayload | None = None,
+        params: list["RestApiOperationParameter"] | None = None,
+        request_body: "RestApiOperationPayload | None" = None,
     ):
         self.id = id
         self.method = method.upper()
@@ -110,7 +109,7 @@ class RestApiOperation:
         full_path = urljoin(base_path, path.lstrip("/"))
         return urlunparse(parsed_base._replace(path=full_path))
 
-    def build_headers(self, arguments: Dict[str, Any]) -> Dict[str, str]:
+    def build_headers(self, arguments: dict[str, Any]) -> dict[str, str]:
         headers = {}
 
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
@@ -151,7 +150,7 @@ class RestApiOperation:
 
         return urlparse(server_url_string)
 
-    def build_path(self, path_template: str, arguments: Dict[str, Any]) -> str:
+    def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
         for parameter in parameters:
             argument = arguments.get(parameter.name)
@@ -165,7 +164,7 @@ class RestApiOperation:
             path_template = path_template.replace(f"{{{parameter.name}}}", str(argument))
         return path_template
 
-    def build_query_string(self, arguments: Dict[str, Any]) -> str:
+    def build_query_string(self, arguments: dict[str, Any]) -> str:
         segments = []
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
         for parameter in parameters:
@@ -185,10 +184,10 @@ class RestApiOperation:
 
     def get_parameters(
         self,
-        operation: RestApiOperation,
+        operation: "RestApiOperation",
         add_payload_params_from_metadata: bool = True,
         enable_payload_spacing: bool = False,
-    ) -> list[RestApiOperationParameter]:
+    ) -> list["RestApiOperationParameter"]:
         params = list(operation.parameters)
         if operation.request_body is not None:
             params.extend(
@@ -204,7 +203,7 @@ class RestApiOperation:
 
         return params
 
-    def create_payload_artificial_parameter(self, operation: RestApiOperation) -> RestApiOperationParameter:
+    def create_payload_artificial_parameter(self, operation: "RestApiOperation") -> "RestApiOperationParameter":
         return RestApiOperationParameter(
             name=self.PAYLOAD_ARGUMENT_NAME,
             type=(
@@ -220,7 +219,7 @@ class RestApiOperation:
             schema=operation.request_body.schema if operation.request_body else None,
         )
 
-    def create_content_type_artificial_parameter(self) -> RestApiOperationParameter:
+    def create_content_type_artificial_parameter(self) -> "RestApiOperationParameter":
         return RestApiOperationParameter(
             name=self.CONTENT_TYPE_ARGUMENT_NAME,
             type="string",
@@ -239,10 +238,10 @@ class RestApiOperation:
 
     def _get_parameters_from_payload_metadata(
         self,
-        properties: list[RestApiOperationPayloadProperty],
+        properties: list["RestApiOperationPayloadProperty"],
         enable_namespacing: bool = False,
         root_property_name: bool = None,
-    ) -> list[RestApiOperationParameter]:
+    ) -> list["RestApiOperationParameter"]:
         parameters: list[RestApiOperationParameter] = []
         for property in properties:
             parameter_name = self._get_property_name(property, root_property_name, enable_namespacing)
@@ -264,7 +263,7 @@ class RestApiOperation:
         return parameters
 
     def get_payload_parameters(
-        self, operation: RestApiOperation, use_parameters_from_metadata: bool, enable_namespacing: bool
+        self, operation: "RestApiOperation", use_parameters_from_metadata: bool, enable_namespacing: bool
     ):
         if use_parameters_from_metadata:
             if operation.request_body is None:
@@ -308,7 +307,6 @@ class RestApiOperationParameter:
         default_value: Any | None = None,
         schema: str | None = None,
     ):
-
         self.name = name
         self.type = type
         self.location = location
@@ -424,7 +422,7 @@ class OpenApiParser:
         self,
         parsed_document: Any,
         execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
-    ) -> Dict[str, RestApiOperation]:
+    ) -> dict[str, RestApiOperation]:
         """Create the REST API Operations from the parsed OpenAPI document.
 
         Args:
@@ -502,7 +500,7 @@ class OpenApiRunner:
     def __init__(
         self,
         parsed_openapi_document: Mapping[str, str],
-        auth_callback: Callable[[Dict[str, str]], Dict[str, str]] | None = None,
+        auth_callback: Callable[[dict[str, str]], dict[str, str]] | None = None,
         http_client: httpx.AsyncClient | None = None,
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
@@ -527,8 +525,8 @@ class OpenApiRunner:
         return self.build_full_url(url, operation.build_query_string(arguments))
 
     def build_json_payload(
-        self, payload_metadata: RestApiOperationPayload, arguments: Dict[str, Any]
-    ) -> Tuple[str, str]:
+        self, payload_metadata: RestApiOperationPayload, arguments: dict[str, Any]
+    ) -> tuple[str, str]:
         """Build the JSON payload."""
         if self.enable_dynamic_payload:
             if payload_metadata is None:
@@ -566,7 +564,7 @@ class OpenApiRunner:
                 )
         return result
 
-    def build_operation_payload(self, operation: RestApiOperation, arguments: KernelArguments) -> Tuple[str, str]:
+    def build_operation_payload(self, operation: RestApiOperation, arguments: KernelArguments) -> tuple[str, str]:
         if operation.request_body is None and self.payload_argument_name not in arguments:
             return None, None
         return self.build_json_payload(operation.request_body, arguments)

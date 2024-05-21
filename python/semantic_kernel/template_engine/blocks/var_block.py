@@ -45,7 +45,7 @@ class VarBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
-    name: Optional[str] = ""
+    name: str | None = ""
 
     @model_validator(mode="before")
     @classmethod

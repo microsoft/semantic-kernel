@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from typing import List
-
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -61,7 +59,7 @@ def test_get_kernel_parameter_metadata_with_variables():
         )
     ]
     config = PromptTemplateConfig(template="Example template", input_variables=input_variables)
-    metadata: List[KernelParameterMetadata] = config.get_kernel_parameter_metadata()
+    metadata: list[KernelParameterMetadata] = config.get_kernel_parameter_metadata()
     assert len(metadata) == 1
     assert metadata[0].name == "var1"
     assert metadata[0].description == "A variable"

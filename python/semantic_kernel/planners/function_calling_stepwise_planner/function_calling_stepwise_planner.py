@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import asyncio
 import logging
 import os
 from copy import copy
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -59,7 +58,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     generate_plan_yaml: str
     step_prompt: str
 
-    def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
+    def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
         """Initialize a new instance of the FunctionCallingStepwisePlanner
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
