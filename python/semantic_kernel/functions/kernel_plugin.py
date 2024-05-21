@@ -56,7 +56,8 @@ class KernelPlugin(KernelBaseModel):
             indexed by their name.
 
     Methods:
-        set, __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
+        set (key: str, value: KernelFunction): Set a function in the plugin.
+        __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
         get (key: str, default: KernelFunction | None = None): Get a function from the plugin.
         __getitem__ (key: str): Get a function from the plugin.
         __contains__ (key: str): Check if a function is in the plugin.
