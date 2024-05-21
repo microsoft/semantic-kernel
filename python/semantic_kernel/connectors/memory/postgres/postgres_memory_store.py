@@ -3,7 +3,6 @@
 import atexit
 import json
 import logging
-from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
@@ -20,6 +19,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000
@@ -28,6 +28,7 @@ DEFAULT_SCHEMA = "public"
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class PostgresMemoryStore(MemoryStoreBase):
     """A memory store that uses Postgres with pgvector as the backend."""
 
@@ -81,7 +82,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
+        dimension_num: int | None = None,
     ) -> None:
         """Creates a new collection.
 
@@ -117,7 +118,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (),
                 )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -198,7 +199,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise ServiceResponseException("Upsert failed")
                 return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -291,8 +292,8 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -361,7 +362,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (key,),
                 )
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -392,7 +393,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -461,7 +462,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -489,7 +490,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         results = await self.__get_collections(cur)
         return collection_name in results
 
-    async def __get_collections(self, cur: Cursor) -> List[str]:
+    async def __get_collections(self, cur: Cursor) -> list[str]:
         cur.execute(
             """
             SELECT table_name

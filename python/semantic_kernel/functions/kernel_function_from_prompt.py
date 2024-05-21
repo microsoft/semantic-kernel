@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 import os
+from collections.abc import AsyncGenerator
 from html import unescape
-from typing import Any, AsyncGenerator
+from typing import Any
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -274,7 +274,7 @@ through prompt_template_config or in the prompt_template."
                 arguments[parameter.name] = parameter.default
 
     @classmethod
-    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
+    def from_yaml(cls, yaml_str: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a YAML string."""
         try:
             data = yaml.safe_load(yaml_str)
@@ -299,7 +299,7 @@ through prompt_template_config or in the prompt_template."
         )
 
     @classmethod
-    def from_directory(cls, path: str, plugin_name: str | None = None) -> KernelFunctionFromPrompt:
+    def from_directory(cls, path: str, plugin_name: str | None = None) -> "KernelFunctionFromPrompt":
         """Creates a new instance of the KernelFunctionFromPrompt class from a directory.
 
         The directory needs to contain:

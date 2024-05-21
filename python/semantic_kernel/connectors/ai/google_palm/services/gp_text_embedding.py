@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 import google.generativeai as palm
 from numpy import array, ndarray
@@ -10,10 +10,12 @@ from pydantic import StringConstraints, ValidationError
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
@@ -46,7 +48,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

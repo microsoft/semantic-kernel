@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase

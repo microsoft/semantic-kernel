@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Annotated, Any, List, Tuple
+from typing import Annotated, Any
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
@@ -76,7 +76,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         chat_history: ChatHistory,
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List[ChatMessageContent]:
+    ) -> list[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -124,7 +124,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def get_streaming_chat_message_contents(
         self,
-        messages: List[Tuple[str, str]],
+        messages: list[tuple[str, str]],
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ):
@@ -134,7 +134,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 

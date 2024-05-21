@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Annotated, List
+from typing import Annotated
 
 import google.generativeai as palm
 from google.generativeai.types import Completion
@@ -51,7 +51,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
     async def get_text_contents(
         self, prompt: str, settings: GooglePalmTextPromptExecutionSettings
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 

@@ -17,7 +17,7 @@ from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
 directory = os.path.dirname(os.path.realpath(__file__))
 openapi_document = directory + "/openapi.yaml"
 invalid_openapi_document = directory + "/invalid_openapi.yaml"
-with open(openapi_document, "r") as f:
+with open(openapi_document) as f:
     openapi_document_json = yaml.safe_load(f)
 spec = Spec.from_dict(openapi_document_json)
 

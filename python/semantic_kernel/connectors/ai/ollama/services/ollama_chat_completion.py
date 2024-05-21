@@ -2,7 +2,8 @@
 
 import json
 import logging
-from typing import Any, AsyncGenerator, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import aiohttp
 from pydantic import HttpUrl
@@ -33,14 +34,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     """
 
     url: HttpUrl = "http://localhost:11434/api/chat"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
     async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List[ChatMessageContent]:
+    ) -> list[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -75,7 +76,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncGenerator[List[StreamingChatMessageContent], Any]:
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.
@@ -116,7 +117,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -147,7 +148,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
         Streams a text completion using a Ollama model.
         Note that this method does not support multiple responses.

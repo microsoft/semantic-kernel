@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import logging
 import os
 import re
+from collections.abc import Awaitable, Callable
 from io import BufferedReader, BytesIO
-from typing import Annotated, Any, Awaitable, Callable
+from typing import Annotated, Any
 
 import httpx
 from pydantic import ValidationError, field_validator

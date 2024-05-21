@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Annotated, Any, AsyncGenerator, Iterable, Optional, Union
+from collections.abc import AsyncGenerator, Iterable
+from typing import Annotated, Any
 
 import pytest
 
@@ -30,7 +31,7 @@ def test_init_native_function_with_input_description():
     assert native_function.parameters[0].type_ == "str"
     assert native_function.parameters[0].is_required is True
     assert native_function.parameters[1].name == "arguments"
-    assert native_function.parameters[1].description == ""
+    assert native_function.parameters[1].description is None
     assert not native_function.parameters[1].default_value
     assert native_function.parameters[1].type_ == "KernelArguments"
     assert native_function.parameters[1].is_required is True
@@ -70,7 +71,7 @@ def test_init_native_function_from_kernel_function_decorator():
         description="Test description",
         name="test_function",
     )
-    def decorated_function(input: Annotated[Optional[str], "Test input description"] = "test_default_value") -> None:
+    def decorated_function(input: Annotated[str | None, "Test input description"] = "test_default_value") -> None:
         pass
 
     assert decorated_function.__kernel_function__ is True
@@ -288,7 +289,7 @@ async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kern
 @pytest.mark.asyncio
 async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel: Kernel):
     @kernel_function(name="function")
-    def my_function(input_obj: InputObject, input_str: Union[str, int]) -> str:
+    def my_function(input_obj: InputObject, input_str: str | int) -> str:
         assert input_obj is not None
         assert isinstance(input_obj, InputObject)
         assert input_obj.arg1 == "test"

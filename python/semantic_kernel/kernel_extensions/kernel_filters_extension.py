@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Callable, Coroutine
 from functools import partial
-from typing import Any, Callable, Coroutine, Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
 from pydantic import Field
 

@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from copy import copy, deepcopy
 from inspect import isasyncgen, isgenerator
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -77,12 +76,12 @@ class KernelFunction(KernelBaseModel):
         description: str | None = None,
         prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: PromptTemplateBase | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_template: "PromptTemplateBase | None " = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         prompt_execution_settings: (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
         ) = None,
-    ) -> KernelFunctionFromPrompt:
+    ) -> "KernelFunctionFromPrompt":
         """
         Create a new instance of the KernelFunctionFromPrompt class.
         """
@@ -105,7 +104,7 @@ class KernelFunction(KernelBaseModel):
         method: Callable[..., Any],
         plugin_name: str | None = None,
         stream_method: Callable[..., Any] | None = None,
-    ) -> KernelFunctionFromMethod:
+    ) -> "KernelFunctionFromMethod":
         """
         Create a new instance of the KernelFunctionFromMethod class.
         """
@@ -138,17 +137,17 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.is_prompt
 
     @property
-    def parameters(self) -> list[KernelParameterMetadata]:
+    def parameters(self) -> list["KernelParameterMetadata"]:
         return self.metadata.parameters
 
     @property
-    def return_parameter(self) -> KernelParameterMetadata | None:
+    def return_parameter(self) -> "KernelParameterMetadata | None":
         return self.metadata.return_parameter
 
     async def __call__(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult | None:
@@ -180,8 +179,8 @@ class KernelFunction(KernelBaseModel):
 
     async def invoke(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> "FunctionResult | None":
@@ -220,11 +219,11 @@ class KernelFunction(KernelBaseModel):
 
     async def invoke_stream(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
         metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
+    ) -> "AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]":
         """
         Invoke a stream async function with the given arguments.
 
@@ -260,7 +259,7 @@ class KernelFunction(KernelBaseModel):
             else:
                 yield function_context.result
 
-    def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
+    def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
         """Copy the function, can also override the plugin_name.
 
         Args:
