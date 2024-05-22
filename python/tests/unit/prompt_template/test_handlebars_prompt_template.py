@@ -354,3 +354,12 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
         rendered.strip()
         == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )
+
+
+@mark.asyncio
+async def test_helpers_chat_history_not_chat_history(kernel: Kernel):
+    template = """{{messages chat_history}}"""
+    target = create_handlebars_prompt_template(template)
+    chat_history = "this is not a chathistory object"
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert rendered.strip() == ""

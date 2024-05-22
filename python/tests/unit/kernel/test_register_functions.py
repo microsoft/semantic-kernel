@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 from pydantic import ValidationError

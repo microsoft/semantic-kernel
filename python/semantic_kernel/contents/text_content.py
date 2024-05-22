@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from html import unescape
 from xml.etree.ElementTree import Element

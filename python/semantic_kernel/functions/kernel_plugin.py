@@ -1,22 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import importlib
 import inspect
 import json
 import logging
 import os
-import sys
-from collections.abc import Generator
+from collections.abc import Generator, ItemsView
 from functools import singledispatchmethod
 from glob import glob
 from types import MethodType
-from typing import TYPE_CHECKING, Any, ItemsView
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated  # pragma: no cover
-else:
-    from typing_extensions import Annotated  # pragma: no cover
+from typing import TYPE_CHECKING, Annotated, Any
 
 import httpx
 from pydantic import Field, StringConstraints
@@ -63,7 +56,8 @@ class KernelPlugin(KernelBaseModel):
             indexed by their name.
 
     Methods:
-        set, __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
+        set (key: str, value: KernelFunction): Set a function in the plugin.
+        __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
         get (key: str, default: KernelFunction | None = None): Get a function from the plugin.
         __getitem__ (key: str): Get a function from the plugin.
         __contains__ (key: str): Check if a function is in the plugin.
@@ -104,8 +98,8 @@ class KernelPlugin(KernelBaseModel):
         description: str | None = None,
         functions: (
             KERNEL_FUNCTION_TYPE
-            | KernelPlugin
-            | list[KERNEL_FUNCTION_TYPE | KernelPlugin]
+            | "KernelPlugin"
+            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
             | dict[str, KERNEL_FUNCTION_TYPE]
             | None
         ) = None,
@@ -138,7 +132,7 @@ class KernelPlugin(KernelBaseModel):
     # region Dict-like methods
 
     def __setitem__(self, key: str, value: KERNEL_FUNCTION_TYPE) -> None:
-        """Set a function in the plugin.
+        """Sets a function in the plugin.
 
         This function uses plugin[function_name] = function syntax.
 
@@ -199,7 +193,7 @@ class KernelPlugin(KernelBaseModel):
         raise TypeError(f"Unknown type being added, type was {type(functions)}")
 
     @add.register(list)
-    def add_list(self, functions: list[KERNEL_FUNCTION_TYPE | KernelPlugin]) -> None:
+    def add_list(self, functions: list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]) -> None:
         """Add a list of functions to the plugin."""
         for function in functions:
             if isinstance(function, KernelPlugin):
@@ -231,7 +225,7 @@ class KernelPlugin(KernelBaseModel):
     # endregion
     # region Properties
 
-    def get_functions_metadata(self) -> list[KernelFunctionMetadata]:
+    def get_functions_metadata(self) -> list["KernelFunctionMetadata"]:
         """
         Get the metadata for the functions in the plugin.
 
@@ -246,7 +240,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_object(
         cls, plugin_name: str, plugin_instance: Any | dict[str, Any], description: str | None = None
-    ) -> KernelPlugin:
+    ) -> "KernelPlugin":
         """
         Creates a plugin that wraps the specified target object and imports it into the kernel's plugin collection
 
@@ -281,7 +275,7 @@ class KernelPlugin(KernelBaseModel):
         parent_directory: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
-    ) -> KernelPlugin:
+    ) -> "KernelPlugin":
         """Create a plugin from a specified directory.
 
         This method does not recurse into subdirectories beyond one level deep from the specified plugin directory.
@@ -370,9 +364,9 @@ class KernelPlugin(KernelBaseModel):
         cls,
         plugin_name: str,
         openapi_document_path: str,
-        execution_settings: OpenAPIFunctionExecutionParameters | None = None,
+        execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
         description: str | None = None,
-    ) -> KernelPlugin:
+    ) -> "KernelPlugin":
         """Create a plugin from an OpenAPI document.
 
         Args:
@@ -408,9 +402,9 @@ class KernelPlugin(KernelBaseModel):
         plugin_name: str,
         plugin_url: str | None = None,
         plugin_str: str | None = None,
-        execution_parameters: OpenAIFunctionExecutionParameters | None = None,
+        execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
         description: str | None = None,
-    ) -> KernelPlugin:
+    ) -> "KernelPlugin":
         """Create a plugin from the Open AI manifest.
 
         Args:
@@ -474,7 +468,7 @@ class KernelPlugin(KernelBaseModel):
         py_file: str,
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
-    ) -> KernelPlugin:
+    ) -> "KernelPlugin":
         module_name = os.path.basename(py_file).replace(".py", "")
         spec = importlib.util.spec_from_file_location(module_name, py_file)
         if not spec:
@@ -498,13 +492,13 @@ class KernelPlugin(KernelBaseModel):
     def _validate_functions(
         functions: (
             KERNEL_FUNCTION_TYPE
-            | list[KERNEL_FUNCTION_TYPE | KernelPlugin]
+            | list[KERNEL_FUNCTION_TYPE | "KernelPlugin"]
             | dict[str, KERNEL_FUNCTION_TYPE]
-            | KernelPlugin
+            | "KernelPlugin"
             | None
         ),
         plugin_name: str,
-    ) -> dict[str, KernelFunction]:
+    ) -> dict[str, "KernelFunction"]:
         """Validates the functions and returns a dictionary of functions."""
         if not functions or not plugin_name:
             # if the plugin_name is not present, the validation will fail, so no point in parsing.
@@ -542,7 +536,7 @@ class KernelPlugin(KernelBaseModel):
         raise ValueError(f"Invalid type for supplied functions: {functions} (type: {type(functions)})")
 
     @staticmethod
-    def _parse_or_copy(function: KERNEL_FUNCTION_TYPE, plugin_name: str) -> KernelFunction:
+    def _parse_or_copy(function: KERNEL_FUNCTION_TYPE, plugin_name: str) -> "KernelFunction":
         """Handle the function and return a KernelFunction instance."""
         if isinstance(function, KernelFunction):
             return function.function_copy(plugin_name=plugin_name)

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Optional
+from typing import Any
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -19,8 +19,8 @@ class InputVariable(KernelBaseModel):
     """
 
     name: str
-    description: Optional[str] = ""
-    default: Optional[Any] = ""
-    is_required: Optional[bool] = True
-    json_schema: Optional[str] = ""
+    description: str | None = ""
+    default: Any | None = ""
+    is_required: bool | None = True
+    json_schema: str | None = ""
     allow_dangerously_set_content: bool = False

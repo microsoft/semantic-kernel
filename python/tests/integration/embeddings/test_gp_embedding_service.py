@@ -6,12 +6,10 @@ import sys
 import pytest
 
 import semantic_kernel as sk
+import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
-
-if sys.version_info >= (3, 9):
-    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 pytestmark = [
     pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"),

@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from typing import Any
 
@@ -56,7 +55,7 @@ class PromptExecutionSettings(KernelBaseModel):
             by_alias=True,
         )
 
-    def update_from_prompt_execution_settings(self, config: PromptExecutionSettings) -> None:
+    def update_from_prompt_execution_settings(self, config: "PromptExecutionSettings") -> None:
         """Update the prompt execution settings from a completion config."""
         if config.service_id is not None:
             self.service_id = config.service_id
@@ -65,7 +64,7 @@ class PromptExecutionSettings(KernelBaseModel):
         self.unpack_extension_data()
 
     @classmethod
-    def from_prompt_execution_settings(cls, config: PromptExecutionSettings) -> PromptExecutionSettings:
+    def from_prompt_execution_settings(cls, config: "PromptExecutionSettings") -> "PromptExecutionSettings":
         """Create a prompt execution settings from a completion config."""
         config.pack_extension_data()
         return cls(

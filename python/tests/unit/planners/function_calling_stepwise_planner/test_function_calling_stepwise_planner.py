@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

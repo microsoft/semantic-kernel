@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from numpy import array, expand_dims, ndarray
 from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
@@ -10,6 +10,7 @@ from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connec
 from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class, experimental_function
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -47,7 +48,8 @@ OUTPUT_FIELDS_WO_EMBEDDING = [
 ]
 
 
-def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> Dict[str, Any]:
+@experimental_function
+def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
     Args:
         mem (MemoryRecord): MemoryRecord to convert.
@@ -66,7 +68,8 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> Dict[str, Any]:
     return ret_dict
 
 
-def milvus_dict_to_memoryrecord(milvus_dict: Dict[str, Any]) -> MemoryRecord:
+@experimental_function
+def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
     """Convert Milvus search result dict into MemoryRecord.
 
     Args:
@@ -92,7 +95,8 @@ def milvus_dict_to_memoryrecord(milvus_dict: Dict[str, Any]) -> MemoryRecord:
     )
 
 
-def create_fields(dimensions: int) -> List[FieldSchema]:
+@experimental_function
+def create_fields(dimensions: int) -> list[FieldSchema]:
     return [
         FieldSchema(
             name=SEARCH_FIELD_ID,
@@ -138,11 +142,12 @@ def create_fields(dimensions: int) -> List[FieldSchema]:
     ]
 
 
+@experimental_class
 class MilvusMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         uri: str = "http://localhost:19530",
-        token: Optional[str] = None,
+        token: str | None = None,
         **kwargs,
     ) -> None:
         """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
@@ -159,13 +164,13 @@ class MilvusMemoryStore(MemoryStoreBase):
                 authentication is required. Defaults to None.
         """
         connections.connect("default", uri=uri, token=token)
-        self.collections: Dict[str, Collection] = {}
+        self.collections: dict[str, Collection] = {}
 
     async def create_collection(
         self,
         collection_name: str,
         dimension_num: int = 1536,
-        distance_type: Optional[str] = "IP",
+        distance_type: str | None = "IP",
         overwrite: bool = False,
         consistency: str = "Session",
     ) -> None:
@@ -198,7 +203,7 @@ class MilvusMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return a list of present collections.
 
         Returns:
@@ -206,7 +211,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         return utility.list_collections()
 
-    async def delete_collection(self, collection_name: Optional[str] = None, all: bool = False) -> None:
+    async def delete_collection(self, collection_name: str | None = None, all: bool = False) -> None:
         """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
@@ -253,7 +258,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         return res[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord], batch_size=100) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
         """_summary_
 
         Args:
@@ -297,7 +302,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         res = await self.get_batch(collection_name=collection_name, keys=[key], with_embeddings=with_embedding)
         return res[0]
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Get the MemoryRecords corresponding to the keys
 
         Args:
@@ -337,7 +342,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         """
         await self.remove_batch(collection_name=collection_name, keys=[key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Remove multiple records based on keys.
 
         Args:
@@ -373,7 +378,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Find the nearest `limit` matches for an embedding.
 
         Args:
@@ -424,7 +429,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Find the nearest match for an embedding.
 
         Args:

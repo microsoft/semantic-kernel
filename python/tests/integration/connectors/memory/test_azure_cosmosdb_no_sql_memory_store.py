@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import List
 
 import numpy as np
 import pytest
@@ -173,7 +172,7 @@ def create_embedding(non_zero_pos: int) -> np.ndarray:
     return embedding
 
 
-def get_vector_items() -> List[MemoryRecord]:
+def get_vector_items() -> list[MemoryRecord]:
     records = []
     record = MemoryRecord(
         id="test_id1",

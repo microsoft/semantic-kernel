@@ -261,7 +261,7 @@ def test_add_functions_to_existing(kernel: Kernel):
 @patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
 async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel):
     base_folder = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
-    with open(os.path.join(base_folder, "TestOpenAIPlugin", "akv-openai.json"), "r") as file:
+    with open(os.path.join(base_folder, "TestOpenAIPlugin", "akv-openai.json")) as file:
         openai_spec = file.read()
 
     openapi_spec_file_path = os.path.join(
@@ -452,7 +452,7 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 
 
 # endregion
-# experimental class decorator
+# region experimental class decorator
 
 
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):

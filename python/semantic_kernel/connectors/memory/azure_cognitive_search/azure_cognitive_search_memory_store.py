@@ -3,7 +3,6 @@
 import logging
 import uuid
 from inspect import isawaitable
-from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -33,10 +32,12 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
@@ -99,8 +100,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswAlgorithmConfiguration] = None,
-        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
+        vector_config: HnswAlgorithmConfiguration | None = None,
+        search_resource_encryption_key: SearchResourceEncryptionKey | None = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -164,7 +165,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
             await self._search_index_client.create_index(index)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -228,7 +229,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return result[0]
         return None
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
         Arguments:
@@ -294,8 +295,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         return dict_to_memory_record(search_result, with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -319,7 +320,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return search_results
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -357,7 +358,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -390,7 +391,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
