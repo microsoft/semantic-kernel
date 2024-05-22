@@ -294,7 +294,16 @@ public class BinaryContent : KernelContent
     {
         if (this._data is null && this._dataUri is not null)
         {
-            this._data = Convert.FromBase64String(this._dataUri!.Substring(this._dataUri.IndexOf(',') + 1));
+            var parsedDataUri = DataUriParser.Parse(this._dataUri);
+            if (string.Equals(parsedDataUri.DataFormat, "base64", StringComparison.OrdinalIgnoreCase))
+            {
+                this._data = Convert.FromBase64String(parsedDataUri.Data!);
+            }
+            else
+            {
+                // Defaults to UTF8 encoding if format is not provided.
+                this._data = Encoding.UTF8.GetBytes(parsedDataUri.Data!);
+            }
         }
 
         return this._data;

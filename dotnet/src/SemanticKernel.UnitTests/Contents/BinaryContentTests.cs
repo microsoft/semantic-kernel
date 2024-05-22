@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Xunit;
@@ -192,7 +193,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     {
         // Arrange
         var content = JsonSerializer.Deserialize<BinaryContent>(serialized)!;
-         
+
         // Act & Assert
         var reSerialization = JsonSerializer.Serialize(content);
 
@@ -257,13 +258,15 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     public void DeserializesParameterizedDataUriAsExpected()
     {
         // Arrange
-        var content = new BinaryContent();
-        content.Data = new ReadOnlyMemory<byte>(Convert.FromBase64String("U29tZSBkYXRh"));
-        content.MimeType = "application/json";
-        content.Metadata = new Dictionary<string, object?>
+        var content = new BinaryContent
         {
-            { "data-uri-parameter1", "value1" },
-            { "data-uri-parameter2", "value2" }
+            Data = new ReadOnlyMemory<byte>(Convert.FromBase64String("U29tZSBkYXRh")),
+            MimeType = "application/json",
+            Metadata = new Dictionary<string, object?>
+            {
+                { "data-uri-parameter1", "value1" },
+                { "data-uri-parameter2", "value2" }
+            }
         };
 
         var expectedDataUri = "data:application/json;parameter1=value1;parameter2=value2;base64,U29tZSBkYXRh";
@@ -274,13 +277,14 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData("data:application/octet-stream;utf8,01-02-03-04")]
-    public void DoNotBase64EncodeIfDataIsNotBase64(string dataUri)
+    [InlineData("data:application/json,01-02-03-04")]
+    [InlineData("data:,01-02-03-04")]
+    public void ReturnUTF8EncodedWhenDataIsNotBase64(string path)
     {
         // Arrange
-        var content = new BinaryContent();
-        content.DataUri = "data:application/octet-stream;utf8,01-02-03-04";
+        var content = new BinaryContent(path);
 
         // Act & Assert
-        Assert.Equal("data:application/octet-stream,01-02-03-04", content.DataUri);
+        Assert.Equal("01-02-03-04", Encoding.UTF8.GetString(content.Data!.Value.ToArray()));
     }
 }
