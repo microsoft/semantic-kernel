@@ -38,7 +38,7 @@ public class Example59_OpenAIFunctionCalling {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-3.5-turbo-1106");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
 
     // Define functions that can be called by the model
     public static class HelperFunctions {
@@ -177,6 +177,95 @@ public class Example59_OpenAIFunctionCalling {
         chatHistory.getMessages().stream()
             .filter(it -> it.getContent() != null)
             .forEach(it -> System.out.println(it.getContent()));
+
+        multiTurnaroundCall();
+    }
+
+    public static class PetPlugin {
+
+        @DefineKernelFunction(name = "getPetName", description = "Retrieves the pet for a given ID.")
+        public String getPetName(
+            @KernelFunctionParameter(name = "petId", description = "The pets id") String id) {
+            if (id.equals("ca2fc6bc-1307-4da6-a009-d7bf88dec37b")) {
+                return "Snuggles";
+            }
+
+            throw new RuntimeException("Pet not found");
+        }
+
+        @DefineKernelFunction(name = "getPetType", description = "Retrieves the type of pet for a given ID.")
+        public String getPetType(
+            @KernelFunctionParameter(name = "petId", description = "The pets id") String id) {
+            if (id.equals("ca2fc6bc-1307-4da6-a009-d7bf88dec37b")) {
+                return "cat";
+            }
+
+            throw new RuntimeException("Pet not found");
+        }
+    }
+
+    public static void multiTurnaroundCall() {
+        System.out.println("======== Open AI - Function calling ========");
+
+        OpenAIAsyncClient client;
+
+        if (AZURE_CLIENT_KEY != null) {
+            client = new OpenAIClientBuilder()
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
+
+        } else {
+            client = new OpenAIClientBuilder()
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
+        }
+
+        ChatCompletionService chat = OpenAIChatCompletion.builder()
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
+
+        var plugin = KernelPluginFactory.createFromObject(new PetPlugin(), "PetPlugin");
+
+        var kernel = Kernel.builder()
+            .withAIService(ChatCompletionService.class, chat)
+            .withPlugin(plugin)
+            .build();
+
+        System.out.println("======== Example 3: Multiple auto function calling ========");
+
+        var chatHistory = new ChatHistory();
+        chatHistory.addUserMessage(
+            "What is the name of the pet with id ca2fc6bc-1307-4da6-a009-d7bf88dec37b?");
+
+        var messages = chat.getChatMessageContentsAsync(
+            chatHistory,
+            kernel,
+            InvocationContext.builder()
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withReturnMode(InvocationReturnMode.FULL_HISTORY)
+                .build())
+            .block();
+
+        chatHistory = new ChatHistory(messages);
+
+        System.out.println(chatHistory.getLastMessage().get().getContent());
+
+        chatHistory.addMessage(AuthorRole.USER, "What type of animal are they?");
+
+        messages = chat.getChatMessageContentsAsync(
+            chatHistory,
+            kernel,
+            InvocationContext.builder()
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withReturnMode(InvocationReturnMode.FULL_HISTORY)
+                .build())
+            .block();
+
+        chatHistory = new ChatHistory(messages);
+
+        System.out.println(chatHistory.getLastMessage().get().getContent());
 
     }
 
