@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable
 from copy import copy
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal
 
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
@@ -21,15 +21,11 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
-from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
-from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.services.kernel_services_extension import AI_SERVICE_CLIENT_TYPE, KernelServicesExtension
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_function import KernelFunction
-
-
-AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClientBase)
 
 
 logger: logging.Logger = logging.getLogger(__name__)
