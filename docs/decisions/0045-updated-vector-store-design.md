@@ -18,7 +18,7 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 
 ### Problems with current design
 
-1. The `IMemoryStore` interface has three responsibilities with different cardinalities.
+1. The `IMemoryStore` interface has four responsibilities with different cardinalities.
 2. The `IMemoryStore` interface only supports a fixed schema for data storage, retrieval and search, which limits its usability by customers with existing data sets.
 2. The `IMemoryStore` implementations are opinionated around key encoding / decoding and collection name sanitization, which limits its usability by customers with existing data sets.
 
@@ -72,9 +72,9 @@ interface IMemoryStore
 
 1. The `IMemoryStore` should be split into four different interfaces, one for each responsibility.
 2. The **Data Storage and Retrieval** and **Vector Search** areas should allow typed access to data and support any schema that is currently available in the customer's data store.
-3. The collection / index list/exists/delete functionality should allow management of any collection regardless of schema.
-4. The collection / index create functionality should allow developers to create their own implementations and support creating first party collections for built in functionality.
-5. Remove opinionated behaviors from connectors. The opinionated behavior limits the ability of these connectors to be used with pre-created vector databases. As far as possible these behaviors should be moved into decorators or be injectable.  Examples of opinionated behaviors:
+3. The collection / index create functionality should allow developers to create their own implementations and support creating first party collections for built in functionality. Each implementation would be for a specific schema and data store type.
+4. The collection / index list/exists/delete functionality should allow management of any collection regardless of schema. There should be one implementation for each data store type.
+5. Remove opinionated behaviors from connectors. The opinionated behavior limits the ability of these connectors to be used with pre-existing vector databases. As far as possible these behaviors should be moved into decorators or be injectable.  Examples of opinionated behaviors:
     1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
     2. The AzureAISearch connector sanitizes collection names before using them, since Azure AI Search supports a limited set of characters.
     3. The Redis connector prepends the collection name on to the front of keys before storing records and also registers the collection name as a prefix for records to be indexed by the index.
