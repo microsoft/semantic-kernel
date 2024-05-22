@@ -17,7 +17,7 @@ class OpenAIPromptExecutionSettings(PromptExecutionSettings):
 
     ai_model_id: str | None = Field(None, serialization_alias="model")
     frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
-    logit_bias: dict[str | int, float] | None = Field(None)
+    logit_bias: dict[str | int, float] | None = None
     max_tokens: int | None = Field(None, gt=0)
     number_of_responses: int | None = Field(None, ge=1, le=128, serialization_alias="n")
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
@@ -41,19 +41,15 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     @model_validator(mode="after")
     def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
-        if self.best_of is not None and self.number_of_responses is not None:
-            if self.best_of < self.number_of_responses:
-                raise ServiceInvalidExecutionSettingsError(
-                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
-                )
-        if (
-            self.extension_data.get("best_of") is not None
-            and self.extension_data.get("number_of_responses") is not None
-        ):
-            if self.extension_data["best_of"] < self.extension_data["number_of_responses"]:
-                raise ServiceInvalidExecutionSettingsError(
-                    "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
-                )
+
+        best_of = self.best_of or self.extension_data.get("best_of")
+        number_of_responses = self.number_of_responses or self.extension_data.get("number_of_responses")
+
+        if best_of is not None and number_of_responses is not None and best_of < number_of_responses:
+            raise ServiceInvalidExecutionSettingsError(
+                "When used with number_of_responses, best_of controls the number of candidate completions and n specifies how many to return, therefore best_of must be greater than number_of_responses."  # noqa: E501
+            )
+
         return self
 
 
