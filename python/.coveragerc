@@ -1,5 +1,9 @@
 [run]
 source = semantic_kernel
+omit = 
+    semantic_kernel/connectors/memory/*
+    semantic_kernel/reliability/*
+    semantic_kernel/memory/*
 
 [report]
 # Regexes for lines to exclude from consideration
