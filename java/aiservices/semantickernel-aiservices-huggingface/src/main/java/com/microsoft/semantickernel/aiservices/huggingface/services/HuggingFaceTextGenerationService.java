@@ -60,8 +60,12 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
         @Nullable PromptExecutionSettings executionSettings,
         @Nullable Kernel kernel) {
 
-        HuggingFacePromptExecutionSettings huggingFacePromptExecutionSettings = HuggingFacePromptExecutionSettings.fromExecutionSettings(
-            executionSettings);
+        HuggingFacePromptExecutionSettings huggingFacePromptExecutionSettings = null;
+
+        if (executionSettings != null) {
+            huggingFacePromptExecutionSettings = HuggingFacePromptExecutionSettings.fromExecutionSettings(
+                executionSettings);
+        }
 
         return getTextContentsAsync(
             prompt,

@@ -1,10 +1,13 @@
 package com.microsoft.semantickernel.aiservices.huggingface.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.huggingface.services.HuggingFacePromptExecutionSettings;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 
 @JsonInclude(Include.NON_NULL)
 public class TextGenerationRequest {
@@ -14,7 +17,7 @@ public class TextGenerationRequest {
     /// </summary>
     @Nullable
     @JsonProperty("inputs")
-    private final String inputs;
+    private final List<String> inputs;
 
     /// <summary>
     /// Enable streaming
@@ -42,7 +45,7 @@ public class TextGenerationRequest {
         boolean stream,
         @Nullable HuggingFaceTextParameters parameters,
         @Nullable HuggingFaceTextOptions options) {
-        this.inputs = inputs;
+        this.inputs = Arrays.asList(inputs);
         this.stream = stream;
         this.parameters = parameters;
         this.options = options;

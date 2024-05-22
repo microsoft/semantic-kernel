@@ -6,10 +6,10 @@ import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.aiservices.huggingface.models.ChatCompletionRequest;
 import com.microsoft.semantickernel.aiservices.huggingface.models.GeneratedTextItem;
 import com.microsoft.semantickernel.aiservices.huggingface.models.TextGenerationRequest;
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -31,6 +31,8 @@ public class HuggingFaceClient {
         this.httpClient = httpClient;
     }
 
+    /*
+    TODO: TGI
     public Mono<String> getChatMessageContentsAsync(
         String modelId,
         ChatCompletionRequest chatCompletionRequest
@@ -55,6 +57,20 @@ public class HuggingFaceClient {
         }
     }
 
+     */
+
+    private class GeneratedTextItemList {
+
+        private final List<List<GeneratedTextItem>> generatedTextItems;
+
+        @JsonCreator
+        public GeneratedTextItemList(
+            List<List<GeneratedTextItem>> generatedTextItems
+        ) {
+            this.generatedTextItems = generatedTextItems;
+        }
+
+    }
 
     public Mono<List<GeneratedTextItem>> getTextContentsAsync(
         String modelId,
@@ -64,12 +80,14 @@ public class HuggingFaceClient {
             String body = new ObjectMapper().writeValueAsString(textGenerationRequest);
             return performRequest(modelId, body)
                 .handle((response, sink) -> {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JavaType type = mapper.getTypeFactory().
-                        constructCollectionType(List.class, GeneratedTextItem.class);
                     try {
-                        sink.next(mapper.readValue(response, type));
-                    } catch (JsonProcessingException e) {
+                        ObjectMapper mapper = new ObjectMapper();
+                        JavaType type = mapper.getTypeFactory().
+                            constructCollectionType(List.class, GeneratedTextItemList.class);
+                        GeneratedTextItemList data = mapper.readValue(response,
+                            GeneratedTextItemList.class);
+                        sink.next(data.generatedTextItems.get(0));
+                    } catch (Exception e) {
                         sink.error(
                             new SKException("Failed to deserialize response from Hugging Face",
                                 e));

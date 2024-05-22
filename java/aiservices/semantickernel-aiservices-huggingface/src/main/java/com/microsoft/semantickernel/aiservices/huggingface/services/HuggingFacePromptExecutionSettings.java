@@ -63,7 +63,6 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
      * @param responseFormat       The response format to use for prompt execution
-     *                             {@link ResponseFormat}.
      */
     public HuggingFacePromptExecutionSettings(
         String serviceId,

@@ -151,7 +151,7 @@ public class GeneratedTextItem {
             int id,
             @JsonProperty("text")
             @Nullable String text,
-            @JsonProperty("logProb")
+            @JsonProperty("logprob")
             double logProb) {
             super(id, text, logProb);
             this.special = special;

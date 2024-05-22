@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.annotation.Nullable;
 
+// TODO Support TGI
 public class ChatCompletionRequest {
 
 
