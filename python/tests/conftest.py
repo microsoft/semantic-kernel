@@ -2,18 +2,16 @@
 
 import warnings
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.streaming_text_content import StreamingTextContent
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_function import KernelFunction
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
+if TYPE_CHECKING:
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.kernel import Kernel
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
 @pytest.fixture(scope="function")
@@ -59,6 +57,8 @@ def not_decorated_native_function() -> Callable:
 
 @pytest.fixture(scope="session")
 def decorated_native_function() -> Callable:
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
     @kernel_function(name="getLightStatus")
     def decorated_native_function(arg1: str) -> str:
         return "test"
@@ -68,6 +68,8 @@ def decorated_native_function() -> Callable:
 
 @pytest.fixture(scope="session")
 def custom_plugin_class():
+    from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
     class CustomPlugin:
         @kernel_function(name="getLightStatus")
         def decorated_native_function(self) -> str:
@@ -92,7 +94,10 @@ def experimental_plugin_class():
 
 @pytest.fixture(scope="session")
 def create_mock_function() -> Callable:
+    from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+    from semantic_kernel.functions.function_result import FunctionResult
     from semantic_kernel.functions.kernel_function import KernelFunction
+    from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
     async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
@@ -132,7 +137,9 @@ def create_mock_function() -> Callable:
 
 
 @pytest.fixture(scope="function")
-def chat_history():
+def chat_history() -> "ChatHistory":
+    from semantic_kernel.contents.chat_history import ChatHistory
+
     return ChatHistory()
 
 

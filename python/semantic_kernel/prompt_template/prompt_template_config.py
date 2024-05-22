@@ -43,7 +43,7 @@ class PromptTemplateConfig(KernelBaseModel):
         """Verify that input variable default values are string only"""
         for variable in self.input_variables:
             if variable.default and not isinstance(variable.default, str):
-                raise ValueError(f"Default value for input variable {variable.name} must be a string.")
+                raise TypeError(f"Default value for input variable {variable.name} must be a string.")
         return self
 
     @field_validator("execution_settings", mode="before")
@@ -88,11 +88,11 @@ class PromptTemplateConfig(KernelBaseModel):
             raise ValueError("json_str is empty")
         try:
             return cls.model_validate_json(json_str)
-        except Exception as e:
+        except Exception as exc:
             raise ValueError(
                 "Unable to deserialize PromptTemplateConfig from the "
-                f"specified JSON string: {json_str} with exception: {e}"
-            )
+                f"specified JSON string: {json_str} with exception: {exc}"
+            ) from exc
 
     @classmethod
     def restore(
