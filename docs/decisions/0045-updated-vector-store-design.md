@@ -13,7 +13,7 @@ informed:
 ## Context and Problem Statement
 
 Semantic Kernel has a collection of connectors to popular Vector databases e.g. Azure AI Search, Chroma, Milvus, ...
-Each Memory connector implements a memory abstraction defined by Semantic Kernel and allows developers to easily intergrate Vector databases into their applications.
+Each Memory connector implements a memory abstraction defined by Semantic Kernel and allows developers to easily integrate Vector databases into their applications.
 The current abstractions are experimental and the purpose of this ADR is to progress the design of the abstractions so that they can graduate to non experimental status.
 
 ### Problems with current design
@@ -26,10 +26,10 @@ Responsibilities:
 
 |Functional Area|Cardinality|Significance to Semantic Kernel|
 |-|-|-|-|
-|Collection/Index create|An implementation per store type and model|Valueable when building a store and adding data|
-|Collection/Index list/exists/delete|An implementation per store type|Valueable when building a store and adding data|
-|Data Storage and Retrieval|An implementation per store type|Valueable when building a store and adding data|
-|Vector Search|An implementation per store type, model and search type|Valueable for RAG scenarios|
+|Collection/Index create|An implementation per store type and model|Valuable when building a store and adding data|
+|Collection/Index list/exists/delete|An implementation per store type|Valuable when building a store and adding data|
+|Data Storage and Retrieval|An implementation per store type|Valueble when building a store and adding data|
+|Vector Search|An implementation per store type, model and search type|Valuable for RAG scenarios|
 
 
 ### Memory Store Today
@@ -248,7 +248,7 @@ A comparison of the different ways in which stores implement storage capabilitie
 
 |Feature|Azure AI Search|Weaviate|Redis|Chroma|FAISS|Pinecone|LLamaIndex|PostgreSql|Qdrant|Milvus|
 |-|-|-|-|-|-|-|-|-|-|-|
-|Get Item Suport|Y|Y|Y|Y||Y||Y|Y|Y|
+|Get Item Support|Y|Y|Y|Y||Y||Y|Y|Y|
 |Batch Operation Support|Y|Y|Y|Y||Y||||Y|
 |Per Item Results for Batch Operations|Y|Y|Y|N||N|||||
 |Keys of upserted records|Y|Y|N<sup>3</sup>|N<sup>3</sup>||N<sup>3</sup>||||Y|
@@ -263,7 +263,7 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Index to Collection|1 to 1|1 to 1|1 to many|1 to 1|-|1 to 1|-|1 to 1|1 to 1|1 to 1|
 |Id Type|String|UUID|string with collection name prefix|string||string|UUID|64Bit Int / UUID / ULID|64Bit Unsigned Int / UUID|Int64 / varchar|
 |Supported Vector Types|Collection(Edm.Single)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
-|Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/usage-guide#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
+|Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/guides#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
 |Supported index types|[Exhaustive KNN / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
 Footnotes:
@@ -284,7 +284,7 @@ Mapping between data models and the storage models can also require custom logic
 
 I'm therefore proposing that we allow mappers to be injectable for each `VectorDBRecordService` instance. The interfaces for these would vary depending
 on the storage models used by each vector store and any unique capabilities that each vector store may have, e.g. qdrant can operate in `single` or
-`multiple named vector` modes, which means the mapper needs to know wether to set a single vector or fill a vector map.
+`multiple named vector` modes, which means the mapper needs to know whether to set a single vector or fill a vector map.
 
 In addition to this, we should build first party mappers for each of the vector stores, which will cater for built in, generic models or use metadata to perform the mapping.
 
@@ -496,8 +496,8 @@ Chosen option: 4 + 5.
 - Collection create and configuration varies considerably across different schemas, even for the same database, but also varies by database type.
 - Collection list, exists and delete is the same across different schemas, but varies by database type.
 - Vector storage, even with custom schemas can be supported using a single implementation per database type.
-- We will therefore need to support multiple collection create service implementations per store type, a single colelction update service implementation per store type, and a single vector store implementation per store type.
-- At the same time we can layer interfaces on top that allow easy combined access to colleciton and record management.
+- We will therefore need to support multiple collection create service implementations per store type, a single collection update service implementation per store type, and a single vector store implementation per store type.
+- At the same time we can layer interfaces on top that allow easy combined access to collection and record management.
 
 
 ###  Question 2: Collection name and key value normalization in store, decorator or via injection.
@@ -576,7 +576,7 @@ public class MyMemoryStore()
 }
 ```
 
-#### Option 2 - Collection name via construtor
+#### Option 2 - Collection name via constructor
 
 ```cs
 public class MyMemoryStore(string defaultCollectionName)
@@ -665,14 +665,14 @@ public async Task<TDataModel?> GetAsync(int key, VectorDBRecordServiceGetDocumen
     {
         KeyType.Int => key,
         KeyType.String => key.ToString(),
-        KeyType.GUID => throw new InvalidOperationException($"The provided key must be convertable to a GUID.")
+        KeyType.GUID => throw new InvalidOperationException($"The provided key must be convertible to a GUID.")
     }
 }
 public async Task<TDataModel?> GetAsync(GUID key, VectorDBRecordServiceGetDocumentOptions? options = default, CancellationToken cancellationToken = default)
 {
     var convertedKey = this.keyType switch
     {
-        KeyType.Int => throw new InvalidOperationException($"The provided key must be convertable to an int.")
+        KeyType.Int => throw new InvalidOperationException($"The provided key must be convertible to an int.")
         KeyType.String => key.ToString(),
         KeyType.GUID => key
     }
