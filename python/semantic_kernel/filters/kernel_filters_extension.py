@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from abc import ABC
 from collections.abc import Callable, Coroutine
 from functools import partial
 from typing import Any, Literal, TypeVar
@@ -24,7 +25,7 @@ FILTER_MAPPING = {
 }
 
 
-class KernelFilterExtension(KernelBaseModel):
+class KernelFilterExtension(KernelBaseModel, ABC):
     """KernelFilterExtension."""
 
     function_invocation_filters: list[tuple[int, CALLABLE_FILTER_TYPE]] = Field(default_factory=list)
