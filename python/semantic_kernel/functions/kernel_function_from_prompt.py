@@ -19,6 +19,7 @@ from semantic_kernel.exceptions import FunctionExecutionException, FunctionIniti
 from semantic_kernel.exceptions.function_exceptions import PromptRenderingException
 from semantic_kernel.filters.filter_types import FilterTypes
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_prompt_render_context
 from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -26,7 +27,6 @@ from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP, Kerne
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.prompt_rendering_result import PromptRenderingResult
-from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_prompt_render_context
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
