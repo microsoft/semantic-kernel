@@ -17,6 +17,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests;
 [Trait("Feature", "Agent")]
 public sealed class OpenAIRestExtensionsAssistantsTests
 {
+    private const string BogusEndpoint = "http://localhost";
     private const string BogusApiKey = "bogus";
     private const string TestAgentId = "agentId";
 
@@ -30,7 +31,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
-        this._restContext = new(BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
+        this._restContext = new(BogusEndpoint, BogusApiKey, () => new HttpClient(this._mockHttpMessageHandler.Object));
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     {
         await this._restContext.CreateAssistantModelAsync(this._assistantModel).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, OpenAIRestExtensions.BaseAssistantUrl);
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Post, 1, this._restContext.GetAssistantsUrl());
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     {
         await this._restContext.GetAssistantModelAsync(TestAgentId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, OpenAIRestExtensions.GetAssistantUrl(TestAgentId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, this._restContext.GetAssistantUrl(TestAgentId));
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     {
         await this._restContext.ListAssistantModelsAsync(10, false, "20").ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{OpenAIRestExtensions.BaseAssistantUrl}?limit=10&order=desc&after=20");
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Get, 1, $"{this._restContext.GetAssistantsUrl()}?limit=10&order=desc&after=20");
     }
 
     [Fact]
@@ -62,6 +63,6 @@ public sealed class OpenAIRestExtensionsAssistantsTests
     {
         await this._restContext.DeleteAssistantModelAsync(TestAgentId).ConfigureAwait(true);
 
-        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, OpenAIRestExtensions.GetAssistantUrl(TestAgentId));
+        this._mockHttpMessageHandler.VerifyMock(HttpMethod.Delete, 1, this._restContext.GetAssistantUrl(TestAgentId));
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 /// Further consolidation can happen in the future so that flow executor becomes a generalization of StepwisePlanner.
 /// And both chatMode and completionMode could be supported.
 /// </remarks>
-internal class FlowExecutor : IFlowExecutor
+internal partial class FlowExecutor : IFlowExecutor
 {
     /// <summary>
     /// The kernel builder
@@ -71,20 +71,35 @@ internal class FlowExecutor : IFlowExecutor
     /// <summary>
     /// The regex for parsing the final answer response
     /// </summary>
-    private static readonly Regex s_finalAnswerRegex =
-        new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline)]
+    private static partial Regex FinalAnswerRegex();
+#else
+    private static Regex FinalAnswerRegex() => s_finalAnswerRegex;
+    private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
 
     /// <summary>
     /// The regex for parsing the question
     /// </summary>
-    private static readonly Regex s_questionRegex =
-        new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline)]
+    private static partial Regex QuestionRegex();
+#else
+    private static Regex QuestionRegex() => s_questionRegex;
+    private static readonly Regex s_questionRegex = new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-    private static readonly Regex s_thoughtRegex =
-        new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline);
+#if NET
+    [GeneratedRegex(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline)]
+    private static partial Regex ThoughtRegex();
+#else
+    private static Regex ThoughtRegex() => s_thoughtRegex;
+    private static readonly Regex s_thoughtRegex = new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
+#endif
 
     /// <summary>
     /// Check repeat step function
@@ -117,12 +132,10 @@ internal class FlowExecutor : IFlowExecutor
         this._flowStatusProvider = statusProvider;
         this._globalPluginCollection = globalPluginCollection;
 
-        var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json")!);
-        checkRepeatStepConfig.Template = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt")!;
+        var checkRepeatStepConfig = this.ImportPromptTemplateConfig("CheckRepeatStep");
         this._checkRepeatStepFunction = KernelFunctionFactory.CreateFromPrompt(checkRepeatStepConfig);
 
-        var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json")!);
-        checkStartStepConfig.Template = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt")!;
+        var checkStartStepConfig = this.ImportPromptTemplateConfig("CheckStartStep");
         this._checkStartStepFunction = KernelFunctionFactory.CreateFromPrompt(checkStartStepConfig);
 
         this._config.ExcludedPlugins.Add(RestrictedPluginName);
@@ -130,6 +143,23 @@ internal class FlowExecutor : IFlowExecutor
 
         this._executeFlowFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteFlowAsync, "ExecuteFlow", "Execute a flow");
         this._executeStepFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteStepAsync, "ExecuteStep", "Execute a flow step");
+    }
+
+    private PromptTemplateConfig ImportPromptTemplateConfig(string functionName)
+    {
+        var config = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read($"Plugins.{functionName}.yaml")!);
+
+        // if AIServiceIds is specified, only include the relevant execution settings
+        if (this._config.AIServiceIds.Count > 0)
+        {
+            var serviceIdsToRemove = config.ExecutionSettings.Keys.Except(this._config.AIServiceIds);
+            foreach (var serviceId in serviceIdsToRemove)
+            {
+                config.ExecutionSettings.Remove(serviceId);
+            }
+        }
+
+        return config;
     }
 
     public async Task<FunctionResult> ExecuteFlowAsync(Flow flow, string sessionId, string input, KernelArguments kernelArguments)
@@ -147,7 +177,7 @@ internal class FlowExecutor : IFlowExecutor
 
         // populate persisted state arguments
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
-        List<string> outputs = new();
+        List<string> outputs = [];
 
         while (executionState.CurrentStepIndex < sortedSteps.Count)
         {
@@ -172,7 +202,7 @@ internal class FlowExecutor : IFlowExecutor
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
             var continueLoop = false;
-            var completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
+            var completed = step.Provides.All(executionState.Variables.ContainsKey);
             if (!completed)
             {
                 // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the step
@@ -262,12 +292,11 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(stepResult.ToString()) && (stepResult.IsPromptInput() || stepResult.IsTerminateFlow()))
                 {
-                    try
+                    if (stepResult.ValueType == typeof(List<string>))
                     {
-                        var stepOutputs = JsonSerializer.Deserialize<string[]>(stepResult.ToString());
-                        outputs.AddRange(stepOutputs!);
+                        outputs.AddRange(stepResult.GetValue<List<string>>()!);
                     }
-                    catch (JsonException)
+                    else
                     {
                         outputs.Add(stepResult.ToString());
                     }
@@ -276,9 +305,15 @@ internal class FlowExecutor : IFlowExecutor
                 {
                     stepState.Status = ExecutionState.Status.Completed;
 
-                    var metadata = stepResult.Metadata!
-                        .Where(kvp => step.Provides.Contains(kvp.Key))
-                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    var metadata = stepResult.Metadata!.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    foreach (var variable in step.Provides)
+                    {
+                        if (!metadata.ContainsKey(variable))
+                        {
+                            metadata[variable] = string.Empty;
+                        }
+                    }
+
                     stepResult = new FunctionResult(stepResult.Function, stepResult.GetValue<object>(), metadata: metadata);
 
                     if (!string.IsNullOrWhiteSpace(exitResponse))
@@ -482,13 +517,13 @@ internal class FlowExecutor : IFlowExecutor
     private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(KernelArguments context, KernelFunction function, string sessionId, string checkRepeatOrStartStepId, string input)
     {
         var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, checkRepeatOrStartStepId).ConfigureAwait(false);
-        if (chatHistory != null)
+        if (chatHistory is not null)
         {
             chatHistory.AddUserMessage(input);
         }
         else
         {
-            chatHistory = new ChatHistory();
+            chatHistory = [];
         }
 
         var scratchPad = this.CreateRepeatOrStartStepScratchPad(chatHistory);
@@ -508,7 +543,7 @@ internal class FlowExecutor : IFlowExecutor
             this._logger.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
         }
 
-        Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
+        Match finalAnswerMatch = FinalAnswerRegex().Match(llmResponseText);
         if (finalAnswerMatch.Success)
         {
             string resultString = finalAnswerMatch.Groups[1].Value.Trim();
@@ -520,14 +555,14 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         // Extract thought
-        Match thoughtMatch = s_thoughtRegex.Match(llmResponseText);
+        Match thoughtMatch = ThoughtRegex().Match(llmResponseText);
         if (thoughtMatch.Success)
         {
             string thoughtString = thoughtMatch.Groups[1].Value.Trim();
             chatHistory.AddSystemMessage(thoughtString);
         }
 
-        Match questionMatch = s_questionRegex.Match(llmResponseText);
+        Match questionMatch = QuestionRegex().Match(llmResponseText);
         if (questionMatch.Success)
         {
             string prompt = questionMatch.Groups[1].Value.Trim();
@@ -538,7 +573,7 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         this._logger.LogWarning("Missing result tag from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
-        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER]");
+        chatHistory.AddSystemMessage(llmResponseText + "\nI should provide either [QUESTION] or [FINAL_ANSWER].");
         await this._flowStatusProvider.SaveChatHistoryAsync(sessionId, checkRepeatOrStartStepId, chatHistory).ConfigureAwait(false);
         return null;
     }
@@ -571,7 +606,7 @@ internal class FlowExecutor : IFlowExecutor
     {
         var stepsTaken = await this._flowStatusProvider.GetReActStepsAsync(sessionId, stepId).ConfigureAwait(false);
         var lastStep = stepsTaken.LastOrDefault();
-        if (lastStep != null)
+        if (lastStep is not null)
         {
             lastStep.Observation += $"{AuthorRole.User.Label}: {input}\n";
             await this._flowStatusProvider.SaveReActStepsAsync(sessionId, stepId, stepsTaken).ConfigureAwait(false);
@@ -603,7 +638,15 @@ internal class FlowExecutor : IFlowExecutor
                 this._logger.LogInformation("Thought: {Thought}", actionStep.Thought);
             }
 
-            if (!string.IsNullOrEmpty(actionStep.Action!))
+            if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
+            {
+                if (step.Provides.Count() == 1)
+                {
+                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
+                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
+                }
+            }
+            else if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 if (actionStep.Action!.Contains(Constants.StopAndPromptFunctionName))
                 {
@@ -626,7 +669,7 @@ internal class FlowExecutor : IFlowExecutor
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory is null)
                 {
-                    chatHistory = new ChatHistory();
+                    chatHistory = [];
                 }
                 else
                 {
@@ -727,14 +770,6 @@ internal class FlowExecutor : IFlowExecutor
 
                 this._logger?.LogWarning("Action: No result from action");
             }
-            else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
-            {
-                if (step.Provides.Count() == 1)
-                {
-                    arguments[step.Provides.Single()] = actionStep.FinalAnswer;
-                    return new FunctionResult(this._executeStepFunction, actionStep.FinalAnswer, metadata: arguments);
-                }
-            }
             else
             {
                 actionStep.Observation = "ACTION $JSON_BLOB must be provided as part of thought process.";
@@ -748,16 +783,10 @@ internal class FlowExecutor : IFlowExecutor
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 
-    private class RepeatOrStartStepResult
+    private sealed class RepeatOrStartStepResult(bool? execute, string? prompt = null)
     {
-        public RepeatOrStartStepResult(bool? execute, string? prompt = null)
-        {
-            this.Prompt = prompt;
-            this.Execute = execute;
-        }
+        public bool? Execute { get; } = execute;
 
-        public bool? Execute { get; }
-
-        public string? Prompt { get; }
+        public string? Prompt { get; } = prompt;
     }
 }

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Azure.AI.OpenAI;
@@ -110,7 +109,7 @@ public sealed class OpenAIFunctionToolCall
         // we want to keep track of it so we can send back an error.
         if (update.Id is string id)
         {
-            (toolCallIdsByIndex ??= new())[update.ToolCallIndex] = id;
+            (toolCallIdsByIndex ??= [])[update.ToolCallIndex] = id;
         }
 
         if (update is StreamingFunctionToolCallUpdate ftc)
@@ -118,13 +117,13 @@ public sealed class OpenAIFunctionToolCall
             // Ensure we're tracking the function's name.
             if (ftc.Name is string name)
             {
-                (functionNamesByIndex ??= new())[ftc.ToolCallIndex] = name;
+                (functionNamesByIndex ??= [])[ftc.ToolCallIndex] = name;
             }
 
             // Ensure we're tracking the function's arguments.
             if (ftc.ArgumentsUpdate is string argumentsUpdate)
             {
-                if (!(functionArgumentBuildersByIndex ??= new()).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
+                if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
                 {
                     functionArgumentBuildersByIndex[ftc.ToolCallIndex] = arguments = new();
                 }
@@ -145,7 +144,7 @@ public sealed class OpenAIFunctionToolCall
         ref Dictionary<int, string>? functionNamesByIndex,
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
     {
-        ChatCompletionsFunctionToolCall[] toolCalls = Array.Empty<ChatCompletionsFunctionToolCall>();
+        ChatCompletionsFunctionToolCall[] toolCalls = [];
         if (toolCallIdsByIndex is { Count: > 0 })
         {
             toolCalls = new ChatCompletionsFunctionToolCall[toolCallIdsByIndex.Count];
@@ -159,7 +158,7 @@ public sealed class OpenAIFunctionToolCall
                 functionNamesByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionName);
                 functionArgumentBuildersByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionArguments);
 
-                toolCalls[i] = CreateChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
+                toolCalls[i] = new ChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
                 i++;
             }
 
@@ -168,13 +167,4 @@ public sealed class OpenAIFunctionToolCall
 
         return toolCalls;
     }
-
-    // TODO: Remove this temporary hack once the Azure SDK has been updated to set `base.Type = "function"` in the ChatCompletionsFunctionToolCall ctor
-    internal static ChatCompletionsFunctionToolCall CreateChatCompletionsFunctionToolCall(string id, string name, string arguments)
-    {
-        var c = new ChatCompletionsFunctionToolCall(id, name, arguments);
-        s_type?.SetValue(c, "function");
-        return c;
-    }
-    private static readonly PropertyInfo? s_type = typeof(ChatCompletionsToolCall).GetProperty("Type", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 }

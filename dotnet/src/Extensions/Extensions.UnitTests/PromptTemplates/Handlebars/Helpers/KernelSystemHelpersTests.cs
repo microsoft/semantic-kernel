@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Web;
+using HandlebarsDotNet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Xunit;
@@ -22,7 +25,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithMessageHelperAsync()
     {
         // Arrange
-        var template = "{{#message role=\"title\"}}Hello World!{{/message}}";
+        var template = """{{#message role="title"}}Hello World!{{/message}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -31,11 +34,12 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("<title~>Hello World!</title~>", result);
     }
 
-    [Fact]
-    public async Task ItRendersTemplateWithSetHelperAsync()
+    [Theory]
+    [InlineData("{{set name=\"x\" value=10}}{{json x}}")]
+    [InlineData("{{set \"x\" 10}}{{json x}}")]
+    public async Task ItRendersTemplateWithSetHelperAsync(string template)
     {
         // Arrange
-        var template = "{{set name=\"x\" value=10}}{{json x}}";
         var arguments = new KernelArguments();
 
         // Act
@@ -45,21 +49,35 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("10", result);
     }
 
-    [Fact]
-    public async Task ItRendersTemplateWithJsonHelperAsync()
+    [Theory]
+    [MemberData(nameof(JsonObjectsToParse))]
+    public async Task ItRendersTemplateWithJsonHelperAsync(object json)
     {
         // Arrange
         var template = "{{json person}}";
         var arguments = new KernelArguments
             {
-                { "person", new { name = "Alice", age = 25 } }
+                { "person", json }
             };
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("{\"name\":\"Alice\",\"age\":25}", result);
+        Assert.Equal("""{"name":"Alice","age":25}""", HttpUtility.HtmlDecode(result));
+    }
+
+    [Fact]
+    public async Task ItThrowsExceptionWithJsonHelperWithoutArgumentsAsync()
+    {
+        // Arrange
+        var template = "{{json}}";
+
+        // Act
+        var exception = await Assert.ThrowsAsync<HandlebarsRuntimeException>(() => this.RenderPromptTemplateAsync(template));
+
+        // Assert
+        Assert.Equal("`json` helper requires a value to be passed in.", exception.Message);
     }
 
     [Fact]
@@ -130,7 +148,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithArrayHelperAndVariableReferenceAsync()
     {
         // Arrange
-        var template = @"{{array ""hi"" "" "" name ""!"" ""Welcome to"" "" "" Address.City}}";
+        var template = """{{array "hi" " " name "!" "Welcome to" " " Address.City}}""";
         var arguments = new KernelArguments
         {
             { "name", "Alice" },
@@ -174,7 +192,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithConcatHelperAsync()
     {
         // Arrange
-        var template = "{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{concat "Hello" " " name "!"}}""";
         var arguments = new KernelArguments
             {
                 { "name", "Alice" }
@@ -191,7 +209,7 @@ public sealed class KernelSystemHelpersTests
     public async Task ItRendersTemplateWithdSetAndConcatHelpersAsync()
     {
         // Arrange
-        var template = "{{set name=\"name\" value=\"Alice\"}}{{concat \"Hello\" \" \" name \"!\"}}";
+        var template = """{{set name="name" value="Alice"}}{{concat "Hello" " " name "!"}}""";
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template);
@@ -200,19 +218,64 @@ public sealed class KernelSystemHelpersTests
         Assert.Equal("Hello Alice!", result);
     }
 
-    [Fact]
-    public async Task ItRendersTemplateWithEqualHelperAsync()
+    [Theory]
+    [InlineData("{{or true true}}", "True")]
+    [InlineData("{{or true false}}", "True")]
+    [InlineData("{{or false false}}", "False")]
+    [InlineData("{{or x x}}", "True")]
+    [InlineData("{{or x y}}", "True")]
+    [InlineData("{{or x z}}", "True")]
+    [InlineData("{{or y y}}", "False")]
+    [InlineData("{{or y z}}", "False")]
+    [InlineData("{{or z z}}", "False")]
+    public async Task ItRendersTemplateWithOrHelperAsync(string template, string expectedResult)
     {
         // Arrange
-        var template = "{{#if (equals x y)}}Equal{{else}}Not equal{{/if}}";
-        var arguments = new KernelArguments { { "x", 10 }, { "y", 10 } };
+        var arguments = new KernelArguments { { "x", true }, { "y", false }, { "z", null } };
 
         // Act
         var result = await this.RenderPromptTemplateAsync(template, arguments);
 
         // Assert
-        Assert.Equal("Equal", result);
+        Assert.Equal(expectedResult, result);
     }
+
+    [Theory]
+    [InlineData("{{#if (equals x y)}}Equal{{else}}Not equal{{/if}}", "Equal")]
+    [InlineData("{{#if (equals x)}}Equal{{else}}Not equal{{/if}}", "Not equal")]
+    [InlineData("{{#if (equals a b)}}Equal{{else}}Not equal{{/if}}", "Not equal")]
+    [InlineData("{{#if (equals b z)}}Equal{{else}}Not equal{{/if}}", "Equal")]
+    public async Task ItRendersTemplateWithEqualHelperAsync(string template, string expectedResult)
+    {
+        // Arrange
+        var arguments = new KernelArguments { { "x", 10 }, { "y", 10 }, { "a", null }, { "b", "test" }, { "z", "test" } };
+
+        // Act
+        var result = await this.RenderPromptTemplateAsync(template, arguments);
+
+        // Assert
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    public async Task ItThrowsExceptionIfMessageDoesNotContainRoleAsync()
+    {
+        // Arrange
+        var template = "{{#message attribute=\"value\"}}Hello World!{{/message}}";
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<KernelException>(() => this.RenderPromptTemplateAsync(template));
+
+        // Assert
+        Assert.Equal("Message must have a role.", exception.Message);
+    }
+
+    public static TheoryData<object> JsonObjectsToParse => new()
+    {
+        new { name = "Alice", age = 25 },
+        "{\"name\":\"Alice\",\"age\":25}",
+        JsonNode.Parse("{\"name\":\"Alice\",\"age\":25}")!
+    };
 
     #region private
 

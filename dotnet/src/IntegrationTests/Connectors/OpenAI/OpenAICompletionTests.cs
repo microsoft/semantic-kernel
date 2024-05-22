@@ -4,9 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -21,28 +24,16 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
 #pragma warning disable xUnit1004 // Contains test methods used in manual verification. Disable warning for this file only.
 
-public sealed class OpenAICompletionTests : IDisposable
+public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposable
 {
     private const string InputParameterName = "input";
-    private readonly IKernelBuilder _kernelBuilder;
-    private readonly IConfigurationRoot _configuration;
-
-    public OpenAICompletionTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
-            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAICompletionTests>()
-            .Build();
-
-        this._kernelBuilder = Kernel.CreateBuilder();
-    }
+    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
+        .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<OpenAICompletionTests>()
+        .Build();
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place Market")]
@@ -138,7 +129,7 @@ public sealed class OpenAICompletionTests : IDisposable
         await foreach (var content in target.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
         {
             fullResult.Append(content);
-        };
+        }
 
         // Assert
         Assert.Contains(expectedAnswerContains, fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
@@ -247,29 +238,31 @@ public sealed class OpenAICompletionTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task AzureOpenAIShouldReturnTokenUsageInMetadataAsync(bool useChatModel)
+    public async Task AzureOpenAIShouldReturnMetadataAsync(bool useChatModel)
     {
         // Arrange
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
-        var builder = this._kernelBuilder;
 
         if (useChatModel)
         {
-            this.ConfigureAzureOpenAIChatAsText(builder);
+            this.ConfigureAzureOpenAIChatAsText(this._kernelBuilder);
         }
         else
         {
-            this.ConfigureAzureOpenAI(builder);
+            this.ConfigureAzureOpenAI(this._kernelBuilder);
         }
 
-        Kernel target = builder.Build();
+        var kernel = this._kernelBuilder.Build();
 
-        IReadOnlyKernelPluginCollection plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
+        var plugin = TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        // Act and Assert
-        FunctionResult result = await target.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
+        // Act
+        var result = await kernel.InvokeAsync(plugin["FunPlugin"]["Limerick"]);
 
+        // Assert
         Assert.NotNull(result.Metadata);
+
+        // Usage
         Assert.True(result.Metadata.TryGetValue("Usage", out object? usageObject));
         Assert.NotNull(usageObject);
 
@@ -277,9 +270,13 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.True(jsonObject.TryGetProperty("PromptTokens", out JsonElement promptTokensJson));
         Assert.True(promptTokensJson.TryGetInt32(out int promptTokens));
         Assert.NotEqual(0, promptTokens);
+
         Assert.True(jsonObject.TryGetProperty("CompletionTokens", out JsonElement completionTokensJson));
         Assert.True(completionTokensJson.TryGetInt32(out int completionTokens));
         Assert.NotEqual(0, completionTokens);
+
+        // ContentFilterResults
+        Assert.True(result.Metadata.ContainsKey("ContentFilterResults"));
     }
 
     [Fact]
@@ -366,7 +363,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt =
             "Given a json input and a request. Apply the request on the json input and return the result. " +
             $"Put the result in between <result></result> tags{lineEnding}" +
-            $"Input:{lineEnding}{{\"name\": \"John\", \"age\": 30}}{lineEnding}{lineEnding}Request:{lineEnding}name";
+            $$"""Input:{{lineEnding}}{"name": "John", "age": 30}{{lineEnding}}{{lineEnding}}Request:{{lineEnding}}name""";
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
@@ -433,15 +430,16 @@ public sealed class OpenAICompletionTests : IDisposable
 
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
         var defaultPromptModel = new PromptTemplateConfig(prompt) { Name = "FishMarket1" };
-        var azurePromptModel = PromptTemplateConfig.FromJson(
-            @"{
-                ""name"": ""FishMarket2"",
-                ""execution_settings"": {
-                    ""azure-text-davinci-003"": {
-                        ""max_tokens"": 256
+        var azurePromptModel = PromptTemplateConfig.FromJson("""
+            {
+                "name": "FishMarket2",
+                "execution_settings": {
+                    "azure-text-davinci-003": {
+                        "max_tokens": 256
                     }
                 }
-            }");
+            }
+            """);
         azurePromptModel.Template = prompt;
 
         var defaultFunc = target.CreateFunctionFromPrompt(defaultPromptModel);
@@ -455,31 +453,101 @@ public sealed class OpenAICompletionTests : IDisposable
         // Assert
         Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task ChatSystemPromptIsNotIgnoredAsync()
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings { ChatSystemPrompt = "Reply \"I don't know\" to every question." };
+
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?", new(settings));
+
+        // Assert
+        Assert.Contains("I don't know", result.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SemanticKernelVersionHeaderIsSentAsync()
+    {
+        // Arrange
+        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+        Assert.NotNull(azureOpenAIConfiguration.ServiceId);
+
+        using var defaultHandler = new HttpClientHandler();
+        using var httpHeaderHandler = new HttpHeaderHandler(defaultHandler);
+        using var httpClient = new HttpClient(httpHeaderHandler);
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        builder.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            apiKey: azureOpenAIConfiguration.ApiKey,
+            serviceId: azureOpenAIConfiguration.ServiceId,
+            httpClient: httpClient);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
+
+        // Assert
+        Assert.NotNull(httpHeaderHandler.RequestHeaders);
+        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+    }
+
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData(null, null)]
+    [InlineData(false, null)]
+    [InlineData(true, 2)]
+    [InlineData(true, 5)]
+    public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Hi, can you help me today?", new(settings));
+
+        var logProbabilityInfo = result.Metadata?["LogProbabilityInfo"] as ChatChoiceLogProbabilityInfo;
+
+        // Assert
+        if (logprobs is true)
+        {
+            Assert.NotNull(logProbabilityInfo);
+            Assert.Equal(topLogprobs, logProbabilityInfo.TokenLogProbabilityResults[0].TopLogProbabilityEntries.Count);
+        }
+        else
+        {
+            Assert.Null(logProbabilityInfo);
+        }
+    }
+
     #region internals
 
-    private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
+    private readonly XunitLogger<Kernel> _logger = new(output);
+    private readonly RedirectOutput _testOutputHelper = new(output);
 
-    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = new();
+    private readonly Dictionary<AIServiceType, Action<Kernel>> _serviceConfiguration = [];
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~OpenAICompletionTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
+        this._logger.Dispose();
+        this._testOutputHelper.Dispose();
     }
 
     private void ConfigureChatOpenAI(IKernelBuilder kernelBuilder)
@@ -546,6 +614,17 @@ public sealed class OpenAICompletionTests : IDisposable
             endpoint: azureOpenAIConfiguration.Endpoint,
             apiKey: azureOpenAIConfiguration.ApiKey,
             serviceId: azureOpenAIConfiguration.ServiceId);
+    }
+
+    private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    {
+        public System.Net.Http.Headers.HttpRequestHeaders? RequestHeaders { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            this.RequestHeaders = request.Headers;
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 
     #endregion

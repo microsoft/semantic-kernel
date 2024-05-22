@@ -87,10 +87,10 @@ public class OpenApiFunctionExecutionParameters
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
         this.ServerUrlOverride = serverUrlOverride;
-        this.UserAgent = userAgent ?? HttpHeaderValues.UserAgent;
+        this.UserAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
-        this.OperationsToExclude = operationsToExclude ?? new List<string>();
+        this.OperationsToExclude = operationsToExclude ?? [];
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,6 +10,7 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
+[ExcludeFromCodeCoverage]
 internal static class HttpRequest
 {
     private static readonly HttpMethod s_patchMethod = new("PATCH");

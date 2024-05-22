@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json;
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// <summary>
 /// OpenAI text to image service.
 /// </summary>
-[Experimental("SKEXP0012")]
+[Experimental("SKEXP0010")]
 public sealed class OpenAITextToImageService : ITextToImageService
 {
     private readonly OpenAITextToImageClientCore _core;
@@ -73,7 +72,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
     public Task<string> GenerateImageAsync(string description, int width, int height, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(description);
-        if (width != height || width != 256 && width != 512 && width != 1024)
+        if (width != height || (width != 256 && width != 512 && width != 1024))
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "OpenAI can generate only square images of size 256x256, 512x512, or 1024x1024.");
         }
@@ -87,10 +86,7 @@ public sealed class OpenAITextToImageService : ITextToImageService
         string format, Func<TextToImageResponse.Image, string> extractResponse,
         CancellationToken cancellationToken)
     {
-        Debug.Assert(width == height);
-        Debug.Assert(width is 256 or 512 or 1024);
-        Debug.Assert(format is "url" or "b64_json");
-        Debug.Assert(extractResponse is not null);
+        Verify.NotNull(extractResponse);
 
         var requestBody = JsonSerializer.Serialize(new TextToImageRequest
         {

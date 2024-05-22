@@ -2,10 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Azure.AI.OpenAI;
-using Json.Schema;
-using Json.Schema.Generation;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -77,11 +74,11 @@ public sealed class OpenAIFunction
     /// This is an optimization to avoid serializing the same JSON Schema over and over again
     /// for this relatively common case.
     /// </remarks>
-    private static readonly BinaryData s_zeroFunctionParametersSchema = new("{\"type\":\"object\",\"required\":[],\"properties\":{}}");
+    private static readonly BinaryData s_zeroFunctionParametersSchema = new("""{"type":"object","required":[],"properties":{}}""");
     /// <summary>
     /// Cached schema for a descriptionless string.
     /// </summary>
-    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("{\"type\":\"string\"}");
+    private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(
@@ -101,7 +98,9 @@ public sealed class OpenAIFunction
     }
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
-    public static string NameSeparator => "_";
+    /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
+    /// to developers who want to use underscores in their function or plugin names. We plan to make this setting configurable in the future.</remarks>
+    public static string NameSeparator { get; set; } = "-";
 
     /// <summary>Gets the name of the plugin with which the function is associated, if any.</summary>
     public string? PluginName { get; }
@@ -174,11 +173,7 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return KernelJsonSchema.Parse(JsonSerializer.Serialize(
-                new JsonSchemaBuilder()
-                .FromType(typeof(string))
-                .Description(description!)
-                .Build()));
+            return KernelJsonSchemaBuilder.Build(null, typeof(string), description);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.

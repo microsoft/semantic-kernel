@@ -1,39 +1,31 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
 
 import pytest
 from openai import AsyncAzureOpenAI
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
+from semantic_kernel.core_plugins.text_memory_plugin import TextMemoryPlugin
+from semantic_kernel.kernel import Kernel
+from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
+from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
 
 @pytest.mark.asyncio
-async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
-    kernel = create_kernel
-
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-    else:
-        deployment_name = "text-embedding-ada-002"
-
-    kernel.add_text_embedding_generation_service(
-        "aoai-ada",
-        sk_oai.AzureTextEmbedding(
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
-        ),
+async def test_azure_text_embedding_service(kernel: Kernel):
+    embeddings_gen = sk_oai.AzureTextEmbedding(
+        service_id="aoai-ada",
     )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async(
-        "test", id="info1", text="this is a test"
-    )
-    await kernel.memory.save_reference_async(
+    kernel.add_service(embeddings_gen)
+
+    memory = SemanticTextMemory(storage=VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+
+    await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
@@ -42,39 +34,33 @@ async def test_azure_text_embedding_service(create_kernel, get_aoai_config):
 
 
 @pytest.mark.asyncio
-async def test_azure_text_embedding_service_with_provided_client(
-    create_kernel, get_aoai_config
-):
-    kernel = create_kernel
+async def test_azure_text_embedding_service_with_provided_client(kernel: Kernel):
 
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-    else:
-        deployment_name = "text-embedding-ada-002"
+    azure_openai_settings = AzureOpenAISettings.create()
+    endpoint = azure_openai_settings.endpoint
+    deployment_name = azure_openai_settings.embedding_deployment_name
+    api_key = azure_openai_settings.api_key.get_secret_value()
+    api_version = azure_openai_settings.api_version
 
     client = AsyncAzureOpenAI(
         azure_endpoint=endpoint,
         azure_deployment=deployment_name,
         api_key=api_key,
-        api_version="2023-05-15",
+        api_version=api_version,
         default_headers={"Test-User-X-ID": "test"},
     )
 
-    kernel.add_text_embedding_generation_service(
-        "aoai-ada-2",
-        sk_oai.AzureTextEmbedding(
-            deployment_name=deployment_name,
-            async_client=client,
-        ),
+    embeddings_gen = sk_oai.AzureTextEmbedding(
+        service_id="aoai-ada-2",
+        async_client=client,
     )
-    kernel.register_memory_store(memory_store=sk.memory.VolatileMemoryStore())
 
-    await kernel.memory.save_information_async(
-        "test", id="info1", text="this is a test"
-    )
-    await kernel.memory.save_reference_async(
+    kernel.add_service(embeddings_gen)
+    memory = SemanticTextMemory(storage=sk.memory.VolatileMemoryStore(), embeddings_generator=embeddings_gen)
+    kernel.add_plugin(TextMemoryPlugin(memory), "TextMemoryPlugin")
+
+    await memory.save_information(collection="generic", id="info1", text="My budget for 2024 is $100,000")
+    await memory.save_reference(
         "test",
         external_id="info1",
         text="this is a test",
@@ -83,24 +69,10 @@ async def test_azure_text_embedding_service_with_provided_client(
 
 
 @pytest.mark.asyncio
-async def test_batch_azure_embeddings(get_aoai_config):
+async def test_batch_azure_embeddings():
     # Configure LLM service
-    _, api_key, endpoint = get_aoai_config
-
-    if "Python_Integration_Tests" in os.environ:
-        deployment_name = os.environ["AzureOpenAIEmbeddings__DeploymentName"]
-
-    else:
-        deployment_name = "ada-002"
-
-    embeddings_service = sk_oai.AzureTextEmbedding(
-        deployment_name=deployment_name,
-        endpoint=endpoint,
-        api_key=api_key,
-    )
-    texts = ["hello world", "goodbye world"]
-    results = await embeddings_service.generate_embeddings_async(texts)
-    batch_results = await embeddings_service.generate_embeddings_async(
-        texts, batch_size=1
-    )
+    embeddings_service = sk_oai.AzureTextEmbedding(service_id="aoai-ada")
+    texts = ["hello world"]
+    results = await embeddings_service.generate_embeddings(texts)
+    batch_results = await embeddings_service.generate_embeddings(texts, batch_size=1)
     assert len(results) == len(batch_results)

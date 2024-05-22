@@ -17,29 +17,17 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class ChatHistoryTests : IDisposable
+public sealed class ChatHistoryTests(ITestOutputHelper output) : IDisposable
 {
-    private readonly IKernelBuilder _kernelBuilder;
-    private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
-    private readonly IConfigurationRoot _configuration;
-    private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
-    public ChatHistoryTests(ITestOutputHelper output)
-    {
-        this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
-
-        // Load configuration
-        this._configuration = new ConfigurationBuilder()
+    private readonly IKernelBuilder _kernelBuilder = Kernel.CreateBuilder();
+    private readonly XunitLogger<Kernel> _logger = new(output);
+    private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<OpenAICompletionTests>()
             .Build();
-
-        this._kernelBuilder = Kernel.CreateBuilder();
-    }
+    private static readonly JsonSerializerOptions s_jsonOptionsCache = new() { WriteIndented = true };
 
     [Fact]
     public async Task ItSerializesAndDeserializesChatHistoryAsync()
@@ -52,7 +40,7 @@ public sealed class ChatHistoryTests : IDisposable
         var kernel = builder.Build();
 
         OpenAIPromptExecutionSettings settings = new() { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        ChatHistory history = new();
+        ChatHistory history = [];
 
         // Act
         history.AddUserMessage("Make me a special poem");
@@ -68,6 +56,54 @@ public sealed class ChatHistoryTests : IDisposable
 
         // Assert
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ItUsesChatSystemPromptFromSettingsAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        builder.Plugins.AddFromType<FakePlugin>();
+        var kernel = builder.Build();
+
+        string systemPrompt = "You are batman. If asked who you are, say 'I am Batman!'";
+
+        OpenAIPromptExecutionSettings settings = new() { ChatSystemPrompt = systemPrompt };
+        ChatHistory history = [];
+
+        // Act
+        history.AddUserMessage("Who are you?");
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent result = await service.GetChatMessageContentAsync(history, settings, kernel);
+
+        // Assert
+        Assert.Contains("Batman", result.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItUsesChatSystemPromptFromChatHistoryAsync()
+    {
+        // Arrange
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        builder.Plugins.AddFromType<FakePlugin>();
+        var kernel = builder.Build();
+
+        string systemPrompt = "You are batman. If asked who you are, say 'I am Batman!'";
+
+        OpenAIPromptExecutionSettings settings = new();
+        ChatHistory history = new(systemPrompt);
+
+        // Act
+        history.AddUserMessage("Who are you?");
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent result = await service.GetChatMessageContentAsync(history, settings, kernel);
+
+        // Assert
+        Assert.Contains("Batman", result.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private void ConfigureAzureOpenAIChatAsText(IKernelBuilder kernelBuilder)
@@ -108,7 +144,6 @@ public sealed class ChatHistoryTests : IDisposable
         if (disposing)
         {
             this._logger.Dispose();
-            this._testOutputHelper.Dispose();
         }
     }
 }

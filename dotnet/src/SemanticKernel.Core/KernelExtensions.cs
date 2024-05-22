@@ -140,7 +140,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -159,13 +160,45 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
         return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
+    }
+    #endregion
+
+    #region CreatePluginFromFunctions
+    /// <summary>Creates a plugin that contains the specified functions.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        CreatePluginFromFunctions(kernel, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(kernel);
+
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
     #endregion
 
@@ -178,7 +211,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -196,7 +230,8 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromType<T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
@@ -215,7 +250,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
     {
@@ -250,7 +286,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -268,32 +305,14 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromObject(this ICollection<KernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>());
-        plugins.Add(plugin);
-        return plugin;
-    }
-
-    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
-    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
-    /// <param name="pluginName">The name for the plugin.</param>
-    /// <param name="description">A description of the plugin.</param>
-    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
-    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
-    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
-    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description, IEnumerable<KernelFunction>? functions = null)
-    {
-        Verify.NotNull(plugins);
-
-        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
         plugins.Add(plugin);
         return plugin;
     }
@@ -306,13 +325,107 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
         plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject(target, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+
+        return plugins;
+    }
+    #endregion
+
+    #region ImportPlugin/AddFromFunctions
+    /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        ImportPluginFromFunctions(kernel, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        KernelPlugin plugin = CreatePluginFromFunctions(kernel, pluginName, description, functions);
+        kernel.Plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        AddFromFunctions(plugins, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>A <see cref="KernelPlugin"/> containing the functions provided in <paramref name="functions"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        var plugin = new DefaultKernelPlugin(pluginName, description, functions);
+        plugins.Add(plugin);
+        return plugin;
+    }
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
+        AddFromFunctions(plugins, pluginName, description: null, functions);
+
+    /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
+    /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
+    /// <param name="pluginName">The name for the plugin.</param>
+    /// <param name="description">A description of the plugin.</param>
+    /// <param name="functions">The initial functions to be available as part of the plugin.</param>
+    /// <returns>The same instance as <paramref name="plugins"/>.</returns>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
+    /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
+    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        Verify.NotNull(plugins);
+
+        plugins.Services.AddSingleton(KernelPluginFactory.CreateFromFunctions(pluginName, description, functions));
 
         return plugins;
     }
@@ -342,7 +455,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -450,7 +563,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -498,7 +611,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -556,11 +669,51 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
 
         return kernel.InvokeAsync(function, arguments, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="promptTemplate">Prompt template for the function.</param>
+    /// <param name="arguments">The arguments to pass to the function's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="templateFormat">The template format of <paramref name="promptTemplate"/>. This must be provided if <paramref name="promptTemplateFactory"/> is not null.</param>
+    /// <param name="promptTemplateFactory">
+    /// The <see cref="IPromptTemplateFactory"/> to use when interpreting the <paramref name="promptTemplate"/> into a <see cref="IPromptTemplate"/>.
+    /// If null, a default factory will be used.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The <typeparamref name="T"/> of the function result value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="kernel"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="promptTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
+    /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    public static Task<T?> InvokePromptAsync<T>(
+        this Kernel kernel,
+        string promptTemplate,
+        KernelArguments? arguments = null,
+        string? templateFormat = null,
+        IPromptTemplateFactory? promptTemplateFactory = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(kernel);
+        Verify.NotNullOrWhiteSpace(promptTemplate);
+
+        KernelFunction function = KernelFunctionFromPrompt.Create(
+            promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
+            templateFormat: templateFormat,
+            promptTemplateFactory: promptTemplateFactory,
+            loggerFactory: kernel.LoggerFactory);
+
+        return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
 
     /// <summary>
@@ -580,23 +733,21 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="promptTemplate"/> is empty or composed entirely of whitespace.</exception>
     /// <exception cref="KernelFunction">The function failed to invoke successfully.</exception>
     /// <exception cref="KernelFunctionCanceledException">The <see cref="KernelFunction"/>'s invocation was canceled.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static Task<T?> InvokePromptAsync<T>(
         this Kernel kernel,
         string promptTemplate,
-        KernelArguments? arguments = null,
-        string? templateFormat = null,
-        IPromptTemplateFactory? promptTemplateFactory = null)
+        KernelArguments? arguments,
+        string? templateFormat,
+        IPromptTemplateFactory? promptTemplateFactory)
     {
-        Verify.NotNull(kernel);
-        Verify.NotNullOrWhiteSpace(promptTemplate);
-
-        KernelFunction function = KernelFunctionFromPrompt.Create(
+        return InvokePromptAsync<T>(
+            kernel,
             promptTemplate,
-            templateFormat: templateFormat,
-            promptTemplateFactory: promptTemplateFactory,
-            loggerFactory: kernel.LoggerFactory);
-
-        return kernel.InvokeAsync<T>(function, arguments);
+            arguments,
+            templateFormat,
+            promptTemplateFactory,
+            CancellationToken.None);
     }
     #endregion
 
@@ -634,6 +785,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -674,6 +826,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -712,12 +865,12 @@ public static class KernelExtensions
             // that such functionality will work when KernelBuilder is used to build the kernel but not when the IServiceProvider
             // is created via other means, such as if Kernel is directly created by DI. However, it allows us to create the APIs
             // the way we want them for the longer term and then subsequently fix the implementation when M.E.DI is fixed.
-            Dictionary<Type, HashSet<object?>> typeToKeyMappings = new();
+            Dictionary<Type, HashSet<object?>> typeToKeyMappings = [];
             foreach (ServiceDescriptor serviceDescriptor in services)
             {
                 if (!typeToKeyMappings.TryGetValue(serviceDescriptor.ServiceType, out HashSet<object?>? keys))
                 {
-                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = new();
+                    typeToKeyMappings[serviceDescriptor.ServiceType] = keys = [];
                 }
 
                 keys.Add(serviceDescriptor.ServiceKey);

@@ -1,41 +1,50 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.connectors.ai.open_ai.request_settings.azure_chat_request_settings import (
-    AzureChatRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+    ApiKeyAuthentication,
+    AzureAISearchDataSource,
+    AzureAISearchDataSourceParameters,
+    AzureChatPromptExecutionSettings,
+    AzureCosmosDBDataSource,
+    AzureCosmosDBDataSourceParameters,
+    AzureDataSourceParameters,
+    AzureEmbeddingDependency,
+    ConnectionStringAuthentication,
+    DataSourceFieldsMapping,
+    ExtraBody,
 )
-from semantic_kernel.connectors.ai.open_ai.request_settings.open_ai_request_settings import (
-    OpenAIChatRequestSettings,
-    OpenAIRequestSettings,
-    OpenAITextRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
+    OpenAITextPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
-    AzureChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
-    AzureTextCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import (
-    AzureTextEmbedding,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
-    OpenAITextEmbedding,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 
 __all__ = [
-    "OpenAIRequestSettings",
-    "OpenAIChatRequestSettings",
-    "OpenAITextRequestSettings",
-    "AzureChatRequestSettings",
+    "OpenAIPromptExecutionSettings",
+    "OpenAIChatPromptExecutionSettings",
+    "OpenAITextPromptExecutionSettings",
+    "AzureChatPromptExecutionSettings",
     "OpenAITextCompletion",
     "OpenAIChatCompletion",
     "OpenAITextEmbedding",
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
+    "AzureAISearchDataSource",
+    "AzureAISearchDataSourceParameters",
+    "AzureCosmosDBDataSource",
+    "AzureCosmosDBDataSourceParameters",
+    "AzureDataSourceParameters",
+    "ApiKeyAuthentication",
+    "ConnectionStringAuthentication",
+    "DataSourceFieldsMapping",
+    "ExtraBody",
+    "AzureEmbeddingDependency",
+    "DataSourceFieldsMapping",
 ]

@@ -26,14 +26,6 @@ internal sealed record AssistantModel
     public string Id { get; init; } = string.Empty;
 
     /// <summary>
-    /// Always "assistant"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; init; } = "assistant";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// Unix timestamp (in seconds) for when the assistant was created
     /// </summary>
     [JsonPropertyName("created_at")]
@@ -70,14 +62,14 @@ internal sealed record AssistantModel
     /// There can be a maximum of 128 tools per assistant.
     /// </summary>
     [JsonPropertyName("tools")]
-    public List<ToolModel> Tools { get; init; } = new List<ToolModel>();
+    public List<ToolModel> Tools { get; init; } = [];
 
     /// <summary>
     /// A list of file IDs attached to this assistant.
     /// There can be a maximum of 20 files attached to the assistant.
     /// </summary>
     [JsonPropertyName("file_ids")]
-    public List<string> FileIds { get; init; } = new List<string>();
+    public List<string> FileIds { get; init; } = [];
 
     /// <summary>
     /// Set of 16 key-value pairs that can be attached to an object.
@@ -87,5 +79,29 @@ internal sealed record AssistantModel
     /// maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; init; } = [];
+
+    /// <summary>
+    /// Assistant file model.
+    /// </summary>
+    public sealed class FileModel
+    {
+        /// <summary>
+        /// ID of the assistant.
+        /// </summary>
+        [JsonPropertyName("assistant_id")]
+        public string AssistantId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// ID of the uploaded file.
+        /// </summary>
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Unix timestamp (in seconds) for when the assistant was created
+        /// </summary>
+        [JsonPropertyName("created_at")]
+        public long CreatedAt { get; init; }
+    }
 }

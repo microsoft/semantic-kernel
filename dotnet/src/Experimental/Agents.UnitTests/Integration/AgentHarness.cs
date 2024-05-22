@@ -21,23 +21,16 @@ namespace SemanticKernel.Experimental.Agents.UnitTests.Integration;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class AgentHarness
+public sealed class AgentHarness(ITestOutputHelper output)
 {
+    private const string SkipReason =
 #if DISABLEHOST
-    private const string SkipReason = "Harness only for local/dev environment";
+        "Harness only for local/dev environment";
 #else
-    private const string SkipReason = null;
+        null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public AgentHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Verify creation and retrieval of agent.
@@ -46,19 +39,19 @@ public sealed class AgentHarness
     public async Task VerifyAgentLifecycleAsync()
     {
         var agent =
-            await AgentBuilder.NewAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                instructions: "say something funny",
-                name: "Fred",
-                description: "test agent").ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithInstructions("say something funny")
+                .WithName("Fred")
+                .WithDescription("test agent")
+                .BuildAsync().ConfigureAwait(true);
 
         this.DumpAgent(agent);
 
         var copy =
-            await AgentBuilder.GetAgentAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                agentId: agent.Id).ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .GetAsync(agentId: agent.Id).ConfigureAwait(true);
 
         this.DumpAgent(copy);
     }
@@ -79,9 +72,9 @@ public sealed class AgentHarness
         this.DumpAgent(agent);
 
         var copy =
-            await AgentBuilder.GetAgentAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                agentId: agent.Id).ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .GetAsync(agentId: agent.Id).ConfigureAwait(true);
 
         this.DumpAgent(copy);
     }
@@ -92,7 +85,7 @@ public sealed class AgentHarness
     [Fact(Skip = SkipReason)]
     public async Task VerifyAgentListAsync()
     {
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
         var agents = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var agent in agents)
         {
@@ -116,7 +109,7 @@ public sealed class AgentHarness
                 "Math Tutor",
             };
 
-        var context = new OpenAIRestContext(TestConfig.OpenAIApiKey);
+        var context = new OpenAIRestContext(AgentBuilder.OpenAIBaseUrl, TestConfig.OpenAIApiKey);
         var agents = await context.ListAssistantModelsAsync().ConfigureAwait(true);
         foreach (var agent in agents)
         {

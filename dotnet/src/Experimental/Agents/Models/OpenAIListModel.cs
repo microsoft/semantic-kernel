@@ -12,18 +12,10 @@ namespace Microsoft.SemanticKernel.Experimental.Agents.Models;
 internal abstract class OpenAIListModel<TModel>
 {
     /// <summary>
-    /// Always "list"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "list";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// List of steps.
     /// </summary>
     [JsonPropertyName("data")]
-    public List<TModel> Data { get; set; } = new List<TModel>();
+    public List<TModel> Data { get; set; } = [];
 
     /// <summary>
     /// The identifier of the first data record.

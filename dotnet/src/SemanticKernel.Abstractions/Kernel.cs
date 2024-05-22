@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 /// </remarks>
 public sealed class Kernel
 {
-    /// <summary>Key used by KernelBuilder to store type information into the service provider.</summary>
+    /// <summary>Key used by <see cref="IKernelBuilder"/> to store type information into the service provider.</summary>
     internal const string KernelServiceTypeToKeyMappings = nameof(KernelServiceTypeToKeyMappings);
 
     /// <summary>Dictionary containing ambient data stored in the kernel, lazily-initialized on first access.</summary>
@@ -32,6 +33,12 @@ public sealed class Kernel
     private CultureInfo _culture = CultureInfo.InvariantCulture;
     /// <summary>The collection of plugins, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private KernelPluginCollection? _plugins;
+    /// <summary>The collection of function filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IFunctionInvocationFilter>? _functionInvocationFilters;
+    /// <summary>The collection of prompt filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IPromptRenderFilter>? _promptRenderFilters;
+    /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
+    private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -54,19 +61,22 @@ public sealed class Kernel
 
         // Store the provided plugins. If there weren't any, look in DI to see if there's a plugin collection.
         this._plugins = plugins ?? this.Services.GetService<KernelPluginCollection>();
+
         if (this._plugins is null)
         {
             // Otherwise, enumerate any plugins that may have been registered directly.
-            IEnumerable<KernelPlugin> e = this.Services.GetServices<KernelPlugin>();
+            IEnumerable<KernelPlugin> registeredPlugins = this.Services.GetServices<KernelPlugin>();
 
             // It'll be common not to have any plugins directly registered as a service.
             // If we can efficiently tell there aren't any, avoid proactively allocating
             // the plugins collection.
-            if (e is not ICollection<KernelPlugin> c || c.Count != 0)
+            if (IsNotEmpty(registeredPlugins))
             {
-                this._plugins = new(e);
+                this._plugins = new(registeredPlugins);
             }
         }
+
+        this.AddFilters();
     }
 
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
@@ -104,6 +114,9 @@ public sealed class Kernel
             FunctionInvoked = this.FunctionInvoked,
             PromptRendering = this.PromptRendering,
             PromptRendered = this.PromptRendered,
+            _functionInvocationFilters = this._functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(this._functionInvocationFilters) : null,
+            _promptRenderFilters = this._promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(this._promptRenderFilters) : null,
+            _autoFunctionInvocationFilters = this._autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(this._autoFunctionInvocationFilters) : null,
             _data = this._data is { Count: > 0 } ? new Dictionary<string, object?>(this._data) : null,
             _culture = this._culture,
         };
@@ -113,8 +126,35 @@ public sealed class Kernel
     /// </summary>
     public KernelPluginCollection Plugins =>
         this._plugins ??
-        Interlocked.CompareExchange(ref this._plugins, new KernelPluginCollection(), null) ??
+        Interlocked.CompareExchange(ref this._plugins, [], null) ??
         this._plugins;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IFunctionInvocationFilter> FunctionInvocationFilters =>
+        this._functionInvocationFilters ??
+        Interlocked.CompareExchange(ref this._functionInvocationFilters, [], null) ??
+        this._functionInvocationFilters;
+
+    /// <summary>
+    /// Gets the collection of function filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IPromptRenderFilter> PromptRenderFilters =>
+        this._promptRenderFilters ??
+        Interlocked.CompareExchange(ref this._promptRenderFilters, [], null) ??
+        this._promptRenderFilters;
+
+    /// <summary>
+    /// Gets the collection of auto function invocation filters available through the kernel.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public IList<IAutoFunctionInvocationFilter> AutoFunctionInvocationFilters =>
+        this._autoFunctionInvocationFilters ??
+        Interlocked.CompareExchange(ref this._autoFunctionInvocationFilters, [], null) ??
+        this._autoFunctionInvocationFilters;
 
     /// <summary>
     /// Gets the service provider used to query for services available through the kernel.
@@ -163,32 +203,8 @@ public sealed class Kernel
     /// </remarks>
     public IDictionary<string, object?> Data =>
         this._data ??
-        Interlocked.CompareExchange(ref this._data, new Dictionary<string, object?>(), null) ??
+        Interlocked.CompareExchange(ref this._data, [], null) ??
         this._data;
-
-    /// <summary>
-    /// Provides an event that's raised prior to a function's invocation.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
-
-    /// <summary>
-    /// Provides an event that's raised after a function's invocation.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
-
-    /// <summary>
-    /// Provides an event that's raised prior to a prompt being rendered.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
-
-    /// <summary>
-    /// Provides an event that's raised after a prompt is rendered.
-    /// </summary>
-    [Experimental("SKEXP0004")]
-    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
 
     #region GetServices
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
@@ -252,10 +268,10 @@ public sealed class Kernel
             {
                 if (typeToKeyMappings.TryGetValue(typeof(T), out HashSet<object?>? keys))
                 {
-                    return keys.SelectMany(key => this.Services.GetKeyedServices<T>(key));
+                    return keys.SelectMany(this.Services.GetKeyedServices<T>);
                 }
 
-                return Enumerable.Empty<T>();
+                return [];
             }
         }
 
@@ -264,58 +280,110 @@ public sealed class Kernel
 
     #endregion
 
-    #region Internal Event Helpers
-    [Experimental("SKEXP0004")]
-    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
+    #region Filters
+
+    private void AddFilters()
     {
-        FunctionInvokingEventArgs? eventArgs = null;
-        if (this.FunctionInvoking is { } functionInvoking)
+        // Enumerate any function filters that may have been registered.
+        IEnumerable<IFunctionInvocationFilter> functionInvocationFilters = this.Services.GetServices<IFunctionInvocationFilter>();
+
+        if (IsNotEmpty(functionInvocationFilters))
         {
-            eventArgs = new(function, arguments);
-            functionInvoking.Invoke(this, eventArgs);
+            this._functionInvocationFilters = new(functionInvocationFilters);
         }
 
-        return eventArgs;
-    }
+        // Enumerate any prompt filters that may have been registered.
+        IEnumerable<IPromptRenderFilter> promptRenderFilters = this.Services.GetServices<IPromptRenderFilter>();
 
-    [Experimental("SKEXP0004")]
-    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
-    {
-        FunctionInvokedEventArgs? eventArgs = null;
-        if (this.FunctionInvoked is { } functionInvoked)
+        if (IsNotEmpty(promptRenderFilters))
         {
-            eventArgs = new(function, arguments, result);
-            functionInvoked.Invoke(this, eventArgs);
+            this._promptRenderFilters = new(promptRenderFilters);
         }
 
-        return eventArgs;
-    }
+        // Enumerate any automatic function invocation filters that may have been registered.
+        IEnumerable<IAutoFunctionInvocationFilter> autoFunctionInvocationFilters = this.Services.GetServices<IAutoFunctionInvocationFilter>();
 
-    [Experimental("SKEXP0004")]
-    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
-    {
-        PromptRenderingEventArgs? eventArgs = null;
-        if (this.PromptRendering is { } promptRendering)
+        if (IsNotEmpty(autoFunctionInvocationFilters))
         {
-            eventArgs = new(function, arguments);
-            promptRendering.Invoke(this, eventArgs);
+            this._autoFunctionInvocationFilters = new(autoFunctionInvocationFilters);
         }
-
-        return eventArgs;
     }
 
-    [Experimental("SKEXP0004")]
-    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    [Experimental("SKEXP0001")]
+    internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        FunctionResult functionResult,
+        Func<FunctionInvocationContext, Task> functionCallback)
     {
-        PromptRenderedEventArgs? eventArgs = null;
-        if (this.PromptRendered is { } promptRendered)
-        {
-            eventArgs = new(function, arguments, renderedPrompt);
-            promptRendered.Invoke(this, eventArgs);
-        }
+        FunctionInvocationContext context = new(this, function, arguments, functionResult);
 
-        return eventArgs;
+        await InvokeFilterOrFunctionAsync(this._functionInvocationFilters, functionCallback, context).ConfigureAwait(false);
+
+        return context;
     }
+
+    /// <summary>
+    /// This method will execute filters and kernel function recursively.
+    /// If there are no registered filters, just kernel function will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or kernel function if there are no remaining filters to execute.
+    /// Kernel function will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrFunctionAsync(
+        NonNullCollection<IFunctionInvocationFilter>? functionFilters,
+        Func<FunctionInvocationContext, Task> functionCallback,
+        FunctionInvocationContext context,
+        int index = 0)
+    {
+        if (functionFilters is { Count: > 0 } && index < functionFilters.Count)
+        {
+            await functionFilters[index].OnFunctionInvocationAsync(context,
+                (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).ConfigureAwait(false);
+        }
+        else
+        {
+            await functionCallback(context).ConfigureAwait(false);
+        }
+    }
+
+    [Experimental("SKEXP0001")]
+    internal async Task<PromptRenderContext> OnPromptRenderAsync(
+        KernelFunction function,
+        KernelArguments arguments,
+        Func<PromptRenderContext, Task> renderCallback)
+    {
+        PromptRenderContext context = new(this, function, arguments);
+
+        await InvokeFilterOrPromptRenderAsync(this._promptRenderFilters, renderCallback, context).ConfigureAwait(false);
+
+        return context;
+    }
+
+    /// <summary>
+    /// This method will execute prompt filters and prompt rendering recursively.
+    /// If there are no registered filters, just prompt rendering will be executed.
+    /// If there are registered filters, filter on <paramref name="index"/> position will be executed.
+    /// Second parameter of filter is callback. It can be either filter on <paramref name="index"/> + 1 position or prompt rendering if there are no remaining filters to execute.
+    /// Prompt rendering will be always executed as last step after all filters.
+    /// </summary>
+    private static async Task InvokeFilterOrPromptRenderAsync(
+        NonNullCollection<IPromptRenderFilter>? promptFilters,
+        Func<PromptRenderContext, Task> renderCallback,
+        PromptRenderContext context,
+        int index = 0)
+    {
+        if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
+        {
+            await promptFilters[index].OnPromptRenderAsync(context,
+                (context) => InvokeFilterOrPromptRenderAsync(promptFilters, renderCallback, context, index + 1)).ConfigureAwait(false);
+        }
+        else
+        {
+            await renderCallback(context).ConfigureAwait(false);
+        }
+    }
+
     #endregion
 
     #region InvokeAsync
@@ -522,5 +590,96 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
+    #endregion
+
+    #region Private
+
+    private static bool IsNotEmpty<T>(IEnumerable<T> enumerable) =>
+        enumerable is not ICollection<T> collection || collection.Count != 0;
+
+    #endregion
+
+    #region Obsolete
+
+    /// <summary>
+    /// Provides an event that's raised prior to a function's invocation.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Provides an event that's raised after a function's invocation.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    /// <summary>
+    /// Provides an event that's raised prior to a prompt being rendered.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderingEventArgs>? PromptRendering;
+
+    /// <summary>
+    /// Provides an event that's raised after a prompt is rendered.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    public event EventHandler<PromptRenderedEventArgs>? PromptRendered;
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokingEventArgs? OnFunctionInvoking(KernelFunction function, KernelArguments arguments)
+    {
+        FunctionInvokingEventArgs? eventArgs = null;
+        if (this.FunctionInvoking is { } functionInvoking)
+        {
+            eventArgs = new(function, arguments);
+            functionInvoking.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal FunctionInvokedEventArgs? OnFunctionInvoked(KernelFunction function, KernelArguments arguments, FunctionResult result)
+    {
+        FunctionInvokedEventArgs? eventArgs = null;
+        if (this.FunctionInvoked is { } functionInvoked)
+        {
+            eventArgs = new(function, arguments, result);
+            functionInvoked.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderingEventArgs? OnPromptRendering(KernelFunction function, KernelArguments arguments)
+    {
+        PromptRenderingEventArgs? eventArgs = null;
+        if (this.PromptRendering is { } promptRendering)
+        {
+            eventArgs = new(function, arguments);
+            promptRendering.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
+    [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
+    internal PromptRenderedEventArgs? OnPromptRendered(KernelFunction function, KernelArguments arguments, string renderedPrompt)
+    {
+        PromptRenderedEventArgs? eventArgs = null;
+        if (this.PromptRendered is { } promptRendered)
+        {
+            eventArgs = new(function, arguments, renderedPrompt);
+            promptRendered.Invoke(this, eventArgs);
+        }
+
+        return eventArgs;
+    }
+
     #endregion
 }

@@ -2,7 +2,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Optional, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -11,9 +12,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class RetryMechanismBase(ABC):
     @abstractmethod
-    async def execute_with_retry_async(
-        self, action: Callable[[], Awaitable[T]], log: Optional[Any] = None
-    ) -> Awaitable[T]:
+    async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
         Arguments:
@@ -22,8 +21,4 @@ class RetryMechanismBase(ABC):
         Returns:
             Awaitable[T] -- An awaitable that will return the result of the action.
         """
-        if log:
-            logger.warning(
-                "The `log` parameter is deprecated. Please use the `logging` module instead."
-            )
         pass

@@ -18,14 +18,6 @@ internal sealed class ThreadModel
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Always "thread"
-    /// </summary>
-    [JsonPropertyName("object")]
-#pragma warning disable CA1720 // Identifier contains type name - We don't control the schema
-    public string Object { get; set; } = "thread";
-#pragma warning restore CA1720 // Identifier contains type name
-
-    /// <summary>
     /// The Unix timestamp (in seconds) for when the thread was created.
     /// </summary>
     [JsonPropertyName("created_at")]
@@ -38,5 +30,5 @@ internal sealed class ThreadModel
     /// characters long and values can be a maximum of 512 characters long.
     /// </summary>
     [JsonPropertyName("metadata")]
-    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set; } = [];
 }

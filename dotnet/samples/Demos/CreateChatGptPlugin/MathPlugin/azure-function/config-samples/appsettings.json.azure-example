@@ -1,0 +1,25 @@
+{
+  "kernel": {
+    "serviceType": "AzureOpenAI",
+    "serviceId": "gpt-35-turbo",
+    "deploymentOrModelId": "gpt-35-turbo",
+    "endpoint": "https:// ... your endpoint ... .openai.azure.com/"
+  },
+  "aiPlugin": {
+    "schemaVersion": "v1",
+    "nameForModel": "MyPlugin",
+    "nameForHuman": "My Plugin",
+    "descriptionForModel": "<Instructions for the model>",
+    "descriptionForHuman": "<Description for users>",
+    "auth": {
+      "type": "none"
+    },
+    "api": {
+      "type": "openapi",
+      "url": "{url}/swagger.json"
+    },
+    "logoUrl": "{url}/logo.png",
+    "contactEmail": "support@example.com",
+    "legalInfoUrl": "http://www.example.com/legal"
+  }
+}

@@ -2,7 +2,6 @@
 
 using System;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
@@ -49,7 +48,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, new AzureKeyCredential(apiKey), options);
     }
 
     /// <summary>
@@ -74,7 +74,8 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         var options = GetOpenAIClientOptions(httpClient);
 
         this.DeploymentOrModelName = deploymentName;
-        this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
+        this.Endpoint = new Uri(endpoint);
+        this.Client = new OpenAIClient(this.Endpoint, credential, options);
     }
 
     /// <summary>
@@ -97,17 +98,5 @@ internal sealed class AzureOpenAIClientCore : ClientCore
         this.Client = openAIClient;
 
         this.AddAttribute(DeploymentNameKey, deploymentName);
-    }
-
-    /// <summary>
-    /// Logs Azure OpenAI action details.
-    /// </summary>
-    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
-    internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
-    {
-        if (this.Logger.IsEnabled(LogLevel.Information))
-        {
-            this.Logger.LogInformation("Action: {Action}. Azure OpenAI Deployment Name: {DeploymentName}.", callerMemberName, this.DeploymentOrModelName);
-        }
     }
 }

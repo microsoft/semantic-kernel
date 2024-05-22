@@ -40,21 +40,29 @@ public sealed class RestApiOperationPayloadProperty
     public KernelJsonSchema? Schema { get; }
 
     /// <summary>
+    /// The default value.
+    /// </summary>
+    public object? DefaultValue { get; }
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationPayloadProperty"/> class.
     /// </summary>
-    /// <param name="name">Property name.</param>
-    /// <param name="type">Property type.</param>
-    /// <param name="isRequired">Flag specifying if the property is required or not.</param>
-    /// <param name="properties">Properties.</param>
-    /// <param name="description">Property description.</param>
+    /// <param name="name">The name of the property.</param>
+    /// <param name="type">The type of the property.</param>
+    /// <param name="isRequired">A flag specifying if the property is required or not.</param>
+    /// <param name="properties">A list of properties for the payload property.</param>
+    /// <param name="description">A description of the property.</param>
     /// <param name="schema">The schema of the payload property.</param>
+    /// <param name="defaultValue">The default value of the property.</param>
+    /// <returns>Returns a new instance of the <see cref="RestApiOperationPayloadProperty"/> class.</returns>
     public RestApiOperationPayloadProperty(
         string name,
         string type,
         bool isRequired,
         IList<RestApiOperationPayloadProperty> properties,
         string? description = null,
-        KernelJsonSchema? schema = null)
+        KernelJsonSchema? schema = null,
+        object? defaultValue = null)
     {
         this.Name = name;
         this.Type = type;
@@ -62,5 +70,6 @@ public sealed class RestApiOperationPayloadProperty
         this.Description = description;
         this.Properties = properties;
         this.Schema = schema;
+        this.DefaultValue = defaultValue;
     }
 }

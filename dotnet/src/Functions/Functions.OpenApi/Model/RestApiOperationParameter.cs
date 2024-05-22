@@ -50,7 +50,7 @@ public sealed class RestApiOperationParameter
     /// <summary>
     /// The default value.
     /// </summary>
-    public string? DefaultValue { get; }
+    public object? DefaultValue { get; }
 
     /// <summary>
     /// Specifies whether arrays and objects should generate separate parameters for each array item or object property.
@@ -83,7 +83,7 @@ public sealed class RestApiOperationParameter
         RestApiOperationParameterLocation location,
         RestApiOperationParameterStyle? style = null,
         string? arrayItemType = null,
-        string? defaultValue = null,
+        object? defaultValue = null,
         string? description = null,
         KernelJsonSchema? schema = null)
     {

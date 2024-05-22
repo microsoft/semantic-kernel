@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from collections.abc import Callable
 from functools import wraps
 from logging import Logger, getLogger
-from typing import Any, Callable
+from typing import Any
 
 logger: Logger = getLogger(__name__)
+
+# TODO: delete
 
 
 def _nullify(fn) -> Callable[[Any], None]:
@@ -20,14 +23,8 @@ def _nullify(fn) -> Callable[[Any], None]:
 class _NullerMeta(type):
     def __new__(cls, classname, base_classes, class_dict):
         """Return a Class that nullifies all Logger object callbacks"""
-        nullified_dict = {
-            attr_name: _nullify(attr)
-            for attr_name, attr in Logger.__dict__.items()
-            if callable(attr)
-        }
-        return type.__new__(
-            cls, classname, base_classes, {**class_dict, **nullified_dict}
-        )
+        nullified_dict = {attr_name: _nullify(attr) for attr_name, attr in Logger.__dict__.items() if callable(attr)}
+        return type.__new__(cls, classname, base_classes, {**class_dict, **nullified_dict})
 
 
 class NullLogger(Logger, metaclass=_NullerMeta):

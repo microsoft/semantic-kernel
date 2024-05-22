@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -33,12 +34,12 @@ internal static partial class PlannerInstrumentation
 
     /// <summary>Invokes the supplied <paramref name="createPlanAsync"/> delegate, surrounded by logging and metrics.</summary>
     public static async Task<TPlan> CreatePlanAsync<TPlanner, TPlan>(
-        Func<TPlanner, Kernel, string, CancellationToken, Task<TPlan>> createPlanAsync,
-        TPlanner planner, Kernel kernel, string goal, ILogger logger, CancellationToken cancellationToken)
+        Func<TPlanner, Kernel, string, KernelArguments?, CancellationToken, Task<TPlan>> createPlanAsync,
+        TPlanner planner, Kernel kernel, string goal, KernelArguments? arguments, ILogger logger, CancellationToken cancellationToken)
         where TPlanner : class
         where TPlan : class
     {
-        string plannerName = planner.GetType().FullName;
+        string plannerName = planner.GetType().FullName!;
 
         using var activity = s_activitySource.StartActivity(plannerName);
 
@@ -49,7 +50,7 @@ internal static partial class PlannerInstrumentation
         long startingTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var plan = await createPlanAsync(planner, kernel, goal, cancellationToken).ConfigureAwait(false);
+            var plan = await createPlanAsync(planner, kernel, goal, arguments, cancellationToken).ConfigureAwait(false);
             logger.LogPlanCreated();
             logger.LogPlan(plan);
 
@@ -58,7 +59,7 @@ internal static partial class PlannerInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogCreatePlanError(ex, ex.Message);
             throw;
         }
@@ -78,7 +79,7 @@ internal static partial class PlannerInstrumentation
         where TPlanInput : class
         where TPlanResult : class
     {
-        string planName = plan.GetType().FullName;
+        string planName = plan.GetType().FullName!;
         using var activity = s_activitySource.StartActivity(planName);
 
         logger.LogInvokePlanStarted();
@@ -97,7 +98,7 @@ internal static partial class PlannerInstrumentation
         catch (Exception ex)
         {
             tags.Add("error.type", ex.GetType().FullName);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetError(ex);
             logger.LogInvokePlanError(ex, ex.Message);
             throw;
         }
@@ -192,7 +193,7 @@ internal static partial class PlannerInstrumentation
                 var jsonString = planResult.GetType() == typeof(string)
                     ? planResult.ToString()
                     : JsonSerializer.Serialize(planResult);
-                s_logPlanResult(logger, jsonString, null);
+                s_logPlanResult(logger, jsonString ?? string.Empty, null);
             }
             catch (NotSupportedException ex)
             {
@@ -204,13 +205,13 @@ internal static partial class PlannerInstrumentation
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Plan creation failed. Error: {Message}")]
+        Message = "Plan execution failed. Error: {Message}")]
     static partial void LogInvokePlanError(this ILogger logger, Exception exception, string message);
 
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Plan creation duration: {Duration}s.")]
+        Message = "Plan execution duration: {Duration}s.")]
     static partial void LogInvokePlanDuration(this ILogger logger, double duration);
 
 #pragma warning restore SYSLIB1006 // Multiple logging methods cannot use the same event id within a class

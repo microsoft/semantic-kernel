@@ -23,7 +23,7 @@ namespace SemanticKernel.Experimental.Agents.UnitTests.Integration;
 /// </remarks>
 [Trait("Category", "Integration Tests")]
 [Trait("Feature", "Agent")]
-public sealed class RunHarness
+public sealed class RunHarness(ITestOutputHelper output)
 {
 #if DISABLEHOST
     private const string SkipReason = "Harness only for local/dev environment";
@@ -31,15 +31,7 @@ public sealed class RunHarness
     private const string SkipReason = null;
 #endif
 
-    private readonly ITestOutputHelper _output;
-
-    /// <summary>
-    /// Test constructor.
-    /// </summary>
-    public RunHarness(ITestOutputHelper output)
-    {
-        this._output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     /// <summary>
     /// Verify creation of run.
@@ -48,12 +40,12 @@ public sealed class RunHarness
     public async Task VerifyRunLifecycleAsync()
     {
         var agent =
-            await AgentBuilder.NewAsync(
-                apiKey: TestConfig.OpenAIApiKey,
-                model: TestConfig.SupportedGpt35TurboModel,
-                instructions: "say something funny",
-                name: "Fred",
-                description: "funny agent").ConfigureAwait(true);
+            await new AgentBuilder()
+                .WithOpenAIChatCompletion(TestConfig.SupportedGpt35TurboModel, TestConfig.OpenAIApiKey)
+                .WithInstructions("say something funny")
+                .WithName("Fred")
+                .WithDescription("funny agent")
+                .BuildAsync().ConfigureAwait(true);
 
         var thread = await agent.NewThreadAsync().ConfigureAwait(true);
 

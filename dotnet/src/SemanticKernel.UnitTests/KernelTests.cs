@@ -6,17 +6,19 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
 
-// ReSharper disable StringLiteralTypo
+#pragma warning disable CS0618 // Events are deprecated
 
 namespace SemanticKernel.UnitTests;
 
@@ -239,7 +241,7 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.Same(function, ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
     [Fact]
@@ -264,7 +266,7 @@ public class KernelTests
         Assert.Equal(1, handlerInvocations);
         Assert.Equal(0, functionInvocations);
         Assert.Same(function, ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
     [Fact]
@@ -291,7 +293,7 @@ public class KernelTests
         // Assert
         Assert.Equal(0, invoked);
         Assert.Same(functions["GetAnyValue"], ex.Function);
-        Assert.Null(ex.FunctionResult);
+        Assert.Null(ex.FunctionResult?.Value);
     }
 
     [Fact]
@@ -503,7 +505,7 @@ public class KernelTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "fake result", "function");
 
         var kernel = new Kernel();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromFunctions("plugin", "description", new[] { function }));
+        kernel.ImportPluginFromFunctions("plugin", [function]);
 
         //Act
         var result = await kernel.InvokeAsync("plugin", "function");
@@ -583,6 +585,8 @@ public class KernelTests
             .AddSingleton(new HttpClient())
 #pragma warning restore CA2000
             .AddSingleton(loggerFactory.Object)
+            .AddSingleton<IFunctionInvocationFilter>(new MyFunctionFilter())
+            .AddSingleton<IPromptRenderFilter>(new MyPromptFilter())
             .BuildServiceProvider();
         var plugin = KernelPluginFactory.CreateFromFunctions("plugin1");
         var plugins = new KernelPluginCollection() { plugin };
@@ -598,6 +602,7 @@ public class KernelTests
         Assert.Equal(kernel1.Data["key"], kernel2.Data["key"]);
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
         Assert.Equal(kernel1.Plugins, kernel2.Plugins);
+        this.AssertFilters(kernel1, kernel2);
 
         // Minimally configured kernel
         Kernel kernel3 = new();
@@ -609,6 +614,7 @@ public class KernelTests
         Assert.Empty(kernel4.Data);
         Assert.NotSame(kernel1.Plugins, kernel2.Plugins);
         Assert.Empty(kernel4.Plugins);
+        this.AssertFilters(kernel3, kernel4);
     }
 
     [Fact]
@@ -637,12 +643,62 @@ public class KernelTests
         mockTextCompletion.Verify(m => m.GetStreamingTextContentsAsync(It.IsIn("Write a simple phrase about UnitTests importance"), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+    [Fact]
+    public async Task ValidateInvokeAsync()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "ExpectedResult");
+
+        // Act
+        var result = await kernel.InvokeAsync(function);
+
+        // Assert
+        Assert.NotNull(result.Value);
+        Assert.Equal("ExpectedResult", result.Value);
+    }
+
+    [Fact]
+    public async Task ValidateInvokePromptAsync()
+    {
+        // Arrange
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        builder.Services.AddTransient<IChatCompletionService>((sp) => new FakeChatCompletionService("ExpectedResult"));
+        Kernel kernel = builder.Build();
+
+        // Act
+        var result = await kernel.InvokePromptAsync("My Test Prompt");
+
+        // Assert
+        Assert.NotNull(result.Value);
+        Assert.Equal("ExpectedResult", result.Value.ToString());
+    }
+
+    private sealed class FakeChatCompletionService(string result) : IChatCompletionService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<ChatMessageContent>>([new(AuthorRole.Assistant, result)]);
+        }
+
+#pragma warning disable IDE0036 // Order modifiers
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore IDE0036 // Order modifiers
+        {
+            yield return new StreamingChatMessageContent(AuthorRole.Assistant, result);
+        }
+    }
+
     private (TextContent mockTextContent, Mock<ITextGenerationService> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextContent = new TextContent(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextGenerationService>();
-        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<TextContent> { mockTextContent });
+        mockTextCompletion.Setup(m => m.GetTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).ReturnsAsync([mockTextContent]);
         return (mockTextContent, mockTextCompletion);
     }
 
@@ -652,6 +708,29 @@ public class KernelTests
         mockTextCompletion.Setup(m => m.GetStreamingTextContentsAsync(It.IsAny<string>(), It.IsAny<PromptExecutionSettings>(), It.IsAny<Kernel>(), It.IsAny<CancellationToken>())).Returns(streamingContents.ToAsyncEnumerable());
 
         return mockTextCompletion;
+    }
+
+    private void AssertFilters(Kernel kernel1, Kernel kernel2)
+    {
+        var functionFilters1 = kernel1.GetAllServices<IFunctionInvocationFilter>().ToArray();
+        var promptFilters1 = kernel1.GetAllServices<IPromptRenderFilter>().ToArray();
+
+        var functionFilters2 = kernel2.GetAllServices<IFunctionInvocationFilter>().ToArray();
+        var promptFilters2 = kernel2.GetAllServices<IPromptRenderFilter>().ToArray();
+
+        Assert.Equal(functionFilters1.Length, functionFilters2.Length);
+
+        for (var i = 0; i < functionFilters1.Length; i++)
+        {
+            Assert.Same(functionFilters1[i], functionFilters2[i]);
+        }
+
+        Assert.Equal(promptFilters1.Length, promptFilters2.Length);
+
+        for (var i = 0; i < promptFilters1.Length; i++)
+        {
+            Assert.Same(promptFilters1[i], promptFilters2[i]);
+        }
     }
 
     public class MyPlugin
@@ -673,6 +752,22 @@ public class KernelTests
         {
             await Task.Delay(0);
             Assert.NotNull(kernel.Plugins);
+        }
+    }
+
+    private sealed class MyFunctionFilter : IFunctionInvocationFilter
+    {
+        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        {
+            await next(context);
+        }
+    }
+
+    private sealed class MyPromptFilter : IPromptRenderFilter
+    {
+        public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
+        {
+            await next(context);
         }
     }
 }

@@ -2,20 +2,14 @@
 
 import base64
 import os
-from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
-from azure.search.documents.indexes.models import (
-    SearchableField,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-)
+from azure.search.documents.indexes.aio import SearchIndexClient
+from azure.search.documents.indexes.models import SearchableField, SearchField, SearchFieldDataType, SimpleField
 from dotenv import load_dotenv
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    USER_AGENT,
-)
+from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
+from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 SEARCH_FIELD_ID = "Id"
@@ -28,10 +22,10 @@ SEARCH_FIELD_IS_REF = "IsReference"
 
 
 def get_search_index_async_client(
-    search_endpoint: Optional[str] = None,
-    admin_key: Optional[str] = None,
-    azure_credential: Optional[AzureKeyCredential] = None,
-    token_credential: Optional[TokenCredential] = None,
+    search_endpoint: str | None = None,
+    admin_key: str | None = None,
+    azure_credential: AzureKeyCredential | None = None,
+    token_credential: TokenCredential | None = None,
 ):
     """Return a client for Azure Cognitive Search.
 
@@ -45,17 +39,6 @@ def get_search_index_async_client(
     ENV_VAR_ENDPOINT = "AZURE_COGNITIVE_SEARCH_ENDPOINT"
     ENV_VAR_API_KEY = "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 
-    try:
-        # Note: there are two client classes available:
-        # 1. Async: azure.search.documents.indexes.aio.SearchIndexClient
-        # 2. Sync: azure.search.documents.indexes.SearchIndexClient
-        from azure.search.documents.indexes.aio import SearchIndexClient
-    except ImportError:
-        raise ValueError(
-            "Error: Unable to import Azure Cognitive Search client python package."
-            "Please install Azure Cognitive Search client"
-        )
-
     # Load environment variables
     load_dotenv()
 
@@ -65,11 +48,11 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_ENDPOINT):
         service_endpoint = os.getenv(ENV_VAR_ENDPOINT)
     else:
-        raise ValueError("Error: missing Azure Cognitive Search client endpoint.")
+        raise ServiceInitializationError("Error: missing Azure Cognitive Search client endpoint.")
 
     if service_endpoint is None:
         print(service_endpoint)
-        raise ValueError("Error: Azure Cognitive Search client not set.")
+        raise ServiceInitializationError("Error: Azure Cognitive Search client not set.")
 
     # Credentials
     if admin_key:
@@ -81,27 +64,23 @@ def get_search_index_async_client(
     elif os.getenv(ENV_VAR_API_KEY):
         azure_credential = AzureKeyCredential(os.getenv(ENV_VAR_API_KEY))
     else:
-        raise ValueError("Error: missing Azure Cognitive Search client credentials.")
+        raise ServiceInitializationError("Error: missing Azure Cognitive Search client credentials.")
 
     if azure_credential is None and token_credential is None:
-        raise ValueError("Error: Azure Cognitive Search credentials not set.")
+        raise ServiceInitializationError("Error: Azure Cognitive Search credentials not set.")
 
     sk_headers = {USER_AGENT: "Semantic-Kernel"}
 
     if azure_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=azure_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=azure_credential, headers=sk_headers)
 
     if token_credential:
-        return SearchIndexClient(
-            endpoint=service_endpoint, credential=token_credential, headers=sk_headers
-        )
+        return SearchIndexClient(endpoint=service_endpoint, credential=token_credential, headers=sk_headers)
 
     raise ValueError("Error: unable to create Azure Cognitive Search client.")
 
 
-def get_index_schema(vector_size: int) -> list:
+def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     """Return the schema of search indexes.
 
     Arguments:
@@ -132,7 +111,7 @@ def get_index_schema(vector_size: int) -> list:
             type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
             searchable=True,
             vector_search_dimensions=vector_size,
-            vector_search_configuration="az-vector-config",
+            vector_search_profile_name=vector_search_profile_name,
         ),
         SimpleField(
             name=SEARCH_FIELD_SRC,
@@ -167,7 +146,7 @@ def get_index_schema(vector_size: int) -> list:
     return search_fields
 
 
-def get_field_selection(with_embeddings: bool) -> List[str]:
+def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
 
     Arguments:

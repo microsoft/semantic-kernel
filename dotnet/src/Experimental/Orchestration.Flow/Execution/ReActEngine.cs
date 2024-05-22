@@ -93,34 +93,19 @@ internal sealed class ReActEngine
         var promptConfig = config.ReActPromptTemplateConfig;
         if (promptConfig is null)
         {
-            promptConfig = new PromptTemplateConfig();
-
-            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.config.json")!;
+            string promptConfigString = EmbeddedResource.Read("Plugins.ReActEngine.yaml")!;
             if (!string.IsNullOrEmpty(modelId))
             {
-                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.config.json", false);
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
                 promptConfigString = string.IsNullOrEmpty(modelConfigString) ? promptConfigString : modelConfigString!;
             }
 
-            if (!string.IsNullOrEmpty(promptConfigString))
-            {
-                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
-            }
-            else
-            {
-                promptConfig.SetMaxTokens(config.MaxTokens);
-            }
-        }
+            promptConfig = KernelFunctionYaml.ToPromptTemplateConfig(promptConfigString);
 
-        var promptTemplate = config.ReActPromptTemplate;
-        if (string.IsNullOrEmpty(promptTemplate))
-        {
-            promptTemplate = EmbeddedResource.Read("Plugins.ReActEngine.skprompt.txt")!;
-
-            if (!string.IsNullOrEmpty(promptTemplate))
+            if (!string.IsNullOrEmpty(modelId))
             {
-                var modelPromptTemplate = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.skprompt.txt", false);
-                promptConfig.Template = string.IsNullOrEmpty(modelPromptTemplate) ? promptTemplate : modelPromptTemplate!;
+                var modelConfigString = EmbeddedResource.Read($"Plugins.ReActEngine.{modelId}.yaml", false);
+                promptConfigString = string.IsNullOrEmpty(modelConfigString) ? promptConfigString : modelConfigString!;
             }
         }
 
@@ -174,11 +159,12 @@ internal sealed class ReActEngine
 
         var actionStep = this.ParseResult(llmResponseText);
 
-        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0)
+        if (!string.IsNullOrEmpty(actionStep.Action) || previousSteps.Count == 0 || !string.IsNullOrEmpty(actionStep.FinalAnswer))
         {
             return actionStep;
         }
 
+        actionStep.Thought = llmResponseText;
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);
@@ -187,7 +173,7 @@ internal sealed class ReActEngine
 
     internal async Task<string> InvokeActionAsync(ReActStep actionStep, string chatInput, ChatHistory chatHistory, Kernel kernel, KernelArguments contextVariables)
     {
-        var variables = actionStep.ActionVariables ?? new Dictionary<string, string>();
+        var variables = actionStep.ActionVariables ?? [];
 
         variables[Constants.ActionVariableNames.ChatInput] = chatInput;
         variables[Constants.ActionVariableNames.ChatHistory] = ChatHistorySerializer.Serialize(chatHistory);
@@ -288,7 +274,7 @@ internal sealed class ReActEngine
             {
                 // ignore the built-in context variables
                 var variablesToPrint = s.ActionVariables?.Where(v => !Constants.ActionVariableNames.All.Contains(v.Key)).ToDictionary(_ => _.Key, _ => _.Value);
-                scratchPadLines.Insert(insertPoint, $"{Action} {{\"action\": \"{s.Action}\",\"action_variables\": {JsonSerializer.Serialize(variablesToPrint)}}}");
+                scratchPadLines.Insert(insertPoint, $$"""{{Action}} {"action": "{{s.Action}}","action_variables": {{JsonSerializer.Serialize(variablesToPrint)}}}""");
             }
 
             if (i != 0)
@@ -384,8 +370,8 @@ internal sealed class ReActEngine
     {
         var functionViews = kernel.Plugins.GetFunctionsMetadata();
 
-        var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
-        var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
+        var excludedPlugins = this._config.ExcludedPlugins ?? [];
+        var excludedFunctions = this._config.ExcludedFunctions ?? [];
 
         var availableFunctions =
             functionViews
@@ -404,14 +390,14 @@ internal sealed class ReActEngine
         {
             Description = "The message to be shown to the user.",
             ParameterType = typeof(string),
-            Schema = KernelJsonSchema.Parse("{\"type\":\"string\"}"),
+            Schema = KernelJsonSchema.Parse("""{"type":"string"}"""),
         };
 
         return new KernelFunctionMetadata(Constants.StopAndPromptFunctionName)
         {
             PluginName = "_REACT_ENGINE_",
             Description = "Terminate the session, only used when previous attempts failed with FATAL error and need notify user",
-            Parameters = new[] { promptParameter }
+            Parameters = [promptParameter]
         };
     }
 
