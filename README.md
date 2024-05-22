@@ -7,27 +7,19 @@
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-[Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
-is an SDK that integrates Large Language Models (LLMs) like
-[OpenAI](https://platform.openai.com/docs/introduction),
-[Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
-and [Hugging Face](https://huggingface.co/)
-with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this
-by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
-that can be chained together
-in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
+Semantic Kernel is a set of libraries for easily integrating AI into applications and services implemented with C#, Java, and Python.
 
-What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
-plugins with AI. With Semantic Kernel
-[planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), you
-can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
-Semantic Kernel will execute the plan for the user.
+It provides:
+- abstractions for AI services (such as chat, text to images, audio to text, etc.) and memory stores
+- implementations of those abstractions for services from [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), [Hugging Face](https://huggingface.co/), local models, and more, and for a multitude of vector databases, such as those from [Chroma](https://docs.trychroma.com/getting-started), [Qdrant](https://qdrant.tech/), [Milvus](https://milvus.io/), and [Azure](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search)
+- a common representation for [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins), which can then be orchestrated automatically by AI
+- the ability to create such plugins from a multitude of sources, including from OpenAPI specifications, prompts, and arbitrary code written in the target language
+- extensible support for prompt management and rendering, including built-in handling of common formats like Handlebars and Liquid
+- and a wealth of functionality layered on top of these abstractions, such as filters for responsible AI, dependency injection integration, and more.
 
 #### Please star the repo to show your support for this project!
 
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
-
-
 
 ## Getting started with Semantic Kernel
 
