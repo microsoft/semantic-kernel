@@ -154,7 +154,7 @@ async def main():
         execution_parameters=OpenAIFunctionExecutionParameters(
             http_client=http_client,
             auth_callback=authentication_provider.authenticate_request,
-            server_url_override=endpoint,
+            server_url_override=str(endpoint),
             enable_dynamic_payload=True,
         ),
     )
