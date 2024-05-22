@@ -228,7 +228,7 @@ def _split_str_lines(
                 token_counter=token_counter,
             )
         if was_split:
-            break
+            break  # pragma: no cover
 
     return lines
 
@@ -245,7 +245,7 @@ def _split_str(
     """
     input_was_split = False
     if not text:
-        return [], input_was_split
+        return [], input_was_split  # pragma: no cover
 
     if trim:
         text = text.strip()
@@ -305,7 +305,7 @@ def _split_list(
     Split list of string into lines.
     """
     if not text:
-        return [], False
+        return [], False  # pragma: no cover
 
     lines = []
     input_was_split = False

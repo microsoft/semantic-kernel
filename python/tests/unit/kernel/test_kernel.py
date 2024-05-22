@@ -452,7 +452,7 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 
 
 # endregion
-# experimental class decorator
+# region experimental class decorator
 
 
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
