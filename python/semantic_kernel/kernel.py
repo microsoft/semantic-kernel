@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import AsyncGenerator, AsyncIterable
 from copy import copy
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator, AsyncIterable, Literal, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, Union
 
 from pydantic import Field, field_validator
 
@@ -146,7 +146,7 @@ class Kernel(KernelFilterExtension):
 
     async def invoke_stream(
         self,
-        function: "KernelFunction" | None = None,
+        function: "KernelFunction | None" = None,
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
@@ -207,7 +207,7 @@ class Kernel(KernelFilterExtension):
 
     async def invoke(
         self,
-        function: "KernelFunction" | None = None,
+        function: "KernelFunction | None" = None,
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
@@ -435,7 +435,7 @@ class Kernel(KernelFilterExtension):
     def add_function(
         self,
         plugin_name: str,
-        function: KERNEL_FUNCTION_TYPE | None = None,
+        function: "KERNEL_FUNCTION_TYPE | None" = None,
         function_name: str | None = None,
         description: str | None = None,
         prompt: str | None = None,
@@ -505,7 +505,7 @@ class Kernel(KernelFilterExtension):
     def add_functions(
         self,
         plugin_name: str,
-        functions: list[KERNEL_FUNCTION_TYPE] | dict[str, KERNEL_FUNCTION_TYPE],
+        functions: "list[KERNEL_FUNCTION_TYPE] | dict[str, KERNEL_FUNCTION_TYPE]",
     ) -> "KernelPlugin":
         """
         Adds a list of functions to the specified plugin.
@@ -744,7 +744,7 @@ class Kernel(KernelFilterExtension):
     def get_service(
         self,
         service_id: str | None = None,
-        type: Type[ALL_SERVICE_TYPES] | None = None,
+        type: type[ALL_SERVICE_TYPES] | None = None,
     ) -> "AIServiceClientBase":
         """Get a service by service_id and type.
 
@@ -792,7 +792,7 @@ class Kernel(KernelFilterExtension):
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
 
     def get_prompt_execution_settings_from_service_id(
-        self, service_id: str, type: Type[ALL_SERVICE_TYPES] | None = None
+        self, service_id: str, type: type[ALL_SERVICE_TYPES] | None = None
     ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_service(service_id, type=type)

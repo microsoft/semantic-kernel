@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Annotated, Any, List
+from typing import Annotated, Any
 
 import google.generativeai as palm
 from numpy import array, ndarray
@@ -48,7 +48,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

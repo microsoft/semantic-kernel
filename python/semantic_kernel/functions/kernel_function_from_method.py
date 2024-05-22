@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import Any, Callable
+from typing import Any
 
 from pydantic import ValidationError
 

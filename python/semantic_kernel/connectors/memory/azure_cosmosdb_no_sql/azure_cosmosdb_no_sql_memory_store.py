@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, List, Tuple
+from typing import Any
 
 import numpy as np
 from azure.cosmos.aio import ContainerProxy, CosmosClient, DatabaseProxy
@@ -58,7 +58,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             vector_embedding_policy=self.vector_embedding_policy,
         )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         return [container["id"] async for container in self.database.list_containers()]
 
     async def delete_collection(self, collection_name: str) -> None:
@@ -71,8 +71,8 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         result = await self.upsert_batch(collection_name, [record])
         return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
-        doc_ids: List[str] = []
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+        doc_ids: list[str] = []
         for record in records:
             cosmosRecord: dict = {
                 "id": record.id,
@@ -99,7 +99,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
             timestamp=item.get("timestamp", None),
         )
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         query = "SELECT * FROM c WHERE ARRAY_CONTAINS(@ids, c.id)"
         parameters = [{"name": "@ids", "value": keys}]
 
@@ -120,13 +120,13 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         await self.container.delete_item(key, partition_key=key)
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         for key in keys:
             await self.container.delete_item(key, partition_key=key)
 
     async def get_nearest_matches(
         self, collection_name: str, embedding: ndarray, limit: int, min_relevance_score: float, with_embeddings: bool
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         embedding_key = self.vector_embedding_policy["vectorEmbeddings"][0]["path"][1:]
         query = (
             "SELECT TOP {} c.id, c.{}, c.text, c.description, c.metadata, "
@@ -155,7 +155,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
 
     async def get_nearest_match(
         self, collection_name: str, embedding: ndarray, min_relevance_score: float, with_embedding: bool
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         nearest_results = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,

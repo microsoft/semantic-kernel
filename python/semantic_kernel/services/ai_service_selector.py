@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelServiceNotFoundError
@@ -24,7 +24,7 @@ class AIServiceSelector:
 
     def select_ai_service(
         self, kernel: "Kernel", function: "KernelFunction", arguments: KernelArguments
-    ) -> Tuple["ALL_COMPLETION_SERVICE_TYPES", PromptExecutionSettings]:
+    ) -> tuple["ALL_COMPLETION_SERVICE_TYPES", PromptExecutionSettings]:
         """Select a AI Service on a first come, first served basis,
         starting with execution settings in the arguments,
         followed by the execution settings from the function.

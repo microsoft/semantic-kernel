@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import os
-from typing import Dict, Optional
 
 import httpx
 from aiohttp import ClientSession
@@ -47,7 +45,7 @@ class OpenAIAuthenticationProvider:
     """A Sample Authentication Provider for an OpenAI/OpenAPI plugin"""
 
     def __init__(
-        self, oauth_values: Optional[Dict[str, Dict[str, str]]] = None, credentials: Optional[Dict[str, str]] = None
+        self, oauth_values: dict[str, dict[str, str]] | None = None, credentials: dict[str, str] | None = None
     ):
         """Initializes the OpenAIAuthenticationProvider."""
         self.oauth_values = oauth_values or {}
@@ -145,7 +143,7 @@ async def main():
     openai_spec_file = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
     )
-    with open(openai_spec_file, "r") as file:
+    with open(openai_spec_file) as file:
         openai_spec = file.read()
 
     http_client = httpx.AsyncClient()

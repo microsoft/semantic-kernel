@@ -6,12 +6,10 @@ import sys
 import pytest
 from test_utils import retry
 
+import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-if sys.version_info >= (3, 9):
-    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 pytestmark = [
     pytest.mark.skipif(sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"),

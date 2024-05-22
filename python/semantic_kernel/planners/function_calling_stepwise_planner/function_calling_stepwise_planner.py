@@ -1,12 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import asyncio
 import logging
 import os
 from copy import copy
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -59,7 +58,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     generate_plan_yaml: str
     step_prompt: str
 
-    def __init__(self, service_id: str, options: Optional[FunctionCallingStepwisePlannerOptions] = None):
+    def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
         """Initialize a new instance of the FunctionCallingStepwisePlanner
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
@@ -197,10 +196,13 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                         request_index=0,
                         function_call_behavior=prompt_execution_settings.function_call_behavior,
                     )
-                    frc = FunctionResultContent.from_function_call_content_and_result(
-                        function_call_content=item, result=context.function_result
-                    )
-                    chat_history_for_steps.add_message(message=frc.to_chat_message_content())
+                    if context is not None:
+                        # Only add the function result content to the chat history if the context is present
+                        # which means it wasn't added in the _process_function_call method
+                        frc = FunctionResultContent.from_function_call_content_and_result(
+                            function_call_content=item, result=context.function_result
+                        )
+                        chat_history_for_steps.add_message(message=frc.to_chat_message_content())
                 except Exception as exc:
                     frc = FunctionResultContent.from_function_call_content_and_result(
                         function_call_content=item,

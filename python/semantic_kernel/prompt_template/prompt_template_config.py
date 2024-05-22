@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from typing import Dict, List, Optional, TypeVar, Union
+from typing import TypeVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -31,12 +31,12 @@ class PromptTemplateConfig(KernelBaseModel):
     """
 
     name: str = ""
-    description: Optional[str] = ""
-    template: Optional[str] = None
+    description: str | None = ""
+    template: str | None = None
     template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME
-    input_variables: List[InputVariable] = Field(default_factory=list)
+    input_variables: list[InputVariable] = Field(default_factory=list)
     allow_dangerously_set_content: bool = False
-    execution_settings: Dict[str, PromptExecutionSettings] = Field(default_factory=dict)
+    execution_settings: dict[str, PromptExecutionSettings] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def check_input_variables(self):
@@ -50,10 +50,8 @@ class PromptTemplateConfig(KernelBaseModel):
     @classmethod
     def rewrite_execution_settings(
         cls,
-        settings: Optional[
-            Union[PromptExecutionSettings, List[PromptExecutionSettings], Dict[str, PromptExecutionSettings]]
-        ],
-    ) -> Dict[str, PromptExecutionSettings]:
+        settings: None | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]),
+    ) -> dict[str, PromptExecutionSettings]:
         """Rewrite execution settings to a dictionary."""
         if not settings:
             return {}
@@ -70,7 +68,7 @@ class PromptTemplateConfig(KernelBaseModel):
         self.execution_settings[settings.service_id or "default"] = settings
         logger.warning("Execution settings already exist and overwrite is set to False")
 
-    def get_kernel_parameter_metadata(self) -> List[KernelParameterMetadata]:
+    def get_kernel_parameter_metadata(self) -> list[KernelParameterMetadata]:
         """Get the kernel parameter metadata for the input variables."""
         return [
             KernelParameterMetadata(
@@ -103,8 +101,8 @@ class PromptTemplateConfig(KernelBaseModel):
         description: str,
         template: str,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        input_variables: List[InputVariable] = [],
-        execution_settings: Dict[str, PromptExecutionSettings] = {},
+        input_variables: list[InputVariable] = [],
+        execution_settings: dict[str, PromptExecutionSettings] = {},
         allow_dangerously_set_content: bool = False,
     ) -> "PromptTemplateConfig":
         """Restore a PromptTemplateConfig instance from the specified parameters.
