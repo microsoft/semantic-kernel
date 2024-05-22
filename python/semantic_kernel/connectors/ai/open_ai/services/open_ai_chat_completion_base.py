@@ -94,7 +94,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel and kernel arguments are required for auto invoking OpenAI tool calls."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
@@ -171,7 +171,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel argument and arguments are required for OpenAI tool calling."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
