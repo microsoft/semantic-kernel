@@ -263,7 +263,7 @@ def test_kernel_function_no_typing():
     ],
 )
 def test_annotation_parsing(name, annotation, description, type_, is_required):
-    annotations = _parse_parameter(name, annotation)
+    annotations = _parse_parameter(name, annotation, None)
 
     assert description == annotations.get("description")
     assert type_ == annotations["type_"]

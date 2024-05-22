@@ -1,4 +1,6 @@
-import semantic_kernel as sk
+# Copyright (c) Microsoft. All rights reserved.
+
+from semantic_kernel import Kernel
 from semantic_kernel.core_plugins.text_plugin import TextPlugin
 
 
@@ -6,14 +8,12 @@ def test_can_be_instantiated():
     assert TextPlugin()
 
 
-def test_can_be_imported():
-    kernel = sk.Kernel()
+def test_can_be_imported(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text_plugin")
     assert not kernel.plugins["text_plugin"]["trim"].is_prompt
 
 
-def test_can_be_imported_with_name():
-    kernel = sk.Kernel()
+def test_can_be_imported_with_name(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text")
     assert not kernel.plugins["text"]["trim"].is_prompt
 
