@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -94,7 +95,7 @@ public class Plugin {
                     invocationContext)
                 .block();
 
-            String message = result.get(result.size() - 1).getContent();
+            String message = CollectionUtil.getLastOrNull(result).getContent();
             System.out.printf("Assistant > %s%n", message);
 
             // Add the message from the agent to the chat history

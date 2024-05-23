@@ -49,6 +49,13 @@ public class FunctionResultMetadata {
 
     /**
      * Create a new instance of FunctionResultMetadata.
+     */
+    public static FunctionResultMetadata build(String id) {
+        return build(id, null, null);
+    }
+
+    /**
+     * Create a new instance of FunctionResultMetadata.
      *
      * @param id        The id of the result of the function invocation.
      * @param usage     The usage of the result of the function invocation.
@@ -57,13 +64,17 @@ public class FunctionResultMetadata {
      */
     public static FunctionResultMetadata build(
         String id,
-        CompletionsUsage usage,
-        OffsetDateTime createdAt) {
+        @Nullable CompletionsUsage usage,
+        @Nullable OffsetDateTime createdAt) {
 
         CaseInsensitiveMap<ContextVariable<?>> metadata = new CaseInsensitiveMap<>();
         metadata.put(ID, ContextVariable.of(id));
-        metadata.put(USAGE, ContextVariable.of(usage));
-        metadata.put(CREATED_AT, ContextVariable.of(createdAt));
+        if (usage != null) {
+            metadata.put(USAGE, ContextVariable.of(usage));
+        }
+        if (createdAt != null) {
+            metadata.put(CREATED_AT, ContextVariable.of(createdAt));
+        }
 
         return new FunctionResultMetadata(metadata);
     }

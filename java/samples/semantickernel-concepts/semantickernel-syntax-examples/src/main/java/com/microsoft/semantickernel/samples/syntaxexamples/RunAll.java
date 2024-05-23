@@ -20,7 +20,6 @@ import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example13_Con
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example06_TemplateLanguage;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example56_TemplateMethodFunctionsWithMultipleArguments;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example64_MultiplePromptTemplates;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;

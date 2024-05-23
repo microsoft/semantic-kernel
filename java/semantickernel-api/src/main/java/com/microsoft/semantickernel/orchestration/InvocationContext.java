@@ -23,6 +23,7 @@ public class InvocationContext {
     @Nullable
     private final ToolCallBehavior toolCallBehavior;
     private final ContextVariableTypes contextVariableTypes;
+    private final InvocationReturnMode invocationReturnMode;
 
     /**
      * Create a new instance of InvocationContext.
@@ -36,10 +37,12 @@ public class InvocationContext {
         @Nullable KernelHooks hooks,
         @Nullable PromptExecutionSettings promptExecutionSettings,
         @Nullable ToolCallBehavior toolCallBehavior,
-        @Nullable ContextVariableTypes contextVariableTypes) {
+        @Nullable ContextVariableTypes contextVariableTypes,
+        InvocationReturnMode invocationReturnMode) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
         this.toolCallBehavior = toolCallBehavior;
+        this.invocationReturnMode = invocationReturnMode;
         if (contextVariableTypes == null) {
             this.contextVariableTypes = new ContextVariableTypes();
         } else {
@@ -55,6 +58,7 @@ public class InvocationContext {
         this.promptExecutionSettings = null;
         this.toolCallBehavior = null;
         this.contextVariableTypes = new ContextVariableTypes();
+        this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
     }
 
     /**
@@ -68,11 +72,13 @@ public class InvocationContext {
             this.promptExecutionSettings = null;
             this.toolCallBehavior = null;
             this.contextVariableTypes = new ContextVariableTypes();
+            this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
         } else {
             this.hooks = context.hooks;
             this.promptExecutionSettings = context.promptExecutionSettings;
             this.toolCallBehavior = context.toolCallBehavior;
             this.contextVariableTypes = context.contextVariableTypes;
+            this.invocationReturnMode = context.invocationReturnMode;
         }
     }
 
@@ -152,6 +158,15 @@ public class InvocationContext {
     }
 
     /**
+     * Get the return mode for the invocation.
+     *
+     * @return this {@link Builder}
+     */
+    public InvocationReturnMode returnMode() {
+        return invocationReturnMode;
+    }
+
+    /**
      * Builder for {@link InvocationContext}.
      */
     public static class Builder implements SemanticKernelBuilder<InvocationContext> {
@@ -163,6 +178,7 @@ public class InvocationContext {
         private PromptExecutionSettings promptExecutionSettings;
         @Nullable
         private ToolCallBehavior toolCallBehavior;
+        private InvocationReturnMode invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
 
         /**
          * Add kernel hooks to the builder.
@@ -223,10 +239,23 @@ public class InvocationContext {
             return this;
         }
 
+        /**
+         * Set the return mode for the invocation.
+         * <p>
+         * Defaults to {@link InvocationReturnMode#NEW_MESSAGES_ONLY}.
+         *
+         * @param invocationReturnMode the return mode for the invocation.
+         * @return this {@link Builder}
+         */
+        public Builder withReturnMode(InvocationReturnMode invocationReturnMode) {
+            this.invocationReturnMode = invocationReturnMode;
+            return this;
+        }
+
         @Override
         public InvocationContext build() {
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
-                contextVariableTypes);
+                contextVariableTypes, invocationReturnMode);
         }
     }
 

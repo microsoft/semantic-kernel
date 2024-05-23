@@ -7,6 +7,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -90,7 +91,7 @@ public class CreatingFunctions {
             var reply = chat.getChatMessageContentsAsync(history, kernel, invocationContext)
                 .block();
 
-            String message = reply.get(reply.size() - 1).getContent();
+            String message = CollectionUtil.getLastOrNull(reply).getContent();
             System.out.println("Assistant > " + message);
 
             // Add the message from the agent to the chat history
