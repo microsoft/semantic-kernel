@@ -104,6 +104,7 @@ public class Example98_GeminiFunctionCalling {
             var result = kernel
                     .invokeAsync(function)
                     .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+//                    .withToolCallBehavior(ToolCallBehavior.allowOnlyKernelFunctions(true, kernel.getPlugin("HelperFunctions").get("currentUtcTime")))
                     .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
                     .block();
 

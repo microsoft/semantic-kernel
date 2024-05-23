@@ -16,6 +16,7 @@ import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.api.Type;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
+import com.google.protobuf.Descriptors;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
@@ -115,17 +116,19 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             }
 
             if (invocationContext.getToolCallBehavior() != null && kernel != null) {
-                List<Tool> tools = getTools(kernel, invocationContext.getToolCallBehavior());
-                if (tools != null) {
-                    modelBuilder.setTools(tools);
+                List<Tool> tools = new ArrayList<>();
+                Tool tool = getTool(kernel, invocationContext.getToolCallBehavior());
+                if (tool != null) {
+                    tools.add(tool);
                 }
+                modelBuilder.setTools(tools);
             }
         }
 
         return modelBuilder.build();
     }
 
-    private Tool buildTool(KernelFunction<?> function) {
+    private FunctionDeclaration buildFunctionDeclaration(KernelFunction<?> function) {
         FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
         functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), function.getName()));
         functionBuilder.setDescription(function.getDescription());
@@ -135,29 +138,31 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             Schema.Builder parametersBuilder = Schema.newBuilder();
 
             function.getMetadata().getParameters().forEach(parameter -> {
-                parametersBuilder.setDescription(parameter.getDescription());
                 parametersBuilder.setType(Type.OBJECT);
+                parametersBuilder.putProperties(
+                        parameter.getName(),
+                        Schema.newBuilder().setType(Type.STRING).setDescription(parameter.getDescription()).build());
             });
 
             functionBuilder.setParameters(parametersBuilder.build());
         }
 
-        return Tool.newBuilder().addFunctionDeclarations(functionBuilder.build()).build();
+        return functionBuilder.build();
     }
 
-    private List<Tool> getTools(@Nullable Kernel kernel, @Nullable ToolCallBehavior toolCallBehavior) {
+    private Tool getTool(@Nullable Kernel kernel, @Nullable ToolCallBehavior toolCallBehavior) {
         if (kernel == null || toolCallBehavior == null) {
             return null;
         }
 
-        List<Tool> tools = new ArrayList<>();
+        Tool.Builder toolBuilder = Tool.newBuilder();
 
         // If a specific function is required to be called
         if (toolCallBehavior instanceof ToolCallBehavior.RequiredKernelFunction) {
-            KernelFunction<?> tool = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
+            KernelFunction<?> kernelFunction = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
                     .getRequiredFunction();
 
-            tools.add(buildTool(tool));
+            toolBuilder.addFunctionDeclarations(buildFunctionDeclaration(kernelFunction));
         }
         // If a set of functions are enabled to be called
         if (toolCallBehavior instanceof ToolCallBehavior.AllowedKernelFunctions) {
@@ -167,12 +172,12 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                         // check if all kernel functions are enabled or if the specific function is enabled
                         if (enabledKernelFunctions.isAllKernelFunctionsAllowed() ||
                                 enabledKernelFunctions.isFunctionAllowed(function.getPluginName(), function.getName())) {
-                            tools.add(buildTool(function));
+                            toolBuilder.addFunctionDeclarations(buildFunctionDeclaration(function));
                         }
                     }));
         }
 
-        return tools.isEmpty() ? null : tools;
+        return toolBuilder.build();
     }
 
     private List<ChatMessageContent<?>> getChatMessageContentsFromResponse(GenerateContentResponse response) {
