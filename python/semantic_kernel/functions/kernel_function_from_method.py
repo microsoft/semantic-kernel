@@ -58,7 +58,7 @@ class KernelFunctionFromMethod(KernelFunction):
         if parameters is None:
             parameters = [KernelParameterMetadata(**param) for param in method.__kernel_function_parameters__]  # type: ignore
         if return_parameter is None:
-            return_param = KernelParameterMetadata(
+            return_parameter = KernelParameterMetadata(
                 name="return",
                 description=method.__kernel_function_return_description__,  # type: ignore
                 default_value=None,
@@ -71,7 +71,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 name=function_name,
                 description=description,
                 parameters=parameters,
-                return_parameter=return_param,
+                return_parameter=return_parameter,
                 is_prompt=False,
                 is_asynchronous=isasyncgenfunction(method) or iscoroutinefunction(method),
                 plugin_name=plugin_name,
