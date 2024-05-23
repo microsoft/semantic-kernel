@@ -18,6 +18,7 @@ TYPE_MAPPING = {
     "list": "array",
     "dict": "object",
     "object": "object",
+    "array": "array",
 }
 
 

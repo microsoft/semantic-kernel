@@ -474,6 +474,22 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             chat_history.add_message(message=frc.to_chat_message_content())
             return
 
+        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        if len(parsed_args) < num_required_func_params:
+            msg = (
+                f"There are `{num_required_func_params}` tool call arguments required and "
+                f"only `{len(parsed_args)}` received. The required arguments are: "
+                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                "Please provide the required arguments and try again."
+            )
+            logger.exception(msg)
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=msg,
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return
+
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
             function=function_to_call,
