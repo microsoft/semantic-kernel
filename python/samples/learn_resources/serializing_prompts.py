@@ -50,7 +50,10 @@ async def main():
         plugin_name="ConversationSummaryPlugin",
     )
 
-    summarize_function = kernel.get_function("ConversationSummaryPlugin", "SummarizeConversation")
+    summarize_function = kernel.get_function(
+        plugin_name="ConversationSummaryPlugin",
+        function_name="SummarizeConversation"
+    )
 
     # Create the history
     history = ChatHistory()
