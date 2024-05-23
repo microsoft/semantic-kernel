@@ -18,7 +18,7 @@ async def test_register_valid_native_function(kernel: Kernel, decorated_native_f
     registered_func = kernel.get_function(plugin_name="TestPlugin", function_name="getLightStatus")
 
     assert isinstance(registered_func, KernelFunction)
-    assert kernel.get_function(plugin_name="TestPlugin",function_name= "getLightStatus") == registered_func
+    assert kernel.get_function(plugin_name="TestPlugin", function_name="getLightStatus") == registered_func
     func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
     assert str(func_result) == "test"
 

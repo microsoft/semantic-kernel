@@ -51,8 +51,7 @@ async def main():
     )
 
     summarize_function = kernel.get_function(
-        plugin_name="ConversationSummaryPlugin",
-        function_name="SummarizeConversation"
+        plugin_name="ConversationSummaryPlugin", function_name="SummarizeConversation"
     )
 
     # Create the history
