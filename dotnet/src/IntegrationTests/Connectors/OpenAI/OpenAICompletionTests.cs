@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -502,6 +503,38 @@ public sealed class OpenAICompletionTests(ITestOutputHelper output) : IDisposabl
         // Assert
         Assert.NotNull(httpHeaderHandler.RequestHeaders);
         Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+    }
+
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData(null, null)]
+    [InlineData(false, null)]
+    [InlineData(true, 2)]
+    [InlineData(true, 5)]
+    public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
+    {
+        // Arrange
+        var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+
+        this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
+        var builder = this._kernelBuilder;
+        this.ConfigureAzureOpenAIChatAsText(builder);
+        Kernel target = builder.Build();
+
+        // Act
+        var result = await target.InvokePromptAsync("Hi, can you help me today?", new(settings));
+
+        var logProbabilityInfo = result.Metadata?["LogProbabilityInfo"] as ChatChoiceLogProbabilityInfo;
+
+        // Assert
+        if (logprobs is true)
+        {
+            Assert.NotNull(logProbabilityInfo);
+            Assert.Equal(topLogprobs, logProbabilityInfo.TokenLogProbabilityResults[0].TopLogProbabilityEntries.Count);
+        }
+        else
+        {
+            Assert.Null(logProbabilityInfo);
+        }
     }
 
     #region internals

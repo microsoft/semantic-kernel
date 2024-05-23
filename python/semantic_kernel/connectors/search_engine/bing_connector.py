@@ -2,7 +2,6 @@
 
 import logging
 import urllib
-from typing import List
 
 import aiohttp
 from pydantic import ValidationError
@@ -48,7 +47,7 @@ class BingConnector(ConnectorBase):
             bing_settings.custom_config if bing_settings and bing_settings.custom_config else None
         )
 
-    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """
         Returns the search results of the query provided by pinging the Bing web search API.
         Returns `num_results` results and ignores the first `offset`.

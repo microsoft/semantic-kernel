@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from typing import List, Optional, Tuple
 
 from pytest import mark, raises
 
@@ -15,11 +14,11 @@ from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptT
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
-def _get_template_language_tests(safe: bool = True) -> List[Tuple[str, str]]:
+def _get_template_language_tests(safe: bool = True) -> list[tuple[str, str]]:
     path = __file__
     path = os.path.dirname(path)
 
-    with open(os.path.join(path, "semantic-kernel-tests.txt"), "r") as file:
+    with open(os.path.join(path, "semantic-kernel-tests.txt")) as file:
         content = file.readlines()
 
     key = ""
@@ -47,7 +46,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 

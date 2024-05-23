@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Literal
 
 from pydantic.dataclasses import dataclass
 

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 from openai import BadRequestError
 
@@ -22,7 +22,7 @@ class ContentFilterResult:
     severity: ContentFilterResultSeverity = ContentFilterResultSeverity.SAFE
 
     @classmethod
-    def from_inner_error_result(cls, inner_error_results: Dict[str, Any]) -> "ContentFilterResult":
+    def from_inner_error_result(cls, inner_error_results: dict[str, Any]) -> "ContentFilterResult":
         """Creates a ContentFilterResult from the inner error results.
 
         Arguments:
@@ -56,7 +56,7 @@ class ContentFilterAIException(ServiceContentFilterException):
     content_filter_code: ContentFilterCodes
 
     # The results of the different content filter checks.
-    content_filter_result: Dict[str, ContentFilterResult]
+    content_filter_result: dict[str, ContentFilterResult]
 
     def __init__(
         self,

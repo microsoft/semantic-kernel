@@ -1,12 +1,6 @@
-import sys
-from typing import Optional
+from typing import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
 
 
 class TestNativeEchoBotPlugin:
@@ -14,7 +8,7 @@ class TestNativeEchoBotPlugin:
     Description: Test Native Plugin for testing purposes
     """
 
-    def __init__(self, static_input: Optional[str] = None):
+    def __init__(self, static_input: str | None = None):
         self.static_input = static_input or ""
 
     @kernel_function(

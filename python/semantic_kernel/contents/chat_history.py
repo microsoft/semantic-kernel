@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Generator
 from functools import singledispatchmethod
 from html import unescape
-from typing import Any, Generator
+from typing import Any
 from xml.etree.ElementTree import Element, tostring
 
 from defusedxml.ElementTree import XML, ParseError
@@ -288,7 +288,7 @@ class ChatHistory(KernelBaseModel):
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod
-    def restore_chat_history(cls, chat_history_json: str) -> ChatHistory:
+    def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
         """
         Restores a ChatHistory instance from a JSON string.
 
@@ -320,7 +320,7 @@ class ChatHistory(KernelBaseModel):
             file.write(json_str)
 
     @classmethod
-    def load_chat_history_from_file(cls, file_path: str) -> ChatHistory:
+    def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
         """
         Loads the ChatHistory from a file.
 

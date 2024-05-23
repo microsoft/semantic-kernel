@@ -1,10 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import (
-    Dict,
-    Mapping,
-)
+from collections.abc import Mapping
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -77,7 +74,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "OpenAIChatCompletion":
+    def from_dict(cls, settings: dict[str, str]) -> "OpenAIChatCompletion":
         """
         Initialize an Open AI service from a dictionary of settings.
 

@@ -13,16 +13,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-TYPE_MAPPER = {
-    "str": "string",
-    "int": "number",
-    "float": "number",
-    "bool": "boolean",
-    "list": "array",
-    "dict": "object",
-}
-
-
 def update_settings_from_function_call_configuration(
     function_call_configuration: "FunctionCallConfiguration", settings: "OpenAIChatPromptExecutionSettings"
 ) -> None:
@@ -44,6 +34,22 @@ def update_settings_from_function_call_configuration(
 
 def kernel_function_metadata_to_openai_tool_format(metadata: KernelFunctionMetadata) -> dict[str, Any]:
     """Convert the kernel function metadata to OpenAI format."""
+
+    def parse_schema(schema_data):
+        """Recursively parse the schema data to include nested properties."""
+        if schema_data.get("type") == "object":
+            return {
+                "type": "object",
+                "properties": {key: parse_schema(value) for key, value in schema_data.get("properties", {}).items()},
+                "description": schema_data.get("description", ""),
+            }
+        else:
+            return {
+                "type": schema_data.get("type", "string"),
+                "description": schema_data.get("description", ""),
+                **({"enum": schema_data.get("enum")} if "enum" in schema_data else {}),
+            }
+
     return {
         "type": "function",
         "function": {
@@ -51,24 +57,8 @@ def kernel_function_metadata_to_openai_tool_format(metadata: KernelFunctionMetad
             "description": metadata.description or "",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    param.name: {
-                        "description": param.description or "",
-                        "type": parse_parameter_type(param.type_),
-                        **({"enum": param.enum} if hasattr(param, "enum") else {}),  # Added support for enum
-                    }
-                    for param in metadata.parameters
-                },
+                "properties": {param.name: parse_schema(param.schema_data) for param in metadata.parameters},
                 "required": [p.name for p in metadata.parameters if p.is_required],
             },
         },
     }
-
-
-def parse_parameter_type(param_type: str | None) -> str:
-    """Parse the parameter type."""
-    if not param_type:
-        return "string"
-    if "," in param_type:
-        param_type = param_type.split(",", maxsplit=1)[0]
-    return TYPE_MAPPER.get(param_type, "string")

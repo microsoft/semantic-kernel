@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
@@ -89,7 +88,8 @@ class FunctionResultContent(KernelContent):
         metadata: dict[str, Any] = {},
     ) -> "FunctionResultContent":
         """Create an instance from a FunctionCallContent and a result."""
-        metadata.update(function_call_content.metadata)
+        if function_call_content.metadata:
+            metadata.update(function_call_content.metadata)
         return cls(
             id=function_call_content.id,
             result=result,  # type: ignore
