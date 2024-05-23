@@ -63,6 +63,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 description=method.__kernel_function_return_description__,  # type: ignore
                 default_value=None,
                 type_=method.__kernel_function_return_type__,  # type: ignore
+                type_object=method.__kernel_function_return_type_object__,  # type: ignore
                 is_required=method.__kernel_function_return_required__,  # type: ignore
             )
 

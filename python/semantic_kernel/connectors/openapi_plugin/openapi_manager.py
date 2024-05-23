@@ -132,7 +132,9 @@ def _create_function_from_operation(
             is_required=p.is_required,
             type_=p.type if p.type is not None else TYPE_MAPPING.get(p.type, None),
             schema_data=(
-                p.schema if p.schema is not None and isinstance(p.schema, dict) else {"type": f"{p.type}"} if p.type else None
+                p.schema
+                if p.schema is not None and isinstance(p.schema, dict)
+                else {"type": f"{p.type}"} if p.type else None
             ),
         )
         for p in rest_operation_params

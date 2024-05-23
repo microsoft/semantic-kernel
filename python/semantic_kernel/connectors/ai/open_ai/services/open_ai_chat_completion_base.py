@@ -476,16 +476,16 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
         num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
         if len(parsed_args) < num_required_func_params:
-            logger.exception(
-                f"Received an invalid number of arguments for function {function_call.name}: `{len(parsed_args)}` "
-                f"returned args versus `{num_required_func_params}` expected args. Trying tool call again."
+            msg = (
+                f"There are `{num_required_func_params}` tool call arguments required and "
+                f"only `{len(parsed_args)}` received. The required arguments are: "
+                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                "Please provide the required arguments and try again."
             )
+            logger.exception(msg)
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
-                result=(
-                    f"There are {num_required_func_params} tool call arguments required and "
-                    f"only {len(parsed_args)} received, please try again."
-                ),
+                result=msg,
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return

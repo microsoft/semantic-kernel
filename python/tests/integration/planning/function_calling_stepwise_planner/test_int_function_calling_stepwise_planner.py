@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
+
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai import (
@@ -42,8 +44,19 @@ async def test_can_execute_function_calling_stepwise_plan(kernel: Kernel):
 
     planner = FunctionCallingStepwisePlanner(service_id=service_id, options=options)
 
+    retry_attempts = 3
     for question in questions:
-        result = await planner.invoke(kernel, question)
-        print(f"Q: {question}\nA: {result.final_answer}\n")
-        assert isinstance(result, FunctionCallingStepwisePlannerResult)
-        assert 0 < len(result.final_answer)
+        for attempt in range(retry_attempts):
+            try:
+                result = await planner.invoke(kernel, question)
+                print(f"Q: {question}\nA: {result.final_answer}\n")
+                assert isinstance(result, FunctionCallingStepwisePlannerResult)
+                assert 0 < len(result.final_answer)
+                break
+            except Exception as e:
+                if attempt < retry_attempts - 1:
+                    print(f"Attempt {attempt + 1} failed, retrying... Exception: {e}")
+                    await asyncio.sleep(1)
+                else:
+                    print(f"All {retry_attempts} attempts failed. Exception: {e}")
+                    raise
