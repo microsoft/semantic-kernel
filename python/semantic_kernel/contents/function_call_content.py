@@ -4,7 +4,7 @@ import json
 import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent

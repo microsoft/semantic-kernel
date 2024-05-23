@@ -16,7 +16,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""
     arguments = KernelArguments()
-    arguments["secret_name"] = "Foo"
+    arguments["secret_name"] = "Foo"  # nosec
     arguments["api_version"] = "7.0"
     arguments["value"] = "Bar"
     arguments["enabled"] = True
@@ -31,7 +31,7 @@ async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
 async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Gets a secret from the Azure Key Vault."""
     arguments = KernelArguments()
-    arguments["secret_name"] = "Foo"
+    arguments["secret_name"] = "Foo"  # nosec
     arguments["api_version"] = "7.0"
     result = await kernel.invoke(
         function=plugin["GetSecret"],

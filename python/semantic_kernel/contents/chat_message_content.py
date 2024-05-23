@@ -4,7 +4,7 @@ import logging
 from enum import Enum
 from html import unescape
 from typing import Any, Union, overload
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
 from pydantic import Field
@@ -289,7 +289,7 @@ class ChatMessageContent(KernelContent):
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
-            assert isinstance(self.items[0], FunctionResultContent)
+            assert isinstance(self.items[0], FunctionResultContent)  # nosec
             ret["tool_call_id"] = self.items[0].id or ""
         if self.role != AuthorRole.TOOL and self.name:
             ret["name"] = self.name

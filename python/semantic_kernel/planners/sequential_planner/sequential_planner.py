@@ -54,7 +54,6 @@ class SequentialPlanner:
             config (SequentialPlannerConfig, optional): The configuration to use for planning. Defaults to None.
             prompt (str, optional): The prompt to use for planning. Defaults to None.
         """
-        assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
         self.config.excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)

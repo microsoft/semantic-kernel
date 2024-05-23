@@ -17,6 +17,15 @@ repos:
         files: \.py$
       - id: mixed-line-ending
         files: \.py$
+      - id: check-ast
+        name: Check Valid Python Samples
+        types: ["python"]
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
+    hooks:
+      - id: nbqa-check-ast
+        name: Check Valid Python Notebooks
+        types: ["jupyter"]
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
@@ -27,6 +36,11 @@ repos:
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.2
+    hooks:
+    - id: pyupgrade
+      args: [--py310-plus]
   - repo: local
     hooks:
     - id: mypy
@@ -36,3 +50,9 @@ repos:
       language: system
       types: [python]
       pass_filenames: false
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: ["-c", "python/pyproject.toml"]
+        additional_dependencies: [ "bandit[toml]" ]

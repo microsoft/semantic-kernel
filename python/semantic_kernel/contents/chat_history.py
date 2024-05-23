@@ -5,7 +5,7 @@ from collections.abc import Generator
 from functools import singledispatchmethod
 from html import unescape
 from typing import Any
-from xml.etree.ElementTree import Element, tostring
+from xml.etree.ElementTree import Element, tostring  # nosec
 
 from defusedxml.ElementTree import XML, ParseError
 from pydantic import field_validator

@@ -2,7 +2,7 @@
 
 from enum import Enum
 from typing import Any, Union, overload
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

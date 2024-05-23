@@ -8,10 +8,7 @@ from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, Serve
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
-from semantic_kernel.connectors.memory.pinecone.utils import (
-    build_payload,
-    parse_payload,
-)
+from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidRequestError,
@@ -74,7 +71,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key = api_key or (
             pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
         )
-        assert api_key, "The Pinecone api_key cannot be None."
+        if not api_key:
+            raise ValueError("The Pinecone api_key cannot be None.")
 
         self._pinecone_api_key = api_key
         self._default_dimensionality = default_dimensionality

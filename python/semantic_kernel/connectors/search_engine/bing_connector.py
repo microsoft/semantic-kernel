@@ -38,7 +38,8 @@ class BingConnector(ConnectorBase):
         self._api_key = api_key or (
             bing_settings.api_key.get_secret_value() if bing_settings and bing_settings.api_key else None
         )
-        assert self._api_key, "API key cannot be 'None' or empty."
+        if not self._api_key:
+            raise ValueError("API key cannot be 'None' or empty.")
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """

@@ -507,7 +507,7 @@ class USearchMemoryStore(MemoryStoreBase):
             log=log,
         )
 
-        assert isinstance(result, Matches)
+        # assert isinstance(result, Matches)  # nosec
 
         relevance_score = 1 / (result.distances + 1)
         filtered_labels = result.keys[np.where(relevance_score >= min_relevance_score)[0]]

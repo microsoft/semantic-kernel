@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from html import unescape
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent

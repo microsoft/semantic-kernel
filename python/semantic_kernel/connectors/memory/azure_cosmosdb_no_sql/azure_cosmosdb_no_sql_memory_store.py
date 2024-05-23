@@ -129,11 +129,9 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         embedding_key = self.vector_embedding_policy["vectorEmbeddings"][0]["path"][1:]
         query = (
-            "SELECT TOP {} c.id, c.{}, c.text, c.description, c.metadata, "
-            "c.timestamp, VectorDistance(c.{}, {}) AS SimilarityScore FROM c ORDER BY "
-            "VectorDistance(c.{}, {})".format(
-                limit, embedding_key, embedding_key, embedding.tolist(), embedding_key, embedding.tolist()
-            )
+            f"SELECT TOP {limit} c.id, c.{embedding_key}, c.text, c.description, c.metadata, "  # nosec
+            f"c.timestamp, VectorDistance(c.{embedding_key}, {embedding.tolist()}) AS SimilarityScore FROM c ORDER BY "  # nosec
+            f"VectorDistance(c.{embedding_key}, {embedding.tolist()})"  # nosec
         )
 
         items = [item async for item in self.container.query_items(query=query)]

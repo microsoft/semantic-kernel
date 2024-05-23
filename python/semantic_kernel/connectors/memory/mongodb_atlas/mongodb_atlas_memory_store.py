@@ -153,7 +153,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             document, {"$set": document}, upsert=True
         )
 
-        assert update_result.acknowledged
+        if not update_result.acknowledged:
+            raise ValueError("Upsert failed")
         return record._id
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
@@ -183,7 +184,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             bulk_update_result.matched_count,
             bulk_update_result.upserted_count,
         )
-        assert bulk_update_result.matched_count + bulk_update_result.upserted_count == len(records)
+        if bulk_update_result.matched_count + bulk_update_result.upserted_count != len(records):
+            raise ValueError("Batch upsert failed")
         return [record._id for record in records]
 
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:

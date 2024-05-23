@@ -526,8 +526,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         except Exception as exc:
             logger.exception(f"Error invoking function {context.function.fully_qualified_name}: {exc}.")
             value = f"An error occurred while invoking the function {context.function.fully_qualified_name}: {exc}"
-            assert context.function_result is not None
-            context.function_result.value = value
+            if context.function_result is not None:
+                context.function_result.value = value
+            else:
+                context.function_result = FunctionResult(function=context.function.metadata, value=value)
             return
 
 

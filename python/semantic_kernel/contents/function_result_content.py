@@ -2,7 +2,7 @@
 
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import field_validator
 

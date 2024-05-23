@@ -128,6 +128,11 @@ line-length = 120
 [tool.black]
 line-length = 120
 
+[tool.bandit]
+targets = ["python/semantic_kernel"]
+exclude_dirs = ["python/tests"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
