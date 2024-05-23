@@ -309,6 +309,18 @@ def test_function_from_lambda():
 
 
 @pytest.mark.asyncio
+async def test_function_invoke_return_list_type(kernel: Kernel):
+    @kernel_function(name="list_func")
+    def test_list_func() -> list[str]:
+        return ["test1", "test2"]
+
+    func = KernelFunction.from_method(test_list_func, "test")
+
+    result = await kernel.invoke(function=func)
+    assert str(result) == "test1,test2"
+
+
+@pytest.mark.asyncio
 async def test_function_invocation_filters(kernel: Kernel):
     func = KernelFunctionFromMethod(method=kernel_function(lambda input: input**2, name="square"), plugin_name="math")
     kernel.add_function(plugin_name="math", function=func)

@@ -56,15 +56,15 @@ class KernelPlugin(KernelBaseModel):
             indexed by their name.
 
     Methods:
-        set (key: str, value: KernelFunction): Set a function in the plugin.
-        __setitem__ (key: str, value: KernelFunction): Set a function in the plugin.
-        get (key: str, default: KernelFunction | None = None): Get a function from the plugin.
-        __getitem__ (key: str): Get a function from the plugin.
-        __contains__ (key: str): Check if a function is in the plugin.
-        __iter__ (): Iterate over the functions in the plugin.
-        update(*args: Any, **kwargs: Any): Update the plugin with the functions from another.
-        setdefault(key: str, value: KernelFunction | None): Set a default value for a key.
-        get_functions_metadata(): Get the metadata for the functions in the plugin.
+        set: Set a function in the plugin.
+        __setitem__: Set a function in the plugin.
+        get: Get a function from the plugin.
+        __getitem__: Get a function from the plugin.
+        __contains__: Check if a function is in the plugin.
+        __iter__: Iterate over the functions in the plugin.
+        update: Update the plugin with the functions from another.
+        setdefault: Set a default value for a key.
+        get_functions_metadata: Get the metadata for the functions in the plugin.
 
     Class methods:
         from_object(plugin_name: str, plugin_instance: Any | dict[str, Any], description: str | None = None):
@@ -106,17 +106,11 @@ class KernelPlugin(KernelBaseModel):
     ):
         """Create a KernelPlugin
 
-        Attributes:
-            name (str): The name of the plugin. The name can be upper/lower
+        Args:
+            name: The name of the plugin. The name can be upper/lower
                 case letters and underscores.
-            description (str, optional): The description of the plugin.
-            functions (
-                    KernelFunction |
-                    Callable |
-                    list[KernelFunction | Callable | KernelPlugin] |
-                    dict[str, KernelFunction | Callable] |
-                    KernelPlugin |
-                    None):
+            description: The description of the plugin.
+            functions:
                 The functions in the plugin, will be rewritten to a dictionary of functions.
 
         Raises:

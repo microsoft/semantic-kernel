@@ -65,6 +65,7 @@ def kernel_function(
             _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
         )
         setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
+        setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
         setattr(func, "__kernel_function_return_description__", return_annotation.get("description", ""))
         setattr(func, "__kernel_function_return_required__", return_annotation.get("is_required", False))
         return func
