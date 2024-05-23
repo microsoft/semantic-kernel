@@ -38,16 +38,15 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         message_history: ChatHistory | None = None,
         env_file_path: str | None = None,
     ):
-        """
-        Initializes a new instance of the GooglePalmChatCompletion class.
+        """Initializes a new instance of the GooglePalmChatCompletion class.
 
         Arguments:
-            ai_model_id {str} -- GooglePalm model name, see
+            ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            api_key {str | None} -- The optional API key to use. If not provided, will be read from either
+            api_key (str | None): The optional API key to use. If not provided, will be read from either
                 the env vars or the .env settings file
-            message_history {ChatHistory | None} -- The message history to use for context. (Optional)
-            env_file_path {str | None} -- Use the environment settings file as a fallback to
+            message_history (ChatHistory | None): The message history to use for context. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         google_palm_settings = None
@@ -77,17 +76,16 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ) -> list[ChatMessageContent]:
-        """
-        This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            chat_history {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+            chat_history (List[ChatMessage]): A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
-            settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            settings (GooglePalmPromptExecutionSettings): Settings for the request.
+            kwargs (Dict[str, Any]): The optional arguments.
 
         Returns:
-            List[ChatMessageContent] -- A list of ChatMessageContent objects representing the response(s) from the LLM.
+            List[ChatMessageContent]: A list of ChatMessageContent objects representing the response(s) from the LLM.
         """
         settings.messages = self._prepare_chat_history_for_request(chat_history, role_key="author")
         if not settings.ai_model_id:
@@ -104,10 +102,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         """Create a chat message content object from a response.
 
         Arguments:
-            response {ChatResponse} -- The response to create the content from.
+            response (ChatResponse): The response to create the content from.
 
         Returns:
-            ChatMessageContent -- The created chat message content.
+            ChatMessageContent: The created chat message content.
         """
         metadata = {
             "citation_metadata": candidate.get("citation_metadata"),
@@ -135,15 +133,14 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
     ) -> list[TextContent]:
-        """
-        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
         Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {GooglePalmPromptExecutionSettings} -- Settings for the request.
+            prompt (str): The prompt to send to the LLM.
+            settings (GooglePalmPromptExecutionSettings): Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
         settings.messages = [{"author": "user", "content": prompt}]
         if not settings.ai_model_id:
@@ -156,10 +153,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         """Create a text content object from a response.
 
         Arguments:
-            response {ChatResponse} -- The response to create the content from.
+            response (ChatResponse): The response to create the content from.
 
         Returns:
-            TextContent -- The created text content.
+            TextContent: The created text content.
         """
         metadata = {"citation_metadata": candidate.get("citation_metadata"), "filters": response.filters}
         return TextContent(
@@ -180,8 +177,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self,
         settings: GooglePalmPromptExecutionSettings,
     ):
-        """
-        Completes the given user message. If len(messages) > 1, and a
+        """Completes the given user message. If len(messages) > 1, and a
         conversation has not been initiated yet, it is assumed that chat history
         is needed for context. All messages preceding the last message will be
         utilized for context. This also enables Google PaLM to utilize memory
@@ -189,12 +185,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         messages.
 
         Arguments:
-            messages {str} -- The message (from a user) to respond to.
-            settings {GooglePalmPromptExecutionSettings} -- The request settings.
-            context {str} -- Text that should be provided to the model first,
+            messages (str): The message (from a user) to respond to.
+            settings (GooglePalmPromptExecutionSettings): The request settings.
+            context (str): Text that should be provided to the model first,
             to ground the response. If a system message is provided, it will be
             used as context.
-            examples {ExamplesOptions} -- 	Examples of what the model should
+            examples (ExamplesOptions): 	Examples of what the model should
             generate. This includes both the user input and the response that
             the model should emulate. These examples are treated identically to
             conversation messages except that they take precedence over the
@@ -202,13 +198,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             input_token_limit the input will be truncated. Items will be dropped
             from messages before examples
             See: https://developers.generativeai.google/api/python/google/generativeai/types/ExampleOptions
-            prompt {MessagePromptOptions} -- 	You may pass a
+            prompt (MessagePromptOptions): 	You may pass a
             types.MessagePromptOptions instead of a setting context/examples/messages,
             but not both.
             See: https://developers.generativeai.google/api/python/google/generativeai/types/MessagePromptOptions
 
         Returns:
-            str -- The completed text.
+            str: The completed text.
         """
         if settings is None:
             raise ValueError("The request settings cannot be `None`")

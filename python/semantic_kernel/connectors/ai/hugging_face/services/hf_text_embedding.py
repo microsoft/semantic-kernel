@@ -25,14 +25,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         device: int | None = -1,
         service_id: str | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the HuggingFaceTextEmbedding class.
+        """Initializes a new instance of the HuggingFaceTextEmbedding class.
 
         Arguments:
-            ai_model_id {str} -- Hugging Face model card string, see
+            ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
-            device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
-            log  -- The logger instance to use. (Optional) (Deprecated)
+            device (Optional[int]): Device to run the model on, -1 for CPU, 0+ for GPU.
+            log : The logger instance to use. (Optional) (Deprecated)
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
@@ -45,14 +44,13 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         )
 
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        """
-        Generates embeddings for a list of texts.
+        """Generates embeddings for a list of texts.
 
         Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
+            texts (List[str]): Texts to generate embeddings for.
 
         Returns:
-            ndarray -- Embeddings for the texts.
+            ndarray: Embeddings for the texts.
         """
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts")

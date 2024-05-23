@@ -8,7 +8,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AstraDBSettings(BaseModelSettings):
-    """AstraDB model settings
+    """AstraDB model settings.
 
     Optional:
     - app_token: SecretStr | None - AstraDB token

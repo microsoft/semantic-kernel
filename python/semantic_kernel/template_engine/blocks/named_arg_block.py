@@ -88,6 +88,7 @@ class NamedArgBlock(Block):
         return fields
 
     def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+        """Render the named argument block."""
         if self.value:
             return self.value.render(kernel, arguments)
         if arguments is None:

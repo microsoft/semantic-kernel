@@ -122,8 +122,22 @@ notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
 
 [tool.ruff]
-lint.select = ["E", "F", "I"]
 line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["D", "E", "F", "I"]
+ignore = ["D100", "D101", "D104"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore all directories named `tests`.
+"tests/**" = ["D"]
+"samples/**" = ["D"]
+# Ignore all files that end in `_test.py`.
+"*_test.py" = ["D"]
 
 [tool.black]
 line-length = 120

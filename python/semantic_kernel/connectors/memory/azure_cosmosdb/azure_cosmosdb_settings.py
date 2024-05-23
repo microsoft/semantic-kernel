@@ -8,7 +8,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureCosmosDBSettings(BaseModelSettings):
-    """Azure CosmosDB model settings
+    """Azure CosmosDB model settings.
 
     Optional:
     - connection_string: str - Azure CosmosDB connection string

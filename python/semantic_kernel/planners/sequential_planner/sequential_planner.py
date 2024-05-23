@@ -26,6 +26,7 @@ PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/sk
 
 
 def read_file(file_path: str) -> str:
+    """Reads the content of a file."""
     with open(file_path) as file:
         return file.read()
 
@@ -45,8 +46,7 @@ class SequentialPlanner:
         config: SequentialPlannerConfig = None,
         prompt: str = None,
     ) -> None:
-        """
-        Initializes a new instance of the SequentialPlanner class.
+        """Initializes a new instance of the SequentialPlanner class.
 
         Args:
             kernel (Kernel): The kernel instance to use for planning
@@ -89,6 +89,7 @@ class SequentialPlanner:
         )
 
     async def create_plan(self, goal: str) -> Plan:
+        """Create a plan for the specified goal."""
         if len(goal) == 0:
             raise PlannerInvalidGoalError("The goal specified is empty")
 

@@ -30,6 +30,7 @@ class TextContent(KernelContent):
     encoding: str | None = None
 
     def __str__(self) -> str:
+        """Return the text of the response."""
         return self.text
 
     def to_element(self) -> Element:

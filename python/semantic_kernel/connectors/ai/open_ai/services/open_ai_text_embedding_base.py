@@ -19,13 +19,13 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         """Generates embeddings for the given texts.
 
         Arguments:
-            texts {List[str]} -- The texts to generate embeddings for.
-            batch_size {Optional[int]} -- The batch size to use for the request.
-            kwargs {Dict[str, Any]} -- Additional arguments to pass to the request,
+            texts (List[str]): The texts to generate embeddings for.
+            batch_size (Optional[int]): The batch size to use for the request.
+            kwargs (Dict[str, Any]): Additional arguments to pass to the request,
                 see OpenAIEmbeddingPromptExecutionSettings for the details.
 
         Returns:
-            ndarray -- The embeddings for the text.
+            ndarray: The embeddings for the text.
 
         """
         settings = OpenAIEmbeddingPromptExecutionSettings(

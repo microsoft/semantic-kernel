@@ -36,17 +36,17 @@ class AzureOpenAIConfigBase(OpenAIHandler):
         """Internal class for configuring a connection to an Azure OpenAI service.
 
         Arguments:
-            deployment_name {str} -- Name of the deployment.
-            ai_model_type {OpenAIModelTypes} -- The type of OpenAI model to deploy.
-            endpoint {Optional[HttpsUrl]} -- The specific endpoint URL for the deployment. (Optional)
-            base_url {Optional[HttpsUrl]} -- The base URL for Azure services. (Optional)
-            api_version {str} -- Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
-            api_key {Optional[str]} -- API key for Azure services. (Optional)
-            ad_token {Optional[str]} -- Azure AD token for authentication. (Optional)
-            ad_token_provider {Optional[Callable[[], Union[str, Awaitable[str]]]]} -- A callable
+            deployment_name (str): Name of the deployment.
+            ai_model_type (OpenAIModelTypes): The type of OpenAI model to deploy.
+            endpoint (Optional[HttpsUrl]): The specific endpoint URL for the deployment. (Optional)
+            base_url (Optional[HttpsUrl]): The base URL for Azure services. (Optional)
+            api_version (str): Azure API version. Defaults to the defined DEFAULT_AZURE_API_VERSION.
+            api_key (Optional[str]): API key for Azure services. (Optional)
+            ad_token (Optional[str]): Azure AD token for authentication. (Optional)
+            ad_token_provider (Optional[Callable[[], Union[str, Awaitable[str]]]]): A callable
                 or coroutine function providing Azure AD tokens. (Optional)
-            default_headers {Union[Mapping[str, str], None]} -- Default headers for HTTP requests. (Optional)
-            async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
+            default_headers (Union[Mapping[str, str], None]): Default headers for HTTP requests. (Optional)
+            async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
 
         The `validate_call` decorator is used with a configuration that allows arbitrary types.
         This is necessary for types like `HttpsUrl` and `OpenAIModelTypes`.

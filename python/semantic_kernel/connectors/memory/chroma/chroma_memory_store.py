@@ -29,8 +29,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         client_settings: Optional["chromadb.config.Settings"] = None,
         **kwargs,
     ) -> None:
-        """
-        ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
+        """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
         Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
 
         Args:
@@ -39,6 +38,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             client_settings (Optional["chromadb.config.Settings"], optional): A Settings instance to configure
                 the ChromaDB client. Defaults to None, which means the default settings for ChromaDB will be used.
             similarity_fetch_limit (int, optional): The maximum number of results to calculate cosine-similarity.
+
         Example:
             # Create a ChromaMemoryStore with a local specified directory for data persistence
             chroma_local_data_store = ChromaMemoryStore(persist_directory='/path/to/persist/directory')
@@ -78,7 +78,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             embedding_function is set to "DoNotUseChromaEmbeddingFunction".
 
         Arguments:
-            collection_name {str} -- The name of the collection to create.
+            collection_name (str): The name of the collection to create.
             The name of the collection will be converted to snake case.
 
         Returns:
@@ -97,7 +97,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            List[str]: The list of collections.
         """
         return [collection.name for collection in self._client.list_collections()]
 
@@ -105,7 +105,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Deletes a collection.
 
         Arguments:
-            collection_name {str} -- The name of the collection to delete.
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
@@ -116,10 +116,10 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Checks if a collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to check.
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
         if await self.get_collection(collection_name) is None:
             return False
@@ -130,11 +130,11 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Upserts a single MemoryRecord.
 
         Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            records {MemoryRecord} -- The record to upsert.
+            collection_name (str): The name of the collection to upsert the record into.
+            records (MemoryRecord): The record to upsert.
 
         Returns:
-            List[str] -- The unique database key of the record.
+            List[str]: The unique database key of the record.
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
@@ -163,11 +163,11 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Upserts a batch of records.
 
         Arguments:
-            collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+            collection_name (str): The name of the collection to upsert the records into.
+            records (List[MemoryRecord]): The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records. In Pinecone, these are the record IDs.
+            List[str]: The unique database keys of the records. In Pinecone, these are the record IDs.
         """
         # upsert is checking collection existence
         return [await self.upsert(collection_name, record) for record in records]
@@ -176,12 +176,12 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Gets a record.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the record from.
-            key {str} -- The unique database key of the record.
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+            collection_name (str): The name of the collection to get the record from.
+            key (str): The unique database key of the record.
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            MemoryRecord -- The record.
+            MemoryRecord: The record.
         """
         records = await self.get_batch(collection_name, [key], with_embedding)
         try:
@@ -195,12 +195,12 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Gets a batch of records.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str): The name of the collection to get the records from.
+            keys (List[str]): The unique database keys of the records.
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord]: The records.
         """
         collection = await self.get_collection(collection_name)
         if collection is None:
@@ -216,8 +216,8 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Removes a record.
 
         Arguments:
-            collection_name {str} -- The name of the collection to remove the record from.
-            key {str} -- The unique database key of the record to remove.
+            collection_name (str): The name of the collection to remove the record from.
+            key (str): The unique database key of the record to remove.
 
         Returns:
             None
@@ -228,8 +228,8 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Removes a batch of records.
 
         Arguments:
-            collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+            collection_name (str): The name of the collection to remove the records from.
+            keys (List[str]): The unique database keys of the records to remove.
 
         Returns:
             None
@@ -249,14 +249,14 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the nearest matches from.
-            embedding {ndarray} -- The embedding to find the nearest matches to.
-            limit {int} -- The maximum number of matches to return.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str): The name of the collection to get the nearest matches from.
+            embedding (ndarray): The embedding to find the nearest matches to.
+            limit (int): The maximum number of matches to return.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         if with_embeddings is False:
             logger.warning(
@@ -316,13 +316,13 @@ class ChromaMemoryStore(MemoryStoreBase):
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the nearest match from.
-            embedding {ndarray} -- The embedding to find the nearest match to.
-            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+            collection_name (str): The name of the collection to get the nearest match from.
+            embedding (ndarray): The embedding to find the nearest match to.
+            min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            Tuple[MemoryRecord, float]: The record and the relevance score.
         """
         results = await self.get_nearest_matches(
             collection_name=collection_name,

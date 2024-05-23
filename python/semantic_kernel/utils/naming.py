@@ -5,8 +5,8 @@ import string
 
 
 def generate_random_ascii_name(length: int = 16) -> str:
-    """
-    Generate a series of random ASCII characters of the specified length.
+    """Generate a series of random ASCII characters of the specified length.
+
     As example, plugin/function names can contain upper/lowercase letters, and underscores
 
     Args:

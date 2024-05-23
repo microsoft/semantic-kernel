@@ -12,28 +12,26 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 def get_redis_key(collection_name: str, record_id: str) -> str:
-    """
-    Returns the Redis key for an element called record_id within collection_name
+    """Returns the Redis key for an element called record_id within collection_name.
 
     Arguments:
-        collection_name {str} -- Name for a collection of embeddings
-        record_id {str} -- ID associated with a memory record
+        collection_name (str): Name for a collection of embeddings
+        record_id (str): ID associated with a memory record
 
     Returns:
-        str -- Redis key in the format collection_name:id
+        str: Redis key in the format collection_name:id
     """
     return f"{collection_name}:{record_id}"
 
 
 def split_redis_key(redis_key: str) -> tuple[str, str]:
-    """
-    Split a Redis key into its collection name and record ID
+    """Split a Redis key into its collection name and record ID.
 
     Arguments:
-        collection_name {str} -- Redis key
+        collection_name (str): Redis key
 
     Returns:
-        Tuple[str, str] -- Tuple of the collection name and ID
+        Tuple[str, str]: Tuple of the collection name and ID
     """
     collection, record_id = redis_key.split(":")
     return collection, record_id

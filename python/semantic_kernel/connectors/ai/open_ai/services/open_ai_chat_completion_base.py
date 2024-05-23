@@ -78,15 +78,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Executes a chat completion request and returns the result.
 
         Arguments:
-            chat_history {ChatHistory} -- The chat history to use for the chat completion.
-            settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
+            chat_history (ChatHistory): The chat history to use for the chat completion.
+            settings (OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings): The settings to use
                 for the chat completion request.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            kwargs (Dict[str, Any]): The optional arguments.
 
         Returns:
-            List[ChatMessageContent] -- The completion result(s).
+            List[ChatMessageContent]: The completion result(s).
         """
-
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
         if settings.function_call_behavior is not None and settings.function_call_behavior.auto_invoke_kernel_functions:
@@ -155,13 +154,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Executes a streaming chat completion request and returns the result.
 
         Arguments:
-            chat_history {ChatHistory} -- The chat history to use for the chat completion.
-            settings {OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings} -- The settings to use
+            chat_history (ChatHistory): The chat history to use for the chat completion.
+            settings (OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings): The settings to use
                 for the chat completion request.
-            kwargs {Dict[str, Any]} -- The optional arguments.
+            kwargs (Dict[str, Any]): The optional arguments.
 
         Yields:
-            List[StreamingChatMessageContent] -- A stream of
+            List[StreamingChatMessageContent]: A stream of
                 StreamingChatMessageContent when using Azure.
         """
         kernel = kwargs.get("kernel", None)
@@ -258,7 +257,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # region internal handlers
 
     async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> list["ChatMessageContent"]:
-        """Send the chat request"""
+        """Send the chat request."""
         response = await self._send_request(request_settings=settings)
         response_metadata = self._get_metadata_from_chat_response(response)
         completions = [
@@ -269,7 +268,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     async def _send_chat_stream_request(
         self, settings: OpenAIChatPromptExecutionSettings
     ) -> AsyncGenerator[list["StreamingChatMessageContent | None"], None]:
-        """Send the chat stream request"""
+        """Send the chat stream request."""
         response = await self._send_request(request_settings=settings)
         if not isinstance(response, AsyncStream):
             raise ServiceInvalidResponseError("Expected an AsyncStream[ChatCompletionChunk] response.")

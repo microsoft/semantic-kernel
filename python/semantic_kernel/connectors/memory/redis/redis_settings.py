@@ -8,7 +8,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class RedisSettings(BaseModelSettings):
-    """Redis model settings
+    """Redis model settings.
 
     Optional:
     - connection_string: str | None - Redis connection string

@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import asyncio
 import logging
 import os
@@ -59,7 +58,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     step_prompt: str
 
     def __init__(self, service_id: str, options: FunctionCallingStepwisePlannerOptions | None = None):
-        """Initialize a new instance of the FunctionCallingStepwisePlanner
+        """Initialize a new instance of the FunctionCallingStepwisePlanner.
 
         The FunctionCallingStepwisePlanner is a planner based on top of an OpenAI Chat Completion service
         (whether it be AzureOpenAI or OpenAI), so that we can use tools.
@@ -94,8 +93,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         arguments: KernelArguments | None = None,
         **kwargs: Any,
     ) -> FunctionCallingStepwisePlannerResult:
-        """
-        Execute the function calling stepwise planner
+        """Execute the function calling stepwise planner.
 
         Args:
             kernel: The kernel instance
@@ -226,7 +224,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         arguments: KernelArguments,
         service: OpenAIChatCompletion | AzureChatCompletion,
     ) -> ChatHistory:
-        """Build the chat history for the stepwise planner"""
+        """Build the chat history for the stepwise planner."""
         chat_history = ChatHistory()
         additional_arguments = KernelArguments(
             goal=goal,
@@ -244,8 +242,10 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
 
     def _create_config_from_yaml(self, kernel: Kernel) -> "KernelFunction":
         """A temporary method to create a function from the yaml file.
+
         The yaml.safe_load will be replaced with the proper kernel
-        method later."""
+        method later.
+        """
         data = yaml.safe_load(self.generate_plan_yaml)
         prompt_template_config = PromptTemplateConfig(**data)
         if "default" in prompt_template_config.execution_settings:
@@ -264,7 +264,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         kernel: Kernel,
         arguments: KernelArguments,
     ) -> str:
-        """Generate the plan for the given question using the kernel"""
+        """Generate the plan for the given question using the kernel."""
         generate_plan_function = self._create_config_from_yaml(kernel)
         # TODO: revisit when function call behavior is finalized, and other function calling models are added
         functions_manual = [

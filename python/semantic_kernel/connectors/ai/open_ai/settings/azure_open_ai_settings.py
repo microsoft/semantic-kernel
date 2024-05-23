@@ -8,7 +8,7 @@ from semantic_kernel.kernel_pydantic import HttpsUrl
 
 
 class AzureOpenAISettings(BaseSettings):
-    """AzureOpenAI model settings
+    """AzureOpenAI model settings.
 
     The settings are first loaded from environment variables with the prefix 'AZURE_OPENAI_'.
     If the environment variables are not found, the settings can be loaded from a .env file

@@ -62,4 +62,5 @@ class FunctionIdBlock(Block):
         return fields
 
     def render(self, *_: tuple["Kernel", Optional["KernelArguments"]]) -> str:
+        """Render the function id block."""
         return self.content

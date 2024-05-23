@@ -13,6 +13,9 @@ repos:
         files: \.toml$
       - id: check-yaml
         files: \.yaml$
+      - id: check-json
+        files: \.json$
+        exclude: ^python\/\.vscode\/.*
       - id: end-of-file-fixer
         files: \.py$
       - id: mixed-line-ending
@@ -20,27 +23,31 @@ repos:
       - id: check-ast
         name: Check Valid Python Samples
         types: ["python"]
+      - id: debug-statements
+        files: ^python\/semantic_kernel\/.*\.py$
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.8.5
     hooks:
       - id: nbqa-check-ast
         name: Check Valid Python Notebooks
         types: ["jupyter"]
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-        files: \.py$
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
-    hooks:
-      - id: ruff
-        args: [ --fix, --exit-non-zero-on-fix ]
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.2
     hooks:
     - id: pyupgrade
       args: [--py310-plus]
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        files: \.py$
+      - id: black-jupyter
+        files: \.ipynb$
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
   - repo: local
     hooks:
     - id: mypy

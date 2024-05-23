@@ -23,10 +23,10 @@ def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord
     """Converts a search result to a MemoryRecord.
 
     Arguments:
-        data {dict} -- Azure Cognitive Search result data.
+        data (dict): Azure Cognitive Search result data.
 
     Returns:
-        MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
+        MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
     """
     meta = data.get(MONGODB_FIELD_METADATA, {})
 
@@ -44,15 +44,14 @@ def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord
 
 
 def memory_record_to_mongo_document(record: MemoryRecord) -> dict:
-    """Convert a MemoryRecord to a dictionary
+    """Convert a MemoryRecord to a dictionary.
 
     Arguments:
-        record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
+        record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:
-        data {dict} -- Dictionary data.
+        data (dict): Dictionary data.
     """
-
     return {
         MONGODB_FIELD_ID: record._id,
         MONGODB_FIELD_METADATA: {

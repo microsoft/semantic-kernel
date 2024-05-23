@@ -9,7 +9,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureAISearchSettings(BaseModelSettings):
-    """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector
+    """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 
     Optional:
     - api_key: SecretStr - Azure AI Search API key (Env var AZURE_AI_SEARCH_API_KEY)
@@ -25,9 +25,7 @@ class AzureAISearchSettings(BaseModelSettings):
         env_prefix = "AZURE_AI_SEARCH_"
 
     def model_dump(self):
-        """
-        Custom method to dump model data in the required format.
-        """
+        """Custom method to dump model data in the required format."""
         return {
             "api_key": self.api_key.get_secret_value() if self.api_key else None,
             "endpoint": str(self.endpoint),

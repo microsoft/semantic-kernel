@@ -13,8 +13,7 @@ from semantic_kernel.kernel import Kernel
 
 
 def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
-    """
-    Configure the AI service for the kernel
+    """Configure the AI service for the kernel
 
     Args:
         kernel (Kernel): The kernel to configure

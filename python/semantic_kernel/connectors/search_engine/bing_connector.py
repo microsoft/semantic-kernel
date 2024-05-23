@@ -14,9 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class BingConnector(ConnectorBase):
-    """
-    A search engine connector that uses the Bing Search API to perform a web search
-    """
+    """A search engine connector that uses the Bing Search API to perform a web search."""
 
     _api_key: str
 
@@ -24,9 +22,9 @@ class BingConnector(ConnectorBase):
         """Initializes a new instance of the BingConnector class.
 
         Arguments:
-            api_key {str | None}: The Bing Search API key. If provided, will override
+            api_key (str | None): The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
-            env_file_path {str | None}: The optional path to the .env file. If provided,
+            env_file_path (str | None): The optional path to the .env file. If provided,
                 the settings are read from this file path location.
         """
         bing_settings = None
@@ -42,15 +40,7 @@ class BingConnector(ConnectorBase):
             raise ValueError("API key cannot be 'None' or empty.")
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
-        """
-        Returns the search results of the query provided by pinging the Bing web search API.
-        Returns `num_results` results and ignores the first `offset`.
-
-        :param query: search query
-        :param num_results: the number of search results to return
-        :param offset: the number of search results to ignore
-        :return: list of search results
-        """
+        """Returns the search results of the query provided by pinging the Bing web search API."""
         if not query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 

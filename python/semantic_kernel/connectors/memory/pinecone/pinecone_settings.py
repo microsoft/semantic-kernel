@@ -8,7 +8,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class PineconeSettings(BaseModelSettings):
-    """Pinecone model settings
+    """Pinecone model settings.
 
     Required:
     - api_key: SecretStr - Pinecone API key

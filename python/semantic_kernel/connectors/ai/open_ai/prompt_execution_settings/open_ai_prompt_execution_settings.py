@@ -41,7 +41,6 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     @model_validator(mode="after")
     def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
-
         best_of = self.best_of or self.extension_data.get("best_of")
         number_of_responses = self.number_of_responses or self.extension_data.get("number_of_responses")
 

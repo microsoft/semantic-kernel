@@ -62,6 +62,7 @@ class FunctionResultContent(KernelContent):
         return result
 
     def __str__(self) -> str:
+        """Return the text of the response."""
         return self.result
 
     def to_element(self) -> Element:

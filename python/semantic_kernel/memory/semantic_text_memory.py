@@ -22,12 +22,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Initialize a new instance of SemanticTextMemory.
 
         Arguments:
-            storage {MemoryStoreBase} -- The MemoryStoreBase to use for storage.
-            embeddings_generator {EmbeddingGeneratorBase} -- The EmbeddingGeneratorBase
+            storage (MemoryStoreBase): The MemoryStoreBase to use for storage.
+            embeddings_generator (EmbeddingGeneratorBase): The EmbeddingGeneratorBase
                 to use for generating embeddings.
-
-        Returns:
-            None -- None.
         """
         super().__init__()
         self._storage = storage
@@ -45,13 +42,12 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Save information to the memory (calls the memory store's upsert method).
 
         Arguments:
-            collection {str} -- The collection to save the information to.
-            text {str} -- The text to save.
-            id {str} -- The id of the information.
-            description {Optional[str]} -- The description of the information.
-
-        Returns:
-            None -- None.
+            collection (str): The collection to save the information to.
+            text (str): The text to save.
+            id (str): The id of the information.
+            description (Optional[str]): The description of the information.
+            additional_metadata (Optional[str]): Additional metadata of the information.
+            embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the information.
         """
         # TODO: not the best place to create collection, but will address this behavior together with .NET SK
         if not await self._storage.does_collection_exist(collection_name=collection):
@@ -81,14 +77,13 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Save a reference to the memory (calls the memory store's upsert method).
 
         Arguments:
-            collection {str} -- The collection to save the reference to.
-            text {str} -- The text to save.
-            external_id {str} -- The external id of the reference.
-            external_source_name {str} -- The external source name of the reference.
-            description {Optional[str]} -- The description of the reference.
-
-        Returns:
-            None -- None.
+            collection (str): The collection to save the reference to.
+            text (str): The text to save.
+            external_id (str): The external id of the reference.
+            external_source_name (str): The external source name of the reference.
+            description (Optional[str]): The description of the reference.
+            additional_metadata (Optional[str]): Additional metadata of the reference.
+            embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the reference.
         """
         # TODO: not the best place to create collection, but will address this behavior together with .NET SK
         if not await self._storage.does_collection_exist(collection_name=collection):
@@ -113,11 +108,11 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Get information from the memory (calls the memory store's get method).
 
         Arguments:
-            collection {str} -- The collection to get the information from.
-            key {str} -- The key of the information.
+            collection (str): The collection to get the information from.
+            key (str): The key of the information.
 
         Returns:
-            Optional[MemoryQueryResult] -- The MemoryQueryResult if found, None otherwise.
+            Optional[MemoryQueryResult]: The MemoryQueryResult if found, None otherwise.
         """
         record = await self._storage.get(collection_name=collection, key=key)
         return MemoryQueryResult.from_memory_record(record, 1.0) if record else None
@@ -134,14 +129,15 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Search the memory (calls the memory store's get_nearest_matches method).
 
         Arguments:
-            collection {str} -- The collection to search in.
-            query {str} -- The query to search for.
-            limit {int} -- The maximum number of results to return. (default: {1})
-            min_relevance_score {float} -- The minimum relevance score to return. (default: {0.0})
-            with_embeddings {bool} -- Whether to return the embeddings of the results. (default: {False})
+            collection (str): The collection to search in.
+            query (str): The query to search for.
+            limit (int): The maximum number of results to return. (default: {1})
+            min_relevance_score (float): The minimum relevance score to return. (default: {0.0})
+            with_embeddings (bool): Whether to return the embeddings of the results. (default: {False})
+            embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the information.
 
         Returns:
-            List[MemoryQueryResult] -- The list of MemoryQueryResult found.
+            List[MemoryQueryResult]: The list of MemoryQueryResult found.
         """
         query_embedding = (await self._embeddings_generator.generate_embeddings([query], **embeddings_kwargs))[0]
         results = await self._storage.get_nearest_matches(
@@ -158,6 +154,6 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         """Get the list of collections in the memory (calls the memory store's get_collections method).
 
         Returns:
-            List[str] -- The list of all the memory collection names.
+            List[str]: The list of all the memory collection names.
         """
         return await self._storage.get_collections()

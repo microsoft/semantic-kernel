@@ -34,14 +34,12 @@ class CosmosDBVectorSearchType(str, Enum):
 
 @experimental_function
 def get_mongodb_search_client(connection_string: str, application_name: str):
-    """
-    Returns a client for Azure Cosmos Mongo vCore Vector DB
+    """Returns a client for Azure Cosmos Mongo vCore Vector DB.
 
     Arguments:
         connection_string {str}
 
     """
-
     ENV_VAR_COSMOS_CONN_STR = "AZCOSMOS_CONNSTR"
 
     load_dotenv()

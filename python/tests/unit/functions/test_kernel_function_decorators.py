@@ -34,7 +34,7 @@ class MiscClass:
 
     @kernel_function
     def func_docstring_as_description(self, input):
-        """description"""
+        """Description"""
         return input
 
     @kernel_function

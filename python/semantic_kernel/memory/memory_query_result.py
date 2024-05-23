@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -32,16 +31,17 @@ class MemoryQueryResult:
         """Initialize a new instance of MemoryQueryResult.
 
         Arguments:
-            is_reference {bool} -- Whether the record is a reference record.
-            external_source_name {Optional[str]} -- The name of the external source.
-            id {str} -- A unique for the record.
-            description {Optional[str]} -- The description of the record.
-            text {Optional[str]} -- The text of the record.
-            embedding {ndarray} -- The embedding of the record.
-            relevance {float} -- The relevance of the record to a known query.
+            is_reference (bool): Whether the record is a reference record.
+            external_source_name (Optional[str]): The name of the external source.
+            id (str): A unique for the record.
+            description (Optional[str]): The description of the record.
+            text (Optional[str]): The text of the record.
+            additional_metadata (Optional[str]): Custom metadata for the record.
+            embedding (ndarray): The embedding of the record.
+            relevance (float): The relevance of the record to a known query.
 
         Returns:
-            None -- None.
+            None: None.
         """
         self.is_reference = is_reference
         self.external_source_name = external_source_name
@@ -60,11 +60,11 @@ class MemoryQueryResult:
         """Create a new instance of MemoryQueryResult from a MemoryRecord.
 
         Arguments:
-            record {MemoryRecord} -- The MemoryRecord to create the MemoryQueryResult from.
-            relevance {float} -- The relevance of the record to a known query.
+            record (MemoryRecord): The MemoryRecord to create the MemoryQueryResult from.
+            relevance (float): The relevance of the record to a known query.
 
         Returns:
-            MemoryQueryResult -- The created MemoryQueryResult.
+            MemoryQueryResult: The created MemoryQueryResult.
         """
         return MemoryQueryResult(
             is_reference=record._is_reference,

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-"""
-QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
+"""QdrantMemoryStore provides functionality to add Qdrant vector database to support Semantic Kernel memory.
 The QdrantMemoryStore inherits from MemoryStoreBase for persisting/retrieving data from a Qdrant Vector Database.
 """
 
@@ -50,9 +49,10 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Creates a new collection if it does not exist.
 
         Arguments:
-            collection_name {str} -- The name of the collection to create.
-            vector_size {int} -- The size of the vector.
-            distance {Optional[str]} -- The distance metric to use. (default: {"Cosine"})
+            collection_name (str): The name of the collection to create.
+            vector_size (int): The size of the vector.
+            distance (Optional[str]): The distance metric to use. (default: {"Cosine"})
+
         Returns:
             None
         """
@@ -69,7 +69,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            List[str]: The list of collections.
         """
         collection_info = self._qdrantclient.get_collections()
         return [collection.name for collection in collection_info.collections]
@@ -78,7 +78,7 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Gets the a collections based upon collection name.
 
         Returns:
-            CollectionInfo -- Collection Information from Qdrant about collection.
+            CollectionInfo: Collection Information from Qdrant about collection.
         """
         collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
         return collection_info
@@ -87,22 +87,21 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Deletes a collection.
 
         Arguments:
-            collection_name {str} -- The name of the collection to delete.
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
         """
-
         self._qdrantclient.delete_collection(collection_name=collection_name)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to check.
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
         try:
             result = await self.get_collection(collection_name=collection_name)
@@ -114,11 +113,11 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Upserts a record.
 
         Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            record {MemoryRecord} -- The record to upsert.
+            collection_name (str): The name of the collection to upsert the record into.
+            record (MemoryRecord): The record to upsert.
 
         Returns:
-            str -- The unique database key of the record.
+            str: The unique database key of the record.
         """
         data_to_upsert = await self._convert_from_memory_record(
             collection_name=collection_name,
@@ -286,11 +285,11 @@ class QdrantMemoryStore(MemoryStoreBase):
         """Gets an existing record based upon payload id.
 
         Arguments:
-            collection_name {str} -- The name of the collection.
-            payload_id {str} -- The payload id to search for.
+            collection_name (str): The name of the collection.
+            payload_id (str): The payload id to search for.
 
         Returns:
-            Optional[ScoredPoint] -- The existing record if found; otherwise, None.
+            Optional[ScoredPoint]: The existing record if found; otherwise, None.
         """
         filter = qdrant_models.Filter(
             must=[

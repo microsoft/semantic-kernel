@@ -5,8 +5,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class Math:
-    """
-    Description: MathPlugin provides a set of functions to make Math calculations.
+    """Description: MathPlugin provides a set of functions to make Math calculations.
 
     Usage:
         kernel.add_plugin(MathPlugin(), plugin_name="math")

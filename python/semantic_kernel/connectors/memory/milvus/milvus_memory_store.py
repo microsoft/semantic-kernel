@@ -51,6 +51,7 @@ OUTPUT_FIELDS_WO_EMBEDDING = [
 @experimental_function
 def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
+
     Args:
         mem (MemoryRecord): MemoryRecord to convert.
 
@@ -259,7 +260,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         return res[0]
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): The collection name.
@@ -303,7 +304,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         return res[0]
 
     async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
-        """Get the MemoryRecords corresponding to the keys
+        """Get the MemoryRecords corresponding to the keys.
 
         Args:
             collection_name (str): _description_

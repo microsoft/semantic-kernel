@@ -43,14 +43,14 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Initializes a new instance of the AstraDBMemoryStore class.
 
         Arguments:
-            astra_application_token {str} -- The Astra application token.
-            astra_id {str} -- The Astra id of database.
-            astra_region {str} -- The Astra region
-            keyspace_name {str} -- The Astra keyspace
-            embedding_dim {int} -- The dimensionality to use for new collections.
-            similarity {str} -- TODO
-            session -- Optional session parameter
-            env_file_path {str | None} -- Use the environment settings file as a
+            astra_application_token (str): The Astra application token.
+            astra_id (str): The Astra id of database.
+            astra_region (str): The Astra region
+            keyspace_name (str): The Astra keyspace
+            embedding_dim (int): The dimensionality to use for new collections.
+            similarity (str): TODO
+            session: Optional session parameter
+            env_file_path (str | None): Use the environment settings file as a
                 fallback to environment variables. (Optional)
         """
         astradb_settings = None
@@ -103,7 +103,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            List[str]: The list of collections.
         """
         return await self._client.find_collections(False)
 
@@ -116,10 +116,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Creates a new collection in Astra if it does not exist.
 
         Arguments:
-            collection_name {str} -- The name of the collection to create.
-            dimension_num {int} -- The dimension of the vectors to be stored in this collection.
-            distance_type {str} -- Specifies the similarity metric to be used when querying or comparing vectors within
+            collection_name (str): The name of the collection to create.
+            dimension_num (int): The dimension of the vectors to be stored in this collection.
+            distance_type (str): Specifies the similarity metric to be used when querying or comparing vectors within
             this collection. The available options are dot_product, euclidean, and cosine.
+
         Returns:
             None
         """
@@ -139,7 +140,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Deletes a collection.
 
         Arguments:
-            collection_name {str} -- The name of the collection to delete.
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
@@ -154,10 +155,10 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Checks if a collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to check.
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
         return await self._client.find_collection(collection_name)
 
@@ -167,11 +168,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
             If the record does not exist, it will be created.
 
         Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            record {MemoryRecord} -- The memory record to upsert.
+            collection_name (str): The name associated with a collection of embeddings.
+            record (MemoryRecord): The memory record to upsert.
 
         Returns:
-            str -- The unique identifier for the memory record.
+            str: The unique identifier for the memory record.
         """
         filter = {"_id": record._id}
         update = {"$set": build_payload(record)}
@@ -185,11 +186,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
             If the record does not exist, it will be created.
 
         Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            records {List[MemoryRecord]} -- The memory records to upsert.
+            collection_name (str): The name associated with a collection of embeddings.
+            records (List[MemoryRecord]): The memory records to upsert.
 
         Returns:
-            List[str] -- The unique identifiers for the memory record.
+            List[str]: The unique identifiers for the memory record.
         """
         return await asyncio.gather(*[self.upsert(collection_name, record) for record in records])
 
@@ -197,12 +198,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Gets a record. Does not guarantee that the collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the record from.
-            key {str} -- The unique database key of the record.
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+            collection_name (str): The name of the collection to get the record from.
+            key (str): The unique database key of the record.
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            MemoryRecord -- The record.
+            MemoryRecord: The record.
         """
         filter = {"_id": key}
         documents = await self._client.find_documents(
@@ -222,14 +223,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Gets a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str): The name of the collection to get the records from.
+            keys (List[str]): The unique database keys of the records.
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord]: The records.
         """
-
         filter = {"_id": {"$in": keys}}
         documents = await self._client.find_documents(
             collection_name=collection_name,
@@ -242,8 +242,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to remove the record from.
-            key {str} -- The unique id associated with the memory record to remove.
+            collection_name (str): The name of the collection to remove the record from.
+            key (str): The unique id associated with the memory record to remove.
 
         Returns:
             None
@@ -255,8 +255,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """Removes a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
-            collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique ids associated with the memory records to remove.
+            collection_name (str): The name of the collection to remove the records from.
+            keys (List[str]): The unique ids associated with the memory records to remove.
 
         Returns:
             None
@@ -272,14 +272,15 @@ class AstraDBMemoryStore(MemoryStoreBase):
         with_embedding: bool = False,
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
+
         Arguments:
-            collection_name {str} -- The name of the collection to get the nearest matches from.
-            embedding {ndarray} -- The embedding to find the nearest matches to.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str): The name of the collection to get the nearest matches from.
+            embedding (ndarray): The embedding to find the nearest matches to.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            Tuple[MemoryRecord, float]: The record and the relevance score.
         """
         matches = await self.get_nearest_matches(
             collection_name=collection_name,
@@ -299,15 +300,16 @@ class AstraDBMemoryStore(MemoryStoreBase):
         with_embeddings: bool = False,
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
+
         Arguments:
-            collection_name {str} -- The name of the collection to get the nearest matches from.
-            embedding {ndarray} -- The embedding to find the nearest matches to.
-            limit {int} -- The maximum number of matches to return.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+            collection_name (str): The name of the collection to get the nearest matches from.
+            embedding (ndarray): The embedding to find the nearest matches to.
+            limit (int): The maximum number of matches to return.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         matches = await self._client.find_documents(
             collection_name=collection_name,

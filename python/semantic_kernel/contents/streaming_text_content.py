@@ -28,6 +28,7 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
     """
 
     def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
     def __add__(self, other: "TextContent") -> "StreamingTextContent":

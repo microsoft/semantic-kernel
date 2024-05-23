@@ -21,23 +21,22 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     Make sure to have the ollama service running either locally or remotely.
 
     Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
-        session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
+        ai_model_id (str): Ollama model name, see https://ollama.ai/library
+        url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
+        session (Optional[aiohttp.ClientSession]): Optional client session to use for requests.
     """
 
     url: HttpUrl = "http://localhost:11434/api/embeddings"
     session: aiohttp.ClientSession | None = None
 
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        """
-        Generates embeddings for a list of texts.
+        """Generates embeddings for a list of texts.
 
         Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
+            texts (List[str]): Texts to generate embeddings for.
 
         Returns:
-            ndarray -- Embeddings for the texts.
+            ndarray: Embeddings for the texts.
         """
         result = []
         for text in texts:

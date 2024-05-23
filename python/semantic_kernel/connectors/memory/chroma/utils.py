@@ -85,11 +85,13 @@ def query_results_to_records(results: "QueryResult", with_embedding: bool) -> li
 
 def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarray, **kwargs) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
+
     Arguments:
-        embedding {ndarray} -- The query embedding.
-        embedding_array {ndarray} -- The group of embeddings.
+        embedding (ndarray): The query embedding.
+        embedding_array (ndarray): The group of embeddings.
+
     Returns:
-        ndarray -- The cosine similarity scores.
+        ndarray: The cosine similarity scores.
     """
     if kwargs.get("logger"):
         logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")

@@ -72,20 +72,7 @@ class ChatMessageContent(KernelContent):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
-    ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
-        Or they can implement their own subclass of this class and return an instance.
-
-        Args:
-            inner_content: Optional[Any] - The inner content of the response,
-                this should hold all the information from the response so even
-                when not creating a subclass a developer can leverage the full thing.
-            ai_model_id: Optional[str] - The id of the AI model that generated this response.
-            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
-            encoding: Optional[str] - The encoding of the text.
-        """
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -99,20 +86,7 @@ class ChatMessageContent(KernelContent):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
-    ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
-        Or they can implement their own subclass of this class and return an instance.
-
-        Args:
-            inner_content: Optional[Any] - The inner content of the response,
-                this should hold all the information from the response so even
-                when not creating a subclass a developer can leverage the full thing.
-            ai_model_id: Optional[str] - The id of the AI model that generated this response.
-            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            content: str - The text of the response.
-            encoding: Optional[str] - The encoding of the text.
-        """
+    ) -> None: ...
 
     def __init__(  # type: ignore
         self,
@@ -127,19 +101,21 @@ class ChatMessageContent(KernelContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ):
-        """All Chat Completion Services should return a instance of this class as response.
-        Or they can implement their own subclass of this class and return an instance.
+        """Create a ChatMessageContent instance.
 
         Args:
+            role: ChatRole - The role of the chat message.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
                 when not creating a subclass a developer can leverage the full thing.
+            name: Optional[str] - The name of the response.
+            encoding: Optional[str] - The encoding of the text.
+            finish_reason: Optional[FinishReason] - The reason the response was finished.
             ai_model_id: Optional[str] - The id of the AI model that generated this response.
             metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            content: str - The text of the response.
-            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
-            encoding: Optional[str] - The encoding of the text.
+            **kwargs: Any - Any additional fields to set on the instance.
         """
         kwargs["role"] = role
         if encoding:
@@ -271,7 +247,6 @@ class ChatMessageContent(KernelContent):
         Returns:
             str - The prompt from the ChatMessageContent.
         """
-
         root = self.to_element()
         return ElementTree.tostring(root, encoding=self.encoding or "unicode", short_empty_elements=False)
 

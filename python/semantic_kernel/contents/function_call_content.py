@@ -35,6 +35,7 @@ class FunctionCallContent(KernelContent):
         return self.split_name()[0]
 
     def __str__(self) -> str:
+        """Return the function call as a string."""
         return f"{self.name}({self.arguments})"
 
     def __add__(self, other: "FunctionCallContent | None") -> "FunctionCallContent":

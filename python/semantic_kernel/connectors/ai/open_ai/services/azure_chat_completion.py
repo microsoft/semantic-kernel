@@ -52,8 +52,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initialize an AzureChatCompletion service.
+        """Initialize an AzureChatCompletion service.
 
         Arguments:
             service_id {str | None}: The service ID for the Azure deployment. (Optional)
@@ -71,8 +70,8 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             ad_token_provider {AsyncAzureADTokenProvider}: The Azure Active Directory token provider. (Optional)
             default_headers {Mapping[str, str]}: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {AsyncAzureOpenAI | None} -- An existing client to use. (Optional)
-            env_file_path {str | None} -- Use the environment settings file as a fallback to using env vars.
+            async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
         """
         azure_openai_settings = None
         try:
@@ -122,15 +121,13 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
-        """
-        Initialize an Azure OpenAI service from a dictionary of settings.
+        """Initialize an Azure OpenAI service from a dictionary of settings.
 
         Arguments:
             settings: A dictionary of settings for the service.
                 should contains keys: service_id, and optionally:
                     ad_auth, ad_token_provider, default_headers
         """
-
         return AzureChatCompletion(
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key", None),
