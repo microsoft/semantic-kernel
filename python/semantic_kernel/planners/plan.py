@@ -11,7 +11,7 @@ from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.exceptions import KernelInvokeException, KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelInvokeException, KernelPluginNotFoundError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
