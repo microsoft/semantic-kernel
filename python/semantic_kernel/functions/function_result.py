@@ -38,7 +38,11 @@ class FunctionResult(KernelBaseModel):
         if self.value:
             try:
                 if isinstance(self.value, list):
-                    return str(self.value[0])
+                    return (
+                        str(self.value[0])
+                        if isinstance(self.value[0], KernelContent)
+                        else ",".join(map(str, self.value))
+                    )
                 elif isinstance(self.value, dict):
                     # TODO: remove this once function result doesn't include input args
                     # This is so an integration test can pass.
