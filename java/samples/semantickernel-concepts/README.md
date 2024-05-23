@@ -57,8 +57,8 @@ Create a Kernel using `KernelBuilder` and configure the necessary parameters
 
 ```java
 Kernel kernel = Kernel.builder()
-    .withPlugin()
-    .withAIService()
+    .withPlugin(myPlugin)
+    .withAIService(openAiChatService)
     .withServiceSelector()
     .build();
 ```
@@ -74,7 +74,7 @@ public static class Time {
 
     @DefineKernelFunction(name = "date")
     public String date() {
-        System.out.println("date is callled");
+        System.out.println("date is called");
         Date now = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(now);
@@ -96,8 +96,10 @@ KernelPlugin time = KernelPluginFactory.createFromObject(new Time(), "time");
 
 ### Native function
 
-Define a local class and its function, and annotate it appropriately
+A native function in Semantic Kernel performs precise tasks like data retrieval, time checks, and complex math, which large language models (LLMs) may make mistake. Native functions are written in code and ensure accuracy. In contrast, LLMs offer flexibility, generality, and creativity, excelling in generating and predicting text. Combining both leverages their respective strengths for optimal performance.
+For more details, refer to [Microsoft Documentation on Kernel Functions.](https://learn.microsoft.com/en-us/semantic-kernel/agents/plugins/using-the-kernelfunction-decorator?tabs=Csharp)
 
+Here’s an example of how to define a native kernel function:
 ```java
 public class TextPlugin {
     @DefineKernelFunction(description = "Change all string chars to uppercase.", name = "Uppercase")
@@ -109,7 +111,10 @@ public class TextPlugin {
 
 ### Inline function
 
-Define a function using a Prompt.
+To create a inline KernelFunction from a prompt, you can use either of the following methods, which are equivalent:
+- `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate).build();`
+- `KernelFunction.createFromPrompt(message).build();`
+
 
 #### `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate).build();`
 
@@ -156,40 +161,44 @@ var fixedFunction = KernelFunction
         .build();
 ```
 
-> `KernelFunction.createFromPrompt(message)` is entirely equivalent to `KernelFunctionFromPrompt.builder().withTemplate(promptTemplate)` according to the source code.
 
-> `SEMANTIC_KERNEL_TEMPLATE_FORMAT` refers to '**semantic-kernel**', which is a rendering engine for `{{$variable}}`
-> 
-> Another rendering engine is **'handlebars'**, which is used for `{{variable}}`
-> ```java
->  runPrompt(kernel,
->          "semantic-kernel",
->          "Hello AI, my name is {{$name}}. What is the origin of my name?",
->          templateFactory);
-> 
->  runPrompt(kernel,
->          "handlebars",
->          "Hello AI, my name is {{name}}. What is the origin of my name?",
->          templateFactory);
-> ```
-> ```java
->  public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
->                               PromptTemplateFactory templateFactory) {
->      var function = new KernelFunctionFromPrompt.Builder<>()
->              .withTemplate(prompt)
->              .withTemplateFormat(templateFormat)
->              .withPromptTemplateFactory(templateFactory)
->              .build();
->
->      var arguments = KernelFunctionArguments.builder()
->              .withVariable("name", "Bob")
->              .build();
->
->      var result = kernel.invokeAsync(function).withArguments(arguments).block();
->      System.out.println(result.getResult());
->  }
-> ```
+The `SEMANTIC_KERNEL_TEMPLATE_FORMAT` corresponds to the '**semantic-kernel**' rendering engine, which uses the syntax `{{$variable}}` for variables.
+ 
+Another rendering engine is **'handlebars'**, which uses the syntax `{{variable}}`.
+Here's an example of how to use both:
 
+```java
+ runPrompt(kernel,
+         "semantic-kernel",
+         "Hello AI, my name is {{$name}}. What is the origin of my name?",
+         templateFactory);
+
+ runPrompt(kernel,
+         "handlebars",
+         "Hello AI, my name is {{name}}. What is the origin of my name?",
+         templateFactory);
+```
+The `runPrompt` method is defined as follows:
+```java
+ public static void runPrompt(Kernel kernel, String templateFormat, String prompt,
+                              PromptTemplateFactory templateFactory) {
+     var function = new KernelFunctionFromPrompt.Builder<>()
+             .withTemplate(prompt)
+             .withTemplateFormat(templateFormat)
+             .withPromptTemplateFactory(templateFactory)
+             .build();
+
+     var arguments = KernelFunctionArguments.builder()
+             .withVariable("name", "Bob")
+             .build();
+
+     var result = kernel.invokeAsync(function).withArguments(arguments).block();
+     System.out.println(result.getResult());
+ }
+```
+For more information, please refer to the following resources:
+- [Microsoft Documentation on Prompt Template Syntax](https://learn.microsoft.com/en-us/semantic-kernel/prompts/prompt-template-syntax)
+- [Microsoft Devblogs on Using Handlebars Planner in Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/using-handlebars-planner-in-semantic-kernel/)
 
 ### Configuration file
 
