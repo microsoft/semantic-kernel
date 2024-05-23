@@ -42,7 +42,7 @@ class CodeBlock(Block):
         CodeBlockTokenError: If a token is not a named argument after the second token.
         CodeBlockRenderError: If the plugin collection is not set in the kernel.
         CodeBlockRenderError: If the function is not found in the plugin collection.
-        CodeBlockRenderError: If the function does not take any arguments but it is being
+        CodeBlockRenderError: If the function does not take any arguments, but it is being
             called in the template with arguments.
     """
 
@@ -104,7 +104,7 @@ these will be ignored."
         """Render the code block.
 
         If the first token is a function_id, it will call the function from the plugin collection.
-        Otherwise it is a value or variable and those are then rendered directly.
+        Otherwise, it is a value or variable and those are then rendered directly.
         """
         logger.debug(f"Rendering code: `{self.content}`")
         if self.tokens[0].type == BlockTypes.FUNCTION_ID:
