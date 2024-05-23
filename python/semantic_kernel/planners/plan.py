@@ -11,7 +11,7 @@ from pydantic import PrivateAttr
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.exceptions import KernelInvokeException
+from semantic_kernel.exceptions import KernelInvokeException, KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -200,9 +200,9 @@ class Plan:
     def set_available_functions(self, plan: "Plan", kernel: "Kernel", arguments: "KernelArguments") -> "Plan":
         if len(plan.steps) == 0:
             try:
-                plugin_function = kernel.plugins[plan.plugin_name][plan.name]
+                plugin_function = kernel.get_function(plan.plugin_name, plan.name)
                 plan.set_function(plugin_function)
-            except Exception as exc:
+            except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
                 logger.error(
                     f"Something went wrong when setting available functions in {self._plugin_name}.{self._name}:'{exc}'"
                 )
