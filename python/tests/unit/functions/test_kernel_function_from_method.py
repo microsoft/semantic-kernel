@@ -411,3 +411,27 @@ async def test_function_invocation_filters_streaming(kernel: Kernel):
         "func2",
         "overridden_func",
     ]
+
+
+@pytest.mark.asyncio
+async def test_default_handling(kernel: Kernel):
+    @kernel_function
+    def func_default(input: str = "test"):
+        return input
+
+    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+
+    res = await kernel.invoke(func)
+    assert str(res) == "test"
+
+
+@pytest.mark.asyncio
+async def test_default_handling_2(kernel: Kernel):
+    @kernel_function
+    def func_default(base: str, input: str = "test"):
+        return input
+
+    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+
+    res = await kernel.invoke(func, base="base")
+    assert str(res) == "test"
