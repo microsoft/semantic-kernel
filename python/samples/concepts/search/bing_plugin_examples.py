@@ -14,7 +14,7 @@ async def example1(kernel: Kernel, search_plugin_name: str):
     print("======== Bing and Google Search Plugins ========")
 
     question = "What's the largest building in the world?"
-    function = kernel.plugins[search_plugin_name]["search"]
+    function = kernel.get_function(plugin_name=search_plugin_name, function_name="search")
     result = await kernel.invoke(function, query=question)
 
     print(question)
