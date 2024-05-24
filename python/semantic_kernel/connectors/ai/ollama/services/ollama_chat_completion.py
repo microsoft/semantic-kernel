@@ -75,7 +75,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
-        """Streams a text completion using a Ollama model.
+        """Streams a text completion using an Ollama model.
 
         Note that this method does not support multiple responses.
 
@@ -146,7 +146,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """Streams a text completion using a Ollama model.
+        """Streams a text completion using an Ollama model.
 
         Note that this method does not support multiple responses.
 

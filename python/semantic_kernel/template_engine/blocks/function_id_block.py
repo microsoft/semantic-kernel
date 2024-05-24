@@ -27,7 +27,7 @@ class FunctionIdBlock(Block):
     The content is parsed using a regex, that returns either a plugin and
     function name or just a function name, depending on the content.
 
-    Anything other then that and a ValueError is raised.
+    Anything other than that and a ValueError is raised.
 
     Args:
         content (str): The content of the block.
@@ -48,7 +48,7 @@ class FunctionIdBlock(Block):
         """Parse the content of the function id block and extract the plugin and function name.
 
         If both are present in the fields, return the fields as is.
-        Otherwise use the regex to extract the plugin and function name.
+        Otherwise, use the regex to extract the plugin and function name.
         """
         if "plugin_name" in fields and "function_name" in fields:
             return fields

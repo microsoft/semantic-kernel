@@ -62,7 +62,11 @@ class QdrantMemoryStore(MemoryStoreBase):
         return [collection.name for collection in collection_info.collections]
 
     async def get_collection(self, collection_name: str) -> qdrant_models.CollectionInfo:
-        """Gets the collection information."""
+        """Gets the collection based upon collection name.
+
+        Returns:
+            CollectionInfo -- Collection Information from Qdrant about collection.
+        """
         collection_info = self._qdrantclient.get_collection(collection_name=collection_name)
         return collection_info
 

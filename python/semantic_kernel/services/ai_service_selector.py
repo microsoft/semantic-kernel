@@ -25,7 +25,7 @@ class AIServiceSelector:
         arguments: "KernelArguments",
         type_: type["AI_SERVICE_CLIENT_TYPE"] | None = None,
     ) -> tuple["AI_SERVICE_CLIENT_TYPE", "PromptExecutionSettings"]:
-        """Select a AI Service on a first come, first served basis.
+        """Select an AI Service on a first come, first served basis.
 
         Starts with execution settings in the arguments,
         followed by the execution settings from the function.

@@ -110,7 +110,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 
         Args:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
+                should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
         return AzureTextCompletion(

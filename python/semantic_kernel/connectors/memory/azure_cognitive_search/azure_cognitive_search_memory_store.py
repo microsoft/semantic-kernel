@@ -81,8 +81,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_memory_settings and acs_memory_settings.api_key
             else None
         )
-        if not admin_key:
-            raise ValueError("The ACS admin_key is required to connect to Azure Cognitive Search.")
         search_endpoint = search_endpoint or (
             acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
         )
@@ -136,7 +134,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                         name=vector_search_algorithm_name,
                         kind="hnsw",
                         parameters=HnswParameters(
-                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            m=4,  # Number of bidirectional links, typically between 4 and 10
                             ef_construction=400,  # Size during indexing, range: 100-1000
                             ef_search=500,  # Size during search, range: 100-1000
                             metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"

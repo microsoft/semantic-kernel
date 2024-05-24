@@ -26,7 +26,7 @@ class VarBlock(Block):
     """Create a variable block.
 
     A variable block is used to add a variable to a template.
-    It get's rendered from KernelArguments, if the variable is not found
+    It gets rendered from KernelArguments, if the variable is not found
     a warning is logged and an empty string is returned.
     The variable must start with $ and be followed by a valid variable name.
     A valid variable name is a string of letters, numbers and underscores.
