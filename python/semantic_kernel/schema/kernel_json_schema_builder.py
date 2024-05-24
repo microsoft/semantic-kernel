@@ -1,4 +1,5 @@
-from typing import Any, get_type_hints, Union, get_origin, get_args
+from typing import Any, Union, get_args, get_origin, get_type_hints
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 TYPE_MAPPING = {
@@ -80,7 +81,8 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
-        """Handles complex types like List[str], Dict[str, int], Set[int], Tuple[int, str], Union[int, str], and Optional[int]."""
+        """Handles complex types like list[str], dict[str, int],
+        set[int], tuple[int, str], Union[int, str], and Optional[int]."""
         origin = get_origin(parameter_type)
         args = get_args(parameter_type)
 

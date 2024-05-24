@@ -1,9 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 import json
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from unittest.mock import Mock
-from typing import Any, List, Dict, Set, Tuple, Union, Optional
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
@@ -17,6 +16,35 @@ class ExampleModel(KernelBaseModel):
 class AnotherModel:
     title: str
     score: float
+
+
+class MockClass:
+    name: str = None
+    age: int = None
+
+
+class MockModel:
+    __annotations__ = {
+        "id": int,
+        "name": str,
+        "is_active": bool,
+        "scores": List[int],
+        "metadata": Dict[str, Any],
+        "tags": Set[str],
+        "coordinates": Tuple[int, int],
+        "status": Union[int, str],
+        "optional_field": Optional[str],
+    }
+    __fields__ = {
+        "id": Mock(description="The ID of the model"),
+        "name": Mock(description="The name of the model"),
+        "is_active": Mock(description="Whether the model is active"),
+        "tags": Mock(description="Tags associated with the model"),
+        "status": Mock(description="The status of the model, either as an integer or a string"),
+        "scores": Mock(description="The scores associated with the model"),
+        "optional_field": Mock(description="An optional field that can be null"),
+        "metadata": Mock(description="The optional metadata description"),
+    }
 
 
 def test_build_with_kernel_base_model():
@@ -77,30 +105,6 @@ def test_get_json_schema():
     assert result == expected_schema
 
 
-class MockModel:
-    __annotations__ = {
-        "id": int,
-        "name": str,
-        "is_active": bool,
-        "scores": List[int],
-        "metadata": Dict[str, Any],
-        "tags": Set[str],
-        "coordinates": Tuple[int, int],
-        "status": Union[int, str],
-        "optional_field": Optional[str],
-    }
-    __fields__ = {
-        "id": Mock(description="The ID of the model"),
-        "name": Mock(description="The name of the model"),
-        "is_active": Mock(description="Whether the model is active"),
-        "tags": Mock(description="Tags associated with the model"),
-        "status": Mock(description="The status of the model, either as an integer or a string"),
-        "scores": Mock(description="The scores associated with the model"),
-        "optional_field": Mock(description="An optional field that can be null"),
-        "metadata": Mock(description="The optional metadata description"),
-    }
-
-
 def test_build_primitive_types():
     assert KernelJsonSchemaBuilder.build(int) == {"type": "integer"}
     assert KernelJsonSchemaBuilder.build(str) == {"type": "string"}
@@ -111,6 +115,21 @@ def test_build_primitive_types():
 def test_build_list():
     schema = KernelJsonSchemaBuilder.build(list[str])
     assert schema == {"type": "array", "items": {"type": "string"}, "description": None}
+
+
+def test_build_list_complex_type():
+    schema = KernelJsonSchemaBuilder.build(list[MockClass])
+    assert schema == {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "age": {"type": "integer"},
+            },
+        },
+        "description": None,
+    }
 
 
 def test_build_dict():
@@ -176,11 +195,11 @@ def test_build_model_schema_for_many_types():
         },
         "coordinates": {
             "type": "array",
-            "items": {
-                "type": "integer",
-                "type": "integer"
-            },
-            "description": None
+            "items": [
+                {"type": "integer"},
+                {"type": "integer"}
+            ],
+            "description": null
         },
         "status": {
             "anyOf": [
