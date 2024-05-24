@@ -139,9 +139,6 @@ convention = "google"
 # Ignore all files that end in `_test.py`.
 "*_test.py" = ["D"]
 
-[tool.black]
-line-length = 120
-
 [tool.bandit]
 targets = ["python/semantic_kernel"]
 exclude_dirs = ["python/tests"]
