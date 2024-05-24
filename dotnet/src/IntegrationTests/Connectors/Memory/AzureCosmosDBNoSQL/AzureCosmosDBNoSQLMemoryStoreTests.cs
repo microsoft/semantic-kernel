@@ -199,7 +199,7 @@ public class AzureCosmosDBNoSQLMemoryStoreTests : IClassFixture<AzureCosmosDBNoS
         }
     }
 
-    private class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
+    private sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
     {
         public static ReadOnlyMemory<float> MatchingEmbedding = new[] { 0.0f, 0.0f, 0.0f };
 
