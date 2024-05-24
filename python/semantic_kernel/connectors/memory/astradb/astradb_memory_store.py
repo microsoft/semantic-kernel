@@ -9,10 +9,7 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
-from semantic_kernel.connectors.memory.astradb.utils import (
-    build_payload,
-    parse_payload,
-)
+from semantic_kernel.connectors.memory.astradb.utils import build_payload, parse_payload
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -58,7 +55,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         astradb_settings = None
         try:
-            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
+            astradb_settings = AstraDBSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
 

@@ -8,10 +8,7 @@ from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, Serve
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
-from semantic_kernel.connectors.memory.pinecone.utils import (
-    build_payload,
-    parse_payload,
-)
+from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceInvalidRequestError,
@@ -67,7 +64,7 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         pinecone_settings = None
         try:
-            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
+            pinecone_settings = PineconeSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
 

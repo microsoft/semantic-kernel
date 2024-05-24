@@ -76,7 +76,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         """
         azure_openai_settings = None
         try:
-            azure_openai_settings = AzureOpenAISettings.create(env_file_path=env_file_path)
+            azure_openai_settings = AzureOpenAISettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load AzureOpenAI pydantic settings: {e}")
 

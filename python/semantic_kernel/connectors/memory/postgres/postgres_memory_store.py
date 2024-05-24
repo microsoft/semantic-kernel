@@ -61,7 +61,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         """
         postgres_settings = None
         try:
-            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
+            postgres_settings = PostgresSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load Postgres pydantic settings: {e}")
 

@@ -52,7 +52,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         """
         google_palm_settings = None
         try:
-            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
+            google_palm_settings = GooglePalmSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Error loading Google Palm pydantic settings: {e}")
 

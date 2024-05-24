@@ -1,13 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class PostgresSettings(BaseModelSettings):
+class PostgresSettings(KernelBaseSettings):
     """Postgres model settings
 
     Required:
@@ -15,7 +17,6 @@ class PostgresSettings(BaseModelSettings):
         (Env var POSTGRES_CONNECTION_STRING)
     """
 
-    connection_string: SecretStr | None = None
+    env_prefix: ClassVar[str] = "ASTRADB_"
 
-    class Config(BaseModelSettings.Config):
-        env_prefix = "POSTGRES_"
+    connection_string: SecretStr | None = None

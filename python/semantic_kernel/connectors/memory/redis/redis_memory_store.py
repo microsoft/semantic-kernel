@@ -72,7 +72,7 @@ class RedisMemoryStore(MemoryStoreBase):
         """
         redis_settings = None
         try:
-            redis_settings = RedisSettings.create(env_file_path=env_file_path)
+            redis_settings = RedisSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load Redis pydantic settings: {e}")
 

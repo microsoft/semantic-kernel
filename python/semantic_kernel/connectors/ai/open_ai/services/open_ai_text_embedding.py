@@ -6,15 +6,9 @@ from collections.abc import Mapping
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
-    OpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
-    OpenAITextEmbeddingBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -53,7 +47,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 a fallback to environment variables. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
+            openai_settings = OpenAISettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
 

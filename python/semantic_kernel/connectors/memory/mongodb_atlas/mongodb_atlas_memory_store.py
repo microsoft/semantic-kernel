@@ -50,7 +50,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         mongodb_settings = None
         try:
-            mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
+            mongodb_settings = MongoDBAtlasSettings(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load the MongoDBAtlas pydantic settings: {e}")
 

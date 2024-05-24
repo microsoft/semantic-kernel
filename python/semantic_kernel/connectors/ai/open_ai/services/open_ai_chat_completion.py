@@ -4,16 +4,11 @@ import logging
 from collections.abc import Mapping
 
 from openai import AsyncOpenAI
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -49,24 +44,18 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             env_file_path {str | None} -- Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
-        openai_settings = None
-        try:
-            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
-
-        api_key = api_key or (
-            openai_settings.api_key.get_secret_value() if openai_settings and openai_settings.api_key else None
-        )
-        org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
-        ai_model_id = ai_model_id or (
-            openai_settings.chat_model_id if openai_settings and openai_settings.chat_model_id else None
-        )
-
-        super().__init__(
-            ai_model_id=ai_model_id,
+        openai_settings = OpenAISettings.create(
+            env_file_path=env_file_path,
             api_key=api_key,
             org_id=org_id,
+            chat_model_id=ai_model_id,
+        )
+        if not openai_settings.chat_model_id:
+            raise ValueError("Model ID is required, either directly as a parameter or in the settings.")
+        super().__init__(
+            ai_model_id=openai_settings.chat_model_id,
+            api_key=openai_settings.api_key.get_secret_value(),
+            org_id=openai_settings.org_id,
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,
             default_headers=default_headers,

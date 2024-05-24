@@ -93,10 +93,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-
             cosmosdb_settings = None
             try:
-                cosmosdb_settings = AzureCosmosDBSettings.create(env_file_path=env_file_path)
+                cosmosdb_settings = AzureCosmosDBSettings(env_file_path=env_file_path)
             except ValidationError as e:
                 logger.warning(f"Failed to load AzureCosmosDB pydantic settings: {e}")
 

@@ -7,15 +7,9 @@ from collections.abc import Mapping
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
-    OpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -37,7 +31,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         """
         Initialize an OpenAITextCompletion service.
 
-        Arguments:
+        Args:
             ai_model_id {str | None} -- OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id {str | None} -- Service ID tied to the execution settings.
@@ -52,23 +46,20 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
                 environment variables. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
+            openai_settings = OpenAISettings.create(
+                env_file_path=env_file_path,
+                api_key=api_key,
+                org_id=org_id,
+                text_model_id=ai_model_id,
+            )
         except ValidationError as e:
             logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
 
-        api_key = api_key or (
-            openai_settings.api_key.get_secret_value() if openai_settings and openai_settings.api_key else None
-        )
-        org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
-        ai_model_id = ai_model_id or (
-            openai_settings.text_model_id if openai_settings and openai_settings.text_model_id else None
-        )
-
         super().__init__(
-            ai_model_id=ai_model_id,
-            api_key=api_key,
-            org_id=org_id,
+            ai_model_id=openai_settings.text_model_id,
             service_id=service_id,
+            api_key=openai_settings.api_key.get_secret_value(),
+            org_id=openai_settings.org_id,
             ai_model_type=OpenAIModelTypes.TEXT,
             default_headers=default_headers,
             async_client=async_client,
