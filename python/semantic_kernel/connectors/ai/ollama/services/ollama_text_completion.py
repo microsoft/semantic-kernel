@@ -63,7 +63,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         settings: OllamaTextPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
-        Streams a text completion using a Ollama model.
+        Streams a text completion using an Ollama model.
         Note that this method does not support multiple responses,
         but the result will be a list anyway.
 
