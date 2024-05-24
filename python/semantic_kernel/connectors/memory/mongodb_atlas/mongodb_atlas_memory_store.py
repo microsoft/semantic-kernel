@@ -46,6 +46,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         read_preference: ReadPreference | None = ReadPreference.PRIMARY,
         env_file_path: str | None = None,
     ):
+        """Initializes a new instance of the MongoDBAtlasMemoryStore class."""
         from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
 
         mongodb_settings = None
@@ -70,18 +71,22 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
     @property
     def database_name(self) -> str:
+        """The name of the database."""
         return self.__database_name
 
     @property
     def database(self) -> core.AgnosticDatabase:
+        """The database object."""
         return self._mongo_client[self.database_name]
 
     @property
     def index_name(self) -> str:
+        """The name of the index."""
         return self.__index_name
 
     @property
     def num_candidates(self) -> int:
+        """The number of candidates to return."""
         return self.__num_candidates
 
     async def close(self):
@@ -93,7 +98,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
 
         Returns:
@@ -115,7 +120,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection from the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
 
         Returns:
@@ -126,7 +131,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
 
         Returns:
@@ -135,11 +140,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         return collection_name in (await self.get_collections())
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a memory record into the data store. Does not guarantee that the collection exists.
+        """Upserts a memory record into the data store.
+
+        Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             record (MemoryRecord): The memory record to upsert.
 
@@ -157,11 +164,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         return record._id
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
+        """Upserts a group of memory records into the data store.
+
+        Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             records (MemoryRecord): The memory records to upsert.
 
@@ -189,7 +198,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             key (str): The unique id associated with the memory record to get.
             with_embedding (bool): If true, the embedding will be returned in the memory record.
@@ -204,7 +213,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             keys (List[str]): The unique ids associated with the memory records to get.
             with_embeddings (bool): If true, the embedding will be returned in the memory records.
@@ -221,7 +230,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             key (str): The unique id associated with the memory record to remove.
 
@@ -235,7 +244,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             keys (List[str]): The unique ids associated with the memory records to remove.
 
@@ -258,7 +267,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             embedding (ndarray): The embedding to compare the collection's embeddings with.
             limit (int): The maximum number of similarity results to return, defaults to 1.
@@ -306,7 +315,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             embedding (ndarray): The embedding to compare the collection's embeddings with.
             min_relevance_score (float): The minimum relevance threshold for returned result.

@@ -39,7 +39,7 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     ) -> list["TextContent"]:
         """Executes a completion request and returns the result.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to use for the completion request.
             settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 
@@ -79,9 +79,10 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         settings: "OpenAIPromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
         """Executes a completion request and streams the result.
+
         Supports both chat completion and text completion.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to use for the completion request.
             settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 

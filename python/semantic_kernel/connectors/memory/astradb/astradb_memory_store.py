@@ -2,10 +2,16 @@
 
 import asyncio
 import logging
+import sys
 
 import aiohttp
 from numpy import ndarray
 from pydantic import ValidationError
+
+if sys.version_info >= (3, 12):
+    pass
+else:
+    pass
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
@@ -42,7 +48,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
-        Arguments:
+        Args:
             astra_application_token (str): The Astra application token.
             astra_id (str): The Astra id of database.
             astra_region (str): The Astra region
@@ -115,7 +121,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     ) -> None:
         """Creates a new collection in Astra if it does not exist.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to create.
             dimension_num (int): The dimension of the vectors to be stored in this collection.
             distance_type (str): Specifies the similarity metric to be used when querying or comparing vectors within
@@ -139,7 +145,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to delete.
 
         Returns:
@@ -154,7 +160,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to check.
 
         Returns:
@@ -163,11 +169,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
         return await self._client.find_collection(collection_name)
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a memory record into the data store. Does not guarantee that the collection exists.
-            If the record already exists, it will be updated.
-            If the record does not exist, it will be created.
+        """Upsert a memory record into the data store.
 
-        Arguments:
+        Does not guarantee that the collection exists.
+        If the record already exists, it will be updated.
+        If the record does not exist, it will be created.
+
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             record (MemoryRecord): The memory record to upsert.
 
@@ -181,11 +189,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
         return status["upsertedId"] if "upsertedId" in status else record._id
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a batch of memory records into the data store. Does not guarantee that the collection exists.
-            If the record already exists, it will be updated.
-            If the record does not exist, it will be created.
+        """Upsert a batch of memory records into the data store.
 
-        Arguments:
+        Does not guarantee that the collection exists.
+        If the record already exists, it will be updated.
+        If the record does not exist, it will be created.
+
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             records (List[MemoryRecord]): The memory records to upsert.
 
@@ -197,7 +207,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the record from.
             key (str): The unique database key of the record.
             with_embedding (bool): Whether to include the embedding in the result. (default: {False})
@@ -222,7 +232,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the records from.
             keys (List[str]): The unique database keys of the records.
             with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
@@ -241,7 +251,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the record from.
             key (str): The unique id associated with the memory record to remove.
 
@@ -254,7 +264,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the records from.
             keys (List[str]): The unique ids associated with the memory records to remove.
 
@@ -273,11 +283,11 @@ class AstraDBMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest matches from.
             embedding (ndarray): The embedding to find the nearest matches to.
             min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
+            with_embedding (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
             Tuple[MemoryRecord, float]: The record and the relevance score.
@@ -301,7 +311,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest matches from.
             embedding (ndarray): The embedding to find the nearest matches to.
             limit (int): The maximum number of matches to return.

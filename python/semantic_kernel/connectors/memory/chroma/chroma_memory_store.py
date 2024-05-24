@@ -1,9 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Optional
+import sys
+from typing import TYPE_CHECKING, Any, Optional
 
 from numpy import array, ndarray
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_similarity_scores, query_results_to_records
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
@@ -27,9 +33,10 @@ class ChromaMemoryStore(MemoryStoreBase):
         self,
         persist_directory: str | None = None,
         client_settings: Optional["chromadb.config.Settings"] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB.
+
         Collection names with uppercase characters are not supported by ChromaDB, they will be automatically converted.
 
         Args:
@@ -38,6 +45,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             client_settings (Optional["chromadb.config.Settings"], optional): A Settings instance to configure
                 the ChromaDB client. Defaults to None, which means the default settings for ChromaDB will be used.
             similarity_fetch_limit (int, optional): The maximum number of results to calculate cosine-similarity.
+            **kwargs: Additional keyword arguments.
 
         Example:
             # Create a ChromaMemoryStore with a local specified directory for data persistence
@@ -74,10 +82,11 @@ class ChromaMemoryStore(MemoryStoreBase):
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in Chroma if it does not exist.
-            To prevent downloading model file from embedding_function,
-            embedding_function is set to "DoNotUseChromaEmbeddingFunction".
 
-        Arguments:
+        To prevent downloading model file from embedding_function,
+        embedding_function is set to "DoNotUseChromaEmbeddingFunction".
+
+        Args:
             collection_name (str): The name of the collection to create.
             The name of the collection will be converted to snake case.
 
@@ -86,6 +95,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         self._client.create_collection(name=collection_name)
 
+    @override
     async def get_collection(self, collection_name: str) -> Optional["Collection"]:
         try:
             # Current version of ChromeDB rejects camel case collection names.
@@ -104,7 +114,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to delete.
 
         Returns:
@@ -115,7 +125,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to check.
 
         Returns:
@@ -127,11 +137,11 @@ class ChromaMemoryStore(MemoryStoreBase):
             return True
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a single MemoryRecord.
+        """Upsert a single MemoryRecord.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the record into.
-            records (MemoryRecord): The record to upsert.
+            record (MemoryRecord): The record to upsert.
 
         Returns:
             List[str]: The unique database key of the record.
@@ -160,9 +170,9 @@ class ChromaMemoryStore(MemoryStoreBase):
         return record._key
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a batch of records.
+        """Upsert a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the records into.
             records (List[MemoryRecord]): The records to upsert.
 
@@ -175,7 +185,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the record from.
             key (str): The unique database key of the record.
             with_embedding (bool): Whether to include the embedding in the result. (default: {False})
@@ -194,7 +204,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the records from.
             keys (List[str]): The unique database keys of the records.
             with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
@@ -215,7 +225,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the record from.
             key (str): The unique database key of the record to remove.
 
@@ -227,7 +237,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the records from.
             keys (List[str]): The unique database keys of the records to remove.
 
@@ -248,7 +258,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest matches from.
             embedding (ndarray): The embedding to find the nearest matches to.
             limit (int): The maximum number of matches to return.
@@ -315,7 +325,7 @@ class ChromaMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest match from.
             embedding (ndarray): The embedding to find the nearest match to.
             min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
@@ -332,38 +342,3 @@ class ChromaMemoryStore(MemoryStoreBase):
             with_embeddings=with_embedding,
         )
         return results[0]
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    import numpy as np
-
-    memory = ChromaMemoryStore()
-    memory_record1 = MemoryRecord(
-        id="test_id1",
-        text="sample text1",
-        is_reference=False,
-        embedding=np.array([0.5, 0.5]),
-        description="description",
-        external_source_name="external source",
-        timestamp="timestamp",
-    )
-    memory_record2 = MemoryRecord(
-        id="test_id2",
-        text="sample text2",
-        is_reference=False,
-        embedding=np.array([0.25, 0.75]),
-        description="description",
-        external_source_name="external source",
-        timestamp="timestamp",
-    )
-
-    asyncio.run(memory.create_collection("test_collection"))
-    collection = asyncio.run(memory.get_collection("test_collection"))
-
-    asyncio.run(memory.upsert_batch(collection.name, [memory_record1, memory_record2]))
-
-    result = asyncio.run(memory.get(collection.name, "test_id1", True))
-    results = asyncio.run(memory.get_nearest_match("test_collection", np.array([0.5, 0.5])))
-    print(results)

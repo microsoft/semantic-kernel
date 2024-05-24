@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import overload
+else:
+    from typing_extensions import overload
 
 import sentence_transformers
 import torch
@@ -27,11 +33,11 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextEmbedding class.
 
-        Arguments:
+        Args:
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
             device (Optional[int]): Device to run the model on, -1 for CPU, 0+ for GPU.
-            log : The logger instance to use. (Optional) (Deprecated)
+            service_id (Optional[str]): Service ID for the model.
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
@@ -43,15 +49,8 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
+    @overload
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        """Generates embeddings for a list of texts.
-
-        Arguments:
-            texts (List[str]): Texts to generate embeddings for.
-
-        Returns:
-            ndarray: Embeddings for the texts.
-        """
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts")
             embeddings = self.generator.encode(texts, **kwargs)

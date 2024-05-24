@@ -54,21 +54,21 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
-        Arguments:
-            service_id {str | None}: The service ID for the Azure deployment. (Optional)
-            api_key  {str | None}: The optional api key. If provided, will override the value in the
+        Args:
+            service_id (str | None): The service ID for the Azure deployment. (Optional)
+            api_key  (str | None): The optional api key. If provided, will override the value in the
                 env vars or .env file.
-            deployment_name  {str | None}: The optional deployment. If provided, will override the value
+            deployment_name  (str | None): The optional deployment. If provided, will override the value
                 (chat_deployment_name) in the env vars or .env file.
-            endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+            endpoint (str | None): The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
-            base_url {str | None}: The optional deployment base_url. If provided will override the value
+            base_url (str | None): The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
-            api_version {str | None}: The optional deployment api version. If provided will override the value
+            api_version (str | None): The optional deployment api version. If provided will override the value
                 in the env vars or .env file.
-            ad_token {str | None}: The Azure Active Directory token. (Optional)
-            ad_token_provider {AsyncAzureADTokenProvider}: The Azure Active Directory token provider. (Optional)
-            default_headers {Mapping[str, str]}: The default headers mapping of string keys to
+            ad_token (str | None): The Azure Active Directory token. (Optional)
+            ad_token_provider (AsyncAzureADTokenProvider): The Azure Active Directory token provider. (Optional)
+            default_headers (Mapping[str, str]): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
@@ -123,7 +123,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def from_dict(cls, settings: dict[str, str]) -> "AzureChatCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
                 should contains keys: service_id, and optionally:
                     ad_auth, ad_token_provider, default_headers

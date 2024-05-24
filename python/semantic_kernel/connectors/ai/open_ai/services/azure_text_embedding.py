@@ -111,7 +111,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth

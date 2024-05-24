@@ -22,7 +22,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
     Make sure to have the ollama service running either locally or remotely.
 
-    Arguments:
+    Args:
         ai_model_id (str): Ollama model name, see https://ollama.ai/library
         url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
@@ -37,7 +37,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to send to the LLM.
             settings (OllamaTextPromptExecutionSettings): Settings for the request.
 
@@ -61,10 +61,11 @@ class OllamaTextCompletion(TextCompletionClientBase):
         settings: OllamaTextPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using a Ollama model.
+
         Note that this method does not support multiple responses,
         but the result will be a list anyway.
 
-        Arguments:
+        Args:
             prompt (str): Prompt to complete.
             settings (OllamaTextPromptExecutionSettings): Request settings.
 

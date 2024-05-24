@@ -30,7 +30,7 @@ class MemoryQueryResult:
     ) -> None:
         """Initialize a new instance of MemoryQueryResult.
 
-        Arguments:
+        Args:
             is_reference (bool): Whether the record is a reference record.
             external_source_name (Optional[str]): The name of the external source.
             id (str): A unique for the record.
@@ -59,7 +59,7 @@ class MemoryQueryResult:
     ) -> "MemoryQueryResult":
         """Create a new instance of MemoryQueryResult from a MemoryRecord.
 
-        Arguments:
+        Args:
             record (MemoryRecord): The MemoryRecord to create the MemoryQueryResult from.
             relevance (float): The relevance of the record to a known query.
 

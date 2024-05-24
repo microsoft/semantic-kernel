@@ -50,8 +50,8 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
-        Arguments:
-            pinecone_api_key (str): The Pinecone API key.
+        Args:
+            api_key (str): The Pinecone API key.
             default_dimensionality (int): The default dimensionality to use for new collections.
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
@@ -88,16 +88,18 @@ class PineconeMemoryStore(MemoryStoreBase):
         index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
-            This function creates an index, by default the following index
-            settings are used: metric = cosine, cloud = aws, region = us-east-1.
 
-        Arguments:
+        This function creates an index, by default the following index
+        settings are used: metric = cosine, cloud = aws, region = us-east-1.
+
+        Args:
             collection_name (str): The name of the collection to create.
-            In Pinecone, a collection is represented as an index. The concept
-            of "collection" in Pinecone is just a static copy of an index.
-
-        Returns:
-            None
+                In Pinecone, a collection is represented as an index. The concept
+                of "collection" in Pinecone is just a static copy of an index.
+            dimension_num (int, optional): The dimensionality of the embeddings.
+            distance_type (str, optional): The distance metric to use for the index.
+                (default: {"cosine"})
+            index_spec (NamedTuple, optional): The index spec to use for the index.
         """
         if dimension_num is None:
             dimension_num = self._default_dimensionality
@@ -115,7 +117,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def describe_collection(self, collection_name: str) -> IndexDescription | None:
         """Gets the description of the index.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the index to get.
 
         Returns:
@@ -138,7 +140,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to delete.
 
         Returns:
@@ -151,7 +153,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to check.
 
         Returns:
@@ -166,9 +168,9 @@ class PineconeMemoryStore(MemoryStoreBase):
         return collection_name in index_collection_names
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a record.
+        """Upsert a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the record into.
             record (MemoryRecord): The record to upsert.
 
@@ -191,9 +193,9 @@ class PineconeMemoryStore(MemoryStoreBase):
         return record._id
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a batch of records.
+        """Upsert a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the records into.
             records (List[MemoryRecord]): The records to upsert.
 
@@ -224,7 +226,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the record from.
             key (str): The unique database key of the record.
             with_embedding (bool): Whether to include the embedding in the result. (default: {False})
@@ -248,7 +250,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the records from.
             keys (List[str]): The unique database keys of the records.
             with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
@@ -265,7 +267,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the record from.
             key (str): The unique database key of the record to remove.
 
@@ -281,7 +283,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the records from.
             keys (List[str]): The unique database keys of the records to remove.
 
@@ -305,7 +307,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest match from.
             embedding (ndarray): The embedding to find the nearest match to.
             min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
@@ -333,7 +335,7 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest matches from.
             embedding (ndarray): The embedding to find the nearest matches to.
             limit (int): The maximum number of matches to return.

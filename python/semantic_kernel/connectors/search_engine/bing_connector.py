@@ -21,7 +21,7 @@ class BingConnector(ConnectorBase):
     def __init__(self, api_key: str | None = None, env_file_path: str | None = None) -> None:
         """Initializes a new instance of the BingConnector class.
 
-        Arguments:
+        Args:
             api_key (str | None): The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
             env_file_path (str | None): The optional path to the .env file. If provided,

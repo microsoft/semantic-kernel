@@ -134,9 +134,7 @@ def _create_function_from_operation(
             schema_data=(
                 p.schema
                 if p.schema is not None and isinstance(p.schema, dict)
-                else {"type": f"{p.type}"}
-                if p.type
-                else None
+                else {"type": f"{p.type}"} if p.type else None
             ),
         )
         for p in rest_operation_params

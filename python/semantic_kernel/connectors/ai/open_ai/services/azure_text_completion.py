@@ -37,17 +37,17 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     ) -> None:
         """Initialize an AzureTextCompletion service.
 
-        Arguments:
+        Args:
             service_id: The service ID for the Azure deployment. (Optional)
-            api_key  {str | None}: The optional api key. If provided, will override the value in the
+            api_key (str | None): The optional api key. If provided, will override the value in the
                 env vars or .env file.
-            deployment_name  {str | None}: The optional deployment. If provided, will override the value
+            deployment_name  (str | None): The optional deployment. If provided, will override the value
                 (text_deployment_name) in the env vars or .env file.
-            endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+            endpoint (str | None): The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
-            base_url {str | None}: The optional deployment base_url. If provided will override the value
+            base_url (str | None): The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
-            api_version {str | None}: The optional deployment api version. If provided will override the value
+            api_version (str | None): The optional deployment api version. If provided will override the value
                 in the env vars or .env file.
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
@@ -108,7 +108,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
     def from_dict(cls, settings: dict[str, str]) -> "AzureTextCompletion":
         """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
                 should contains keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth

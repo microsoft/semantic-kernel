@@ -26,7 +26,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
 
     Make sure to have the ollama service running either locally or remotely.
 
-    Arguments:
+    Args:
         ai_model_id (str): Ollama model name, see https://ollama.ai/library
         url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/chat
         session (Optional[aiohttp.ClientSession]): Optional client session to use for requests.
@@ -43,7 +43,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     ) -> list[ChatMessageContent]:
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings (PromptExecutionSettings): Settings for the request.
@@ -76,9 +76,10 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         **kwargs: Any,
     ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """Streams a text completion using a Ollama model.
+
         Note that this method does not support multiple responses.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): A chat history that contains a list of chat messages,
                 that can be rendered into a set of messages, from system, user, assistant and function.
             settings (OllamaChatPromptExecutionSettings): Request settings.
@@ -117,8 +118,8 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
-            chat_history (ChatHistory): A chat history that contains the prompt to complete.
+        Args:
+            prompt (str): A prompt to complete
             settings (OllamaChatPromptExecutionSettings): Settings for the request.
 
         Returns:
@@ -146,9 +147,10 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         settings: OllamaChatPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using a Ollama model.
+
         Note that this method does not support multiple responses.
 
-        Arguments:
+        Args:
             prompt (str): A chat history that contains the prompt to complete.
             settings (OllamaChatPromptExecutionSettings): Request settings.
 

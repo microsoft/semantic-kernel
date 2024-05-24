@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Annotated, Any
+
+if sys.version_info >= (3, 12):
+    from typing import overload
+else:
+    from typing_extensions import overload
 
 import google.generativeai as palm
 from numpy import array, ndarray
@@ -22,7 +28,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     def __init__(self, ai_model_id: str, api_key: str | None = None, env_file_path: str | None = None) -> None:
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
-        Arguments:
+        Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key (str | None): The optional API key to use. If not provided, will be
@@ -47,15 +53,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
+    @overload
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        """Generates embeddings for a list of texts.
-
-        Arguments:
-            texts (List[str]): Texts to generate embeddings for.
-
-        Returns:
-            ndarray: Embeddings for the texts.
-        """
         try:
             palm.configure(api_key=self.api_key)
         except Exception as ex:

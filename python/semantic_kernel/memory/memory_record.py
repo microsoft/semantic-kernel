@@ -33,7 +33,7 @@ class MemoryRecord:
     ) -> None:
         """Initialize a new instance of MemoryRecord.
 
-        Arguments:
+        Args:
             is_reference (bool): Whether the record is a reference record.
             external_source_name (Optional[str]): The name of the external source.
             id (str): A unique for the record.
@@ -64,7 +64,7 @@ class MemoryRecord:
     ) -> "MemoryRecord":
         """Create a reference record.
 
-        Arguments:
+        Args:
             external_id (str): The external id of the record.
             source_name (str): The name of the external source.
             description (Optional[str]): The description of the record.
@@ -95,7 +95,7 @@ class MemoryRecord:
     ) -> "MemoryRecord":
         """Create a local record.
 
-        Arguments:
+        Args:
             id (str): A unique for the record.
             text (str): The text of the record.
             description (Optional[str]): The description of the record.

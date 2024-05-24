@@ -36,7 +36,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextCompletion class.
 
-        Arguments:
+        Args:
             ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/models
             device (Optional[int]): Device to run the model on, defaults to CPU, 0+ for GPU,
@@ -80,7 +80,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to send to the LLM.
             settings (HuggingFacePromptExecutionSettings): Settings for the request.
 
@@ -108,9 +108,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         settings: HuggingFacePromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """Streams a text completion using a Hugging Face model.
+
         Note that this method does not support multiple responses.
 
-        Arguments:
+        Args:
             prompt (str): Prompt to complete.
             settings (HuggingFacePromptExecutionSettings): Request settings.
 

@@ -26,11 +26,8 @@ class MemoryStoreBase(ABC):
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
-
-        Returns:
-            None
         """
         pass
 
@@ -49,11 +46,8 @@ class MemoryStoreBase(ABC):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection from the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
-
-        Returns:
-            None
         """
         pass
 
@@ -61,7 +55,7 @@ class MemoryStoreBase(ABC):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
 
         Returns:
@@ -77,7 +71,7 @@ class MemoryStoreBase(ABC):
         If the record already exists, it will be updated.
         If the record does not exist, it will be created.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             record (MemoryRecord): The memory record to upsert.
 
@@ -94,7 +88,7 @@ class MemoryStoreBase(ABC):
         If the record already exists, it will be updated.
         If the record does not exist, it will be created.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             records (MemoryRecord): The memory records to upsert.
 
@@ -107,7 +101,7 @@ class MemoryStoreBase(ABC):
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             key (str): The unique id associated with the memory record to get.
             with_embedding (bool): If true, the embedding will be returned in the memory record.
@@ -118,10 +112,15 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self,
+        collection_name: str,
+        keys: list[str],
+        with_embeddings: bool,
+    ) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             keys (List[str]): The unique ids associated with the memory records to get.
             with_embeddings (bool): If true, the embedding will be returned in the memory records.
@@ -135,12 +134,9 @@ class MemoryStoreBase(ABC):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             key (str): The unique id associated with the memory record to remove.
-
-        Returns:
-            None
         """
         pass
 
@@ -148,12 +144,9 @@ class MemoryStoreBase(ABC):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             keys (List[str]): The unique ids associated with the memory records to remove.
-
-        Returns:
-            None
         """
         pass
 
@@ -168,7 +161,7 @@ class MemoryStoreBase(ABC):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             embedding (ndarray): The embedding to compare the collection's embeddings with.
             limit (int): The maximum number of similarity results to return.
@@ -191,7 +184,7 @@ class MemoryStoreBase(ABC):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name associated with a collection of embeddings.
             embedding (ndarray): The embedding to compare the collection's embeddings with.
             min_relevance_score (float): The minimum relevance threshold for returned result.

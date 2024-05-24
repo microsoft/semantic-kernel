@@ -23,7 +23,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     ) -> list["ChatMessageContent"]:
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): A list of chats in a chat_history object, that can be
                 rendered into messages from system, user, assistant and tools.
             settings (PromptExecutionSettings): Settings for the request.
@@ -43,7 +43,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         """This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): A list of chat chat_history, that can be rendered into a
                 set of chat_history, from system, user, assistant and function.
             settings (PromptExecutionSettings): Settings for the request.
@@ -61,15 +61,18 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         role_key: str = "role",
         content_key: str = "content",
     ) -> list[dict[str, str | None]]:
-        """Prepare the chat history for a request, allowing customization of the key names for role/author,
-        and optionally overriding the role.
+        """Prepare the chat history for a request.
+
+        Allowing customization of the key names for role/author, and optionally overriding the role.
 
         ChatRole.TOOL messages need to be formatted different than system/user/assistant messages:
             They require a "tool_call_id" and (function) "name" key, and the "metadata" key should
             be removed. The "encoding" key should also be removed.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): The chat history to prepare.
+            role_key (str): The key name for the role/author.
+            content_key (str): The key name for the content/message.
 
         Returns:
             List[Dict[str, Optional[str]]]: The prepared chat history.

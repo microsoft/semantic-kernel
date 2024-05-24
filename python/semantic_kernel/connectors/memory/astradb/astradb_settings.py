@@ -27,4 +27,6 @@ class AstraDBSettings(BaseModelSettings):
     keyspace: str
 
     class Config(BaseModelSettings.Config):
+        """Pydantic configuration settings."""
+
         env_prefix = "ASTRADB_"

@@ -66,6 +66,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     @field_validator("functions", "function_call", mode="after")
     @classmethod
     def validate_function_call(cls, v: str | list[dict[str, Any]] | None = None):
+        """Validate the function_call and functions parameters."""
         if v is not None:
             logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501

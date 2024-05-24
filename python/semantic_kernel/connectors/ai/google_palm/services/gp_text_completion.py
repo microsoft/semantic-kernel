@@ -24,7 +24,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     def __init__(self, ai_model_id: str, api_key: str | None = None, env_file_path: str | None = None):
         """Initializes a new instance of the GooglePalmTextCompletion class.
 
-        Arguments:
+        Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key (str | None): The optional API key to use. If not provided, will be
@@ -53,7 +53,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to send to the LLM.
             settings (GooglePalmTextPromptExecutionSettings): Settings for the request.
 
@@ -98,6 +98,12 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         prompt: str,
         settings: GooglePalmTextPromptExecutionSettings,
     ):
+        """Get streaming text contents from the Google Palm API, unsupported.
+
+        Raises:
+            NotImplementedError: Google Palm API does not currently support streaming.
+
+        """
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":

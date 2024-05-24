@@ -22,8 +22,9 @@ MONGODB_FIELD_TIMESTAMP = "timestamp"
 def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
-    Arguments:
+    Args:
         data (dict): Azure Cognitive Search result data.
+        with_embeddings (bool): Whether to include embeddings.
 
     Returns:
         MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
@@ -46,7 +47,7 @@ def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord
 def memory_record_to_mongo_document(record: MemoryRecord) -> dict:
     """Convert a MemoryRecord to a dictionary.
 
-    Arguments:
+    Args:
         record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:

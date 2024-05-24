@@ -77,7 +77,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     ) -> list["ChatMessageContent"]:
         """Executes a chat completion request and returns the result.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): The chat history to use for the chat completion.
             settings (OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings): The settings to use
                 for the chat completion request.
@@ -153,7 +153,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
         """Executes a streaming chat completion request and returns the result.
 
-        Arguments:
+        Args:
             chat_history (ChatHistory): The chat history to use for the chat completion.
             settings (OpenAIChatPromptExecutionSettings | AzureChatPromptExecutionSettings): The settings to use
                 for the chat completion request.

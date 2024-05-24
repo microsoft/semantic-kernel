@@ -46,16 +46,14 @@ class PostgresMemoryStore(MemoryStoreBase):
         schema: str = DEFAULT_SCHEMA,
         env_file_path: str | None = None,
     ) -> None:
-        r"""Initializes a new instance of the PostgresMemoryStore class.
+        """Initializes a new instance of the PostgresMemoryStore class.
 
-        Arguments:
-            connection_string (str): The connection string to the Postgres database.\n
-            default_dimensionality (int): The default dimensionality of the embeddings.\n
-            min_pool (int): The minimum number of connections in the connection pool.\n
-            max_pool (int): The maximum number of connections in the connection pool.\n
-            schema (str): The schema to use. (default: {"public"})\n
-            timezone_offset (Optional[str]): The timezone offset to use. (default: {None})
-                Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+        Args:
+            connection_string (str): The connection string to the Postgres database.
+            default_dimensionality (int): The default dimensionality of the embeddings.
+            min_pool (int): The minimum number of connections in the connection pool.
+            max_pool (int): The maximum number of connections in the connection pool.
+            schema (str): The schema to use. (default: {"public"})
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
@@ -86,7 +84,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> None:
         r"""Creates a new collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to create.\n
             dimension_num (Optional[int]): The dimensionality of the embeddings. (default: {None})
             Uses the default dimensionality when not provided
@@ -131,7 +129,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to delete.
 
         Returns:
@@ -148,7 +146,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to check.
 
         Returns:
@@ -161,7 +159,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         r"""Upserts a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the record into.\n
             record (MemoryRecord): The record to upsert.
 
@@ -202,7 +200,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the records into.
             records (List[MemoryRecord]): The records to upsert.
 
@@ -252,7 +250,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the record from.
             key (str): The unique database key of the record.
             with_embedding (bool): Whether to include the embedding in the result. (default: {False})
@@ -296,7 +294,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the records from.
             keys (List[str]): The unique database keys of the records.
             with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
@@ -341,7 +339,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the record from.
             key (str): The unique database key of the record to remove.
 
@@ -365,7 +363,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the records from.
             keys (List[str]): The unique database keys of the records to remove.
 
@@ -396,7 +394,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest matches from.
             embedding (ndarray): The embedding to find the nearest matches to.
             limit (int): The maximum number of matches to return.
@@ -465,7 +463,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest match from.
             embedding (ndarray): The embedding to find the nearest match to.
             min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})

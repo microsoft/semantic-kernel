@@ -15,7 +15,7 @@ class RetryMechanismBase(ABC):
     async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
-        Arguments:
+        Args:
             action (Callable[[], Awaitable[T]]): The action to retry on exception.
 
         Returns:

@@ -93,7 +93,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This will execute the functions in the order they are provided, if a list of functions is provided.
         When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
 
-        Arguments:
+        Args:
             function (KernelFunction): The function to execute,
                 this value has precedence when supplying both this and using function_name and plugin_name,
                 if this is none, function_name and plugin_name are used and cannot be None.
@@ -152,7 +152,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         When multiple functions are passed the FunctionResult of each is put into a list.
 
-        Arguments:
+        Args:
             function (KernelFunction): The function or functions to execute,
             this value has precedence when supplying both this and using function_name and plugin_name,
             if this is none, function_name and plugin_name are used and cannot be None.

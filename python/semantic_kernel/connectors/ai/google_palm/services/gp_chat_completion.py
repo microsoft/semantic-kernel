@@ -40,7 +40,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ):
         """Initializes a new instance of the GooglePalmChatCompletion class.
 
-        Arguments:
+        Args:
             ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
             api_key (str | None): The optional API key to use. If not provided, will be read from either
@@ -78,7 +78,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ) -> list[ChatMessageContent]:
         """This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
-        Arguments:
+        Args:
             chat_history (List[ChatMessage]): A list of chat messages, that can be rendered into a
                 set of messages, from system, user, assistant and function.
             settings (GooglePalmPromptExecutionSettings): Settings for the request.
@@ -101,8 +101,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ) -> ChatMessageContent:
         """Create a chat message content object from a response.
 
-        Arguments:
+        Args:
             response (ChatResponse): The response to create the content from.
+            candidate (MessageDict): The candidate message to create the content from.
+            index (int): The index of the candidate message.
 
         Returns:
             ChatMessageContent: The created chat message content.
@@ -126,6 +128,11 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         settings: GooglePalmPromptExecutionSettings,
         **kwargs: Any,
     ):
+        """Return a streaming chat message.
+
+        Raises:
+            NotImplementedError: Google Palm API does not currently support streaming
+        """
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def get_text_contents(
@@ -135,7 +142,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     ) -> list[TextContent]:
         """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to send to the LLM.
             settings (GooglePalmPromptExecutionSettings): Settings for the request.
 
@@ -152,8 +159,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
     def _create_text_content(self, response: ChatResponse, candidate: MessageDict) -> TextContent:
         """Create a text content object from a response.
 
-        Arguments:
+        Args:
             response (ChatResponse): The response to create the content from.
+            candidate (MessageDict): The candidate message to create the content from.
 
         Returns:
             TextContent: The created text content.
@@ -171,40 +179,31 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         prompt: str,
         settings: GooglePalmPromptExecutionSettings,
     ):
+        """Return a streaming text content.
+
+        Raises:
+            NotImplementedError: Google Palm API does not currently support streaming
+        """
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
         self,
         settings: GooglePalmPromptExecutionSettings,
-    ):
-        """Completes the given user message. If len(messages) > 1, and a
+    ) -> Any:
+        """Completes the given user message.
+
+        If len(messages) > 1, and a
         conversation has not been initiated yet, it is assumed that chat history
         is needed for context. All messages preceding the last message will be
         utilized for context. This also enables Google PaLM to utilize memory
         and plugins, which should be stored in the messages parameter as system
         messages.
 
-        Arguments:
-            messages (str): The message (from a user) to respond to.
+        Args:
             settings (GooglePalmPromptExecutionSettings): The request settings.
-            context (str): Text that should be provided to the model first,
-            to ground the response. If a system message is provided, it will be
-            used as context.
-            examples (ExamplesOptions): 	Examples of what the model should
-            generate. This includes both the user input and the response that
-            the model should emulate. These examples are treated identically to
-            conversation messages except that they take precedence over the
-            history in messages: If the total input size exceeds the model's
-            input_token_limit the input will be truncated. Items will be dropped
-            from messages before examples
-            See: https://developers.generativeai.google/api/python/google/generativeai/types/ExampleOptions
-            prompt (MessagePromptOptions): 	You may pass a
-            types.MessagePromptOptions instead of a setting context/examples/messages,
-            but not both.
-            See: https://developers.generativeai.google/api/python/google/generativeai/types/MessagePromptOptions
 
         Returns:
-            str: The completed text.
+            The completion.
         """
         if settings is None:
             raise ValueError("The request settings cannot be `None`")

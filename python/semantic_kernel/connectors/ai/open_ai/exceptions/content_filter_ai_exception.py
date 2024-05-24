@@ -25,7 +25,7 @@ class ContentFilterResult:
     def from_inner_error_result(cls, inner_error_results: dict[str, Any]) -> "ContentFilterResult":
         """Creates a ContentFilterResult from the inner error results.
 
-        Arguments:
+        Args:
             key (str): The key to get the inner error result from.
             inner_error_results (Dict[str, Any]): The inner error results.
 
@@ -65,7 +65,7 @@ class ContentFilterAIException(ServiceContentFilterException):
     ) -> None:
         """Initializes a new instance of the ContentFilterAIException class.
 
-        Arguments:
+        Args:
             message (str): The error message.
             inner_exception (Exception): The inner exception.
         """

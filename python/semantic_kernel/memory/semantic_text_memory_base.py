@@ -26,7 +26,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
 
-        Arguments:
+        Args:
             collection (str): The collection to save the information to.
             text (str): The text to save.
             id (str): The id of the information.
@@ -49,7 +49,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
     ) -> None:
         """Save a reference to the memory (calls the memory store's upsert method).
 
-        Arguments:
+        Args:
             collection (str): The collection to save the reference to.
             text (str): The text to save.
             external_id (str): The external id of the reference.
@@ -69,7 +69,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
     ) -> "MemoryQueryResult | None":
         """Get information from the memory (calls the memory store's get method).
 
-        Arguments:
+        Args:
             collection (str): The collection to get the information from.
             key (str): The key of the information.
 
@@ -88,7 +88,7 @@ class SemanticTextMemoryBase(KernelBaseModel):
     ) -> list["MemoryQueryResult"]:
         """Search the memory (calls the memory store's get_nearest_matches method).
 
-        Arguments:
+        Args:
             collection (str): The collection to search in.
             query (str): The query to search for.
             limit (int): The maximum number of results to return. (default: {1})

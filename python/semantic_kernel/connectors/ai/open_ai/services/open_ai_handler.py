@@ -34,9 +34,10 @@ class OpenAIHandler(KernelBaseModel, ABC):
         request_settings: OpenAIPromptExecutionSettings,
     ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
         """Completes the given prompt. Returns a single string completion.
+
         Cannot return multiple completions. Cannot return logprobs.
 
-        Arguments:
+        Args:
             prompt (str): The prompt to complete.
             messages (List[Tuple[str, str]]): A list of tuples, where each tuple is a role and content set.
             request_settings (OpenAIPromptExecutionSettings): The request settings.
@@ -82,6 +83,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
             ) from ex
 
     def store_usage(self, response):
+        """Store the usage information from the response."""
         if not isinstance(response, AsyncStream):
             logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens

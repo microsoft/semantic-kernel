@@ -21,7 +21,7 @@ class KernelArguments(dict):
         This class is derived from a dict, hence behaves the same way,
         just adds the execution_settings as a dict, with service_id and the settings.
 
-        Arguments:
+        Args:
             settings (PromptExecutionSettings | List[PromptExecutionSettings] | None):
                 The settings for the execution.
                 If a list is given, make sure all items in the list have a unique service_id

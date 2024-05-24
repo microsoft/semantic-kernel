@@ -124,6 +124,7 @@ all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transfo
 [tool.ruff]
 line-length = 120
 target-version = "py310"
+include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 
 [tool.ruff.lint]
 select = ["D", "E", "F", "I"]

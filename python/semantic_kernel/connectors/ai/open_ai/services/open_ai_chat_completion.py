@@ -30,7 +30,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
     ) -> None:
         """Initialize an OpenAIChatCompletion service.
 
-        Arguments:
+        Args:
             ai_model_id (str): OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id (str | None): Service ID tied to the execution settings.
@@ -72,7 +72,7 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
     def from_dict(cls, settings: dict[str, str]) -> "OpenAIChatCompletion":
         """Initialize an Open AI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
         """
         return OpenAIChatCompletion(

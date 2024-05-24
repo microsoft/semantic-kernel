@@ -29,7 +29,7 @@ def get_search_index_async_client(
 ):
     """Return a client for Azure Cognitive Search.
 
-    Arguments:
+    Args:
         search_endpoint (str): Optional endpoint (default: {None}).
         admin_key (str): Optional API key (default: {None}).
         azure_credential (AzureKeyCredential): Optional Azure credentials (default: {None}).
@@ -82,8 +82,9 @@ def get_search_index_async_client(
 def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     """Return the schema of search indexes.
 
-    Arguments:
+    Args:
         vector_size (int): The size of the vectors being stored in collection/index.
+        vector_search_profile_name (str): The name of the vector search profile.
 
     Returns:
         list: The Azure Cognitive Search schema as list type.
@@ -147,8 +148,8 @@ def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
 def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
 
-    Arguments:
-        with_embedding (bool): Whether to include the embedding vector field.
+    Args:
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
         List[str]: List of fields.
@@ -171,8 +172,9 @@ def get_field_selection(with_embeddings: bool) -> list[str]:
 def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
-    Arguments:
+    Args:
         data (dict): Azure Cognitive Search result data.
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
         MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
@@ -194,7 +196,7 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
 def memory_record_to_search_record(record: MemoryRecord) -> dict:
     """Convert a MemoryRecord to a dictionary.
 
-    Arguments:
+    Args:
         record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:

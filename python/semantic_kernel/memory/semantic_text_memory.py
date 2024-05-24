@@ -21,7 +21,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     def __init__(self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase) -> None:
         """Initialize a new instance of SemanticTextMemory.
 
-        Arguments:
+        Args:
             storage (MemoryStoreBase): The MemoryStoreBase to use for storage.
             embeddings_generator (EmbeddingGeneratorBase): The EmbeddingGeneratorBase
                 to use for generating embeddings.
@@ -41,7 +41,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
 
-        Arguments:
+        Args:
             collection (str): The collection to save the information to.
             text (str): The text to save.
             id (str): The id of the information.
@@ -76,7 +76,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     ) -> None:
         """Save a reference to the memory (calls the memory store's upsert method).
 
-        Arguments:
+        Args:
             collection (str): The collection to save the reference to.
             text (str): The text to save.
             external_id (str): The external id of the reference.
@@ -107,7 +107,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     ) -> MemoryQueryResult | None:
         """Get information from the memory (calls the memory store's get method).
 
-        Arguments:
+        Args:
             collection (str): The collection to get the information from.
             key (str): The key of the information.
 
@@ -128,7 +128,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
     ) -> list[MemoryQueryResult]:
         """Search the memory (calls the memory store's get_nearest_matches method).
 
-        Arguments:
+        Args:
             collection (str): The collection to search in.
             query (str): The query to search for.
             limit (int): The maximum number of results to return. (default: {1})

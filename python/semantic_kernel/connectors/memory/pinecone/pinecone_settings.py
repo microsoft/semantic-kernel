@@ -10,7 +10,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 class PineconeSettings(BaseModelSettings):
     """Pinecone model settings.
 
-    Required:
+    Args:
     - api_key: SecretStr - Pinecone API key
         (Env var PINECONE_API_KEY)
     """
@@ -18,4 +18,6 @@ class PineconeSettings(BaseModelSettings):
     api_key: SecretStr | None = None
 
     class Config(BaseModelSettings.Config):
+        """Config for Pinecone settings."""
+
         env_prefix = "PINECONE_"

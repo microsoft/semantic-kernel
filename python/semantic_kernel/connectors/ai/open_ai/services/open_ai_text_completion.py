@@ -30,7 +30,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
     ) -> None:
         """Initialize an OpenAITextCompletion service.
 
-        Arguments:
+        Args:
             ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id (str | None): Service ID tied to the execution settings.
@@ -71,7 +71,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
     def from_dict(cls, settings: dict[str, str]) -> "OpenAITextCompletion":
         """Initialize an Open AI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
         """
         if "default_headers" in settings and isinstance(settings["default_headers"], str):

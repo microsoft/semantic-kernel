@@ -56,10 +56,11 @@ class RedisMemoryStore(MemoryStoreBase):
         env_file_path: str | None = None,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
+
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
         See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors.
 
-        Arguments:
+        Args:
             connection_string (str): Provide connection URL to a Redis instance
             vector_size (str): Size of vectors, defaults to 1536
             vector_distance_metric (str): Metric for measuring vector distances, defaults to COSINE
@@ -100,11 +101,12 @@ class RedisMemoryStore(MemoryStoreBase):
         self._database.close()
 
     async def create_collection(self, collection_name: str) -> None:
-        """Creates a collection, implemented as a Redis index containing hashes
-        prefixed with "collection_name:".
+        """Creates a collection.
+
+        Implemented as a Redis index containing hashes prefixed with "collection_name:".
         If a collection of the name exists, it is left unchanged.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
         """
         if await self.does_collection_exist(collection_name):
@@ -142,12 +144,12 @@ class RedisMemoryStore(MemoryStoreBase):
 
     async def delete_collection(self, collection_name: str, delete_records: bool = True) -> None:
         """Deletes a collection from the data store.
+
         If the collection does not exist, the database is left unchanged.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             delete_records (bool): Delete all data associated with the collection, default to True
-
         """
         if await self.does_collection_exist(collection_name):
             self._ft(collection_name).dropindex(delete_documents=delete_records)
@@ -155,7 +157,7 @@ class RedisMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
 
         Returns:
@@ -168,14 +170,16 @@ class RedisMemoryStore(MemoryStoreBase):
             return False
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upsert a memory record into the data store. Does not guarantee that the collection exists.
+        """Upsert a memory record into the data store.
+
+        Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the record do not have the same dimensionality configured for the collection,
         it will not be detected to belong to the collection in Redis.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             record (MemoryRecord): Memory record to upsert
 
@@ -200,14 +204,16 @@ class RedisMemoryStore(MemoryStoreBase):
             raise ServiceResponseException("Could not upsert messages.") from e
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
+        """Upserts a group of memory records into the data store.
+
+        Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the records do not have the same dimensionality configured for the collection,
         they will not be detected to belong to the collection in Redis.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             records (List[MemoryRecord]): List of memory records to upsert
 
@@ -224,7 +230,7 @@ class RedisMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             key (str): ID associated with the memory to get
             with_embedding (bool): Include embedding with the memory record, default to False
@@ -250,12 +256,14 @@ class RedisMemoryStore(MemoryStoreBase):
     async def get_batch(
         self, collection_name: str, keys: list[str], with_embeddings: bool = False
     ) -> list[MemoryRecord]:
-        """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
+        """Gets a batch of memory records from the data store.
 
-        Arguments:
+        Does not guarantee that the collection exists.
+
+        Args:
             collection_name (str): Name for a collection of embeddings
             keys (List[str]): IDs associated with the memory records to get
-            with_embedding (bool): Include embeddings with the memory records, default to False
+            with_embeddings (bool): Include embeddings with the memory records, default to False
 
         Returns:
             List[MemoryRecord]: The memory records if found, else an empty list
@@ -269,10 +277,12 @@ class RedisMemoryStore(MemoryStoreBase):
         return records
 
     async def remove(self, collection_name: str, key: str) -> None:
-        """Removes a memory record from the data store. Does not guarantee that the collection exists.
+        """Removes a memory record from the data store.
+
+        Does not guarantee that the collection exists.
         If the key does not exist, do nothing.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             key (str): ID associated with the memory to remove
         """
@@ -284,7 +294,7 @@ class RedisMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             keys (List[str]): IDs associated with the memory records to remove
         """
@@ -303,7 +313,7 @@ class RedisMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Get the nearest matches to an embedding using the configured similarity algorithm.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             embedding (ndarray): Embedding to find the nearest matches to
             limit (int): Maximum number of matches to return
@@ -355,7 +365,7 @@ class RedisMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Get the nearest match to an embedding using the configured similarity algorithm.
 
-        Arguments:
+        Args:
             collection_name (str): Name for a collection of embeddings
             embedding (ndarray): Embedding to find the nearest match to
             min_relevance_score (float): Minimum relevance score of the match, default to 0.0

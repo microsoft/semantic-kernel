@@ -25,7 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class KernelPromptTemplate(PromptTemplateBase):
     """Create a Kernel prompt template.
 
-    Arguments:
+    Args:
         prompt_template_config (PromptTemplateConfig): The prompt template configuration
             This includes the actual template to use.
         allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides

@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import overload
+else:
+    from typing_extensions import overload
 
 import aiohttp
 from numpy import array, ndarray
@@ -20,7 +26,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
 
     Make sure to have the ollama service running either locally or remotely.
 
-    Arguments:
+    Args:
         ai_model_id (str): Ollama model name, see https://ollama.ai/library
         url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
         session (Optional[aiohttp.ClientSession]): Optional client session to use for requests.
@@ -29,15 +35,8 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     url: HttpUrl = "http://localhost:11434/api/embeddings"
     session: aiohttp.ClientSession | None = None
 
+    @overload
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
-        """Generates embeddings for a list of texts.
-
-        Arguments:
-            texts (List[str]): Texts to generate embeddings for.
-
-        Returns:
-            ndarray: Embeddings for the texts.
-        """
         result = []
         for text in texts:
             async with AsyncSession(self.session) as session:

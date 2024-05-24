@@ -53,7 +53,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
-        Arguments:
+        Args:
             vector_size (int): Embedding vector size.
             search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
@@ -107,7 +107,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> None:
         """Creates a new collection if it does not exist.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to create.
             vector_config (HnswVectorSearchAlgorithmConfiguration): Optional search algorithm configuration
                                                                       (default: {None}).
@@ -185,7 +185,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to delete.
 
         Returns:
@@ -196,7 +196,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to check.
 
         Returns:
@@ -215,7 +215,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the record into.
             record (MemoryRecord): The record to upsert.
 
@@ -230,7 +230,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to upsert the records into.
             records (List[MemoryRecord]): The records to upsert.
 
@@ -266,7 +266,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the record from.
             key (str): The unique database key of the record.
             with_embedding (bool): Whether to include the embedding in the result. (default: {False})
@@ -295,7 +295,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the records from.
             keys (List[str]): The unique database keys of the records.
             with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
@@ -318,7 +318,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the records from.
             keys (List[str]): The unique database keys of the records to remove.
 
@@ -331,7 +331,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to remove the record from.
             key (str): The unique database key of the record to remove.
 
@@ -354,7 +354,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
-        Arguments:
+        Args:
             collection_name (str): The name of the collection to get the nearest match from.
             embedding (ndarray): The embedding to find the nearest match to.
             min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
