@@ -9,7 +9,6 @@ from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
@@ -59,21 +58,13 @@ class PostgresMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
-        postgres_settings = None
-        try:
-            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load Postgres pydantic settings: {e}")
-
-        connection_string = connection_string or (
-            postgres_settings.connection_string.get_secret_value()
-            if postgres_settings and postgres_settings.connection_string
-            else None
-        )
+        postgres_settings = PostgresSettings.create(env_file_path=env_file_path, connection_string=connection_string)
 
         self._check_dimensionality(default_dimensionality)
 
-        self._connection_string = connection_string
+        self._connection_string = (
+            postgres_settings.connection_string.get_secret_value() if postgres_settings.connection_string else None
+        )
         self._default_dimensionality = default_dimensionality
         self._connection_pool = ConnectionPool(self._connection_string, min_size=min_pool, max_size=max_pool)
         self._schema = schema

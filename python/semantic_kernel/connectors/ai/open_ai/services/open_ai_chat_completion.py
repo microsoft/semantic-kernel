@@ -50,11 +50,9 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
             org_id=org_id,
             chat_model_id=ai_model_id,
         )
-        if not openai_settings.chat_model_id:
-            raise ValueError("Model ID is required, either directly as a parameter or in the settings.")
         super().__init__(
             ai_model_id=openai_settings.chat_model_id,
-            api_key=openai_settings.api_key.get_secret_value(),
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
             org_id=openai_settings.org_id,
             service_id=service_id,
             ai_model_type=OpenAIModelTypes.CHAT,

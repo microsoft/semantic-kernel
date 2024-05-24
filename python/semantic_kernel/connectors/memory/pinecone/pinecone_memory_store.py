@@ -5,7 +5,6 @@ from typing import NamedTuple
 
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
@@ -62,18 +61,9 @@ class PineconeMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        pinecone_settings = None
-        try:
-            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
+        pinecone_settings = PineconeSettings.create(env_file_path=env_file_path, api_key=api_key)
 
-        api_key = api_key or (
-            pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
-        )
-        assert api_key, "The Pinecone api_key cannot be None."
-
-        self._pinecone_api_key = api_key
+        self._pinecone_api_key = pinecone_settings.api_key.get_secret_value() if pinecone_settings.api_key else None
         self._default_dimensionality = default_dimensionality
 
         self.pinecone = Pinecone(api_key=self._pinecone_api_key)

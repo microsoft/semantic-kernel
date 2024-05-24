@@ -5,7 +5,6 @@ import logging
 import numpy as np
 import redis
 from numpy import ndarray
-from pydantic import ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
@@ -70,22 +69,14 @@ class RedisMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables, defaults to False
         """
-        redis_settings = None
-        try:
-            redis_settings = RedisSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load Redis pydantic settings: {e}")
-
-        connection_string = connection_string or (
-            redis_settings.connection_string.get_secret_value()
-            if redis_settings and redis_settings.connection_string
-            else None
-        )
+        redis_settings = RedisSettings.create(env_file_path=env_file_path, connection_string=connection_string)
 
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")
 
-        self._database = redis.Redis.from_url(connection_string)
+        self._database = redis.Redis.from_url(
+            redis_settings.connection_string.get_secret_value() if redis_settings.connection_string else None
+        )
         self._ft = self._database.ft
 
         self._query_dialect = query_dialect

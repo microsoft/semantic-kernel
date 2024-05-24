@@ -17,8 +17,8 @@ from azure.search.documents.indexes.models import (
 )
 from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
-from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
     SEARCH_FIELD_ID,
@@ -68,28 +68,18 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
-        from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
-
-        acs_memory_settings = None
-        try:
-            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
-
-        admin_key = admin_key or (
-            acs_memory_settings.api_key.get_secret_value()
-            if acs_memory_settings and acs_memory_settings.api_key
-            else None
+        acs_memory_settings = AzureAISearchSettings.create(
+            env_file_path=env_file_path,
+            endpoint=search_endpoint,
+            api_key=admin_key,
         )
-        assert admin_key, "The ACS admin_key is required to connect to Azure Cognitive Search."
-        search_endpoint = search_endpoint or (
-            acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
-        )
-        assert search_endpoint, "The ACS endpoint is required to connect to Azure Cognitive Search."
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
-            str(search_endpoint), admin_key, azure_credentials, token_credentials
+            search_endpoint=str(acs_memory_settings.endpoint),
+            admin_key=acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None,
+            azure_credential=azure_credentials,
+            token_credential=token_credentials,
         )
 
     async def close(self):

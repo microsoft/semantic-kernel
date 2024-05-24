@@ -2,11 +2,9 @@
 
 import asyncio
 import logging
-from dataclasses import dataclass
 
 import numpy as np
 import weaviate
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -65,13 +63,6 @@ SCHEMA = {
 ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
 
 
-@dataclass
-class WeaviateConfig:
-    use_embed: bool = False
-    url: str = None
-    api_key: str = None
-
-
 @experimental_class
 class WeaviateMemoryStore(MemoryStoreBase):
     class FieldMapper:
@@ -116,45 +107,28 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig | None = None, env_file_path: str | None = None):
+    def __init__(
+        self,
+        url: str | None = None,
+        api_key: str | None = None,
+        use_embed: bool = False,
+        env_file_path: str | None = None,
+    ):
         """Initializes a new instance of the WeaviateMemoryStore
 
-        Optional parameters:
-        - env_file_path {str | None} -- Whether to use the environment settings (.env) file. Defaults to False.
+        Args:
+            url (str): The URL of the Weaviate instance.
+            api_key (str): The API key to use for authentication.
+            use_embed (bool): Whether to use the client embedding options.
+            env_file_path (str): Whether to use the environment settings (.env) file. Defaults to False.
         """
-
-        # Initialize settings from environment variables or defaults defined in WeaviateSettings
-        weaviate_settings = None
-        try:
-            weaviate_settings = WeaviateSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load WeaviateSettings pydantic settings: {e}")
-
-        # Override settings with provided config if available
-        if config:
-            self.settings = self.merge_settings(weaviate_settings, config)
-        else:
-            self.settings = weaviate_settings
-
-        self.settings.validate_settings()
-        self.client = self._initialize_client()
-
-    def merge_settings(self, default_settings: WeaviateSettings, config: WeaviateConfig) -> WeaviateSettings:
-        """
-        Merges default settings with configuration provided through WeaviateConfig.
-
-        This function allows for manual overriding of settings from the config parameter.
-        """
-        return WeaviateSettings(
-            url=config.url or (str(default_settings.url) if default_settings and default_settings.url else None),
-            api_key=config.api_key
-            or (default_settings.api_key.get_secret_value() if default_settings and default_settings.api_key else None),
-            use_embed=(
-                config.use_embed
-                if config.use_embed is not None
-                else (default_settings.use_embed if default_settings and default_settings.use_embed else False)
-            ),
+        self.settings = WeaviateSettings.create(
+            env_file_path=env_file_path,
+            url=url,
+            api_key=api_key,
+            use_embed=use_embed,
         )
+        self.client = self._initialize_client()
 
     def _initialize_client(self) -> weaviate.Client:
         """
@@ -165,10 +139,13 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         if self.settings.api_key:
             return weaviate.Client(
-                url=self.settings.url, auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key)
+                url=str(self.settings.url),
+                auth_client_secret=weaviate.auth.AuthApiKey(
+                    api_key=self.settings.api_key.get_secret_value() if self.settings.api_key else None
+                ),
             )
 
-        return weaviate.Client(url=self.settings.url)
+        return weaviate.Client(url=str(self.settings.url))
 
     async def create_collection(self, collection_name: str) -> None:
         schema = SCHEMA.copy()

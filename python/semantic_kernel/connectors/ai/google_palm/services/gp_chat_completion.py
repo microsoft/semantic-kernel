@@ -5,7 +5,7 @@ from typing import Annotated, Any
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
-from pydantic import PrivateAttr, StringConstraints, ValidationError
+from pydantic import PrivateAttr, StringConstraints
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
@@ -50,24 +50,14 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             env_file_path {str | None} -- Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
-        google_palm_settings = None
-        try:
-            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Error loading Google Palm pydantic settings: {e}")
-
-        api_key = api_key or (
-            google_palm_settings.api_key.get_secret_value()
-            if google_palm_settings and google_palm_settings.api_key
-            else None
-        )
-        ai_model_id = ai_model_id or (
-            google_palm_settings.chat_model_id if google_palm_settings and google_palm_settings.chat_model_id else None
-        )
-
-        super().__init__(
-            ai_model_id=ai_model_id,
+        google_palm_settings = GooglePalmSettings.create(
+            env_file_path=env_file_path,
             api_key=api_key,
+            chat_model_id=ai_model_id,
+        )
+        super().__init__(
+            ai_model_id=google_palm_settings.chat_model_id,
+            api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,
         )
         self._message_history = message_history
 

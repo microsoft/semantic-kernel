@@ -4,7 +4,6 @@ import logging
 from collections.abc import Mapping
 
 from openai import AsyncOpenAI
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
@@ -46,24 +45,17 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             env_file_path {str | None} -- Use the environment settings file as
                 a fallback to environment variables. (Optional)
         """
-        try:
-            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
-
-        api_key = api_key or (
-            openai_settings.api_key.get_secret_value() if openai_settings and openai_settings.api_key else None
-        )
-        org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
-        ai_model_id = ai_model_id or (
-            openai_settings.embedding_model_id if openai_settings and openai_settings.embedding_model_id else None
-        )
-
-        super().__init__(
-            ai_model_id=ai_model_id,
+        openai_settings = OpenAISettings.create(
+            env_file_path=env_file_path,
             api_key=api_key,
-            ai_model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
+            embedding_model_id=ai_model_id,
+        )
+        super().__init__(
+            ai_model_id=openai_settings.embedding_model_id,
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            ai_model_type=OpenAIModelTypes.EMBEDDING,
+            org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,
             async_client=async_client,

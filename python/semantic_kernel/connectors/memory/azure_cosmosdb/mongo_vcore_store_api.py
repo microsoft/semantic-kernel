@@ -8,7 +8,7 @@ import numpy as np
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import (
     AzureCosmosDBStoreApi,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+from semantic_kernel.connectors.memory.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
 )

@@ -42,7 +42,7 @@ def test_azure_text_embedding_init_with_empty_endpoint_and_base_url(azure_openai
 
 @pytest.mark.parametrize("override_env_param_dict", [{"AZURE_OPENAI_ENDPOINT": "http://test.com"}], indirect=True)
 def test_azure_text_embedding_init_with_invalid_endpoint(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ServiceInitializationError):
+    with pytest.raises(ValidationError):
         AzureTextEmbedding()
 
 

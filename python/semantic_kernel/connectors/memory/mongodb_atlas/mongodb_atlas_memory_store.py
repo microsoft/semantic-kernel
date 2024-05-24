@@ -7,10 +7,10 @@ from typing import Any
 
 from motor import core, motor_asyncio
 from numpy import ndarray
-from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
+from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
     DEFAULT_SEARCH_INDEX_NAME,
@@ -46,22 +46,10 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         read_preference: ReadPreference | None = ReadPreference.PRIMARY,
         env_file_path: str | None = None,
     ):
-        from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
-
-        mongodb_settings = None
-        try:
-            mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load the MongoDBAtlas pydantic settings: {e}")
-
-        connection_string = connection_string or (
-            mongodb_settings.connection_string.get_secret_value()
-            if mongodb_settings and mongodb_settings.connection_string
-            else None
-        )
+        mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path, connection_string=connection_string)
 
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
-            connection_string,
+            mongodb_settings.connection_string.get_secret_value() if mongodb_settings.connection_string else None,
             read_preference=read_preference,
             driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
         )

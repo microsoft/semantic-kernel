@@ -5,7 +5,7 @@ from typing import Annotated, Any
 
 import google.generativeai as palm
 from numpy import array, ndarray
-from pydantic import StringConstraints, ValidationError
+from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
@@ -31,22 +31,15 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             env_file_path {str | None} -- Use the environment settings file
                 as a fallback to environment variables. (Optional)
         """
-        try:
-            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.error(f"Error loading Google Palm pydantic settings: {e}")
-
-        api_key = api_key or (
-            google_palm_settings.api_key.get_secret_value()
-            if google_palm_settings and google_palm_settings.api_key
-            else None
+        google_palm_settings = GooglePalmSettings.create(
+            env_file_path=env_file_path,
+            api_key=api_key,
+            embedding_model_id=ai_model_id,
         )
-        ai_model_id = ai_model_id or (
-            google_palm_settings.embedding_model_id
-            if google_palm_settings and google_palm_settings.embedding_model_id
-            else None
+        super().__init__(
+            ai_model_id=google_palm_settings.embedding_model_id,
+            api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,
         )
-        super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """

@@ -6,7 +6,7 @@ from typing import Annotated
 import google.generativeai as palm
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
-from pydantic import StringConstraints, ValidationError
+from pydantic import StringConstraints
 
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
@@ -33,21 +33,15 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             env_file_path {str | None} -- Use the environment settings file as a
                 fallback to environment variables. (Optional)
         """
-        try:
-            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Error loading Google Palm pydantic settings: {e}")
-
-        api_key = api_key or (
-            google_palm_settings.api_key.get_secret_value()
-            if google_palm_settings and google_palm_settings.api_key
-            else None
+        google_palm_settings = GooglePalmSettings.create(
+            env_file_path=env_file_path,
+            api_key=api_key,
+            text_model_id=ai_model_id,
         )
-        ai_model_id = ai_model_id or (
-            google_palm_settings.text_model_id if google_palm_settings and google_palm_settings.text_model_id else None
+        super().__init__(
+            ai_model_id=google_palm_settings.text_model_id,
+            api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,
         )
-
-        super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
     async def get_text_contents(
         self, prompt: str, settings: GooglePalmTextPromptExecutionSettings

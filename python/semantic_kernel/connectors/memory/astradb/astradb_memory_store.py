@@ -5,7 +5,6 @@ import logging
 
 import aiohttp
 from numpy import ndarray
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
@@ -53,27 +52,13 @@ class AstraDBMemoryStore(MemoryStoreBase):
             env_file_path {str | None} -- Use the environment settings file as a
                 fallback to environment variables. (Optional)
         """
-        astradb_settings = None
-        try:
-            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
-
-        # Load the settings and validate
-        astra_application_token = astra_application_token or (
-            astradb_settings.app_token.get_secret_value() if astradb_settings and astradb_settings.app_token else None
+        astradb_settings = AstraDBSettings.create(
+            env_file_path=env_file_path,
+            app_token=astra_application_token,
+            db_id=astra_id,
+            region=astra_region,
+            keyspace=keyspace_name,
         )
-        assert astra_application_token is not None, "The astra_application_token cannot be None."
-        astra_id = astra_id or (astradb_settings.db_id if astradb_settings and astradb_settings.db_id else None)
-        assert astra_id is not None, "The astra_id cannot be None."
-        astra_region = astra_region or (
-            astradb_settings.region if astradb_settings and astradb_settings.region else None
-        )
-        assert astra_region is not None, "The astra_region cannot be None."
-        keyspace_name = keyspace_name or (
-            astradb_settings.keyspace if astradb_settings and astradb_settings.keyspace else None
-        )
-        assert keyspace_name is not None, "The keyspace_name cannot be None."
 
         self._embedding_dim = embedding_dim
         self._similarity = similarity
@@ -86,10 +71,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
             )
 
         self._client = AstraClient(
-            astra_id=astra_id,
-            astra_region=astra_region,
-            astra_application_token=astra_application_token,
-            keyspace_name=keyspace_name,
+            astra_id=astradb_settings.db_id,
+            astra_region=astradb_settings.region,
+            astra_application_token=(
+                astradb_settings.app_token.get_secret_value() if astradb_settings.app_token else None
+            ),
+            keyspace_name=astradb_settings.keyspace,
             embedding_dim=embedding_dim,
             similarity_function=similarity,
             session=self._session,

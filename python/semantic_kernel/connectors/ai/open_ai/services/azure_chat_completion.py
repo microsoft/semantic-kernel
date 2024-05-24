@@ -11,7 +11,6 @@ from openai.lib.azure import AsyncAzureADTokenProvider
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
@@ -73,25 +72,20 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             async_client {AsyncAzureOpenAI | None} -- An existing client to use. (Optional)
             env_file_path {str | None} -- Use the environment settings file as a fallback to using env vars.
         """
-        azure_openai_settings = None
-        try:
-            azure_openai_settings = AzureOpenAISettings.create(
-                env_file_path=env_file_path,
-                api_key=api_key,
-                base_url=base_url,
-                endpoint=endpoint,
-                chat_deployment_name=deployment_name,
-                api_version=api_version,
-            )
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureOpenAI pydantic settings: {e}")
-
+        azure_openai_settings = AzureOpenAISettings.create(
+            env_file_path=env_file_path,
+            api_key=api_key,
+            base_url=base_url,
+            endpoint=endpoint,
+            chat_deployment_name=deployment_name,
+            api_version=api_version,
+        )
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
 
-        if azure_openai_settings.endpoint and azure_openai_settings.deployment_name:
+        if azure_openai_settings.endpoint and azure_openai_settings.chat_deployment_name:
             azure_openai_settings.base_url = HttpsUrl(
-                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.deployment_name}"
+                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.chat_deployment_name}"
             )
         super().__init__(
             deployment_name=azure_openai_settings.chat_deployment_name,
@@ -99,7 +93,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             base_url=azure_openai_settings.base_url,
             api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=azure_openai_settings.api_key.get_secret_value(),
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
