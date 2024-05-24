@@ -23,4 +23,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
+      - name: Install dependencies
+        run: cd python && poetry install
       - uses: pre-commit/action@v3.0.1
