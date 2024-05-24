@@ -5,9 +5,9 @@ import sys
 from typing import Any
 
 if sys.version_info >= (3, 12):
-    from typing import overload
+    from typing import override
 else:
-    from typing_extensions import overload
+    from typing_extensions import override
 
 import aiohttp
 from numpy import array, ndarray
@@ -35,7 +35,7 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     url: HttpUrl = "http://localhost:11434/api/embeddings"
     session: aiohttp.ClientSession | None = None
 
-    @overload
+    @override
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         result = []
         for text in texts:

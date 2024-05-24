@@ -5,9 +5,9 @@ import sys
 from typing import Any
 
 if sys.version_info >= (3, 12):
-    from typing import overload
+    from typing import override
 else:
-    from typing_extensions import overload
+    from typing_extensions import override
 
 import sentence_transformers
 import torch
@@ -49,7 +49,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    @overload
+    @override
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts")
