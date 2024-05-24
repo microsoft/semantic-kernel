@@ -16,10 +16,10 @@ class TextPlugin(KernelBaseModel):
         {{text.trim $input}} => "hello world"
 
         KernelArguments["input"] = "  hello world  "
-        {{text.trimStart $input} => "hello world  "
+        {{text.trimStart $input}} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
-        {{text.trimEnd $input} => "  hello world"
+        {{text.trimEnd $input}} => "  hello world"
 
         KernelArguments["input"] = "hello world"
         {{text.uppercase $input}} => "HELLO WORLD"
