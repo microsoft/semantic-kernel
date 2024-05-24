@@ -1,13 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import sys
 from typing import Annotated, Any
-
-if sys.version_info >= (3, 12):
-    from typing import overload
-else:
-    from typing_extensions import overload
 
 import google.generativeai as palm
 from numpy import array, ndarray
@@ -53,8 +47,8 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         )
         super().__init__(ai_model_id=ai_model_id, api_key=api_key)
 
-    @overload
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
+        """Generates embeddings for the given list of texts."""
         try:
             palm.configure(api_key=self.api_key)
         except Exception as ex:
