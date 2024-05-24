@@ -32,7 +32,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
                 as a fallback to environment variables. (Optional)
         """
         try:
-            google_palm_settings = GooglePalmSettings(env_file_path=env_file_path)
+            google_palm_settings = GooglePalmSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.error(f"Error loading Google Palm pydantic settings: {e}")
 

@@ -72,7 +72,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         acs_memory_settings = None
         try:
-            acs_memory_settings = AzureAISearchSettings(env_file_path=env_file_path)
+            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
 

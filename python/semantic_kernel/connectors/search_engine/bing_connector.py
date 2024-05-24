@@ -31,7 +31,7 @@ class BingConnector(ConnectorBase):
         """
         bing_settings = None
         try:
-            bing_settings = BingSettings(env_file_path=env_file_path)
+            bing_settings = BingSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load the Bing pydantic settings: {e}.")
 

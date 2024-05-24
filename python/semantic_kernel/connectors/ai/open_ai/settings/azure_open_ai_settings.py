@@ -5,6 +5,7 @@ from typing import ClassVar
 
 from pydantic import SecretStr
 
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 
 
@@ -63,4 +64,4 @@ class AzureOpenAISettings(KernelBaseSettings):
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
-    api_version: str | None = None
+    api_version: str | None = DEFAULT_AZURE_API_VERSION

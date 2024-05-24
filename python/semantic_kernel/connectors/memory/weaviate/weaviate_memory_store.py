@@ -126,7 +126,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         # Initialize settings from environment variables or defaults defined in WeaviateSettings
         weaviate_settings = None
         try:
-            weaviate_settings = WeaviateSettings(env_file_path=env_file_path)
+            weaviate_settings = WeaviateSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load WeaviateSettings pydantic settings: {e}")
 

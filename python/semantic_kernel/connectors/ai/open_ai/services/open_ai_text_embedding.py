@@ -47,7 +47,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
                 a fallback to environment variables. (Optional)
         """
         try:
-            openai_settings = OpenAISettings(env_file_path=env_file_path)
+            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
 

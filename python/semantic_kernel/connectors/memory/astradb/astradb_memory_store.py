@@ -55,7 +55,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         """
         astradb_settings = None
         try:
-            astradb_settings = AstraDBSettings(env_file_path=env_file_path)
+            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
         except ValidationError as e:
             logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
 
