@@ -10,7 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletionBase
-from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent, TextContent
+from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent, TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException
@@ -64,7 +64,9 @@ async def test_complete_chat(tool_call, kernel: Kernel):
     settings.function_call_behavior = None
     mock_function_call = MagicMock(spec=FunctionCallContent)
     mock_text = MagicMock(spec=TextContent)
-    mock_message = ChatMessageContent(role="assistant", items=[mock_function_call] if tool_call else [mock_text])
+    mock_message = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, items=[mock_function_call] if tool_call else [mock_text]
+    )
     mock_message_content = [mock_message]
     arguments = KernelArguments()
 
