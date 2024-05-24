@@ -1,12 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 from datetime import datetime, timedelta
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from msgraph import GraphServiceClient
 from msgraph.generated.models.booking_appointment import BookingAppointment

@@ -31,9 +31,13 @@ def test_build_with_primitive_type():
     expected_schema = {"type": "string"}
     result = KernelJsonSchemaBuilder.build(str)
     assert result == expected_schema
+    result = KernelJsonSchemaBuilder.build("str")
+    assert result == expected_schema
 
     expected_schema = {"type": "integer"}
     result = KernelJsonSchemaBuilder.build(int)
+    assert result == expected_schema
+    result = KernelJsonSchemaBuilder.build("int")
     assert result == expected_schema
 
 
@@ -44,8 +48,12 @@ def test_build_with_primitive_type_and_description():
 
 
 def test_build_model_schema():
-    expected_schema = {"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "integer"}}}
-    result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel)
+    expected_schema = {
+        "type": "object",
+        "properties": {"name": {"type": "string"}, "age": {"type": "integer"}},
+        "description": "A model",
+    }
+    result = KernelJsonSchemaBuilder.build_model_schema(ExampleModel, description="A model")
     assert result == expected_schema
 
 

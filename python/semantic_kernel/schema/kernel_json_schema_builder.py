@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Type, get_type_hints
+from typing import Any, get_type_hints
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -18,15 +18,15 @@ TYPE_MAPPING = {
     "list": "array",
     "dict": "object",
     "object": "object",
+    "array": "array",
 }
 
 
 class KernelJsonSchemaBuilder:
 
     @classmethod
-    def build(cls, parameter_type: Type | str, description: str | None = None) -> dict[str, Any]:
+    def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds JSON schema for a given parameter type."""
-        print(f"Building schema for type: {parameter_type}")
 
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
@@ -41,7 +41,7 @@ class KernelJsonSchemaBuilder:
             return schema
 
     @classmethod
-    def build_model_schema(cls, model: Type, description: str | None = None) -> dict[str, Any]:
+    def build_model_schema(cls, model: type, description: str | None = None) -> dict[str, Any]:
         """Builds JSON schema for a given model."""
         properties = {}
         for field_name, field_type in get_type_hints(model).items():
@@ -56,7 +56,6 @@ class KernelJsonSchemaBuilder:
         if description:
             schema["description"] = description
 
-        print(f"Generated schema for model {model}: {schema}")
         return schema
 
     @classmethod
@@ -67,13 +66,11 @@ class KernelJsonSchemaBuilder:
         if description:
             schema["description"] = description
 
-        print(f"Generated schema from type name {parameter_type}: {schema}")
         return schema
 
     @classmethod
-    def get_json_schema(cls, parameter_type: Type) -> dict[str, Any]:
+    def get_json_schema(cls, parameter_type: type) -> dict[str, Any]:
         """Gets JSON schema for a given parameter type."""
         type_name = TYPE_MAPPING.get(parameter_type, "object")
         schema = {"type": type_name}
-        print(f"Generated JSON schema for type {parameter_type}: {schema}")
         return schema

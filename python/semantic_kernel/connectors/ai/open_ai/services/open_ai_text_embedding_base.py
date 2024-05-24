@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, List, Optional
+from typing import Any
 
 from numpy import array, ndarray
 
@@ -15,7 +15,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
-    async def generate_embeddings(self, texts: List[str], batch_size: Optional[int] = None, **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], batch_size: int | None = None, **kwargs: Any) -> ndarray:
         """Generates embeddings for the given texts.
 
         Arguments:

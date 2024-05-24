@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from collections.abc import AsyncGenerator
 from threading import Thread
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from transformers import AutoTokenizer, TextIteratorStreamer, pipeline
@@ -27,11 +28,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
     def __init__(
         self,
         ai_model_id: str,
-        task: Optional[str] = "text2text-generation",
-        device: Optional[int] = -1,
-        service_id: Optional[str] = None,
-        model_kwargs: Optional[Dict[str, Any]] = None,
-        pipeline_kwargs: Optional[Dict[str, Any]] = None,
+        task: str | None = "text2text-generation",
+        device: int | None = -1,
+        service_id: str | None = None,
+        model_kwargs: dict[str, Any] | None = None,
+        pipeline_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextCompletion class.
@@ -77,7 +78,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -96,7 +97,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             return [self._create_text_content(results, result) for result in results]
         return [self._create_text_content(results, results)]
 
-    def _create_text_content(self, response: Any, candidate: Dict[str, str]) -> TextContent:
+    def _create_text_content(self, response: Any, candidate: dict[str, str]) -> TextContent:
         return TextContent(
             inner_content=response,
             ai_model_id=self.ai_model_id,
@@ -107,7 +108,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         settings: HuggingFacePromptExecutionSettings,
-    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
         Streams a text completion using a Hugging Face model.
         Note that this method does not support multiple responses.

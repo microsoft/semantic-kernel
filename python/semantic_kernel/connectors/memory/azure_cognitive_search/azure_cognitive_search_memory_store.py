@@ -3,7 +3,6 @@
 import logging
 import uuid
 from inspect import isawaitable
-from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -82,7 +81,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_memory_settings and acs_memory_settings.api_key
             else None
         )
-        assert admin_key, "The ACS admin_key is required to connect to Azure Cognitive Search."
         search_endpoint = search_endpoint or (
             acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
         )
@@ -101,8 +99,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswAlgorithmConfiguration] = None,
-        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
+        vector_config: HnswAlgorithmConfiguration | None = None,
+        search_resource_encryption_key: SearchResourceEncryptionKey | None = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -136,7 +134,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                         name=vector_search_algorithm_name,
                         kind="hnsw",
                         parameters=HnswParameters(
-                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            m=4,  # Number of bidirectional links, typically between 4 and 10
                             ef_construction=400,  # Size during indexing, range: 100-1000
                             ef_search=500,  # Size during search, range: 100-1000
                             metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
@@ -166,7 +164,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
             await self._search_index_client.create_index(index)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -230,7 +228,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return result[0]
         return None
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
         Arguments:
@@ -296,8 +294,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         return dict_to_memory_record(search_result, with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -321,7 +319,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return search_results
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -359,7 +357,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -392,7 +390,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
