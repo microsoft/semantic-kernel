@@ -164,6 +164,12 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
+        // In some cases we're expected to generate the key to use. Do so if one isn't provided.
+        if (string.IsNullOrEmpty(record.Key))
+        {
+            record.Key = Guid.NewGuid().ToString();
+        }
+
         var result = await this._cosmosClient
             .GetDatabase(this._databaseName)
             .GetContainer(collectionName)
@@ -193,6 +199,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
+        // TODO: Consider using a query when `withEmbedding` is false to avoid passing it over the wire.
         var result = await this._cosmosClient
          .GetDatabase(this._databaseName)
          .GetContainer(collectionName)
@@ -332,7 +339,7 @@ public class AzureCosmosDBNoSQLMemoryStore : IMemoryStore, IDisposable
             {
                 if (memoryRecord.SimilarityScore >= minRelevanceScore)
                 {
-                    yield return (memoryRecord, memoryRecord.SimilarityScore);
+                    yield return (memoryRecord, 1 - memoryRecord.SimilarityScore);
                 }
             }
         }
