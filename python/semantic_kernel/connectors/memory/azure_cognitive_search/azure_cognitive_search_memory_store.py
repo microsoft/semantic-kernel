@@ -81,7 +81,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             if acs_memory_settings and acs_memory_settings.api_key
             else None
         )
-        assert admin_key, "The ACS admin_key is required to connect to Azure Cognitive Search."
         search_endpoint = search_endpoint or (
             acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
         )

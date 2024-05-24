@@ -279,7 +279,7 @@ async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel
             enable_dynamic_payload=True,
         ),
     )
-    plugin = kernel.plugins["TestOpenAIPlugin"]
+    plugin = kernel.get_plugin(plugin_name="TestOpenAIPlugin")
     assert plugin is not None
     assert plugin.name == "TestOpenAIPlugin"
     assert plugin.functions.get("GetSecret") is not None
@@ -295,7 +295,7 @@ def test_import_plugin_from_openapi(kernel: Kernel):
         plugin_name="TestOpenAPIPlugin",
         openapi_document_path=openapi_spec_file,
     )
-    plugin = kernel.plugins["TestOpenAPIPlugin"]
+    plugin = kernel.get_plugin(plugin_name="TestOpenAPIPlugin")
     assert plugin is not None
     assert plugin.name == "TestOpenAPIPlugin"
     assert plugin.functions.get("GetSecret") is not None

@@ -10,12 +10,12 @@ def test_can_be_instantiated():
 
 def test_can_be_imported(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text_plugin")
-    assert not kernel.plugins["text_plugin"]["trim"].is_prompt
+    assert not kernel.get_function(plugin_name="text_plugin", function_name="trim").is_prompt
 
 
 def test_can_be_imported_with_name(kernel: Kernel):
     kernel.add_plugin(TextPlugin(), "text")
-    assert not kernel.plugins["text"]["trim"].is_prompt
+    assert not kernel.get_function(plugin_name="text", function_name="trim").is_prompt
 
 
 def test_can_trim():
