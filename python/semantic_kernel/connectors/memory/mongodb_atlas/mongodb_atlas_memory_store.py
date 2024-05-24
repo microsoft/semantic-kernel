@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from importlib import metadata
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 from motor import core, motor_asyncio
 from numpy import ndarray
@@ -104,7 +104,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets all collection names in the data store.
 
         Returns:
@@ -156,7 +156,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         assert update_result.acknowledged
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -169,7 +169,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             List[str] -- The unique identifiers for the memory records.
         """
 
-        upserts: List[UpdateOne] = []
+        upserts: list[UpdateOne] = []
         for record in records:
             document = memory_record_to_mongo_document(record)
             upserts.append(UpdateOne(document, {"$set": document}, upsert=True))
@@ -201,7 +201,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         return document_to_memory_record(document, with_embedding) if document else None
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -232,7 +232,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
         await self.database[collection_name].delete_one({MONGODB_FIELD_ID: key})
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -244,7 +244,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"collection {collection_name} not found")
-        deletes: List[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
+        deletes: list[DeleteOne] = [DeleteOne({MONGODB_FIELD_ID: key}) for key in keys]
         bulk_write_result = await self.database[collection_name].bulk_write(deletes, ordered=False)
         logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
@@ -255,7 +255,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         limit: int,
         with_embeddings: bool,
         min_relevance_score: float | None = None,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:
@@ -269,7 +269,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
                 is its similarity score as a float.
         """
         pipeline: list[dict[str, Any]] = []
-        vector_search_query: List[Mapping[str, Any]] = {
+        vector_search_query: list[Mapping[str, Any]] = {
             "$vectorSearch": {
                 "queryVector": embedding.tolist(),
                 "limit": limit,
@@ -302,7 +302,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         with_embedding: bool,
         min_relevance_score: float | None = None,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:
@@ -314,7 +314,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
-        matches: List[Tuple[MemoryRecord, float]] = await self.get_nearest_matches(
+        matches: list[tuple[MemoryRecord, float]] = await self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,

@@ -2,7 +2,6 @@
 
 import logging
 from abc import ABC
-from typing import List, Union
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
@@ -37,7 +36,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIPromptExecutionSettings,
-    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion]]:
+    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
         """
         Completes the given prompt. Returns a single string completion.
         Cannot return multiple completions. Cannot return logprobs.
@@ -75,7 +74,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> List[ndarray]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[ndarray]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)

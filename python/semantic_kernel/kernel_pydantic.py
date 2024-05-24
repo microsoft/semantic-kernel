@@ -1,9 +1,7 @@
-import sys
+# Copyright (c) Microsoft. All rights reserved.
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, UrlConstraints
 from pydantic.networks import Url

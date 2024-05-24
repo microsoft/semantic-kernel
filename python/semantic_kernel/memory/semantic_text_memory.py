@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import PrivateAttr
 
@@ -38,9 +38,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         collection: str,
         text: str,
         id: str,
-        description: Optional[str] = None,
-        additional_metadata: Optional[str] = None,
-        embeddings_kwargs: Optional[Dict[str, Any]] = {},
+        description: str | None = None,
+        additional_metadata: str | None = None,
+        embeddings_kwargs: dict[str, Any] | None = {},
     ) -> None:
         """Save information to the memory (calls the memory store's upsert method).
 
@@ -74,9 +74,9 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         text: str,
         external_id: str,
         external_source_name: str,
-        description: Optional[str] = None,
-        additional_metadata: Optional[str] = None,
-        embeddings_kwargs: Optional[Dict[str, Any]] = {},
+        description: str | None = None,
+        additional_metadata: str | None = None,
+        embeddings_kwargs: dict[str, Any] | None = {},
     ) -> None:
         """Save a reference to the memory (calls the memory store's upsert method).
 
@@ -109,7 +109,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         self,
         collection: str,
         key: str,
-    ) -> Optional[MemoryQueryResult]:
+    ) -> MemoryQueryResult | None:
         """Get information from the memory (calls the memory store's get method).
 
         Arguments:
@@ -129,8 +129,8 @@ class SemanticTextMemory(SemanticTextMemoryBase):
         limit: int = 1,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-        embeddings_kwargs: Optional[Dict[str, Any]] = {},
-    ) -> List[MemoryQueryResult]:
+        embeddings_kwargs: dict[str, Any] | None = {},
+    ) -> list[MemoryQueryResult]:
         """Search the memory (calls the memory store's get_nearest_matches method).
 
         Arguments:
@@ -154,7 +154,7 @@ class SemanticTextMemory(SemanticTextMemoryBase):
 
         return [MemoryQueryResult.from_memory_record(r[0], r[1]) for r in results]
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Get the list of collections in the memory (calls the memory store's get_collections method).
 
         Returns:

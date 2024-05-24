@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Union, overload
@@ -21,8 +20,8 @@ ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultCont
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     """This is the class for streaming chat message response content.
 
-    All Chat Completion Services should return a instance of this class as streaming response,
-    where each part of the response as it is streamed is converted to a instance of this class,
+    All Chat Completion Services should return an instance of this class as streaming response,
+    where each part of the response as it is streamed is converted to an instance of this class,
     the end-user will have to either do something directly or gather them and combine them into a
     new instance. A service can implement their own subclass of this class and return instances of that.
 
@@ -56,7 +55,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -83,7 +82,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -110,7 +109,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -163,7 +162,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         """Return the content of the response encoded in the encoding."""
         return self.content.encode(self.encoding if self.encoding else "utf-8") if self.content else b""
 
-    def __add__(self, other: StreamingChatMessageContent) -> StreamingChatMessageContent:
+    def __add__(self, other: "StreamingChatMessageContent") -> "StreamingChatMessageContent":
         """When combining two StreamingChatMessageContent instances, the content fields are combined.
 
         The inner_content of the first one is used, ai_model_id and encoding should be the same,

@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Annotated, Any, AsyncGenerator, Iterable, Optional, Union
+from collections.abc import AsyncGenerator, Iterable
+from typing import Annotated, Any
 
 import pytest
 
@@ -70,7 +71,7 @@ def test_init_native_function_from_kernel_function_decorator():
         description="Test description",
         name="test_function",
     )
-    def decorated_function(input: Annotated[Optional[str], "Test input description"] = "test_default_value") -> None:
+    def decorated_function(input: Annotated[str | None, "Test input description"] = "test_default_value") -> None:
         pass
 
     assert decorated_function.__kernel_function__ is True
@@ -288,7 +289,7 @@ async def test_service_execution_with_complex_object_from_str_mixed(kernel: Kern
 @pytest.mark.asyncio
 async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel: Kernel):
     @kernel_function(name="function")
-    def my_function(input_obj: InputObject, input_str: Union[str, int]) -> str:
+    def my_function(input_obj: InputObject, input_str: str | int) -> str:
         assert input_obj is not None
         assert isinstance(input_obj, InputObject)
         assert input_obj.arg1 == "test"
@@ -305,6 +306,18 @@ async def test_service_execution_with_complex_object_from_str_mixed_multi(kernel
 def test_function_from_lambda():
     func = KernelFunctionFromMethod(method=kernel_function(lambda x: x**2, name="square"), plugin_name="math")
     assert func is not None
+
+
+@pytest.mark.asyncio
+async def test_function_invoke_return_list_type(kernel: Kernel):
+    @kernel_function(name="list_func")
+    def test_list_func() -> list[str]:
+        return ["test1", "test2"]
+
+    func = KernelFunction.from_method(test_list_func, "test")
+
+    result = await kernel.invoke(function=func)
+    assert str(result) == "test1,test2"
 
 
 @pytest.mark.asyncio
@@ -410,3 +423,27 @@ async def test_function_invocation_filters_streaming(kernel: Kernel):
         "func2",
         "overridden_func",
     ]
+
+
+@pytest.mark.asyncio
+async def test_default_handling(kernel: Kernel):
+    @kernel_function
+    def func_default(input: str = "test"):
+        return input
+
+    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+
+    res = await kernel.invoke(func)
+    assert str(res) == "test"
+
+
+@pytest.mark.asyncio
+async def test_default_handling_2(kernel: Kernel):
+    @kernel_function
+    def func_default(base: str, input: str = "test"):
+        return input
+
+    func = kernel.add_function(plugin_name="test", function_name="func_default", function=func_default)
+
+    res = await kernel.invoke(func, base="base")
+    assert str(res) == "test"

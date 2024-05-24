@@ -2,8 +2,9 @@
 
 import asyncio
 import logging
+from collections.abc import Callable
 from html import escape
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import nest_asyncio
 
@@ -32,7 +33,7 @@ def create_template_helper_from_function(
     def func(*args, **kwargs):
         arguments = KernelArguments()
         if base_arguments and base_arguments.execution_settings:
-            arguments.execution_settings = base_arguments.execution_settings
+            arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
         arguments.update(base_arguments)
         arguments.update(kwargs)
 

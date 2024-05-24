@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional
 
 from numpy import array, ndarray
 
@@ -25,7 +25,7 @@ class ChromaMemoryStore(MemoryStoreBase):
 
     def __init__(
         self,
-        persist_directory: Optional[str] = None,
+        persist_directory: str | None = None,
         client_settings: Optional["chromadb.config.Settings"] = None,
         **kwargs,
     ) -> None:
@@ -93,7 +93,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         except ValueError:
             return None
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -159,7 +159,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         )
         return record._key
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -191,7 +191,7 @@ class ChromaMemoryStore(MemoryStoreBase):
                 f"Record with key '{key}' does not exist in collection '{collection_name}'"
             ) from exc
 
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -224,7 +224,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         await self.remove_batch(collection_name, [key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -245,7 +245,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = True,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -312,7 +312,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = True,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:

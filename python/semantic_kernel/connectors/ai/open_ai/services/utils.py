@@ -37,18 +37,29 @@ def kernel_function_metadata_to_openai_tool_format(metadata: KernelFunctionMetad
 
     def parse_schema(schema_data):
         """Recursively parse the schema data to include nested properties."""
-        if schema_data.get("type") == "object":
+        if schema_data is None:
+            return {"type": "string", "description": ""}
+
+        schema_type = schema_data.get("type")
+        schema_description = schema_data.get("description", "")
+
+        if schema_type == "object":
+            properties = {key: parse_schema(value) for key, value in schema_data.get("properties", {}).items()}
             return {
                 "type": "object",
-                "properties": {key: parse_schema(value) for key, value in schema_data.get("properties", {}).items()},
-                "description": schema_data.get("description", ""),
+                "properties": properties,
+                "description": schema_description,
             }
-        else:
-            return {
-                "type": schema_data.get("type", "string"),
-                "description": schema_data.get("description", ""),
-                **({"enum": schema_data.get("enum")} if "enum" in schema_data else {}),
-            }
+
+        if schema_type == "array":
+            items = schema_data.get("items", {"type": "string"})
+            return {"type": "array", "description": schema_description, "items": items}
+
+        schema_dict = {"type": schema_type, "description": schema_description}
+        if "enum" in schema_data:
+            schema_dict["enum"] = schema_data["enum"]
+
+        return schema_dict
 
     return {
         "type": "function",

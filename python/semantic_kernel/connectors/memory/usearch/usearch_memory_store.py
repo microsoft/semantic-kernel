@@ -6,7 +6,6 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -39,7 +38,7 @@ class _USearchCollection:
 
     embeddings_index: Index
     embeddings_data_table: pa.Table
-    embeddings_id_to_label: Dict[str, int]
+    embeddings_id_to_label: dict[str, int]
 
     @staticmethod
     def create_default(embeddings_index: Index) -> "_USearchCollection":
@@ -84,13 +83,13 @@ class _CollectionFileType(Enum):
 
 
 # Mapping of collection file types to their file extensions.
-_collection_file_extensions: Dict[_CollectionFileType, str] = {
+_collection_file_extensions: dict[_CollectionFileType, str] = {
     _CollectionFileType.USEARCH: ".usearch",
     _CollectionFileType.PARQUET: ".parquet",
 }
 
 
-def memoryrecords_to_pyarrow_table(records: List[MemoryRecord]) -> pa.Table:
+def memoryrecords_to_pyarrow_table(records: list[MemoryRecord]) -> pa.Table:
     """Convert a list of `MemoryRecord` to a PyArrow Table"""
     records_pylist = [
         {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names} for record in records
@@ -98,7 +97,7 @@ def memoryrecords_to_pyarrow_table(records: List[MemoryRecord]) -> pa.Table:
     return pa.Table.from_pylist(records_pylist, schema=_embeddings_data_schema)
 
 
-def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: Optional[ndarray] = None) -> List[MemoryRecord]:
+def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: ndarray | None = None) -> list[MemoryRecord]:
     """Convert a PyArrow Table to a list of MemoryRecords.
 
     Args:
@@ -121,7 +120,7 @@ def pyarrow_table_to_memoryrecords(table: pa.Table, vectors: Optional[ndarray] =
 class USearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
-        persist_directory: Optional[os.PathLike] = None,
+        persist_directory: os.PathLike | None = None,
     ) -> None:
         """
         Create a USearchMemoryStore instance.
@@ -140,7 +139,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         self._persist_directory = Path(persist_directory) if persist_directory is not None else None
 
-        self._collections: Dict[str, _USearchCollection] = {}
+        self._collections: dict[str, _USearchCollection] = {}
         if self._persist_directory:
             self._collections = self._read_collections_from_dir()
 
@@ -168,11 +167,11 @@ class USearchMemoryStore(MemoryStoreBase):
         self,
         collection_name: str,
         ndim: int = 0,
-        metric: Union[str, MetricKind, CompiledMetric] = MetricKind.IP,
-        dtype: Optional[Union[str, ScalarKind]] = None,
-        connectivity: Optional[int] = None,
-        expansion_add: Optional[int] = None,
-        expansion_search: Optional[int] = None,
+        metric: str | MetricKind | CompiledMetric = MetricKind.IP,
+        dtype: str | ScalarKind | None = None,
+        connectivity: int | None = None,
+        expansion_add: int | None = None,
+        expansion_search: int | None = None,
         view: bool = False,
     ) -> None:
         """Create a new collection.
@@ -219,7 +218,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         return None
 
-    def _read_embeddings_table(self, path: os.PathLike) -> Tuple[pa.Table, Dict[str, int]]:
+    def _read_embeddings_table(self, path: os.PathLike) -> tuple[pa.Table, dict[str, int]]:
         """Read embeddings from the provided path and generate an ID to label mapping.
 
         Args:
@@ -229,7 +228,7 @@ class USearchMemoryStore(MemoryStoreBase):
             Tuple of embeddings table and a dictionary mapping from record ID to its label.
         """
         embeddings_table = pq.read_table(path, schema=_embeddings_data_schema)
-        embeddings_id_to_label: Dict[str, int] = {
+        embeddings_id_to_label: dict[str, int] = {
             record_id: idx for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
         }
         return embeddings_table, embeddings_id_to_label
@@ -239,7 +238,7 @@ class USearchMemoryStore(MemoryStoreBase):
         # str cast is temporarily fix for https://github.com/unum-cloud/usearch/issues/196
         return Index.restore(str(path), view=False)
 
-    def _read_collections_from_dir(self) -> Dict[str, _USearchCollection]:
+    def _read_collections_from_dir(self) -> dict[str, _USearchCollection]:
         """Read all collections from directory to memory.
 
         Raises:
@@ -249,7 +248,7 @@ class USearchMemoryStore(MemoryStoreBase):
             Dict[str, _USearchCollection]: Dictionary with collection names as keys and
               their _USearchCollection as values.
         """
-        collections: Dict[str, _USearchCollection] = {}
+        collections: dict[str, _USearchCollection] = {}
 
         for collection_name, collection_files in self._get_all_storage_files().items():
             expected_storage_files = len(_CollectionFileType)
@@ -272,7 +271,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         return collections
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Get list of existing collections.
 
         Returns:
@@ -300,14 +299,14 @@ class USearchMemoryStore(MemoryStoreBase):
     async def upsert_batch(
         self,
         collection_name: str,
-        records: List[MemoryRecord],
+        records: list[MemoryRecord],
         *,
         compact: bool = False,
         copy: bool = True,
         threads: int = 0,
-        log: Union[str, bool] = False,
+        log: str | bool = False,
         batch_size: int = 0,
-    ) -> List[str]:
+    ) -> list[str]:
         """Upsert a batch of MemoryRecords and return their IDs.
 
         Args:
@@ -384,10 +383,10 @@ class USearchMemoryStore(MemoryStoreBase):
     async def get_batch(
         self,
         collection_name: str,
-        keys: List[str],
+        keys: list[str],
         with_embeddings: bool,
         dtype: ScalarKind = ScalarKind.F32,
-    ) -> List[MemoryRecord]:
+    ) -> list[MemoryRecord]:
         """Retrieve a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
@@ -407,7 +406,7 @@ class USearchMemoryStore(MemoryStoreBase):
         await self.remove_batch(collection_name=collection_name, keys=[key])
         return None
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Remove a batch of MemoryRecords using their keys."""
         collection_name = collection_name.lower()
         if collection_name not in self._collections:
@@ -429,7 +428,7 @@ class USearchMemoryStore(MemoryStoreBase):
         min_relevance_score: float = 0.0,
         with_embedding: bool = True,
         exact: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Retrieve the nearest matching MemoryRecord for the provided embedding.
 
         By default it is approximately search, see `exact` param description.
@@ -469,9 +468,9 @@ class USearchMemoryStore(MemoryStoreBase):
         *,
         threads: int = 0,
         exact: bool = False,
-        log: Union[str, bool] = False,
+        log: str | bool = False,
         batch_size: int = 0,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Get the nearest matches to a given embedding.
 
         By default it is approximately search, see `exact` param description.
@@ -500,7 +499,7 @@ class USearchMemoryStore(MemoryStoreBase):
         collection_name = collection_name.lower()
         ucollection = self._collections[collection_name]
 
-        result: Union[Matches, BatchMatches] = ucollection.embeddings_index.search(
+        result: Matches | BatchMatches = ucollection.embeddings_index.search(
             vectors=embedding,
             count=limit,
             threads=threads,
@@ -513,7 +512,7 @@ class USearchMemoryStore(MemoryStoreBase):
         relevance_score = 1 / (result.distances + 1)
         filtered_labels = result.keys[np.where(relevance_score >= min_relevance_score)[0]]
 
-        filtered_vectors: Optional[np.ndarray] = None
+        filtered_vectors: np.ndarray | None = None
         if with_embeddings:
             filtered_vectors = ucollection.embeddings_index.get(filtered_labels)
 
@@ -527,7 +526,7 @@ class USearchMemoryStore(MemoryStoreBase):
             )
         ]
 
-    def _get_all_storage_files(self) -> Dict[str, List[Path]]:
+    def _get_all_storage_files(self) -> dict[str, list[Path]]:
         """Return storage files for each collection in `self._persist_directory`.
 
         Collection name is derived from file name and converted to lowercase. Files with extensions that
@@ -543,7 +542,7 @@ class USearchMemoryStore(MemoryStoreBase):
             raise ServiceInitializationError("Persist directory is not set")
 
         storage_exts = _collection_file_extensions.values()
-        collection_storage_files: Dict[str, List[Path]] = {}
+        collection_storage_files: dict[str, list[Path]] = {}
         for path in self._persist_directory.iterdir():
             if path.is_file() and (path.suffix in storage_exts):
                 collection_name = path.stem.lower()
