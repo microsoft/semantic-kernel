@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Tuple
 
 import numpy as np
 import redis
 from numpy import ndarray
+from pydantic import ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
+from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
@@ -24,10 +25,12 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class RedisMemoryStore(MemoryStoreBase):
     """A memory store implementation using Redis"""
 
@@ -50,7 +53,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """
         RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
@@ -64,10 +67,21 @@ class RedisMemoryStore(MemoryStoreBase):
             vector_type {str} -- Vector type, defaults to FLOAT32
             vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
             query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-
+            env_file_path {str | None} -- Use the environment settings file as a fallback to
+                environment variables, defaults to False
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        redis_settings = None
+        try:
+            redis_settings = RedisSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load Redis pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            redis_settings.connection_string.get_secret_value()
+            if redis_settings and redis_settings.connection_string
+            else None
+        )
+
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")
 
@@ -122,7 +136,7 @@ class RedisMemoryStore(MemoryStoreBase):
             except Exception as e:
                 raise ServiceResponseException(f"Failed to create collection {collection_name}") from e
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """
         Returns a list of names of all collection names present in the data store.
 
@@ -195,7 +209,7 @@ class RedisMemoryStore(MemoryStoreBase):
         except Exception as e:
             raise ServiceResponseException("Could not upsert messages.") from e
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """
         Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
@@ -248,8 +262,8 @@ class RedisMemoryStore(MemoryStoreBase):
         return record
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """
         Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
@@ -284,7 +298,7 @@ class RedisMemoryStore(MemoryStoreBase):
 
         self._database.delete(get_redis_key(collection_name, key))
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """
         Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
@@ -304,7 +318,7 @@ class RedisMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """
         Get the nearest matches to an embedding using the configured similarity algorithm.
 
@@ -357,7 +371,7 @@ class RedisMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """
         Get the nearest match to an embedding using the configured similarity algorithm.
 

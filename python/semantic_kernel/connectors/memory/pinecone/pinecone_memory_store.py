@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
+from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,
@@ -18,6 +20,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 # Limitations set by Pinecone at https://docs.pinecone.io/reference/known-limitations
 MAX_DIMENSIONALITY = 20000
@@ -30,6 +33,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
@@ -45,21 +49,33 @@ class PineconeMemoryStore(MemoryStoreBase):
         self,
         api_key: str,
         default_dimensionality: int,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
         Arguments:
             pinecone_api_key {str} -- The Pinecone API key.
             default_dimensionality {int} -- The default dimensionality to use for new collections.
+            env_file_path {str | None} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
+
+        pinecone_settings = None
+        try:
+            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
+
+        api_key = api_key or (
+            pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
+        )
+        assert api_key, "The Pinecone api_key cannot be None."
+
         self._pinecone_api_key = api_key
         self._default_dimensionality = default_dimensionality
 
@@ -69,8 +85,8 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
-        distance_type: Optional[str] = "cosine",
+        dimension_num: int | None = None,
+        distance_type: str | None = "cosine",
         index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
@@ -98,7 +114,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             )
             self.collection_names_cache.add(collection_name)
 
-    async def describe_collection(self, collection_name: str) -> Optional[IndexDescription]:
+    async def describe_collection(self, collection_name: str) -> IndexDescription | None:
         """Gets the description of the index.
         Arguments:
             collection_name {str} -- The name of the index to get.
@@ -174,7 +190,7 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         return record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -228,8 +244,8 @@ class PineconeMemoryStore(MemoryStoreBase):
         return parse_payload(fetch_response.vectors[key], with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -262,7 +278,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         collection = self.pinecone.Index(collection_name)
         collection.delete([key])
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -286,7 +302,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -314,7 +330,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -372,7 +388,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         )
 
     async def __get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
     ) -> "FetchResponse":
         index = self.pinecone.Index(collection_name)
         if len(keys) > MAX_FETCH_BATCH_SIZE:

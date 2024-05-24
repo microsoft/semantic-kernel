@@ -3,7 +3,6 @@
 import logging
 import uuid
 from inspect import isawaitable
-from typing import List, Optional, Tuple
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
@@ -18,6 +17,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
@@ -29,13 +29,15 @@ from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     get_search_index_async_client,
     memory_record_to_search_record,
 )
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
     _vector_size: int = None
@@ -43,30 +45,50 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     def __init__(
         self,
         vector_size: int,
-        search_endpoint: Optional[str] = None,
-        admin_key: Optional[str] = None,
-        azure_credentials: Optional[AzureKeyCredential] = None,
-        token_credentials: Optional[TokenCredential] = None,
-        **kwargs,
+        search_endpoint: str | None = None,
+        admin_key: str | None = None,
+        azure_credentials: AzureKeyCredential | None = None,
+        token_credentials: TokenCredential | None = None,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
 
         Arguments:
             vector_size {int}                                -- Embedding vector size.
-            search_endpoint {Optional[str]}                  -- The endpoint of the Azure Cognitive Search service
+            search_endpoint {str | None}                  -- The endpoint of the Azure Cognitive Search service
                                                                 (default: {None}).
-            admin_key {Optional[str]}                        -- Azure Cognitive Search API key (default: {None}).
-            azure_credentials {Optional[AzureKeyCredential]} -- Azure Cognitive Search credentials (default: {None}).
-            token_credentials {Optional[TokenCredential]}    -- Azure Cognitive Search token credentials
+            admin_key {str | None}                        -- Azure Cognitive Search API key (default: {None}).
+            azure_credentials {AzureKeyCredential | None} -- Azure Cognitive Search credentials (default: {None}).
+            token_credentials {TokenCredential | None}    -- Azure Cognitive Search token credentials
                                                                 (default: {None}).
+            env_file_path {str | None}                  -- Use the environment settings file as a fallback
+                                                                to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
         """
+        from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
+
+        acs_memory_settings = None
+        try:
+            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
+
+        admin_key = admin_key or (
+            acs_memory_settings.api_key.get_secret_value()
+            if acs_memory_settings and acs_memory_settings.api_key
+            else None
+        )
+        search_endpoint = search_endpoint or (
+            acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
+        )
+        assert search_endpoint, "The ACS endpoint is required to connect to Azure Cognitive Search."
+
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
-            search_endpoint, admin_key, azure_credentials, token_credentials
+            str(search_endpoint), admin_key, azure_credentials, token_credentials
         )
 
     async def close(self):
@@ -77,8 +99,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        vector_config: Optional[HnswAlgorithmConfiguration] = None,
-        search_resource_encryption_key: Optional[SearchResourceEncryptionKey] = None,
+        vector_config: HnswAlgorithmConfiguration | None = None,
+        search_resource_encryption_key: SearchResourceEncryptionKey | None = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
@@ -112,7 +134,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                         name=vector_search_algorithm_name,
                         kind="hnsw",
                         parameters=HnswParameters(
-                            m=4,  # Number of bi-directional links, typically between 4 and 10
+                            m=4,  # Number of bidirectional links, typically between 4 and 10
                             ef_construction=400,  # Size during indexing, range: 100-1000
                             ef_search=500,  # Size during search, range: 100-1000
                             metric="cosine",  # Can be "cosine", "dotProduct", or "euclidean"
@@ -122,7 +144,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
 
         if not self._search_index_client:
-            raise ServiceInitializationError("Error: self._search_index_client not set 1.")
+            raise MemoryConnectorInitializationError("Error: self._search_index_client not set 1.")
 
         # Check to see if collection exists
         collection_index = None
@@ -142,7 +164,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
             await self._search_index_client.create_index(index)
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -206,7 +228,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             return result[0]
         return None
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upsert a batch of records.
 
         Arguments:
@@ -264,7 +286,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             )
         except ResourceNotFoundError as exc:
             await search_client.close()
-            raise ServiceResourceNotFoundError("Memory record not found") from exc
+            raise MemoryConnectorResourceNotFound("Memory record not found") from exc
 
         await search_client.close()
 
@@ -272,8 +294,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         return dict_to_memory_record(search_result, with_embedding)
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -297,7 +319,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return search_results
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -335,7 +357,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -368,7 +390,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:

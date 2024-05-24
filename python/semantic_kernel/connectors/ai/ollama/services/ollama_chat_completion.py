@@ -2,7 +2,8 @@
 
 import json
 import logging
-from typing import Any, AsyncGenerator, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import aiohttp
 from pydantic import HttpUrl
@@ -33,14 +34,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
     """
 
     url: HttpUrl = "http://localhost:11434/api/chat"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List[ChatMessageContent]:
+    ) -> list[ChatMessageContent]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
@@ -70,14 +71,14 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     )
                 ]
 
-    async def complete_chat_stream(
+    async def get_streaming_chat_message_contents(
         self,
         chat_history: ChatHistory,
         settings: OllamaChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncGenerator[List[StreamingChatMessageContent], Any]:
+    ) -> AsyncGenerator[list[StreamingChatMessageContent], Any]:
         """
-        Streams a text completion using a Ollama model.
+        Streams a text completion using an Ollama model.
         Note that this method does not support multiple responses.
 
         Arguments:
@@ -112,11 +113,11 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     if body.get("done"):
                         break
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -143,13 +144,13 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     )
                 ]
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: OllamaChatPromptExecutionSettings,
-    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
-        Streams a text completion using a Ollama model.
+        Streams a text completion using an Ollama model.
         Note that this method does not support multiple responses.
 
         Arguments:

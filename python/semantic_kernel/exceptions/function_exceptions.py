@@ -43,6 +43,10 @@ class FunctionResultError(FunctionException):
     pass
 
 
+class PromptRenderingException(FunctionException):
+    pass
+
+
 __all__ = [
     "FunctionException",
     "FunctionInitializationError",
@@ -54,4 +58,5 @@ __all__ = [
     "PluginInvalidNameError",
     "FunctionExecutionException",
     "FunctionResultError",
+    "PromptRenderingException",
 ]

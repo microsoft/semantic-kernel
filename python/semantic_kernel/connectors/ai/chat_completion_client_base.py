@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class ChatCompletionClientBase(AIServiceClientBase, ABC):
     @abstractmethod
-    async def complete_chat(
+    async def get_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
@@ -36,7 +36,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         pass
 
     @abstractmethod
-    def complete_chat_stream(
+    def get_streaming_chat_message_contents(
         self,
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",

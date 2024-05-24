@@ -6,6 +6,7 @@ This section contains code snippets that demonstrate the usage of Semantic Kerne
 | -------- | ----------- |
 | AutoFunctionCalling | Using `Auto Function Calling` to allow function call capable models to invoke Kernel Functions automatically |
 | ChatCompletion | Using [`ChatCompletion`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/connectors/ai/chat_completion_client_base.py) messaging capable service with models  |
+| Filtering | Creating and using Filters |
 | Functions | Invoking [`Method`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_method.py) or [`Prompt`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/functions/kernel_function_from_prompt.py) functions with [`Kernel`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/kernel.py) |
 | Grounding | An example of how to perform LLM grounding |
 | Logging | Showing how to set up logging |

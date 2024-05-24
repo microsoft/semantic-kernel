@@ -91,11 +91,13 @@ internal static class HttpClientProvider
 #else
         private static HttpClientHandler CreateHandler()
         {
-            return new HttpClientHandler()
+            var handler = new HttpClientHandler();
+            try
             {
-                // Check cert revocation
-                CheckCertificateRevocationList = true,
-            };
+                handler.CheckCertificateRevocationList = true;
+            }
+            catch (PlatformNotSupportedException) { } // not supported on older frameworks
+            return handler;
         }
 #endif
     }
