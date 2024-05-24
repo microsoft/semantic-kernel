@@ -15,8 +15,23 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.core_plugins import MathPlugin, TimePlugin
 from semantic_kernel.functions import KernelArguments
 
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
+
+
+class Profile(KernelBaseModel):
+    first_name: str = None
+    last_name: str = None
+    phone_numbers: list[str] = None
+
+
+class ProfilePlugin:
+    @kernel_function(name="GetPersonProfile", description="Gets a person's profile given their id.")
+    def get_profile(self, person_id: str) -> Profile:
+        return Profile(first_name="John", last_name="Doe")
 
 
 system_message = """
@@ -42,8 +57,10 @@ plugins_directory = os.path.join(__file__, "../../../../../prompt_template_sampl
 # the joke plugin in the FunPlugins is a semantic plugin and has the function calling disabled.
 # kernel.import_plugin_from_prompt_directory("chat", plugins_directory, "FunPlugin")
 # the math plugin is a core plugin and has the function calling enabled.
-kernel.add_plugin(MathPlugin(), plugin_name="math")
-kernel.add_plugin(TimePlugin(), plugin_name="time")
+# kernel.add_plugin(MathPlugin(), plugin_name="math")
+# kernel.add_plugin(TimePlugin(), plugin_name="time")
+
+kernel.add_plugin(ProfilePlugin(), plugin_name="Profile")
 
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
