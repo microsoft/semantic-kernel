@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3  
       # The action will only run if the description or comments mentions @AdaGPT
-      - uses: zirkelc/adagpt@v1
+      - uses: zirkelc/adagpt@<commit-sha>
         name: AdaGPT
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
