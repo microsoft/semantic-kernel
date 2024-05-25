@@ -127,7 +127,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
         Arguments:
             settings: A dictionary of settings for the service.
-                should contains keys: service_id, and optionally:
+                should contain keys: service_id, and optionally:
                     ad_auth, ad_token_provider, default_headers
         """
 
@@ -151,7 +151,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
     def _create_chat_message_content(
         self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
     ) -> ChatMessageContent:
-        """Create a Azure chat message content object from a choice."""
+        """Create an Azure chat message content object from a choice."""
         content = super()._create_chat_message_content(response, choice, response_metadata)
         return self._add_tool_message_to_chat_message_content(content, choice)
 
@@ -161,7 +161,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         choice: ChunkChoice,
         chunk_metadata: dict[str, Any],
     ) -> "StreamingChatMessageContent":
-        """Create a Azure streaming chat message content object from a choice."""
+        """Create an Azure streaming chat message content object from a choice."""
         content = super()._create_streaming_chat_message_content(chunk, choice, chunk_metadata)
         return self._add_tool_message_to_chat_message_content(content, choice)
 
@@ -200,7 +200,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     @staticmethod
     def split_message(message: "ChatMessageContent") -> list["ChatMessageContent"]:
-        """Split a Azure On Your Data response into separate ChatMessageContents.
+        """Split an Azure On Your Data response into separate ChatMessageContents.
 
         If the message does not have three contents, and those three are one each of:
         FunctionCallContent, FunctionResultContent, and TextContent,

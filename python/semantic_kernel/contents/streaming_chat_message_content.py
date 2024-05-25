@@ -20,8 +20,8 @@ ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultCont
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     """This is the class for streaming chat message response content.
 
-    All Chat Completion Services should return a instance of this class as streaming response,
-    where each part of the response as it is streamed is converted to a instance of this class,
+    All Chat Completion Services should return an instance of this class as streaming response,
+    where each part of the response as it is streamed is converted to an instance of this class,
     the end-user will have to either do something directly or gather them and combine them into a
     new instance. A service can implement their own subclass of this class and return instances of that.
 
@@ -55,7 +55,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -82,7 +82,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -109,7 +109,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
-        """All Chat Completion Services should return a instance of this class as response for streaming.
+        """All Chat Completion Services should return an instance of this class as response for streaming.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
