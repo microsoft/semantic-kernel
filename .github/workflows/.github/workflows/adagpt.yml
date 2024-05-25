@@ -1,0 +1,30 @@
+# File: .github/workflows/adagpt.yml
+name: 'AdaGPT'
+
+# Run the workflow on new issues, pull requests and comments
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+# Allows the workflow to create comments on issues and pull requests
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  # Runs for issues, pull requests and comments
+  adagpt:
+    name: AdaGPT comment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3  
+      # The action will only run if the description or comments mentions @AdaGPT
+      - uses: zirkelc/adagpt@v1
+        name: AdaGPT
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_key: ${{ secrets.OPENAI_KEY }}
