@@ -44,7 +44,7 @@ const string AzureOpenAIEndpoint = "https://.openai.azure.com/";
 // Replace with your Azure OpenAI API key
 const string AzureOpenAIApiKey = "";
 
-// Replace with your Azure OpenAI deployment name
+// Replace with your Azure OpenAI embedding deployment name
 const string EmbeddingModelDeploymentName = "embeddings";
 
 // Replace with your Azure OpenAI chat completion deployment name
