@@ -20,7 +20,7 @@ dotnet add package Microsoft.SemanticKernel
 dotnet add package Microsoft.SemanticKernel.Connectors.OpenAI
 ```
 
-Add then add `Microsoft.SemanticKernel.Connectors.SqlServer` to give your Chatbot memories:
+Add `Microsoft.SemanticKernel.Connectors.SqlServer` to give your Chatbot memories:
 
 ```bash
 dotnet add package Microsoft.SemanticKernel.Connectors.SqlServer
