@@ -373,7 +373,8 @@ public sealed class Plan : ISKFunction
                 }
                 catch (Exception e) when (!e.IsCriticalException())
                 {
-                    functionContext.Log.LogError(e, "Something went wrong in plan step {0}.{1}:'{2}'",
+                    functionContext.Log.LogError(e, "Error in plan step {0}.{1}:'{2}'. Exception: {3}",
+                        this.SkillName, this.Name, context.LastErrorDescription, e.Message);
                         this.SkillName, this.Name, context.LastErrorDescription);
                     functionContext.Fail(e.Message, e);
                     return functionContext;
