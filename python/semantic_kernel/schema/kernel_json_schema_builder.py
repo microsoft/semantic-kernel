@@ -81,7 +81,8 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
-        """Handles complex types like list[str], dict[str, int], set[int], tuple[int, str], Union[int, str], and Optional[int]."""
+        """Handles complex types like list[str], dict[str, int],
+        set[int], tuple[int, str], Union[int, str], and Optional[int]."""
         origin = get_origin(parameter_type)
         args = get_args(parameter_type)
 
