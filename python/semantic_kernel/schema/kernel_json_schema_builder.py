@@ -81,8 +81,7 @@ class KernelJsonSchemaBuilder:
 
     @classmethod
     def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
-        """Handles complex types like list[str], dict[str, int],
-        set[int], tuple[int, str], Union[int, str], and Optional[int]."""
+        """Handles complex types like list[str], dict[str, int], set[int], tuple[int, str], Union[int, str], and Optional[int]."""
         origin = get_origin(parameter_type)
         args = get_args(parameter_type)
 
@@ -91,7 +90,10 @@ class KernelJsonSchemaBuilder:
             return {"type": "array", "items": cls.build(item_type), "description": description}
         elif origin is dict:
             _, value_type = args
-            return {"type": "object", "additionalProperties": cls.build(value_type), "description": description}
+            additional_properties = cls.build(value_type)
+            if additional_properties == {"type": "object"}:
+                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
+            return {"type": "object", "additionalProperties": additional_properties, "description": description}
         elif origin is tuple:
             items = [cls.build(arg) for arg in args]
             return {"type": "array", "items": items, "description": description}
