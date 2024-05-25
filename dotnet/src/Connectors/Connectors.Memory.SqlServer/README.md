@@ -47,7 +47,7 @@ const string AzureOpenAIApiKey = "";
 // Replace with your Azure OpenAI deployment name
 const string EmbeddingModelDeploymentName = "embeddings";
 
-// Replace with your Azure OpenAI deployment name
+// Replace with your Azure OpenAI chat completion deployment name
 const string ChatModelDeploymentName = "gpt-35";
 
 // Complete with your Azure SQL connection string
