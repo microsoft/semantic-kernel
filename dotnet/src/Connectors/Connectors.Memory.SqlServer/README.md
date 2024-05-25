@@ -23,7 +23,7 @@ dotnet add package Microsoft.SemanticKernel.Connectors.OpenAI
 Add `Microsoft.SemanticKernel.Connectors.SqlServer` to give your Chatbot memories:
 
 ```bash
-dotnet add package Microsoft.SemanticKernel.Connectors.SqlServer
+dotnet add package Microsoft.SemanticKernel.Connectors.SqlServer --prerelease
 ```
 
 Then you can use the following code to create a Chatbot with a memory that uses SQL Server:
