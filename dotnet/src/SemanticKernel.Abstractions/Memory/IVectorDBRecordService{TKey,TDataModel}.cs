@@ -38,22 +38,22 @@ public interface IVectorDBRecordService<TKey, TDataModel>
     IAsyncEnumerable<TDataModel?> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes a vector record from the data store. Does not guarantee that the collection exists.
+    /// Deletes a vector record from the data store. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="key">The unique id associated with the vector record to remove.</param>
     /// <param name="options">Optional options for removing the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the vector record.</returns>
-    Task RemoveAsync(TKey key, RemoveRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteAsync(TKey key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes a batch of vector records from the data store. Does not guarantee that the collection exists.
-    /// Removes will be made in a single request or in a single parallel batch depending on the available store functionality.
+    /// Deletes a batch of vector records from the data store. Does not guarantee that the collection exists.
+    /// Deletes will be made in a single request or in a single parallel batch depending on the available store functionality.
     /// </summary>
     /// <param name="keys">The unique ids associated with the vector records to remove.</param>
     /// <param name="options">Optional options for removing the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task RemoveBatchAsync(IEnumerable<TKey> keys, RemoveRecordOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upserts a vector record into the data store. Does not guarantee that the collection exists.

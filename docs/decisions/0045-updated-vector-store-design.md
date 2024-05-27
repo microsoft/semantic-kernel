@@ -25,7 +25,7 @@ The current abstractions are experimental and the purpose of this ADR is to prog
 Responsibilities:
 
 |Functional Area|Cardinality|Significance to Semantic Kernel|
-|-|-|-|-|
+|-|-|-|
 |Collection/Index create|An implementation per store type and model|Valuable when building a store and adding data|
 |Collection/Index list/exists/delete|An implementation per store type|Valuable when building a store and adding data|
 |Data Storage and Retrieval|An implementation per store type|Valueble when building a store and adding data|
@@ -111,8 +111,8 @@ classDiagram
             +UpserBatch(TModel record) string
             +Get(string key) TModel
             +GetBatch(string[] keys) TModel[]
-            +Remove(string key)
-            +RemoveBatch(string[] keys)
+            +Delete(string key)
+            +DeleteBatch(string[] keys)
         }
     }
 
@@ -177,7 +177,7 @@ classDiagram
             <<interface>>
             +Upsert(TModel record) string
             +Get(string key) TModel
-            +Remove(string key) string
+            +Delete(string key) string
         }
 
         class ISemanticTextMemory{
@@ -185,9 +185,9 @@ classDiagram
             +SaveInformationAsync()
             +SaveReferenceAsync()
             +GetAsync()
-            +RemoveAsync()
+            +DeleteAsync()
             +SearchAsync()
-            +GetCollectionNamesAsync()
+            +GetCollectionsAsync()
         }
     }
 
@@ -206,7 +206,7 @@ classDiagram
             -IVectorDBRecordService~CustomerHistoryModel~ _store
             +Upsert(ChatHistoryModel record) string
             +Get(string key) ChatHistoryModel
-            +Remove(string key) string
+            +Delete(string key) string
         }
     }
 
@@ -259,10 +259,14 @@ A comparison of the different ways in which stores implement storage capabilitie
 |Is Key separate from data|N|Y|Y|Y||Y||N|Y|N|
 |Can Generate Ids|N|Y|N|N||Y||Y|N|Y|
 |Can Generate Embedding|Not Available Via API yet|Y|N|Client Side Abstraction|||||N||
+|Index allows text search|Y|Y|Y|Y (On Metadata by default)||||Y (with TSVECTOR field)|Y|Y|
+|Allows filtering|Y|Y|Y (on TAG)|Y (On Metadata by default)||[Y](https://docs.pinecone.io/guides/indexes/configure-pod-based-indexes#selective-metadata-indexing)||Y|Y|Y|
+|Allows scalar index field setup|Y|Y|Y|N||Y|||Y|Y|
+|Requires scalar index field setup to filter|Y|Y|Y|N||N (on by default for all)|||N|N (can filter without index)|
 |Field Differentiation|Fields|Key, Props, Vectors|Key, Fields|Key, Documents, Metadata, Vectors||Key, Metadata, SparseValues, Vectors||Fields|Key, Props(Payload), Vectors|Fields|
 |Index to Collection|1 to 1|1 to 1|1 to many|1 to 1|-|1 to 1|-|1 to 1|1 to 1|1 to 1|
 |Id Type|String|UUID|string with collection name prefix|string||string|UUID|64Bit Int / UUID / ULID|64Bit Unsigned Int / UUID|Int64 / varchar|
-|Supported Vector Types|Collection(Edm.Single)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
+|Supported Vector Types|[Collection(Edm.Byte) / Collection(Edm.Single) / Collection(Edm.Half) / Collection(Edm.Int16) / Collection(Edm.SByte)](https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types)|float32|FLOAT32 and FLOAT64|||[Rust f32](https://docs.pinecone.io/troubleshooting/embedding-values-changed-when-upserted)||[single-precision (4 byte float) / half-precision (2 byte float) / binary (1bit) / sparse vectors (4 bytes)](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|UInt8 / Float32|Binary / Float32 / Float16 / BFloat16 / SparseFloat|
 |Supported Distance Functions|[Cosine / dot prod / euclidean dist (l2 norm)](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#similarity-metrics-used-to-measure-nearness)|[Cosine dist / dot prod / Squared L2 dist / hamming (num of diffs) / manhattan dist](https://weaviate.io/developers/weaviate/config-refs/distances#available-distance-metrics)|[Euclidean dist (L2) / Inner prod (IP) / Cosine dist](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/)|[Squared L2 / Inner prod / Cosine similarity](https://docs.trychroma.com/guides#changing-the-distance-function)||[cosine sim / euclidean dist / dot prod](https://docs.pinecone.io/reference/api/control-plane/create_index)||[L2 dist / inner prod / cosine dist / L1 dist / Hamming dist / Jaccard dist](https://github.com/pgvector/pgvector?tab=readme-ov-file#pgvector)|[Dot prod / Cosine sim / Euclidean dist (L2) / Manhattan dist](https://qdrant.tech/documentation/concepts/search/)|[Cosine sim / Euclidean dist / Inner Prod](https://milvus.io/docs/index-vector-fields.md)|
 |Supported index types|[Exhaustive KNN / HNSW](https://learn.microsoft.com/en-us/azure/search/vector-search-ranking#algorithms-used-in-vector-search)|[HNSW / Flat / Dynamic](https://weaviate.io/developers/weaviate/config-refs/schema/vector-index)|[HNSW / FLAT](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/#create-a-vector-field)|[HNSW not configurable](https://cookbook.chromadb.dev/core/concepts/#vector-index-hnsw-index)||[PGA](https://www.pinecone.io/blog/hnsw-not-enough/)||[HNSW / IVFFlat](https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing)|[HNSW for dense](https://qdrant.tech/documentation/concepts/indexing/#vector-index)|<p>[In Memory: FLAT / IVF_FLAT / IVF_SQ8 / IVF_PQ / HNSW / SCANN](https://milvus.io/docs/index.md)</p><p>[On Disk: DiskANN](https://milvus.io/docs/disk_index.md)</p><p>[GPU: GPU_CAGRA / GPU_IVF_FLAT / GPU_IVF_PQ / GPU_BRUTE_FORCE](https://milvus.io/docs/gpu_index.md)</p>|
 
@@ -339,16 +343,16 @@ Additional:
 interface IVectorDBRecordService<TDataModel>
 {
     Task CreateCollectionAsync(CollectionConfig collectionConfig, CancellationToken cancellationToken = default);
-    Task<IEnumerable<CollectionConfig>> GetCollectionNamesAsync(CancellationToken cancellationToken = default);
-    Task<bool> DoesCollectionExistAsync(string name, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
+    Task<bool> CollectionExistAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 
     Task UpsertAsync(TDataModel data, CancellationToken cancellationToken = default);
     IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TDataModel> dataSet, CancellationToken cancellationToken = default);
     Task<TDataModel> GetAsync(string key, bool withEmbedding = false, CancellationToken cancellationToken = default);
     IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<string> keys, bool withVectors = false, CancellationToken cancellationToken = default);
-    Task RemoveAsync(string key, CancellationToken cancellationToken = default);
-    Task RemoveBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
+    Task DeleteAsync(string key, CancellationToken cancellationToken = default);
+    Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
 }
 
 class AzureAISearchVectorDBRecordService<TDataModel>(
@@ -373,8 +377,8 @@ interface IVectorDBCollectionService
     virtual Task CreateChatHistoryCollectionAsync(string name, CancellationToken cancellationToken = default);
     virtual Task CreateSemanticCacheCollectionAsync(string name, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<string>> GetCollectionNamesAsync(CancellationToken cancellationToken = default);
-    Task<bool> DoesCollectionExistAsync(string name, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
+    Task<bool> CollectionExistAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
@@ -391,7 +395,7 @@ class MLIndexAzureAISearchVectorDBCollectionService(MLIndex mlIndexSpec): AzureA
 interface IVectorDBRecordService<TDataModel>
 {
     Task<TDataModel?> GetAsync(string key, VectorDBRecordServiceGetDocumentOptions? options = default, CancellationToken cancellationToken = default);
-    Task RemoveAsync(string key, VectorDBRecordServiceRemoveDocumentOptions? options = default, CancellationToken cancellationToken = default);
+    Task DeleteAsync(string key, VectorDBRecordServiceDeleteDocumentOptions? options = default, CancellationToken cancellationToken = default);
     Task<string> UpsertAsync(TDataModel record, VectorDBRecordServiceUpsertDocumentOptions? options = default, CancellationToken cancellationToken = default);
 }
 
@@ -417,8 +421,8 @@ class CustomerChatHistoryCollectionCreateService: IVectorDBCollectionCreateServi
 
 interface IVectorDBCollectionUpdateService
 {
-    Task<IEnumerable<string>> GetCollectionNamesAsync(CancellationToken cancellationToken = default);
-    Task<bool> DoesCollectionExistAsync(string name, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
+    Task<bool> CollectionExistAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
@@ -441,8 +445,8 @@ interface IVectorDBCollectionCreateService
 
 interface IVectorDBCollectionUpdateService
 {
-    Task<IEnumerable<string>> GetCollectionNamesAsync(CancellationToken cancellationToken = default);
-    Task<bool> DoesCollectionExistAsync(string name, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
+    Task<bool> CollectionExistAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
@@ -457,8 +461,8 @@ interface IVectorDBCollectionService: IVectorDBCollectionCreateService, IVectorD
 abstract class VectorDBCollectionService(IVectorDBCollectionUpdateService collectionsUpdateService): IVectorDBCollectionService
 {
     public abstract Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
-    public Task<IEnumerable<string>> GetCollectionNamesAsync(CancellationToken cancellationToken = default) { return collectionsUpdateService.GetCollectionNamesAsync(cancellationToken); }
-    public Task<bool> DoesCollectionExistAsync(string name, CancellationToken cancellationToken = default) { return collectionsUpdateService.DoesCollectionExistAsync(name, cancellationToken); }
+    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) { return collectionsUpdateService.ListCollectionNamesAsync(cancellationToken); }
+    public Task<bool> CollectionExistAsync(string name, CancellationToken cancellationToken = default) { return collectionsUpdateService.CollectionExistAsync(name, cancellationToken); }
     public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) { return collectionsUpdateService.DeleteCollectionAsync(name, cancellationToken); }
 }
 
@@ -532,6 +536,7 @@ Chosen option: 4 + 5.
 - Pros: Easy to package matching encoders/decoders together.
 - Pros: Easier to obsolete encoding/normalization as a concept.
 - Cons: Need to implement the full VectorDBRecordService interface.
+- Cons: Hard to have a generic implementation that can work with any model, without either changing the data in the provided object on upsert or doing cloning in an expensive way.
 
 ```cs
     new KeyNormalizingAISearchVectorDBRecordService<MyModel>(
@@ -543,7 +548,7 @@ Chosen option: 4 + 5.
 
 - Pros: Allows normalization to vary separately from the vector store.
 - Pros: No need to implement the full VectorDBRecordService interface.
-- Pros: Can modify values on serialization without changing the incoming record.
+- Pros: Can modify values on serialization without changing the incoming record, if supported by DB SDK.
 - Cons: Harder to package matching encoders/decoders together.
 
 ```cs
@@ -557,9 +562,18 @@ public class StoreOptions
 }
 ```
 
+### Option 4 - Normalization via custom mapper
+
+If developer wants to change any values they can do so by creating a custom mapper.
+
+- Cons: Developer needs to implement a mapper if they want to do normalization.
+- Cons: Developer cannot change collection name as part of the mapping.
+- Pros: No new extension points required to support normalization.
+- Pros: Developer can change any field in the record.
+
 #### Decision Outcome
 
-Option 2 / 3 should work. Leaning towards 2, but let's discuss.
+Chosen option 3, since it is similar to how we are doing mapper injection and would also work well in python.
 
 Option 1 won't work because if e.g. the data was written using another tool, it may be unlikely that it was encoded using the same mechanism as supported here
 and therefore this functionality may not be appropriate. The developer should have the ability to not use this functionality or
