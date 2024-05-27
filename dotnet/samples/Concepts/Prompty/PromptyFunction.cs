@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
+using Microsoft.SemanticKernel.Prompty;
 
 namespace Prompty;
 
@@ -125,7 +126,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
             What is Seattle?
             """;
 
-        var promptConfig = PromptyKernelExtensions.ToPromptTemplateConfig(promptyTemplate);
+        var promptConfig = KernelFunctionPrompty.ToPromptTemplateConfig(promptyTemplate);
         var promptTemplateFactory = new LiquidPromptTemplateFactory();
         var promptTemplate = promptTemplateFactory.Create(promptConfig);
         var prompt = await promptTemplate.RenderAsync(kernel);
