@@ -250,9 +250,11 @@ Below are some different examples of Assembly and root namespace naming that are
 ```text
 dotnet/
 ├── samples/
-│   ├── ApplicationInsightsExample/
-│   ├── KernelSyntaxExamples/
-│   └── NCalcSkills/
+│   └── Concepts/
+│   └── Demos/
+│   └── GettingStarted/
+│   └── GettingStartedWithAgents/
+│   └── LearnResources/
 └── src/
     ├── Connectors/
     │   ├── Connectors.AI.OpenAI*
