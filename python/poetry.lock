@@ -168,63 +168,6 @@ files = [
 ]
 
 [[package]]
-name = "argon2-cffi"
-version = "23.1.0"
-description = "Argon2 for Python"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "argon2_cffi-23.1.0-py3-none-any.whl", hash = "sha256:c670642b78ba29641818ab2e68bd4e6a78ba53b7eff7b4c3815ae16abf91c7ea"},
-    {file = "argon2_cffi-23.1.0.tar.gz", hash = "sha256:879c3e79a2729ce768ebb7d36d4609e3a78a4ca2ec3a9f12286ca057e3d0db08"},
-]
-
-[package.dependencies]
-argon2-cffi-bindings = "*"
-
-[package.extras]
-dev = ["argon2-cffi[tests,typing]", "tox (>4)"]
-docs = ["furo", "myst-parser", "sphinx", "sphinx-copybutton", "sphinx-notfound-page"]
-tests = ["hypothesis", "pytest"]
-typing = ["mypy"]
-
-[[package]]
-name = "argon2-cffi-bindings"
-version = "21.2.0"
-description = "Low-level CFFI bindings for Argon2"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "argon2-cffi-bindings-21.2.0.tar.gz", hash = "sha256:bb89ceffa6c791807d1305ceb77dbfacc5aa499891d2c55661c6459651fc39e3"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:ccb949252cb2ab3a08c02024acb77cfb179492d5701c7cbdbfd776124d4d2367"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9524464572e12979364b7d600abf96181d3541da11e23ddf565a32e70bd4dc0d"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b746dba803a79238e925d9046a63aa26bf86ab2a2fe74ce6b009a1c3f5c8f2ae"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:58ed19212051f49a523abb1dbe954337dc82d947fb6e5a0da60f7c8471a8476c"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:bd46088725ef7f58b5a1ef7ca06647ebaf0eb4baff7d1d0d177c6cc8744abd86"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-musllinux_1_1_i686.whl", hash = "sha256:8cd69c07dd875537a824deec19f978e0f2078fdda07fd5c42ac29668dda5f40f"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:f1152ac548bd5b8bcecfb0b0371f082037e47128653df2e8ba6e914d384f3c3e"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-win32.whl", hash = "sha256:603ca0aba86b1349b147cab91ae970c63118a0f30444d4bc80355937c950c082"},
-    {file = "argon2_cffi_bindings-21.2.0-cp36-abi3-win_amd64.whl", hash = "sha256:b2ef1c30440dbbcba7a5dc3e319408b59676e2e039e2ae11a8775ecf482b192f"},
-    {file = "argon2_cffi_bindings-21.2.0-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:e415e3f62c8d124ee16018e491a009937f8cf7ebf5eb430ffc5de21b900dad93"},
-    {file = "argon2_cffi_bindings-21.2.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:3e385d1c39c520c08b53d63300c3ecc28622f076f4c2b0e6d7e796e9f6502194"},
-    {file = "argon2_cffi_bindings-21.2.0-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2c3e3cc67fdb7d82c4718f19b4e7a87123caf8a93fde7e23cf66ac0337d3cb3f"},
-    {file = "argon2_cffi_bindings-21.2.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6a22ad9800121b71099d0fb0a65323810a15f2e292f2ba450810a7316e128ee5"},
-    {file = "argon2_cffi_bindings-21.2.0-pp37-pypy37_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f9f8b450ed0547e3d473fdc8612083fd08dd2120d6ac8f73828df9b7d45bb351"},
-    {file = "argon2_cffi_bindings-21.2.0-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:93f9bf70084f97245ba10ee36575f0c3f1e7d7724d67d8e5b08e61787c320ed7"},
-    {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:3b9ef65804859d335dc6b31582cad2c5166f0c3e7975f324d9ffaa34ee7e6583"},
-    {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d4966ef5848d820776f5f562a7d45fdd70c2f330c961d0d745b784034bd9f48d"},
-    {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:20ef543a89dee4db46a1a6e206cd015360e5a75822f76df533845c3cbaf72670"},
-    {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ed2937d286e2ad0cc79a7087d3c272832865f779430e0cc2b4f3718d3159b0cb"},
-    {file = "argon2_cffi_bindings-21.2.0-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:5e00316dabdaea0b2dd82d141cc66889ced0cdcbfa599e8b471cf22c620c329a"},
-]
-
-[package.dependencies]
-cffi = ">=1.0.1"
-
-[package.extras]
-dev = ["cogapp", "pre-commit", "pytest", "wheel"]
-tests = ["pytest"]
-
-[[package]]
 name = "asttokens"
 version = "2.4.1"
 description = "Annotate AST trees with source code positions"
@@ -347,26 +290,6 @@ files = [
 azure-common = ">=1.1"
 azure-core = ">=1.28.0"
 isodate = ">=0.6.0"
-
-[[package]]
-name = "azure-storage-blob"
-version = "12.19.1"
-description = "Microsoft Azure Blob Storage Client Library for Python"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "azure-storage-blob-12.19.1.tar.gz", hash = "sha256:13e16ba42fc54ac2c7e8f976062173a5c82b9ec0594728e134aac372965a11b0"},
-    {file = "azure_storage_blob-12.19.1-py3-none-any.whl", hash = "sha256:c5530dc51c21c9564e4eb706cd499befca8819b10dd89716d3fc90d747556243"},
-]
-
-[package.dependencies]
-azure-core = ">=1.28.0,<2.0.0"
-cryptography = ">=2.1.4"
-isodate = ">=0.6.1"
-typing-extensions = ">=4.3.0"
-
-[package.extras]
-aio = ["azure-core[aio] (>=1.28.0,<2.0.0)"]
 
 [[package]]
 name = "backcall"
@@ -2286,21 +2209,16 @@ files = [
 client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
 
 [[package]]
-name = "minio"
-version = "7.2.0"
-description = "MinIO Python SDK for Amazon S3 Compatible Cloud Storage"
+name = "milvus-lite"
+version = "2.4.5"
+description = "A lightweight version of Milvus wrapped with Python."
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 files = [
-    {file = "minio-7.2.0-py3-none-any.whl", hash = "sha256:10656272c16156fa08436ce2b27e25e4134ef5142a8c259513ee26fb514531a6"},
-    {file = "minio-7.2.0.tar.gz", hash = "sha256:4b015b018d10c1505f7c3e724fa7c2267760ac7bee6463a624cbf22cd272877b"},
+    {file = "milvus_lite-2.4.5-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:343d5f4df801def14eb711048de8fdf24a216704e591c261cd0827770772a7ee"},
+    {file = "milvus_lite-2.4.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:73f154a82d60f933e2c991b53dd795683b196c0f5b6d36f8464422bdedddb857"},
+    {file = "milvus_lite-2.4.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:22d70c87494442882b3fceeba38ef131d1186c9b9bc363fb9550e8494b2fdaba"},
 ]
-
-[package.dependencies]
-argon2-cffi = "*"
-certifi = "*"
-pycryptodome = "*"
-urllib3 = "*"
 
 [[package]]
 name = "mkl"
@@ -3684,47 +3602,6 @@ files = [
 ]
 
 [[package]]
-name = "pycryptodome"
-version = "3.19.1"
-description = "Cryptographic library for Python"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-files = [
-    {file = "pycryptodome-3.19.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:694020d2ff985cd714381b9da949a21028c24b86f562526186f6af7c7547e986"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:4464b0e8fd5508bff9baf18e6fd4c6548b1ac2ce9862d6965ff6a84ec9cb302a"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:420972f9c62978e852c74055d81c354079ce3c3a2213a92c9d7e37bbc63a26e2"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c1bc0c49d986a1491d66d2a56570f12e960b12508b7e71f2423f532e28857f36"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-musllinux_1_1_aarch64.whl", hash = "sha256:e038ab77fec0956d7aa989a3c647652937fc142ef41c9382c2ebd13c127d5b4a"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-win32.whl", hash = "sha256:a991f8ffe8dfe708f86690948ae46442eebdd0fff07dc1b605987939a34ec979"},
-    {file = "pycryptodome-3.19.1-cp27-cp27m-win_amd64.whl", hash = "sha256:2c16426ef49d9cba018be2340ea986837e1dfa25c2ea181787971654dd49aadd"},
-    {file = "pycryptodome-3.19.1-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:6d0d2b97758ebf2f36c39060520447c26455acb3bcff309c28b1c816173a6ff5"},
-    {file = "pycryptodome-3.19.1-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:b8b80ff92049fd042177282917d994d344365ab7e8ec2bc03e853d93d2401786"},
-    {file = "pycryptodome-3.19.1-cp27-cp27mu-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cd4e7e8bf0fc1ada854688b9b309ee607e2aa85a8b44180f91021a4dd330a928"},
-    {file = "pycryptodome-3.19.1-cp27-cp27mu-musllinux_1_1_aarch64.whl", hash = "sha256:8cf5d3d6cf921fa81acd1f632f6cedcc03f5f68fc50c364cd39490ba01d17c49"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-macosx_10_9_universal2.whl", hash = "sha256:67939a3adbe637281c611596e44500ff309d547e932c449337649921b17b6297"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-macosx_10_9_x86_64.whl", hash = "sha256:11ddf6c9b52116b62223b6a9f4741bc4f62bb265392a4463282f7f34bb287180"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e3e6f89480616781d2a7f981472d0cdb09b9da9e8196f43c1234eff45c915766"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:27e1efcb68993b7ce5d1d047a46a601d41281bba9f1971e6be4aa27c69ab8065"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1c6273ca5a03b672e504995529b8bae56da0ebb691d8ef141c4aa68f60765700"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:b0bfe61506795877ff974f994397f0c862d037f6f1c0bfc3572195fc00833b96"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-musllinux_1_1_i686.whl", hash = "sha256:f34976c5c8eb79e14c7d970fb097482835be8d410a4220f86260695ede4c3e17"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:7c9e222d0976f68d0cf6409cfea896676ddc1d98485d601e9508f90f60e2b0a2"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-win32.whl", hash = "sha256:4805e053571140cb37cf153b5c72cd324bb1e3e837cbe590a19f69b6cf85fd03"},
-    {file = "pycryptodome-3.19.1-cp35-abi3-win_amd64.whl", hash = "sha256:a470237ee71a1efd63f9becebc0ad84b88ec28e6784a2047684b693f458f41b7"},
-    {file = "pycryptodome-3.19.1-pp27-pypy_73-manylinux2010_x86_64.whl", hash = "sha256:ed932eb6c2b1c4391e166e1a562c9d2f020bfff44a0e1b108f67af38b390ea89"},
-    {file = "pycryptodome-3.19.1-pp27-pypy_73-win32.whl", hash = "sha256:81e9d23c0316fc1b45d984a44881b220062336bbdc340aa9218e8d0656587934"},
-    {file = "pycryptodome-3.19.1-pp310-pypy310_pp73-macosx_10_9_x86_64.whl", hash = "sha256:37e531bf896b70fe302f003d3be5a0a8697737a8d177967da7e23eff60d6483c"},
-    {file = "pycryptodome-3.19.1-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cd4e95b0eb4b28251c825fe7aa941fe077f993e5ca9b855665935b86fbb1cc08"},
-    {file = "pycryptodome-3.19.1-pp310-pypy310_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c22c80246c3c880c6950d2a8addf156cee74ec0dc5757d01e8e7067a3c7da015"},
-    {file = "pycryptodome-3.19.1-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:e70f5c839c7798743a948efa2a65d1fe96bb397fe6d7f2bde93d869fe4f0ad69"},
-    {file = "pycryptodome-3.19.1-pp39-pypy39_pp73-macosx_10_9_x86_64.whl", hash = "sha256:6c3df3613592ea6afaec900fd7189d23c8c28b75b550254f4bd33fe94acb84b9"},
-    {file = "pycryptodome-3.19.1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:08b445799d571041765e7d5c9ca09c5d3866c2f22eeb0dd4394a4169285184f4"},
-    {file = "pycryptodome-3.19.1-pp39-pypy39_pp73-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:954d156cd50130afd53f8d77f830fe6d5801bd23e97a69d358fed068f433fbfe"},
-    {file = "pycryptodome-3.19.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:b7efd46b0b4ac869046e814d83244aeab14ef787f4850644119b1c8b0ec2d637"},
-    {file = "pycryptodome-3.19.1.tar.gz", hash = "sha256:8ae0dd1bcfada451c35f9e29a3e5db385caabc190f98e4a80ad02a61098fb776"},
-]
-
-[[package]]
 name = "pydantic"
 version = "2.7.1"
 description = "Data validation using Python type hints"
@@ -3871,32 +3748,29 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.4.1"
+version = "2.4.3"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymilvus-2.4.1-py3-none-any.whl", hash = "sha256:1ad85c011e56b40944b224c34ad5c1565fe5ac703589986d323b9fd7ad3973bf"},
-    {file = "pymilvus-2.4.1.tar.gz", hash = "sha256:e77ceb3459d4574685fa3e346c4608354272b50b16a2d65fb7928068184a1ab7"},
+    {file = "pymilvus-2.4.3-py3-none-any.whl", hash = "sha256:38239e89f8d739f665141d0b80908990b5f59681e889e135c234a4a45669a5c8"},
+    {file = "pymilvus-2.4.3.tar.gz", hash = "sha256:703ac29296cdce03d6dc2aaebbe959e57745c141a94150e371dc36c61c226cc1"},
 ]
 
 [package.dependencies]
-azure-storage-blob = "*"
 environs = "<=9.5.0"
-grpcio = ">=1.49.1,<=1.60.0"
-minio = ">=7.0.0"
+grpcio = ">=1.49.1,<=1.63.0"
+milvus-lite = ">=2.4.0,<2.5.0"
 numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
-pyarrow = ">=12.0.0"
-requests = "*"
-scipy = "*"
 setuptools = ">=67"
 ujson = ">=2.0.0"
 
 [package.extras]
+bulk-writer = ["azure-storage-blob", "minio (>=7.0.0)", "pyarrow (>=12.0.0)", "requests"]
+dev = ["black", "grpcio (==1.62.2)", "grpcio-testing (==1.62.2)", "grpcio-tools (==1.62.2)", "pytest (>=5.3.4)", "pytest-cov (>=2.8.1)", "pytest-timeout (>=1.3.4)", "ruff (>0.4.0)"]
 model = ["milvus-model (>=0.1.0)"]
-test = ["black", "grpcio-testing", "pytest (>=5.3.4)", "pytest-cov (>=2.8.1)", "pytest-timeout (>=1.3.4)", "ruff (>=0.3.3)"]
 
 [[package]]
 name = "pymongo"
@@ -6200,4 +6074,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "dbb299872a8be7f6204fbe1d5e5ad443639cb45f9ee68835f826964c69b77175"
+content-hash = "8afac9de32b710a4ff30110c0e1fc811e604d7f02354ca74a328f9f3ffe3a919"
