@@ -2194,19 +2194,16 @@ traitlets = "*"
 
 [[package]]
 name = "milvus"
-version = "2.2.16"
+version = "2.3.8"
 description = "Embeded Milvus"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "milvus-2.2.16-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:ada1fef174aa42d5117b4a784a48f9106141df8e799bccd7092ad88f4a34f67c"},
-    {file = "milvus-2.2.16-py3-none-macosx_11_0_arm64.whl", hash = "sha256:8df249e791758a94a3e3b6606e6efa6cda136eadf718dd37053b58729173f64e"},
-    {file = "milvus-2.2.16-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ea5bd32251b7bcad629d7e46c307414a586c96b4a50491d04a08db42fca8fba9"},
-    {file = "milvus-2.2.16-py3-none-win_amd64.whl", hash = "sha256:f906990a6d7bbb5955bb03541992d0072ed213f8665c1101b003cea995cb97d9"},
+    {file = "milvus-2.3.8-py3-none-macosx_12_0_arm64.whl", hash = "sha256:f86c1a5b00c8f3c6589affef8b04f45146496cf9c815a122e9a277698456cbb8"},
 ]
 
 [package.extras]
-client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
+client = ["pymilvus (>=2.3.0b1,<2.4.0)"]
 
 [[package]]
 name = "milvus-lite"
@@ -5960,4 +5957,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "8afac9de32b710a4ff30110c0e1fc811e604d7f02354ca74a328f9f3ffe3a919"
+content-hash = "68ac03e588be923ece82d2bfddf8a35dcffce59d5553c15c36e64e579bfac4b2"

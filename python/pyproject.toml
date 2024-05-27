@@ -48,7 +48,7 @@ chromadb = "0.4.13"
 
 [tool.poetry.group.milvus.dependencies]
 pymilvus = "2.4.3"
-milvus = "2.2.16"
+milvus = "2.3.8"
 
 [tool.poetry.group.weaviate.dependencies]
 weaviate-client = ">=3.18,<5.0"
