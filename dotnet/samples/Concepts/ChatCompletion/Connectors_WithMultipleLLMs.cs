@@ -28,7 +28,8 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
 
         await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
         await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
-        await RunByFirstModelIdAsync(kernel, "gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId);
+        await RunByFirstModelIdAsync(kernel, ["gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId]);
+        await RunByFirstServiceIdAsync(kernel, ["NotFound", "AzureOpenAIChat", "OpenAIChat"]);
     }
 
     private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
@@ -37,12 +38,21 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelArguments arguments = [];
-        arguments.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>()
-        {
-            { serviceId, new PromptExecutionSettings() }
-        };
-        var result = await kernel.InvokePromptAsync(prompt, arguments);
+        var result = await kernel.InvokePromptAsync(prompt, new(new PromptExecutionSettings { ServiceId = serviceId }));
+
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    private async Task RunByFirstServiceIdAsync(Kernel kernel, string[] serviceIds)
+    {
+        Console.WriteLine($"======== Service Ids: {string.Join(", ", serviceIds)} ========");
+
+        var prompt = "Hello AI, what can you do for me?";
+
+        var function = kernel.CreateFunctionFromPrompt(prompt, serviceIds.Select(serviceId => new PromptExecutionSettings { ServiceId = serviceId }));
+
+        var result = await kernel.InvokeAsync(function);
+
         Console.WriteLine(result.GetValue<string>());
     }
 
@@ -61,20 +71,13 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
         Console.WriteLine(result.GetValue<string>());
     }
 
-    private async Task RunByFirstModelIdAsync(Kernel kernel, params string[] modelIds)
+    private async Task RunByFirstModelIdAsync(Kernel kernel, string[] modelIds)
     {
         Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 
         var prompt = "Hello AI, what can you do for me?";
 
-        var modelSettings = new Dictionary<string, PromptExecutionSettings>();
-        foreach (var modelId in modelIds)
-        {
-            modelSettings.Add(modelId, new PromptExecutionSettings() { ModelId = modelId });
-        }
-        var promptConfig = new PromptTemplateConfig(prompt) { Name = "HelloAI", ExecutionSettings = modelSettings };
-
-        var function = kernel.CreateFunctionFromPrompt(promptConfig);
+        var function = kernel.CreateFunctionFromPrompt(prompt, modelIds.Select((modelId, index) => new PromptExecutionSettings { ServiceId = $"service-{index}", ModelId = modelId }));
 
         var result = await kernel.InvokeAsync(function);
         Console.WriteLine(result.GetValue<string>());

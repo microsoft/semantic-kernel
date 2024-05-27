@@ -109,6 +109,7 @@ public class PromptExecutionSettings
         return new()
         {
             ModelId = this.ModelId,
+            ServiceId = this.ServiceId,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null
         };
     }

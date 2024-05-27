@@ -133,7 +133,7 @@ public static class KernelFunctionFactory
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
     public static KernelFunction CreateFromPrompt(
         string promptTemplate,
-        IReadOnlyCollection<PromptExecutionSettings>? executionSettings,
+        IEnumerable<PromptExecutionSettings>? executionSettings,
         string? functionName = null,
         string? description = null,
         string? templateFormat = null,
@@ -173,6 +173,6 @@ public static class KernelFunctionFactory
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
     [return: NotNullIfNotNull(nameof(settings))]
-    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IReadOnlyCollection<PromptExecutionSettings>? settings) =>
+    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IEnumerable<PromptExecutionSettings>? settings) =>
         settings?.ToDictionary(s => s.ServiceId ?? PromptExecutionSettings.DefaultServiceId, s => s);
 }

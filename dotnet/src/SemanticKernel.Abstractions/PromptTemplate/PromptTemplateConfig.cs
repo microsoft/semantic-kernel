@@ -243,13 +243,19 @@ public sealed class PromptTemplateConfig
     {
         Verify.NotNull(settings);
 
-        var key = serviceId ?? PromptExecutionSettings.DefaultServiceId;
+        var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+
+        // To avoid any reference changes to the settings object, clone it before changing service id.
+        var clonedSettings = settings.Clone();
+
+        // Overwrite the service id if provided in the method.
+        clonedSettings.ServiceId = key;
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
-        this.ExecutionSettings[key] = settings;
+        this.ExecutionSettings[key] = clonedSettings;
     }
 
     /// <summary>

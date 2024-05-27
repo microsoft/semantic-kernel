@@ -126,7 +126,7 @@ public static class KernelExtensions
     public static KernelFunction CreateFunctionFromPrompt(
         this Kernel kernel,
         string promptTemplate,
-        IReadOnlyCollection<PromptExecutionSettings>? executionSettings,
+        IEnumerable<PromptExecutionSettings>? executionSettings,
         string? functionName = null,
         string? description = null,
         string? templateFormat = null,
