@@ -21,6 +21,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
+    private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -36,12 +37,32 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
     public KernelArguments(PromptExecutionSettings? executionSettings)
+        : this(executionSettings is null ? null : [executionSettings])
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    public KernelArguments(IReadOnlyCollection<PromptExecutionSettings>? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
-
         if (executionSettings is not null)
         {
-            this.ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, executionSettings } };
+            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>(executionSettings.Count);
+            foreach (var settings in executionSettings)
+            {
+                var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+                if (newExecutionSettings.ContainsKey(targetServiceId))
+                {
+                    throw new ArgumentException("When adding multiple execution settings, the service id needs to be provided and be unique for each.");
+                }
+
+                newExecutionSettings[targetServiceId] = settings;
+            }
+
+            this.ExecutionSettings = newExecutionSettings;
         }
     }
 
@@ -65,7 +86,34 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
-    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; set; }
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings
+    {
+        get => this._executionSettings;
+        set
+        {
+            this._executionSettings = value;
+
+            if (this._executionSettings is null ||
+                this._executionSettings.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var kv in this._executionSettings)
+            {
+                // Ensures that if a service id is not specified and is not default, it is set to the current service id.
+                if (kv.Key != kv.Value.ServiceId)
+                {
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
+                    {
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                    }
+
+                    kv.Value.ServiceId = kv.Key;
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.

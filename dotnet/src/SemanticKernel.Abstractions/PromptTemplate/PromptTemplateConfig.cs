@@ -187,6 +187,25 @@ public sealed class PromptTemplateConfig
         {
             Verify.NotNull(value);
             this._executionSettings = value;
+
+            if (value.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var kv in value)
+            {
+                // Ensures that if a service id is not specified and is not default, it is set to the current service id.
+                if (kv.Key != kv.Value.ServiceId)
+                {
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
+                    {
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                    }
+
+                    kv.Value.ServiceId = kv.Key;
+                }
+            }
         }
     }
 

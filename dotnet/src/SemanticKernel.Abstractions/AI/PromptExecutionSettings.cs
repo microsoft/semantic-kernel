@@ -28,6 +28,22 @@ public class PromptExecutionSettings
     public static string DefaultServiceId => "default";
 
     /// <summary>
+    /// Service identifier.
+    /// This identifies the service these settings are configured for e.g., openai, ollama, huggingface, etc.
+    /// </summary>
+    [JsonPropertyName("service_id")]
+    public string? ServiceId
+    {
+        get => this._serviceId;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._serviceId = value;
+        }
+    }
+
+    /// <summary>
     /// Model identifier.
     /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
@@ -113,6 +129,7 @@ public class PromptExecutionSettings
 
     private string? _modelId;
     private IDictionary<string, object>? _extensionData;
+    private string? _serviceId;
 
     #endregion
 }

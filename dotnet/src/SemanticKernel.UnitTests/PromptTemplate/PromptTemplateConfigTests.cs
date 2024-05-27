@@ -106,6 +106,136 @@ public class PromptTemplateConfigTests
     }
 
     [Fact]
+    public void DeserializingAutoSetServiceIdWhenNotProvided()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "service1": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                },
+                "service2": {
+                  "model_id": "gpt-3.5_turbo",
+                  "max_tokens": 256,
+                  "temperature": 0.3,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.Equal("service1", promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
+        Assert.Equal("service2", promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
+    }
+
+    [Fact]
+    public void DeserializingAutoSetServiceIdWhenDefault()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "default": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+        Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
+        Assert.Equal(PromptExecutionSettings.DefaultServiceId, promptTemplateConfig.DefaultExecutionSettings?.ServiceId);
+    }
+
+    [Fact]
+    public void DeserializingServiceIdUnmatchingIndexShouldThrow()
+    {
+        // Arrange
+        string configPayload = """
+            {
+              "schema": 1,
+              "description": "",
+              "execution_settings": 
+              {
+                "service1": {
+                  "model_id": "gpt-4",
+                  "max_tokens": 200,
+                  "temperature": 0.2,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                },
+                "service2": {
+                  "service_id": "service3",
+                  "model_id": "gpt-3.5_turbo",
+                  "max_tokens": 256,
+                  "temperature": 0.3,
+                  "top_p": 0.0,
+                  "presence_penalty": 0.0,
+                  "frequency_penalty": 0.0,
+                  "stop_sequences": 
+                  [
+                    "Human",
+                    "AI"
+                  ]
+                }
+              }
+            }
+            """;
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload));
+    }
+
+    [Fact]
     public void DeserializingExpectCompletion()
     {
         // Arrange
