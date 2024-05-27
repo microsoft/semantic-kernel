@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 public class AzureOpenAIApiKeyConfig : AzureOpenAIConfig
 {
     /// <summary>
-    /// API key  required by the service.
+    /// API key required by the service.
     /// </summary>
     public string ApiKey { get; set; } = string.Empty;
 
