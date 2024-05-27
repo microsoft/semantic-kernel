@@ -12,7 +12,7 @@
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
-    <PackageVersion Include="Markdig" Version="0.36.2" />
+    <PackageVersion Include="Markdig" Version="0.37.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.5" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
@@ -27,7 +27,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.60.3" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.17.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
@@ -84,7 +84,7 @@
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.1.2" />
-    <PackageVersion Include="Scriban" Version="5.10.0" />
+    <PackageVersion Include="Fluid.Core" Version="2.10.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
@@ -100,7 +100,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
