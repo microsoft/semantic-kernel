@@ -52,7 +52,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task AutoInvokeKernelFunctionsWithComplexParameterAsync()
     {
-        // Create a kernel with MistralAI chat completion and WeatherPlugin
+        // Create a kernel with MistralAI chat completion and HolidayPlugin
         Kernel kernel = CreateKernelWithPlugin<HolidayPlugin>();
 
         // Invoke chat prompt with auto invocation of functions enabled
