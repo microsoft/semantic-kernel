@@ -58,7 +58,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         Args:
             plugins (KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None):
                 The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
-            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None:
+            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None):
                 The services to be used by the kernel, will be rewritten to a dict with service_id as key
             ai_service_selector (AIServiceSelector | None): The AI service selector to be used by the kernel,
                 default is based on order of execution settings.

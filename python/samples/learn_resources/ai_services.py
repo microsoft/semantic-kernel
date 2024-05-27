@@ -3,24 +3,25 @@
 import asyncio
 import os
 
-from service_configurator import add_service
+from sk_service_configurator import add_service
 
-import semantic_kernel as sk
+from semantic_kernel.kernel import Kernel
 
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_service(kernel=kernel, use_chat=True)
+    # use_azure: True to use Azure OpenAI, False to use OpenAI
+    kernel = add_service(kernel, use_chat=True)
 
     script_directory = os.path.dirname(__file__)
     plugins_directory = os.path.join(script_directory, "plugins")
-    writer_plugin = kernel.import_plugin_from_prompt_directory(
+    writer_plugin = kernel.add_plugin(
         parent_directory=plugins_directory,
-        plugin_directory_name="WriterPlugin",
+        plugin_name="WriterPlugin",
     )
 
     # Run the ShortPoem function with the Kernel Argument.
