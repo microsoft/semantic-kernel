@@ -3,9 +3,8 @@
 ## OpenAI / Azure OpenAI API keys
 
 To run the LLM prompts and semantic functions in the examples below, make sure
-you have an
-[OpenAI API Key](https://platform.openai.com) or
-[Azure OpenAI Service Key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
+you have an [Azure OpenAI Service Key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api) or
+[OpenAI API Key](https://platform.openai.com).
 
 ## Nuget package
 
@@ -81,6 +80,18 @@ requirements and setup instructions.
 8. [Creating images with DALL-E 3](./notebooks/07-DALL-E-3.ipynb)
 9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-3.ipynb)
 10. [BingSearch using Kernel](./notebooks/10-BingSearch-using-kernel.ipynb)
+
+# Semantic Kernel Samples
+
+The repository contains also code samples that demonstrates how to get started
+
+| Type                                                               | Description                                                                                                            |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| [`GettingStarted`](./GettingStarted/README.md)                     | Take this step by step tutorial to get started with the Semantic Kernel and get introduced to the key concepts.        |
+| [`GettingStartedWithAgents`](./GettingStartedWithAgents/README.md) | Take this step by step tutorial to get started with the Semantic Kernel Agents and get introduced to the key concepts. |
+| [`Concepts`](./Concepts/README.md)                                 | This section contains focussed samples which illustrate all of the concepts included in the Semantic Kernel.           |
+| [`Demos`](./Demos/README.md)                                       | Look here to find a sample which demonstrate how to use many of Semantic Kernel features.                              |
+| [`LearnResources`](./LearnResources/README.md)                     | Code snippets that are related to online documentation sources like Microsoft Learn, DevBlogs and others               |
 
 # Nuget packages
 
