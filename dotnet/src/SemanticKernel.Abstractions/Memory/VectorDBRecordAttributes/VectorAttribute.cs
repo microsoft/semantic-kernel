@@ -12,8 +12,4 @@ namespace Microsoft.SemanticKernel.Memory;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class VectorAttribute : Attribute
 {
-    /// <summary>
-    /// Gets or sets the name of a related property in the data model that is storing the data that this vector is indexing.
-    /// </summary>
-    public string? DataPropertyName { get; set; }
 }

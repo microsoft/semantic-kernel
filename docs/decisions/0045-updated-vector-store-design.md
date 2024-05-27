@@ -305,7 +305,7 @@ For the built in mapper, I'm proposing that we use attributes to annotate the mo
         [property: Key, JsonPropertyName("hotel-id")] string HotelId,
         [property: Metadata, JsonPropertyName("hotel-name")] string HotelName,
         [property: Data, JsonPropertyName("description")] string Description,
-        [property: Vector(DataField = "Description"), JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
+        [property: Vector, JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
 ```
 
 ## Decision Drivers
