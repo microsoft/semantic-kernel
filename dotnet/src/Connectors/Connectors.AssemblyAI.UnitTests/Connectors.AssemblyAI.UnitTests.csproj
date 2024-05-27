@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Connectors.AssemblyAI.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Connectors.AssemblyAI.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
@@ -12,12 +12,6 @@
     <IsPackable>false</IsPackable>
     <NoWarn>SKEXP0001;SKEXP0005;SKEXP0070;CS1591</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Use newest available compiler to permit LangVersion 12. -->
-    <!-- This can be removed once we no longer target the .NET 6 SDK in CI. -->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
