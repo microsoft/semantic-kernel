@@ -78,14 +78,23 @@ def kernel_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             name="foo",
             description="bar",
             default_value="baz",
-            type="string",
+            type_="string",
             is_required=True,
+            schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
         ),
         KernelFunctionMetadata: KernelFunctionMetadata(
             name="foo",
             plugin_name="bar",
             description="baz",
-            parameters=[KernelParameterMetadata(name="qux", description="bar", default_value="baz")],
+            parameters=[
+                KernelParameterMetadata(
+                    name="qux",
+                    description="bar",
+                    default_value="baz",
+                    type_="str",
+                    schema_data=KernelParameterMetadata.infer_schema(None, "str", "baz", "bar"),
+                )
+            ],
             is_prompt=True,
             is_asynchronous=False,
         ),

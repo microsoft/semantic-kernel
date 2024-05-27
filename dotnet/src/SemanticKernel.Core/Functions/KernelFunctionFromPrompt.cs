@@ -115,7 +115,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
 
-    /// <inheritdoc/>j
+    /// <inheritdoc/>
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -132,18 +132,25 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
 #pragma warning restore CS0612 // Events are deprecated
 
+        // Return function result if it was set in prompt filter.
+        if (result.FunctionResult is not null)
+        {
+            result.FunctionResult.RenderedPrompt = result.RenderedPrompt;
+            return result.FunctionResult;
+        }
+
         if (result.AIService is IChatCompletionService chatCompletion)
         {
             var chatContent = await chatCompletion.GetChatMessageContentAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(chatContent.ModelId, chatContent.Metadata, this._logger);
-            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata);
+            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         if (result.AIService is ITextGenerationService textGeneration)
         {
             var textContent = await textGeneration.GetTextContentWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken).ConfigureAwait(false);
             this.CaptureUsageDetails(textContent.ModelId, textContent.Metadata, this._logger);
-            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata);
+            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = result.RenderedPrompt };
         }
 
         // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
@@ -220,15 +227,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.Description,
             this.Metadata.Parameters,
             this.Metadata.ReturnParameter,
-            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings.ToDictionary(kv => kv.Key, kv => kv.Value),
+            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
             this._inputVariables,
             this._logger);
     }
-
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this);
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -298,7 +300,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
         foreach (var parameter in this._inputVariables)
         {
-            if (!arguments.ContainsName(parameter.Name) && parameter.Default != null)
+            if (!arguments.ContainsName(parameter.Name) && parameter.Default is not null)
             {
                 arguments[parameter.Name] = parameter.Default;
             }
@@ -375,11 +377,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             ExecutionSettings = executionSettings,
             RenderedEventArgs = renderedEventArgs,
+            FunctionResult = renderingContext.Result
         };
     }
 
     /// <summary>Create a random, valid function name.</summary>
-    private static string CreateRandomFunctionName() => $"func{Guid.NewGuid():N}";
+    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
 
     /// <summary>
     /// Captures usage details, including token information.

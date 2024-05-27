@@ -9,17 +9,17 @@ class TextPlugin(KernelBaseModel):
     TextPlugin provides a set of functions to manipulate strings.
 
     Usage:
-        kernel.import_plugin_from_object(TextPlugin(), plugin_name="text")
+        kernel.add_plugin(TextPlugin(), plugin_name="text")
 
     Examples:
         KernelArguments["input"] = "  hello world  "
         {{text.trim $input}} => "hello world"
 
         KernelArguments["input"] = "  hello world  "
-        {{text.trimStart $input} => "hello world  "
+        {{text.trimStart $input}} => "hello world  "
 
         KernelArguments["input"] = "  hello world  "
-        {{text.trimEnd $input} => "  hello world"
+        {{text.trimEnd $input}} => "  hello world"
 
         KernelArguments["input"] = "hello world"
         {{text.uppercase $input}} => "HELLO WORLD"

@@ -2,19 +2,21 @@
 
 import asyncio
 import logging
-from typing import List, Optional, Tuple
 
 import aiohttp
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
+from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
 from semantic_kernel.connectors.memory.astradb.utils import (
     build_payload,
     parse_payload,
 )
-from semantic_kernel.exceptions import ServiceInitializationError
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
@@ -26,6 +28,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AstraDBMemoryStore(MemoryStoreBase):
     """A memory store that uses Astra database as the backend."""
 
@@ -37,7 +40,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         keyspace_name: str,
         embedding_dim: int,
         similarity: str,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: aiohttp.ClientSession | None = None,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -49,13 +53,37 @@ class AstraDBMemoryStore(MemoryStoreBase):
             embedding_dim {int} -- The dimensionality to use for new collections.
             similarity {str} -- TODO
             session -- Optional session parameter
+            env_file_path {str | None} -- Use the environment settings file as a
+                fallback to environment variables. (Optional)
         """
+        astradb_settings = None
+        try:
+            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
+
+        # Load the settings and validate
+        astra_application_token = astra_application_token or (
+            astradb_settings.app_token.get_secret_value() if astradb_settings and astradb_settings.app_token else None
+        )
+        assert astra_application_token is not None, "The astra_application_token cannot be None."
+        astra_id = astra_id or (astradb_settings.db_id if astradb_settings and astradb_settings.db_id else None)
+        assert astra_id is not None, "The astra_id cannot be None."
+        astra_region = astra_region or (
+            astradb_settings.region if astradb_settings and astradb_settings.region else None
+        )
+        assert astra_region is not None, "The astra_region cannot be None."
+        keyspace_name = keyspace_name or (
+            astradb_settings.keyspace if astradb_settings and astradb_settings.keyspace else None
+        )
+        assert keyspace_name is not None, "The keyspace_name cannot be None."
+
         self._embedding_dim = embedding_dim
         self._similarity = similarity
         self._session = session
 
         if self._embedding_dim > MAX_DIMENSIONALITY:
-            raise ServiceInitializationError(
+            raise MemoryConnectorInitializationError(
                 f"Dimensionality of {self._embedding_dim} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
@@ -70,7 +98,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             session=self._session,
         )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -81,8 +109,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
-        distance_type: Optional[str] = "cosine",
+        dimension_num: int | None = None,
+        distance_type: str | None = "cosine",
     ) -> None:
         """Creates a new collection in Astra if it does not exist.
 
@@ -150,7 +178,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
 
         return status["upsertedId"] if "upsertedId" in status else record._id
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -188,8 +216,8 @@ class AstraDBMemoryStore(MemoryStoreBase):
         return parse_payload(documents[0])
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
@@ -222,7 +250,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         filter = {"_id": key}
         await self._client.delete_documents(collection_name, filter)
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records. Does not guarantee that the collection exists.
 
         Arguments:
@@ -241,7 +269,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
         Arguments:
             collection_name {str} -- The name of the collection to get the nearest matches from.
@@ -268,7 +296,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
         Arguments:
             collection_name {str} -- The name of the collection to get the nearest matches from.

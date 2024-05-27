@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,8 +26,8 @@ public sealed class KernelFunctionFromMethodTests2
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
         MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not ("GetType" or "Equals" or "GetHashCode" or "ToString" or "Finalize" or "MemberwiseClone"))
             .ToArray();
 
         KernelFunction[] functions = (from method in methods select KernelFunctionFactory.CreateFromMethod(method, pluginInstance, "plugin")).ToArray();
@@ -42,8 +43,8 @@ public sealed class KernelFunctionFromMethodTests2
         // Arrange
         var pluginInstance = new LocalExamplePlugin();
         MethodInfo[] methods = pluginInstance.GetType()
-            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
-            .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
+            .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod)
+            .Where(m => m.Name is not ("GetType" or "Equals" or "GetHashCode" or "ToString" or "Finalize" or "MemberwiseClone"))
             .ToArray();
 
         KernelFunction[] functions = [.. KernelPluginFactory.CreateFromObject(pluginInstance)];
@@ -51,6 +52,34 @@ public sealed class KernelFunctionFromMethodTests2
         // Act
         Assert.Equal(methods.Length, functions.Length);
         Assert.All(functions, Assert.NotNull);
+    }
+
+    [Fact]
+    public void ItKeepsDefaultValueNullWhenNotProvided()
+    {
+        // Arrange & Act
+        var pluginInstance = new LocalExamplePlugin();
+        var plugin = KernelPluginFactory.CreateFromObject(pluginInstance);
+
+        // Assert
+        this.AssertDefaultValue(plugin, "Type04Nullable", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type04Optional", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05", "input", null, true);
+        this.AssertDefaultValue(plugin, "Type05Nullable", "input", null, false);
+        this.AssertDefaultValue(plugin, "Type05EmptyDefault", "input", string.Empty, false);
+        this.AssertDefaultValue(plugin, "Type05DefaultProvided", "input", "someDefault", false);
+    }
+
+    internal void AssertDefaultValue(KernelPlugin plugin, string functionName, string parameterName, object? expectedDefaultValue, bool expectedIsRequired)
+    {
+        var functionExists = plugin.TryGetFunction(functionName, out var function);
+        Assert.True(functionExists);
+        Assert.NotNull(function);
+
+        var parameter = function.Metadata.Parameters.First(p => p.Name == parameterName);
+        Assert.NotNull(parameter);
+        Assert.Equal(expectedDefaultValue, parameter.DefaultValue);
+        Assert.Equal(expectedIsRequired, parameter.IsRequired);
     }
 
     [Fact]
@@ -83,6 +112,24 @@ public sealed class KernelFunctionFromMethodTests2
         Assert.True(canary);
         Assert.Null(result.GetValue<object?>());
         Assert.Empty(result.ToString());
+    }
+
+    [Fact]
+    public async Task ItCanImportClosedGenericsAsync()
+    {
+        await Validate(KernelPluginFactory.CreateFromObject(new GenericPlugin<int>()));
+        await Validate(KernelPluginFactory.CreateFromType<GenericPlugin<int>>());
+
+        async Task Validate(KernelPlugin plugin)
+        {
+            Assert.Equal("GenericPlugin_Int32", plugin.Name);
+            Assert.Equal(3, plugin.FunctionCount);
+            foreach (KernelFunction function in plugin)
+            {
+                FunctionResult result = await function.InvokeAsync(new(), new() { { "input", 42 } });
+                Assert.Equal(42, result.Value);
+            }
+        }
     }
 
     [Fact]
@@ -289,13 +336,30 @@ public sealed class KernelFunctionFromMethodTests2
         }
 
         [KernelFunction]
+        public void Type04Optional([Optional] string input)
+        {
+        }
+
+        [KernelFunction]
         public string Type05(string input)
         {
             return "";
         }
 
         [KernelFunction]
-        public string? Type05Nullable(string? input = null)
+        private string? Type05Nullable(string? input = null)
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        internal string? Type05EmptyDefault(string? input = "")
+        {
+            return "";
+        }
+
+        [KernelFunction]
+        public string? Type05DefaultProvided(string? input = "someDefault")
         {
             return "";
         }
@@ -402,5 +466,17 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return string.Empty;
         }
+    }
+
+    private sealed class GenericPlugin<T>
+    {
+        [KernelFunction]
+        public int GetValue1(int input) => input;
+
+        [KernelFunction]
+        public T GetValue2(T input) => input;
+
+        [KernelFunction]
+        public Task<T> GetValue3Async(T input) => Task.FromResult(input);
     }
 }

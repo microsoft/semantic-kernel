@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0050</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0001,SKEXP0050</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
@@ -36,6 +36,12 @@
     <ProjectReference Include="..\Plugins.MsGraph\Plugins.MsGraph.csproj" />
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="TestData\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

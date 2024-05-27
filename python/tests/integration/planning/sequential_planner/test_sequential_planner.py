@@ -27,26 +27,19 @@ async def retry(func, retries=3):
             time.sleep(max(min(i, max_delay), min_delay))
 
 
-def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
-    _, api_key, endpoint = get_aoai_config
+def initialize_kernel(use_embeddings=False, use_chat_model=False):
 
     kernel = Kernel()
     if use_chat_model:
         kernel.add_service(
             sk_oai.AzureChatCompletion(
                 service_id="chat_completion",
-                deployment_name="gpt-35-turbo-0613",
-                endpoint=endpoint,
-                api_key=api_key,
             ),
         )
     else:
         kernel.add_service(
             sk_oai.AzureTextCompletion(
                 service_id="text_completion",
-                deployment_name="gpt-35-turbo-instruct",
-                endpoint=endpoint,
-                api_key=api_key,
             ),
         )
 
@@ -54,9 +47,6 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
         kernel.add_service(
             sk_oai.AzureTextEmbedding(
                 service_id="text_embedding",
-                deployment_name="text-embedding-ada-002",
-                endpoint=endpoint,
-                api_key=api_key,
             ),
         )
     return kernel
@@ -84,11 +74,11 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt, expected_function, expected_plugin):
+async def test_create_plan_function_flow(use_chat_model, prompt, expected_function, expected_plugin):
     # Arrange
     service_id = "chat_completion" if use_chat_model else "text_completion"
 
-    kernel = initialize_kernel(get_aoai_config, False, use_chat_model)
+    kernel = initialize_kernel(False, use_chat_model)
     kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
     kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
 
@@ -117,9 +107,9 @@ async def test_create_plan_function_flow(get_aoai_config, use_chat_model, prompt
     raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_function, expected_plugin, expected_default):
+async def test_create_plan_with_defaults(prompt, expected_function, expected_plugin, expected_default):
     # Arrange
-    kernel = initialize_kernel(get_aoai_config)
+    kernel = initialize_kernel()
     kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
     kernel.add_plugin(WriterPluginFake(), "WriterPlugin")
 
@@ -152,9 +142,9 @@ async def test_create_plan_with_defaults(get_aoai_config, prompt, expected_funct
     raises=PlannerException,
     reason="Test is known to occasionally produce unexpected results.",
 )
-async def test_create_plan_goal_relevant(get_aoai_config, prompt, expected_function, expected_plugin):
+async def test_create_plan_goal_relevant(prompt, expected_function, expected_plugin):
     # Arrange
-    kernel = initialize_kernel(get_aoai_config, use_embeddings=True)
+    kernel = initialize_kernel(use_embeddings=True)
     kernel.add_plugin(EmailPluginFake(), "email_plugin_fake")
     kernel.add_plugin(FunPluginFake(), "fun_plugin_fake")
     kernel.add_plugin(WriterPluginFake(), "writer_plugin_fake")

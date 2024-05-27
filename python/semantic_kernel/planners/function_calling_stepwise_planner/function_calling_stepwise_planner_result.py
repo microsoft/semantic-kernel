@@ -1,11 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -16,7 +12,7 @@ class FunctionCallingStepwisePlannerResult(KernelBaseModel):
     """The result of the function calling stepwise planner"""
 
     final_answer: str = ""
-    chat_history: ChatHistory = None
+    chat_history: ChatHistory | None = None
     iterations: int = 0
 
 

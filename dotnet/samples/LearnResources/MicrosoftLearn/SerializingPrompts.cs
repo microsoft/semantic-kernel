@@ -1,16 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Examples;
 
@@ -18,12 +12,14 @@ namespace Examples;
 /// This example demonstrates how to serialize prompts as described at
 /// https://learn.microsoft.com/semantic-kernel/prompts/saving-prompts-as-files
 /// </summary>
-public class SerializingPrompts : BaseTest
+public class SerializingPrompts(ITestOutputHelper output) : LearnBaseTest([
+            "Can you send an approval to the marketing team?",
+    "That is all, thanks."], output)
 {
     [Fact]
     public async Task RunAsync()
     {
-        WriteLine("======== Serializing Prompts ========");
+        Console.WriteLine("======== Serializing Prompts ========");
 
         string? endpoint = TestConfiguration.AzureOpenAI.Endpoint;
         string? modelId = TestConfiguration.AzureOpenAI.ChatModelId;
@@ -31,7 +27,7 @@ public class SerializingPrompts : BaseTest
 
         if (endpoint is null || modelId is null || apiKey is null)
         {
-            WriteLine("Azure OpenAI credentials not found. Skipping example.");
+            Console.WriteLine("Azure OpenAI credentials not found. Skipping example.");
 
             return;
         }
@@ -73,9 +69,9 @@ public class SerializingPrompts : BaseTest
         ChatHistory history = [];
 
         // Start the chat loop
-        Write("User > ");
+        Console.Write("User > ");
         string? userInput;
-        while ((userInput = ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Invoke handlebars prompt
             var intent = await kernel.InvokeAsync(
@@ -111,26 +107,19 @@ public class SerializingPrompts : BaseTest
             {
                 if (chunk.Role.HasValue)
                 {
-                    Write(chunk.Role + " > ");
+                    Console.Write(chunk.Role + " > ");
                 }
                 message += chunk;
-                Write(chunk);
+                Console.Write(chunk);
             }
-            WriteLine();
+            Console.WriteLine();
 
             // Append to history
             history.AddUserMessage(userInput);
             history.AddAssistantMessage(message);
 
             // Get user input again
-            Write("User > ");
+            Console.Write("User > ");
         }
-    }
-
-    public SerializingPrompts(ITestOutputHelper output) : base(output)
-    {
-        SimulatedInputText = [
-            "Can you send an approval to the marketing team?",
-            "That is all, thanks."];
     }
 }

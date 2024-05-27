@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Linq;
@@ -16,7 +16,7 @@ internal static class DataHelper
     static DataHelper()
     {
         VectorSearchTestRecords = CreateBatchRecords(8);
-        VectorSearchTestEmbedding = new[] { 1, 0.699f, 0.701f };
+        VectorSearchTestEmbedding = [1, 0.699f, 0.701f];
         VectorSearchExpectedResults = VectorSearchTestRecords
             .OrderByDescending(r => TensorPrimitives.CosineSimilarity(r.Embedding.Span, VectorSearchTestEmbedding))
             .ToArray();

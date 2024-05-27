@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Planning.Handlebars;
 /// <summary>
 /// Represents a Handlebars planner.
 /// </summary>
-public sealed class HandlebarsPlanner
+public sealed partial class HandlebarsPlanner
 {
     /// <summary>
     /// Represents static options for all Handlebars Planner prompt templates.
@@ -89,11 +90,7 @@ public sealed class HandlebarsPlanner
             var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
             modelResults = await chatCompletionService.GetChatMessageContentAsync(chatMessages, executionSettings: this._options.ExecutionSettings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            // Regex breakdown:
-            // (```\s*handlebars){1}\s*: Opening backticks, starting boundary for HB template
-            // ((([^`]|`(?!``))+): Any non-backtick character or one backtick character not followed by 2 more consecutive backticks
-            // (\s*```){1}: Closing backticks, closing boundary for HB template
-            MatchCollection matches = Regex.Matches(modelResults.Content, @"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline);
+            MatchCollection matches = ParseRegex().Matches(modelResults.Content ?? string.Empty);
             if (matches.Count < 1)
             {
                 throw new KernelException($"[{HandlebarsPlannerErrorCodes.InvalidTemplate}] Could not find the plan in the results. Additional helpers or input may be required.\n\nPlanner output:\n{modelResults.Content}");
@@ -220,6 +217,9 @@ public sealed class HandlebarsPlanner
                 case "assistant~":
                     chatMessages.AddAssistantMessage(message);
                     break;
+                default:
+                    Debug.Fail($"Unexpected role: {role}");
+                    break;
             }
         }
 
@@ -281,16 +281,39 @@ public sealed class HandlebarsPlanner
     private static string MinifyHandlebarsTemplate(string template)
     {
         // This regex pattern matches '{{', then any characters including newlines (non-greedy), then '}}'
-        string pattern = @"(\{\{[\s\S]*?}})";
-
         // Replace all occurrences of the pattern in the input template
-        return Regex.Replace(template, pattern, m =>
+        return MinifyRegex().Replace(template, m =>
         {
             // For each match, remove the whitespace within the handlebars, except for spaces
             // that separate different items (e.g., 'json' and '(get')
-            return Regex.Replace(m.Value, @"\s+", " ").Replace(" {", "{").Replace(" }", "}").Replace(" )", ")");
+            return WhitespaceRegex().Replace(m.Value, " ").Replace(" {", "{").Replace(" }", "}").Replace(" )", ")");
         });
     }
 
+    /// <summary>
+    /// Regex breakdown:
+    /// (```\s*handlebars){1}\s*: Opening backticks, starting boundary for HB template
+    /// ((([^`]|`(?!``))+): Any non-backtick character or one backtick character not followed by 2 more consecutive backticks
+    /// (\s*```){1}: Closing backticks, closing boundary for HB template
+    /// </summary>
+#if NET
+    [GeneratedRegex(@"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline)]
+    private static partial Regex ParseRegex();
+
+    [GeneratedRegex(@"\{\{[\s\S]*?}}")]
+    private static partial Regex MinifyRegex();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
+#else
+    private static readonly Regex s_parseRegex = new(@"(```\s*handlebars){1}\s*(([^`]|`(?!``))+)(\s*```){1}", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static Regex ParseRegex() => s_parseRegex;
+
+    private static readonly Regex s_minifyRegex = new(@"(\{\{[\s\S]*?}})");
+    private static Regex MinifyRegex() => s_minifyRegex;
+
+    private static readonly Regex s_whitespaceRegex = new(@"\s+");
+    private static Regex WhitespaceRegex() => s_whitespaceRegex;
+#endif
     #endregion
 }

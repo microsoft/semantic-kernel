@@ -13,7 +13,7 @@ class TimePlugin(KernelBaseModel):
                  to get the current time and date.
 
     Usage:
-        kernel.import_plugin_from_object(TimePlugin(), plugin_name="time")
+        kernel.add_plugin(TimePlugin(), plugin_name="time")
 
     Examples:
         {{time.date}}            => Sunday, 12 January, 2031
@@ -74,7 +74,7 @@ class TimePlugin(KernelBaseModel):
     @kernel_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:
         """
-        Get the current date and time in the local time zone"
+        Get the current date and time in the local time zone
 
         Example:
             {{time.now}} => Sunday, January 12, 2031 9:15 PM

@@ -32,7 +32,7 @@ internal sealed class DescribeIndexStatsRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = this.Filter == null
+        HttpRequestMessage request = this.Filter is null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
             : HttpRequest.CreatePostRequest("/describe_index_stats", this);
 

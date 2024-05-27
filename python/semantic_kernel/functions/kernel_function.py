@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from copy import copy, deepcopy
-from typing import TYPE_CHECKING, Any, Callable
+from inspect import isasyncgen, isgenerator
+from typing import TYPE_CHECKING, Any
 
+from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -73,12 +76,12 @@ class KernelFunction(KernelBaseModel):
         description: str | None = None,
         prompt: str | None = None,
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
-        prompt_template: PromptTemplateBase | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
+        prompt_template: "PromptTemplateBase | None " = None,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
         prompt_execution_settings: (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None
+            "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
         ) = None,
-    ) -> KernelFunctionFromPrompt:
+    ) -> "KernelFunctionFromPrompt":
         """
         Create a new instance of the KernelFunctionFromPrompt class.
         """
@@ -101,7 +104,7 @@ class KernelFunction(KernelBaseModel):
         method: Callable[..., Any],
         plugin_name: str | None = None,
         stream_method: Callable[..., Any] | None = None,
-    ) -> KernelFunctionFromMethod:
+    ) -> "KernelFunctionFromMethod":
         """
         Create a new instance of the KernelFunctionFromMethod class.
         """
@@ -134,19 +137,20 @@ class KernelFunction(KernelBaseModel):
         return self.metadata.is_prompt
 
     @property
-    def parameters(self) -> list[KernelParameterMetadata]:
+    def parameters(self) -> list["KernelParameterMetadata"]:
         return self.metadata.parameters
 
     @property
-    def return_parameter(self) -> KernelParameterMetadata | None:
+    def return_parameter(self) -> "KernelParameterMetadata | None":
         return self.metadata.return_parameter
 
     async def __call__(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> FunctionResult:
+    ) -> FunctionResult | None:
         """Invoke the function with the given arguments.
 
         Args:
@@ -158,22 +162,28 @@ class KernelFunction(KernelBaseModel):
         Returns:
             FunctionResult: The result of the function
         """
-        return await self.invoke(kernel, arguments, **kwargs)
+        return await self.invoke(kernel, arguments, metadata, **kwargs)
 
     @abstractmethod
-    async def _invoke_internal(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> FunctionResult:
+    async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
+        """Internal invoke method of the the function with the given arguments.
+
+        This function should be implemented by the subclass.
+        It relies on updating the context with the result from the function.
+
+        Args:
+            context (FunctionInvocationContext): The invocation context.
+
+        """
         pass
 
     async def invoke(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> FunctionResult:
+    ) -> "FunctionResult | None":
         """Invoke the function with the given arguments.
 
         Args:
@@ -187,20 +197,19 @@ class KernelFunction(KernelBaseModel):
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        try:
-            return await self._invoke_internal(kernel, arguments)
-        except Exception as exc:
-            logger.error(f"Error occurred while invoking function {self.name}: {exc}")
-            return FunctionResult(
-                function=self.metadata, value=None, metadata={"exception": exc, "arguments": arguments}
-            )
+        _rebuild_function_invocation_context()
+        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
+
+        stack = kernel.construct_call_stack(
+            filter_type=FilterTypes.FUNCTION_INVOCATION,
+            inner_function=self._invoke_internal,
+        )
+        await stack(function_context)
+
+        return function_context.result
 
     @abstractmethod
-    def _invoke_internal_stream(
-        self,
-        kernel: Kernel,
-        arguments: KernelArguments,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
+    async def _invoke_internal_stream(self, context: FunctionInvocationContext) -> None:
         """Internal invoke method of the the function with the given arguments.
 
         The abstract method is defined without async because otherwise the typing fails.
@@ -210,10 +219,11 @@ class KernelFunction(KernelBaseModel):
 
     async def invoke_stream(
         self,
-        kernel: Kernel,
-        arguments: KernelArguments | None = None,
+        kernel: "Kernel",
+        arguments: "KernelArguments | None" = None,
+        metadata: dict[str, Any] = {},
         **kwargs: Any,
-    ) -> AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]:
+    ) -> "AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]":
         """
         Invoke a stream async function with the given arguments.
 
@@ -224,19 +234,32 @@ class KernelFunction(KernelBaseModel):
                 added to the KernelArguments.
 
         Yields:
-            StreamingKernelContent or FunctionResult -- The results of the function,
+            KernelContent with the StreamingKernelMixin or FunctionResult --
+                The results of the function,
                 if there is an error a FunctionResult is yielded.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
-        try:
-            async for partial_result in self._invoke_internal_stream(kernel, arguments):
-                yield partial_result
-        except Exception as e:
-            logger.error(f"Error occurred while invoking function {self.name}: {e}")
-            yield FunctionResult(function=self.metadata, value=None, metadata={"exception": e, "arguments": arguments})
+        _rebuild_function_invocation_context()
+        function_context = FunctionInvocationContext(function=self, kernel=kernel, arguments=arguments)
 
-    def function_copy(self, plugin_name: str | None = None) -> KernelFunction:
+        stack = kernel.construct_call_stack(
+            filter_type=FilterTypes.FUNCTION_INVOCATION,
+            inner_function=self._invoke_internal_stream,
+        )
+        await stack(function_context)
+
+        if function_context.result is not None:
+            if isasyncgen(function_context.result.value):
+                async for partial in function_context.result.value:
+                    yield partial
+            elif isgenerator(function_context.result.value):
+                for partial in function_context.result.value:
+                    yield partial
+            else:
+                yield function_context.result
+
+    def function_copy(self, plugin_name: str | None = None) -> "KernelFunction":
         """Copy the function, can also override the plugin_name.
 
         Args:

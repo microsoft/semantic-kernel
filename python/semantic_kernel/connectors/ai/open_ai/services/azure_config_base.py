@@ -1,19 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Awaitable, Callable, Dict, Mapping, Optional, Union
+from collections.abc import Awaitable, Callable, Mapping
 
 from openai import AsyncAzureOpenAI
-from pydantic import validate_call
+from pydantic import ConfigDict, validate_call
 
-from semantic_kernel.connectors.ai.open_ai.const import (
-    DEFAULT_AZURE_API_VERSION,
-    USER_AGENT,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIHandler,
-    OpenAIModelTypes,
-)
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION, USER_AGENT
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler, OpenAIModelTypes
 from semantic_kernel.connectors.telemetry import APP_INFO, prepend_semantic_kernel_to_user_agent
 from semantic_kernel.exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -24,20 +18,20 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AzureOpenAIConfigBase(OpenAIHandler):
     """Internal class for configuring a connection to an Azure OpenAI service."""
 
-    @validate_call(config=dict(arbitrary_types_allowed=True))
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
         self,
         deployment_name: str,
         ai_model_type: OpenAIModelTypes,
-        endpoint: Optional[HttpsUrl] = None,
-        base_url: Optional[HttpsUrl] = None,
+        endpoint: HttpsUrl | None = None,
+        base_url: HttpsUrl | None = None,
         api_version: str = DEFAULT_AZURE_API_VERSION,
-        service_id: Optional[str] = None,
-        api_key: Optional[str] = None,
-        ad_token: Optional[str] = None,
-        ad_token_provider: Optional[Callable[[], Union[str, Awaitable[str]]]] = None,
-        default_headers: Union[Mapping[str, str], None] = None,
-        async_client: Optional[AsyncAzureOpenAI] = None,
+        service_id: str | None = None,
+        api_key: str | None = None,
+        ad_token: str | None = None,
+        ad_token_provider: Callable[[], str | Awaitable[str]] | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncAzureOpenAI | None = None,
     ) -> None:
         """Internal class for configuring a connection to an Azure OpenAI service.
 
@@ -96,7 +90,7 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             args["service_id"] = service_id
         super().__init__(**args)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         client_settings = {
             "base_url": str(self.client.base_url),
             "api_version": self.client._custom_query["api-version"],

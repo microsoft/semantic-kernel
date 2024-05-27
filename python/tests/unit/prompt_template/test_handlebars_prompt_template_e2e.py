@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
 
 from pytest import mark
 
@@ -16,7 +15,8 @@ def create_handlebars_prompt_template(template: str) -> HandlebarsPromptTemplate
     return HandlebarsPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="test", description="test", template=template, template_format="handlebars"
-        )
+        ),
+        allow_dangerously_set_content=True,
     )
 
 
@@ -26,7 +26,7 @@ class MyPlugin:
         return "123 ok" if input == "123" else f"{input} != 123"
 
     @kernel_function()
-    def asis(self, input: Optional[str] = None) -> str:
+    def asis(self, input: str | None = None) -> str:
         return input or ""
 
 
