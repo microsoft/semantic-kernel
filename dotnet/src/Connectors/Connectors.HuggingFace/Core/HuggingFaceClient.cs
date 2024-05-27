@@ -132,9 +132,11 @@ internal sealed class HuggingFaceClient
     {
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
-        var request = this.CreateTextRequest(prompt, executionSettings);
 
-        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, executionSettings);
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = this.CreateTextRequest(prompt, huggingFaceExecutionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, huggingFaceExecutionSettings);
         using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
 
         TextGenerationResponse response;
@@ -145,16 +147,16 @@ internal sealed class HuggingFaceClient
 
             response = DeserializeResponse<TextGenerationResponse>(body);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (activity is not null)
         {
-            activity?.SetError(ex);
+            activity.SetError(ex);
             throw;
         }
 
         var textContents = GetTextContentsFromResponse(response, modelId);
 
         activity?.SetCompletionResponse(textContents);
-        this.LogTextGenerationUsage(executionSettings);
+        this.LogTextGenerationUsage(huggingFaceExecutionSettings);
 
         return textContents;
     }
@@ -166,20 +168,58 @@ internal sealed class HuggingFaceClient
     {
         string modelId = executionSettings?.ModelId ?? this.ModelId;
         var endpoint = this.GetTextGenerationEndpoint(modelId);
-        var request = this.CreateTextRequest(prompt, executionSettings);
+
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        var request = this.CreateTextRequest(prompt, huggingFaceExecutionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
-
-        using var response = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
-
-        await foreach (var streamingTextContent in this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this.ModelProvider, prompt, huggingFaceExecutionSettings);
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
+        try
         {
-            yield return streamingTextContent;
+            using var httpRequestMessage = this.CreatePost(request, endpoint, this.ApiKey);
+            httpResponseMessage = await this.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            throw;
+        }
+
+        var responseEnumerator = this.ProcessTextResponseStreamAsync(responseStream, modelId, cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingTextContent>? streamedContents = activity is not null ? [] : null;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                streamedContents?.Add(responseEnumerator.Current);
+                yield return responseEnumerator.Current;
+            }
+        }
+        finally
+        {
+            activity?.EndStreaming(streamedContents);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 
@@ -203,9 +243,8 @@ internal sealed class HuggingFaceClient
 
     private TextGenerationRequest CreateTextRequest(
         string prompt,
-        PromptExecutionSettings? promptExecutionSettings)
+        HuggingFacePromptExecutionSettings huggingFaceExecutionSettings)
     {
-        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
         ValidateMaxNewTokens(huggingFaceExecutionSettings.MaxNewTokens);
         var request = TextGenerationRequest.FromPromptAndExecutionSettings(prompt, huggingFaceExecutionSettings);
         return request;
@@ -217,13 +256,13 @@ internal sealed class HuggingFaceClient
     private static List<TextContent> GetTextContentsFromResponse(ImageToTextGenerationResponse response, string modelId)
         => response.Select(r => new TextContent(r.GeneratedText, modelId, r, Encoding.UTF8)).ToList();
 
-    private void LogTextGenerationUsage(PromptExecutionSettings? executionSettings)
+    private void LogTextGenerationUsage(HuggingFacePromptExecutionSettings executionSettings)
     {
         if (this.Logger.IsEnabled(LogLevel.Debug))
         {
-            this.Logger?.LogDebug(
+            this.Logger.LogDebug(
                 "HuggingFace text generation usage: ModelId: {ModelId}",
-                executionSettings?.ModelId ?? this.ModelId);
+                executionSettings.ModelId ?? this.ModelId);
         }
     }
     private Uri GetTextGenerationEndpoint(string modelId)

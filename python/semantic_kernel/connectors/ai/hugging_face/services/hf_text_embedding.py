@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 import sentence_transformers
 import torch
@@ -9,10 +9,12 @@ from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     device: str
     generator: Any
@@ -20,8 +22,8 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     def __init__(
         self,
         ai_model_id: str,
-        device: Optional[int] = -1,
-        service_id: Optional[str] = None,
+        device: int | None = -1,
+        service_id: str | None = None,
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextEmbedding class.
@@ -42,7 +44,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 

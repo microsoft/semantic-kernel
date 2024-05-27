@@ -4,9 +4,10 @@ import os
 import time
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
-from semantic_kernel.utils.settings import astradb_settings_from_dot_env
+from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
 
 astradb_installed: bool
 try:
@@ -36,16 +37,15 @@ def slow_down_tests():
 
 @pytest.fixture(scope="session")
 def get_astradb_config():
-    if "Python_Integration_Tests" in os.environ:
-        app_token = os.environ["ASTRADB_APP_TOKEN"]
-        db_id = os.environ["ASTRADB_ID"]
-        region = os.environ["ASTRADB_REGION"]
-        keyspace = os.environ["ASTRADB_KEYSPACE"]
-    else:
-        # Load credentials from .env file
-        app_token, db_id, region, keyspace = astradb_settings_from_dot_env()
-
-    return app_token, db_id, region, keyspace
+    try:
+        astradb_settings = AstraDBSettings()
+        app_token = astradb_settings.app_token.get_secret_value()
+        db_id = astradb_settings.db_id
+        region = astradb_settings.region
+        keyspace = astradb_settings.keyspace
+        return app_token, db_id, region, keyspace
+    except ValidationError:
+        pytest.skip("AsbtraDBSettings not found in env vars.")
 
 
 @pytest.mark.asyncio

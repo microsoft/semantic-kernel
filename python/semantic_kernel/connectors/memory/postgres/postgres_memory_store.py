@@ -3,14 +3,15 @@
 import atexit
 import json
 import logging
-from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
+from pydantic import ValidationError
 
+from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     ServiceResourceNotFoundError,
@@ -18,6 +19,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 # Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
 MAX_DIMENSIONALITY = 2000
@@ -26,6 +28,7 @@ DEFAULT_SCHEMA = "public"
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class PostgresMemoryStore(MemoryStoreBase):
     """A memory store that uses Postgres with pgvector as the backend."""
 
@@ -41,7 +44,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         min_pool: int,
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -52,10 +55,22 @@ class PostgresMemoryStore(MemoryStoreBase):
             max_pool {int} -- The maximum number of connections in the connection pool.\n
             schema {str} -- The schema to use. (default: {"public"})\n
             timezone_offset {Optional[str]} -- The timezone offset to use. (default: {None})
-            Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+                Expected format '-7:00'. Uses the local timezone offset when not provided.\n
+            env_file_path {str | None} -- Use the environment settings file as a fallback
+                to environment variables. (Optional)
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        postgres_settings = None
+        try:
+            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load Postgres pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            postgres_settings.connection_string.get_secret_value()
+            if postgres_settings and postgres_settings.connection_string
+            else None
+        )
+
         self._check_dimensionality(default_dimensionality)
 
         self._connection_string = connection_string
@@ -67,7 +82,7 @@ class PostgresMemoryStore(MemoryStoreBase):
     async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = None,
+        dimension_num: int | None = None,
     ) -> None:
         """Creates a new collection.
 
@@ -103,7 +118,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (),
                 )
 
-    async def get_collections(self) -> List[str]:
+    async def get_collections(self) -> list[str]:
         """Gets the list of collections.
 
         Returns:
@@ -184,7 +199,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     raise ServiceResponseException("Upsert failed")
                 return result[0]
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
         Arguments:
@@ -277,8 +292,8 @@ class PostgresMemoryStore(MemoryStoreBase):
                 )
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -347,7 +362,7 @@ class PostgresMemoryStore(MemoryStoreBase):
                     (key,),
                 )
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
         Arguments:
@@ -378,7 +393,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
         Arguments:
@@ -447,7 +462,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
         Arguments:
@@ -475,7 +490,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         results = await self.__get_collections(cur)
         return collection_name in results
 
-    async def __get_collections(self, cur: Cursor) -> List[str]:
+    async def __get_collections(self, cur: Cursor) -> list[str]:
         cur.execute(
             """
             SELECT table_name

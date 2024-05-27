@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
+from html import unescape
 from xml.etree.ElementTree import Element
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG
@@ -10,7 +10,7 @@ from semantic_kernel.contents.kernel_content import KernelContent
 class TextContent(KernelContent):
     """This is the base class for text response content.
 
-    All Text Completion Services should return a instance of this class as response.
+    All Text Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -46,7 +46,7 @@ class TextContent(KernelContent):
         if element.tag != TEXT_CONTENT_TAG:
             raise ValueError(f"Element tag is not {TEXT_CONTENT_TAG}")
 
-        return TextContent(text=element.text or "", encoding=element.get("encoding", None))
+        return TextContent(text=unescape(element.text) if element.text else "", encoding=element.get("encoding", None))
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

@@ -7,7 +7,6 @@ from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAICh
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env
 
 
 async def main():
@@ -17,18 +16,17 @@ async def main():
     model = "gpt-35-turbo" if useAzureOpenAI else "gpt-3.5-turbo-1106"
     service_id = model
 
-    api_key, org_id = openai_settings_from_dot_env()
     kernel.add_service(
-        OpenAIChatCompletion(service_id=service_id, ai_model_id=model, api_key=api_key, org_id=org_id),
+        OpenAIChatCompletion(service_id=service_id, ai_model_id=model),
     )
 
     template = """
 
     Previous information from chat:
     {{$chat_history}}
-    
+
     User: {{$request}}
-    Assistant: 
+    Assistant:
     """
 
     print("--- Rendered Prompt ---")

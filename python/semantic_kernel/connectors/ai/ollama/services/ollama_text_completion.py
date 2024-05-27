@@ -2,7 +2,8 @@
 
 import json
 import logging
-from typing import Any, AsyncGenerator, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import aiohttp
 from pydantic import HttpUrl
@@ -28,13 +29,13 @@ class OllamaTextCompletion(TextCompletionClientBase):
     """
 
     url: HttpUrl = "http://localhost:11434/api/generate"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-    ) -> List[TextContent]:
+    ) -> list[TextContent]:
         """
         This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
@@ -56,13 +57,13 @@ class OllamaTextCompletion(TextCompletionClientBase):
                 text = inner_content["response"]
                 return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
-    async def complete_stream(
+    async def get_streaming_text_contents(
         self,
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
-    ) -> AsyncGenerator[List[StreamingTextContent], Any]:
+    ) -> AsyncGenerator[list[StreamingTextContent], Any]:
         """
-        Streams a text completion using a Ollama model.
+        Streams a text completion using an Ollama model.
         Note that this method does not support multiple responses,
         but the result will be a list anyway.
 

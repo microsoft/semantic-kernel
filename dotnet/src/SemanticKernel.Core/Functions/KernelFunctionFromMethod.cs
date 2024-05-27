@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -166,11 +165,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Metadata.AdditionalProperties);
     }
 
-    /// <summary>
-    /// JSON serialized string representation of the function.
-    /// </summary>
-    public override string ToString() => JsonSerializer.Serialize(this, JsonOptionsCache.WriteIndented);
-
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -211,7 +205,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
     private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target)
     {
-        ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
+        ThrowForInvalidSignatureIf(method.ContainsGenericParameters, method, "Open generic methods are not supported");
 
         if (functionName is null)
         {
@@ -795,7 +789,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
-    private static string SanitizeMetadataName(string methodName) =>
+    internal static string SanitizeMetadataName(string methodName) =>
         InvalidNameCharsRegex().Replace(methodName, "_");
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
