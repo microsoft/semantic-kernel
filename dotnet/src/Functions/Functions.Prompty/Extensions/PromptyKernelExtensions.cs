@@ -83,6 +83,25 @@ public static partial class PromptyKernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNullOrWhiteSpace(promptyTemplate);
 
+        var promptTemplateConfig = ToPromptTemplateConfig(promptyTemplate);
+
+        return KernelFunctionFactory.CreateFromPrompt(
+            promptTemplateConfig,
+            promptTemplateFactory ?? s_defaultTemplateFactory,
+            kernel.LoggerFactory);
+    }
+
+    /// <summary>
+    /// Create a <see cref="PromptTemplateConfig"/> from a prompty template.
+    /// </summary>
+    /// <param name="promptyTemplate">Prompty representation of a prompt-based <see cref="KernelFunction"/>.</param>
+    /// <returns>The created <see cref="PromptTemplateConfig"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="promptyTemplate"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="promptyTemplate"/> is empty or composed entirely of whitespace.</exception>
+    public static PromptTemplateConfig ToPromptTemplateConfig(string promptyTemplate)
+    {
+        Verify.NotNullOrWhiteSpace(promptyTemplate);
+
         // Step 1:
         // Create PromptTemplateConfig from text.
         // Retrieve the header, which is in yaml format and put between ---
@@ -224,9 +243,6 @@ public static partial class PromptyKernelExtensions
         // Update template format. If not provided, use Liquid as default.
         promptTemplateConfig.TemplateFormat = prompty.Template ?? LiquidPromptTemplateFactory.LiquidTemplateFormat;
 
-        return KernelFunctionFactory.CreateFromPrompt(
-            promptTemplateConfig,
-            promptTemplateFactory ?? s_defaultTemplateFactory,
-            kernel.LoggerFactory);
+        return promptTemplateConfig;
     }
 }
