@@ -75,8 +75,8 @@ public class OrderedAIServiceSelectorTests
         Kernel kernel = builder.Build();
 
         var promptConfig = new PromptTemplateConfig() { Template = "Hello AI" };
-        var executionSettings = new PromptExecutionSettings();
-        promptConfig.AddExecutionSettings(executionSettings, "service2");
+        promptConfig.AddExecutionSettings(new(), "service2");
+        var executionSettings = promptConfig.ExecutionSettings["service2"];
         var function = kernel.CreateFunctionFromPrompt(promptConfig);
         var serviceSelector = new OrderedAIServiceSelector();
 
