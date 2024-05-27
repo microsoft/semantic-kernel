@@ -85,7 +85,7 @@ requirements and setup instructions.
 
 # Semantic Kernel Samples
 
-The repository contains also code samples that demonstrates how to get started
+The repository also contains the following code samples:
 
 | Type                                                                       | Description                                                                                                            |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
