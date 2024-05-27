@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 public sealed class AssemblyAIAudioToTextService : IAudioToTextService
 {
     private readonly AssemblyAIClient _client;
+
     /// <summary>
     /// Attributes is not used by AssemblyAIAudioToTextService.
     /// </summary>
@@ -75,37 +76,6 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         {
             throw new ArgumentException("AudioContent doesn't have any content.", nameof(content));
         }
-
-        var transcriptId = await this._client.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-        var transcript = await this._client.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
-            .ConfigureAwait(false);
-
-        return new[]
-        {
-            new TextContent(
-                text: transcript.RootElement.GetProperty("text").GetString(),
-                modelId: null,
-                // TODO: change to typed object when AAI SDK is shipped
-                innerContent: transcript,
-                encoding: Encoding.UTF8,
-                metadata: null
-            )
-        };
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
-        AudioStreamContent content,
-        PromptExecutionSettings? executionSettings = null,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        Verify.NotNull(content);
-        Verify.NotNull(content.Stream);
-
-        string uploadUrl = await this._client.UploadFileAsync(content.Stream, cancellationToken).ConfigureAwait(false);
 
         var transcriptId = await this._client.CreateTranscriptAsync(uploadUrl, executionSettings, cancellationToken)
             .ConfigureAwait(false);
