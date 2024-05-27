@@ -40,7 +40,7 @@ def _message(this, options, *args, **kwargs):
     end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
     try:
         content = options["fn"](this)
-    except Exception:
+    except Exception:  # pragma: no cover
         content = ""
     return f"{start}{content}{end}"
 

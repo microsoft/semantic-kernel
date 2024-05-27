@@ -12,7 +12,7 @@ class PromptExecutionSettings(KernelBaseModel):
 
     Can be used by itself or as a base class for other prompt execution settings. The methods are used to create
     specific prompt execution settings objects based on the keys in the extension_data field, this way you can
-    create a generic PromptExecutionSettings object in your application, which get's mapped into the keys of the
+    create a generic PromptExecutionSettings object in your application, which gets mapped into the keys of the
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
     Parameters:

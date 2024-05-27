@@ -42,8 +42,8 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
     AutoFunctionInvocationContext,
 )
 from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_auto_function_invocation_context
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -94,7 +94,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel and kernel arguments are required for auto invoking OpenAI tool calls."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
@@ -171,7 +171,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel argument and arguments are required for OpenAI tool calling."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
@@ -470,6 +470,22 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result="The tool call could not be found, please try again and make sure to validate the name.",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return
+
+        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        if len(parsed_args) < num_required_func_params:
+            msg = (
+                f"There are `{num_required_func_params}` tool call arguments required and "
+                f"only `{len(parsed_args)}` received. The required arguments are: "
+                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                "Please provide the required arguments and try again."
+            )
+            logger.exception(msg)
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=msg,
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return
