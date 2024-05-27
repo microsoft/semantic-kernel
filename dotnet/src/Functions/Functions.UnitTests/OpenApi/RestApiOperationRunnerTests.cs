@@ -1048,7 +1048,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
+        await Assert.ThrowsAsync<HttpOperationException>(() => sut.RunAsync(operation, arguments));
     }
 
     [Fact]

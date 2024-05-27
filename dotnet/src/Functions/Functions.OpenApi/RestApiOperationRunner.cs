@@ -205,7 +205,7 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
+        var mediaType = contentType?.MediaType ?? throw new HttpOperationException("No media type available.");
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
@@ -214,7 +214,10 @@ internal sealed class RestApiOperationRunner
             var mediaTypeParts = mediaType.Split('/');
             if (mediaTypeParts.Length != 2)
             {
-                throw new KernelException($"The string `{mediaType}` is not a valid media type.");
+                throw new HttpOperationException($"The string `{mediaType}` is not a valid media type.")
+                {
+                    StatusCode = HttpStatusCode.UnsupportedMediaType
+                };
             }
 
             var primaryMediaType = mediaTypeParts.First();
@@ -222,7 +225,10 @@ internal sealed class RestApiOperationRunner
             // Try to obtain the content serializer by the primary type (e.g., text, application, image)
             if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
             {
-                throw new KernelException($"The content type `{mediaType}` is not supported.");
+                throw new HttpOperationException($"The content type `{mediaType}` is not supported.")
+                {
+                    StatusCode = HttpStatusCode.UnsupportedMediaType
+                };
             }
         }
 
