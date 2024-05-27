@@ -39,14 +39,14 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
             new ChatMessageContent(AuthorRole.User, "What is the weather like in Paris?")
         };
         var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
-        var result1 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
-        chatHistory.AddRange(result1);
+        var result1 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        chatHistory.Add(result1);
 
         chatHistory.Add(new ChatMessageContent(AuthorRole.User, "What is the weather like in Marseille?"));
-        var result2 = await service.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel);
+        var result2 = await service.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
 
-        Console.WriteLine(result1[0].Content);
-        Console.WriteLine(result2[0].Content);
+        Console.WriteLine(result1);
+        Console.WriteLine(result2);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         [Description("Get the current weather in a given location.")]
         public string GetWeather(
             [Description("The city and department, e.g. Marseille, 13")] string location
-        ) => "12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy";
+        ) => $"12°C\nWind: 11 KMPH\nHumidity: 48%\nMostly cloudy\nLocation: {location}";
     }
 
     public sealed class HolidayPlugin
@@ -81,7 +81,7 @@ public sealed class OpenAI_FunctionCalling(ITestOutputHelper output) : BaseTest(
         [KernelFunction]
         [Description("Book a holiday for a specified time period.")]
         public string BookHoliday(
-            [Description("The city and department, e.g. Marseille, 13")] HolidayRequest holidayRequest
+            [Description("Holiday time period")] HolidayRequest holidayRequest
         ) => $"Holiday booked, starting {holidayRequest.StartDate} and ending {holidayRequest.EndDate}";
     }
 
