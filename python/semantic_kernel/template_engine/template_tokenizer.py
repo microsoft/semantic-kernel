@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List
 
 from semantic_kernel.exceptions import (
     BlockSyntaxError,
@@ -28,7 +27,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # [any-char]       ::= any char
 class TemplateTokenizer:
     @staticmethod
-    def tokenize(text: str) -> List[Block]:
+    def tokenize(text: str) -> list[Block]:
         code_tokenizer = CodeTokenizer()
         # An empty block consists of 4 chars: "{{}}"
         EMPTY_CODE_BLOCK_LENGTH = 4
@@ -46,7 +45,7 @@ class TemplateTokenizer:
         if len(text) < MIN_CODE_BLOCK_LENGTH:
             return [TextBlock.from_text(text)]
 
-        blocks: List[Block] = []
+        blocks: list[Block] = []
         end_of_last_block = 0
         block_start_pos = 0
         block_start_found = False
@@ -111,7 +110,7 @@ class TemplateTokenizer:
     @staticmethod
     def _extract_blocks(
         text: str, code_tokenizer: CodeTokenizer, block_start_pos: int, end_of_last_block: int, next_char_pos: int
-    ) -> List[Block]:
+    ) -> list[Block]:
         """Extract the blocks from the found code.
 
         If there is text before the current block, create a TextBlock from that.
@@ -122,7 +121,7 @@ class TemplateTokenizer:
         If there is only a variable or value in the code block,
         return just that, instead of the CodeBlock.
         """
-        new_blocks: List[Block] = []
+        new_blocks: list[Block] = []
         if block_start_pos > end_of_last_block:
             new_blocks.append(
                 TextBlock.from_text(

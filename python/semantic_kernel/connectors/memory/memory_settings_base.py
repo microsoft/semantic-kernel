@@ -2,7 +2,10 @@
 
 from pydantic_settings import BaseSettings
 
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
+
+@experimental_class
 class BaseModelSettings(BaseSettings):
     env_file_path: str | None = None
 

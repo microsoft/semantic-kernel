@@ -28,11 +28,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
         execution_settings=execution_settings,
     )
 
-    kernel.add_service(
-        sk_oai.AzureTextCompletion(
-            service_id=service_id,
-        ),
-    )
+    kernel.add_service(sk_oai.AzureTextCompletion(service_id=service_id))
 
     conversationSummaryPlugin = kernel.add_plugin(
         ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"
@@ -63,12 +59,7 @@ async def test_oai_summarize_conversation_using_plugin(
         execution_settings=execution_settings,
     )
 
-    kernel.add_service(
-        sk_oai.OpenAITextCompletion(
-            service_id="conversation_summary",
-            ai_model_id="gpt-3.5-turbo-instruct",
-        ),
-    )
+    kernel.add_service(sk_oai.OpenAITextCompletion(service_id="conversation_summary"))
 
     conversationSummaryPlugin = kernel.add_plugin(
         ConversationSummaryPlugin(kernel, prompt_template_config), "conversationSummary"

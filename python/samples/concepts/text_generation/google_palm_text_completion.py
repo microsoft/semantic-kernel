@@ -6,7 +6,7 @@ from semantic_kernel.connectors.ai.google_palm import GooglePalmTextCompletion, 
 from semantic_kernel.kernel import Kernel
 
 
-async def text_completion_example_complete(kernel, user_mssg, settings):
+async def text_completion_example_complete(kernel: Kernel, user_mssg, settings):
     """
     Complete a text prompt using the Google PaLM model and print the results.
     """

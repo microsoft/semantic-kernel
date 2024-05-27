@@ -26,7 +26,7 @@ PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/sk
 
 
 def read_file(file_path: str) -> str:
-    with open(file_path, "r") as file:
+    with open(file_path) as file:
         return file.read()
 
 

@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Dict, Mapping, Optional
+from collections.abc import Mapping
 
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -29,9 +29,9 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
-        service_id: Optional[str] = None,
-        default_headers: Optional[Mapping[str, str]] = None,
-        async_client: Optional[AsyncOpenAI] = None,
+        service_id: str | None = None,
+        default_headers: Mapping[str, str] | None = None,
+        async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
         """
@@ -75,7 +75,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         )
 
     @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextCompletion":
+    def from_dict(cls, settings: dict[str, str]) -> "OpenAITextCompletion":
         """
         Initialize an Open AI service from a dictionary of settings.
 

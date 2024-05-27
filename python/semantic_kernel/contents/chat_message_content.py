@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 from enum import Enum
@@ -38,7 +37,7 @@ logger = logging.getLogger(__name__)
 class ChatMessageContent(KernelContent):
     """This is the class for chat message response content.
 
-    All Chat Completion Services should return a instance of this class as response.
+    All Chat Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -74,7 +73,7 @@ class ChatMessageContent(KernelContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
+        """All Chat Completion Services should return an instance of this class as response.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -101,7 +100,7 @@ class ChatMessageContent(KernelContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
-        """All Chat Completion Services should return a instance of this class as response.
+        """All Chat Completion Services should return an instance of this class as response.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -128,7 +127,7 @@ class ChatMessageContent(KernelContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ):
-        """All Chat Completion Services should return a instance of this class as response.
+        """All Chat Completion Services should return an instance of this class as response.
         Or they can implement their own subclass of this class and return an instance.
 
         Args:
@@ -232,7 +231,7 @@ class ChatMessageContent(KernelContent):
 
     @classmethod
     def from_element(cls, element: Element) -> "ChatMessageContent":
-        """Create a new instance of ChatMessageContent from a XML element.
+        """Create a new instance of ChatMessageContent from an XML element.
 
         Args:
             element: Element - The XML Element to create the ChatMessageContent from.
@@ -258,10 +257,10 @@ class ChatMessageContent(KernelContent):
         else:
             kwargs["items"] = items
         if "choice_index" in kwargs and cls is ChatMessageContent:
-            logger.warning(
+            logger.info(
                 "Seems like you are trying to create a StreamingChatMessageContent, "
                 "use StreamingChatMessageContent.from_element instead, ignoring that field "
-                " and creating a ChatMessageContent instance."
+                "and creating a ChatMessageContent instance."
             )
             kwargs.pop("choice_index")
         return cls(**kwargs)

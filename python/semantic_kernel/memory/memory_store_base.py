@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
 
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class MemoryStoreBase(ABC):
     async def __aenter__(self):
         return self
@@ -34,7 +35,7 @@ class MemoryStoreBase(ABC):
     @abstractmethod
     async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets all collection names in the data store.
 
         Returns:
@@ -83,7 +84,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
             If the record already exists, it will be updated.
             If the record does not exist, it will be created.
@@ -112,7 +113,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -139,7 +140,7 @@ class MemoryStoreBase(ABC):
         pass
 
     @abstractmethod
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
         Arguments:
@@ -159,7 +160,7 @@ class MemoryStoreBase(ABC):
         limit: int,
         min_relevance_score: float,
         with_embeddings: bool,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:
@@ -182,7 +183,7 @@ class MemoryStoreBase(ABC):
         embedding: ndarray,
         min_relevance_score: float,
         with_embedding: bool,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
         Arguments:

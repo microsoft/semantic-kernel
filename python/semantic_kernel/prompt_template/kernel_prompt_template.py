@@ -2,11 +2,11 @@
 
 import logging
 from html import escape
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import PrivateAttr, field_validator
 
-from semantic_kernel.exceptions import CodeBlockRenderException, TemplateRenderException
+from semantic_kernel.exceptions import TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -37,7 +37,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         TemplateSyntaxError: If the template has a syntax error
     """
 
-    _blocks: List[Block] = PrivateAttr(default_factory=list)
+    _blocks: list[Block] = PrivateAttr(default_factory=list)
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -71,13 +71,13 @@ class KernelPromptTemplate(PromptTemplateBase):
                         # is a named arg block.
                         self._add_if_missing(sub_block.variable.name, seen)
 
-    def _add_if_missing(self, variable_name: str, seen: Optional[set] = None):
+    def _add_if_missing(self, variable_name: str, seen: set | None = None):
         # Convert variable_name to lower case to handle case-insensitivity
         if variable_name and variable_name.lower() not in seen:
             seen.add(variable_name.lower())
             self.prompt_template_config.input_variables.append(InputVariable(name=variable_name))
 
-    def extract_blocks(self) -> List[Block]:
+    def extract_blocks(self) -> list[Block]:
         """
         Given a prompt template string, extract all the blocks
         (text, variables, function calls).
@@ -111,7 +111,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             arguments = KernelArguments()
         return await self.render_blocks(self._blocks, kernel, arguments)
 
-    async def render_blocks(self, blocks: List[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
+    async def render_blocks(self, blocks: list[Block], kernel: "Kernel", arguments: "KernelArguments") -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -123,7 +123,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
         logger.debug(f"Rendering list of {len(blocks)} blocks")
-        rendered_blocks: List[str] = []
+        rendered_blocks: list[str] = []
 
         arguments = self._get_trusted_arguments(arguments)
         allow_unsafe_function_output = self._get_allow_unsafe_function_output()
@@ -134,7 +134,7 @@ class KernelPromptTemplate(PromptTemplateBase):
             if isinstance(block, CodeRenderer):
                 try:
                     rendered = await block.render_code(kernel, arguments)
-                except CodeBlockRenderException as exc:
+                except Exception as exc:
                     logger.error(f"Error rendering code block: {exc}")
                     raise TemplateRenderException(f"Error rendering code block: {exc}") from exc
                 rendered_blocks.append(rendered if allow_unsafe_function_output else escape(rendered))

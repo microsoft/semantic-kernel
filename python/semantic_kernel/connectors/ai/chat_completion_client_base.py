@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 

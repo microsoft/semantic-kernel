@@ -1,14 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
 import warnings
-from typing import TYPE_CHECKING, Callable, List
-from unittest.mock import Mock
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
+    from semantic_kernel.contents.chat_history import ChatHistory
+    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -43,23 +44,6 @@ def kernel_with_service(kernel: "Kernel", service: "AIServiceClientBase") -> "Ke
 @pytest.fixture(scope="function")
 def kernel_with_default_service(kernel: "Kernel", default_service: "AIServiceClientBase") -> "Kernel":
     kernel.add_service(default_service)
-    return kernel
-
-
-@pytest.fixture(scope="function")
-def kernel_with_handlers(kernel: "Kernel") -> "Kernel":
-    from semantic_kernel.events.function_invoked_event_args import FunctionInvokedEventArgs
-    from semantic_kernel.events.function_invoking_event_args import FunctionInvokingEventArgs
-
-    def invoking_handler(kernel: "Kernel", e: FunctionInvokingEventArgs) -> FunctionInvokingEventArgs:
-        pass
-
-    def invoked_handler(kernel: "Kernel", e: FunctionInvokedEventArgs) -> FunctionInvokedEventArgs:
-        pass
-
-    kernel.add_function_invoking_handler(invoking_handler)
-    kernel.add_function_invoked_handler(invoked_handler)
-
     return kernel
 
 
@@ -115,7 +99,7 @@ def create_mock_function() -> Callable:
     from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
-    async def stream_func(*args, **kwargs) -> List[StreamingTextContent]:
+    async def stream_func(*args, **kwargs):
         yield [StreamingTextContent(choice_index=0, text="test", metadata={})]
 
     def create_mock_function(name: str, value: str = "test") -> "KernelFunction":
@@ -127,15 +111,25 @@ def create_mock_function() -> Callable:
             is_prompt=True,
             is_asynchronous=True,
         )
-        mock_function = Mock(spec=KernelFunction)
-        mock_function.metadata = kernel_function_metadata
-        mock_function.name = kernel_function_metadata.name
-        mock_function.plugin_name = kernel_function_metadata.plugin_name
-        mock_function.description = kernel_function_metadata.description
-        mock_function.invoke.return_value = FunctionResult(function=mock_function.metadata, value=value, metadata={})
-        mock_function.invoke_stream = stream_func
-        mock_function.function_copy.return_value = mock_function
-        mock_function.__kernel_function__ = True
+
+        class CustomKernelFunction(KernelFunction):
+            call_count: int = 0
+
+            async def _invoke_internal_stream(
+                self,
+                context: "FunctionInvocationContext",
+            ) -> None:
+                self.call_count += 1
+                context.result = FunctionResult(
+                    function=kernel_function_metadata,
+                    value=stream_func(),
+                )
+
+            async def _invoke_internal(self, context: "FunctionInvocationContext"):
+                self.call_count += 1
+                context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
+
+        mock_function = CustomKernelFunction(metadata=kernel_function_metadata)
 
         return mock_function
 
@@ -143,7 +137,7 @@ def create_mock_function() -> Callable:
 
 
 @pytest.fixture(scope="function")
-def chat_history():
+def chat_history() -> "ChatHistory":
     from semantic_kernel.contents.chat_history import ChatHistory
 
     return ChatHistory()
