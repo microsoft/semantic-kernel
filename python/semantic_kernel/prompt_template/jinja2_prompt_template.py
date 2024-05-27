@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional
 
 from jinja2 import BaseLoader, TemplateError
 from jinja2.sandbox import ImmutableSandboxedEnvironment

@@ -254,6 +254,39 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Whether to return log probabilities of the output tokens or not.
+    /// If true, returns the log probabilities of each output token returned in the `content` of `message`.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("logprobs")]
+    public bool? Logprobs
+    {
+        get => this._logprobs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._logprobs = value;
+        }
+    }
+
+    /// <summary>
+    /// An integer specifying the number of most likely tokens to return at each token position, each with an associated log probability.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("top_logprobs")]
+    public int? TopLogprobs
+    {
+        get => this._topLogprobs;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._topLogprobs = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -294,7 +327,9 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
             ToolCallBehavior = this.ToolCallBehavior,
             User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt
+            ChatSystemPrompt = this.ChatSystemPrompt,
+            Logprobs = this.Logprobs,
+            TopLogprobs = this.TopLogprobs
         };
     }
 
@@ -370,6 +405,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private ToolCallBehavior? _toolCallBehavior;
     private string? _user;
     private string? _chatSystemPrompt;
+    private bool? _logprobs;
+    private int? _topLogprobs;
 
     #endregion
 }

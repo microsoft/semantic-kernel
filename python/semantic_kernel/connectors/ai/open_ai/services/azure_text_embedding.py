@@ -2,7 +2,7 @@
 
 
 import logging
-from typing import Mapping
+from collections.abc import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -21,10 +21,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base 
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
     """Azure Text Embedding class."""
 
@@ -119,7 +121,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 
         Arguments:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
+                should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
         return AzureTextEmbedding(

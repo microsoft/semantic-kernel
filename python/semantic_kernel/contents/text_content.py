@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from html import unescape
 from xml.etree.ElementTree import Element
@@ -11,7 +10,7 @@ from semantic_kernel.contents.kernel_content import KernelContent
 class TextContent(KernelContent):
     """This is the base class for text response content.
 
-    All Text Completion Services should return a instance of this class as response.
+    All Text Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:

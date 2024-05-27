@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
-from typing import Any, Callable
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -58,11 +58,12 @@ class KernelFunctionFromMethod(KernelFunction):
         if parameters is None:
             parameters = [KernelParameterMetadata(**param) for param in method.__kernel_function_parameters__]  # type: ignore
         if return_parameter is None:
-            return_param = KernelParameterMetadata(
+            return_parameter = KernelParameterMetadata(
                 name="return",
                 description=method.__kernel_function_return_description__,  # type: ignore
                 default_value=None,
-                type=method.__kernel_function_return_type__,  # type: ignore
+                type_=method.__kernel_function_return_type__,  # type: ignore
+                type_object=method.__kernel_function_return_type_object__,  # type: ignore
                 is_required=method.__kernel_function_return_required__,  # type: ignore
             )
 
@@ -71,7 +72,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 name=function_name,
                 description=description,
                 parameters=parameters,
-                return_parameter=return_param,
+                return_parameter=return_parameter,
                 is_prompt=False,
                 is_asynchronous=isasyncgenfunction(method) or iscoroutinefunction(method),
                 plugin_name=plugin_name,
@@ -124,6 +125,8 @@ class KernelFunctionFromMethod(KernelFunction):
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
+            if param.name is None:
+                raise FunctionExecutionException("Parameter name cannot be None")
             if param.name == "kernel":
                 function_arguments[param.name] = context.kernel
                 continue
@@ -148,10 +151,13 @@ class KernelFunctionFromMethod(KernelFunction):
                             ) from exc
                     else:
                         try:
-                            value = param.type_object(value)
+                            if isinstance(value, dict) and hasattr(param.type_object, "__init__"):
+                                value = param.type_object(**value)
+                            else:
+                                value = param.type_object(value)
                         except Exception as exc:
                             raise FunctionExecutionException(
-                                f"Parameter {param.name} is expected to be parsed to {param.type_} but is not."
+                                f"Parameter {param.name} is expected to be parsed to {param.type_object} but is not."
                             ) from exc
                 function_arguments[param.name] = value
                 continue

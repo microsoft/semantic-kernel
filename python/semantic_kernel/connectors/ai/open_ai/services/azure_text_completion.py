@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Mapping
+from collections.abc import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
@@ -118,7 +118,7 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 
         Arguments:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
+                should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
 

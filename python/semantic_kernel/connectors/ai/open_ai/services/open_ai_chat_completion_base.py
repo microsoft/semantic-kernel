@@ -2,9 +2,10 @@
 
 import asyncio
 import logging
+from collections.abc import AsyncGenerator
 from copy import copy
 from functools import reduce
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from openai import AsyncStream
 from openai.types.chat.chat_completion import ChatCompletion, Choice
@@ -41,8 +42,8 @@ from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_c
     AutoFunctionInvocationContext,
 )
 from semantic_kernel.filters.filter_types import FilterTypes
+from semantic_kernel.filters.kernel_filters_extension import _rebuild_auto_function_invocation_context
 from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.kernel_extensions.kernel_filters_extension import _rebuild_auto_function_invocation_context
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -73,7 +74,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> List["ChatMessageContent"]:
+    ) -> list["ChatMessageContent"]:
         """Executes a chat completion request and returns the result.
 
         Arguments:
@@ -93,7 +94,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel and kernel arguments are required for auto invoking OpenAI tool calls."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
@@ -150,7 +151,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: ChatHistory,
         settings: OpenAIChatPromptExecutionSettings,
         **kwargs: Any,
-    ) -> AsyncGenerator[List[StreamingChatMessageContent | None], Any]:
+    ) -> AsyncGenerator[list[StreamingChatMessageContent | None], Any]:
         """Executes a streaming chat completion request and returns the result.
 
         Arguments:
@@ -170,7 +171,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 raise ServiceInvalidExecutionSettingsError(
                     "The kernel argument and arguments are required for OpenAI tool calling."
                 )
-            if settings.number_of_responses > 1:
+            if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
                     "Auto-invocation of tool calls may only be used with a "
                     "OpenAIChatPromptExecutions.number_of_responses of 1."
@@ -208,12 +209,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 return
 
             # there is one response stream in the messages, combining now to create the full completion
+            # depending on the prompt, the message may contain both function call content and others
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
-            function_calls = [item for item in chat_history.messages[-1].items if isinstance(item, FunctionCallContent)]
             fc_count = len(function_calls)
-
             logger.info(f"processing {fc_count} tool calls in parallel.")
 
             # this function either updates the chat history with the function call results
@@ -239,7 +240,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
             self._update_settings(settings, chat_history, kernel=kernel)
 
-    def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> Dict[str, Optional[str]]:
+    def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> dict[str, str | None]:
         msg = super()._chat_message_content_to_dict(message)
         if message.role == "assistant":
             if tool_calls := getattr(message, "tool_calls", None):
@@ -256,7 +257,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # endregion
     # region internal handlers
 
-    async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> List["ChatMessageContent"]:
+    async def _send_chat_request(self, settings: OpenAIChatPromptExecutionSettings) -> list["ChatMessageContent"]:
         """Send the chat request"""
         response = await self._send_request(request_settings=settings)
         response_metadata = self._get_metadata_from_chat_response(response)
@@ -284,7 +285,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     # region content creation
 
     def _create_chat_message_content(
-        self, response: ChatCompletion, choice: Choice, response_metadata: Dict[str, Any]
+        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -308,7 +309,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self,
         chunk: ChatCompletionChunk,
         choice: ChunkChoice,
-        chunk_metadata: Dict[str, Any],
+        chunk_metadata: dict[str, Any],
     ) -> StreamingChatMessageContent | None:
         """Create a streaming chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -328,7 +329,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             items=items,
         )
 
-    def _get_metadata_from_chat_response(self, response: ChatCompletion) -> Dict[str, Any]:
+    def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
         """Get metadata from a chat response."""
         return {
             "id": response.id,
@@ -337,7 +338,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "usage": getattr(response, "usage", None),
         }
 
-    def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> Dict[str, Any]:
+    def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:
         """Get metadata from a streaming chat response."""
         return {
             "id": response.id,
@@ -345,13 +346,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             "system_fingerprint": response.system_fingerprint,
         }
 
-    def _get_metadata_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> Dict[str, Any]:
+    def _get_metadata_from_chat_choice(self, choice: Choice | ChunkChoice) -> dict[str, Any]:
         """Get metadata from a chat choice."""
         return {
             "logprobs": getattr(choice, "logprobs", None),
         }
 
-    def _get_tool_calls_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> List[FunctionCallContent]:
+    def _get_tool_calls_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
         if isinstance(choice, Choice):
             content = choice.message
@@ -369,7 +370,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             for tool in content.tool_calls
         ]
 
-    def _get_function_call_from_chat_choice(self, choice: Union[Choice, ChunkChoice]) -> List[FunctionCallContent]:
+    def _get_function_call_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get a function call from a chat choice."""
         if isinstance(choice, Choice):
             content = choice.message
@@ -415,7 +416,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             )
 
     # endregion
-    # region tool calling
+    # region function calling
 
     async def _process_function_call(
         self,
@@ -469,6 +470,22 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result="The tool call could not be found, please try again and make sure to validate the name.",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return
+
+        num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
+        if len(parsed_args) < num_required_func_params:
+            msg = (
+                f"There are `{num_required_func_params}` tool call arguments required and "
+                f"only `{len(parsed_args)}` received. The required arguments are: "
+                f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
+                "Please provide the required arguments and try again."
+            )
+            logger.exception(msg)
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=msg,
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return

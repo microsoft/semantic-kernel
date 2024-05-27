@@ -11,6 +11,18 @@ from semantic_kernel.text import (
 NEWLINE = os.linesep
 
 
+def test_split_empty_string():
+    """Test split_plain_text_lines() with empty string"""
+
+    text = ""
+
+    max_token_per_line = 10
+
+    expected = []
+    split = split_plaintext_lines(text, max_token_per_line)
+    assert expected == split
+
+
 def test_split_plain_text_lines_with_token_count():
     """Test split_plain_text_lines() with external token counter"""
 

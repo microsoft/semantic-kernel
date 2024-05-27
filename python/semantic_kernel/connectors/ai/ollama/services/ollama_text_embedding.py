@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 import aiohttp
 from numpy import array, ndarray
@@ -9,10 +9,12 @@ from pydantic import HttpUrl
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class OllamaTextEmbedding(EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
@@ -25,9 +27,9 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     """
 
     url: HttpUrl = "http://localhost:11434/api/embeddings"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         """
         Generates embeddings for a list of texts.
 
