@@ -6,16 +6,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.14" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
+    <PackageVersion Include="Azure.Identity" Version="1.11.3" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
-    <PackageVersion Include="Markdig" Version="0.35.0" />
+    <PackageVersion Include="Markdig" Version="0.37.0" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
-    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.1.1" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.3.0.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
-    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.1.0" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
@@ -48,7 +48,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.4.0" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
@@ -61,11 +61,11 @@
     <!-- Plugins -->
 
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.2" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="8.0.4" />
 
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.9.2" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.9.2" />
-    <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.25.0" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="[3.32.3, )" />
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="[2.28.0, )" />
@@ -76,10 +76,10 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.61.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.2" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.4" />
     <!-- Memory stores -->
     <PackageVersion Include="Pgvector" Version="0.2.0" />
-    <PackageVersion Include="NRedisStack" Version="0.11.0" />
+    <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
@@ -95,12 +95,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.11.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.13.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -110,17 +110,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Analyzers" Version="[4.11.0]" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="[4.12.3]" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.11.0]" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="[4.12.3]" />
     <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.0]" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="[4.12.3]" />
     <PackageReference Include="Roslynator.Formatting.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
