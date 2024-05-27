@@ -5,13 +5,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.14" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
     <PackageVersion Include="Azure.Identity" Version="1.11.3" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.2.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
     <PackageVersion Include="Markdig" Version="0.37.0" />
-    <PackageVersion Include="Handlebars.Net" Version="2.1.4" />
+    <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="4.3.0.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
@@ -45,16 +45,16 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.5.0" />
     <!-- Test -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
-    <PackageVersion Include="xunit" Version="2.7.0" />
+    <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.1" />
@@ -100,7 +100,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.13.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.14.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
