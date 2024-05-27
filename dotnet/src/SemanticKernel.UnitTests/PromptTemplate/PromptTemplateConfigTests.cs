@@ -261,15 +261,15 @@ public class PromptTemplateConfigTests
         promptTemplateConfig.AddExecutionSettings(settings1, "service4");
 
         // Assert
-        // Ovewrite with Default
+        // Overwrite with Default
         Assert.Equal("model1", promptTemplateConfig.ExecutionSettings["default"].ModelId);
         Assert.Equal("default", promptTemplateConfig.ExecutionSettings["default"].ServiceId);
 
-        // Ovewrite with ServiceId from Argument (Not Defaulting)
+        // Overwrite with ServiceId from Argument (Not Defaulting)
         Assert.Equal("model2", promptTemplateConfig.ExecutionSettings["service1"].ModelId);
         Assert.Equal("service1", promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
 
-        // Ovewrite with ServiceId from Argument
+        // Overwrite with ServiceId from Argument
         Assert.Equal("model-service-2", promptTemplateConfig.ExecutionSettings["override"].ModelId);
         Assert.Equal("override", promptTemplateConfig.ExecutionSettings["override"].ServiceId);
 
