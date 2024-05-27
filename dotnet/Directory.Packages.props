@@ -83,7 +83,7 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.62.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.2" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.4" />
     <PackageVersion Include="Fluid.Core" Version="2.10.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0-preview.0" />
