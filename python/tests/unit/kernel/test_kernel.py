@@ -18,6 +18,7 @@ from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import (
     KernelFunctionAlreadyExistsError,
     KernelServiceNotFoundError,
+    PluginInvalidNameError,
     ServiceInvalidTypeError,
 )
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
@@ -185,7 +186,7 @@ def test_plugin_no_plugin(kernel: Kernel):
 
 
 def test_plugin_name_error(kernel: Kernel):
-    with pytest.raises(ValueError):
+    with pytest.raises(PluginInvalidNameError, match="plugin_name must be provided if a plugin is not supplied."):
         kernel.add_plugin(" ", None)
 
 
@@ -195,6 +196,13 @@ def test_plugins_add_plugins(kernel: Kernel):
 
     kernel.add_plugins([plugin1, plugin2])
     assert len(kernel.plugins) == 2
+
+
+def test_plugins_name_unique(kernel: Kernel):
+    with pytest.raises(PluginInvalidNameError, match="A plugin with the name TestPlugin already exists."):
+        plugin1 = KernelPlugin(name="TestPlugin")
+        plugin2 = KernelPlugin(name="TestPlugin")
+        kernel.add_plugins([plugin1, plugin2])
 
 
 def test_add_function_from_prompt(kernel: Kernel):

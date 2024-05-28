@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
+from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError, PluginInvalidNameError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -81,24 +81,28 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             ValidationError: If a KernelPlugin needs to be created, but it is not valid.
 
         """
+        name = plugin.name if isinstance(plugin, KernelPlugin) else plugin_name
+
+        if name in self.plugins:
+            raise PluginInvalidNameError(f"A plugin with the name {name} already exists.")
         if isinstance(plugin, KernelPlugin):
-            self.plugins[plugin.name] = plugin
-            return self.plugins[plugin.name]
-        if not plugin_name:
-            raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+            self.plugins[name] = plugin
+            return self.plugins[name]
+        if not name:
+            raise PluginInvalidNameError("plugin_name must be provided if a plugin is not supplied.")
         if plugin:
-            self.plugins[plugin_name] = KernelPlugin.from_object(
-                plugin_name=plugin_name, plugin_instance=plugin, description=description
+            self.plugins[name] = KernelPlugin.from_object(
+                plugin_name=name, plugin_instance=plugin, description=description
             )
-            return self.plugins[plugin_name]
+            return self.plugins[name]
         if plugin is None and parent_directory is not None:
-            self.plugins[plugin_name] = KernelPlugin.from_directory(
-                plugin_name=plugin_name,
+            self.plugins[name] = KernelPlugin.from_directory(
+                plugin_name=name,
                 parent_directory=parent_directory,
                 description=description,
                 class_init_arguments=class_init_arguments,
             )
-            return self.plugins[plugin_name]
+            return self.plugins[name]
         raise ValueError("plugin or parent_directory must be provided.")
 
     def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
