@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatM
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
 import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -86,12 +87,14 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) CollectionUtil.getLastOrNull(result))
+        List<OpenAIFunctionToolCall> toolCalls = ((OpenAIChatMessageContent<?>) CollectionUtil.getLastOrNull(
+            result))
             .getToolCall();
 
         Assertions.assertNotNull(toolCalls);
         Assertions.assertEquals(1, toolCalls.size());
-        Assertions.assertEquals("apluginname", CollectionUtil.getLastOrNull(toolCalls).getPluginName());
+        Assertions.assertEquals("apluginname",
+            CollectionUtil.getLastOrNull(toolCalls).getPluginName());
         Assertions.assertEquals("doIt", CollectionUtil.getLastOrNull(toolCalls).getFunctionName());
         Assertions.assertEquals("call_abc123", CollectionUtil.getLastOrNull(toolCalls).getId());
 
@@ -135,7 +138,8 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
+        Assertions.assertTrue(
+            CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
         Mockito.verify(testPlugin, Mockito.times(1)).doIt();
 
         result = chatCompletionService
@@ -162,8 +166,64 @@ public class ToolCallBehaviourTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
+        Assertions.assertTrue(
+            CollectionUtil.getLastOrNull(result).getContent().contains("tool call done"));
         Mockito.verify(testPlugin, Mockito.times(3)).doIt();
+    }
+
+
+    @Test
+    public void toolCallingHistoryPassed() throws NoSuchMethodException {
+        ChatCompletionService chatCompletionService = getChatCompletionService();
+
+        TestPlugin testPlugin = Mockito.spy(new TestPlugin());
+        KernelFunction<String> method = KernelFunctionFromMethod.<String>builder()
+            .withFunctionName("doIt")
+            .withMethod(TestPlugin.class.getMethod("doIt"))
+            .withTarget(testPlugin)
+            .withPluginName("apluginname")
+            .build();
+
+        Kernel kernel = Kernel.builder()
+            .withAIService(ChatCompletionService.class, chatCompletionService)
+            .withPlugin(
+                new KernelPlugin(
+                    "apluginname",
+                    "A plugin description",
+                    Map.of("doIt", method)))
+            .build();
+
+        ChatHistory messages = new ChatHistory();
+        messages.addMessage(
+            new ChatMessageContent<>(
+                AuthorRole.USER,
+                "Call A function"));
+
+        List<ChatMessageContent<?>> result = chatCompletionService
+            .getChatMessageContentsAsync(
+                messages,
+                kernel,
+                InvocationContext.builder()
+                    .withToolCallBehavior(
+                        ToolCallBehavior.allowAllKernelFunctions(true))
+                    .withReturnMode(InvocationReturnMode.FULL_HISTORY)
+                    .build())
+            .block();
+
+        ChatHistory newHistory = new ChatHistory(result);
+        newHistory.addMessage(AuthorRole.USER, "do something else");
+
+        List<ChatMessageContent<?>> result2 = chatCompletionService
+            .getChatMessageContentsAsync(
+                newHistory,
+                kernel,
+                InvocationContext.builder()
+                    .withToolCallBehavior(
+                        ToolCallBehavior.allowAllKernelFunctions(true))
+                    .withReturnMode(InvocationReturnMode.FULL_HISTORY)
+                    .build())
+            .block();
+        Assertions.assertTrue(result2.size() == 6);
     }
 
     private ChatCompletionService getChatCompletionService() {
@@ -220,6 +280,7 @@ public class ToolCallBehaviourTest {
             .withModelId("gpt-35-turbo-2")
             .build();
     }
+
 
     public static MappingBuilder buildTextResponse(String bodyMatcher, String responseBody) {
         return post(urlEqualTo(
