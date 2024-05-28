@@ -447,7 +447,7 @@ internal sealed class MistralClient
 
                 this.AddResponseMessage(chatRequest, chatHistory, toolCall, result: stringResult, errorMessage: null);
 
-                // If filter requested termination, breaking request iteration loop.
+                // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
                 {
                     if (this._logger.IsEnabled(LogLevel.Debug))
@@ -455,6 +455,9 @@ internal sealed class MistralClient
                         this._logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
+                    var lastChatMessage = chatHistory.Last();
+
+                    yield return new StreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
                     yield break;
                 }
             }
