@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -33,7 +33,7 @@ class MockModel:
         "scores": list[int],
         "metadata": dict[str, Any],
         "tags": set[str],
-        "coordinates": Tuple[int, int],
+        "coordinates": tuple[int, int],
         "status": Union[int, str],
         "optional_field": Optional[str],
     }
@@ -107,13 +107,6 @@ def test_get_json_schema():
     assert result == expected_schema
 
 
-def test_build_primitive_types():
-    assert KernelJsonSchemaBuilder.build(int) == {"type": "integer"}
-    assert KernelJsonSchemaBuilder.build(str) == {"type": "string"}
-    assert KernelJsonSchemaBuilder.build(bool) == {"type": "boolean"}
-    assert KernelJsonSchemaBuilder.build(float) == {"type": "number"}
-
-
 def test_build_list():
     schema = KernelJsonSchemaBuilder.build(list[str])
     assert schema == {"type": "array", "items": {"type": "string"}, "description": None}
@@ -145,7 +138,7 @@ def test_build_set():
 
 
 def test_build_tuple():
-    schema = KernelJsonSchemaBuilder.build(Tuple[int, str])
+    schema = KernelJsonSchemaBuilder.build(tuple[int, str])
     assert schema == {"type": "array", "items": [{"type": "integer"}, {"type": "string"}], "description": None}
 
 
