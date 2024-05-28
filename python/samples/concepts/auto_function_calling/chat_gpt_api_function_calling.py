@@ -54,9 +54,9 @@ chat_function = kernel.add_function(
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
 # the format for that is 'PluginName-FunctionName', (i.e. 'math-Add').
-# if the model or api version do not support this you will get an error.
+# if the model or api version does not support this you will get an error.
 
-# Note: the number of responses for auto inoking tool calls is limited to 1.
+# Note: the number of responses for auto invoking tool calls is limited to 1.
 # If configured to be greater than one, this value will be overridden to 1.
 execution_settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
