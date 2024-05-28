@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
-# import dotenv
 from pytest import mark
-
-# dotenv.load_dotenv()
 
 
 @mark.asyncio
