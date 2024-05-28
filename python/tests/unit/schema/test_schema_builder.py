@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 from unittest.mock import Mock
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -28,9 +28,9 @@ class MockModel:
         "id": int,
         "name": str,
         "is_active": bool,
-        "scores": List[int],
-        "metadata": Dict[str, Any],
-        "tags": Set[str],
+        "scores": list[int],
+        "metadata": dict[str, Any],
+        "tags": set[str],
         "coordinates": Tuple[int, int],
         "status": Union[int, str],
         "optional_field": Optional[str],
