@@ -2,11 +2,7 @@
 
 import logging
 
-from semantic_kernel.exceptions import (
-    BlockSyntaxError,
-    CodeBlockTokenError,
-    TemplateSyntaxError,
-)
+from semantic_kernel.exceptions import BlockSyntaxError, CodeBlockTokenError, TemplateSyntaxError
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -28,6 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class TemplateTokenizer:
     @staticmethod
     def tokenize(text: str) -> list[Block]:
+        """Tokenize the template text into blocks."""
         code_tokenizer = CodeTokenizer()
         # An empty block consists of 4 chars: "{{}}"
         EMPTY_CODE_BLOCK_LENGTH = 4

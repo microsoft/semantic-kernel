@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class AuthorRole(str, Enum):
-    """Author role enum"""
+    """Author role enum."""
 
     SYSTEM = "system"
     USER = "user"

@@ -4,7 +4,7 @@ import json
 import logging
 from collections import OrderedDict
 from collections.abc import Callable, Mapping
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import httpx
@@ -21,15 +21,12 @@ from semantic_kernel.exceptions.function_exceptions import FunctionExecutionExce
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
-if TYPE_CHECKING:
-    pass
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
 class OpenApiRunner:
-    """The OpenApiRunner that runs the operations defined in the OpenAPI manifest"""
+    """The OpenApiRunner that runs the operations defined in the OpenAPI manifest."""
 
     payload_argument_name = "payload"
     media_type_application_json = "application/json"
@@ -42,6 +39,7 @@ class OpenApiRunner:
         enable_dynamic_payload: bool = True,
         enable_payload_namespacing: bool = False,
     ):
+        """Initialize the OpenApiRunner."""
         self.spec = Spec.from_dict(parsed_openapi_document)
         self.auth_callback = auth_callback
         self.http_client = http_client
@@ -102,11 +100,13 @@ class OpenApiRunner:
         return result
 
     def build_operation_payload(self, operation: RestApiOperation, arguments: KernelArguments) -> tuple[str, str]:
+        """Build the operation payload."""
         if operation.request_body is None and self.payload_argument_name not in arguments:
             return None, None
         return self.build_json_payload(operation.request_body, arguments)
 
     def get_argument_name_for_payload(self, property_name, property_namespace=None):
+        """Get argument name for the payload."""
         if not self.enable_payload_namespacing:
             return property_name
         return f"{property_namespace}.{property_name}" if property_namespace else property_name
@@ -123,6 +123,7 @@ class OpenApiRunner:
         arguments: KernelArguments | None = None,
         options: RestApiOperationRunOptions | None = None,
     ) -> str:
+        """Run the operation."""
         from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 
         url = self.build_operation_url(

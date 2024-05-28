@@ -7,7 +7,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class PlannerOptions(KernelBaseModel):
-    """The default planner options that planners inherit from"""
+    """The default planner options that planners inherit from."""
 
     excluded_plugins: set[str] = set()
     excluded_functions: set[str] = set()

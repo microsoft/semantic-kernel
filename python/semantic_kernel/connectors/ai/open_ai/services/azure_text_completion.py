@@ -8,15 +8,9 @@ from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
-    AzureOpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -41,27 +35,26 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initialize an AzureTextCompletion service.
+        """Initialize an AzureTextCompletion service.
 
-        Arguments:
+        Args:
             service_id: The service ID for the Azure deployment. (Optional)
-            api_key  {str | None}: The optional api key. If provided, will override the value in the
+            api_key (str | None): The optional api key. If provided, will override the value in the
                 env vars or .env file.
-            deployment_name  {str | None}: The optional deployment. If provided, will override the value
+            deployment_name  (str | None): The optional deployment. If provided, will override the value
                 (text_deployment_name) in the env vars or .env file.
-            endpoint {str | None}: The optional deployment endpoint. If provided will override the value
+            endpoint (str | None): The optional deployment endpoint. If provided will override the value
                 in the env vars or .env file.
-            base_url {str | None}: The optional deployment base_url. If provided will override the value
+            base_url (str | None): The optional deployment base_url. If provided will override the value
                 in the env vars or .env file.
-            api_version {str | None}: The optional deployment api version. If provided will override the value
+            api_version (str | None): The optional deployment api version. If provided will override the value
                 in the env vars or .env file.
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-            env_file_path {str | None} -- Use the environment settings file as a fallback to
+            async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         azure_openai_settings = None
@@ -113,15 +106,13 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "AzureTextCompletion":
-        """
-        Initialize an Azure OpenAI service from a dictionary of settings.
+        """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
                 should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
-
         return AzureTextCompletion(
             service_id=settings.get("service_id"),
             api_key=settings.get("api_key", None),

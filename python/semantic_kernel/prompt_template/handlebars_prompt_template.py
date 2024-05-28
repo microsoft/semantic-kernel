@@ -45,11 +45,13 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
     @field_validator("prompt_template_config")
     @classmethod
     def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+        """Validate the template format."""
         if v.template_format != HANDLEBARS_TEMPLATE_FORMAT_NAME:
             raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: handlebars")
         return v
 
     def model_post_init(self, __context: Any) -> None:
+        """Post init model."""
         if not self.prompt_template_config.template:
             self._template_compiler = None
             return
@@ -62,7 +64,8 @@ class HandlebarsPromptTemplate(PromptTemplateBase):
             ) from e
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
-        """
+        """Render the prompt template.
+
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
         function result.

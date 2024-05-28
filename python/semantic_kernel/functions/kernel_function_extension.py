@@ -55,9 +55,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         description: str | None = None,
         class_init_arguments: dict[str, dict[str, Any]] | None = None,
     ) -> "KernelPlugin":
-        """
-        Adds a plugin to the kernel's collection of plugins. If a plugin is provided,
-        it uses that instance instead of creating a new KernelPlugin.
+        """Adds a plugin to the kernel's collection of plugins.
+
+        If a plugin is provided, it uses that instance instead of creating a new KernelPlugin.
         See KernelPlugin.from_directory for more details on how the directory is parsed.
 
         Args:
@@ -102,8 +102,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         raise ValueError("plugin or parent_directory must be provided.")
 
     def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
-        """
-        Adds a list of plugins to the kernel's collection of plugins.
+        """Adds a list of plugins to the kernel's collection of plugins.
 
         Args:
             plugins (list[KernelPlugin] | dict[str, KernelPlugin]): The plugins to add to the kernel
@@ -131,8 +130,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         return_plugin: bool = False,
         **kwargs: Any,
     ) -> "KernelFunction | KernelPlugin":
-        """
-        Adds a function to the specified plugin.
+        """Adds a function to the specified plugin.
 
         Args:
             plugin_name (str): The name of the plugin to add the function to
@@ -142,9 +140,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             description (str | None): The description of the function
             prompt (str | None): The prompt template.
             prompt_template_config (PromptTemplateConfig | None): The prompt template configuration
-            prompt_execution_settings (PromptExecutionSettings  | list[PromptExecutionSettings]
-                | dict[str, PromptExecutionSettings] | None):
-                The execution settings, will be parsed into a dict.
+            prompt_execution_settings: The execution settings, will be parsed into a dict.
             template_format (str | None): The format of the prompt template
             prompt_template (PromptTemplateBase | None): The prompt template
             return_plugin (bool): If True, the plugin is returned instead of the function
@@ -190,8 +186,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         plugin_name: str,
         functions: "list[KERNEL_FUNCTION_TYPE] | dict[str, KERNEL_FUNCTION_TYPE]",
     ) -> "KernelPlugin":
-        """
-        Adds a list of functions to the specified plugin.
+        """Adds a list of functions to the specified plugin.
 
         Args:
             plugin_name (str): The name of the plugin to add the functions to
@@ -217,9 +212,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
 
         Args:
             plugin_name (str): The name of the plugin
-            plugin_url (str | None): The URL of the plugin
-            plugin_str (str | None): The JSON string of the plugin
-            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
+            openapi_document_path (str): The path to the OpenAPI document
+            execution_settings (OpenAPIFunctionExecutionParameters | None): The execution parameters
+            description (str | None): The description of the plugin
 
         Returns:
             KernelPlugin: The imported plugin
@@ -351,8 +346,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
     def get_list_of_function_metadata_bool(
         self, include_prompt: bool = True, include_native: bool = True
     ) -> list["KernelFunctionMetadata"]:
-        """
-        Get a list of the function metadata in the plugin collection
+        """Get a list of the function metadata in the plugin collection.
 
         Args:
             include_prompt (bool): Whether to include semantic functions in the list.

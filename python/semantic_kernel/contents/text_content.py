@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from html import unescape
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -30,6 +30,7 @@ class TextContent(KernelContent):
     encoding: str | None = None
 
     def __str__(self) -> str:
+        """Return the text of the response."""
         return self.text
 
     def to_element(self) -> Element:

@@ -19,6 +19,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
 
     @abstractmethod
     async def render(self, kernel: "Kernel", arguments: "KernelArguments") -> str:
+        """Render the prompt template."""
         pass
 
     def _get_trusted_arguments(
@@ -60,8 +61,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
         return allow_unsafe_function_output
 
     def _should_escape(self, name: str, input_variables: list["InputVariable"]) -> bool:
-        """
-        Check if the variable should be escaped.
+        """Check if the variable should be escaped.
 
         If the PromptTemplate allows dangerously set content, then the variable will not be escaped,
         even if the input_variables does specify this.

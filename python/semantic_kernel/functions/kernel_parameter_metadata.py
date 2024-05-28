@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from typing import Any
 
 from pydantic import Field, model_validator
@@ -22,6 +21,7 @@ class KernelParameterMetadata(KernelBaseModel):
     @model_validator(mode="before")
     @classmethod
     def form_schema(cls, data: Any) -> Any:
+        """Create a schema for the parameter metadata."""
         if isinstance(data, dict):
             if data.get("schema_data") is None:
                 type_object = data.get("type_object", None)
@@ -36,6 +36,7 @@ class KernelParameterMetadata(KernelBaseModel):
     def infer_schema(
         cls, type_object: type | None, parameter_type: str | None, default_value: Any, description: str | None
     ) -> dict[str, Any] | None:
+        """Infer the schema for the parameter metadata."""
         schema = None
 
         if type_object is not None:
