@@ -13,8 +13,7 @@ from semantic_kernel.kernel import Kernel
 
 
 def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
-    """
-    Configure the AI service for the kernel
+    """Configure the AI service for the kernel
 
     Args:
         kernel (Kernel): The kernel to configure
@@ -25,7 +24,7 @@ def add_service(kernel: Kernel, use_chat: bool = True) -> Kernel:
     """
     config = dotenv_values(".env")
     llm_service = config.get("GLOBAL_LLM_SERVICE", None)
-    assert llm_service, "The LLM_SERVICE environment variable is not set."
+    assert llm_service, "The LLM_SERVICE environment variable is not set."  # nosec
 
     # The service_id is used to identify the service in the kernel.
     # This can be updated to a custom value if needed.

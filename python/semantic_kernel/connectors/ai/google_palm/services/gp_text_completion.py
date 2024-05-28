@@ -22,15 +22,14 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
     def __init__(self, ai_model_id: str, api_key: str | None = None, env_file_path: str | None = None):
-        """
-        Initializes a new instance of the GooglePalmTextCompletion class.
+        """Initializes a new instance of the GooglePalmTextCompletion class.
 
-        Arguments:
-            ai_model_id {str} -- GooglePalm model name, see
+        Args:
+            ai_model_id (str): GooglePalm model name, see
                 https://developers.generativeai.google/models/language
-            api_key {str | None} -- The optional API key to use. If not provided, will be
+            api_key (str | None): The optional API key to use. If not provided, will be
                 read from either the env vars or the .env settings file.
-            env_file_path {str | None} -- Use the environment settings file as a
+            env_file_path (str | None): Use the environment settings file as a
                 fallback to environment variables. (Optional)
         """
         try:
@@ -52,15 +51,14 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     async def get_text_contents(
         self, prompt: str, settings: GooglePalmTextPromptExecutionSettings
     ) -> list[TextContent]:
-        """
-        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {GooglePalmTextPromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (GooglePalmTextPromptExecutionSettings): Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
         settings.prompt = prompt
         if not settings.ai_model_id:
@@ -100,6 +98,12 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         prompt: str,
         settings: GooglePalmTextPromptExecutionSettings,
     ):
+        """Get streaming text contents from the Google Palm API, unsupported.
+
+        Raises:
+            NotImplementedError: Google Palm API does not currently support streaming.
+
+        """
         raise NotImplementedError("Google Palm API does not currently support streaming")
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":

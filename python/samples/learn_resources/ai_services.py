@@ -18,10 +18,7 @@ async def main():
 
     script_directory = os.path.dirname(__file__)
     plugins_directory = os.path.join(script_directory, "plugins")
-    writer_plugin = kernel.import_plugin_from_prompt_directory(
-        parent_directory=plugins_directory,
-        plugin_directory_name="WriterPlugin",
-    )
+    writer_plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="WriterPlugin")
 
     # Run the ShortPoem function with the Kernel Argument.
     # Kernel arguments can be configured as KernelArguments object

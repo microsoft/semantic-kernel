@@ -9,8 +9,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class WaitPlugin(KernelBaseModel):
-    """
-    WaitPlugin provides a set of functions to wait for a certain amount of time.
+    """WaitPlugin provides a set of functions to wait for a certain amount of time.
 
     Usage:
         kernel.add_plugin(WaitPlugin(), plugin_name="wait")
@@ -19,8 +18,9 @@ class WaitPlugin(KernelBaseModel):
         {{wait.wait 5}} => Wait for 5 seconds
     """
 
-    @kernel_function(description="Wait for a certain number of seconds.")
+    @kernel_function
     async def wait(self, input: Annotated[float | str, "The number of seconds to wait, can be str or float."]) -> None:
+        """Wait for a certain number of seconds."""
         if isinstance(input, str):
             try:
                 input = float(input)

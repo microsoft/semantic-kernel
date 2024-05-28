@@ -22,8 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Jinja2PromptTemplate(PromptTemplateBase):
-    """
-    Creates and renders Jinja2 prompt templates to text.
+    """Creates and renders Jinja2 prompt templates to text.
 
     Jinja2 templates support advanced features such as variable substitution, control structures,
     and inheritance, making it possible to dynamically generate text based on input arguments
@@ -53,18 +52,21 @@ class Jinja2PromptTemplate(PromptTemplateBase):
     @field_validator("prompt_template_config")
     @classmethod
     def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+        """Validate the template format."""
         if v.template_format != JINJA2_TEMPLATE_FORMAT_NAME:
             raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: jinja2")
         return v
 
     def model_post_init(self, _: Any) -> None:
+        """Post init model."""
         if not self.prompt_template_config.template:
             self._env = None
             return
         self._env = ImmutableSandboxedEnvironment(loader=BaseLoader())
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
-        """
+        """Render the prompt template.
+
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
         function result.

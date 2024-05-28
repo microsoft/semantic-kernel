@@ -4,9 +4,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class TestNativeEchoBotPlugin:
-    """
-    Description: Test Native Plugin for testing purposes
-    """
+    """Description: Test Native Plugin for testing purposes"""
 
     def __init__(self, static_input: str | None = None):
         self.static_input = static_input or ""
@@ -16,8 +14,7 @@ class TestNativeEchoBotPlugin:
         name="echo",
     )
     def echo(self, text: Annotated[str, "The text to echo"]) -> str:
-        """
-        Echo for input text with a static input
+        """Echo for input text with a static input
 
         Example:
             "hello world" => "hello world"

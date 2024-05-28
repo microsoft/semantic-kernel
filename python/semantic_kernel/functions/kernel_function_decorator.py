@@ -14,8 +14,9 @@ def kernel_function(
     name: str | None = None,
     description: str | None = None,
 ) -> Callable[..., Any]:
-    """
-    Decorator for kernel functions, can be used directly as @kernel_function
+    """Decorator for kernel functions.
+
+    Can be used directly as @kernel_function
     or with parameters @kernel_function(name='function', description='I am a function.').
 
     This decorator is used to mark a function as a kernel function. It also provides metadata for the function.
@@ -37,13 +38,15 @@ def kernel_function(
     and that is stored as a bool in __kernel_function_streaming__.
 
     Args:
-        name (str | None) -- The name of the function, if not supplied, the function name will be used.
-        description (str | None) -- The description of the function,
+        func (Callable[..., object] | None): The function to decorate, can be None (if used as @kernel_function
+        name (str | None): The name of the function, if not supplied, the function name will be used.
+        description (str | None): The description of the function,
             if not supplied, the function docstring will be used, can be None.
 
     """
 
     def decorator(func: Callable[..., object]) -> Callable[..., object]:
+        """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
         setattr(func, "__kernel_function_description__", description or func.__doc__)
         setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
