@@ -2,15 +2,14 @@
 
 import asyncio
 
-from sk_service_configurator import add_service
-
+from samples.learn_resources.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
 
-async def main():
+async def main(delay: int = 0):
     # <KernelCreation>
     # Initialize the kernel
     kernel = Kernel()
@@ -35,6 +34,7 @@ async def main():
         function_name="sample_zero", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
     # </InvokeInitialPrompt>
 
@@ -48,6 +48,7 @@ async def main():
         function_name="sample_one", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <StructuredPrompt> 2.0 Add structure to the output with formatting
@@ -62,6 +63,7 @@ async def main():
         function_name="sample_two", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <FormattedPrompt> 2.1 Add structure to the output with formatting (using Markdown and JSON)
@@ -95,6 +97,7 @@ async def main():
         function_name="sample_two_one", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <FewShotPrompt> 3.0 Provide examples with few-shot prompting
@@ -116,6 +119,7 @@ async def main():
         function_name="sample_three", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <AvoidPrompt> 4.0 Tell the AI what to do to avoid doing something wrong
@@ -138,6 +142,7 @@ async def main():
         function_name="sample_four", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <ContextPrompt> 5.0 Provide context to the AI through a chat history of this user
@@ -166,6 +171,7 @@ async def main():
         function_name="sample_five", plugin_name="sample_plugin", prompt=prompt, arguments=arguments
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <RolePrompt> 6.0 Using message roles in chat completion prompts
@@ -205,6 +211,7 @@ async def main():
         ),
     )
     print(result)
+    await asyncio.sleep(delay)
     print("-------------------------")
 
     # <BonusPrompt> 7.0 Give your AI words of encouragement

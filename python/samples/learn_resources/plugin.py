@@ -3,8 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from sk_service_configurator import add_service
-
+from samples.learn_resources.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 

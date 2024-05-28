@@ -3,8 +3,7 @@
 import asyncio
 import os
 
-from sk_service_configurator import add_service
-
+from samples.learn_resources.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
