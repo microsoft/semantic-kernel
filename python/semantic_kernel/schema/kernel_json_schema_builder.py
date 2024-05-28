@@ -140,6 +140,7 @@ class KernelJsonSchemaBuilder:
             items = [cls.build(arg) for arg in args]
             return {"type": "array", "items": items, "description": description}
         if origin is Union:
+            # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
                 schema = cls.build(non_none_type)
