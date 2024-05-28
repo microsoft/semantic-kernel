@@ -82,7 +82,7 @@ class FunctionCallBehavior(KernelBaseModel):
             EnabledFunctions (filtered set of functions from the Kernel)
             RequiredFunction (a single function)
 
-        By default the update_settings_callback is called with FunctionCallConfiguration,
+        By default, the update_settings_callback is called with FunctionCallConfiguration,
         which contains a list of available functions or a list of required functions, it also
         takes the PromptExecutionSettings object.
 

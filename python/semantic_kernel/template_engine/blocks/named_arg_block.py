@@ -65,7 +65,7 @@ class NamedArgBlock(Block):
         """Parse the content of the named argument block and extract the name and value.
 
         If the name and either value or variable is present the parsing is skipped.
-        Otherwise the content is parsed using a regex to extract the name and value.
+        Otherwise, the content is parsed using a regex to extract the name and value.
         Those are then turned into Blocks.
 
         Raises:

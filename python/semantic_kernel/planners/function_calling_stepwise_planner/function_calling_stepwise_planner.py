@@ -65,7 +65,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         (whether it be AzureOpenAI or OpenAI), so that we can use tools.
 
         If the options are configured to use callbacks to get the initial plan and the step prompt,
-        the planner will use those provided callbacks to get that information. Otherwise it will
+        the planner will use those provided callbacks to get that information. Otherwise, it will
         read from the default yaml plan file and the step prompt file.
 
         Args:
