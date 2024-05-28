@@ -46,6 +46,8 @@ class ACASessionsSettings(BaseSettings):
     pool_management_endpoint: HttpsUrl
 
     class Config:
+        """Configuration for the Azure Container Apps sessions settings."""
+
         env_prefix = "ACA_"
         env_file = None
         env_file_encoding = "utf-8"
@@ -54,6 +56,7 @@ class ACASessionsSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
+        """Create an instance of the Azure Container Apps sessions settings."""
         if "env_file_path" in kwargs and kwargs["env_file_path"]:
             cls.Config.env_file = kwargs["env_file_path"]
         else:

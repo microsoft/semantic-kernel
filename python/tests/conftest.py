@@ -155,12 +155,12 @@ def enable_debug_mode():
     3. If you want a trace of a particular functions calls, just add `ss()` as the first
         line of the function.
 
-    NOTE:
+    Note:
     ----
         It's completely fine to leave `autouse=True` in the fixture. It doesn't affect
         the tests unless you use `pr` or `ss` in any test.
 
-    NOTE:
+    Note:
     ----
         When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
         because they don't know that we're adding these functions to the builtins. The

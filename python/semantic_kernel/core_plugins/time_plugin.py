@@ -8,9 +8,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class TimePlugin(KernelBaseModel):
-    """
-    Description: TimePlugin provides a set of functions
-                 to get the current time and date.
+    """TimePlugin provides a set of functions to get the current time and date.
 
     Usage:
         kernel.add_plugin(TimePlugin(), plugin_name="time")
@@ -41,8 +39,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current date.")
     def date(self) -> str:
-        """
-        Get the current date
+        """Get the current date.
 
         Example:
             {{time.date}} => Sunday, 12 January, 2031
@@ -52,8 +49,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current date.")
     def today(self) -> str:
-        """
-        Get the current date
+        """Get the current date.
 
         Example:
             {{time.today}} => Sunday, 12 January, 2031
@@ -62,8 +58,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current date in iso format.")
     def iso_date(self) -> str:
-        """
-        Get the current date in iso format
+        """Get the current date in iso format.
 
         Example:
             {{time.iso_date}} => 2031-01-12
@@ -73,8 +68,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current date and time in the local time zone")
     def now(self) -> str:
-        """
-        Get the current date and time in the local time zone"
+        """Get the current date and time in the local time zone.
 
         Example:
             {{time.now}} => Sunday, January 12, 2031 9:15 PM
@@ -84,8 +78,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current date and time in UTC", name="utcNow")
     def utc_now(self) -> str:
-        """
-        Get the current date and time in UTC
+        """Get the current date and time in UTC.
 
         Example:
             {{time.utcNow}} => Sunday, January 13, 2031 5:15 AM
@@ -95,8 +88,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current time in the local time zone")
     def time(self) -> str:
-        """
-        Get the current time in the local time zone
+        """Get the current time in the local time zone.
 
         Example:
             {{time.time}} => 09:15:07 PM
@@ -106,8 +98,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current year")
     def year(self) -> str:
-        """
-        Get the current year
+        """Get the current year.
 
         Example:
             {{time.year}} => 2031
@@ -117,8 +108,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current month")
     def month(self) -> str:
-        """
-        Get the current month
+        """Get the current month.
 
         Example:
             {{time.month}} => January
@@ -128,8 +118,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current month number")
     def month_number(self) -> str:
-        """
-        Get the current month number
+        """Get the current month number.
 
         Example:
             {{time.monthNumber}} => 01
@@ -139,8 +128,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current day")
     def day(self) -> str:
-        """
-        Get the current day of the month
+        """Get the current day of the month.
 
         Example:
             {{time.day}} => 12
@@ -150,8 +138,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current day of the week", name="dayOfWeek")
     def day_of_week(self) -> str:
-        """
-        Get the current day of the week
+        """Get the current day of the week.
 
         Example:
             {{time.dayOfWeek}} => Sunday
@@ -161,8 +148,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current hour")
     def hour(self) -> str:
-        """
-        Get the current hour
+        """Get the current hour.
 
         Example:
             {{time.hour}} => 9 PM
@@ -172,8 +158,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current hour number", name="hourNumber")
     def hour_number(self) -> str:
-        """
-        Get the current hour number
+        """Get the current hour number.
 
         Example:
             {{time.hourNumber}} => 21
@@ -183,8 +168,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current minute")
     def minute(self) -> str:
-        """
-        Get the current minute
+        """Get the current minute.
 
         Example:
             {{time.minute}} => 15
@@ -194,16 +178,14 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the date of offset from today by a provided number of days")
     def days_ago(self, days: str) -> str:
-        """
-        Get the date a provided number of days in the past
+        """Get the date a provided number of days in the past.
 
-        params:
+        Args:
             days: The number of days to offset from today
-        returns:
+        Returns:
             The date of the offset day.
 
         Example:
-             KernelContext["input"] = "3"
              {{time.days_ago $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today() - datetime.timedelta(days=int(days))
@@ -211,16 +193,15 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="""Get the date of the last day matching the supplied week day name in English.""")
     def date_matching_last_day_name(self, day_name: str) -> str:
-        """
-        Get the date of the last day matching the supplied day name
+        """Get the date of the last day matching the supplied day name.
 
-        params:
+        Args:
             day_name: The day name to match with.
-        returns:
+
+        Returns:
             The date of the matching day.
 
         Example:
-             KernelContext["input"] = "Sunday"
              {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today()
@@ -232,8 +213,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the seconds on the current minute")
     def second(self) -> str:
-        """
-        Get the seconds on the current minute
+        """Get the seconds on the current minute.
 
         Example:
             {{time.second}} => 7
@@ -243,8 +223,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current time zone offset", name="timeZoneOffset")
     def time_zone_offset(self) -> str:
-        """
-        Get the current time zone offset
+        """Get the current time zone offset.
 
         Example:
             {{time.timeZoneOffset}} => -08:00
@@ -254,8 +233,7 @@ class TimePlugin(KernelBaseModel):
 
     @kernel_function(description="Get the current time zone name", name="timeZoneName")
     def time_zone_name(self) -> str:
-        """
-        Get the current time zone name
+        """Get the current time zone name.
 
         Example:
             {{time.timeZoneName}} => PST

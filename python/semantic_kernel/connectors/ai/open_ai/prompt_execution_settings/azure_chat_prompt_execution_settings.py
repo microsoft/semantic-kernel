@@ -92,6 +92,7 @@ class ExtraBody(KernelBaseModel):
     output_language: str | None = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
+        """Get an item from the ExtraBody."""
         return getattr(self, item)
 
 

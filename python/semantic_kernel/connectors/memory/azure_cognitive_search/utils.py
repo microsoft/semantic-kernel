@@ -29,13 +29,12 @@ def get_search_index_async_client(
 ):
     """Return a client for Azure Cognitive Search.
 
-    Arguments:
-        search_endpoint {str}                 -- Optional endpoint (default: {None}).
-        admin_key {str}                       -- Optional API key (default: {None}).
-        azure_credential {AzureKeyCredential} -- Optional Azure credentials (default: {None}).
-        token_credential {TokenCredential}    -- Optional Token credential (default: {None}).
+    Args:
+        search_endpoint (str): Optional endpoint (default: {None}).
+        admin_key (str): Optional API key (default: {None}).
+        azure_credential (AzureKeyCredential): Optional Azure credentials (default: {None}).
+        token_credential (TokenCredential): Optional Token credential (default: {None}).
     """
-
     ENV_VAR_ENDPOINT = "AZURE_COGNITIVE_SEARCH_ENDPOINT"
     ENV_VAR_API_KEY = "AZURE_COGNITIVE_SEARCH_ADMIN_KEY"
 
@@ -83,13 +82,13 @@ def get_search_index_async_client(
 def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     """Return the schema of search indexes.
 
-    Arguments:
-        vector_size {int} -- The size of the vectors being stored in collection/index.
+    Args:
+        vector_size (int): The size of the vectors being stored in collection/index.
+        vector_search_profile_name (str): The name of the vector search profile.
 
     Returns:
-        list -- The Azure Cognitive Search schema as list type.
+        list: The Azure Cognitive Search schema as list type.
     """
-
     search_fields = [
         SimpleField(
             name=SEARCH_FIELD_ID,
@@ -149,13 +148,12 @@ def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
 def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
 
-    Arguments:
-        with_embedding {bool} -- Whether to include the embedding vector field.
+    Args:
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
-        List[str] -- List of fields.
+        List[str]: List of fields.
     """
-
     field_selection = [
         SEARCH_FIELD_ID,
         SEARCH_FIELD_TEXT,
@@ -174,13 +172,13 @@ def get_field_selection(with_embeddings: bool) -> list[str]:
 def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
-    Arguments:
-        data {dict} -- Azure Cognitive Search result data.
+    Args:
+        data (dict): Azure Cognitive Search result data.
+        with_embeddings (bool): Whether to include the embedding vector field.
 
     Returns:
-        MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
+        MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
     """
-
     sk_result = MemoryRecord(
         id=decode_id(data[SEARCH_FIELD_ID]),
         key=data[SEARCH_FIELD_ID],
@@ -196,15 +194,14 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
 
 
 def memory_record_to_search_record(record: MemoryRecord) -> dict:
-    """Convert a MemoryRecord to a dictionary
+    """Convert a MemoryRecord to a dictionary.
 
-    Arguments:
-        record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
+    Args:
+        record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:
-        data {dict} -- Dictionary data.
+        data (dict): Dictionary data.
     """
-
     return {
         SEARCH_FIELD_ID: encode_id(record._id),
         SEARCH_FIELD_TEXT: str(record._text),
@@ -222,7 +219,6 @@ def encode_id(id: str) -> str:
     Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
     equal sign, recommending to encode values with a URL-safe algorithm.
     """
-
     id_bytes = id.encode("ascii")
     base64_bytes = base64.b64encode(id_bytes)
     return base64_bytes.decode("ascii")
@@ -234,7 +230,6 @@ def decode_id(base64_id: str) -> str:
     Azure Cognitive Search keys can contain only letters, digits, underscore, dash,
     equal sign, recommending to encode values with a URL-safe algorithm.
     """
-
     base64_bytes = base64_id.encode("ascii")
     message_bytes = base64.b64decode(base64_bytes)
     return message_bytes.decode("ascii")

@@ -3,31 +3,64 @@
 import asyncio
 import os
 
-from service_configurator import add_service
-
-import semantic_kernel as sk
+from samples.learn_resources.sk_service_configurator import add_service
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
+from semantic_kernel.contents import ChatHistory
 
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
-
-    # Add the service to the kernel
-    # use_chat: True to use chat completion, False to use text completion
-    kernel = add_service(kernel=kernel, use_chat=True)
+    kernel = Kernel()
 
     # Import the MathPlugin.
-    script_directory = os.path.dirname(__file__)
-    plugins_directory = os.path.join(script_directory, "plugins")
-    math_plugin = kernel.import_native_plugin_from_directory(plugins_directory, "MathPlugin")
+    # <RunningNativeFunction>
+    plugins_directory = os.path.join(os.path.dirname(__file__), "plugins")
+    math_plugin = kernel.add_plugin(parent_directory=plugins_directory, plugin_name="MathPlugin")
 
     result = await kernel.invoke(
-        math_plugin["Add"],
-        number1=5,
-        number2=5,
+        math_plugin["Sqrt"],
+        number1=12,
     )
 
     print(result)
+    # </RunningNativeFunction>
+
+    # <Chat>
+    kernel = add_service(kernel, use_chat=True)
+    kernel.add_function(
+        prompt="""{{$chat_history}}{{$input}}""",
+        execution_settings=OpenAIChatPromptExecutionSettings(
+            service_id="default",
+            temperature=0.0,
+            max_tokens=1000,
+            function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions(),
+        ),
+        plugin_name="Chat",
+        function_name="Chat",
+        description="Chat with the assistant",
+    )
+    chat_history = ChatHistory()
+    while True:
+        try:
+            request = input("Your request: ")
+        except (KeyboardInterrupt, EOFError):
+            break
+        if request.lower() == "exit":
+            break
+        result = await kernel.invoke(
+            plugin_name="Chat",
+            function_name="Chat",
+            input=request,
+            chat_history=chat_history,
+        )
+        print(result)
+        chat_history.add_user_message(request)
+        chat_history.add_assistant_message(str(result))
+
+    print("\n\nExiting...")
+    # </Chat>
 
 
 # Run the main function
