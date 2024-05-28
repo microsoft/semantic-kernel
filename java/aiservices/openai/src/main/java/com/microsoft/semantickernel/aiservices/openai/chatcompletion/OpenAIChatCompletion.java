@@ -887,7 +887,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
                 if (id == null) {
                     throw new SKException(
-                        "Require to create a tool call message, but not tool call id is available");
+                        "Require to create a tool call message, but no tool call id is available");
                 }
                 return new ChatRequestToolMessage(content, id);
             default:
@@ -920,7 +920,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                                     StringEscapeUtils.escapeJson(entry.getKey()),
                                     StringEscapeUtils.escapeJson(
                                         entry.getValue().toPromptString())))
-                                .collect(Collectors.joining("{", "}", ","))
+                                .collect(Collectors.joining(",", "{", "}"))
                             : "{}";
 
                         String prefix = "";
