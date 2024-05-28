@@ -9,7 +9,6 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self
 
-
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -20,8 +19,10 @@ class StreamingContentMixin(KernelBaseModel, ABC):
 
     @abstractmethod
     def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
         pass
 
     @abstractmethod
     def __add__(self, other: Any) -> Self:
+        """Combine two streaming contents together."""
         pass

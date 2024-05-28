@@ -25,6 +25,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class CodeTokenizer:
     @staticmethod
     def tokenize(text: str) -> list[Block]:
+        """Tokenize the code text into blocks."""
         # Remove spaces, which are ignored anyway
         text = text.strip() if text else ""
         # Render None/empty to []
@@ -116,7 +117,7 @@ class CodeTokenizer:
 
                 continue
 
-            # If we're not inside a quoted value and we're not processing a space
+            # If we're not inside a quoted value, and we're not processing a space
             current_token_content.append(current_char)
 
             if current_token_type is None:

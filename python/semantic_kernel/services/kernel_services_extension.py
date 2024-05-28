@@ -107,6 +107,7 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         return service
 
     def get_services_by_type(self, type: type[ALL_SERVICE_TYPES]) -> dict[str, ALL_SERVICE_TYPES]:
+        """Get all services of a specific type."""
         return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
 
     def get_prompt_execution_settings_from_service_id(
@@ -120,6 +121,12 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         )
 
     def add_service(self, service: AIServiceClientBase, overwrite: bool = False) -> None:
+        """Add a single service to the Kernel.
+
+        Args:
+            service (AIServiceClientBase): The service to add.
+            overwrite (bool, optional): Whether to overwrite the service if it already exists. Defaults to False.
+        """
         if service.service_id not in self.services or overwrite:
             self.services[service.service_id] = service
         else:

@@ -10,7 +10,6 @@ jobs:
   python-tests-coverage:
     name: Create Test Coverage Messages
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     permissions:
       pull-requests: write
       contents: read
@@ -21,14 +20,17 @@ jobs:
         os: [ubuntu-latest]
     steps:
       - name: Wait for unit tests to succeed
+        continue-on-error: true
         uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Python Unit Tests (${{ matrix.python-version}}, ${{ matrix.os }})'
           repo-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           wait-interval: 10
+          allowed-conclusions: success
       - uses: actions/checkout@v4
       - name: Download coverage
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
           name: python-coverage-${{ matrix.os }}-${{ matrix.python-version }}.txt
@@ -37,6 +39,7 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Download pytest
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
           name: pytest-${{ matrix.os }}-${{ matrix.python-version }}.xml
@@ -45,6 +48,7 @@ jobs:
           search_artifacts: true
           if_no_artifact_found: warn
       - name: Pytest coverage comment
+        continue-on-error: true
         id: coverageComment
         uses: MishaKav/pytest-coverage-comment@main
         with:

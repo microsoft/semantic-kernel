@@ -27,7 +27,6 @@ class KernelJsonSchemaBuilder:
     @classmethod
     def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds JSON schema for a given parameter type."""
-
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
         if issubclass(parameter_type, KernelBaseModel):

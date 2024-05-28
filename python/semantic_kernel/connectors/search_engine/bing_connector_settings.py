@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 
 class BingSettings(BaseSettings):
-    """Bing Connector settings
+    """Bing Connector settings.
 
     The settings are first loaded from environment variables with the prefix 'BING_'. If the
     environment variables are not found, the settings can be loaded from a .env file with the
@@ -23,6 +23,8 @@ class BingSettings(BaseSettings):
     custom_config: str | None = None
 
     class Config:
+        """Configuration for the Bing Connector settings."""
+
         env_prefix = "BING_"
         env_file = None
         env_file_encoding = "utf-8"
@@ -31,6 +33,7 @@ class BingSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
+        """Create an instance of the Bing Connector settings."""
         if "env_file_path" in kwargs and kwargs["env_file_path"]:
             cls.Config.env_file = kwargs["env_file_path"]
         else:

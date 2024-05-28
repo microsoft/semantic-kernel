@@ -4,7 +4,11 @@ This project contains a collection of examples used in documentation on [learn.m
 
 ## Prerequisites
 
-- [Python](https://www.python.org/downloads/) 3.8 and above
+- [Python](https://www.python.org/downloads/) 3.10 and above
+- Install Semantic Kernel through PyPi:
+  ```bash
+  pip install semantic-kernel
+  ```
 
 ## Configuring the sample
 
@@ -19,13 +23,13 @@ Copy the `.env.example` file to a new file named `.env`. Then, copy those keys i
 ```
 GLOBAL_LLM_SERVICE="OpenAI" # Toggle between "OpenAI" or "AzureOpenAI"
 
-OPEN_AI_CHAT_COMPLETION_MODEL_ID="gpt-3.5-turbo-0125"
-OPEN_AI_TEXT_COMPLETION_MODEL_ID="gpt-3.5-turbo-instruct"
+OPEN_AI_CHAT_MODEL_ID="gpt-3.5-turbo-0125"
+OPEN_AI_TEXT_MODEL_ID="gpt-3.5-turbo-instruct"
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
 
-AZURE_OPEN_AI_CHAT_COMPLETION_DEPLOYMENT_NAME="gpt-35-turbo"
-AZURE_OPEN_AI_TEXT_COMPLETION_DEPLOYMENT_NAME="gpt-35-turbo-instruct"
+AZURE_OPEN_AI_CHAT_DEPLOYMENT_NAME="gpt-35-turbo"
+AZURE_OPEN_AI_TEXT_DEPLOYMENT_NAME="gpt-35-turbo-instruct"
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 AZURE_OPENAI_API_VERSION=""

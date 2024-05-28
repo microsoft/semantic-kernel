@@ -14,9 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class BingConnector(ConnectorBase):
-    """
-    A search engine connector that uses the Bing Search API to perform a web search
-    """
+    """A search engine connector that uses the Bing Search API to perform a web search."""
 
     _api_key: str
 
@@ -25,12 +23,12 @@ class BingConnector(ConnectorBase):
     ) -> None:
         """Initializes a new instance of the BingConnector class.
 
-        Arguments:
-            api_key {str | None}: The Bing Search API key. If provided, will override
+        Args:
+            api_key (str | None): The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
             custom_config {str | None}: The Bing Custom Search instance's unique identifier.
                 If provided, will override the value in the env vars or .env file.
-            env_file_path {str | None}: The optional path to the .env file. If provided,
+            env_file_path (str | None): The optional path to the .env file. If provided,
                 the settings are read from this file path location.
         """
         bing_settings = None
@@ -42,21 +40,14 @@ class BingConnector(ConnectorBase):
         self._api_key = api_key or (
             bing_settings.api_key.get_secret_value() if bing_settings and bing_settings.api_key else None
         )
-        assert self._api_key, "API key cannot be 'None' or empty."
+        if not self._api_key:
+            raise ValueError("API key cannot be 'None' or empty.")
         self._custom_config = custom_config or (
             bing_settings.custom_config if bing_settings and bing_settings.custom_config else None
         )
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
-        """
-        Returns the search results of the query provided by pinging the Bing web search API.
-        Returns `num_results` results and ignores the first `offset`.
-
-        :param query: search query
-        :param num_results: the number of search results to return
-        :param offset: the number of search results to ignore
-        :return: list of search results
-        """
+        """Returns the search results of the query provided by pinging the Bing web search API."""
         if not query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 

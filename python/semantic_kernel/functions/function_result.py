@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FunctionResult(KernelBaseModel):
     """The result of a function.
 
-    Arguments:
+    Args:
         function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
         metadata (Mapping[str, Any]): The metadata of the result.
@@ -56,7 +56,7 @@ class FunctionResult(KernelBaseModel):
     def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
 
-        Arguments:
+        Args:
             index (int): The index of the inner content if the inner content is a list, default 0.
         """
         if isinstance(self.value, list):

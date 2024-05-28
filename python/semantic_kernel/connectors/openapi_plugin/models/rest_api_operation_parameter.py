@@ -29,6 +29,7 @@ class RestApiOperationParameter:
         schema: str | None = None,
         response: RestApiOperationExpectedResponse | None = None,
     ):
+        """Initialize the RestApiOperationParameter."""
         self.name = name
         self.type = type
         self.location = location

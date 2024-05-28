@@ -41,7 +41,6 @@ class OpenAITextPromptExecutionSettings(OpenAIPromptExecutionSettings):
     @model_validator(mode="after")
     def check_best_of_and_n(self) -> "OpenAITextPromptExecutionSettings":
         """Check that the best_of parameter is not greater than the number_of_responses parameter."""
-
         best_of = self.best_of or self.extension_data.get("best_of")
         number_of_responses = self.number_of_responses or self.extension_data.get("number_of_responses")
 
@@ -67,6 +66,7 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
     @field_validator("functions", "function_call", mode="after")
     @classmethod
     def validate_function_call(cls, v: str | list[dict[str, Any]] | None = None):
+        """Validate the function_call and functions parameters."""
         if v is not None:
             logger.warning(
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
