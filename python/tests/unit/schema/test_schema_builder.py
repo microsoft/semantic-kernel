@@ -4,6 +4,8 @@ import json
 from typing import Any, Optional, Tuple, Union
 from unittest.mock import Mock
 
+import pytest
+
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 
@@ -220,19 +222,31 @@ def test_build_model_schema_for_many_types():
     assert schema == expected_schema
 
 
-def test_build_from_many_type_names():
-    assert KernelJsonSchemaBuilder.build_from_type_name("int") == {"type": "integer"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("str") == {"type": "string"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("bool") == {"type": "boolean"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("float") == {"type": "number"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("list") == {"type": "array"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("dict") == {"type": "object"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("object") == {"type": "object"}
-    assert KernelJsonSchemaBuilder.build_from_type_name("array") == {"type": "array"}
+@pytest.mark.parametrize(
+    "type_name, expected",
+    [
+        ("int", {"type": "integer"}),
+        ("str", {"type": "string"}),
+        ("bool", {"type": "boolean"}),
+        ("float", {"type": "number"}),
+        ("list", {"type": "array"}),
+        ("dict", {"type": "object"}),
+        ("object", {"type": "object"}),
+        ("array", {"type": "array"}),
+    ],
+)
+def test_build_from_many_type_names(type_name, expected):
+    assert KernelJsonSchemaBuilder.build_from_type_name(type_name) == expected
 
 
-def test_get_json_schema_multiple():
-    assert KernelJsonSchemaBuilder.get_json_schema(int) == {"type": "integer"}
-    assert KernelJsonSchemaBuilder.get_json_schema(str) == {"type": "string"}
-    assert KernelJsonSchemaBuilder.get_json_schema(bool) == {"type": "boolean"}
-    assert KernelJsonSchemaBuilder.get_json_schema(float) == {"type": "number"}
+@pytest.mark.parametrize(
+    "type_obj, expected",
+    [
+        (int, {"type": "integer"}),
+        (str, {"type": "string"}),
+        (bool, {"type": "boolean"}),
+        (float, {"type": "number"}),
+    ],
+)
+def test_get_json_schema_multiple(type_obj, expected):
+    assert KernelJsonSchemaBuilder.get_json_schema(type_obj) == expected

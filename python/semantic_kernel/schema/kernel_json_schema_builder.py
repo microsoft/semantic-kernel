@@ -39,7 +39,6 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the parameter type.
         """
-
         if isinstance(parameter_type, str):
             return cls.build_from_type_name(parameter_type, description)
         if isinstance(parameter_type, KernelBaseModel):
