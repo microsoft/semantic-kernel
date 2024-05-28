@@ -3,18 +3,18 @@
 import asyncio
 import os
 
-from service_configurator import add_service
-
-import semantic_kernel as sk
+from samples.learn_resources.sk_service_configurator import add_service
+from semantic_kernel.kernel import Kernel
 
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_service(kernel=kernel, use_chat=True)
+    # use_azure: True to use Azure OpenAI, False to use OpenAI
+    kernel = add_service(kernel, use_chat=True)
 
     script_directory = os.path.dirname(__file__)
     plugins_directory = os.path.join(script_directory, "plugins")

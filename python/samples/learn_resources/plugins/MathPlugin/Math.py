@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+# <defineClass>
 import math
 from typing import Annotated
 
@@ -5,7 +7,9 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class Math:
-    """Description: MathPlugin provides a set of functions to make Math calculations.
+    # </defineClass>
+    """
+    Description: MathPlugin provides a set of functions to make Math calculations.
 
     Usage:
         kernel.add_plugin(MathPlugin(), plugin_name="math")
@@ -39,6 +43,7 @@ class Math:
     ) -> Annotated[float, "The output is a float"]:
         return float(number1) * float(number2)
 
+    # <defineFunction>
     @kernel_function(
         description="Takes the square root of a number",
         name="Sqrt",
@@ -48,6 +53,8 @@ class Math:
         number1: Annotated[float, "the number to take the square root of"],
     ) -> Annotated[float, "The output is a float"]:
         return math.sqrt(float(number1))
+
+    # </defineFunction>
 
     @kernel_function(name="Add")
     def add(
