@@ -13,7 +13,7 @@
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.1.5" />
     <PackageVersion Include="Markdig" Version="0.37.0" />
-    <PackageVersion Include="Handlebars.Net" Version="2.1.5" />
+    <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
@@ -83,7 +83,7 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.62.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.30" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.2" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.4" />
     <PackageVersion Include="Fluid.Core" Version="2.10.0" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0-preview.0" />
