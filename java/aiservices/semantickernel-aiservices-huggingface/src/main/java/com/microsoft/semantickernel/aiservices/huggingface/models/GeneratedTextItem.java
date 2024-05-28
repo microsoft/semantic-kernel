@@ -1,7 +1,10 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -17,10 +20,8 @@ public class GeneratedTextItem {
 
     @JsonCreator
     public GeneratedTextItem(
-        @JsonProperty("generated_text")
-        @Nullable String generatedText,
-        @JsonProperty("details")
-        @Nullable TextGenerationDetails details) {
+        @JsonProperty("generated_text") @Nullable String generatedText,
+        @JsonProperty("details") @Nullable TextGenerationDetails details) {
         this.generatedText = generatedText;
         this.details = details;
     }
@@ -58,21 +59,24 @@ public class GeneratedTextItem {
 
         @JsonCreator
         public TextGenerationDetails(
-            @JsonProperty("finish_reason")
-            @Nullable String finishReason,
-            @JsonProperty("generated_tokens")
-            int generatedTokens,
-            @JsonProperty("seed")
-            @Nullable Long seed,
-            @JsonProperty("prefill")
-            @Nullable List<TextGenerationPrefillToken> prefill,
-            @JsonProperty("tokens")
-            @Nullable List<TextGenerationToken> tokens) {
+            @JsonProperty("finish_reason") @Nullable String finishReason,
+            @JsonProperty("generated_tokens") int generatedTokens,
+            @JsonProperty("seed") @Nullable Long seed,
+            @JsonProperty("prefill") @Nullable List<TextGenerationPrefillToken> prefill,
+            @JsonProperty("tokens") @Nullable List<TextGenerationToken> tokens) {
             this.finishReason = finishReason;
             this.generatedTokens = generatedTokens;
             this.seed = seed;
-            this.prefill = prefill;
-            this.tokens = tokens;
+            if (prefill != null) {
+                this.prefill = new ArrayList<>(prefill);
+            } else {
+                this.prefill = null;
+            }
+            if (tokens != null) {
+                this.tokens = new ArrayList<>(tokens);
+            } else {
+                this.tokens = null;
+            }
         }
 
         @Nullable
@@ -91,12 +95,12 @@ public class GeneratedTextItem {
 
         @Nullable
         public List<TextGenerationPrefillToken> getPrefill() {
-            return prefill;
+            return Collections.unmodifiableList(prefill);
         }
 
         @Nullable
         public List<TextGenerationToken> getTokens() {
-            return tokens;
+            return Collections.unmodifiableList(tokens);
         }
     }
 
@@ -114,10 +118,8 @@ public class GeneratedTextItem {
 
         @JsonCreator
         public TextGenerationPrefillToken(
-            @JsonProperty("id")
-            int id,
-            @JsonProperty("text")
-            @Nullable String text,
+            @JsonProperty("id") int id,
+            @JsonProperty("text") @Nullable String text,
             @JsonProperty("logprob") double logProb) {
             this.id = id;
             this.text = text;
@@ -145,14 +147,10 @@ public class GeneratedTextItem {
 
         @JsonCreator
         public TextGenerationToken(
-            @JsonProperty("special")
-            boolean special,
-            @JsonProperty("id")
-            int id,
-            @JsonProperty("text")
-            @Nullable String text,
-            @JsonProperty("logprob")
-            double logProb) {
+            @JsonProperty("special") boolean special,
+            @JsonProperty("id") int id,
+            @JsonProperty("text") @Nullable String text,
+            @JsonProperty("logprob") double logProb) {
             super(id, text, logProb);
             this.special = special;
         }

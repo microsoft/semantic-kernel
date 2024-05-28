@@ -1,8 +1,10 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface.services;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings {
@@ -36,8 +38,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             copy.getUser(),
             copy.getStopSequences(),
             copy.getTokenSelectionBiases(),
-            copy.getResponseFormat() == null ? null : copy.getResponseFormat().toString()
-        );
+            copy.getResponseFormat() == null ? null : copy.getResponseFormat().toString());
         this.topK = null;
         this.repetitionPenalty = null;
         this.maxTime = null;
@@ -124,8 +125,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             null,
             null,
             null,
-            null
-        );
+            null);
     }
 
     @Nullable
@@ -161,5 +161,32 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
     @Nullable
     public Long getSeed() {
         return seed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        HuggingFacePromptExecutionSettings that = (HuggingFacePromptExecutionSettings) o;
+        return Objects.equals(topK, that.topK) &&
+            Objects.equals(repetitionPenalty, that.repetitionPenalty) &&
+            Objects.equals(maxTime, that.maxTime) &&
+            Objects.equals(details, that.details) &&
+            Objects.equals(logProbs, that.logProbs) &&
+            Objects.equals(topLogProbs, that.topLogProbs) &&
+            Objects.equals(seed, that.seed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), topK, repetitionPenalty, maxTime, details, logProbs,
+            topLogProbs, seed);
     }
 }

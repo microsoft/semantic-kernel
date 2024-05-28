@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -5,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.huggingface.services.HuggingFacePromptExecutionSettings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
@@ -66,12 +68,9 @@ public class TextGenerationRequest {
                 true,
                 null,
                 null,
-                executionSettings.getDetails()
-            ),
-            new HuggingFaceTextOptions()
-        );
+                executionSettings.getDetails()),
+            new HuggingFaceTextOptions());
     }
-
 
     public static class HuggingFaceTextParameters {
 
@@ -158,26 +157,16 @@ public class TextGenerationRequest {
         private final Boolean details;
 
         public HuggingFaceTextParameters(
-            @JsonProperty("top_k")
-            @Nullable Integer topK,
-            @JsonProperty("top_p")
-            @Nullable Double topP,
-            @JsonProperty("temperature")
-            @Nullable Double temperature,
-            @JsonProperty("repetition_penalty")
-            @Nullable Double repetitionPenalty,
-            @JsonProperty("max_new_tokens")
-            @Nullable Integer maxNewTokens,
-            @JsonProperty("max_time")
-            @Nullable Double maxTime,
-            @JsonProperty("return_full_text")
-            boolean returnFullText,
-            @JsonProperty("num_return_sequences")
-            @Nullable Integer numReturnSequences,
-            @JsonProperty("do_sample")
-            @Nullable Boolean doSample,
-            @JsonProperty("details")
-            @Nullable Boolean details) {
+            @JsonProperty("top_k") @Nullable Integer topK,
+            @JsonProperty("top_p") @Nullable Double topP,
+            @JsonProperty("temperature") @Nullable Double temperature,
+            @JsonProperty("repetition_penalty") @Nullable Double repetitionPenalty,
+            @JsonProperty("max_new_tokens") @Nullable Integer maxNewTokens,
+            @JsonProperty("max_time") @Nullable Double maxTime,
+            @JsonProperty("return_full_text") boolean returnFullText,
+            @JsonProperty("num_return_sequences") @Nullable Integer numReturnSequences,
+            @JsonProperty("do_sample") @Nullable Boolean doSample,
+            @JsonProperty("details") @Nullable Boolean details) {
             this.topK = topK;
             this.topP = topP;
             this.temperature = temperature;
@@ -240,6 +229,7 @@ public class TextGenerationRequest {
         }
     }
 
+    @SuppressFBWarnings("SS_SHOULD_BE_STATIC")
     public static class HuggingFaceTextOptions {
 
         /// <summary>

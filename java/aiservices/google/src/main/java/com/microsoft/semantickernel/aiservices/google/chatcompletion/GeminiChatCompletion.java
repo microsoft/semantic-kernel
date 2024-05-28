@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
@@ -51,18 +52,24 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     @Override
-    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
-        return internalChatMessageContentsAsync(getContents(chatHistory), kernel, invocationContext);
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+        return internalChatMessageContentsAsync(getContents(chatHistory), kernel,
+            invocationContext);
     }
 
     @Override
-    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
         GeminiXMLPromptParser.GeminiParsedPrompt parsedPrompt = GeminiXMLPromptParser.parse(prompt);
 
-        return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel, invocationContext);
+        return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel,
+            invocationContext);
     }
 
-    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(List<Content> contents, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(
+        List<Content> contents, @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
         GenerativeModel model = getGenerativeModel(kernel, invocationContext);
 
         try {
@@ -77,61 +84,65 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         List<Content> contents = new ArrayList<>();
         chatHistory.forEach(chatMessageContent -> {
             if (chatMessageContent.getAuthorRole() == AuthorRole.USER) {
-                contents.add(ContentMaker.forRole(GeminiRole.USER.toString()).fromMultiModalData(chatMessageContent.getContent()));
+                contents.add(ContentMaker.forRole(GeminiRole.USER.toString())
+                    .fromMultiModalData(chatMessageContent.getContent()));
             } else if (chatMessageContent.getAuthorRole() == AuthorRole.ASSISTANT) {
-                contents.add(ContentMaker.forRole(GeminiRole.MODEL.toString()).fromMultiModalData(chatMessageContent.getContent()));
+                contents.add(ContentMaker.forRole(GeminiRole.MODEL.toString())
+                    .fromMultiModalData(chatMessageContent.getContent()));
             } else if (chatMessageContent.getAuthorRole() == AuthorRole.TOOL) {
-                contents.add(ContentMaker.forRole(GeminiRole.FUNCTION.toString()).fromMultiModalData(chatMessageContent.getContent()));
+                contents.add(ContentMaker.forRole(GeminiRole.FUNCTION.toString())
+                    .fromMultiModalData(chatMessageContent.getContent()));
             }
         });
 
         return contents;
     }
 
-    private GenerativeModel getGenerativeModel(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    private GenerativeModel getGenerativeModel(@Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
         GenerativeModel.Builder modelBuilder = new GenerativeModel.Builder()
-                .setModelName(getModelId())
-                .setVertexAi(getClient());
+            .setModelName(getModelId())
+            .setVertexAi(getClient());
 
         if (invocationContext != null) {
             if (invocationContext.getPromptExecutionSettings() != null) {
                 PromptExecutionSettings settings = invocationContext.getPromptExecutionSettings();
 
                 GenerationConfig config = GenerationConfig.newBuilder()
-                        .setMaxOutputTokens(settings.getMaxTokens())
-                        .setTemperature((float) settings.getTemperature())
-                        .setTopP((float) settings.getTopP())
-                        .build();
+                    .setMaxOutputTokens(settings.getMaxTokens())
+                    .setTemperature((float) settings.getTemperature())
+                    .setTopP((float) settings.getTopP())
+                    .build();
 
                 modelBuilder.setGenerationConfig(config);
             }
 
             if (invocationContext.getToolCallBehavior() != null) {
-                ToolCallBehavior toolCallBehavior = invocationContext.getToolCallBehavior();
-
                 if (kernel != null) {
                     Tool.Builder tool = Tool.newBuilder();
 
                     kernel.getPlugins()
-                            .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
-                                FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
-                                functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), name));
-                                functionBuilder.setDescription(function.getDescription());
+                        .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
+                            FunctionDeclaration.Builder functionBuilder = FunctionDeclaration
+                                .newBuilder();
+                            functionBuilder.setName(ToolCallBehavior
+                                .formFullFunctionName(function.getPluginName(), name));
+                            functionBuilder.setDescription(function.getDescription());
 
-                                List<InputVariable> parameters = function.getMetadata().getParameters();
-                                if (parameters != null && !parameters.isEmpty()) {
-                                    Schema.Builder parametersBuilder = Schema.newBuilder();
+                            List<InputVariable> parameters = function.getMetadata().getParameters();
+                            if (parameters != null && !parameters.isEmpty()) {
+                                Schema.Builder parametersBuilder = Schema.newBuilder();
 
-                                    function.getMetadata().getParameters().forEach(parameter -> {
-                                        parametersBuilder.setDescription(parameter.getDescription());
-                                        parametersBuilder.setType(Type.OBJECT);
-                                    });
+                                function.getMetadata().getParameters().forEach(parameter -> {
+                                    parametersBuilder.setDescription(parameter.getDescription());
+                                    parametersBuilder.setType(Type.OBJECT);
+                                });
 
-                                    functionBuilder.setParameters(parametersBuilder.build());
-                                }
+                                functionBuilder.setParameters(parametersBuilder.build());
+                            }
 
-                                tool.addFunctionDeclarations(functionBuilder.build());
-                            }));
+                            tool.addFunctionDeclarations(functionBuilder.build());
+                        }));
 
                     List<Tool> tools = new ArrayList<>();
                     tools.add(tool.build());
@@ -144,16 +155,17 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return modelBuilder.build();
     }
 
-    private List<ChatMessageContent<?>> getChatMessageContentsFromResponse(GenerateContentResponse response) {
+    private List<ChatMessageContent<?>> getChatMessageContentsFromResponse(
+        GenerateContentResponse response) {
         List<ChatMessageContent<?>> chatMessageContents = new ArrayList<>();
 
         response.getCandidatesList().forEach(
-                candidate -> {
-                    chatMessageContents.add(new ChatMessageContent<>(
-                            AuthorRole.ASSISTANT,
-                            candidate.getContent().getPartsList().stream().map(Part::getText).reduce("", String::concat)));
-                }
-        );
+            candidate -> {
+                chatMessageContents.add(new ChatMessageContent<>(
+                    AuthorRole.ASSISTANT,
+                    candidate.getContent().getPartsList().stream().map(Part::getText).reduce("",
+                        String::concat)));
+            });
 
         return chatMessageContents;
     }
@@ -162,12 +174,12 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         public GeminiChatCompletion build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "VertexAI client must be provided");
+                    "VertexAI client must be provided");
             }
 
             if (this.modelId == null || modelId.isEmpty()) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "Gemini model id must be provided");
+                    "Gemini model id must be provided");
             }
 
             return new GeminiChatCompletion(client, modelId);

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.core.credential.AzureKeyCredential;
@@ -44,8 +45,7 @@ public class Example20_HuggingFace {
             .withArguments(
                 KernelFunctionArguments.builder()
                     .withVariable("input", "What is New York?")
-                    .build()
-            )
+                    .build())
             .withResultType(String.class)
             .block();
 
@@ -53,43 +53,43 @@ public class Example20_HuggingFace {
     }
 
     /*
-
-    public static void runConversationApiExampleAsync() {
-        System.out.println("\n======== HuggingFace Inference API example ========\n");
-
-        HuggingFaceClient client = HuggingFaceClient.builder()
-            .credential(new AzureKeyCredential(HUGGINGFACE_CLIENT_KEY))
-            .endpoint(HUGGINGFACE_CLIENT_ENDPOINT)
-            .build();
-
-        var chatCompletion = HuggingFaceChatCompletionService.builder()
-            .withModelId("msft-dialogpt-medium-13")
-            .withHuggingFaceClient(client)
-            .build();
-
-        Kernel kernel = Kernel.builder()
-            .withAIService(ChatCompletionService.class, chatCompletion)
-            .build();
-
-        var questionAnswerFunction = KernelFunctionFromPrompt.builder()
-            .withTemplate("""
-                <message role="system">Assistant is a large language model that answers questions.</message>
-                <message role="assistant">What is your question?</message>
-                <message role="user">{{$input}}</message>
-                """)
-            .build();
-
-        var result = kernel.invokeAsync(questionAnswerFunction)
-            .withArguments(
-                KernelFunctionArguments.builder()
-                    .withVariable("input", "What is New York?")
-                    .build()
-            )
-            .withResultType(String.class)
-            .block();
-
-        System.out.println(result.getResult());
-    }
-
-*/
+     * 
+     * public static void runConversationApiExampleAsync() {
+     * System.out.println("\n======== HuggingFace Inference API example ========\n");
+     * 
+     * HuggingFaceClient client = HuggingFaceClient.builder()
+     * .credential(new AzureKeyCredential(HUGGINGFACE_CLIENT_KEY))
+     * .endpoint(HUGGINGFACE_CLIENT_ENDPOINT)
+     * .build();
+     * 
+     * var chatCompletion = HuggingFaceChatCompletionService.builder()
+     * .withModelId("msft-dialogpt-medium-13")
+     * .withHuggingFaceClient(client)
+     * .build();
+     * 
+     * Kernel kernel = Kernel.builder()
+     * .withAIService(ChatCompletionService.class, chatCompletion)
+     * .build();
+     * 
+     * var questionAnswerFunction = KernelFunctionFromPrompt.builder()
+     * .withTemplate("""
+     * <message role="system">Assistant is a large language model that answers questions.</message>
+     * <message role="assistant">What is your question?</message>
+     * <message role="user">{{$input}}</message>
+     * """)
+     * .build();
+     * 
+     * var result = kernel.invokeAsync(questionAnswerFunction)
+     * .withArguments(
+     * KernelFunctionArguments.builder()
+     * .withVariable("input", "What is New York?")
+     * .build()
+     * )
+     * .withResultType(String.class)
+     * .block();
+     * 
+     * System.out.println(result.getResult());
+     * }
+     * 
+     */
 }

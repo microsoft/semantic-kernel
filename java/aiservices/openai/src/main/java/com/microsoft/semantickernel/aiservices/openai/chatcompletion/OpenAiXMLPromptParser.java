@@ -44,10 +44,8 @@ class OpenAiXMLPromptParser {
         @Override
         public ChatPromptParseVisitor<ParsedPrompt> addFunction(
             String name,
-            @Nullable
-            String description,
-            @Nullable
-            BinaryData parameters) {
+            @Nullable String description,
+            @Nullable BinaryData parameters) {
             FunctionDefinition function = new FunctionDefinition(name);
 
             if (description != null) {

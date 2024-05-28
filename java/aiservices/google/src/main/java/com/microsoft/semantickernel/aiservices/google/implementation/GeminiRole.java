@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.implementation;
 
 public enum GeminiRole {

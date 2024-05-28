@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface;
 
 import com.azure.core.credential.KeyCredential;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.aiservices.huggingface.models.GeneratedTextItem;
 import com.microsoft.semantickernel.aiservices.huggingface.models.TextGenerationRequest;
 import com.microsoft.semantickernel.exceptions.SKException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import reactor.core.publisher.Mono;
 
@@ -32,41 +34,40 @@ public class HuggingFaceClient {
     }
 
     /*
-    TODO: TGI
-    public Mono<String> getChatMessageContentsAsync(
-        String modelId,
-        ChatCompletionRequest chatCompletionRequest
-    ) {
-        try {
-            String body = new ObjectMapper().writeValueAsString(chatCompletionRequest);
-            return performRequest(modelId, body)
-                .handle((response, sink) -> {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JavaType type = mapper.getTypeFactory().
-                        constructCollectionType(List.class, GeneratedTextItem.class);
-                    try {
-                        sink.next(mapper.readValue(response, type));
-                    } catch (JsonProcessingException e) {
-                        sink.error(
-                            new SKException("Failed to deserialize response from Hugging Face",
-                                e));
-                    }
-                });
-        } catch (JsonProcessingException e) {
-            return Mono.error(new SKException("Failed to serialize request body", e));
-        }
-    }
-
+     * TODO: TGI
+     * public Mono<String> getChatMessageContentsAsync(
+     * String modelId,
+     * ChatCompletionRequest chatCompletionRequest
+     * ) {
+     * try {
+     * String body = new ObjectMapper().writeValueAsString(chatCompletionRequest);
+     * return performRequest(modelId, body)
+     * .handle((response, sink) -> {
+     * ObjectMapper mapper = new ObjectMapper();
+     * JavaType type = mapper.getTypeFactory().
+     * constructCollectionType(List.class, GeneratedTextItem.class);
+     * try {
+     * sink.next(mapper.readValue(response, type));
+     * } catch (JsonProcessingException e) {
+     * sink.error(
+     * new SKException("Failed to deserialize response from Hugging Face",
+     * e));
+     * }
+     * });
+     * } catch (JsonProcessingException e) {
+     * return Mono.error(new SKException("Failed to serialize request body", e));
+     * }
+     * }
+     * 
      */
 
-    private class GeneratedTextItemList {
+    private static class GeneratedTextItemList {
 
         private final List<List<GeneratedTextItem>> generatedTextItems;
 
         @JsonCreator
         public GeneratedTextItemList(
-            List<List<GeneratedTextItem>> generatedTextItems
-        ) {
+            List<List<GeneratedTextItem>> generatedTextItems) {
             this.generatedTextItems = generatedTextItems;
         }
 
@@ -74,16 +75,15 @@ public class HuggingFaceClient {
 
     public Mono<List<GeneratedTextItem>> getTextContentsAsync(
         String modelId,
-        TextGenerationRequest textGenerationRequest
-    ) {
+        TextGenerationRequest textGenerationRequest) {
         try {
             String body = new ObjectMapper().writeValueAsString(textGenerationRequest);
             return performRequest(modelId, body)
                 .handle((response, sink) -> {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
-                        JavaType type = mapper.getTypeFactory().
-                            constructCollectionType(List.class, GeneratedTextItemList.class);
+                        JavaType type = mapper.getTypeFactory().constructCollectionType(List.class,
+                            GeneratedTextItemList.class);
                         GeneratedTextItemList data = mapper.readValue(response,
                             GeneratedTextItemList.class);
                         sink.next(data.generatedTextItems.get(0));
@@ -105,7 +105,7 @@ public class HuggingFaceClient {
             .setHeader(HttpHeaderName.CONTENT_TYPE, "application/json")
             .setHeader(HttpHeaderName.fromString("azureml-model-deployment"), modelId);
 
-        request.setBody(body.getBytes());
+        request.setBody(body.getBytes(StandardCharsets.UTF_8));
 
         Mono<String> responseBody = httpClient
             .send(request)
@@ -134,7 +134,6 @@ public class HuggingFaceClient {
         return new Builder();
     }
 
-
     public static class Builder {
 
         private KeyCredential key;
@@ -148,8 +147,7 @@ public class HuggingFaceClient {
             return new HuggingFaceClient(
                 key,
                 endpoint,
-                httpClient
-            );
+                httpClient);
         }
 
         public Builder credential(KeyCredential key) {

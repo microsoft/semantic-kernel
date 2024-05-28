@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
  * Builder for a Gemini service.
  */
 public abstract class GeminiServiceBuilder<T, U extends GeminiServiceBuilder<T, U>> implements
-        SemanticKernelBuilder<T> {
+    SemanticKernelBuilder<T> {
 
     @Nullable
     protected String modelId;

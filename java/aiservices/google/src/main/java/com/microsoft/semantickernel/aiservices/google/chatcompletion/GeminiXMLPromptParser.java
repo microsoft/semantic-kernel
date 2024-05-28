@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.azure.core.util.BinaryData;
@@ -23,9 +24,8 @@ public class GeminiXMLPromptParser {
         private final List<FunctionDeclaration> functions;
 
         protected GeminiParsedPrompt(
-                ChatHistory parsedChatHistory,
-                @Nullable List<FunctionDeclaration> parsedFunctions
-        ) {
+            ChatHistory parsedChatHistory,
+            @Nullable List<FunctionDeclaration> parsedFunctions) {
             this.chatHistory = parsedChatHistory;
             if (parsedFunctions == null) {
                 parsedFunctions = new ArrayList<>();
@@ -34,11 +34,11 @@ public class GeminiXMLPromptParser {
         }
 
         public ChatHistory getChatHistory() {
-            return chatHistory;
+            return new ChatHistory(chatHistory.getMessages());
         }
 
         public List<FunctionDeclaration> getFunctions() {
-            return functions;
+            return Collections.unmodifiableList(functions);
         }
     }
 
@@ -58,7 +58,8 @@ public class GeminiXMLPromptParser {
         }
     }
 
-    private static class GeminiChatPromptParseVisitor implements ChatPromptParseVisitor<GeminiParsedPrompt> {
+    private static class GeminiChatPromptParseVisitor
+        implements ChatPromptParseVisitor<GeminiParsedPrompt> {
         private GeminiParsedPrompt parsedRaw;
         private final List<FunctionDeclaration> functionDefinitions = new ArrayList<>();
         private final ChatHistory chatHistory = new ChatHistory();
@@ -74,15 +75,8 @@ public class GeminiXMLPromptParser {
         @Override
         public ChatPromptParseVisitor<GeminiParsedPrompt> addFunction(
             String name,
-            @Nullable
-            String description,
-            @Nullable
-            BinaryData parameters) {
-
-            String paramString = null;
-            if (parameters != null) {
-                paramString = parameters.toString();
-            }
+            @Nullable String description,
+            @Nullable BinaryData parameters) {
 
             // TODO: Build the parameters schema
             Schema.Builder parametersBuilder = Schema.newBuilder();
@@ -107,7 +101,8 @@ public class GeminiXMLPromptParser {
 
             ChatMessageContent<?> message = new ChatMessageContent<>(AuthorRole.USER, rawPrompt);
 
-            this.parsedRaw = new GeminiParsedPrompt(new ChatHistory(Collections.singletonList(message)),null);
+            this.parsedRaw = new GeminiParsedPrompt(
+                new ChatHistory(Collections.singletonList(message)), null);
 
             return this;
         }
@@ -129,8 +124,8 @@ public class GeminiXMLPromptParser {
 
     public static GeminiParsedPrompt parse(String rawPrompt) {
         ChatPromptParseVisitor<GeminiParsedPrompt> visitor = ChatXMLPromptParser.parse(
-                rawPrompt,
-                new GeminiChatPromptParseVisitor());
+            rawPrompt,
+            new GeminiChatPromptParseVisitor());
 
         return visitor.get();
     }

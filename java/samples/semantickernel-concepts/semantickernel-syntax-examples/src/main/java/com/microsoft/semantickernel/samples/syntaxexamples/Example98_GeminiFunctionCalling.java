@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -36,7 +37,6 @@ public class Example98_GeminiFunctionCalling {
     private static final String PROJECT_ID = System.getenv("PROJECT_ID");
     private static final String LOCATION = System.getenv("LOCATION");
     private static final String MODEL_ID = System.getenv("GEMINI_MODEL_ID");
-
 
     // Define functions that can be called by the model
     public static class HelperFunctions {
@@ -81,7 +81,8 @@ public class Example98_GeminiFunctionCalling {
                 .withVertexAIClient(client)
                 .build();
 
-            var plugin = KernelPluginFactory.createFromObject(new HelperFunctions(), "HelperFunctions");
+            var plugin = KernelPluginFactory.createFromObject(new HelperFunctions(),
+                "HelperFunctions");
 
             var kernel = Kernel.builder()
                 .withAIService(ChatCompletionService.class, chat)
@@ -109,63 +110,63 @@ public class Example98_GeminiFunctionCalling {
 
             System.out.println(result.getResult());
 
-//            System.out.println("======== Example 2: Use manual function calling ========");
-//
-//            var chatHistory = new ChatHistory();
-//            chatHistory.addUserMessage(
-//                    "Given the current time of day and weather, what is the likely color of the sky in Boston?");
-//
-//            while (true) {
-//                var messages = chat.getChatMessageContentsAsync(
-//                                chatHistory,
-//                                kernel,
-//                                InvocationContext.builder()
-//                                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build())
-//                        .block();
-//
-//                messages.stream()
-//                        .filter(it -> it.getContent() != null)
-//                        .forEach(it -> System.out.println(it.getContent()));
-//
-//                List<OpenAIFunctionToolCall> toolCalls = messages.stream()
-//                        .filter(it -> it instanceof OpenAIChatMessageContent)
-//                        .map(it -> (OpenAIChatMessageContent<?>) it)
-//                        .map(OpenAIChatMessageContent::getToolCall)
-//                        .flatMap(List::stream)
-//                        .collect(Collectors.toList());
-//
-//                if (toolCalls.isEmpty()) {
-//                    break;
-//                }
-//
-//                messages.stream()
-//                        .forEach(it -> chatHistory.addMessage(it));
-//
-//                for (var toolCall : toolCalls) {
-//
-//                    String content = null;
-//                    try {
-//                        // getFunction will throw an exception if the function is not found
-//                        var fn = kernel.getFunction(toolCall.getPluginName(),
-//                                toolCall.getFunctionName());
-//                        FunctionResult<?> fnResult = fn
-//                                .invokeAsync(kernel, toolCall.getArguments(), null, null).block();
-//                        content = (String) fnResult.getResult();
-//                    } catch (IllegalArgumentException e) {
-//                        content = "Unable to find function. Please try again!";
-//                    }
-//
-//                    chatHistory.addMessage(
-//                            AuthorRole.TOOL,
-//                            content,
-//                            StandardCharsets.UTF_8,
-//                            new FunctionResultMetadata(new CaseInsensitiveMap<>() {
-//                                {
-//                                    put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
-//                                }
-//                            }));
-//                }
-//            }
+            //            System.out.println("======== Example 2: Use manual function calling ========");
+            //
+            //            var chatHistory = new ChatHistory();
+            //            chatHistory.addUserMessage(
+            //                    "Given the current time of day and weather, what is the likely color of the sky in Boston?");
+            //
+            //            while (true) {
+            //                var messages = chat.getChatMessageContentsAsync(
+            //                                chatHistory,
+            //                                kernel,
+            //                                InvocationContext.builder()
+            //                                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build())
+            //                        .block();
+            //
+            //                messages.stream()
+            //                        .filter(it -> it.getContent() != null)
+            //                        .forEach(it -> System.out.println(it.getContent()));
+            //
+            //                List<OpenAIFunctionToolCall> toolCalls = messages.stream()
+            //                        .filter(it -> it instanceof OpenAIChatMessageContent)
+            //                        .map(it -> (OpenAIChatMessageContent<?>) it)
+            //                        .map(OpenAIChatMessageContent::getToolCall)
+            //                        .flatMap(List::stream)
+            //                        .collect(Collectors.toList());
+            //
+            //                if (toolCalls.isEmpty()) {
+            //                    break;
+            //                }
+            //
+            //                messages.stream()
+            //                        .forEach(it -> chatHistory.addMessage(it));
+            //
+            //                for (var toolCall : toolCalls) {
+            //
+            //                    String content = null;
+            //                    try {
+            //                        // getFunction will throw an exception if the function is not found
+            //                        var fn = kernel.getFunction(toolCall.getPluginName(),
+            //                                toolCall.getFunctionName());
+            //                        FunctionResult<?> fnResult = fn
+            //                                .invokeAsync(kernel, toolCall.getArguments(), null, null).block();
+            //                        content = (String) fnResult.getResult();
+            //                    } catch (IllegalArgumentException e) {
+            //                        content = "Unable to find function. Please try again!";
+            //                    }
+            //
+            //                    chatHistory.addMessage(
+            //                            AuthorRole.TOOL,
+            //                            content,
+            //                            StandardCharsets.UTF_8,
+            //                            new FunctionResultMetadata(new CaseInsensitiveMap<>() {
+            //                                {
+            //                                    put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
+            //                                }
+            //                            }));
+            //                }
+            //            }
         }
     }
 }

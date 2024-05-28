@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface.services;
 
 import com.microsoft.semantickernel.Kernel;
@@ -43,8 +44,7 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
             prompt,
             false,
             textParameters,
-            new HuggingFaceTextOptions()
-        );
+            new HuggingFaceTextOptions());
 
         return client
             .getTextContentsAsync(modelId, textGenerationRequest)
@@ -63,8 +63,9 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
         HuggingFacePromptExecutionSettings huggingFacePromptExecutionSettings = null;
 
         if (executionSettings != null) {
-            huggingFacePromptExecutionSettings = HuggingFacePromptExecutionSettings.fromExecutionSettings(
-                executionSettings);
+            huggingFacePromptExecutionSettings = HuggingFacePromptExecutionSettings
+                .fromExecutionSettings(
+                    executionSettings);
         }
 
         return getTextContentsAsync(
@@ -94,8 +95,7 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
                 true,
                 executionSettings.getResultsPerPrompt(),
                 null,
-                executionSettings.getDetails()
-            );
+                executionSettings.getDetails());
         }
         return textParameters;
     }
@@ -111,7 +111,6 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
     public String getServiceId() {
         return serviceId;
     }
-
 
     public static Builder builder() {
         return new Builder();
@@ -147,7 +146,6 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
             this.serviceId = serviceId;
             return this;
         }
-
 
         public Builder withHuggingFaceClient(HuggingFaceClient client) {
             this.client = client;
