@@ -24,8 +24,9 @@ class PromptTemplateConfig(KernelBaseModel):
         template: The template for the prompt.
         template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
         input_variables: The input variables for the prompt.
-        allow_dangerously_set_content (default: false): Allow content without encoding, this controls
-            if the output of functions called in the template is encoded before use.
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unencoded input.
         execution_settings: The execution settings for the prompt.
 
     """
