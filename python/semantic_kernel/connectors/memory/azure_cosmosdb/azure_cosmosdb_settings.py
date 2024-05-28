@@ -8,9 +8,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureCosmosDBSettings(BaseModelSettings):
-    """Azure CosmosDB model settings
+    """Azure CosmosDB model settings.
 
-    Optional:
+    Args:
     - connection_string: str - Azure CosmosDB connection string
         (Env var COSMOSDB_CONNECTION_STRING)
     """
@@ -19,4 +19,6 @@ class AzureCosmosDBSettings(BaseModelSettings):
     connection_string: SecretStr | None = None
 
     class Config(BaseModelSettings.Config):
+        """Pydantic configuration settings."""
+
         env_prefix = "COSMOSDB_"

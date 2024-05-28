@@ -20,8 +20,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class KernelFunctionFromMethod(KernelFunction):
     """Semantic Kernel Function from a method."""
 
-    # some attributes are now properties, still listed here for documentation purposes
-
     method: Callable[..., Any]
     stream_method: Callable[..., Any] | None = None
 
@@ -34,8 +32,7 @@ class KernelFunctionFromMethod(KernelFunction):
         return_parameter: KernelParameterMetadata | None = None,
         additional_metadata: dict[str, Any] | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the KernelFunctionFromMethod class
+        """Initializes a new instance of the KernelFunctionFromMethod class.
 
         Args:
             method (Callable[..., Any]): The method to be called

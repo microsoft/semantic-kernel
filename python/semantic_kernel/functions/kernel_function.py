@@ -45,8 +45,7 @@ TEMPLATE_FORMAT_MAP = {
 
 
 class KernelFunction(KernelBaseModel):
-    """
-    Semantic Kernel function.
+    """Semantic Kernel function.
 
     Attributes:
         name (str): The name of the function. Must be upper/lower case letters and
@@ -82,9 +81,7 @@ class KernelFunction(KernelBaseModel):
             "PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings] | None"
         ) = None,
     ) -> "KernelFunctionFromPrompt":
-        """
-        Create a new instance of the KernelFunctionFromPrompt class.
-        """
+        """Create a new instance of the KernelFunctionFromPrompt class."""
         from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
         return KernelFunctionFromPrompt(
@@ -105,9 +102,7 @@ class KernelFunction(KernelBaseModel):
         plugin_name: str | None = None,
         stream_method: Callable[..., Any] | None = None,
     ) -> "KernelFunctionFromMethod":
-        """
-        Create a new instance of the KernelFunctionFromMethod class.
-        """
+        """Create a new instance of the KernelFunctionFromMethod class."""
         from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 
         return KernelFunctionFromMethod(
@@ -118,30 +113,37 @@ class KernelFunction(KernelBaseModel):
 
     @property
     def name(self) -> str:
+        """The name of the function."""
         return self.metadata.name
 
     @property
     def plugin_name(self) -> str:
+        """The name of the plugin that contains this function."""
         return self.metadata.plugin_name or ""
 
     @property
     def fully_qualified_name(self) -> str:
+        """The fully qualified name of the function."""
         return self.metadata.fully_qualified_name
 
     @property
     def description(self) -> str | None:
+        """The description of the function."""
         return self.metadata.description
 
     @property
     def is_prompt(self) -> bool:
+        """Whether the function is based on a prompt."""
         return self.metadata.is_prompt
 
     @property
     def parameters(self) -> list["KernelParameterMetadata"]:
+        """The parameters for the function."""
         return self.metadata.parameters
 
     @property
     def return_parameter(self) -> "KernelParameterMetadata | None":
+        """The return parameter for the function."""
         return self.metadata.return_parameter
 
     async def __call__(
@@ -155,8 +157,9 @@ class KernelFunction(KernelBaseModel):
 
         Args:
             kernel (Kernel): The kernel
-            arguments (Optional[KernelArguments]): The Kernel arguments.
+            arguments (KernelArguments | None): The Kernel arguments.
                 Optional, defaults to None.
+            metadata (Dict[str, Any]): Additional metadata.
             kwargs (Dict[str, Any]): Additional keyword arguments that will be
 
         Returns:
@@ -189,6 +192,7 @@ class KernelFunction(KernelBaseModel):
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
+            metadata (Dict[str, Any]): Additional metadata.
             kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
@@ -224,17 +228,17 @@ class KernelFunction(KernelBaseModel):
         metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> "AsyncGenerator[FunctionResult | list[StreamingContentMixin | Any], Any]":
-        """
-        Invoke a stream async function with the given arguments.
+        """Invoke a stream async function with the given arguments.
 
         Args:
             kernel (Kernel): The kernel
             arguments (KernelArguments): The Kernel arguments
+            metadata (Dict[str, Any]): Additional metadata.
             kwargs (Any): Additional keyword arguments that will be
                 added to the KernelArguments.
 
         Yields:
-            KernelContent with the StreamingKernelMixin or FunctionResult --
+            KernelContent with the StreamingKernelMixin or FunctionResult:
                 The results of the function,
                 if there is an error a FunctionResult is yielded.
         """

@@ -57,15 +57,14 @@ pyarrow = { version = ">=12.0.1,<16.0.0", optional = true}
 
 # Groups are for development only (installed through Poetry)
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^3.5"
-black = "^24.2.0"
-ruff = ">=0.3.2,<0.5.0"
-ipykernel = "^6.29.3"
-pytest = "^8.1.1"
-pytest-asyncio = "^0.23.6"
+pre-commit = ">=3.7.1"
+ruff = ">=0.4.5"
+ipykernel = "^6.29.4"
+pytest = "^8.2.1"
+pytest-asyncio = "^0.23.7"
 snoop = "^0.4.3"
 pytest-cov = ">=5.0.0"
-mypy = ">=1.9.0"
+mypy = ">=1.10.0"
 types-PyYAML = "^6.0.12.20240311"
 
 [tool.poetry.group.unit-tests]
@@ -122,12 +121,29 @@ notebooks = ["ipykernel"]
 all = ["google-generativeai", "grpcio-status", "transformers", "sentence-transformers", "torch", "qdrant-client", "chromadb", "pymilvus", "milvus", "weaviate-client", "pinecone-client", "psycopg", "redis", "azure-search-documents", "azure-core", "azure-identity", "azure-cosmos", "usearch", "pyarrow", "ipykernel"]
 
 [tool.ruff]
-lint.select = ["E", "F", "I"]
 line-length = 120
+target-version = "py310"
+include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 
-[tool.black]
-line-length = 120
+[tool.ruff.lint]
+select = ["D", "E", "F", "I"]
+ignore = ["D100", "D101", "D104"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore all directories named `tests`.
+"tests/**" = ["D"]
+"samples/**" = ["D"]
+# Ignore all files that end in `_test.py`.
+"*_test.py" = ["D"]
+
+[tool.bandit]
+targets = ["python/semantic_kernel"]
+exclude_dirs = ["python/tests"]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
