@@ -1,0 +1,3 @@
+[submodule "Singularity"]
+	path = Singularity
+	url = git@github.com:Bryan-Roe/Singularity.git
