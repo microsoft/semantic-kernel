@@ -2,12 +2,14 @@
 package com.microsoft.semantickernel.services.chatcompletion;
 
 import com.azure.core.util.BinaryData;
+import javax.annotation.Nullable;
 
 public interface ChatPromptParseVisitor<T> {
 
     ChatPromptParseVisitor<T> addMessage(String role, String content);
 
-    ChatPromptParseVisitor<T> addFunction(String name, String description, BinaryData parameters);
+    ChatPromptParseVisitor<T> addFunction(String name, @Nullable String description,
+        @Nullable BinaryData parameters);
 
     boolean areMessagesEmpty();
 

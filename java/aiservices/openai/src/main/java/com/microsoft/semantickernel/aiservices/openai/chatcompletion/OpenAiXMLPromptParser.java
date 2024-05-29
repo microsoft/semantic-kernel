@@ -30,7 +30,8 @@ class OpenAiXMLPromptParser {
     private static class OpenAiChatPromptParseVisitor implements
         ChatPromptParseVisitor<ParsedPrompt> {
 
-        private ParsedPrompt parsedRaw;
+        @Nullable
+        private ParsedPrompt parsedRaw = null;
         private final List<FunctionDefinition> functionDefinitions = new ArrayList<>();
         private final List<ChatRequestMessage> messages = new ArrayList<>();
 
@@ -91,7 +92,6 @@ class OpenAiXMLPromptParser {
         public ChatPromptParseVisitor<ParsedPrompt> reset() {
             return new OpenAiChatPromptParseVisitor();
         }
-
     }
 
     public static ParsedPrompt parse(String rawPrompt) {

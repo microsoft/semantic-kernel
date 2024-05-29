@@ -60,7 +60,8 @@ public class GeminiXMLPromptParser {
 
     private static class GeminiChatPromptParseVisitor
         implements ChatPromptParseVisitor<GeminiParsedPrompt> {
-        private GeminiParsedPrompt parsedRaw;
+        @Nullable
+        private GeminiParsedPrompt parsedRaw = null;
         private final List<FunctionDeclaration> functionDefinitions = new ArrayList<>();
         private final ChatHistory chatHistory = new ChatHistory();
 

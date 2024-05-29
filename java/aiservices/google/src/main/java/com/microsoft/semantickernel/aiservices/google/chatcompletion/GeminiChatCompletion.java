@@ -171,6 +171,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
+        @Override
         public GeminiChatCompletion build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,

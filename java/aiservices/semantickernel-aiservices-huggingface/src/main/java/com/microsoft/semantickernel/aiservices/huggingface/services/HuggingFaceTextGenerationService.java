@@ -7,11 +7,13 @@ import com.microsoft.semantickernel.aiservices.huggingface.models.TextGeneration
 import com.microsoft.semantickernel.aiservices.huggingface.models.TextGenerationRequest.HuggingFaceTextOptions;
 import com.microsoft.semantickernel.aiservices.huggingface.models.TextGenerationRequest.HuggingFaceTextParameters;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
@@ -50,7 +52,10 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
             .getTextContentsAsync(modelId, textGenerationRequest)
             .map(result -> result
                 .stream()
-                .map(item -> new TextContent(item.getGeneratedText(), modelId, null))
+                .map(item -> new TextContent(
+                    item.getGeneratedText() != null ? item.getGeneratedText() : "",
+                    modelId,
+                    FunctionResultMetadata.build(UUID.randomUUID().toString())))
                 .collect(Collectors.toList()));
     }
 
@@ -153,6 +158,22 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
         }
 
         public HuggingFaceTextGenerationService build() {
+
+            if (this.modelId == null) {
+                throw new SKException(
+                    "Model ID is required to build HuggingFaceTextGenerationService");
+            }
+
+            if (this.serviceId == null) {
+                throw new SKException(
+                    "Service ID is required to build HuggingFaceTextGenerationService");
+            }
+
+            if (this.client == null) {
+                throw new SKException(
+                    "HuggingFaceClient is required to build HuggingFaceTextGenerationService");
+            }
+
             return new HuggingFaceTextGenerationService(
                 this.modelId,
                 this.serviceId,

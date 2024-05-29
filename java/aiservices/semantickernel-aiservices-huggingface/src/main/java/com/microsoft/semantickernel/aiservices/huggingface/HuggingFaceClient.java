@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import reactor.core.publisher.Mono;
+import javax.annotation.Nullable;
 
 public class HuggingFaceClient {
 
@@ -58,7 +59,7 @@ public class HuggingFaceClient {
      * return Mono.error(new SKException("Failed to serialize request body", e));
      * }
      * }
-     * 
+     *
      */
 
     private static class GeneratedTextItemList {
@@ -136,13 +137,22 @@ public class HuggingFaceClient {
 
     public static class Builder {
 
-        private KeyCredential key;
-        private String endpoint;
-        private HttpClient httpClient;
+        @Nullable
+        private KeyCredential key = null;
+        @Nullable
+        private String endpoint = null;
+        @Nullable
+        private HttpClient httpClient = null;
 
         public HuggingFaceClient build() {
             if (httpClient == null) {
                 httpClient = HttpClient.createDefault();
+            }
+            if (key == null) {
+                throw new SKException("Key credential is required");
+            }
+            if (endpoint == null) {
+                throw new SKException("Endpoint is required");
             }
             return new HuggingFaceClient(
                 key,

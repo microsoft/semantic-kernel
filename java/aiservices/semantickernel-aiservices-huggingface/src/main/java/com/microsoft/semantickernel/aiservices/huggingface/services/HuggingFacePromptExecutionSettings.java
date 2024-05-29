@@ -118,7 +118,9 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             promptExecutionSettings.getUser(),
             promptExecutionSettings.getStopSequences(),
             promptExecutionSettings.getTokenSelectionBiases(),
-            promptExecutionSettings.getResponseFormat().toString(),
+            promptExecutionSettings.getResponseFormat() != null
+                ? promptExecutionSettings.getResponseFormat().toString()
+                : null,
             null,
             null,
             null,
@@ -168,7 +170,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof HuggingFacePromptExecutionSettings)) {
             return false;
         }
         if (!super.equals(o)) {
