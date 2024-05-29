@@ -16,6 +16,7 @@ class SequentialPlannerConfig:
         get_available_functions: Callable = None,
         get_plugin_function: Callable = None,
     ):
+        """Initializes a new instance of the SequentialPlannerConfig class."""
         self.relevancy_threshold: float = relevancy_threshold
         self.max_relevant_functions: int = max_relevant_functions
         self.excluded_plugins: list[str] = excluded_plugins or []

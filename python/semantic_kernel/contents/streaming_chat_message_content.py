@@ -2,7 +2,7 @@
 
 from enum import Enum
 from typing import Any, Union, overload
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -54,20 +54,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         finish_reason: FinishReason | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> None:
-        """All Chat Completion Services should return an instance of this class as response for streaming.
-        Or they can implement their own subclass of this class and return an instance.
-
-        Args:
-            inner_content: Optional[Any] - The inner content of the response,
-                this should hold all the information from the response so even
-                when not creating a subclass a developer can leverage the full thing.
-            ai_model_id: Optional[str] - The id of the AI model that generated this response.
-            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
-            encoding: Optional[str] - The encoding of the text.
-        """
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -81,20 +68,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         finish_reason: FinishReason | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> None:
-        """All Chat Completion Services should return an instance of this class as response for streaming.
-        Or they can implement their own subclass of this class and return an instance.
-
-        Args:
-            inner_content: Optional[Any] - The inner content of the response,
-                this should hold all the information from the response so even
-                when not creating a subclass a developer can leverage the full thing.
-            ai_model_id: Optional[str] - The id of the AI model that generated this response.
-            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            content: str - The text of the response.
-            encoding: Optional[str] - The encoding of the text.
-        """
+    ) -> None: ...
 
     def __init__(  # type: ignore
         self,
@@ -109,19 +83,21 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ):
-        """All Chat Completion Services should return an instance of this class as response for streaming.
-        Or they can implement their own subclass of this class and return an instance.
+        """Create a new instance of StreamingChatMessageContent.
 
         Args:
+            role: ChatRole - The role of the chat message.
+            choice_index: int - The index of the choice that generated this response.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even
                 when not creating a subclass a developer can leverage the full thing.
-            ai_model_id: Optional[str] - The id of the AI model that generated this response.
-            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-            role: ChatRole - The role of the chat message.
-            content: str - The text of the response.
-            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            name: Optional[str] - The name of the response.
             encoding: Optional[str] - The encoding of the text.
+            finish_reason: Optional[FinishReason] - The reason the response was finished.
+            metadata: Dict[str, Any] - Any metadata that should be attached to the response.
+            ai_model_id: Optional[str] - The id of the AI model that generated this response.
         """
         kwargs: dict[str, Any] = {
             "role": role,

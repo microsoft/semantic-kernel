@@ -15,11 +15,10 @@ class PromptExecutionSettings(KernelBaseModel):
     create a generic PromptExecutionSettings object in your application, which gets mapped into the keys of the
     prompt execution settings that each services returns by using the service.get_prompt_execution_settings() method.
 
-    Parameters:
-        service_id (str): The service ID to use for the request.
-        extension_data (Dict[str, Any], optional): Any additional data to send with the request. Defaults to None.
-        kwargs (Any): Additional keyword arguments,
-            these are attempted to parse into the keys of the specific prompt execution settings.
+    Attributes:
+        service_id (str | None): The service ID to use for the request.
+        extension_data (Dict[str, Any]): Any additional data to send with the request.
+
     Methods:
         prepare_settings_dict: Prepares the settings as a dictionary for sending to the AI service.
         update_from_prompt_execution_settings: Update the keys from another prompt execution settings object.
@@ -30,6 +29,13 @@ class PromptExecutionSettings(KernelBaseModel):
     extension_data: dict[str, Any] = Field(default_factory=dict)
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
+        """Initialize the prompt execution settings.
+
+        Args:
+            service_id (str): The service ID to use for the request.
+            kwargs (Any): Additional keyword arguments,
+                these are attempted to parse into the keys of the specific prompt execution settings.
+        """
         extension_data = kwargs.pop("extension_data", {})
         extension_data.update(kwargs)
         super().__init__(service_id=service_id, extension_data=extension_data)

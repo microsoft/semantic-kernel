@@ -20,7 +20,7 @@ class DocumentLoader:
         auth_callback: Callable[[Any], None] | None,
         user_agent: str | None = HTTP_USER_AGENT,
     ):
-        """Load the manifest from the given URL"""
+        """Load the manifest from the given URL."""
         headers = {"User-Agent": user_agent}
         async with http_client as client:
             if auth_callback:

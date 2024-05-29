@@ -25,12 +25,12 @@ class ContentFilterResult:
     def from_inner_error_result(cls, inner_error_results: dict[str, Any]) -> "ContentFilterResult":
         """Creates a ContentFilterResult from the inner error results.
 
-        Arguments:
-            key {str} -- The key to get the inner error result from.
-            inner_error_results {Dict[str, Any]} -- The inner error results.
+        Args:
+            key (str): The key to get the inner error result from.
+            inner_error_results (Dict[str, Any]): The inner error results.
 
         Returns:
-            ContentFilterResult -- The ContentFilterResult.
+            ContentFilterResult: The ContentFilterResult.
         """
         return cls(
             filtered=inner_error_results.get("filtered", False),
@@ -47,7 +47,7 @@ class ContentFilterCodes(Enum):
 
 @dataclass
 class ContentFilterAIException(ServiceContentFilterException):
-    """AI exception for an error from Azure OpenAI's content filter"""
+    """AI exception for an error from Azure OpenAI's content filter."""
 
     # The parameter that caused the error.
     param: str
@@ -65,9 +65,9 @@ class ContentFilterAIException(ServiceContentFilterException):
     ) -> None:
         """Initializes a new instance of the ContentFilterAIException class.
 
-        Arguments:
-            message {str} -- The error message.
-            inner_exception {Exception} -- The inner exception.
+        Args:
+            message (str): The error message.
+            inner_exception (Exception): The inner exception.
         """
         super().__init__(message)
 
