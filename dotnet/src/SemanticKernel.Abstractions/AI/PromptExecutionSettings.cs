@@ -29,7 +29,7 @@ public class PromptExecutionSettings
 
     /// <summary>
     /// Service identifier.
-    /// This identifies the service these settings are configured for e.g., openai, ollama, huggingface, etc.
+    /// This identifies the service these settings are configured for e.g., azure_openai_eastus, openai, ollama, huggingface, etc.
     /// </summary>
     [JsonPropertyName("service_id")]
     public string? ServiceId

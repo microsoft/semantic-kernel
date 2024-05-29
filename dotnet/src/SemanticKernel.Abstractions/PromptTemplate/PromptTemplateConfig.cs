@@ -178,6 +178,7 @@ public sealed class PromptTemplateConfig
     /// </summary>
     /// <remarks>
     /// The settings dictionary is keyed by the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// When setting, the service id of each <see cref="PromptExecutionSettings"/> must match the key in the dictionary.
     /// </remarks>
     [JsonPropertyName("execution_settings")]
     public Dictionary<string, PromptExecutionSettings> ExecutionSettings
@@ -186,24 +187,23 @@ public sealed class PromptTemplateConfig
         set
         {
             Verify.NotNull(value);
-            this._executionSettings = value;
 
-            if (value.Count == 0)
+            // Clone the settings to avoid reference changes.
+            this._executionSettings = new(value);
+            if (this._executionSettings.Count != 0)
             {
-                return;
-            }
-
-            foreach (var kv in value)
-            {
-                // Ensures that if a service id is not specified and is not default, it is set to the current service id.
-                if (kv.Key != kv.Value.ServiceId)
+                foreach (var kv in this._executionSettings)
                 {
-                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
+                    // Ensures that if a service id is not specified and is not default, it is set to the current service id.
+                    if (kv.Key != kv.Value.ServiceId)
                     {
-                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
-                    }
+                        if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
+                        {
+                            throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                        }
 
-                    kv.Value.ServiceId = kv.Key;
+                        kv.Value.ServiceId = kv.Key;
+                    }
                 }
             }
         }
