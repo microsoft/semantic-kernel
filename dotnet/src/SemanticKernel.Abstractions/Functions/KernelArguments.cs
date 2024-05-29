@@ -46,12 +46,12 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(IReadOnlyCollection<PromptExecutionSettings>? executionSettings)
+    public KernelArguments(IEnumerable<PromptExecutionSettings>? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
         if (executionSettings is not null)
         {
-            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>(executionSettings.Count);
+            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>();
             foreach (var settings in executionSettings)
             {
                 var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;

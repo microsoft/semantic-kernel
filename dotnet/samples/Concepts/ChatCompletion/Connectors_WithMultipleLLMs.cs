@@ -7,6 +7,7 @@ namespace ChatCompletion;
 
 public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(output)
 {
+    private const string ChatPrompt = "Hello AI, what can you do for me?";
     /// <summary>
     /// Show how to run a prompt function and specify a specific service to use.
     /// </summary>
@@ -26,60 +27,92 @@ public class Connectors_WithMultipleLLMs(ITestOutputHelper output) : BaseTest(ou
                 serviceId: "OpenAIChat")
             .Build();
 
-        await RunByServiceIdAsync(kernel, "AzureOpenAIChat");
-        await RunByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
-        await RunByFirstModelIdAsync(kernel, ["gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId]);
-        await RunByFirstServiceIdAsync(kernel, ["NotFound", "AzureOpenAIChat", "OpenAIChat"]);
+        // Preconfigured function settings
+        await PreconfiguredFunctionSettingsByFirstModelIdAsync(kernel, ["gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId]);
+        await PreconfiguredFunctionSettingsByFirstServiceIdAsync(kernel, ["NotFound", "AzureOpenAIChat", "OpenAIChat"]);
+        await PreconfiguredFunctionSettingsByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
+        await PreconfiguredFunctionSettingsByServiceIdAsync(kernel, "AzureOpenAIChat");
+
+        // Per invocation settings
+        await InvocationSettingsByServiceIdAsync(kernel, "AzureOpenAIChat");
+        await InvocationSettingsByFirstServiceIdAsync(kernel, ["NotFound", "AzureOpenAIChat", "OpenAIChat"]);
+        await InvocationSettingsByModelIdAsync(kernel, TestConfiguration.OpenAI.ChatModelId);
+        await InvocationSettingsByFirstModelIdAsync(kernel, ["gpt-4-1106-preview", TestConfiguration.AzureOpenAI.ChatModelId, TestConfiguration.OpenAI.ChatModelId]);
     }
 
-    private async Task RunByServiceIdAsync(Kernel kernel, string serviceId)
+    private async Task InvocationSettingsByServiceIdAsync(Kernel kernel, string serviceId)
     {
         Console.WriteLine($"======== Service Id: {serviceId} ========");
 
-        var prompt = "Hello AI, what can you do for me?";
-
-        var result = await kernel.InvokePromptAsync(prompt, new(new PromptExecutionSettings { ServiceId = serviceId }));
+        var result = await kernel.InvokePromptAsync(ChatPrompt, new(new PromptExecutionSettings { ServiceId = serviceId }));
 
         Console.WriteLine(result.GetValue<string>());
     }
 
-    private async Task RunByFirstServiceIdAsync(Kernel kernel, string[] serviceIds)
+    private async Task InvocationSettingsByFirstServiceIdAsync(Kernel kernel, string[] serviceIds)
     {
         Console.WriteLine($"======== Service Ids: {string.Join(", ", serviceIds)} ========");
 
-        var prompt = "Hello AI, what can you do for me?";
-
-        var function = kernel.CreateFunctionFromPrompt(prompt, serviceIds.Select(serviceId => new PromptExecutionSettings { ServiceId = serviceId }));
-
-        var result = await kernel.InvokeAsync(function);
+        var result = await kernel.InvokePromptAsync(ChatPrompt, new(serviceIds.Select(serviceId => new PromptExecutionSettings { ServiceId = serviceId })));
 
         Console.WriteLine(result.GetValue<string>());
     }
 
-    private async Task RunByModelIdAsync(Kernel kernel, string modelId)
-    {
-        Console.WriteLine($"======== Model Id: {modelId} ========");
-
-        var prompt = "Hello AI, what can you do for me?";
-
-        var result = await kernel.InvokePromptAsync(
-           prompt,
-           new(new PromptExecutionSettings()
-           {
-               ModelId = modelId
-           }));
-        Console.WriteLine(result.GetValue<string>());
-    }
-
-    private async Task RunByFirstModelIdAsync(Kernel kernel, string[] modelIds)
+    private async Task InvocationSettingsByFirstModelIdAsync(Kernel kernel, string[] modelIds)
     {
         Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
 
-        var prompt = "Hello AI, what can you do for me?";
+        var result = await kernel.InvokePromptAsync(ChatPrompt, new(modelIds.Select((modelId, index) => new PromptExecutionSettings { ServiceId = $"service-{index}", ModelId = modelId })));
 
-        var function = kernel.CreateFunctionFromPrompt(prompt, modelIds.Select((modelId, index) => new PromptExecutionSettings { ServiceId = $"service-{index}", ModelId = modelId }));
+        Console.WriteLine(result.GetValue<string>());
+    }
 
+    private async Task InvocationSettingsByModelIdAsync(Kernel kernel, string modelId)
+    {
+        Console.WriteLine($"======== Model Id: {modelId} ========");
+
+        var result = await kernel.InvokePromptAsync(ChatPrompt, new(new PromptExecutionSettings() { ModelId = modelId }));
+
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    private async Task PreconfiguredFunctionSettingsByFirstServiceIdAsync(Kernel kernel, string[] serviceIds)
+    {
+        Console.WriteLine($"======== Service Ids: {string.Join(", ", serviceIds)} ========");
+
+        var function = kernel.CreateFunctionFromPrompt(ChatPrompt, serviceIds.Select(serviceId => new PromptExecutionSettings { ServiceId = serviceId }));
         var result = await kernel.InvokeAsync(function);
+
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    private async Task PreconfiguredFunctionSettingsByFirstModelIdAsync(Kernel kernel, string[] modelIds)
+    {
+        Console.WriteLine($"======== Model Ids: {string.Join(", ", modelIds)} ========");
+
+        var function = kernel.CreateFunctionFromPrompt(ChatPrompt, modelIds.Select((modelId, index) => new PromptExecutionSettings { ServiceId = $"service-{index}", ModelId = modelId }));
+        var result = await kernel.InvokeAsync(function);
+
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    private async Task PreconfiguredFunctionSettingsByModelIdAsync(Kernel kernel, string modelId)
+    {
+        Console.WriteLine($"======== Model Id: {modelId} ========");
+
+        var function = kernel.CreateFunctionFromPrompt(ChatPrompt);
+        var result = await kernel.InvokeAsync(function, new(new PromptExecutionSettings { ModelId = modelId }));
+
+        Console.WriteLine(result.GetValue<string>());
+    }
+
+    private async Task PreconfiguredFunctionSettingsByServiceIdAsync(Kernel kernel, string serviceId)
+    {
+        Console.WriteLine($"======== Service Id: {serviceId} ========");
+
+        var function = kernel.CreateFunctionFromPrompt(ChatPrompt);
+        var result = await kernel.InvokeAsync(function, new(new PromptExecutionSettings { ServiceId = serviceId }));
+
         Console.WriteLine(result.GetValue<string>());
     }
 }
