@@ -1,15 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
-import sys
-from typing import Any, Dict, Final
+from typing import Annotated, Any, Final
 
 from pydantic import Field
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -26,15 +20,14 @@ DEFAULT_LIMIT: Final[int] = 1
 
 class TextMemoryPlugin(KernelBaseModel):
     memory: SemanticTextMemoryBase
-    embeddings_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    embeddings_kwargs: dict[str, Any] = Field(default_factory=dict)
 
-    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: Dict[str, Any] = {}) -> None:
-        """
-        Initialize a new instance of the TextMemoryPlugin
+    def __init__(self, memory: SemanticTextMemoryBase, embeddings_kwargs: dict[str, Any] = {}) -> None:
+        """Initialize a new instance of the TextMemoryPlugin.
 
         Args:
-            memory (SemanticTextMemoryBase) - the underlying Semantic Text Memory to use
-            embeddings_kwargs (Optional[Dict[str, Any]]) - the keyword arguments to pass to the embedding generator
+            memory (SemanticTextMemoryBase): the underlying Semantic Text Memory to use
+            embeddings_kwargs (Optional[Dict[str, Any]]): the keyword arguments to pass to the embedding generator
         """
         super().__init__(memory=memory, embeddings_kwargs=embeddings_kwargs)
 
@@ -51,17 +44,16 @@ class TextMemoryPlugin(KernelBaseModel):
         ] = DEFAULT_RELEVANCE,
         limit: Annotated[int, "The maximum number of relevant memories to recall."] = DEFAULT_LIMIT,
     ) -> str:
-        """
-        Recall a fact from the long term memory.
+        """Recall a fact from the long term memory.
 
         Example:
             {{memory.recall $ask}} => "Paris"
 
         Args:
-            ask -- The question to ask the memory
-            collection -- The collection to search for information
-            relevance -- The relevance score, from 0.0 to 1.0; 1.0 means perfect match
-            limit -- The maximum number of relevant memories to recall
+            ask: The question to ask the memory
+            collection: The collection to search for information
+            relevance: The relevance score, from 0.0 to 1.0; 1.0 means perfect match
+            limit: The maximum number of relevant memories to recall
 
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
@@ -88,17 +80,15 @@ class TextMemoryPlugin(KernelBaseModel):
         key: Annotated[str, "The unique key to associate with the information."],
         collection: Annotated[str, "The collection to save the information."] = DEFAULT_COLLECTION,
     ) -> None:
-        """
-        Save a fact to the long term memory.
+        """Save a fact to the long term memory.
 
         Args:
-            text -- The text to save to the memory
-            kernel -- The kernel instance, that has a memory store
-            collection -- The collection to save the information
-            key -- The unique key to associate with the information
+            text: The text to save to the memory
+            kernel: The kernel instance, that has a memory store
+            collection: The collection to save the information
+            key: The unique key to associate with the information
 
         """
-
         await self.memory.save_information(
             collection=collection, text=text, id=key, embeddings_kwargs=self.embeddings_kwargs
         )

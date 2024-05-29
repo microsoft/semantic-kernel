@@ -51,23 +51,24 @@ public sealed class RegexTerminationStrategy : TerminationStrategy
     protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Most recent message
-        var message = history[history.Count - 1].Content;
-
-        if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
+        if (history.Count > 0 && history[history.Count - 1].Content is string message)
         {
-            this.Logger.LogDebug("[{MethodName}] Evaluating expressions: {ExpressionCount}", nameof(ShouldAgentTerminateAsync), this._expressions.Length);
-        }
-
-        // Evaluate expressions for match
-        foreach (var expression in this._expressions)
-        {
-            this.Logger.LogDebug("[{MethodName}] Evaluating expression: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
-
-            if (expression.IsMatch(message))
+            if (this.Logger.IsEnabled(LogLevel.Debug)) // Avoid boxing if not enabled
             {
-                this.Logger.LogInformation("[{MethodName}] Expression matched: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
+                this.Logger.LogDebug("[{MethodName}] Evaluating expressions: {ExpressionCount}", nameof(ShouldAgentTerminateAsync), this._expressions.Length);
+            }
 
-                return Task.FromResult(true);
+            // Evaluate expressions for match
+            foreach (var expression in this._expressions)
+            {
+                this.Logger.LogDebug("[{MethodName}] Evaluating expression: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
+
+                if (expression.IsMatch(message))
+                {
+                    this.Logger.LogInformation("[{MethodName}] Expression matched: {Expression}", nameof(ShouldAgentTerminateAsync), expression);
+
+                    return Task.FromResult(true);
+                }
             }
         }
 

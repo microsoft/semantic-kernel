@@ -16,7 +16,7 @@ internal abstract class ClientBase
 {
     private readonly Func<Task<string>>? _bearerTokenProvider;
 
-    private readonly ILogger _logger;
+    protected ILogger Logger { get; }
 
     protected HttpClient HttpClient { get; }
 
@@ -37,7 +37,7 @@ internal abstract class ClientBase
         Verify.NotNull(httpClient);
 
         this.HttpClient = httpClient;
-        this._logger = logger ?? NullLogger.Instance;
+        this.Logger = logger ?? NullLogger.Instance;
     }
 
     protected static void ValidateMaxTokens(int? maxTokens)
@@ -91,23 +91,13 @@ internal abstract class ClientBase
         httpRequestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion,
             HttpHeaderConstant.Values.GetAssemblyVersion(typeof(ClientBase)));
 
-        if (this._bearerTokenProvider != null && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
+        if (this._bearerTokenProvider is not null && await this._bearerTokenProvider().ConfigureAwait(false) is { } bearerKey)
         {
             httpRequestMessage.Headers.Authorization =
                 new AuthenticationHeaderValue("Bearer", bearerKey);
         }
 
         return httpRequestMessage;
-    }
-
-    protected void Log(LogLevel logLevel, string? message, params object[] args)
-    {
-        if (this._logger.IsEnabled(logLevel))
-        {
-#pragma warning disable CA2254 // Template should be a constant string.
-            this._logger.Log(logLevel, message, args);
-#pragma warning restore CA2254
-        }
     }
 
     protected static string GetApiVersionSubLink(GoogleAIVersion apiVersion)

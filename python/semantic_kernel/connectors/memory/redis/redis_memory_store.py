@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Tuple
 
 import numpy as np
 import redis
 from numpy import ndarray
+from pydantic import ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
+from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
@@ -24,12 +25,14 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class RedisMemoryStore(MemoryStoreBase):
-    """A memory store implementation using Redis"""
+    """A memory store implementation using Redis."""
 
     _database: "redis.Redis"
     _ft: "redis.Redis.ft"
@@ -50,24 +53,35 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_type: str = "FLOAT32",
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
-        **kwargs,
+        env_file_path: str | None = None,
     ) -> None:
-        """
-        RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
+        """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
+
         See documentation about connections: https://redis-py.readthedocs.io/en/stable/connections.html
-        See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors
+        See documentation about vector attributes: https://redis.io/docs/stack/search/reference/vectors.
 
-        Arguments:
-            connection_string {str} -- Provide connection URL to a Redis instance
-            vector_size {str} -- Size of vectors, defaults to 1536
-            vector_distance_metric {str} -- Metric for measuring vector distances, defaults to COSINE
-            vector_type {str} -- Vector type, defaults to FLOAT32
-            vector_index_algorithm {str} -- Indexing algorithm for vectors, defaults to HNSW
-            query_dialect {int} -- Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
-
+        Args:
+            connection_string (str): Provide connection URL to a Redis instance
+            vector_size (str): Size of vectors, defaults to 1536
+            vector_distance_metric (str): Metric for measuring vector distances, defaults to COSINE
+            vector_type (str): Vector type, defaults to FLOAT32
+            vector_index_algorithm (str): Indexing algorithm for vectors, defaults to HNSW
+            query_dialect (int): Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
+            env_file_path (str | None): Use the environment settings file as a fallback to
+                environment variables, defaults to False
         """
-        if kwargs.get("logger"):
-            logger.warning("The `logger` parameter is deprecated. Please use the `logging` module instead.")
+        redis_settings = None
+        try:
+            redis_settings = RedisSettings.create(env_file_path=env_file_path)
+        except ValidationError as e:
+            logger.warning(f"Failed to load Redis pydantic settings: {e}")
+
+        connection_string = connection_string or (
+            redis_settings.connection_string.get_secret_value()
+            if redis_settings and redis_settings.connection_string
+            else None
+        )
+
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")
 
@@ -82,22 +96,19 @@ class RedisMemoryStore(MemoryStoreBase):
         self._vector_size = vector_size
 
     async def close(self):
-        """
-        Closes the Redis database connection
-        """
+        """Closes the Redis database connection."""
         logger.info("Closing Redis connection")
         self._database.close()
 
     async def create_collection(self, collection_name: str) -> None:
-        """
-        Creates a collection, implemented as a Redis index containing hashes
-        prefixed with "collection_name:".
+        """Creates a collection.
+
+        Implemented as a Redis index containing hashes prefixed with "collection_name:".
         If a collection of the name exists, it is left unchanged.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
+        Args:
+            collection_name (str): Name for a collection of embeddings
         """
-
         if await self.does_collection_exist(collection_name):
             logger.info(f'Collection "{collection_name}" already exists.')
         else:
@@ -122,35 +133,32 @@ class RedisMemoryStore(MemoryStoreBase):
             except Exception as e:
                 raise ServiceResponseException(f"Failed to create collection {collection_name}") from e
 
-    async def get_collections(self) -> List[str]:
-        """
-        Returns a list of names of all collection names present in the data store.
+    async def get_collections(self) -> list[str]:
+        """Returns a list of names of all collection names present in the data store.
 
         Returns:
-            List[str] -- list of collection names
+            List[str]: list of collection names
         """
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
 
     async def delete_collection(self, collection_name: str, delete_records: bool = True) -> None:
-        """
-        Deletes a collection from the data store.
+        """Deletes a collection from the data store.
+
         If the collection does not exist, the database is left unchanged.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            delete_records {bool} -- Delete all data associated with the collection, default to True
-
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            delete_records (bool): Delete all data associated with the collection, default to True
         """
         if await self.does_collection_exist(collection_name):
             self._ft(collection_name).dropindex(delete_documents=delete_records)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
-        """
-        Determines if a collection exists in the data store.
+        """Determines if a collection exists in the data store.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
+        Args:
+            collection_name (str): Name for a collection of embeddings
 
         Returns:
             True if the collection exists, False if not
@@ -162,22 +170,22 @@ class RedisMemoryStore(MemoryStoreBase):
             return False
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """
-        Upsert a memory record into the data store. Does not guarantee that the collection exists.
+        """Upsert a memory record into the data store.
+
+        Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the record do not have the same dimensionality configured for the collection,
         it will not be detected to belong to the collection in Redis.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            record {MemoryRecord} -- Memory record to upsert
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            record (MemoryRecord): Memory record to upsert
 
-        Returns
-            str -- Redis key associated with the upserted memory record
+        Returns:
+            str: Redis key associated with the upserted memory record
         """
-
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
@@ -195,23 +203,23 @@ class RedisMemoryStore(MemoryStoreBase):
         except Exception as e:
             raise ServiceResponseException("Could not upsert messages.") from e
 
-    async def upsert_batch(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
-        """
-        Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+        """Upserts a group of memory records into the data store.
+
+        Does not guarantee that the collection exists.
             * If the record already exists, it will be updated.
             * If the record does not exist, it will be created.
 
         Note: if the records do not have the same dimensionality configured for the collection,
         they will not be detected to belong to the collection in Redis.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            records {List[MemoryRecord]} -- List of memory records to upsert
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            records (List[MemoryRecord]): List of memory records to upsert
 
-        Returns
-            List[str] -- Redis keys associated with the upserted memory records
+        Returns:
+            List[str]: Redis keys associated with the upserted memory records
         """
-
         keys = list()
         for record in records:
             record_key = await self.upsert(collection_name, record)
@@ -220,18 +228,16 @@ class RedisMemoryStore(MemoryStoreBase):
         return keys
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
-        """
-        Gets a memory record from the data store. Does not guarantee that the collection exists.
+        """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            key {str} -- ID associated with the memory to get
-            with_embedding {bool} -- Include embedding with the memory record, default to False
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            key (str): ID associated with the memory to get
+            with_embedding (bool): Include embedding with the memory record, default to False
 
         Returns:
-            MemoryRecord -- The memory record if found, else None
+            MemoryRecord: The memory record if found, else None
         """
-
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
@@ -248,20 +254,20 @@ class RedisMemoryStore(MemoryStoreBase):
         return record
 
     async def get_batch(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
-        """
-        Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
+        """Gets a batch of memory records from the data store.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            keys {List[str]} -- IDs associated with the memory records to get
-            with_embedding {bool} -- Include embeddings with the memory records, default to False
+        Does not guarantee that the collection exists.
+
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            keys (List[str]): IDs associated with the memory records to get
+            with_embeddings (bool): Include embeddings with the memory records, default to False
 
         Returns:
-            List[MemoryRecord] -- The memory records if found, else an empty list
+            List[MemoryRecord]: The memory records if found, else an empty list
         """
-
         records = list()
         for key in keys:
             record = await self.get(collection_name, key, with_embeddings)
@@ -271,26 +277,26 @@ class RedisMemoryStore(MemoryStoreBase):
         return records
 
     async def remove(self, collection_name: str, key: str) -> None:
-        """
-        Removes a memory record from the data store. Does not guarantee that the collection exists.
+        """Removes a memory record from the data store.
+
+        Does not guarantee that the collection exists.
         If the key does not exist, do nothing.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            key {str} -- ID associated with the memory to remove
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            key (str): ID associated with the memory to remove
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
 
         self._database.delete(get_redis_key(collection_name, key))
 
-    async def remove_batch(self, collection_name: str, keys: List[str]) -> None:
-        """
-        Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
+        """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            keys {List[str]} -- IDs associated with the memory records to remove
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            keys (List[str]): IDs associated with the memory records to remove
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f'Collection "{collection_name}" does not exist')
@@ -304,19 +310,18 @@ class RedisMemoryStore(MemoryStoreBase):
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
-        """
-        Get the nearest matches to an embedding using the configured similarity algorithm.
+    ) -> list[tuple[MemoryRecord, float]]:
+        """Get the nearest matches to an embedding using the configured similarity algorithm.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            embedding {ndarray} -- Embedding to find the nearest matches to
-            limit {int} -- Maximum number of matches to return
-            min_relevance_score {float} -- Minimum relevance score of the matches, default to 0.0
-            with_embeddings {bool} -- Include embeddings in the resultant memory records, default to False
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            embedding (ndarray): Embedding to find the nearest matches to
+            limit (int): Maximum number of matches to return
+            min_relevance_score (float): Minimum relevance score of the matches, default to 0.0
+            with_embeddings (bool): Include embeddings in the resultant memory records, default to False
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- Records and their relevance scores by descending
+            List[Tuple[MemoryRecord, float]]: Records and their relevance scores by descending
                 order, or an empty list if no relevant matches are found
         """
         if not await self.does_collection_exist(collection_name):
@@ -357,18 +362,17 @@ class RedisMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
-        """
-        Get the nearest match to an embedding using the configured similarity algorithm.
+    ) -> tuple[MemoryRecord, float]:
+        """Get the nearest match to an embedding using the configured similarity algorithm.
 
-        Arguments:
-            collection_name {str} -- Name for a collection of embeddings
-            embedding {ndarray} -- Embedding to find the nearest match to
-            min_relevance_score {float} -- Minimum relevance score of the match, default to 0.0
-            with_embedding {bool} -- Include embedding in the resultant memory record, default to False
+        Args:
+            collection_name (str): Name for a collection of embeddings
+            embedding (ndarray): Embedding to find the nearest match to
+            min_relevance_score (float): Minimum relevance score of the match, default to 0.0
+            with_embedding (bool): Include embedding in the resultant memory record, default to False
 
         Returns:
-            Tuple[MemoryRecord, float] -- Record and the relevance score, or None if not found
+            Tuple[MemoryRecord, float]: Record and the relevance score, or None if not found
         """
         matches = await self.get_nearest_matches(
             collection_name=collection_name,

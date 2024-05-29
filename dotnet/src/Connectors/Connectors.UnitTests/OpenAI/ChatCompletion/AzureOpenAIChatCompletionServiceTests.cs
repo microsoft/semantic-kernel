@@ -161,7 +161,9 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             ResultsPerPrompt = 5,
             Seed = 567,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
-            StopSequences = ["stop_sequence"]
+            StopSequences = ["stop_sequence"],
+            Logprobs = true,
+            TopLogprobs = 5
         };
 
         var chatHistory = new ChatHistory();
@@ -218,6 +220,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(567, content.GetProperty("seed").GetInt32());
         Assert.Equal(3, content.GetProperty("logit_bias").GetProperty("2").GetInt32());
         Assert.Equal("stop_sequence", content.GetProperty("stop")[0].GetString());
+        Assert.True(content.GetProperty("logprobs").GetBoolean());
+        Assert.Equal(5, content.GetProperty("top_logprobs").GetInt32());
     }
 
     [Theory]
@@ -323,8 +327,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
-        const int AutoInvokeResponsesCount = 6;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
+        const int ModelResponsesCount = 129;
 
         int functionCallCount = 0;
 
@@ -342,7 +346,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var responses = new List<HttpResponseMessage>();
 
-        for (var i = 0; i < AutoInvokeResponsesCount; i++)
+        for (var i = 0; i < ModelResponsesCount; i++)
         {
             responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_single_function_call_test_response.json")) });
         }
@@ -501,8 +505,8 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
     public async Task GetStreamingChatMessageContentsWithFunctionCallMaximumAutoInvokeAttemptsAsync()
     {
         // Arrange
-        const int DefaultMaximumAutoInvokeAttempts = 5;
-        const int AutoInvokeResponsesCount = 6;
+        const int DefaultMaximumAutoInvokeAttempts = 128;
+        const int ModelResponsesCount = 129;
 
         int functionCallCount = 0;
 
@@ -520,7 +524,7 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var responses = new List<HttpResponseMessage>();
 
-        for (var i = 0; i < AutoInvokeResponsesCount; i++)
+        for (var i = 0; i < ModelResponsesCount; i++)
         {
             responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(OpenAITestHelper.GetTestResponse("chat_completion_streaming_single_function_call_test_response.txt")) });
         }
@@ -779,10 +783,10 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
             new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" })
         };
 
-        var chatHistory = new ChatHistory
-        {
+        ChatHistory chatHistory =
+        [
             new ChatMessageContent(AuthorRole.Assistant, items)
-        };
+        ];
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
 
@@ -833,14 +837,14 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
-            }),
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            ]),
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };
@@ -881,11 +885,11 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
 
         var chatHistory = new ChatHistory
         {
-            new ChatMessageContent(AuthorRole.Tool, new ChatMessageContentItemCollection()
-            {
+            new ChatMessageContent(AuthorRole.Tool,
+            [
                 new FunctionResultContent(new FunctionCallContent("GetCurrentWeather", "MyPlugin", "1", new KernelArguments() { ["location"] = "Boston, MA" }), "rainy"),
                 new FunctionResultContent(new FunctionCallContent("GetWeatherForecast", "MyPlugin", "2", new KernelArguments() { ["location"] = "Boston, MA" }), "sunny")
-            })
+            ])
         };
 
         var settings = new OpenAIPromptExecutionSettings() { ToolCallBehavior = ToolCallBehavior.EnableKernelFunctions };

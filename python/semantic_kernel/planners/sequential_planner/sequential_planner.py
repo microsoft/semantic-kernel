@@ -3,6 +3,7 @@
 import os
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -10,9 +11,7 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.plan import Plan
 from semantic_kernel.planners.sequential_planner.sequential_planner_config import SequentialPlannerConfig
-from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import (
-    SequentialPlannerKernelExtension as KernelContextExtension,
-)
+from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -27,7 +26,8 @@ PROMPT_TEMPLATE_FILE_PATH = os.path.join(CUR_DIR, "Plugins/SequentialPlanning/sk
 
 
 def read_file(file_path: str) -> str:
-    with open(file_path, "r") as file:
+    """Reads the content of a file."""
+    with open(file_path) as file:
         return file.read()
 
 
@@ -46,8 +46,7 @@ class SequentialPlanner:
         config: SequentialPlannerConfig = None,
         prompt: str = None,
     ) -> None:
-        """
-        Initializes a new instance of the SequentialPlanner class.
+        """Initializes a new instance of the SequentialPlanner class.
 
         Args:
             kernel (Kernel): The kernel instance to use for planning
@@ -55,7 +54,6 @@ class SequentialPlanner:
             config (SequentialPlannerConfig, optional): The configuration to use for planning. Defaults to None.
             prompt (str, optional): The prompt to use for planning. Defaults to None.
         """
-        assert isinstance(kernel, Kernel)
         self.config = config or SequentialPlannerConfig()
 
         self.config.excluded_plugins.append(self.RESTRICTED_PLUGIN_NAME)
@@ -91,10 +89,11 @@ class SequentialPlanner:
         )
 
     async def create_plan(self, goal: str) -> Plan:
+        """Create a plan for the specified goal."""
         if len(goal) == 0:
             raise PlannerInvalidGoalError("The goal specified is empty")
 
-        relevant_function_manual = await KernelContextExtension.get_functions_manual(
+        relevant_function_manual = await SequentialPlannerKernelExtension.get_functions_manual(
             self._kernel, self._arguments, goal, self.config
         )
         self._arguments["available_functions"] = relevant_function_manual
@@ -102,10 +101,10 @@ class SequentialPlanner:
 
         plan_result = await self._function_flow_function.invoke(self._kernel, self._arguments)
 
-        if isinstance(plan_result, FunctionResult) and "exception" in plan_result.metadata:
+        if isinstance(plan_result, FunctionResult) and METADATA_EXCEPTION_KEY in plan_result.metadata:
             raise PlannerCreatePlanError(
                 f"Error creating plan for goal: {plan_result.metadata['exception']}",
-            ) from plan_result.metadata["exception"]
+            ) from plan_result.metadata[METADATA_EXCEPTION_KEY]
 
         plan_result_string = str(plan_result).strip()
 

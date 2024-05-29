@@ -22,6 +22,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     private readonly MongoClient _mongoClient;
     private readonly IMongoDatabase _mongoDatabase;
     private readonly AzureCosmosDBMongoDBConfig _config;
+    private readonly bool _ownsMongoClient;
 
     /// <summary>
     /// Initiates a AzureCosmosDBMongoDBMemoryStore instance using a Azure CosmosDB Mongo vCore connection string
@@ -41,6 +42,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         settings.ApplicationName = this._config.ApplicationName;
         this._mongoClient = new MongoClient(settings);
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
+        this._ownsMongoClient = true;
     }
 
     /// <summary>
@@ -48,15 +50,13 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     /// and other properties required for vector search.
     /// </summary>
     public AzureCosmosDBMongoDBMemoryStore(
-        IMongoClient mongoClient,
+        MongoClient mongoClient,
         string databaseName,
         AzureCosmosDBMongoDBConfig config
     )
     {
-        MongoClientSettings settings = mongoClient.Settings;
         this._config = config;
-        settings.ApplicationName = this._config.ApplicationName;
-        this._mongoClient = new MongoClient(settings);
+        this._mongoClient = mongoClient;
         this._mongoDatabase = this._mongoClient.GetDatabase(databaseName);
     }
 
@@ -147,6 +147,8 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         CancellationToken cancellationToken = default
     )
     {
+        record.Key = record.Metadata.Id;
+
         var replaceOptions = new ReplaceOptions() { IsUpsert = true };
 
         var result = await this.GetCollection(collectionName)
@@ -316,7 +318,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            this._mongoClient.Cluster.Dispose();
+            if (this._ownsMongoClient)
+            {
+                this._mongoClient.Cluster.Dispose();
+            }
         }
     }
 
@@ -340,9 +345,9 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._config.Kind },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "numLists", this._config.NumLists },
-                                { "similarity", this._config.Similarity },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", this._config.Dimensions }
                             }
                         }
@@ -372,10 +377,10 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                             "cosmosSearchOptions",
                             new BsonDocument
                             {
-                                { "kind", this._config.Kind },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "m", this._config.NumberOfConnections },
                                 { "efConstruction", this._config.EfConstruction },
-                                { "similarity", this._config.Similarity },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", this._config.Dimensions }
                             }
                         }
@@ -397,7 +402,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             limit = int.MaxValue;
         }
 
-        BsonDocument[] pipeline = Array.Empty<BsonDocument>();
+        BsonDocument[] pipeline = [];
         switch (this._config.Kind)
         {
             case AzureCosmosDBVectorSearchType.VectorIVF:
@@ -408,7 +413,7 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
                 break;
         }
 
-        using var cursor = await this.GetCollection(collectionName)
+        var cursor = await this.GetCollection(collectionName)
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         return cursor;
@@ -437,17 +442,18 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
         }";
 
         string projectStage =
-            @"
-        {
-            ""$project"": {
-                ""similarityScore"": { ""$meta"": ""searchScore"" },
-                ""document"": ""$$ROOT""
+            """
+            {
+                "$project": {
+                    "similarityScore": { "$meta": "searchScore" },
+                    "document": "$$ROOT"
+                }
             }
-        }";
+            """;
 
         BsonDocument searchBson = BsonDocument.Parse(searchStage);
         BsonDocument projectBson = BsonDocument.Parse(projectStage);
-        return new BsonDocument[] { searchBson, projectBson };
+        return [searchBson, projectBson];
     }
 
     private BsonDocument[] GetVectorHNSWSearchPipeline(ReadOnlyMemory<float> embedding, int limit)
@@ -474,18 +480,18 @@ public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
             }
         }";
 
-        string projectStage =
-            @"
-        {
-            ""$project"": {
-                ""similarityScore"": { ""$meta"": ""searchScore"" },
-                ""document"": ""$$ROOT""
+        string projectStage = """
+            {
+                "$project": {
+                    "similarityScore": { "$meta": "searchScore" },
+                    "document": "$$ROOT"
+                }
             }
-        }";
+            """;
 
         BsonDocument searchBson = BsonDocument.Parse(searchStage);
         BsonDocument projectBson = BsonDocument.Parse(projectStage);
-        return new BsonDocument[] { searchBson, projectBson };
+        return [searchBson, projectBson];
     }
 
     private IMongoCollection<AzureCosmosDBMongoDBMemoryRecord> GetCollection(

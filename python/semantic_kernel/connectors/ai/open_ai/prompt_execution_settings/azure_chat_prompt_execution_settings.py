@@ -1,10 +1,9 @@
 import logging
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Union
 
 from pydantic import AliasGenerator, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_snake
 from pydantic.functional_validators import AfterValidator
-from typing_extensions import Annotated
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
@@ -24,46 +23,46 @@ class AzureChatRequestBase(KernelBaseModel):
 
 class ConnectionStringAuthentication(AzureChatRequestBase):
     type: Annotated[Literal["ConnectionString", "connection_string"], AfterValidator(to_snake)] = "connection_string"
-    connection_string: Optional[str] = None
+    connection_string: str | None = None
 
 
 class ApiKeyAuthentication(AzureChatRequestBase):
     type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
-    key: Optional[str] = None
+    key: str | None = None
 
 
 class AzureEmbeddingDependency(AzureChatRequestBase):
     type: Annotated[Literal["DeploymentName", "deployment_name"], AfterValidator(to_snake)] = "deployment_name"
-    deployment_name: Optional[str] = None
+    deployment_name: str | None = None
 
 
 class DataSourceFieldsMapping(AzureChatRequestBase):
-    title_field: Optional[str] = None
-    url_field: Optional[str] = None
-    filepath_field: Optional[str] = None
-    content_fields: Optional[List[str]] = None
-    vector_fields: Optional[List[str]] = None
-    content_fields_separator: Optional[str] = "\n"
+    title_field: str | None = None
+    url_field: str | None = None
+    filepath_field: str | None = None
+    content_fields: list[str] | None = None
+    vector_fields: list[str] | None = None
+    content_fields_separator: str | None = "\n"
 
 
 class AzureDataSourceParameters(AzureChatRequestBase):
     index_name: str
-    index_language: Optional[str] = None
-    fields_mapping: Optional[DataSourceFieldsMapping] = None
-    in_scope: Optional[bool] = True
-    top_n_documents: Optional[int] = 5
-    semantic_configuration: Optional[str] = None
-    role_information: Optional[str] = None
-    filter: Optional[str] = None
+    index_language: str | None = None
+    fields_mapping: DataSourceFieldsMapping | None = None
+    in_scope: bool | None = True
+    top_n_documents: int | None = 5
+    semantic_configuration: str | None = None
+    role_information: str | None = None
+    filter: str | None = None
     strictness: int = 3
-    embedding_dependency: Optional[AzureEmbeddingDependency] = None
+    embedding_dependency: AzureEmbeddingDependency | None = None
 
 
 class AzureCosmosDBDataSourceParameters(AzureDataSourceParameters):
-    authentication: Optional[ConnectionStringAuthentication] = None
-    database_name: Optional[str] = None
-    container_name: Optional[str] = None
-    embedding_dependency_type: Optional[AzureEmbeddingDependency] = None
+    authentication: ConnectionStringAuthentication | None = None
+    database_name: str | None = None
+    container_name: str | None = None
+    embedding_dependency_type: AzureEmbeddingDependency | None = None
 
 
 class AzureCosmosDBDataSource(AzureChatRequestBase):
@@ -72,11 +71,11 @@ class AzureCosmosDBDataSource(AzureChatRequestBase):
 
 
 class AzureAISearchDataSourceParameters(AzureDataSourceParameters):
-    endpoint: Optional[str] = None
+    endpoint: str | None = None
     query_type: Annotated[
         Literal["simple", "semantic", "vector", "vectorSimpleHybrid", "vectorSemanticHybrid"], AfterValidator(to_snake)
     ] = "simple"
-    authentication: Optional[ApiKeyAuthentication] = None
+    authentication: ApiKeyAuthentication | None = None
 
 
 class AzureAISearchDataSource(AzureChatRequestBase):
@@ -88,16 +87,16 @@ DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], 
 
 
 class ExtraBody(KernelBaseModel):
-    data_sources: Optional[List[DataSource]] = None
-    input_language: Optional[str] = Field(None, serialization_alias="inputLanguage")
-    output_language: Optional[str] = Field(None, serialization_alias="outputLanguage")
+    data_sources: list[DataSource] | None = None
+    input_language: str | None = Field(None, serialization_alias="inputLanguage")
+    output_language: str | None = Field(None, serialization_alias="outputLanguage")
 
     def __getitem__(self, item):
+        """Get an item from the ExtraBody."""
         return getattr(self, item)
 
 
 class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
-    response_format: Optional[str] = None
-    extra_body: Optional[Union[Dict[str, Any], ExtraBody]] = None
+    extra_body: dict[str, Any] | ExtraBody | None = None

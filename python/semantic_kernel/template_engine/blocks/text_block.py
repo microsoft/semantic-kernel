@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Optional, Tuple
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pydantic import field_validator
 
@@ -21,16 +21,20 @@ class TextBlock(Block):
     @field_validator("content", mode="before")
     @classmethod
     def content_strip(cls, content: str):
-        # overload strip method text blocks are not stripped.
+        """Strip the content of the text block.
+
+        Overload strip method, text blocks are not stripped.
+        """
         return content
 
     @classmethod
     def from_text(
         cls,
-        text: Optional[str] = None,
-        start_index: Optional[int] = None,
-        stop_index: Optional[int] = None,
+        text: str | None = None,
+        start_index: int | None = None,
+        stop_index: int | None = None,
     ):
+        """Create a text block from a string."""
         if text is None:
             return cls(content="")
         if start_index is not None and stop_index is not None:
@@ -48,5 +52,6 @@ class TextBlock(Block):
 
         return cls(content=text)
 
-    def render(self, *_: Tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+    def render(self, *_: tuple[Optional["Kernel"], Optional["KernelArguments"]]) -> str:
+        """Render the text block."""
         return self.content

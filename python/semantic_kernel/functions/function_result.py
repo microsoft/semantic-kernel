@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
 from typing import Any
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FunctionResult(KernelBaseModel):
     """The result of a function.
 
-    Arguments:
+    Args:
         function (KernelFunctionMetadata): The metadata of the function that was invoked.
         value (Any): The value of the result.
         metadata (Mapping[str, Any]): The metadata of the result.
@@ -39,7 +38,11 @@ class FunctionResult(KernelBaseModel):
         if self.value:
             try:
                 if isinstance(self.value, list):
-                    return str(self.value[0])
+                    return (
+                        str(self.value[0])
+                        if isinstance(self.value[0], KernelContent)
+                        else ",".join(map(str, self.value))
+                    )
                 elif isinstance(self.value, dict):
                     # TODO: remove this once function result doesn't include input args
                     # This is so an integration test can pass.
@@ -53,7 +56,7 @@ class FunctionResult(KernelBaseModel):
     def get_inner_content(self, index: int = 0) -> Any | None:
         """Get the inner content of the function result.
 
-        Arguments:
+        Args:
             index (int): The index of the inner content if the inner content is a list, default 0.
         """
         if isinstance(self.value, list):

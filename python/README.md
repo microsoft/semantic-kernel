@@ -20,15 +20,29 @@ Make sure you have an
 [OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
-Copy those keys into a `.env` file (see the `.env.example` file):
+There are two methods to manage keys, secrets, and endpoints:
+
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+
+2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
 
 ```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_DEPLOYMENT_NAME=""
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
+
+You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+
+```python
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+```
+
+This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
 
 # Running a prompt
 
@@ -37,30 +51,21 @@ import asyncio
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureChatCompletion
 from semantic_kernel.prompt_template import PromptTemplateConfig
-from semantic_kernel.utils.settings import openai_settings_from_dot_env, azure_openai_settings_from_dot_env
 
 kernel = Kernel()
 
 # Prepare OpenAI service using credentials stored in the `.env` file
-api_key, org_id = openai_settings_from_dot_env()
 service_id="chat-gpt"
 kernel.add_service(
     OpenAIChatCompletion(
         service_id=service_id,
-        ai_model_id="gpt-3.5-turbo",
-        api_key=api_key,
-        org_id=org_id
     )
 )
 
 # Alternative using Azure:
-# deployment, api_key, endpoint = azure_openai_settings_from_dot_env()
 # kernel.add_service(
 #   AzureChatCompletion(
 #       service_id=service_id,
-#       deployment_name=deployment,
-#       endpoint=endpoint,
-#       api_key=api_key
 #   )
 # )
 
@@ -112,10 +117,10 @@ if __name__ == "__main__":
 ```python
 # Create a reusable function summarize function
 summarize = kernel.add_function(
-        function_name="tldr_function",
-        plugin_name="tldr_plugin",
-        prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
-        prompt_template_settings=req_settings,
+    function_name="tldr_function",
+    plugin_name="tldr_plugin",
+    prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
+    prompt_template_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics
@@ -148,18 +153,18 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
-- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
-- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
-- [Creating Prompt Functions at runtime (i.e. inline functions)](./notebooks/03-prompt-function-inline.ipynb)
-- [Using Context Variables to Build a Chat Experience](./notebooks/04-kernel-arguments-chat.ipynb)
-- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
-- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
-- [Using Hugging Face for Plugins](./notebooks/07-hugging-face-for-plugins.ipynb)
-- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
-- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
-- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
-- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
+- [Getting started with Semantic Kernel](./samples/getting_started/00-getting-started.ipynb)
+- [Loading and configuring Semantic Kernel](./samples/getting_started/01-basic-loading-the-kernel.ipynb)
+- [Running AI prompts from file](./samples/getting_started/02-running-prompts-from-file.ipynb)
+- [Creating Prompt Functions at runtime (i.e. inline functions)](./samples/getting_started/03-prompt-function-inline.ipynb)
+- [Using Context Variables to Build a Chat Experience](./samples/getting_started/04-kernel-arguments-chat.ipynb)
+- [Introduction to planners](./samples/getting_started/05-using-the-planner.ipynb)
+- [Building Memory with Embeddings](./samples/getting_started/06-memory-and-embeddings.ipynb)
+- [Using Hugging Face for Plugins](./samples/getting_started/07-hugging-face-for-plugins.ipynb)
+- [Combining native functions and semantic functions](./samples/getting_started/08-native-function-inline.ipynb)
+- [Groundedness Checking with Semantic Kernel](./samples/getting_started/09-groundedness-checking.ipynb)
+- [Returning multiple results per prompt](./samples/getting_started/10-multiple-results-per-prompt.ipynb)
+- [Streaming completions with Semantic Kernel](./samples/getting_started/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 
