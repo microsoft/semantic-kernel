@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import nbformat
-from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
-from pytest import mark, raises
+from nbconvert.preprocessors import ExecutePreprocessor
+from pytest import mark
 from traitlets.config import Config
 
 c = Config()
@@ -27,23 +27,13 @@ def run_notebook(notebook_name: str):
         "03-prompt-function-inline.ipynb",
         "04-kernel-arguments-chat.ipynb",
         "05-using-the-planner.ipynb",
+        "06-memory-and-embeddings.ipynb",
         "07-hugging-face-for-plugins.ipynb",
         "08-native-function-inline.ipynb",
         "09-groundedness-checking.ipynb",
+        "10-multiple-results-per-prompt.ipynb",
         "11-streaming-completions.ipynb",
     ],
 )
 def test_notebooks(name):
     run_notebook(name)
-
-
-@mark.parametrize(
-    "name",
-    [
-        "06-memory-and-embeddings.ipynb",
-        "10-multiple-results-per-prompt.ipynb",
-    ],
-)
-def test_notebooks_fail(name):
-    with raises(CellExecutionError):
-        run_notebook(name)
