@@ -84,7 +84,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             arguments = KernelArguments()
 
         arguments = self._get_trusted_arguments(arguments)
-        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
+        allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
         helpers: dict[str, Callable[..., Any]] = {}
         helpers.update(JINJA2_SYSTEM_HELPERS)
         for plugin in kernel.plugins.values():

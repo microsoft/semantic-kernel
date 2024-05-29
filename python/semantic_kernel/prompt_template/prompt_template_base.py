@@ -48,17 +48,17 @@ class PromptTemplateBase(KernelBaseModel, ABC):
                 new_args[name] = value
         return new_args
 
-    def _get_allow_unsafe_function_output(self) -> bool:
-        """Get the allow_unsafe_function_output flag.
+    def _get_allow_dangerously_set_function_output(self) -> bool:
+        """Get the allow_dangerously_set_content flag.
 
         If the prompt template allows unsafe content, then we do not encode the function output,
         unless explicitly allowed by the prompt template config
 
         """
-        allow_unsafe_function_output = self.allow_dangerously_set_content
+        allow_dangerously_set_content = self.allow_dangerously_set_content
         if self.prompt_template_config.allow_dangerously_set_content:
-            allow_unsafe_function_output = True
-        return allow_unsafe_function_output
+            allow_dangerously_set_content = True
+        return allow_dangerously_set_content
 
     def _should_escape(self, name: str, input_variables: list["InputVariable"]) -> bool:
         """Check if the variable should be escaped.

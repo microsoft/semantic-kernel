@@ -123,7 +123,7 @@ class KernelPromptTemplate(PromptTemplateBase):
         rendered_blocks: list[str] = []
 
         arguments = self._get_trusted_arguments(arguments)
-        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
+        allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
         for block in blocks:
             if isinstance(block, TextRenderer):
                 rendered_blocks.append(block.render(kernel, arguments))
