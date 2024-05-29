@@ -1,34 +1,33 @@
 package com.microsoft.semantickernel.samples.syntaxexamples.functions;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.AzureKeyCredential;
-import com.azure.core.credential.KeyCredential;
 import com.google.cloud.vertexai.VertexAI;
+import com.google.cloud.vertexai.api.FunctionResponse;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatCompletion;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
-import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.aiservices.google.implementation.GeminiChatMessageContent;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
+import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,69 +103,75 @@ public class Example98_GeminiFunctionCalling {
             var result = kernel
                     .invokeAsync(function)
                     .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
-//                    .withToolCallBehavior(ToolCallBehavior.allowOnlyKernelFunctions(true, kernel.getPlugin("HelperFunctions").get("currentUtcTime")))
                     .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
                     .block();
 
             System.out.println(result.getResult());
 
-//            System.out.println("======== Example 2: Use manual function calling ========");
-//
-//            var chatHistory = new ChatHistory();
-//            chatHistory.addUserMessage(
-//                    "Given the current time of day and weather, what is the likely color of the sky in Boston?");
-//
-//            while (true) {
-//                var messages = chat.getChatMessageContentsAsync(
-//                                chatHistory,
-//                                kernel,
-//                                InvocationContext.builder()
-//                                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false)).build())
-//                        .block();
-//
-//                messages.stream()
-//                        .filter(it -> it.getContent() != null)
-//                        .forEach(it -> System.out.println(it.getContent()));
-//
-//                List<OpenAIFunctionToolCall> toolCalls = messages.stream()
-//                        .filter(it -> it instanceof OpenAIChatMessageContent)
-//                        .map(it -> (OpenAIChatMessageContent<?>) it)
-//                        .map(OpenAIChatMessageContent::getToolCall)
-//                        .flatMap(List::stream)
-//                        .collect(Collectors.toList());
-//
-//                if (toolCalls.isEmpty()) {
-//                    break;
-//                }
-//
-//                messages.stream()
-//                        .forEach(it -> chatHistory.addMessage(it));
-//
-//                for (var toolCall : toolCalls) {
-//
-//                    String content = null;
-//                    try {
-//                        // getFunction will throw an exception if the function is not found
-//                        var fn = kernel.getFunction(toolCall.getPluginName(),
-//                                toolCall.getFunctionName());
-//                        FunctionResult<?> fnResult = fn
-//                                .invokeAsync(kernel, toolCall.getArguments(), null, null).block();
-//                        content = (String) fnResult.getResult();
-//                    } catch (IllegalArgumentException e) {
-//                        content = "Unable to find function. Please try again!";
-//                    }
-//
-//                    chatHistory.addMessage(
-//                            AuthorRole.TOOL,
-//                            content,
-//                            StandardCharsets.UTF_8,
-//                            new FunctionResultMetadata(new CaseInsensitiveMap<>() {
-//                                {
-//                                    put(FunctionResultMetadata.ID, ContextVariable.of(toolCall.getId()));
-//                                }
-//                            }));
-//                }
-//            }
+            System.out.println("======== Example 2: Use manual function calling ========");
+
+            var chatHistory = new ChatHistory();
+            chatHistory.addUserMessage(
+                    "Given the current time of day and weather, what is the likely color of the sky in Boston?");
+
+            while (true) {
+                var message = (GeminiChatMessageContent<?>) chat.getChatMessageContentsAsync(
+                                chatHistory,
+                                kernel,
+                                InvocationContext.builder()
+                                        .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
+                                        .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
+                                        .build())
+                        .block().get(0);
+
+                // Add the assistant's response to the chat history
+                chatHistory.addMessage(message);
+                if (message.getContent() != null && !message.getContent().isEmpty()) {
+                    System.out.println(message.getContent());
+                }
+
+                // Process the functions calls or break if there are no more functions to call
+                if (message.getFunctionCalls().isEmpty()) {
+                    break;
+                }
+                List<FunctionResponse> functionResponses = new ArrayList<>();
+                for (var functionCall : message.getFunctionCalls()) {
+
+                    String content = null;
+                    try {
+                        // getFunction will throw an exception if the function is not found
+                        String[] name = functionCall.getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
+                        String pluginName = name[0], functionName = name[1];
+
+                        var fn = kernel.getFunction(pluginName, functionName);
+
+                        var arguments = KernelFunctionArguments.builder();
+                        functionCall.getArgs().getFieldsMap().forEach((key, value) -> {
+                            arguments.withVariable(key, value.getStringValue());
+                        });
+
+                        FunctionResult<?> functionResult = fn
+                                .invokeAsync(kernel, arguments.build(), null, null).block();
+
+                        content = (String) functionResult.getResult();
+
+                        var functionResponse = FunctionResponse.newBuilder()
+                                .setName(functionCall.getName())
+                                .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue(content).build()))
+                                .build();
+
+                        functionResponses.add(functionResponse);
+                    } catch (IllegalArgumentException e) {
+                        content = "Unable to find function. Please try again!";
+                    }
+                }
+
+                // Add the function responses to the chat history
+                ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
+                        "", null, null, null, null, null, functionResponses);
+
+                chatHistory.addMessage(functionResponsesMessage);
+            }
         }
     }
 }

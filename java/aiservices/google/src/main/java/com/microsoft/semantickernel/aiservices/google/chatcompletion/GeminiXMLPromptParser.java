@@ -85,7 +85,7 @@ public class GeminiXMLPromptParser {
                     paramString = parameters.toString();
                 }
 
-                // TODO: Build the parameters schema
+                // TODO: Update parameters to not depend on Azure SDK
                 Schema.Builder parametersBuilder = Schema.newBuilder();
 
                 FunctionDeclaration.Builder function = FunctionDeclaration.newBuilder()

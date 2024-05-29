@@ -1,32 +1,34 @@
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
-import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
-import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
-import com.azure.core.util.BinaryData;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.FunctionCall;
 import com.google.cloud.vertexai.api.FunctionDeclaration;
+import com.google.cloud.vertexai.api.FunctionResponse;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.api.Schema;
 import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.api.Type;
-import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.google.implementation.GeminiChatMessageContent;
 import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
+import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -34,12 +36,15 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.services.gemini.GeminiServiceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
@@ -60,41 +65,156 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     @Override
-    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
-        return internalChatMessageContentsAsync(getContents(chatHistory), kernel, invocationContext);
-    }
-
-    @Override
     public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
         GeminiXMLPromptParser.GeminiParsedPrompt parsedPrompt = GeminiXMLPromptParser.parse(prompt);
 
         return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel, invocationContext);
     }
 
-    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(List<Content> contents, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    @Override
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+        return internalChatMessageContentsAsync(
+                new ChatHistory(chatHistory.getMessages()),
+                new ChatHistory(),
+                kernel,
+                invocationContext,
+                Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                        invocationContext != null && invocationContext.getToolCallBehavior() != null
+                                ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts()
+                                : 0)
+        );
+    }
+
+    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(ChatHistory fullHistory, ChatHistory newHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext, int invocationAttempts) {
+        List<Content> contents = getContents(fullHistory);
         GenerativeModel model = getGenerativeModel(kernel, invocationContext);
 
         try {
-            GenerateContentResponse response = model.generateContent(contents);
-            return Mono.just(getChatMessageContentsFromResponse(response));
+            return MonoConverter.fromApiFuture(model.generateContentAsync(contents)).flatMap(result -> {
+                // Separate the messages and function calls in the response
+                GeminiChatMessageContent<?> response = getGeminiChatMessageContent(result);
+
+                // Add assistant response to the chat history
+                fullHistory.addMessage(response);
+                newHistory.addMessage(response);
+
+                // Just return the result:
+                // If we don't want to attempt to invoke any functions or if we have no function calls
+                if (invocationAttempts <= 0 || response.getFunctionCalls().isEmpty()) {
+                    if (invocationContext != null && invocationContext.returnMode() == InvocationReturnMode.FULL_HISTORY) {
+                        return Mono.just(fullHistory.getMessages());
+                    }
+                    if (invocationContext != null && invocationContext.returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                        ChatHistory lastMessage = new ChatHistory();
+                        lastMessage.addMessage(response);
+
+                        return Mono.just(lastMessage.getMessages());
+                    }
+
+                    return Mono.just(newHistory.getMessages());
+                }
+
+                // Perform the function calls
+                // FunctionCall and FunctionResult are kept together to create later the list of FunctionResponse
+                List<Mono<Map.Entry<FunctionCall, FunctionResult<String>>>> functionResults = response.getFunctionCalls().stream()
+                        .map(functionCall -> performFunctionCall(kernel, invocationContext, functionCall))
+                        .collect(Collectors.toList());
+
+                Mono<List<Map.Entry<FunctionCall, FunctionResult<String>>>> combinedResults = Flux.fromIterable(functionResults)
+                        .flatMap(mono -> mono)
+                        .collectList();
+
+                // Create the FunctionResponse and add GeminiChatMessageContent to the chat history
+                return combinedResults.flatMap(results -> {
+                    List<FunctionResponse> functionResponses = results.stream()
+                            .map(resultEntry -> {
+                                FunctionCall functionCall = resultEntry.getKey();
+                                FunctionResult<String> functionResult = resultEntry.getValue();
+
+                                return FunctionResponse.newBuilder()
+                                        .setName(functionCall.getName())
+                                        .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue(functionResult.getResult()).build()))
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
+                            "", null, null, null, null, null, functionResponses);
+
+                    fullHistory.addMessage(functionResponsesMessage);
+                    newHistory.addMessage(functionResponsesMessage);
+
+                    return internalChatMessageContentsAsync(fullHistory, newHistory, kernel, invocationContext, invocationAttempts - 1);
+                });
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    // Convert from ChatHistory to List<Content>
     private List<Content> getContents(ChatHistory chatHistory) {
         List<Content> contents = new ArrayList<>();
         chatHistory.forEach(chatMessageContent -> {
+            Content.Builder contentBuilder = Content.newBuilder();
+
             if (chatMessageContent.getAuthorRole() == AuthorRole.USER) {
-                contents.add(ContentMaker.forRole(GeminiRole.USER.toString()).fromMultiModalData(chatMessageContent.getContent()));
+                contentBuilder.setRole(GeminiRole.USER.toString());
+
+                if (chatMessageContent instanceof GeminiChatMessageContent) {
+                    GeminiChatMessageContent<?> functionResponsesMessage = (GeminiChatMessageContent<?>) chatMessageContent;
+
+                    functionResponsesMessage.getFunctionResponses().forEach(functionResponse -> {
+                        contentBuilder.addParts(Part.newBuilder().setFunctionResponse(functionResponse));
+                    });
+                }
             } else if (chatMessageContent.getAuthorRole() == AuthorRole.ASSISTANT) {
-                contents.add(ContentMaker.forRole(GeminiRole.MODEL.toString()).fromMultiModalData(chatMessageContent.getContent()));
-            } else if (chatMessageContent.getAuthorRole() == AuthorRole.TOOL) {
-                contents.add(ContentMaker.forRole(GeminiRole.FUNCTION.toString()).fromMultiModalData(chatMessageContent.getContent()));
+                contentBuilder.setRole(GeminiRole.MODEL.toString());
+
+                if (chatMessageContent instanceof GeminiChatMessageContent) {
+                    GeminiChatMessageContent<?> functionCallsMessage = (GeminiChatMessageContent<?>) chatMessageContent;
+                    if (functionCallsMessage.getFunctionCalls() != null) {
+                        functionCallsMessage.getFunctionCalls().forEach(functionCall -> {
+                            contentBuilder.addParts(Part.newBuilder().setFunctionCall(functionCall));
+                        });
+                    }
+                }
             }
+
+            if (chatMessageContent.getContent() != null && !chatMessageContent.getContent().isEmpty()) {
+                contentBuilder.addParts(Part.newBuilder().setText(chatMessageContent.getContent()));
+            }
+
+            contents.add(contentBuilder.build());
         });
 
         return contents;
+    }
+
+    private GeminiChatMessageContent<?> getGeminiChatMessageContent(GenerateContentResponse response) {
+        StringBuilder message = new StringBuilder();
+        List<FunctionCall> functionCalls = new ArrayList<>();
+
+        response.getCandidatesList().forEach(
+                candidate -> {
+                    Content content = candidate.getContent();
+                    if (content.getPartsCount() == 0) {
+                        return;
+                    }
+
+                    content.getPartsList().forEach(part -> {
+                        if (!part.getFunctionCall().getName().isEmpty()) {
+                            functionCalls.add(part.getFunctionCall());
+                        }
+                        if (!part.getText().isEmpty()) {
+                            message.append(part.getText());
+                        }
+                    });
+                }
+        );
+
+        return new GeminiChatMessageContent<>(AuthorRole.ASSISTANT,
+                message.toString(), null, null, null, null, functionCalls, null);
     }
 
     private GenerativeModel getGenerativeModel(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
@@ -106,10 +226,17 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             if (invocationContext.getPromptExecutionSettings() != null) {
                 PromptExecutionSettings settings = invocationContext.getPromptExecutionSettings();
 
+                if (settings.getResultsPerPrompt() < 1 || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+                    throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                            String.format("Results per prompt must be in range between 1 and %d, inclusive.",
+                                    MAX_RESULTS_PER_PROMPT));
+                }
+
                 GenerationConfig config = GenerationConfig.newBuilder()
                         .setMaxOutputTokens(settings.getMaxTokens())
                         .setTemperature((float) settings.getTemperature())
                         .setTopP((float) settings.getTopP())
+                        .setCandidateCount(settings.getResultsPerPrompt())
                         .build();
 
                 modelBuilder.setGenerationConfig(config);
@@ -180,18 +307,38 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return toolBuilder.build();
     }
 
-    private List<ChatMessageContent<?>> getChatMessageContentsFromResponse(GenerateContentResponse response) {
-        List<ChatMessageContent<?>> chatMessageContents = new ArrayList<>();
+    public Mono<Map.Entry<FunctionCall, FunctionResult<String>>> performFunctionCall(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext, FunctionCall functionCall) {
+        if (kernel == null) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    "Kernel must be provided to perform function call");
+        }
 
-        response.getCandidatesList().forEach(
-                candidate -> {
-                    chatMessageContents.add(new ChatMessageContent<>(
-                            AuthorRole.ASSISTANT,
-                            candidate.getContent().getPartsList().stream().map(Part::getText).reduce("", String::concat)));
-                }
-        );
+        String[] name = functionCall.getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
 
-        return chatMessageContents;
+        String pluginName = name[0];
+        String functionName = name[1];
+
+        KernelFunction<?> function = kernel.getPlugin(pluginName).get(functionName);
+
+        if (function == null) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                    String.format("Kernel function %s not found in plugin %s", name, pluginName));
+        }
+
+        ContextVariableTypes contextVariableTypes = invocationContext == null
+                ? new ContextVariableTypes()
+                : invocationContext.getContextVariableTypes();
+
+        KernelFunctionArguments.Builder arguments = KernelFunctionArguments.builder();
+        functionCall.getArgs().getFieldsMap().forEach((key, value) -> {
+            arguments.withVariable(key, value.getStringValue());
+        });
+
+        return function
+            .invokeAsync(kernel)
+            .withArguments(arguments.build())
+            .withResultType(contextVariableTypes.getVariableTypeForClass(String.class))
+            .map(functionResult -> new AbstractMap.SimpleEntry<>(functionCall, functionResult));
     }
 
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
