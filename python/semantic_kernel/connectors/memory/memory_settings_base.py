@@ -10,6 +10,8 @@ class BaseModelSettings(BaseSettings):
     env_file_path: str | None = None
 
     class Config:
+        """Pydantic configuration settings."""
+
         env_file = None
         env_file_encoding = "utf-8"
         extra = "ignore"
@@ -17,6 +19,7 @@ class BaseModelSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
+        """Create an instance of the class."""
         if "env_file_path" in kwargs and kwargs["env_file_path"]:
             cls.Config.env_file = kwargs["env_file_path"]
         else:

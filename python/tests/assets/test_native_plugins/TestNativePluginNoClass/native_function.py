@@ -8,8 +8,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
     name="echoAsync",
 )
 async def echo(text: Annotated[str, "The text to echo"]) -> str:
-    """
-    Echo for input text
+    """Echo for input text
 
     Example:
         "hello world" => "hello world"

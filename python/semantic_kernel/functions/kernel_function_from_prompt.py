@@ -63,8 +63,7 @@ class KernelFunctionFromPrompt(KernelFunction):
             PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]
         ) = None,
     ) -> None:
-        """
-        Initializes a new instance of the KernelFunctionFromPrompt class
+        """Initializes a new instance of the KernelFunctionFromPrompt class.
 
         Args:
             function_name (str): The name of the function

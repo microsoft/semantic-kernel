@@ -14,4 +14,11 @@ if TYPE_CHECKING:
 class EmbeddingGeneratorBase(AIServiceClientBase, ABC):
     @abstractmethod
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> "ndarray":
+        """Returns embeddings for the given texts as ndarray.
+
+        Args:
+            texts (List[str]): The texts to generate embeddings for.
+            batch_size (Optional[int]): The batch size to use for the request.
+            kwargs (Dict[str, Any]): Additional arguments to pass to the request.
+        """
         pass

@@ -11,24 +11,23 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 @experimental_class
 class MemoryStoreBase(ABC):
     async def __aenter__(self):
+        """Enter the context manager."""
         return self
 
     async def __aexit__(self, *args):
+        """Exit the context manager."""
         await self.close()
 
     async def close(self):
-        """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
+        """Close the connection."""
         pass
 
     @abstractmethod
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-
-        Returns:
-            None
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
         """
         pass
 
@@ -39,7 +38,7 @@ class MemoryStoreBase(ABC):
         """Gets all collection names in the data store.
 
         Returns:
-            List[str] -- A group of collection names.
+            List[str]: A group of collection names.
         """
         pass
 
@@ -47,11 +46,8 @@ class MemoryStoreBase(ABC):
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection from the data store.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-
-        Returns:
-            None
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
         """
         pass
 
@@ -59,42 +55,45 @@ class MemoryStoreBase(ABC):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Determines if a collection exists in the data store.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
 
         Returns:
-            bool -- True if given collection exists, False if not.
+            bool: True if given collection exists, False if not.
         """
-
         pass
 
     @abstractmethod
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a memory record into the data store. Does not guarantee that the collection exists.
-            If the record already exists, it will be updated.
-            If the record does not exist, it will be created.
+        """Upserts a memory record into the data store.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            record {MemoryRecord} -- The memory record to upsert.
+        Does not guarantee that the collection exists.
+        If the record already exists, it will be updated.
+        If the record does not exist, it will be created.
+
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            record (MemoryRecord): The memory record to upsert.
 
         Returns:
-            str -- The unique identifier for the memory record.
+            str: The unique identifier for the memory record.
         """
         pass
 
     @abstractmethod
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a group of memory records into the data store. Does not guarantee that the collection exists.
-            If the record already exists, it will be updated.
-            If the record does not exist, it will be created.
+        """Upserts a group of memory records into the data store.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            records {MemoryRecord} -- The memory records to upsert.
+        Does not guarantee that the collection exists.
+        If the record already exists, it will be updated.
+        If the record does not exist, it will be created.
+
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            records (MemoryRecord): The memory records to upsert.
 
         Returns:
-            List[str] -- The unique identifiers for the memory records.
+            List[str]: The unique identifiers for the memory records.
         """
         pass
 
@@ -102,27 +101,32 @@ class MemoryStoreBase(ABC):
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Gets a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            key {str} -- The unique id associated with the memory record to get.
-            with_embedding {bool} -- If true, the embedding will be returned in the memory record.
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            key (str): The unique id associated with the memory record to get.
+            with_embedding (bool): If true, the embedding will be returned in the memory record.
 
         Returns:
-            MemoryRecord -- The memory record if found
+            MemoryRecord: The memory record if found
         """
         pass
 
     @abstractmethod
-    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+    async def get_batch(
+        self,
+        collection_name: str,
+        keys: list[str],
+        with_embeddings: bool,
+    ) -> list[MemoryRecord]:
         """Gets a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            keys {List[str]} -- The unique ids associated with the memory records to get.
-            with_embeddings {bool} -- If true, the embedding will be returned in the memory records.
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            keys (List[str]): The unique ids associated with the memory records to get.
+            with_embeddings (bool): If true, the embedding will be returned in the memory records.
 
         Returns:
-            List[MemoryRecord] -- The memory records associated with the unique keys provided.
+            List[MemoryRecord]: The memory records associated with the unique keys provided.
         """
         pass
 
@@ -130,12 +134,9 @@ class MemoryStoreBase(ABC):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a memory record from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            key {str} -- The unique id associated with the memory record to remove.
-
-        Returns:
-            None
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            key (str): The unique id associated with the memory record to remove.
         """
         pass
 
@@ -143,12 +144,9 @@ class MemoryStoreBase(ABC):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of memory records from the data store. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            keys {List[str]} -- The unique ids associated with the memory records to remove.
-
-        Returns:
-            None
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            keys (List[str]): The unique ids associated with the memory records to remove.
         """
         pass
 
@@ -163,15 +161,15 @@ class MemoryStoreBase(ABC):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            embedding {ndarray} -- The embedding to compare the collection's embeddings with.
-            limit {int} -- The maximum number of similarity results to return.
-            min_relevance_score {float} -- The minimum relevance threshold for returned results.
-            with_embeddings {bool} -- If true, the embeddings will be returned in the memory records.
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            embedding (ndarray): The embedding to compare the collection's embeddings with.
+            limit (int): The maximum number of similarity results to return.
+            min_relevance_score (float): The minimum relevance threshold for returned results.
+            with_embeddings (bool): If true, the embeddings will be returned in the memory records.
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- A list of tuples where item1 is a MemoryRecord and item2
+            List[Tuple[MemoryRecord, float]]: A list of tuples where item1 is a MemoryRecord and item2
                 is its similarity score as a float.
         """
         pass
@@ -186,13 +184,13 @@ class MemoryStoreBase(ABC):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding of type float. Does not guarantee that the collection exists.
 
-        Arguments:
-            collection_name {str} -- The name associated with a collection of embeddings.
-            embedding {ndarray} -- The embedding to compare the collection's embeddings with.
-            min_relevance_score {float} -- The minimum relevance threshold for returned result.
-            with_embedding {bool} -- If true, the embeddings will be returned in the memory record.
+        Args:
+            collection_name (str): The name associated with a collection of embeddings.
+            embedding (ndarray): The embedding to compare the collection's embeddings with.
+            min_relevance_score (float): The minimum relevance threshold for returned result.
+            with_embedding (bool): If true, the embeddings will be returned in the memory record.
 
         Returns:
-            Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
+            Tuple[MemoryRecord, float]: A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
         pass

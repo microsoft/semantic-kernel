@@ -84,7 +84,6 @@ class SessionsPythonTool(KernelBaseModel):
 
     async def _ensure_auth_token(self) -> str:
         """Ensure the auth token is valid."""
-
         try:
             auth_token = await self.auth_callback()
         except Exception as e:
@@ -95,13 +94,14 @@ class SessionsPythonTool(KernelBaseModel):
 
     def _sanitize_input(self, code: str) -> str:
         """Sanitize input to the python REPL.
-        Remove whitespace, backtick & python (if llm mistakes python console as terminal)
+
+        Remove whitespace, backtick & python (if llm mistakes python console as terminal).
+
         Args:
-            query: The query to sanitize
+            code: The query to sanitize
         Returns:
             str: The sanitized query
         """
-
         # Removes `, whitespace & python from start
         code = re.sub(r"^(\s|`)*(?i:python)?\s*", "", code)
         # Removes whitespace & ` from end
@@ -120,16 +120,15 @@ class SessionsPythonTool(KernelBaseModel):
         name="execute_code",
     )
     async def execute_code(self, code: Annotated[str, "The valid Python code to execute"]) -> str:
-        """
-        Executes the provided Python code
+        """Executes the provided Python code.
+
         Args:
             code (str): The valid Python code to execute
         Returns:
             str: The result of the Python code execution in the form of Result, Stdout, and Stderr
         Raises:
-            FunctionExecutionException: If the provided code is empty
+            FunctionExecutionException: If the provided code is empty.
         """
-
         if not code:
             raise FunctionExecutionException("The provided code is empty")
 
@@ -168,14 +167,15 @@ class SessionsPythonTool(KernelBaseModel):
         self, *, data: BufferedReader = None, remote_file_path: str = None, local_file_path: str = None
     ) -> SessionsRemoteFileMetadata:
         """Upload a file to the session pool.
+
         Args:
             data (BufferedReader): The file data to upload.
             remote_file_path (str): The path to the file in the session.
             local_file_path (str): The path to the file on the local machine.
+
         Returns:
             RemoteFileMetadata: The metadata of the uploaded file.
         """
-
         if data and local_file_path:
             raise ValueError("data and local_file_path cannot be provided together")
 
@@ -207,6 +207,7 @@ class SessionsPythonTool(KernelBaseModel):
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
         """List the files in the session pool.
+
         Returns:
             list[SessionsRemoteFileMetadata]: The metadata for the files in the session pool
         """
@@ -228,10 +229,12 @@ class SessionsPythonTool(KernelBaseModel):
 
     async def download_file(self, *, remote_file_path: str, local_file_path: str = None) -> BufferedReader | None:
         """Download a file from the session pool.
+
         Args:
             remote_file_path: The path to download the file from, relative to `/mnt/data`.
             local_file_path: The path to save the downloaded file to. If not provided, the
                 file is returned as a BufferedReader.
+
         Returns:
             BufferedReader: The data of the downloaded file.
         """

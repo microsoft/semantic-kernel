@@ -8,9 +8,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class PostgresSettings(BaseModelSettings):
-    """Postgres model settings
+    """Postgres model settings.
 
-    Required:
+    Args:
     - connection_string: str - Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
     """
@@ -18,4 +18,6 @@ class PostgresSettings(BaseModelSettings):
     connection_string: SecretStr | None = None
 
     class Config(BaseModelSettings.Config):
+        """Config for Postgres settings."""
+
         env_prefix = "POSTGRES_"

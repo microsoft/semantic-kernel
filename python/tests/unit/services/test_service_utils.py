@@ -24,7 +24,7 @@ class StringPlugin:
     def get_weather(
         self, location: Annotated[str, "The location to get the weather for."]
     ) -> Annotated[str, "The weather for the location."]:
-        return "The weather in {} is sunny.".format(location)
+        return f"The weather in {location} is sunny."
 
 
 class ComplexRequest(KernelBaseModel):
