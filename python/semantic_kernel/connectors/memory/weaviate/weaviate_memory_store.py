@@ -112,6 +112,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         api_key: str | None = None,
         use_embed: bool = False,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Initializes a new instance of the WeaviateMemoryStore.
 
@@ -119,13 +120,15 @@ class WeaviateMemoryStore(MemoryStoreBase):
             url (str): The URL of the Weaviate instance.
             api_key (str): The API key to use for authentication.
             use_embed (bool): Whether to use the client embedding options.
-            env_file_path (str): Whether to use the environment settings (.env) file. Defaults to False.
+            env_file_path (str): Whether to use the environment settings (.env) file.
+            env_file_encoding (str): The encoding of the environment settings (.env) file. Defaults to 'utf-8'.
         """
         self.settings = WeaviateSettings.create(
-            env_file_path=env_file_path,
             url=url,
             api_key=api_key,
             use_embed=use_embed,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
         self.client = self._initialize_client()
 

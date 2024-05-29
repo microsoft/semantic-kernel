@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from typing import Annotated, Any, ClassVar, Type, TypeVar
+from typing import Annotated, Any, ClassVar, TypeVar
 
 from pydantic import BaseModel, ConfigDict, UrlConstraints
 from pydantic.networks import Url
@@ -36,6 +36,7 @@ class KernelBaseSettings(BaseSettings):
 
     env_prefix: ClassVar[str] = ""
     env_file_path: str | None = None
+    env_file_encoding: str = "utf-8"
 
     model_config = SettingsConfigDict(
         extra="ignore",
@@ -43,11 +44,11 @@ class KernelBaseSettings(BaseSettings):
     )
 
     @classmethod
-    def create(cls: Type["T"], **data: Any) -> "T":
+    def create(cls: type["T"], **data: Any) -> "T":
         """Update the model_config with the prefix."""
         cls.model_config["env_prefix"] = cls.env_prefix
         if data.get("env_file_path"):
             cls.model_config["env_file"] = data["env_file_path"]
-            cls.model_config["env_file_encoding"] = "utf-8"
+        cls.model_config["env_file_encoding"] = data.get("env_file_encoding", "utf-8")
         data = {k: v for k, v in data.items() if v is not None}
         return cls(**data)

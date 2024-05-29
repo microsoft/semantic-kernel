@@ -37,6 +37,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         api_key: str | None = None,
         message_history: ChatHistory | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Initializes a new instance of the GooglePalmChatCompletion class.
 
@@ -48,11 +49,13 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             message_history (ChatHistory | None): The message history to use for context. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         google_palm_settings = GooglePalmSettings.create(
-            env_file_path=env_file_path,
             api_key=api_key,
             chat_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
         super().__init__(
             ai_model_id=google_palm_settings.chat_model_id,

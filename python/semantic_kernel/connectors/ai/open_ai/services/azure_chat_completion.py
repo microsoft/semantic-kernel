@@ -49,6 +49,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
@@ -70,14 +71,16 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
+            env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
         azure_openai_settings = AzureOpenAISettings.create(
-            env_file_path=env_file_path,
             api_key=api_key,
             base_url=base_url,
             endpoint=endpoint,
             chat_deployment_name=deployment_name,
             api_version=api_version,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")

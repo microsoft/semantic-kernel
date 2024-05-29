@@ -26,6 +26,7 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize an OpenAITextCompletion service.
 
@@ -42,12 +43,14 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         openai_settings = OpenAISettings.create(
-            env_file_path=env_file_path,
             api_key=api_key,
             org_id=org_id,
             text_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
         super().__init__(
             ai_model_id=openai_settings.text_model_id,

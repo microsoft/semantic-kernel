@@ -46,6 +46,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         default_dimensionality: int,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -54,6 +55,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             default_dimensionality (int): The default dimensionality to use for new collections.
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise ServiceInitializationError(
@@ -61,7 +63,11 @@ class PineconeMemoryStore(MemoryStoreBase):
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
 
-        pinecone_settings = PineconeSettings.create(env_file_path=env_file_path, api_key=api_key)
+        pinecone_settings = PineconeSettings.create(
+            api_key=api_key,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         self._pinecone_api_key = pinecone_settings.api_key.get_secret_value() if pinecone_settings.api_key else None
         self._default_dimensionality = default_dimensionality

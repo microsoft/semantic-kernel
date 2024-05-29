@@ -38,6 +38,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         similarity: str,
         session: aiohttp.ClientSession | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -51,13 +52,15 @@ class AstraDBMemoryStore(MemoryStoreBase):
             session: Optional session parameter
             env_file_path (str | None): Use the environment settings file as a
                 fallback to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         astradb_settings = AstraDBSettings.create(
-            env_file_path=env_file_path,
             app_token=astra_application_token,
             db_id=astra_id,
             region=astra_region,
             keyspace=keyspace_name,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
 
         self._embedding_dim = embedding_dim

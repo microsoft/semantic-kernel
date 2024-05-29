@@ -50,28 +50,32 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         azure_credentials: AzureKeyCredential | None = None,
         token_credentials: TokenCredential | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
-
-        Args:
-            vector_size (int): Embedding vector size.
-            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
-                                                                (default: {None}).
-            admin_key (str | None): Azure Cognitive Search API key (default: {None}).
-            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
-            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
-                                                                (default: {None}).
-            env_file_path (str | None): Use the environment settings file as a fallback
-                                                                to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
+
+        Args:
+            vector_size (int): Embedding vector size.
+            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
+                (default: {None}).
+            admin_key (str | None): Azure Cognitive Search API key (default: {None}).
+            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
+            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
+                (default: {None}).
+            env_file_path (str | None): Use the environment settings file as a fallback
+                to environment variables
+            env_file_encoding (str | None): The encoding of the environment settings file
+
         """
         acs_memory_settings = AzureAISearchSettings.create(
             env_file_path=env_file_path,
             endpoint=search_endpoint,
             api_key=admin_key,
+            env_file_encoding=env_file_encoding,
         )
 
         self._vector_size = vector_size

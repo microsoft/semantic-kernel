@@ -53,6 +53,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
 
@@ -68,8 +69,13 @@ class RedisMemoryStore(MemoryStoreBase):
             query_dialect (int): Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables, defaults to False
+            env_file_encoding (str | None): Encoding of the environment settings file, defaults to "utf-8"
         """
-        redis_settings = RedisSettings.create(env_file_path=env_file_path, connection_string=connection_string)
+        redis_settings = RedisSettings.create(
+            connection_string=connection_string,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         if vector_size <= 0:
             raise ServiceInitializationError("Vector dimension must be a positive integer")

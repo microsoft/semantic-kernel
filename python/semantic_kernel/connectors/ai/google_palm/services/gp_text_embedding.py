@@ -19,7 +19,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     api_key: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
-    def __init__(self, ai_model_id: str, api_key: str | None = None, env_file_path: str | None = None) -> None:
+    def __init__(
+        self,
+        ai_model_id: str,
+        api_key: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> None:
         """Initializes a new instance of the GooglePalmTextEmbedding class.
 
         Args:
@@ -29,11 +35,13 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
                 read from either the env vars or the .env settings file.
             env_file_path (str | None): Use the environment settings file
                 as a fallback to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         google_palm_settings = GooglePalmSettings.create(
-            env_file_path=env_file_path,
             api_key=api_key,
             embedding_model_id=ai_model_id,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
         super().__init__(
             ai_model_id=google_palm_settings.embedding_model_id,

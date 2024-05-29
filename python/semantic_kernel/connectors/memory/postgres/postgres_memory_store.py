@@ -44,6 +44,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -55,8 +56,13 @@ class PostgresMemoryStore(MemoryStoreBase):
             schema (str): The schema to use. (default: {"public"})
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        postgres_settings = PostgresSettings.create(env_file_path=env_file_path, connection_string=connection_string)
+        postgres_settings = PostgresSettings.create(
+            connection_string=connection_string,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         self._check_dimensionality(default_dimensionality)
 

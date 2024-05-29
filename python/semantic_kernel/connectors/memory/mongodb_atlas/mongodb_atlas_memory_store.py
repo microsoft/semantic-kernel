@@ -45,6 +45,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         database_name: str | None = None,
         read_preference: ReadPreference | None = ReadPreference.PRIMARY,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
         """Create the MongoDB Atlas Memory Store.
 
@@ -54,9 +55,14 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             database_name (str): The name of the database.
             read_preference (ReadPreference): The read preference for the connection.
             env_file_path (str): The path to the .env file containing the connection string.
+            env_file_encoding (str): The encoding of the .env file.
 
         """
-        mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path, connection_string=connection_string)
+        mongodb_settings = MongoDBAtlasSettings.create(
+            connection_string=connection_string,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
         self._mongo_client = motor_asyncio.AsyncIOMotorClient(
             mongodb_settings.connection_string.get_secret_value() if mongodb_settings.connection_string else None,
