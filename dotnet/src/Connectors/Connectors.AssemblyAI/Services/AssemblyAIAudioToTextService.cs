@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Client;
+using Microsoft.SemanticKernel.Connectors.AssemblyAI.Core;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
@@ -82,16 +82,14 @@ public sealed class AssemblyAIAudioToTextService : IAudioToTextService
         var transcript = await this._client.WaitForTranscriptToProcessAsync(transcriptId, executionSettings, cancellationToken)
             .ConfigureAwait(false);
 
-        return new[]
-        {
+        return [
             new TextContent(
-                text: transcript.RootElement.GetProperty("text").GetString(),
+                text: transcript.GetProperty("text").GetString(),
                 modelId: null,
                 // TODO: change to typed object when AAI SDK is shipped
                 innerContent: transcript,
                 encoding: Encoding.UTF8,
-                metadata: null
-            )
-        };
+                metadata: null)
+            ];
     }
 }

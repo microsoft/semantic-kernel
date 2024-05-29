@@ -6,11 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
-using SemanticKernel.Connectors.AssemblyAI.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.AssemblyAI;
+namespace SemanticKernel.Connectors.AssemblyAI.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="AssemblyAIAudioToTextService"/> class.

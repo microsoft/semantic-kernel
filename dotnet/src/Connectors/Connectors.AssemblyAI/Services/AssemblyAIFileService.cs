@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Client;
+using Microsoft.SemanticKernel.Connectors.AssemblyAI.Core;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
+namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 
 /// <summary>
 /// Service to upload files to AssemblyAI

@@ -5,7 +5,6 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
 
 namespace Microsoft.SemanticKernel;
 
