@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example81_OllamaChatCompletion : BaseTest
+public class Ollama_ChatCompletion : BaseTest
 {
     [Fact]
     public Task RunAsync()
@@ -107,7 +107,7 @@ Event: {{$input}}
         this.WriteLine(response);
     }
 
-    public Example81_OllamaChatCompletion(ITestOutputHelper output) : base(output)
+    public Ollama_ChatCompletion(ITestOutputHelper output) : base(output)
     {
     }
 }

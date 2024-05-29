@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example80_OllamaTextGeneration : BaseTest
+public class Ollama_TextGeneration : BaseTest
 {
     [Fact]
     public Task RunAsync()
@@ -107,7 +107,7 @@ Event: {{$input}}
         this.WriteLine(response);
     }
 
-    public Example80_OllamaTextGeneration(ITestOutputHelper output) : base(output)
+    public Ollama_TextGeneration(ITestOutputHelper output) : base(output)
     {
     }
 }

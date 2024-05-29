@@ -1,16 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Examples;
 
-public class Example82_OllamaTextEmbeddingGeneration : BaseTest
+public class Ollama_EmbeddingGeneration : BaseTest
 {
     [Fact]
     public Task RunAsync()
@@ -46,7 +41,7 @@ public class Example82_OllamaTextEmbeddingGeneration : BaseTest
         this.WriteLine(string.Join(", ", embeddings[0].ToArray()));
     }
 
-    public Example82_OllamaTextEmbeddingGeneration(ITestOutputHelper output) : base(output)
+    public Ollama_EmbeddingGeneration(ITestOutputHelper output) : base(output)
     {
     }
 }
