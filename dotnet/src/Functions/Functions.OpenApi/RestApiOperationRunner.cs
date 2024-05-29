@@ -23,6 +23,30 @@ internal sealed class RestApiOperationRunner
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
+    private const string TypeHttp = "HTTP";
+
+    /// <summary>
+    /// This field is the name of the request and it represents the code path taken to process the request.
+    /// A low cardinality value allows for better grouping of requests. For HTTP requests, it represents the HTTP method.
+    /// </summary>
+    private const string Name = "Name";
+
+    /// <summary>
+    /// This field is the command initiated by this dependency call.
+    /// This will be set to the request content.
+    /// </summary>
+    private const string Data = "Data";
+
+    /// <summary>
+    /// The request URL with all query string parameters.
+    /// </summary>
+    private const string Url = "Url";
+
+    /// <summary>
+    /// This field is the dependency type name. It has a low cardinality value for logical grouping of dependencies and interpretation of other fields like commandName and resultCode.
+    /// This will set to HTTP.
+    /// </summary>
+    private const string Type = "Type";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -186,9 +210,25 @@ internal sealed class RestApiOperationRunner
         }
         catch (HttpOperationException ex)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             ex.RequestMethod = requestMessage.Method.Method;
             ex.RequestUri = requestMessage.RequestUri;
             ex.RequestPayload = payload;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            ex.Data.Add(Type, TypeHttp);
+            ex.Data.Add(Name, requestMessage.Method.Method);
+            ex.Data.Add(Url, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(Data, payload);
+
+            throw;
+        }
+        catch (KernelException ex)
+        {
+            ex.Data.Add(Type, TypeHttp);
+            ex.Data.Add(Name, requestMessage.Method.Method);
+            ex.Data.Add(Url, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(Data, payload);
 
             throw;
         }
@@ -205,7 +245,7 @@ internal sealed class RestApiOperationRunner
     {
         var contentType = content.Headers.ContentType;
 
-        var mediaType = contentType?.MediaType ?? throw new HttpOperationException("No media type available.");
+        var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
         // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)
         if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
@@ -214,10 +254,7 @@ internal sealed class RestApiOperationRunner
             var mediaTypeParts = mediaType.Split('/');
             if (mediaTypeParts.Length != 2)
             {
-                throw new HttpOperationException($"The string `{mediaType}` is not a valid media type.")
-                {
-                    StatusCode = HttpStatusCode.UnsupportedMediaType
-                };
+                throw new KernelException($"The string `{mediaType}` is not a valid media type.");
             }
 
             var primaryMediaType = mediaTypeParts.First();
@@ -225,10 +262,7 @@ internal sealed class RestApiOperationRunner
             // Try to obtain the content serializer by the primary type (e.g., text, application, image)
             if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
             {
-                throw new HttpOperationException($"The content type `{mediaType}` is not supported.")
-                {
-                    StatusCode = HttpStatusCode.UnsupportedMediaType
-                };
+                throw new KernelException($"The content type `{mediaType}` is not supported.");
             }
         }
 

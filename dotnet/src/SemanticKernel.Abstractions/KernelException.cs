@@ -7,6 +7,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the base exception from which all Semantic Kernel exceptions derive.
 /// </summary>
+/// <remarks>
+/// Instances of this class optionally contain telemetry information in the Exception.Data property using keys that are consistent with the Application Insights data model.
+/// See https://learn.microsoft.com/en-us/azure/azure-monitor/app/data-model-complete#dependency for more information.
+/// </remarks>
 public class KernelException : Exception
 {
     /// <summary>
