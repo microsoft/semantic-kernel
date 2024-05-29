@@ -10,9 +10,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class PostgresSettings(KernelBaseSettings):
-    """Postgres model settings
+    """Postgres model settings.
 
-    Required:
+    Args:
     - connection_string: str - Postgres connection string
         (Env var POSTGRES_CONNECTION_STRING)
     """

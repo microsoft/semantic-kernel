@@ -3,10 +3,9 @@
 import asyncio
 from typing import Annotated
 
-from service_configurator import add_service
-
-import semantic_kernel as sk
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from samples.learn_resources.sk_service_configurator import add_service
+from semantic_kernel import Kernel
+from semantic_kernel.functions import kernel_function
 
 
 # Let's define a light plugin
@@ -40,7 +39,7 @@ class LightPlugin:
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion

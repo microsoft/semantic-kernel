@@ -10,9 +10,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class PineconeSettings(KernelBaseSettings):
-    """Pinecone model settings
+    """Pinecone model settings.
 
-    Required:
+    Args:
     - api_key: SecretStr - Pinecone API key
         (Env var PINECONE_API_KEY)
     """

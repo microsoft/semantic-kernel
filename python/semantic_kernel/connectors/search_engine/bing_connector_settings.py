@@ -8,7 +8,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
 class BingSettings(KernelBaseSettings):
-    """Bing Connector settings
+    """Bing Connector settings.
 
     The settings are first loaded from environment variables with the prefix 'BING_'. If the
     environment variables are not found, the settings can be loaded from a .env file with the

@@ -49,10 +49,10 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
-        Arguments:
-            pinecone_api_key {str} -- The Pinecone API key.
-            default_dimensionality {int} -- The default dimensionality to use for new collections.
-            env_file_path {str | None} -- Use the environment settings file as a fallback
+        Args:
+            api_key (str): The Pinecone API key.
+            default_dimensionality (int): The default dimensionality to use for new collections.
+            env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
@@ -77,16 +77,18 @@ class PineconeMemoryStore(MemoryStoreBase):
         index_spec: NamedTuple = DEFAULT_INDEX_SPEC,
     ) -> None:
         """Creates a new collection in Pinecone if it does not exist.
-            This function creates an index, by default the following index
-            settings are used: metric = cosine, cloud = aws, region = us-east-1.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to create.
-            In Pinecone, a collection is represented as an index. The concept
-            of "collection" in Pinecone is just a static copy of an index.
+        This function creates an index, by default the following index
+        settings are used: metric = cosine, cloud = aws, region = us-east-1.
 
-        Returns:
-            None
+        Args:
+            collection_name (str): The name of the collection to create.
+                In Pinecone, a collection is represented as an index. The concept
+                of "collection" in Pinecone is just a static copy of an index.
+            dimension_num (int, optional): The dimensionality of the embeddings.
+            distance_type (str, optional): The distance metric to use for the index.
+                (default: {"cosine"})
+            index_spec (NamedTuple, optional): The index spec to use for the index.
         """
         if dimension_num is None:
             dimension_num = self._default_dimensionality
@@ -103,10 +105,12 @@ class PineconeMemoryStore(MemoryStoreBase):
 
     async def describe_collection(self, collection_name: str) -> IndexDescription | None:
         """Gets the description of the index.
-        Arguments:
-            collection_name {str} -- The name of the index to get.
+
+        Args:
+            collection_name (str): The name of the index to get.
+
         Returns:
-            Optional[dict] -- The index.
+            Optional[dict]: The index.
         """
         if await self.does_collection_exist(collection_name):
             return self.pinecone.describe_index(collection_name)
@@ -118,15 +122,15 @@ class PineconeMemoryStore(MemoryStoreBase):
         """Gets the list of collections.
 
         Returns:
-            IndexList -- The list of collections.
+            IndexList: The list of collections.
         """
         return self.pinecone.list_indexes()
 
     async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to delete.
+        Args:
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
@@ -138,11 +142,11 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to check.
+        Args:
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
         if collection_name in self.collection_names_cache:
             return True
@@ -153,14 +157,14 @@ class PineconeMemoryStore(MemoryStoreBase):
         return collection_name in index_collection_names
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
-        """Upserts a record.
+        """Upsert a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            record {MemoryRecord} -- The record to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the record into.
+            record (MemoryRecord): The record to upsert.
 
         Returns:
-            str -- The unique database key of the record. In Pinecone, this is the record ID.
+            str: The unique database key of the record. In Pinecone, this is the record ID.
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -178,14 +182,14 @@ class PineconeMemoryStore(MemoryStoreBase):
         return record._id
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
-        """Upserts a batch of records.
+        """Upsert a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the records into.
+            records (List[MemoryRecord]): The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            List[str]: The unique database keys of the records.
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -211,13 +215,13 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the record from.
-            key {str} -- The unique database key of the record.
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the record from.
+            key (str): The unique database key of the record.
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            MemoryRecord -- The record.
+            MemoryRecord: The record.
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -235,13 +239,13 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the records from.
+            keys (List[str]): The unique database keys of the records.
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord]: The records.
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
@@ -252,9 +256,9 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the record from.
-            key {str} -- The unique database key of the record to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the record from.
+            key (str): The unique database key of the record to remove.
 
         Returns:
             None
@@ -268,9 +272,9 @@ class PineconeMemoryStore(MemoryStoreBase):
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the records from.
+            keys (List[str]): The unique database keys of the records to remove.
 
         Returns:
             None
@@ -292,14 +296,14 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the nearest match from.
-            embedding {ndarray} -- The embedding to find the nearest match to.
-            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the nearest match from.
+            embedding (ndarray): The embedding to find the nearest match to.
+            min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            Tuple[MemoryRecord, float]: The record and the relevance score.
         """
         matches = await self.get_nearest_matches(
             collection_name=collection_name,
@@ -320,15 +324,15 @@ class PineconeMemoryStore(MemoryStoreBase):
     ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the nearest matches from.
-            embedding {ndarray} -- The embedding to find the nearest matches to.
-            limit {int} -- The maximum number of matches to return.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the nearest matches from.
+            embedding (ndarray): The embedding to find the nearest matches to.
+            limit (int): The maximum number of matches to return.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         if not await self.does_collection_exist(collection_name):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")

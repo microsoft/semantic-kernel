@@ -66,10 +66,9 @@ ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
 @experimental_class
 class WeaviateMemoryStore(MemoryStoreBase):
     class FieldMapper:
-        """
-        This inner class is responsible for mapping attribute names between
-        the SK's memory record and weaviate's schema. It provides methods
-        for converting between the two naming conventions.
+        """This maps attribute names between the SK's memory record and weaviate's schema.
+
+        It provides methods for converting between the two naming conventions.
         """
 
         SK_TO_WEAVIATE_MAPPING = {
@@ -88,12 +87,14 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         @classmethod
         def sk_to_weaviate(cls, sk_dict):
+            """Used to convert a MemoryRecord to a dict of attribute-values that can be used by Weaviate."""
             return {
                 cls.SK_TO_WEAVIATE_MAPPING.get(k, k): v for k, v in sk_dict.items() if k in cls.SK_TO_WEAVIATE_MAPPING
             }
 
         @classmethod
         def weaviate_to_sk(cls, weaviate_dict):
+            """Used to convert a Weaviate object to a dict that can be used to initialize a MemoryRecord."""
             return {
                 cls.WEAVIATE_TO_SK_MAPPING.get(k, k): v
                 for k, v in weaviate_dict.items()
@@ -102,9 +103,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
 
         @classmethod
         def remove_underscore_prefix(cls, sk_dict):
-            """
-            Used to initialize a MemoryRecord from a SK's dict of private attribute-values.
-            """
+            """Used to initialize a MemoryRecord from a SK's dict of private attribute-values."""
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
     def __init__(
@@ -114,7 +113,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         use_embed: bool = False,
         env_file_path: str | None = None,
     ):
-        """Initializes a new instance of the WeaviateMemoryStore
+        """Initializes a new instance of the WeaviateMemoryStore.
 
         Args:
             url (str): The URL of the Weaviate instance.
@@ -131,9 +130,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         self.client = self._initialize_client()
 
     def _initialize_client(self) -> weaviate.Client:
-        """
-        Initializes the Weaviate client based on the combined settings.
-        """
+        """Initializes the Weaviate client based on the combined settings."""
         if self.settings.use_embed:
             return weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
 
@@ -148,22 +145,27 @@ class WeaviateMemoryStore(MemoryStoreBase):
         return weaviate.Client(url=str(self.settings.url))
 
     async def create_collection(self, collection_name: str) -> None:
+        """Creates a new collection in Weaviate."""
         schema = SCHEMA.copy()
         schema["class"] = collection_name
         await asyncio.get_running_loop().run_in_executor(None, self.client.schema.create_class, schema)
 
     async def get_collections(self) -> list[str]:
+        """Returns a list of all collections in Weaviate."""
         schemas = await asyncio.get_running_loop().run_in_executor(None, self.client.schema.get)
         return [schema["class"] for schema in schemas["classes"]]
 
     async def delete_collection(self, collection_name: str) -> bool:
+        """Deletes a collection in Weaviate."""
         await asyncio.get_running_loop().run_in_executor(None, self.client.schema.delete_class, collection_name)
 
     async def does_collection_exist(self, collection_name: str) -> bool:
+        """Checks if a collection exists in Weaviate."""
         collections = await self.get_collections()
         return collection_name in collections
 
     async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
+        """Upserts a record into Weaviate."""
         weaviate_record = self.FieldMapper.sk_to_weaviate(vars(record))
 
         vector = weaviate_record.pop("vector", None)
@@ -179,6 +181,8 @@ class WeaviateMemoryStore(MemoryStoreBase):
         )
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
+        """Upserts a batch of records into Weaviate."""
+
         def _upsert_batch_inner():
             results = []
             with self.client.batch as batch:
@@ -199,11 +203,13 @@ class WeaviateMemoryStore(MemoryStoreBase):
         return await asyncio.get_running_loop().run_in_executor(None, _upsert_batch_inner)
 
     async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+        """Gets a record from Weaviate by key."""
         # Call the batched version with a single key
         results = await self.get_batch(collection_name, [key], with_embedding)
         return results[0] if results else None
 
     async def get_batch(self, collection_name: str, keys: list[str], with_embedding: bool) -> list[MemoryRecord]:
+        """Gets a batch of records from Weaviate by keys."""
         queries = self._build_multi_get_query(collection_name, keys, with_embedding)
 
         results = await asyncio.get_running_loop().run_in_executor(None, self.client.query.multi_get(queries).do)
@@ -244,9 +250,11 @@ class WeaviateMemoryStore(MemoryStoreBase):
         return MemoryRecord(**mem_vals)
 
     async def remove(self, collection_name: str, key: str) -> None:
+        """Removes a record from Weaviate by key."""
         await self.remove_batch(collection_name, [key])
 
     async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
+        """Removes a batch of records from Weaviate by keys."""
         # TODO: Use In operator when it's available
         #       (https://github.com/weaviate/weaviate/issues/2387)
         #       and handle max delete objects
@@ -270,6 +278,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         min_relevance_score: float,
         with_embeddings: bool,
     ) -> list[tuple[MemoryRecord, float]]:
+        """Gets the nearest matches to an embedding in Weaviate."""
         nearVector = {
             "vector": embedding,
             "certainty": min_relevance_score,
@@ -309,6 +318,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         min_relevance_score: float,
         with_embedding: bool,
     ) -> tuple[MemoryRecord, float]:
+        """Gets the nearest match to an embedding in Weaviate."""
         results = await self.get_nearest_matches(
             collection_name,
             embedding,

@@ -27,21 +27,20 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initialize an OpenAITextCompletion service.
+        """Initialize an OpenAITextCompletion service.
 
         Args:
-            ai_model_id {str | None} -- OpenAI model name, see
+            ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
-            service_id {str | None} -- Service ID tied to the execution settings.
-            api_key {str | None} -- The optional API key to use. If provided will override,
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            org_id {str | None} -- The optional org ID to use. If provided will override,
+            org_id (str | None): The optional org ID to use. If provided will override,
                 the env vars or .env file value.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            env_file_path {str | None} -- Use the environment settings file as a fallback to
+            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
         openai_settings = OpenAISettings.create(
@@ -62,10 +61,9 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "OpenAITextCompletion":
-        """
-        Initialize an Open AI service from a dictionary of settings.
+        """Initialize an Open AI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
         """
         if "default_headers" in settings and isinstance(settings["default_headers"], str):

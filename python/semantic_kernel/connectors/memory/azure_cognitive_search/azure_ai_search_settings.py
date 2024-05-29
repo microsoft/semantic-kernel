@@ -10,9 +10,9 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureAISearchSettings(KernelBaseSettings):
-    """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector
+    """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 
-    Optional:
+    Args:
     - api_key: SecretStr - Azure AI Search API key (Env var AZURE_AI_SEARCH_API_KEY)
     - endpoint: HttpsUrl - Azure AI Search endpoint (Env var AZURE_AI_SEARCH_ENDPOINT)
     - index_name: str - Azure AI Search index name (Env var AZURE_AI_SEARCH_INDEX_NAME)

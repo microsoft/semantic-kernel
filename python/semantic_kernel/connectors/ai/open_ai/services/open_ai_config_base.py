@@ -32,17 +32,19 @@ class OpenAIConfigBase(OpenAIHandler):
         This constructor sets up a client to interact with OpenAI's API, allowing for
         different types of AI model interactions, like chat or text completion.
 
-        Arguments:
-            ai_model_id {str} -- OpenAI model identifier. Must be non-empty.
+        Args:
+            ai_model_id (str): OpenAI model identifier. Must be non-empty.
                 Default to a preset value.
-            api_key {Optional[str]} -- OpenAI API key for authentication.
+            api_key (Optional[str]): OpenAI API key for authentication.
                 Must be non-empty. (Optional)
-            ai_model_type {Optional[OpenAIModelTypes]} -- The type of OpenAI
+            ai_model_type (Optional[OpenAIModelTypes]): The type of OpenAI
                 model to interact with. Defaults to CHAT.
-            org_id {Optional[str]} -- OpenAI organization ID. This is optional
+            org_id (Optional[str]): OpenAI organization ID. This is optional
                 unless the account belongs to multiple organizations.
-            default_headers {Optional[Mapping[str, str]]} -- Default headers
+            service_id (Optional[str]): OpenAI service ID. This is optional.
+            default_headers (Optional[Mapping[str, str]]): Default headers
                 for HTTP requests. (Optional)
+            async_client (Optional[AsyncOpenAI]): An existing OpenAI client
 
         """
         # Merge APP_INFO into the headers if it exists
@@ -69,9 +71,7 @@ class OpenAIConfigBase(OpenAIHandler):
         super().__init__(**args)
 
     def to_dict(self) -> dict[str, str]:
-        """
-        Create a dict of the service settings.
-        """
+        """Create a dict of the service settings."""
         client_settings = {
             "api_key": self.client.api_key,
             "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},

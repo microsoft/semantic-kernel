@@ -10,7 +10,7 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class AzureCosmosDBSettings(KernelBaseSettings):
-    """Azure CosmosDB model settings
+    """Azure CosmosDB model settings.
 
     Optional:
     - api: str - Azure CosmosDB API version (Env var COSMOSDB_API)

@@ -8,7 +8,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
 class GooglePalmSettings(KernelBaseSettings):
-    """Google Palm model settings
+    """Google Palm model settings.
 
     The settings are first loaded from environment variables with the prefix 'GOOGLE_PALM_'. If the
     environment variables are not found, the settings can be loaded from a .env file with the

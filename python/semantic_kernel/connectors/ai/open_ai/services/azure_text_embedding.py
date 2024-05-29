@@ -35,8 +35,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initialize an AzureTextEmbedding service.
+        """Initialize an AzureTextEmbedding service.
 
         service_id: The service ID. (Optional)
         api_key  {str | None}: The optional api key. If provided, will override the value in the
@@ -54,8 +53,8 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             (Optional) The default value is False.
         default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-        async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-        env_file_path {str | None} -- Use the environment settings file as a fallback to
+        async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+        env_file_path (str | None): Use the environment settings file as a fallback to
             environment variables. (Optional)
         """
         azure_openai_settings = AzureOpenAISettings.create(
@@ -91,10 +90,9 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
-        """
-        Initialize an Azure OpenAI service from a dictionary of settings.
+        """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
                 should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
