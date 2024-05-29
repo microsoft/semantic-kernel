@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
 using Xunit;
 using Xunit.Abstractions;
 

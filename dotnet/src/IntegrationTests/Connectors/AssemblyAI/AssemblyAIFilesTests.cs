@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AssemblyAI.Files;
+using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
 using Xunit.Abstractions;
 
