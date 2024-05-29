@@ -2,11 +2,11 @@
 
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 def test_open_ai_chat_completion_init(openai_unit_test_env) -> None:
@@ -45,7 +45,7 @@ def test_open_ai_chat_completion_init_with_default_header(openai_unit_test_env) 
 
 @pytest.mark.parametrize("exclude_list", [["OPENAI_API_KEY"]], indirect=True)
 def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ServiceInitializationError):
         OpenAIChatCompletion()
 
 
@@ -53,7 +53,7 @@ def test_open_ai_chat_completion_init_with_empty_model_id(openai_unit_test_env) 
 def test_open_ai_chat_completion_init_with_empty_api_key(openai_unit_test_env) -> None:
     ai_model_id = "test_model_id"
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ServiceInitializationError):
         OpenAIChatCompletion(
             ai_model_id=ai_model_id,
         )

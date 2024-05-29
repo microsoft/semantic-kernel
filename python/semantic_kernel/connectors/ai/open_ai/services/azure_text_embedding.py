@@ -5,6 +5,7 @@ from collections.abc import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
@@ -57,14 +58,17 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         env_file_path (str | None): Use the environment settings file as a fallback to
             environment variables. (Optional)
         """
-        azure_openai_settings = AzureOpenAISettings.create(
-            env_file_path=env_file_path,
-            api_key=api_key,
-            embedding_deployment_name=deployment_name,
-            endpoint=endpoint,
-            base_url=base_url,
-            api_version=api_version,
-        )
+        try:
+            azure_openai_settings = AzureOpenAISettings.create(
+                env_file_path=env_file_path,
+                api_key=api_key,
+                embedding_deployment_name=deployment_name,
+                endpoint=endpoint,
+                base_url=base_url,
+                api_version=api_version,
+            )
+        except ValidationError as exc:
+            raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
         if not azure_openai_settings.embedding_deployment_name:
             raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
 

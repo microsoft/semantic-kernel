@@ -5,6 +5,7 @@ from collections.abc import Mapping
 
 from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
@@ -55,14 +56,17 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
         """
-        azure_openai_settings = AzureOpenAISettings.create(
-            env_file_path=env_file_path,
-            text_deployment_name=deployment_name,
-            endpoint=endpoint,
-            base_url=base_url,
-            api_key=api_key,
-            api_version=api_version,
-        )
+        try:
+            azure_openai_settings = AzureOpenAISettings.create(
+                env_file_path=env_file_path,
+                text_deployment_name=deployment_name,
+                endpoint=endpoint,
+                base_url=base_url,
+                api_key=api_key,
+                api_version=api_version,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError(f"Invalid settings: {ex}") from ex
         if not azure_openai_settings.text_deployment_name:
             raise ServiceInitializationError("The Azure Text deployment name is required.")
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
