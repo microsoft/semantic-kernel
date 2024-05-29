@@ -4,12 +4,14 @@ import logging
 from collections.abc import Mapping
 
 from openai import AsyncOpenAI
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import OpenAIChatCompletionBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import OpenAITextCompletionBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -45,13 +47,18 @@ class OpenAIChatCompletion(OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITex
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
-        openai_settings = OpenAISettings.create(
-            api_key=api_key,
-            org_id=org_id,
-            chat_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                chat_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+        if not openai_settings.chat_model_id:
+            raise ServiceInitializationError("The OpenAI chat model ID is required.")
         super().__init__(
             ai_model_id=openai_settings.chat_model_id,
             api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,

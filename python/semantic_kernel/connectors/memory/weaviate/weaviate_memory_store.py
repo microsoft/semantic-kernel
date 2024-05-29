@@ -6,7 +6,7 @@ import logging
 import numpy as np
 import weaviate
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -123,6 +123,8 @@ class WeaviateMemoryStore(MemoryStoreBase):
             env_file_path (str): Whether to use the environment settings (.env) file.
             env_file_encoding (str): The encoding of the environment settings (.env) file. Defaults to 'utf-8'.
         """
+        from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
+
         self.settings = WeaviateSettings.create(
             url=url,
             api_key=api_key,
@@ -130,22 +132,17 @@ class WeaviateMemoryStore(MemoryStoreBase):
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
-        self.client = self._initialize_client()
-
-    def _initialize_client(self) -> weaviate.Client:
-        """Initializes the Weaviate client based on the combined settings."""
         if self.settings.use_embed:
-            return weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
-
-        if self.settings.api_key:
-            return weaviate.Client(
+            self.client = weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
+        elif self.settings.api_key and self.settings.url:
+            self.client = weaviate.Client(
                 url=str(self.settings.url),
-                auth_client_secret=weaviate.auth.AuthApiKey(
-                    api_key=self.settings.api_key.get_secret_value() if self.settings.api_key else None
-                ),
+                auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key.get_secret_value()),
             )
-
-        return weaviate.Client(url=str(self.settings.url))
+        elif self.settings.url:
+            self.client = weaviate.Client(url=str(self.settings.url))
+        else:
+            raise MemoryConnectorInitializationError("WeaviateMemoryStore requires a URL or API key, or to use embed.")
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in Weaviate."""

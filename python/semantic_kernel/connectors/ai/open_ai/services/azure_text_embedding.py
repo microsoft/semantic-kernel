@@ -65,6 +65,8 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             base_url=base_url,
             api_version=api_version,
         )
+        if not azure_openai_settings.embedding_deployment_name:
+            raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
 
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")

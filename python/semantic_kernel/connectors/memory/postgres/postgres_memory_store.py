@@ -9,6 +9,7 @@ from numpy import ndarray
 from psycopg import Cursor
 from psycopg.sql import SQL, Identifier
 from psycopg_pool import ConnectionPool
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.exceptions import (
@@ -16,6 +17,7 @@ from semantic_kernel.exceptions import (
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -58,19 +60,21 @@ class PostgresMemoryStore(MemoryStoreBase):
                 to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        postgres_settings = PostgresSettings.create(
-            connection_string=connection_string,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            postgres_settings = PostgresSettings.create(
+                connection_string=connection_string,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Postgres settings.", ex) from ex
 
         self._check_dimensionality(default_dimensionality)
 
-        self._connection_string = (
-            postgres_settings.connection_string.get_secret_value() if postgres_settings.connection_string else None
-        )
         self._default_dimensionality = default_dimensionality
-        self._connection_pool = ConnectionPool(self._connection_string, min_size=min_pool, max_size=max_pool)
+        self._connection_pool = ConnectionPool(
+            postgres_settings.connection_string.get_secret_value(), min_size=min_pool, max_size=max_pool
+        )
         self._schema = schema
         atexit.register(self._connection_pool.close)
 

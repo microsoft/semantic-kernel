@@ -20,6 +20,6 @@ class AzureAISearchSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "AZURE_AI_SEARCH_"
 
-    api_key: SecretStr | None = None
-    endpoint: HttpsUrl | None = None
+    api_key: SecretStr
+    endpoint: HttpsUrl
     index_name: str | None = None

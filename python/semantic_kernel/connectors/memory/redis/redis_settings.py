@@ -19,4 +19,4 @@ class RedisSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "REDIS_"
 
-    connection_string: SecretStr | None = None
+    connection_string: SecretStr

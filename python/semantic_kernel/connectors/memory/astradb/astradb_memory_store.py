@@ -5,6 +5,7 @@ import logging
 
 import aiohttp
 from numpy import ndarray
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
@@ -54,14 +55,17 @@ class AstraDBMemoryStore(MemoryStoreBase):
                 fallback to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
-        astradb_settings = AstraDBSettings.create(
-            app_token=astra_application_token,
-            db_id=astra_id,
-            region=astra_region,
-            keyspace=keyspace_name,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            astradb_settings = AstraDBSettings.create(
+                app_token=astra_application_token,
+                db_id=astra_id,
+                region=astra_region,
+                keyspace=keyspace_name,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create AstraDB settings.", ex) from ex
 
         self._embedding_dim = embedding_dim
         self._similarity = similarity

@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import redis
 from numpy import ndarray
+from pydantic import ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
@@ -18,10 +19,10 @@ from semantic_kernel.connectors.memory.redis.utils import (
     serialize_record_to_redis,
 )
 from semantic_kernel.exceptions import (
-    ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -71,18 +72,19 @@ class RedisMemoryStore(MemoryStoreBase):
                 environment variables, defaults to False
             env_file_encoding (str | None): Encoding of the environment settings file, defaults to "utf-8"
         """
-        redis_settings = RedisSettings.create(
-            connection_string=connection_string,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            redis_settings = RedisSettings.create(
+                connection_string=connection_string,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
 
         if vector_size <= 0:
-            raise ServiceInitializationError("Vector dimension must be a positive integer")
+            raise MemoryConnectorInitializationError("Vector dimension must be a positive integer")
 
-        self._database = redis.Redis.from_url(
-            redis_settings.connection_string.get_secret_value() if redis_settings.connection_string else None
-        )
+        self._database = redis.Redis.from_url(redis_settings.connection_string.get_secret_value())
         self._ft = self._database.ft
 
         self._query_dialect = query_dialect

@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription, IndexList, Pinecone, ServerlessSpec
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory.pinecone.utils import build_payload, parse_payload
@@ -14,6 +15,7 @@ from semantic_kernel.exceptions import (
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -33,7 +35,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
-    _pinecone_api_key: str
     _default_dimensionality: int
 
     DEFAULT_INDEX_SPEC: ServerlessSpec = ServerlessSpec(
@@ -58,21 +59,22 @@ class PineconeMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
-            raise ServiceInitializationError(
+            raise MemoryConnectorInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
+        try:
+            pinecone_settings = PineconeSettings.create(
+                api_key=api_key,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Pinecone settings.", ex) from ex
 
-        pinecone_settings = PineconeSettings.create(
-            api_key=api_key,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-
-        self._pinecone_api_key = pinecone_settings.api_key.get_secret_value() if pinecone_settings.api_key else None
         self._default_dimensionality = default_dimensionality
 
-        self.pinecone = Pinecone(api_key=self._pinecone_api_key)
+        self.pinecone = Pinecone(api_key=pinecone_settings.api_key.get_secret_value())
         self.collection_names_cache = set()
 
     async def create_collection(

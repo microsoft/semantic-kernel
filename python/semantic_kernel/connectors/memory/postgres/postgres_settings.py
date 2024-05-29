@@ -19,4 +19,4 @@ class PostgresSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "ASTRADB_"
 
-    connection_string: SecretStr | None = None
+    connection_string: SecretStr

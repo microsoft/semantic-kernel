@@ -29,7 +29,7 @@ class GooglePalmSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "GOOGLE_PALM_"
 
-    api_key: SecretStr | None = None
+    api_key: SecretStr
     chat_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None

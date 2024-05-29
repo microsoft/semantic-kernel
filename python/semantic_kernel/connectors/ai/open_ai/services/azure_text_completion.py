@@ -63,6 +63,8 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
             api_key=api_key,
             api_version=api_version,
         )
+        if not azure_openai_settings.text_deployment_name:
+            raise ServiceInitializationError("The Azure Text deployment name is required.")
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
         if azure_openai_settings.endpoint and azure_openai_settings.text_deployment_name:

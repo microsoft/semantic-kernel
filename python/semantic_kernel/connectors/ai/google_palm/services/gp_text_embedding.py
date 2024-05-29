@@ -5,11 +5,11 @@ from typing import Annotated, Any
 
 import google.generativeai as palm
 from numpy import array, ndarray
-from pydantic import StringConstraints
+from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
-from semantic_kernel.exceptions import ServiceInvalidAuthError, ServiceResponseException
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidAuthError, ServiceResponseException
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -36,13 +36,23 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             env_file_path (str | None): Use the environment settings file
                 as a fallback to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+
+        Raises:
+            ServiceInitializationError: When the Google Palm settings cannot be read.
+
         """
-        google_palm_settings = GooglePalmSettings.create(
-            api_key=api_key,
-            embedding_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            google_palm_settings = GooglePalmSettings.create(
+                api_key=api_key,
+                embedding_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create Google Palm settings.", ex) from ex
+        if not google_palm_settings.embedding_model_id:
+            raise ServiceInitializationError("The Google Palm embedding model ID is required.")
+
         super().__init__(
             ai_model_id=google_palm_settings.embedding_model_id,
             api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,

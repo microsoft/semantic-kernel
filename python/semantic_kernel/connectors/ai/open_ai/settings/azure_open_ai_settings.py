@@ -64,4 +64,4 @@ class AzureOpenAISettings(KernelBaseSettings):
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
-    api_version: str | None = DEFAULT_AZURE_API_VERSION
+    api_version: str = DEFAULT_AZURE_API_VERSION

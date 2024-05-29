@@ -6,10 +6,9 @@ import random
 import numpy as np
 import pytest
 import pytest_asyncio
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
+from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 mongodb_atlas_installed: bool
@@ -64,18 +63,18 @@ def test_collection():
     return f"AVSTest-{random.randint(0,9999)}"
 
 
-@pytest.fixture(scope="session")
-def connection_string():
+@pytest.fixture
+def memory():
     try:
-        mongodb_atlas_settings = MongoDBAtlasSettings.create()
-        return mongodb_atlas_settings.api_key.get_secret_value()
-    except ValidationError:
+        return MongoDBAtlasMemoryStore(database_name="pyMSKTest")
+    except MemoryConnectorInitializationError:
         pytest.skip("MongoDB Atlas connection string not found in env vars.")
 
 
 @pytest_asyncio.fixture
-async def vector_search_store():
-    async with MongoDBAtlasMemoryStore(connection_string, database_name="pyMSKTest") as memory:
+async def vector_search_store(memory):
+    await memory.__aenter__()
+    try:
         # Delete all collections before and after
         for cname in await memory.get_collections():
             await memory.delete_collection(cname)
@@ -107,23 +106,32 @@ async def vector_search_store():
             pass
             for cname in await memory.get_collections():
                 await memory.delete_collection(cname)
+    except Exception:
+        pass
+    finally:
+        await memory.__aexit__(None, None, None)
 
 
 @pytest_asyncio.fixture
-async def nearest_match_store():
+async def nearest_match_store(memory):
     """Fixture for read only vector store; the URI for test needs atlas configured"""
-    async with MongoDBAtlasMemoryStore(connection_string, database_name="pyMSKTest") as memory:
+    await memory.__aenter__()
+    try:
         if not await memory.does_collection_exist("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "
                 + "please ensure your Atlas Test Cluster has this collection configured"
             )
         yield memory
+    except Exception:
+        pass
+    finally:
+        await memory.__aexit__(None, None, None)
 
 
 @pytest.mark.asyncio
-async def test_constructor(vector_search_store):
-    assert isinstance(vector_search_store, MongoDBAtlasMemoryStore)
+async def test_constructor(memory):
+    assert isinstance(memory, MongoDBAtlasMemoryStore)
 
 
 @pytest.mark.asyncio

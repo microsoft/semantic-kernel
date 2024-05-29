@@ -5,7 +5,7 @@ from typing import Annotated, Any
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, MessageDict
-from pydantic import PrivateAttr, StringConstraints
+from pydantic import PrivateAttr, StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import (
@@ -19,7 +19,7 @@ from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceInvalidRequestError, ServiceResponseException
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError, ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -50,16 +50,26 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+
+        Raises:
+            ServiceInitializationError: When any of the required settings are missing.
         """
-        google_palm_settings = GooglePalmSettings.create(
-            api_key=api_key,
-            chat_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            google_palm_settings = GooglePalmSettings.create(
+                api_key=api_key,
+                chat_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create Google Palm settings", ex) from ex
+
+        if not google_palm_settings.chat_model_id:
+            raise ServiceInitializationError("The chat model ID is required for a Chat Completion Model.")
+
         super().__init__(
             ai_model_id=google_palm_settings.chat_model_id,
-            api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,
+            api_key=google_palm_settings.api_key.get_secret_value(),
         )
         self._message_history = message_history
 

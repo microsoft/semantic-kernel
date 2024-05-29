@@ -6,14 +6,14 @@ from typing import Annotated
 import google.generativeai as palm
 from google.generativeai.types import Completion
 from google.generativeai.types.text_types import TextCompletion
-from pydantic import StringConstraints
+from pydantic import StringConstraints, ValidationError
 
 from semantic_kernel.connectors.ai.google_palm.gp_prompt_execution_settings import GooglePalmTextPromptExecutionSettings
 from semantic_kernel.connectors.ai.google_palm.settings.google_palm_settings import GooglePalmSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
 from semantic_kernel.contents.text_content import TextContent
-from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceResponseException
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -38,13 +38,22 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             env_file_path (str | None): Use the environment settings file as a
                 fallback to environment variables. (Optional)
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
+
+        Raises:
+            ServiceInitializationError: When the Google Palm settings cannot be read.
         """
-        google_palm_settings = GooglePalmSettings.create(
-            api_key=api_key,
-            text_model_id=ai_model_id,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
+        try:
+            google_palm_settings = GooglePalmSettings.create(
+                api_key=api_key,
+                text_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create Google Palm settings.", ex) from ex
+        if not google_palm_settings.text_model_id:
+            raise ServiceInitializationError("The Google Palm text model ID is required.")
+
         super().__init__(
             ai_model_id=google_palm_settings.text_model_id,
             api_key=google_palm_settings.api_key.get_secret_value() if google_palm_settings.api_key else None,

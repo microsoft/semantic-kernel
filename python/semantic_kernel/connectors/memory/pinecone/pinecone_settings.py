@@ -19,4 +19,4 @@ class PineconeSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "PINECONE_"
 
-    api_key: SecretStr | None = None
+    api_key: SecretStr

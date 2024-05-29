@@ -82,6 +82,12 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
+        if not azure_openai_settings.chat_deployment_name:
+            raise ServiceInitializationError("chat_deployment_name is required.")
+
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
+
         if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
 

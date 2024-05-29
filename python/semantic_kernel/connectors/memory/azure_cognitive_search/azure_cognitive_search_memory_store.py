@@ -17,8 +17,8 @@ from azure.search.documents.indexes.models import (
 )
 from azure.search.documents.models import VectorizedQuery
 from numpy import ndarray
+from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
     SEARCH_FIELD_EMBEDDING,
     SEARCH_FIELD_ID,
@@ -71,17 +71,24 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): The encoding of the environment settings file
 
         """
-        acs_memory_settings = AzureAISearchSettings.create(
-            env_file_path=env_file_path,
-            endpoint=search_endpoint,
-            api_key=admin_key,
-            env_file_encoding=env_file_encoding,
+        from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+            AzureAISearchSettings,
         )
+
+        try:
+            acs_memory_settings = AzureAISearchSettings.create(
+                env_file_path=env_file_path,
+                endpoint=search_endpoint,
+                api_key=admin_key,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
             search_endpoint=str(acs_memory_settings.endpoint),
-            admin_key=acs_memory_settings.api_key.get_secret_value() if acs_memory_settings.api_key else None,
+            admin_key=acs_memory_settings.api_key.get_secret_value(),
             azure_credential=azure_credentials,
             token_credential=token_credentials,
         )
