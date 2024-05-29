@@ -1,24 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
+
+import asyncio
 import random
-import time
 
 import numpy as np
 import pytest
 import pytest_asyncio
 from pydantic import ValidationError
-from pymongo import errors
 
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import (
-    MongoDBAtlasMemoryStore,
-)
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import (
-    MongoDBAtlasSettings,
-)
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 mongodb_atlas_installed: bool
 try:
     import motor  # noqa: F401
+    from pymongo import errors
 
     mongodb_atlas_installed = True
 except ImportError:
@@ -98,7 +95,7 @@ async def vector_search_store():
                         # of a previous index not completing teardown
                         if e.code != DUPLICATE_INDEX_ERR_CODE:
                             raise
-                        time.sleep(1)
+                        await asyncio.sleep(1)
 
             return _patch
 

@@ -76,10 +76,9 @@ def memory_store():
     max_attempts = 5  # the number of retry attempts
     delay = 3  # delay in seconds between each attempt
 
-    config = WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
         try:
-            store = WeaviateMemoryStore(config=config)
+            store = WeaviateMemoryStore(use_embed=True)
             store.client.schema.delete_all()
         except Exception:
             if attempt < max_attempts - 1:  # it's not the final attempt
