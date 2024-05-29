@@ -22,7 +22,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
-    private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
+    private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -103,7 +103,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
             // Clone the settings to avoid reference changes.
             this._executionSettings = value is IDictionary<string, PromptExecutionSettings> dictionary
                 ? new Dictionary<string, PromptExecutionSettings>(dictionary)
-                : (IReadOnlyDictionary<string, PromptExecutionSettings>?)(value?.ToDictionary(kv => kv.Key, kv => kv.Value));
+                : value?.ToDictionary(kv => kv.Key, kv => kv.Value);
 
             if (this._executionSettings is not null && this._executionSettings.Count != 0)
             {
