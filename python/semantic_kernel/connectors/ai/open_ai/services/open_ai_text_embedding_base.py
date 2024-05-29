@@ -1,8 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from typing import Any
 
 from numpy import array, ndarray
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
@@ -15,19 +21,8 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 
 @experimental_class
 class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
+    @override
     async def generate_embeddings(self, texts: list[str], batch_size: int | None = None, **kwargs: Any) -> ndarray:
-        """Generates embeddings for the given texts.
-
-        Arguments:
-            texts {List[str]} -- The texts to generate embeddings for.
-            batch_size {Optional[int]} -- The batch size to use for the request.
-            kwargs {Dict[str, Any]} -- Additional arguments to pass to the request,
-                see OpenAIEmbeddingPromptExecutionSettings for the details.
-
-        Returns:
-            ndarray -- The embeddings for the text.
-
-        """
         settings = OpenAIEmbeddingPromptExecutionSettings(
             ai_model_id=self.ai_model_id,
             **kwargs,
@@ -43,5 +38,6 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
             raw_embeddings.extend(raw_embedding)
         return array(raw_embeddings)
 
+    @override
     def get_prompt_execution_settings_class(self) -> PromptExecutionSettings:
         return OpenAIEmbeddingPromptExecutionSettings

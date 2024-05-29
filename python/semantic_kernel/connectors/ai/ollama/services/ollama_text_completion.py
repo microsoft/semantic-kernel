@@ -18,14 +18,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OllamaTextCompletion(TextCompletionClientBase):
-    """
-    Initializes a new instance of the OllamaTextCompletion class.
+    """Initializes a new instance of the OllamaTextCompletion class.
 
     Make sure to have the ollama service running either locally or remotely.
 
-    Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/generate
+    Args:
+        ai_model_id (str): Ollama model name, see https://ollama.ai/library
+        url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/generate
     """
 
     url: HttpUrl = "http://localhost:11434/api/generate"
@@ -36,15 +35,14 @@ class OllamaTextCompletion(TextCompletionClientBase):
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
     ) -> list[TextContent]:
-        """
-        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {OllamaTextPromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (OllamaTextPromptExecutionSettings): Settings for the request.
 
         Returns:
-            List[TextContent] -- A list of TextContent objects representing the response(s) from the LLM.
+            List[TextContent]: A list of TextContent objects representing the response(s) from the LLM.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
@@ -62,17 +60,17 @@ class OllamaTextCompletion(TextCompletionClientBase):
         prompt: str,
         settings: OllamaTextPromptExecutionSettings,
     ) -> AsyncGenerator[list[StreamingTextContent], Any]:
-        """
-        Streams a text completion using an Ollama model.
+        """Streams a text completion using an Ollama model.
+
         Note that this method does not support multiple responses,
         but the result will be a list anyway.
 
-        Arguments:
-            prompt {str} -- Prompt to complete.
-            settings {OllamaTextPromptExecutionSettings} -- Request settings.
+        Args:
+            prompt (str): Prompt to complete.
+            settings (OllamaTextPromptExecutionSettings): Request settings.
 
         Yields:
-            List[StreamingTextContent] -- Completion result.
+            List[StreamingTextContent]: Completion result.
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id

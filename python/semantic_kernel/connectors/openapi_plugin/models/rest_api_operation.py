@@ -57,6 +57,7 @@ class RestApiOperation:
         request_body: "RestApiOperationPayload | None" = None,
         responses: dict[str, "RestApiOperationExpectedResponse"] | None = None,
     ):
+        """Initialize the RestApiOperation."""
         self.id = id
         self.method = method.upper()
         self.server_url = server_url
@@ -78,6 +79,7 @@ class RestApiOperation:
         return urlunparse(parsed_base._replace(path=full_path))
 
     def build_headers(self, arguments: dict[str, Any]) -> dict[str, str]:
+        """Build the headers for the operation."""
         headers = {}
 
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.HEADER]
@@ -98,11 +100,13 @@ class RestApiOperation:
         return headers
 
     def build_operation_url(self, arguments, server_url_override=None, api_host_url=None):
+        """Build the URL for the operation."""
         server_url = self.get_server_url(server_url_override, api_host_url)
         path = self.build_path(self.path, arguments)
         return urljoin(server_url.geturl(), path.lstrip("/"))
 
     def get_server_url(self, server_url_override=None, api_host_url=None):
+        """Get the server URL for the operation."""
         if server_url_override is not None and server_url_override.geturl() != b"":
             server_url_string = server_url_override.geturl()
         else:
@@ -119,6 +123,7 @@ class RestApiOperation:
         return urlparse(server_url_string)
 
     def build_path(self, path_template: str, arguments: dict[str, Any]) -> str:
+        """Build the path for the operation."""
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.PATH]
         for parameter in parameters:
             argument = arguments.get(parameter.name)
@@ -133,6 +138,7 @@ class RestApiOperation:
         return path_template
 
     def build_query_string(self, arguments: dict[str, Any]) -> str:
+        """Build the query string for the operation."""
         segments = []
         parameters = [p for p in self.parameters if p.location == RestApiOperationParameterLocation.QUERY]
         for parameter in parameters:
@@ -148,6 +154,7 @@ class RestApiOperation:
         return urlencode(segments)
 
     def replace_invalid_symbols(self, parameter_name):
+        """Replace invalid symbols in the parameter name with underscores."""
         return RestApiOperation.INVALID_SYMBOLS_REGEX.sub("_", parameter_name)
 
     def get_parameters(
@@ -156,6 +163,7 @@ class RestApiOperation:
         add_payload_params_from_metadata: bool = True,
         enable_payload_spacing: bool = False,
     ) -> list["RestApiOperationParameter"]:
+        """Get the parameters for the operation."""
         params = list(operation.parameters)
         if operation.request_body is not None:
             params.extend(
@@ -172,6 +180,7 @@ class RestApiOperation:
         return params
 
     def create_payload_artificial_parameter(self, operation: "RestApiOperation") -> "RestApiOperationParameter":
+        """Create an artificial parameter for the REST API request body."""
         return RestApiOperationParameter(
             name=self.PAYLOAD_ARGUMENT_NAME,
             type=(
@@ -188,6 +197,7 @@ class RestApiOperation:
         )
 
     def create_content_type_artificial_parameter(self) -> "RestApiOperationParameter":
+        """Create an artificial parameter for the content type of the REST API request body."""
         return RestApiOperationParameter(
             name=self.CONTENT_TYPE_ARGUMENT_NAME,
             type="string",
@@ -233,6 +243,7 @@ class RestApiOperation:
     def get_payload_parameters(
         self, operation: "RestApiOperation", use_parameters_from_metadata: bool, enable_namespacing: bool
     ):
+        """Get the payload parameters for the operation."""
         if use_parameters_from_metadata:
             if operation.request_body is None:
                 raise Exception(
@@ -252,13 +263,17 @@ class RestApiOperation:
     def get_default_response(
         self, responses: dict[str, RestApiOperationExpectedResponse], preferred_responses: list[str]
     ) -> RestApiOperationExpectedResponse | None:
+        """Get the default response for the operation.
+
+        If no appropriate response is found, returns None.
+        """
         for code in preferred_responses:
             if code in responses:
                 return responses[code]
-        # If no appropriate response is found, return None
         return None
 
     def get_default_return_parameter(self, preferred_responses: list[str] | None = None) -> KernelParameterMetadata:
+        """Get the default return parameter for the operation."""
         if preferred_responses is None:
             preferred_responses = self._preferred_responses
 

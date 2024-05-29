@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-"""
+"""A Text splitter.
+
 Split text in chunks, attempting to leave meaning intact.
 For plain text, split looking at new lines first, then periods, and so on.
 For markdown, split looking at punctuation first, and so on.
@@ -39,8 +40,7 @@ MD_SPLIT_OPTIONS = [
 
 
 def _token_counter(text: str) -> int:
-    """
-    Count the number of tokens in a string.
+    """Count the number of tokens in a string.
 
     TODO: chunking methods should be configurable to allow for different
           tokenization strategies depending on the model to be called.
@@ -50,8 +50,8 @@ def _token_counter(text: str) -> int:
 
 
 def split_plaintext_lines(text: str, max_token_per_line: int, token_counter: Callable = _token_counter) -> list[str]:
-    """
-    Split plain text into lines.
+    """Split plain text into lines.
+
     it will split on new lines first, and then on punctuation.
     """
     return _split_text_lines(
@@ -63,8 +63,8 @@ def split_plaintext_lines(text: str, max_token_per_line: int, token_counter: Cal
 
 
 def split_markdown_lines(text: str, max_token_per_line: int, token_counter: Callable = _token_counter) -> list[str]:
-    """
-    Split markdown into lines.
+    """Split markdown into lines.
+
     It will split on punctuation first, and then on space and new lines.
     """
     return _split_markdown_lines(
@@ -76,10 +76,7 @@ def split_markdown_lines(text: str, max_token_per_line: int, token_counter: Call
 
 
 def split_plaintext_paragraph(text: list[str], max_tokens: int, token_counter: Callable = _token_counter) -> list[str]:
-    """
-    Split plain text into paragraphs.
-    """
-
+    """Split plain text into paragraphs."""
     split_lines = []
     for line in text:
         split_lines.extend(
@@ -95,9 +92,7 @@ def split_plaintext_paragraph(text: list[str], max_tokens: int, token_counter: C
 
 
 def split_markdown_paragraph(text: list[str], max_tokens: int, token_counter: Callable = _token_counter) -> list[str]:
-    """
-    Split markdown into paragraphs.
-    """
+    """Split markdown into paragraphs."""
     split_lines = []
     for line in text:
         split_lines.extend(
@@ -113,9 +108,7 @@ def split_markdown_paragraph(text: list[str], max_tokens: int, token_counter: Ca
 
 
 def _split_text_paragraph(text: list[str], max_tokens: int, token_counter: Callable = _token_counter) -> list[str]:
-    """
-    Split text into paragraphs.
-    """
+    """Split text into paragraphs."""
     if not text:
         return []
 
@@ -165,10 +158,7 @@ def _split_markdown_lines(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> list[str]:
-    """
-    Split markdown into lines.
-    """
-
+    """Split markdown into lines."""
     return _split_str_lines(
         text=text,
         max_tokens=max_token_per_line,
@@ -184,10 +174,7 @@ def _split_text_lines(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> list[str]:
-    """
-    Split text into lines.
-    """
-
+    """Split text into lines."""
     return _split_str_lines(
         text=text,
         max_tokens=max_token_per_line,
@@ -204,6 +191,7 @@ def _split_str_lines(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> list[str]:
+    """Split text into lines."""
     if not text:
         return []
 
@@ -240,9 +228,7 @@ def _split_str(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:
-    """
-    Split text into lines.
-    """
+    """Split text into lines."""
     input_was_split = False
     if not text:
         return [], input_was_split  # pragma: no cover
@@ -301,9 +287,7 @@ def _split_list(
     trim: bool,
     token_counter: Callable = _token_counter,
 ) -> tuple[list[str], bool]:
-    """
-    Split list of string into lines.
-    """
+    """Split list of string into lines."""
     if not text:
         return [], False  # pragma: no cover
 

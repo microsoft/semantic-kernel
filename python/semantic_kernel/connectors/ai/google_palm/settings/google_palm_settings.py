@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 
 class GooglePalmSettings(BaseSettings):
-    """Google Palm model settings
+    """Google Palm model settings.
 
     The settings are first loaded from environment variables with the prefix 'GOOGLE_PALM_'. If the
     environment variables are not found, the settings can be loaded from a .env file with the
@@ -31,6 +31,8 @@ class GooglePalmSettings(BaseSettings):
     embedding_model_id: str | None = None
 
     class Config:
+        """Pydantic configuration settings."""
+
         env_prefix = "GOOGLE_PALM_"
         env_file = None
         env_file_encoding = "utf-8"
@@ -39,6 +41,7 @@ class GooglePalmSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
+        """Create the settings object."""
         if "env_file_path" in kwargs and kwargs["env_file_path"]:
             cls.Config.env_file = kwargs["env_file_path"]
         else:

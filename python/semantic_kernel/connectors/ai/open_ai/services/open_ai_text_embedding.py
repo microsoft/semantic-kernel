@@ -6,15 +6,9 @@ from collections.abc import Mapping
 from openai import AsyncOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
-    OpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
-    OpenAITextEmbeddingBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import OpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
@@ -35,21 +29,20 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the OpenAITextCompletion class.
+        """Initializes a new instance of the OpenAITextCompletion class.
 
-        Arguments:
-            ai_model_id {str} -- OpenAI model name, see
+        Args:
+            ai_model_id (str): OpenAI model name, see
                 https://platform.openai.com/docs/models
-            service_id {str | None} -- Service ID tied to the execution settings.
-            api_key {str | None} -- The optional API key to use. If provided will override,
+            service_id (str | None): Service ID tied to the execution settings.
+            api_key (str | None): The optional API key to use. If provided will override,
                 the env vars or .env file value.
-            org_id {str | None} -- The optional org ID to use. If provided will override,
+            org_id (str | None): The optional org ID to use. If provided will override,
                 the env vars or .env file value.
-            default_headers {Optional[Mapping[str,str]]}: The default headers mapping of string keys to
+            default_headers (Mapping[str,str] | None): The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-            async_client {Optional[AsyncOpenAI]} -- An existing client to use. (Optional)
-            env_file_path {str | None} -- Use the environment settings file as
+            async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as
                 a fallback to environment variables. (Optional)
         """
         try:
@@ -77,13 +70,11 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "OpenAITextEmbedding":
-        """
-        Initialize an Open AI service from a dictionary of settings.
+        """Initialize an Open AI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
         """
-
         return OpenAITextEmbedding(
             ai_model_id=settings["ai_model_id"],
             api_key=settings.get("api_key", None),
