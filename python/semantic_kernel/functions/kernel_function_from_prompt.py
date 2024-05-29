@@ -59,9 +59,8 @@ class KernelFunctionFromPrompt(KernelFunction):
         template_format: TEMPLATE_FORMAT_TYPES = KERNEL_TEMPLATE_FORMAT_NAME,
         prompt_template: PromptTemplateBase | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
-        prompt_execution_settings: None | (
-            PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]
-        ) = None,
+        prompt_execution_settings: None
+        | (PromptExecutionSettings | list[PromptExecutionSettings] | dict[str, PromptExecutionSettings]) = None,
     ) -> None:
         """Initializes a new instance of the KernelFunctionFromPrompt class.
 
@@ -85,6 +84,16 @@ class KernelFunctionFromPrompt(KernelFunction):
 through prompt_template_config or in the prompt_template."
             )
 
+        if prompt and prompt_template_config and prompt_template_config.template != prompt:
+            logger.warning(
+                f"Prompt ({prompt}) and PromptTemplateConfig ({prompt_template_config.template}) both supplied, "
+                "using the template in PromptTemplateConfig, ignoring prompt."
+            )
+        if template_format and prompt_template_config and prompt_template_config.template_format != template_format:
+            logger.warning(
+                f"Template ({template_format}) and PromptTemplateConfig ({prompt_template_config.template_format}) "
+                "both supplied, using the template format in PromptTemplateConfig, ignoring template."
+            )
         if not prompt_template:
             if not prompt_template_config:
                 # prompt must be there if prompt_template and prompt_template_config is not supplied
@@ -94,7 +103,9 @@ through prompt_template_config or in the prompt_template."
                     template=prompt,
                     template_format=template_format,
                 )
-            prompt_template = TEMPLATE_FORMAT_MAP[template_format](prompt_template_config=prompt_template_config)  # type: ignore
+            prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                prompt_template_config=prompt_template_config
+            )  # type: ignore
 
         try:
             metadata = KernelFunctionMetadata(
