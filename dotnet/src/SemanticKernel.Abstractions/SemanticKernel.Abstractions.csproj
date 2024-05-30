@@ -3,7 +3,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0001</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
@@ -30,6 +30,7 @@
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Core" />
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" /> <!-- Moq -->
   </ItemGroup>
 </Project>

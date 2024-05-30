@@ -2,41 +2,44 @@
 
 import logging
 import urllib
-from typing import List
 
 import aiohttp
 
+from semantic_kernel.connectors.search_engine.bing_connector_settings import BingSettings
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.exceptions import ServiceInvalidRequestError
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class BingConnector(ConnectorBase):
-    """
-    A search engine connector that uses the Bing Search API to perform a web search
-    """
+    """A search engine connector that uses the Bing Search API to perform a web search."""
 
-    _api_key: str
+    _settings: BingSettings
 
-    def __init__(self, api_key: str) -> None:
-        self._api_key = api_key
+    def __init__(
+        self,
+        api_key: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> None:
+        """Initializes a new instance of the BingConnector class.
 
-        if not self._api_key:
-            raise ServiceInitializationError(
-                "Bing API key cannot be null. Please set environment variable BING_API_KEY."
-            )
-
-    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> List[str]:
+        Args:
+            api_key (str | None): The Bing Search API key. If provided, will override
+                the value in the env vars or .env file.
+            env_file_path (str | None): The optional path to the .env file. If provided,
+                the settings are read from this file path location.
+            env_file_encoding (str | None): The optional encoding of the .env file.
         """
-        Returns the search results of the query provided by pinging the Bing web search API.
-        Returns `num_results` results and ignores the first `offset`.
+        self.settings = BingSettings.create(
+            api_key=api_key,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
 
-        :param query: search query
-        :param num_results: the number of search results to return
-        :param offset: the number of search results to ignore
-        :return: list of search results
-        """
+    async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
+        """Returns the search results of the query provided by pinging the Bing web search API."""
         if not query:
             raise ServiceInvalidRequestError("query cannot be 'None' or empty.")
 
@@ -58,7 +61,7 @@ class BingConnector(ConnectorBase):
 
         logger.info(f"Sending GET request to {_request_url}")
 
-        headers = {"Ocp-Apim-Subscription-Key": self._api_key}
+        headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
 
         async with aiohttp.ClientSession() as session:
             async with session.get(_request_url, headers=headers, raise_for_status=True) as response:

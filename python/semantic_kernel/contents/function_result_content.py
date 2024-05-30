@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import field_validator
 
@@ -23,7 +23,7 @@ TAG_CONTENT_MAP = {
 class FunctionResultContent(KernelContent):
     """This is the base class for text response content.
 
-    All Text Completion Services should return a instance of this class as response.
+    All Text Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -44,6 +44,16 @@ class FunctionResultContent(KernelContent):
     result: str
     encoding: str | None = None
 
+    @cached_property
+    def function_name(self) -> str:
+        """Get the function name."""
+        return self.split_name()[1]
+
+    @cached_property
+    def plugin_name(self) -> str | None:
+        """Get the plugin name."""
+        return self.split_name()[0]
+
     @field_validator("result", mode="before")
     @classmethod
     def _validate_result(cls, result: Any):
@@ -52,6 +62,7 @@ class FunctionResultContent(KernelContent):
         return result
 
     def __str__(self) -> str:
+        """Return the text of the response."""
         return self.result
 
     def to_element(self) -> Element:
@@ -78,7 +89,8 @@ class FunctionResultContent(KernelContent):
         metadata: dict[str, Any] = {},
     ) -> "FunctionResultContent":
         """Create an instance from a FunctionCallContent and a result."""
-        metadata.update(function_call_content.metadata)
+        if function_call_content.metadata:
+            metadata.update(function_call_content.metadata)
         return cls(
             id=function_call_content.id,
             result=result,  # type: ignore
@@ -101,3 +113,11 @@ class FunctionResultContent(KernelContent):
             "tool_call_id": self.id,
             "content": self.result,
         }
+
+    def split_name(self) -> list[str]:
+        """Split the name into a plugin and function name."""
+        if not self.name:
+            raise ValueError("Name is not set.")
+        if "-" not in self.name:
+            return ["", self.name]
+        return self.name.split("-", maxsplit=1)

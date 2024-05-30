@@ -8,7 +8,7 @@ from semantic_kernel.exceptions import ContentAdditionException
 class StreamingTextContent(StreamingContentMixin, TextContent):
     """This is the base class for streaming text response content.
 
-    All Text Completion Services should return a instance of this class as streaming response.
+    All Text Completion Services should return an instance of this class as streaming response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -28,6 +28,7 @@ class StreamingTextContent(StreamingContentMixin, TextContent):
     """
 
     def __bytes__(self) -> bytes:
+        """Return the content of the response encoded in the encoding."""
         return self.text.encode(self.encoding if self.encoding else "utf-8") if self.text else b""
 
     def __add__(self, other: "TextContent") -> "StreamingTextContent":

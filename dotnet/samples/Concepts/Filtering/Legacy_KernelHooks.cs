@@ -269,7 +269,7 @@ public class Legacy_KernelHooks : BaseTest
         this._openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         this._openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (this._openAIModelId == null || this._openAIApiKey == null)
+        if (this._openAIModelId is null || this._openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;

@@ -76,26 +76,21 @@ jobs:
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAI__Text__DeploymentName: ${{ vars.AZUREOPENAI__TEXT__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
-          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
-          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then
@@ -143,26 +138,21 @@ jobs:
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
           Python_Integration_Tests: Python_Integration_Tests
-          AzureOpenAI__Label: azure-text-davinci-003
-          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-          AzureOpenAI__Text__DeploymentName: ${{ vars.AZUREOPENAI__TEXT__DEPLOYMENTNAME }}
-          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
-          AzureOpenAIEmbeddings_EastUS__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS_EASTUS__DEPLOYMENTNAME}}
-          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAI_EastUS__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
-          AzureOpenAI_EastUS__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
-          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
-          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
-          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }} # azure-text-embedding-ada-002
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
           MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
         run: |
           if ${{ matrix.os == 'ubuntu-latest' }}; then

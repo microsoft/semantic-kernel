@@ -55,7 +55,7 @@ internal static class KernelFunctionExtensions
 
     private static string ConvertType(Type? type)
     {
-        if (type == null || type == typeof(string))
+        if (type is null || type == typeof(string))
         {
             return "string";
         }
@@ -75,23 +75,16 @@ internal static class KernelFunctionExtensions
             return "array";
         }
 
-        switch (Type.GetTypeCode(type))
+        return Type.GetTypeCode(type) switch
         {
-            case TypeCode.SByte:
-            case TypeCode.Byte:
-            case TypeCode.Int16:
-            case TypeCode.UInt16:
-            case TypeCode.Int32:
-            case TypeCode.UInt32:
-            case TypeCode.Int64:
-            case TypeCode.UInt64:
-            case TypeCode.Single:
-            case TypeCode.Double:
-            case TypeCode.Decimal:
-                return "number";
-        }
+            TypeCode.SByte or TypeCode.Byte or
+            TypeCode.Int16 or TypeCode.UInt16 or
+            TypeCode.Int32 or TypeCode.UInt32 or
+            TypeCode.Int64 or TypeCode.UInt64 or
+            TypeCode.Single or TypeCode.Double or TypeCode.Decimal => "number",
 
-        return "object";
+            _ => "object",
+        };
     }
 
     /// <summary>

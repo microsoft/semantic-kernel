@@ -22,9 +22,7 @@ async def main():
     # countryCode = currently, only US, GB, DE, SE, and DK are supported
     query_params = {"q": "Laptop", "size": "3", "budget": "200", "countryCode": "US"}
 
-    result = await kernel.invoke(
-        plugin["productsUsingGET"], query_params=query_params, headers={}, path_params={}, request_body={}
-    )
+    result = await kernel.invoke(plugin["productsUsingGET"], **query_params)
 
     print(f"Function execution result: {str(result)}")
 

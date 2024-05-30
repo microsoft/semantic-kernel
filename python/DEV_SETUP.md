@@ -10,17 +10,31 @@ Make sure you have an
 [OpenAI API Key](https://platform.openai.com) or
 [Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
-Copy those keys into a `.env` file (see the `.env.example` file):
+There are two methods to manage keys, secrets, and endpoints:
 
-```bash
+1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+
+2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys into a `.env` file (see the `.env.example` file):
+
+```
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
-AZURE_OPENAI_DEPLOYMENT_NAME=""
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_TEXT_DEPLOYMENT_NAME=""
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-We suggest adding a copy of the `.env` file under these folders:
+You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+
+```python
+chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
+```
+
+This optional `env_file_path` parameter will allow pydantic settings to use the `.env` file as a fallback to read the settings.
+
+If using the second method, we suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)
 - [./samples/getting_started](./samples/getting_started).

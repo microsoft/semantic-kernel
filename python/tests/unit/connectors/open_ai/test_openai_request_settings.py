@@ -17,14 +17,14 @@ from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
 
 def test_default_openai_chat_prompt_execution_settings():
     settings = OpenAIChatPromptExecutionSettings()
-    assert settings.temperature == 0.0
-    assert settings.top_p == 1.0
-    assert settings.presence_penalty == 0.0
-    assert settings.frequency_penalty == 0.0
-    assert settings.max_tokens == 256
+    assert settings.temperature is None
+    assert settings.top_p is None
+    assert settings.presence_penalty is None
+    assert settings.frequency_penalty is None
+    assert settings.max_tokens is None
     assert settings.stop is None
-    assert settings.number_of_responses == 1
-    assert settings.logit_bias == {}
+    assert settings.number_of_responses is None
+    assert settings.logit_bias is None
     assert settings.messages is None
 
 
@@ -55,14 +55,14 @@ def test_openai_chat_prompt_execution_settings_from_default_completion_config():
     settings = PromptExecutionSettings(service_id="test_service")
     chat_settings = OpenAIChatPromptExecutionSettings.from_prompt_execution_settings(settings)
     assert chat_settings.service_id == "test_service"
-    assert chat_settings.temperature == 0.0
-    assert chat_settings.top_p == 1.0
-    assert chat_settings.presence_penalty == 0.0
-    assert chat_settings.frequency_penalty == 0.0
-    assert chat_settings.max_tokens == 256
+    assert chat_settings.temperature is None
+    assert chat_settings.top_p is None
+    assert chat_settings.presence_penalty is None
+    assert chat_settings.frequency_penalty is None
+    assert chat_settings.max_tokens is None
     assert chat_settings.stop is None
-    assert chat_settings.number_of_responses == 1
-    assert chat_settings.logit_bias == {}
+    assert chat_settings.number_of_responses is None
+    assert chat_settings.logit_bias is None
 
 
 def test_openai_chat_prompt_execution_settings_from_openai_prompt_execution_settings():
@@ -263,3 +263,10 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
     }
     settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
+
+
+def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json():
+    response_format = {"type": "json_object"}
+    settings = AzureChatPromptExecutionSettings(response_format=response_format)
+    options = settings.prepare_settings_dict()
+    assert options["response_format"] == response_format

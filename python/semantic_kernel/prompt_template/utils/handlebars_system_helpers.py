@@ -3,8 +3,8 @@
 import json
 import logging
 import re
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Dict
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ def _messages(this, options, *args, **kwargs):
 
     if not isinstance(this.context["chat_history"], ChatHistory):
         return ""
-    return str(this.context["chat_history"])
+    return this.context["chat_history"].to_prompt()
 
 
 def _message_to_prompt(this, *args, **kwargs):
@@ -40,7 +40,7 @@ def _message(this, options, *args, **kwargs):
     end = f"</{CHAT_MESSAGE_CONTENT_TAG}>"
     try:
         content = options["fn"](this)
-    except Exception:
+    except Exception:  # pragma: no cover
         content = ""
     return f"{start}{content}{end}"
 
@@ -142,7 +142,7 @@ def _snake_case(this, *args, **kwargs):
     return arg.lower()
 
 
-HANDLEBAR_SYSTEM_HELPERS: Dict[str, Callable] = {
+HANDLEBAR_SYSTEM_HELPERS: dict[str, Callable] = {
     "set": _set,
     "get": _get,
     "array": _array,
