@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// <summary>
 /// A tool to be used in the chat completion request.
 /// </summary>
-internal class MistralTool
+internal sealed class MistralTool
 {
     /// <summary>
     /// The type of the tool. Currently, only function is supported.

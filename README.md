@@ -108,45 +108,6 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 - [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
 - Python API reference (coming soon)
 
-## Chat Copilot: see what's possible with Semantic Kernel
-
-If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
-our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
-is a chatbot that demonstrates the power of Semantic Kernel. By combining plugins, planners, and personas,
-we demonstrate how you can build a chatbot that can maintain long-running conversations with users while
-also leveraging plugins to integrate with other services.
-
-![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
-
-You can run the app yourself by downloading it from its [GitHub repo](https://github.com/microsoft/chat-copilot).
-
-## Visual Studio Code extension: design semantic functions with ease
-
-The [Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/vs-code-tools/)
-makes it easy to design and test semantic functions. The extension provides an interface for
-designing semantic functions and allows you to test them with a push of a button with your
-existing models and data.
-
-![Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/media/vs-code-extension.png)
-
-In the above screenshot, you can see the extension in action:
-
-- Syntax highlighting for semantic functions
-- Code completion for semantic functions
-- LLM model picker
-- Run button to test the semantic function with your input data
-
-## Check out our other repos!
-
-If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
-
-| Repo                                                                              | Description                                                                                   |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
-| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.          |
-| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
-| [Kernel Memory](https://github.com/microsoft/kernel-memory)                       | A scalable Memory service to store information and ask questions using the RAG pattern.       |
-
 ## Join the community
 
 We welcome your contributions and suggestions to SK community! One of the easiest

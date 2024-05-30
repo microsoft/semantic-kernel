@@ -3,10 +3,12 @@
 from pydantic import SecretStr
 
 from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
+@experimental_class
 class AstraDBSettings(BaseModelSettings):
-    """AstraDB model settings
+    """AstraDB model settings.
 
     Optional:
     - app_token: SecretStr | None - AstraDB token
@@ -25,4 +27,6 @@ class AstraDBSettings(BaseModelSettings):
     keyspace: str
 
     class Config(BaseModelSettings.Config):
+        """Pydantic configuration settings."""
+
         env_prefix = "ASTRADB_"

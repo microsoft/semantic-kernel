@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import types
-from typing import Callable, Type
+from collections.abc import Callable
 
 
 def experimental_function(func: Callable) -> Callable:
+    """Decorator to mark a function as experimental."""
     if isinstance(func, types.FunctionType):
         if func.__doc__:
             func.__doc__ += "\n\nNote: This function is experimental and may change in the future."
@@ -16,7 +17,8 @@ def experimental_function(func: Callable) -> Callable:
     return func
 
 
-def experimental_class(cls: Type) -> Type:
+def experimental_class(cls: type) -> type:
+    """Decorator to mark a class as experimental."""
     if isinstance(cls, type):
         if cls.__doc__:
             cls.__doc__ += "\n\nNote: This class is experimental and may change in the future."

@@ -194,17 +194,26 @@ async def test_helpers_set_get(kernel: Kernel):
     template = """{% set arg = 'test' %}{{ arg }} {{ arg }}"""
     target = create_jinja2_prompt_template(template)
 
-    rendered = await target.render(kernel, None)
+    rendered = await target.render(kernel, KernelArguments(arg2="test"))
     assert rendered == "test test"
 
 
 @mark.asyncio
 async def test_helpers_empty_get(kernel: Kernel):
-    template = """{{get()}}"""
+    template = """{{get(default='test')}}"""
     target = create_jinja2_prompt_template(template)
 
     rendered = await target.render(kernel, None)
-    assert rendered == ""
+    assert rendered == "test"
+
+
+@mark.asyncio
+async def test_helpers_get(kernel: Kernel):
+    template = """{{get(context=args, name='arg', default='fail')}}"""
+    target = create_jinja2_prompt_template(template)
+
+    rendered = await target.render(kernel, KernelArguments(args={"arg": "test"}))
+    assert rendered == "test"
 
 
 @mark.asyncio
@@ -329,3 +338,12 @@ async def test_helpers_chat_history_messages(kernel: Kernel):
         rendered.strip()
         == """<chat_history><message role="user"><text>User message</text></message><message role="assistant"><text>Assistant message</text></message></chat_history>"""  # noqa E501
     )
+
+
+@mark.asyncio
+async def test_helpers_chat_history_messages_non(kernel: Kernel):
+    template = """{{ messages(chat_history) }}"""
+    target = create_jinja2_prompt_template(template)
+    chat_history = "text instead of a chat_history object"
+    rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
+    assert rendered.strip() == ""

@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+import sys
+from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 import sentence_transformers
 import torch
@@ -9,10 +15,12 @@ from numpy import array, ndarray
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     device: str
     generator: Any
@@ -20,17 +28,16 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     def __init__(
         self,
         ai_model_id: str,
-        device: Optional[int] = -1,
-        service_id: Optional[str] = None,
+        device: int | None = -1,
+        service_id: str | None = None,
     ) -> None:
-        """
-        Initializes a new instance of the HuggingFaceTextEmbedding class.
+        """Initializes a new instance of the HuggingFaceTextEmbedding class.
 
-        Arguments:
-            ai_model_id {str} -- Hugging Face model card string, see
+        Args:
+            ai_model_id (str): Hugging Face model card string, see
                 https://huggingface.co/sentence-transformers
-            device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
-            log  -- The logger instance to use. (Optional) (Deprecated)
+            device (Optional[int]): Device to run the model on, -1 for CPU, 0+ for GPU.
+            service_id (Optional[str]): Service ID for the model.
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
@@ -42,16 +49,8 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
             generator=sentence_transformers.SentenceTransformer(model_name_or_path=ai_model_id, device=resolved_device),
         )
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
-        """
-        Generates embeddings for a list of texts.
-
-        Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
-
-        Returns:
-            ndarray -- Embeddings for the texts.
-        """
+    @override
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         try:
             logger.info(f"Generating embeddings for {len(texts)} texts")
             embeddings = self.generator.encode(texts, **kwargs)

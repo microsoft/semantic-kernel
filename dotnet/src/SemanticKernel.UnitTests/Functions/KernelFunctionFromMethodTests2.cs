@@ -115,6 +115,24 @@ public sealed class KernelFunctionFromMethodTests2
     }
 
     [Fact]
+    public async Task ItCanImportClosedGenericsAsync()
+    {
+        await Validate(KernelPluginFactory.CreateFromObject(new GenericPlugin<int>()));
+        await Validate(KernelPluginFactory.CreateFromType<GenericPlugin<int>>());
+
+        async Task Validate(KernelPlugin plugin)
+        {
+            Assert.Equal("GenericPlugin_Int32", plugin.Name);
+            Assert.Equal(3, plugin.FunctionCount);
+            foreach (KernelFunction function in plugin)
+            {
+                FunctionResult result = await function.InvokeAsync(new(), new() { { "input", 42 } });
+                Assert.Equal(42, result.Value);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ItCanImportMethodFunctionsWithExternalReferencesAsync()
     {
         // Arrange
@@ -448,5 +466,17 @@ public sealed class KernelFunctionFromMethodTests2
         {
             return string.Empty;
         }
+    }
+
+    private sealed class GenericPlugin<T>
+    {
+        [KernelFunction]
+        public int GetValue1(int input) => input;
+
+        [KernelFunction]
+        public T GetValue2(T input) => input;
+
+        [KernelFunction]
+        public Task<T> GetValue3Async(T input) => Task.FromResult(input);
     }
 }

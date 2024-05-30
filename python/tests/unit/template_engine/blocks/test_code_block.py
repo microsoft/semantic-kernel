@@ -57,20 +57,20 @@ class TestCodeBlockRendering:
     async def test_it_throws_if_a_function_call_throws(self, kernel: Kernel):
         @kernel_function(name="funcName")
         def invoke():
-            raise Exception("exception")
+            raise Exception("function exception")
 
         function = KernelFunctionFromMethod(
             method=invoke,
             plugin_name="pluginName",
         )
 
-        kernel.add_plugin(KernelPlugin(name="test", functions=[function]))
+        kernel.add_function(plugin_name="test", function=function)
 
         target = CodeBlock(
-            content="functionName",
+            content="test.funcName",
         )
 
-        with raises(CodeBlockRenderException):
+        with raises(CodeBlockRenderException, match="test.funcName"):
             await target.render_code(kernel, KernelArguments())
 
     @mark.asyncio
