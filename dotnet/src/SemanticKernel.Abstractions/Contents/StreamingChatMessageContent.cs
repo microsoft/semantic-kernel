@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -17,9 +19,53 @@ namespace Microsoft.SemanticKernel;
 public class StreamingChatMessageContent : StreamingKernelContent
 {
     /// <summary>
-    /// Text associated to the message payload
+    /// A convenience property to get or set the text of the first item in the <see cref="Items" /> collection of <see cref="StreamingTextContent"/> type.
     /// </summary>
-    public string? Content { get; set; }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string? Content
+    {
+        get
+        {
+            var textContent = this.Items.OfType<StreamingTextContent>().FirstOrDefault();
+            return textContent?.Text;
+        }
+        set
+        {
+            if (value is null)
+            {
+                return;
+            }
+
+            var textContent = this.Items.OfType<StreamingTextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Text = value;
+                textContent.Encoding = this.Encoding;
+            }
+            else
+            {
+                this.Items.Add(new StreamingTextContent(
+                    text: value,
+                    choiceIndex: this.ChoiceIndex,
+                    modelId: this.ModelId,
+                    innerContent: this.InnerContent,
+                    encoding: this.Encoding,
+                    metadata: this.Metadata
+                ));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Chat message content items.
+    /// </summary>
+    [JsonIgnore]
+    [Experimental("SKEXP0001")]
+    public StreamingKernelContentItemCollection Items
+    {
+        get => this._items ??= [];
+        set => this._items = value;
+    }
 
     /// <summary>
     /// Name of the author of the message
@@ -37,7 +83,29 @@ public class StreamingChatMessageContent : StreamingKernelContent
     /// The encoding of the text content.
     /// </summary>
     [JsonIgnore]
-    public Encoding Encoding { get; set; }
+    public Encoding Encoding
+    {
+        get
+        {
+            var textContent = this.Items.OfType<StreamingTextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                return textContent.Encoding;
+            }
+
+            return this._encoding;
+        }
+        set
+        {
+            this._encoding = value;
+
+            var textContent = this.Items.OfType<StreamingTextContent>().FirstOrDefault();
+            if (textContent is not null)
+            {
+                textContent.Encoding = value;
+            }
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
@@ -55,7 +123,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
     {
         this.Role = role;
         this.Content = content;
-        this.Encoding = encoding ?? Encoding.UTF8;
+        this._encoding = encoding ?? Encoding.UTF8;
     }
 
     /// <inheritdoc/>
@@ -63,4 +131,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
 
     /// <inheritdoc/>
     public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
+
+    private StreamingKernelContentItemCollection? _items;
+    private Encoding _encoding = Encoding.UTF8;
 }
