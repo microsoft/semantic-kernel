@@ -53,7 +53,7 @@ internal sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null
     private const int PayloadPropertiesHierarchyMaxDepth = 10;
 
     /// <summary>
-    /// HttpRequestMethod of property that contains OpenAPI document version.
+    /// Name of property that contains OpenAPI document version.
     /// </summary>
     private const string OpenApiVersionPropertyName = "openapi";
 

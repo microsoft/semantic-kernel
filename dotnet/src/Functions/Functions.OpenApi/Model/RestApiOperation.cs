@@ -105,12 +105,12 @@ public sealed class RestApiOperation
     }
 
     /// <summary>
-    /// Builds operation UrlFull.
+    /// Builds operation Url.
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
-    /// <returns>The operation UrlFull.</returns>
+    /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var serverUrl = this.GetServerUrl(serverUrlOverride, apiHostUrl);
@@ -245,7 +245,7 @@ public sealed class RestApiOperation
     }
 
     /// <summary>
-    /// Returns operation server UrlFull.
+    /// Returns operation server Url.
     /// </summary>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>

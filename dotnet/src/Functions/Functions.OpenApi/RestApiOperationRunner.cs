@@ -30,7 +30,7 @@ internal sealed class RestApiOperationRunner
     private const string HttpRequestMethod = "http.request.method";
 
     /// <summary>
-    /// The request payload body.
+    /// The HTTP request payload body.
     /// </summary>
     private const string HttpRequestBody = "http.request.body";
 
@@ -424,13 +424,13 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds operation UrlFull.
+    /// Builds operation Url.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
-    /// <returns>The operation UrlFull.</returns>
+    /// <returns>The operation Url.</returns>
     private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
