@@ -200,8 +200,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         ChatMessageContent[] messages = await chat.InvokeAsync(agent).ToArrayAsync();
         Assert.Single(messages);
         Assert.Equal(2, messages[0].Items.Count);
-        Assert.NotNull(messages[0].Items.Where(c => c is TextContent).SingleOrDefault());
-        Assert.NotNull(messages[0].Items.Where(c => c is AnnotationContent).SingleOrDefault());
+        Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is TextContent));
+        Assert.NotNull(messages[0].Items.SingleOrDefault(c => c is AnnotationContent));
     }
 
     /// <summary>

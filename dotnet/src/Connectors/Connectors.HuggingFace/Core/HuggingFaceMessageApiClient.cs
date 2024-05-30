@@ -8,10 +8,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Text;
 
@@ -25,7 +27,7 @@ internal sealed class HuggingFaceMessageApiClient
 {
     private readonly HuggingFaceClient _clientCore;
 
-    private static readonly string s_namespace = typeof(HuggingFaceMessageApiClient).Namespace!;
+    private static readonly string s_namespace = typeof(HuggingFaceChatCompletionService).Namespace!;
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
@@ -81,20 +83,60 @@ internal sealed class HuggingFaceMessageApiClient
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
-        var request = this.CreateChatRequest(chatHistory, executionSettings);
+
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
+
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
         request.Stream = true;
 
-        using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
-
-        using var response = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
-
-        using var responseStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync()
-            .ConfigureAwait(false);
-
-        await foreach (var streamingChatContent in this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken).ConfigureAwait(false))
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
+        HttpResponseMessage? httpResponseMessage = null;
+        Stream? responseStream = null;
+        try
         {
-            yield return streamingChatContent;
+            using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
+            httpResponseMessage = await this._clientCore.SendRequestAndGetResponseImmediatelyAfterHeadersReadAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            responseStream = await httpResponseMessage.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetError(ex);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            throw;
+        }
+
+        var responseEnumerator = this.ProcessChatResponseStreamAsync(responseStream, modelId, cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                streamedContents?.Add(responseEnumerator.Current);
+                yield return responseEnumerator.Current;
+            }
+        }
+        finally
+        {
+            activity?.EndStreaming(streamedContents);
+            httpResponseMessage?.Dispose();
+            responseStream?.Dispose();
+            await responseEnumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 
@@ -105,36 +147,57 @@ internal sealed class HuggingFaceMessageApiClient
     {
         string modelId = executionSettings?.ModelId ?? this._clientCore.ModelId;
         var endpoint = this.GetChatGenerationEndpoint();
-        var request = this.CreateChatRequest(chatHistory, executionSettings);
+
+        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(executionSettings);
+        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
+        var request = this.CreateChatRequest(chatHistory, huggingFaceExecutionSettings);
+
+        using var activity = ModelDiagnostics.StartCompletionActivity(endpoint, modelId, this._clientCore.ModelProvider, chatHistory, huggingFaceExecutionSettings);
         using var httpRequestMessage = this._clientCore.CreatePost(request, endpoint, this._clientCore.ApiKey);
 
-        string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
-            .ConfigureAwait(false);
+        ChatCompletionResponse response;
+        try
+        {
+            string body = await this._clientCore.SendRequestAndGetStringBodyAsync(httpRequestMessage, cancellationToken)
+                .ConfigureAwait(false);
 
-        var response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+            response = HuggingFaceClient.DeserializeResponse<ChatCompletionResponse>(body);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
+
         var chatContents = GetChatMessageContentsFromResponse(response, modelId);
 
-        this.LogChatCompletionUsage(executionSettings, response);
+        activity?.SetCompletionResponse(chatContents, response.Usage?.PromptTokens, response.Usage?.CompletionTokens);
+        this.LogChatCompletionUsage(huggingFaceExecutionSettings, response);
 
         return chatContents;
     }
 
-    private void LogChatCompletionUsage(PromptExecutionSettings? executionSettings, ChatCompletionResponse chatCompletionResponse)
+    private void LogChatCompletionUsage(HuggingFacePromptExecutionSettings executionSettings, ChatCompletionResponse chatCompletionResponse)
     {
-        if (this._clientCore.Logger.IsEnabled(LogLevel.Debug))
+        if (chatCompletionResponse.Usage is null)
         {
-            this._clientCore.Logger.Log(
-            LogLevel.Debug,
-            "HuggingFace chat completion usage - ModelId: {ModelId}, Prompt tokens: {PromptTokens}, Completion tokens: {CompletionTokens}, Total tokens: {TotalTokens}",
-            chatCompletionResponse.Model,
-            chatCompletionResponse.Usage!.PromptTokens,
-            chatCompletionResponse.Usage!.CompletionTokens,
-            chatCompletionResponse.Usage!.TotalTokens);
+            this._clientCore.Logger.LogDebug("Token usage information unavailable.");
+            return;
         }
 
-        s_promptTokensCounter.Add(chatCompletionResponse.Usage!.PromptTokens);
-        s_completionTokensCounter.Add(chatCompletionResponse.Usage!.CompletionTokens);
-        s_totalTokensCounter.Add(chatCompletionResponse.Usage!.TotalTokens);
+        if (this._clientCore.Logger.IsEnabled(LogLevel.Information))
+        {
+            this._clientCore.Logger.LogInformation(
+                "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}. ModelId: {ModelId}.",
+                chatCompletionResponse.Usage.PromptTokens,
+                chatCompletionResponse.Usage.CompletionTokens,
+                chatCompletionResponse.Usage.TotalTokens,
+                chatCompletionResponse.Model);
+        }
+
+        s_promptTokensCounter.Add(chatCompletionResponse.Usage.PromptTokens);
+        s_completionTokensCounter.Add(chatCompletionResponse.Usage.CompletionTokens);
+        s_totalTokensCounter.Add(chatCompletionResponse.Usage.TotalTokens);
     }
 
     private static List<ChatMessageContent> GetChatMessageContentsFromResponse(ChatCompletionResponse response, string modelId)
@@ -171,7 +234,7 @@ internal sealed class HuggingFaceMessageApiClient
 
     private static StreamingChatMessageContent GetStreamingChatMessageContentFromStreamResponse(ChatCompletionStreamResponse response, string modelId)
     {
-        var choice = response.Choices.FirstOrDefault();
+        var choice = response.Choices?.FirstOrDefault();
         if (choice is not null)
         {
             var metadata = new HuggingFaceChatCompletionMetadata
@@ -213,12 +276,17 @@ internal sealed class HuggingFaceMessageApiClient
 
     private ChatCompletionRequest CreateChatRequest(
         ChatHistory chatHistory,
-        PromptExecutionSettings? promptExecutionSettings)
+        HuggingFacePromptExecutionSettings huggingFaceExecutionSettings)
     {
-        var huggingFaceExecutionSettings = HuggingFacePromptExecutionSettings.FromExecutionSettings(promptExecutionSettings);
-        huggingFaceExecutionSettings.ModelId ??= this._clientCore.ModelId;
-
         HuggingFaceClient.ValidateMaxTokens(huggingFaceExecutionSettings.MaxTokens);
+
+        if (this._clientCore.Logger.IsEnabled(LogLevel.Trace))
+        {
+            this._clientCore.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
+                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(huggingFaceExecutionSettings));
+        }
+
         var request = ChatCompletionRequest.FromChatHistoryAndExecutionSettings(chatHistory, huggingFaceExecutionSettings);
         return request;
     }

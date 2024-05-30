@@ -77,7 +77,10 @@
   },
   "AzureCosmosDB": {
     "ConnectionString": ""
-  }, 
+  },
+  "SqlServer": {
+    "ConnectionString": ""
+  },
   "Planners": {
     "AzureOpenAI": {
       "ServiceId": "azure-gpt-35-turbo",

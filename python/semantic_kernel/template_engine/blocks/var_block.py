@@ -26,7 +26,7 @@ class VarBlock(Block):
     """Create a variable block.
 
     A variable block is used to add a variable to a template.
-    It get's rendered from KernelArguments, if the variable is not found
+    It gets rendered from KernelArguments, if the variable is not found
     a warning is logged and an empty string is returned.
     The variable must start with $ and be followed by a valid variable name.
     A valid variable name is a string of letters, numbers and underscores.
@@ -45,7 +45,7 @@ class VarBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
-    name: Optional[str] = ""
+    name: str | None = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -67,7 +67,9 @@ class VarBlock(Block):
 
     def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """Render the variable block with the given arguments.
-        If the variable is not found in the arguments, return an empty string."""
+
+        If the variable is not found in the arguments, return an empty string.
+        """
         if arguments is None:
             return ""
         value = arguments.get(self.name, None)

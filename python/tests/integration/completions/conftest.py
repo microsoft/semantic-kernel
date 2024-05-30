@@ -1,15 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
 import pytest
 
+import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-if sys.version_info >= (3, 9):
-    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 
 @pytest.fixture(scope="function")
@@ -84,10 +81,9 @@ def setup_summarize_conversation_using_plugin(kernel: Kernel):
 
 
 @pytest.fixture(scope="function")
-def setup_gp_text_completion_function(kernel: Kernel, get_gp_config):
-    api_key = get_gp_config
+def setup_gp_text_completion_function(kernel: Kernel):
     # Configure LLM service
-    palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001", api_key=api_key)
+    palm_text_completion = sk_gp.GooglePalmTextCompletion(ai_model_id="models/text-bison-001")
     kernel.add_service(palm_text_completion)
 
     # Define semantic function using SK prompt template language

@@ -30,11 +30,12 @@ public sealed class ToolCallBehaviorTests
     public void AutoInvokeKernelFunctionsReturnsCorrectKernelFunctionsInstance()
     {
         // Arrange & Act
+        const int DefaultMaximumAutoInvokeAttempts = 128;
         var behavior = ToolCallBehavior.AutoInvokeKernelFunctions;
 
         // Assert
         Assert.IsType<KernelFunctions>(behavior);
-        Assert.Equal(5, behavior.MaximumAutoInvokeAttempts);
+        Assert.Equal(DefaultMaximumAutoInvokeAttempts, behavior.MaximumAutoInvokeAttempts);
     }
 
     [Fact]
