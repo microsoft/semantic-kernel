@@ -14,6 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class SequentialPlannerFunctionExtension:
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
+        """Convert the function to a manual string."""
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
             + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
@@ -24,6 +25,7 @@ class SequentialPlannerFunctionExtension:
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
+        """Convert the function to an embedding string."""
         inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
         return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
 
@@ -39,6 +41,7 @@ class SequentialPlannerKernelExtension:
         semantic_query: str = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
+        """Get the functions manual."""
         config = config or SequentialPlannerConfig()
 
         if config.get_available_functions is None:
@@ -57,6 +60,7 @@ class SequentialPlannerKernelExtension:
         config: SequentialPlannerConfig,
         semantic_query: str | None = None,
     ):
+        """Get the available functions based on the semantic query."""
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
@@ -93,6 +97,7 @@ class SequentialPlannerKernelExtension:
         available_functions: list[KernelFunctionMetadata],
         memories: list[MemoryQueryResult] | None = None,
     ) -> list[KernelFunctionMetadata]:
+        """Get relevant functions from the memories."""
         relevant_functions = []
         # TODO: cancellation
         if memories is None:

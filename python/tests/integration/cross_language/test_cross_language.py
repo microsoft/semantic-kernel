@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import datetime
 import json
 import logging
@@ -212,7 +214,7 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "prompt_with_chat_roles_expected.json")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -271,7 +273,7 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "prompt_with_complex_objects_expected.json")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -341,7 +343,7 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "prompt_with_helper_functions_expected.json")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -400,7 +402,7 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "prompt_with_simple_variable_expected.json")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -458,7 +460,7 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt):
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "prompt_simple_expected.json")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -500,7 +502,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
     kernel.add_service(ai_service)
 
     prompt_dir = os.path.join(os.path.dirname(__file__), "data", f"{prompt_path}")
-    with open(prompt_dir, "r") as f:
+    with open(prompt_dir) as f:
         prompt_str = f.read()
     function = KernelFunctionFromPrompt.from_yaml(yaml_str=prompt_str, plugin_name="yaml_plugin")
 
@@ -513,7 +515,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
     assert obtained_object is not None
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", f"{expected_result_path}")
-    with open(data_directory, "r") as f:
+    with open(data_directory) as f:
         expected = f.read()
 
     expected_object = json.loads(expected)
@@ -583,7 +585,6 @@ async def setup_openapi_function_call(kernel, function_name, arguments):
 
 @pytest.mark.asyncio
 async def test_openapi_get_lights(kernel: Kernel):
-
     request_content = await setup_openapi_function_call(
         kernel, function_name="GetLights", arguments=KernelArguments(roomId=1)
     )
@@ -597,7 +598,6 @@ async def test_openapi_get_lights(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_openapi_get_light_by_id(kernel: Kernel):
-
     request_content = await setup_openapi_function_call(
         kernel, function_name="GetLightById", arguments=KernelArguments(id=1)
     )
@@ -610,7 +610,6 @@ async def test_openapi_get_light_by_id(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_openapi_delete_light_by_id(kernel: Kernel):
-
     request_content = await setup_openapi_function_call(
         kernel, function_name="DeleteLightById", arguments=KernelArguments(id=1)
     )
@@ -623,7 +622,6 @@ async def test_openapi_delete_light_by_id(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_openapi_create_lights(kernel: Kernel):
-
     request_content = await setup_openapi_function_call(
         kernel, function_name="CreateLights", arguments=KernelArguments(roomId=1, lightName="disco")
     )
@@ -636,7 +634,6 @@ async def test_openapi_create_lights(kernel: Kernel):
 
 @pytest.mark.asyncio
 async def test_openapi_put_light_by_id(kernel: Kernel):
-
     request_content = await setup_openapi_function_call(
         kernel, function_name="PutLightById", arguments=KernelArguments(id=1, hexColor="11EE11")
     )

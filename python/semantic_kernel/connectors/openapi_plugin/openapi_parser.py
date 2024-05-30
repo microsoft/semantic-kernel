@@ -2,7 +2,8 @@
 
 import logging
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Any, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from prance import ResolvingParser
@@ -35,8 +36,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental_class
 class OpenApiParser:
-    """
-    NOTE: SK Python only supports the OpenAPI Spec >=3.0
+    """NOTE: SK Python only supports the OpenAPI Spec >=3.0.
 
     Import an OpenAPI file.
 

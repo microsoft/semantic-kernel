@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from typing import TYPE_CHECKING, Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -7,8 +9,7 @@ if TYPE_CHECKING:
 
 
 class WebSearchEnginePlugin:
-    """
-    Description: A plugin that provides web search engine functionality
+    """A plugin that provides web search engine functionality.
 
     Usage:
         connector = BingConnector(bing_search_api_key)
@@ -23,6 +24,7 @@ class WebSearchEnginePlugin:
     _connector: "ConnectorBase"
 
     def __init__(self, connector: "ConnectorBase") -> None:
+        """Initializes a new instance of the WebSearchEnginePlugin class."""
         self._connector = connector
 
     @kernel_function(description="Performs a web search for a given query")
@@ -32,13 +34,5 @@ class WebSearchEnginePlugin:
         num_results: Annotated[int | None, "The number of search results to return"] = 1,
         offset: Annotated[int | None, "The number of search results to skip"] = 0,
     ) -> list[str]:
-        """
-        Returns the search results of the query provided.
-        Returns `num_results` results and ignores the first `offset`.
-
-        :param query: search query
-        :param num_results: number of search results to return, default is 1
-        :param offset: number of search results to skip, default is 0
-        :return: list of search results
-        """
+        """Returns the search results of the query provided."""
         return await self._connector.search(query, num_results, offset)

@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import WeaviateConfig, WeaviateMemoryStore
+from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import WeaviateMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if not sys.platform.startswith("linux"):
@@ -76,10 +76,9 @@ def memory_store():
     max_attempts = 5  # the number of retry attempts
     delay = 3  # delay in seconds between each attempt
 
-    config = WeaviateConfig(use_embed=True)
     for attempt in range(max_attempts):
         try:
-            store = WeaviateMemoryStore(config=config)
+            store = WeaviateMemoryStore(use_embed=True)
             store.client.schema.delete_all()
         except Exception:
             if attempt < max_attempts - 1:  # it's not the final attempt
@@ -116,8 +115,7 @@ def memory_store_with_collection(memory_store, event_loop, documents):
 
 
 def test_embedded_weaviate():
-    config = WeaviateConfig(use_embed=True)
-    memory_store = WeaviateMemoryStore(config=config)
+    memory_store = WeaviateMemoryStore(use_embed=True)
 
     assert memory_store.client._connection.embedded_db
 

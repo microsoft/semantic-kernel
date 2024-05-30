@@ -1,204 +1,360 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
-import com.microsoft.semantickernel.builders.Buildable;
-import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.memory.MemoryStore;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.orchestration.SKFunction;
-import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+import com.microsoft.semantickernel.contextvariables.ContextVariableType;
+import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.orchestration.FunctionInvocation;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.AIService;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.services.AIServiceCollection;
+import com.microsoft.semantickernel.services.AIServiceSelection;
+import com.microsoft.semantickernel.services.AIServiceSelector;
+import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
+import com.microsoft.semantickernel.services.ServiceNotFoundException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import reactor.core.publisher.Mono;
 
-/** Interface for the semantic kernel. */
-public interface Kernel extends SkillExecutor, Buildable {
+/**
+ * Provides state for use throughout a Semantic Kernel workload.
+ * <p>
+ * An instance of {@code Kernel} is passed through to every function invocation and service call
+ * throughout the system, providing to each the ability to access shared state and services.
+ */
+public class Kernel {
+
+    private final AIServiceSelector serviceSelector;
+    private final KernelPluginCollection plugins;
+    private final KernelHooks globalKernelHooks;
+
+    // Only present so we can create a builder in copy method
+    private final AIServiceCollection services;
+
+    @Nullable
+    private final Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
 
     /**
-     * Settings required to execute functions, including details about AI dependencies, e.g.
-     * endpoints and API keys.
-     */
-    KernelConfig getConfig();
-
-    /**
-     * Reference to the engine rendering prompt templates
+     * Initializes a new instance of {@code Kernel}.
      *
-     * @return Reference to the engine rendering prompt templates
+     * @param services                The collection of services available through the kernel.
+     * @param serviceSelectorProvider The service selector provider for the kernel. If {@code null},
+     *                                an ordered service selector will be used.
+     * @param plugins                 The collection of plugins available through the kernel. If
+     *                                {@code null}, an empty collection will be used.
+     * @param globalKernelHooks       The global hooks to be used throughout the kernel. If
+     *                                {@code null}, an empty collection will be used.
      */
-    PromptTemplateEngine getPromptTemplateEngine();
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    public Kernel(
+        AIServiceCollection services,
+        @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
+        @Nullable List<KernelPlugin> plugins,
+        @Nullable KernelHooks globalKernelHooks) {
 
-    /**
-     * Get the SemanticTextMemory in use.
-     *
-     * @return the SemanticTextMemory in use
-     */
-    SemanticTextMemory getMemory();
+        this.services = services;
+        this.serviceSelectorProvider = serviceSelectorProvider;
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     */
-    Mono<SKContext> runAsync(SKFunction<?>... pipeline);
+        AIServiceSelector serviceSelector;
+        if (serviceSelectorProvider == null) {
+            serviceSelector = new OrderedAIServiceSelector(services);
+        } else {
+            serviceSelector = serviceSelectorProvider.apply(services);
+        }
+        this.serviceSelector = serviceSelector;
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param input Input to process
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     */
-    Mono<SKContext> runAsync(String input, SKFunction<?>... pipeline);
+        if (plugins != null) {
+            this.plugins = new KernelPluginCollection(plugins);
+        } else {
+            this.plugins = new KernelPluginCollection();
+        }
 
-    /**
-     * Run a pipeline composed of synchronous and asynchronous functions.
-     *
-     * @param variables variables to initialise the context with
-     * @param pipeline List of functions
-     * @return Result of the function composition
-     */
-    Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
-
-    /**
-     * Register a semantic function on this kernel
-     *
-     * @param skillName The skill name
-     * @param functionName The function name
-     * @param functionConfig The function configuration
-     * @return The registered function
-     */
-    CompletionSKFunction registerSemanticFunction(
-            String skillName, String functionName, SemanticFunctionConfig functionConfig);
-
-    /**
-     * Get a completion function builder, functions created with this builder will be registered on
-     * the kernel
-     */
-    CompletionSKFunction.Builder getSemanticFunctionBuilder();
-
-    /** Obtains the service with the given name and type */
-    <T extends AIService> T getService(@Nullable String name, Class<T> clazz)
-            throws KernelException;
-
-    /** Registers a semantic function on this kernel */
-    <RequestConfiguration, FunctionType extends SKFunction<RequestConfiguration>>
-            FunctionType registerSemanticFunction(FunctionType semanticFunctionDefinition);
-
-    /** Obtains a semantic function with the given name */
-    SKFunction getFunction(String skill, String function);
-
-    static Builder builder() {
-        return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
+        this.globalKernelHooks = new KernelHooks(globalKernelHooks);
     }
 
-    interface Builder extends SemanticKernelBuilder<Kernel> {
-        /**
-         * Set the kernel configuration
-         *
-         * @param kernelConfig Kernel configuration
-         * @return Builder
-         */
-        Builder withConfiguration(KernelConfig kernelConfig);
-
-        /**
-         * Add prompt template engine to the kernel to be built.
-         *
-         * @param promptTemplateEngine Prompt template engine to add.
-         * @return Updated kernel builder including the prompt template engine.
-         */
-        Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
-
-        /**
-         * Add memory storage to the kernel to be built.
-         *
-         * @param storage Storage to add.
-         * @return Updated kernel builder including the memory storage.
-         */
-        Builder withMemoryStorage(MemoryStore storage);
-
-        /**
-         * Add memory storage factory to the kernel.
-         *
-         * @param factory The storage factory.
-         * @return Updated kernel builder including the memory storage.
-         */
-        Builder withMemoryStorage(Supplier<MemoryStore> factory);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param instance The instance.
-         * @return The builder.
-         */
-        <T extends AIService> Builder withDefaultAIService(T instance);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param instance The instance.
-         * @param clazz The class of the instance.
-         * @return The builder.
-         */
-        <T extends AIService> Builder withDefaultAIService(T instance, Class<T> clazz);
-
-        /**
-         * Adds a factory method to the services collection
-         *
-         * @param factory The factory method that creates the AI service instances of type T.
-         * @param clazz The class of the instance.
-         */
-        <T extends AIService> Builder withDefaultAIService(Supplier<T> factory, Class<T> clazz);
-
-        /**
-         * Adds an instance to the services collection
-         *
-         * @param serviceId The service ID
-         * @param instance The instance.
-         * @param setAsDefault Optional: set as the default AI service for type T
-         * @param clazz The class of the instance.
-         */
-        <T extends AIService> Builder withAIService(
-                @Nullable String serviceId, T instance, boolean setAsDefault, Class<T> clazz);
-
-        /**
-         * Adds a factory method to the services collection
-         *
-         * @param serviceId The service ID
-         * @param factory The factory method that creates the AI service instances of type T.
-         * @param setAsDefault Optional: set as the default AI service for type T
-         * @param clazz The class of the instance.
-         */
-        <T extends AIService> Builder withAIServiceFactory(
-                @Nullable String serviceId,
-                Function<KernelConfig, T> factory,
-                boolean setAsDefault,
-                Class<T> clazz);
-
-        /**
-         * Add a semantic text memory entity to the kernel to be built.
-         *
-         * @param memory Semantic text memory entity to add.
-         * @return Updated kernel builder including the semantic text memory entity.
-         */
-        Builder withMemory(SemanticTextMemory memory);
-
-        /**
-         * Add memory storage and an embedding generator to the kernel to be built.
-         *
-         * @param storage Storage to add.
-         * @param embeddingGenerator Embedding generator to add.
-         * @return Updated kernel builder including the memory storage and embedding generator.
-         */
-        Builder withMemoryStorageAndTextEmbeddingGeneration(
-                MemoryStore storage, TextEmbeddingGeneration embeddingGenerator);
+    /**
+     * Get the fluent builder for creating a new instance of {@code Kernel}.
+     *
+     * @return The fluent builder for creating a new instance of {@code Kernel}.
+     */
+    public static Builder builder() {
+        return new Kernel.Builder();
     }
+
+    /**
+     * Creates a Builder that can create a copy of the {@code Kernel}. Use this method if you wish
+     * to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @param kernel The kernel to copy.
+     * @return A Builder that can create a copy of the instance of {@code Kernel}.
+     */
+    public static Builder from(Kernel kernel) {
+        return new Builder(
+            kernel.services,
+            kernel.serviceSelectorProvider,
+            kernel.plugins);
+    }
+
+    /**
+     * Creates a Builder that can create a copy of the current instance of {@code Kernel}. Use this
+     * method if you wish to modify the state of the kernel such as adding new plugins or services.
+     *
+     * @return A Builder that can create a copy of the current instance of {@code Kernel}.
+     */
+    public Builder toBuilder() {
+        return new Builder(services, serviceSelectorProvider, plugins);
+    }
+
+    /**
+     * Invokes a {@code KernelFunction} function by name.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
+     * @param functionName The name of the function to invoke.
+     * @return The result of the function invocation.
+     * @throws IllegalArgumentException if the plugin or function is not found.
+     * @see KernelFunction#invokeAsync(Kernel)
+     * @see KernelPluginCollection#getFunction(String, String)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> FunctionInvocation<T> invokeAsync(
+        String pluginName,
+        String functionName) {
+        KernelFunction function = getFunction(pluginName, functionName);
+        return invokeAsync(function);
+    }
+
+    /**
+     * Invokes a {@code KernelFunction} function by name.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
+     * @param functionName The name of the function to invoke.
+     * @return The result of the function invocation.
+     * @throws IllegalArgumentException if the plugin or function is not found.
+     * @see KernelFunction#invokeAsync(Kernel)
+     * @see KernelPluginCollection#getFunction(String, String)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> FunctionResult<T> invoke(
+        String pluginName,
+        String functionName) {
+        return this.<T>invokeAsync(pluginName, functionName).block();
+    }
+
+    /**
+     * Invokes a Prompt.
+     *
+     * @param <T>      The return type of the prompt.
+     * @param prompt   The prompt to invoke.
+     * @return The result of the prompt invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
+    public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt) {
+        return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
+    }
+
+    /**
+     * Invokes a {@code KernelFunction}.
+     *
+     * @param <T>      The return type of the function.
+     * @param function The function to invoke.
+     * @return The result of the function invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
+    public <T> FunctionInvocation<T> invokeAsync(KernelFunction<T> function) {
+        return function.invokeAsync(this);
+    }
+
+    /**
+     * Invokes a {@code KernelFunction}.
+     *
+     * @param <T>      The return type of the function.
+     * @param function The function to invoke.
+     * @return The result of the function invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
+    public <T> FunctionResult<T> invoke(KernelFunction<T> function) {
+        return invokeAsync(function).block();
+    }
+
+    /**
+     * Gets the plugin with the specified name.
+     *
+     * @param pluginName The name of the plugin to get.
+     * @return The plugin with the specified name, or {@code null} if no such plugin exists.
+     */
+    @Nullable
+    public KernelPlugin getPlugin(String pluginName) {
+        return plugins.getPlugin(pluginName);
+    }
+
+    /**
+     * Gets the plugins that were added to the kernel.
+     *
+     * @return The plugins available through the kernel (unmodifiable list).
+     * @see Kernel#getPlugins()
+     */
+    public Collection<KernelPlugin> getPlugins() {
+        return Collections.unmodifiableCollection(plugins.getPlugins());
+    }
+
+    /**
+     * Gets the function with the specified name from the plugin with the specified name.
+     *
+     * @param <T>          The return type of the function.
+     * @param pluginName   The name of the plugin containing the function.
+     * @param functionName The name of the function to get.
+     * @return The function with the specified name from the plugin with the specified name.
+     * @throws IllegalArgumentException if the plugin or function is not found.
+     * @see KernelPluginCollection#getFunction(String, String)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> KernelFunction<T> getFunction(String pluginName, String functionName) {
+        return (KernelFunction<T>) plugins.getFunction(pluginName, functionName);
+    }
+
+    /**
+     * Gets the functions available through the kernel. Functions are collected from all plugins
+     * available through the kernel.
+     *
+     * @return The functions available through the kernel.
+     * @see Kernel#getPlugins()
+     * @see Kernel.Builder#withPlugin(KernelPlugin)
+     */
+    public List<KernelFunction<?>> getFunctions() {
+        return plugins.getFunctions();
+    }
+
+    /**
+     * Get the {@code KernelHooks} used throughout the kernel. These {@code KernelHooks} are used in
+     * addition to any hooks provided to a function.
+     *
+     * @return The {@code KernelHooks} used throughout the kernel.
+     * @see KernelFunction#invokeAsync(Kernel, KernelFunctionArguments, ContextVariableType,
+     * InvocationContext)
+     */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public KernelHooks getGlobalKernelHooks() {
+        return globalKernelHooks;
+    }
+
+    /**
+     * Get the AIServiceSelector used to query for services available through the kernel.
+     *
+     * @return The AIServiceSelector used to query for services available through the kernel.
+     */
+    public AIServiceSelector getServiceSelector() {
+        return serviceSelector;
+    }
+
+    /**
+     * Get the service of the specified type from the kernel.
+     *
+     * @param <T>   The type of the service to get.
+     * @param clazz The class of the service to get.
+     * @return The service of the specified type from the kernel.
+     * @throws ServiceNotFoundException if the service is not found.
+     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class,
+     * KernelFunction, com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments)
+     */
+    public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
+        AIServiceSelection<T> selector = serviceSelector
+            .trySelectAIService(
+                clazz,
+                null,
+                null);
+
+        if (selector == null) {
+            throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());
+        }
+
+        return selector.getService();
+    }
+
+    /**
+     * A fluent builder for creating a new instance of {@code Kernel}.
+     */
+    public static class Builder implements SemanticKernelBuilder<Kernel> {
+
+        private final AIServiceCollection services = new AIServiceCollection();
+        private final List<KernelPlugin> plugins = new ArrayList<>();
+        @Nullable
+        private Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider;
+
+        /**
+         * Construct a Builder for creating a new instance of {@code Kernel}. 
+         */
+        public Builder() {
+        }
+
+        private Builder(
+            AIServiceCollection services,
+            @Nullable Function<AIServiceCollection, AIServiceSelector> serviceSelectorProvider,
+            KernelPluginCollection plugins) {
+            this.services.putAll(services);
+            this.serviceSelectorProvider = serviceSelectorProvider;
+            this.plugins.addAll(plugins.getPlugins());
+        }
+
+        /**
+         * Adds a service to the kernel.
+         *
+         * @param <T>       The type of the service to add.
+         * @param clazz     The class of the service to add.
+         * @param aiService The service to add.
+         * @return {@code this} builder with the service added.
+         */
+        public <T extends AIService> Builder withAIService(Class<T> clazz, T aiService) {
+            services.put(clazz, aiService);
+            return this;
+        }
+
+        /**
+         * Adds a plugin to the kernel.
+         *
+         * @param plugin The plugin to add.
+         * @return {@code this} builder with the plugin added.
+         */
+        public Kernel.Builder withPlugin(KernelPlugin plugin) {
+            plugins.add(plugin);
+            return this;
+        }
+
+        /**
+         * Sets the service selector provider for the kernel.
+         *
+         * @param serviceSelector The service selector provider for the kernel.
+         * @return {@code this} builder with the service selector provider set.
+         */
+        public Kernel.Builder withServiceSelector(
+            Function<AIServiceCollection, AIServiceSelector> serviceSelector) {
+            this.serviceSelectorProvider = serviceSelector;
+            return this;
+        }
+
+        /**
+         * Builds a new instance of {@code Kernel} with the services and plugins provided.
+         *
+         * @return A new instance of {@code Kernel}.
+         */
+        @Override
+        public Kernel build() {
+            return new Kernel(
+                services,
+                serviceSelectorProvider,
+                plugins,
+                null);
+        }
+    }
+
 }

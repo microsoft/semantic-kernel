@@ -11,28 +11,26 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
 class HttpPlugin(KernelBaseModel):
-    """
-    A plugin that provides HTTP functionality.
+    """A plugin that provides HTTP functionality.
 
     Usage:
         kernel.add_plugin(HttpPlugin(), "http")
 
     Examples:
-
         {{http.getAsync $url}}
         {{http.postAsync $url}}
         {{http.putAsync $url}}
         {{http.deleteAsync $url}}
     """
 
-    @kernel_function(description="Makes a GET request to a uri", name="getAsync")
-    async def get(self, url: Annotated[str, "The URI to send the request to."]) -> str:
-        """
-        Sends an HTTP GET request to the specified URI and returns
-        the response body as a string.
-        params:
-            uri: The URI to send the request to.
-        returns:
+    @kernel_function(description="Makes a GET request to a url", name="getAsync")
+    async def get(self, url: Annotated[str, "The URL to send the request to."]) -> str:
+        """Sends an HTTP GET request to the specified URI and returns the response body as a string.
+
+        Args:
+            url: The URL to send the request to.
+
+        Returns:
             The response body as a string.
         """
         if not url:
@@ -48,10 +46,9 @@ class HttpPlugin(KernelBaseModel):
         url: Annotated[str, "The URI to send the request to."],
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
-        """
-        Sends an HTTP POST request to the specified URI and returns
-        the response body as a string.
-        params:
+        """Sends an HTTP POST request to the specified URI and returns the response body as a string.
+
+        Args:
             url: The URI to send the request to.
             body: Contains the body of the request
         returns:
@@ -72,12 +69,13 @@ class HttpPlugin(KernelBaseModel):
         url: Annotated[str, "The URI to send the request to."],
         body: Annotated[dict[str, Any] | None, "The body of the request"] = {},
     ) -> str:
-        """
-        Sends an HTTP PUT request to the specified URI and returns
-        the response body as a string.
-        params:
+        """Sends an HTTP PUT request to the specified URI and returns the response body as a string.
+
+        Args:
             url: The URI to send the request to.
-        returns:
+            body: Contains the body of the request
+
+        Returns:
             The response body as a string.
         """
         if not url:
@@ -91,12 +89,12 @@ class HttpPlugin(KernelBaseModel):
 
     @kernel_function(description="Makes a DELETE request to a uri", name="deleteAsync")
     async def delete(self, url: Annotated[str, "The URI to send the request to."]) -> str:
-        """
-        Sends an HTTP DELETE request to the specified URI and returns
-        the response body as a string.
-        params:
-            uri: The URI to send the request to.
-        returns:
+        """Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
+
+        Args:
+            url: The URI to send the request to.
+
+        Returns:
             The response body as a string.
         """
         if not url:
