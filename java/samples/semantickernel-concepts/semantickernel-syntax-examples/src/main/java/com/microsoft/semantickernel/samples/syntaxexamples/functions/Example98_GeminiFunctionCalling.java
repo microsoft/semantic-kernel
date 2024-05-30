@@ -6,10 +6,10 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatCompletion;
-import com.microsoft.semantickernel.aiservices.google.implementation.GeminiChatMessageContent;
+import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatMessageContent;
+import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiFunctionCall;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -24,12 +24,10 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionServic
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Example98_GeminiFunctionCalling {
     private static final String PROJECT_ID = System.getenv("PROJECT_ID");
@@ -131,36 +129,28 @@ public class Example98_GeminiFunctionCalling {
                 }
 
                 // Process the functions calls or break if there are no more functions to call
-                if (message.getFunctionCalls().isEmpty()) {
+                if (message.getGeminiFunctionCalls().isEmpty()) {
                     break;
                 }
-                List<FunctionResponse> functionResponses = new ArrayList<>();
-                for (var functionCall : message.getFunctionCalls()) {
+
+                List<GeminiFunctionCall> functionResponses = new ArrayList<>();
+                for (var geminiFunction : message.getGeminiFunctionCalls()) {
 
                     String content = null;
                     try {
                         // getFunction will throw an exception if the function is not found
-                        String[] name = functionCall.getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
-                        String pluginName = name[0], functionName = name[1];
-
-                        var fn = kernel.getFunction(pluginName, functionName);
+                        var fn = kernel.getFunction(geminiFunction.getPluginName(), geminiFunction.getFunctionName());
 
                         var arguments = KernelFunctionArguments.builder();
-                        functionCall.getArgs().getFieldsMap().forEach((key, value) -> {
+                        geminiFunction.getFunctionCall().getArgs().getFieldsMap().forEach((key, value) -> {
                             arguments.withVariable(key, value.getStringValue());
                         });
 
+                        // Invoke the function and add the result to the list of function responses
                         FunctionResult<?> functionResult = fn
                                 .invokeAsync(kernel, arguments.build(), null, null).block();
 
-                        content = (String) functionResult.getResult();
-
-                        var functionResponse = FunctionResponse.newBuilder()
-                                .setName(functionCall.getName())
-                                .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue(content).build()))
-                                .build();
-
-                        functionResponses.add(functionResponse);
+                        functionResponses.add(new GeminiFunctionCall(geminiFunction.getFunctionCall(), functionResult));
                     } catch (IllegalArgumentException e) {
                         content = "Unable to find function. Please try again!";
                     }
@@ -168,7 +158,7 @@ public class Example98_GeminiFunctionCalling {
 
                 // Add the function responses to the chat history
                 ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
-                        "", null, null, null, null, null, functionResponses);
+                        "", null, null, null, null, functionResponses);
 
                 chatHistory.addMessage(functionResponsesMessage);
             }

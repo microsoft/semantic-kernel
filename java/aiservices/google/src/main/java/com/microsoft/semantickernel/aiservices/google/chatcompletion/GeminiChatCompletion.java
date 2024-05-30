@@ -15,8 +15,6 @@ import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.aiservices.google.implementation.GeminiChatMessageContent;
-import com.microsoft.semantickernel.aiservices.google.implementation.GeminiRole;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
@@ -92,7 +90,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         try {
             return MonoConverter.fromApiFuture(model.generateContentAsync(contents)).flatMap(result -> {
                 // Separate the messages and function calls in the response
-                GeminiChatMessageContent<?> response = getGeminiChatMessageContent(result);
+                GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(result);
 
                 // Add assistant response to the chat history
                 fullHistory.addMessage(response);
@@ -100,7 +98,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                 // Just return the result:
                 // If we don't want to attempt to invoke any functions or if we have no function calls
-                if (invocationAttempts <= 0 || response.getFunctionCalls().isEmpty()) {
+                if (invocationAttempts <= 0 || response.getGeminiFunctionCalls().isEmpty()) {
                     if (invocationContext != null && invocationContext.returnMode() == InvocationReturnMode.FULL_HISTORY) {
                         return Mono.just(fullHistory.getMessages());
                     }
@@ -116,30 +114,18 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                 // Perform the function calls
                 // FunctionCall and FunctionResult are kept together to create later the list of FunctionResponse
-                List<Mono<Map.Entry<FunctionCall, FunctionResult<String>>>> functionResults = response.getFunctionCalls().stream()
-                        .map(functionCall -> performFunctionCall(kernel, invocationContext, functionCall))
+                List<Mono<GeminiFunctionCall>> functionResults = response.getGeminiFunctionCalls().stream()
+                        .map(geminiFunctionCall -> performFunctionCall(kernel, invocationContext, geminiFunctionCall))
                         .collect(Collectors.toList());
 
-                Mono<List<Map.Entry<FunctionCall, FunctionResult<String>>>> combinedResults = Flux.fromIterable(functionResults)
+                Mono<List<GeminiFunctionCall>> combinedResults = Flux.fromIterable(functionResults)
                         .flatMap(mono -> mono)
                         .collectList();
 
-                // Create the FunctionResponse and add GeminiChatMessageContent to the chat history
+                // Add the function responses to the chat history
                 return combinedResults.flatMap(results -> {
-                    List<FunctionResponse> functionResponses = results.stream()
-                            .map(resultEntry -> {
-                                FunctionCall functionCall = resultEntry.getKey();
-                                FunctionResult<String> functionResult = resultEntry.getValue();
-
-                                return FunctionResponse.newBuilder()
-                                        .setName(functionCall.getName())
-                                        .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue(functionResult.getResult()).build()))
-                                        .build();
-                            })
-                            .collect(Collectors.toList());
-
                     ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
-                            "", null, null, null, null, null, functionResponses);
+                            "", null, null, null, null, results);
 
                     fullHistory.addMessage(functionResponsesMessage);
                     newHistory.addMessage(functionResponsesMessage);
@@ -162,9 +148,14 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 contentBuilder.setRole(GeminiRole.USER.toString());
 
                 if (chatMessageContent instanceof GeminiChatMessageContent) {
-                    GeminiChatMessageContent<?> functionResponsesMessage = (GeminiChatMessageContent<?>) chatMessageContent;
+                    GeminiChatMessageContent<?> message = (GeminiChatMessageContent<?>) chatMessageContent;
 
-                    functionResponsesMessage.getFunctionResponses().forEach(functionResponse -> {
+                    message.getGeminiFunctionCalls().forEach(geminiFunction -> {
+                        FunctionResponse functionResponse = FunctionResponse.newBuilder()
+                                .setName(geminiFunction.getFunctionCall().getName())
+                                .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue((String) geminiFunction.getFunctionResult().getResult()).build()))
+                                .build();
+
                         contentBuilder.addParts(Part.newBuilder().setFunctionResponse(functionResponse));
                     });
                 }
@@ -172,12 +163,11 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 contentBuilder.setRole(GeminiRole.MODEL.toString());
 
                 if (chatMessageContent instanceof GeminiChatMessageContent) {
-                    GeminiChatMessageContent<?> functionCallsMessage = (GeminiChatMessageContent<?>) chatMessageContent;
-                    if (functionCallsMessage.getFunctionCalls() != null) {
-                        functionCallsMessage.getFunctionCalls().forEach(functionCall -> {
-                            contentBuilder.addParts(Part.newBuilder().setFunctionCall(functionCall));
-                        });
-                    }
+                    GeminiChatMessageContent<?> message = (GeminiChatMessageContent<?>) chatMessageContent;
+
+                    message.getGeminiFunctionCalls().forEach(geminiFunctionCall -> {
+                        contentBuilder.addParts(Part.newBuilder().setFunctionCall(geminiFunctionCall.getFunctionCall()));
+                    });
                 }
             }
 
@@ -191,9 +181,9 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return contents;
     }
 
-    private GeminiChatMessageContent<?> getGeminiChatMessageContent(GenerateContentResponse response) {
+    private GeminiChatMessageContent<?> getGeminiChatMessageContentFromResponse(GenerateContentResponse response) {
         StringBuilder message = new StringBuilder();
-        List<FunctionCall> functionCalls = new ArrayList<>();
+        List<GeminiFunctionCall> functionCalls = new ArrayList<>();
 
         response.getCandidatesList().forEach(
                 candidate -> {
@@ -204,7 +194,9 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                     content.getPartsList().forEach(part -> {
                         if (!part.getFunctionCall().getName().isEmpty()) {
-                            functionCalls.add(part.getFunctionCall());
+                            // We only care about the function call here
+                            // Execution of the function call will be done later
+                            functionCalls.add(new GeminiFunctionCall(part.getFunctionCall(),null));
                         }
                         if (!part.getText().isEmpty()) {
                             message.append(part.getText());
@@ -214,7 +206,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         );
 
         return new GeminiChatMessageContent<>(AuthorRole.ASSISTANT,
-                message.toString(), null, null, null, null, functionCalls, null);
+                message.toString(), null, null, null, null, functionCalls);
     }
 
     private GenerativeModel getGenerativeModel(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
@@ -307,13 +299,13 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return toolBuilder.build();
     }
 
-    public Mono<Map.Entry<FunctionCall, FunctionResult<String>>> performFunctionCall(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext, FunctionCall functionCall) {
+    public Mono<GeminiFunctionCall> performFunctionCall(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext, GeminiFunctionCall geminiFunction) {
         if (kernel == null) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                     "Kernel must be provided to perform function call");
         }
 
-        String[] name = functionCall.getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
+        String[] name = geminiFunction.getFunctionCall().getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
 
         String pluginName = name[0];
         String functionName = name[1];
@@ -330,7 +322,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 : invocationContext.getContextVariableTypes();
 
         KernelFunctionArguments.Builder arguments = KernelFunctionArguments.builder();
-        functionCall.getArgs().getFieldsMap().forEach((key, value) -> {
+        geminiFunction.getFunctionCall().getArgs().getFieldsMap().forEach((key, value) -> {
             arguments.withVariable(key, value.getStringValue());
         });
 
@@ -338,7 +330,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             .invokeAsync(kernel)
             .withArguments(arguments.build())
             .withResultType(contextVariableTypes.getVariableTypeForClass(String.class))
-            .map(functionResult -> new AbstractMap.SimpleEntry<>(functionCall, functionResult));
+            .map(result -> new GeminiFunctionCall(geminiFunction.getFunctionCall(), result));
     }
 
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {

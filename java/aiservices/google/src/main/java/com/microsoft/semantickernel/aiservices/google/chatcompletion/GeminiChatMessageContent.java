@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.aiservices.google.implementation;
+package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.api.FunctionCall;
 import com.google.cloud.vertexai.api.FunctionResponse;
@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents the content of a chat message.
@@ -18,11 +19,8 @@ import java.util.List;
  * @param <T> The type of the inner content.
  */
 public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
-
     @Nonnull
-    private final List<FunctionCall> functionCalls;
-    @Nonnull
-    private final List<FunctionResponse> functionResponses;
+    private final List<GeminiFunctionCall> geminiFunctionCalls;
 
     /**
      * Creates a new instance of the {@link GeminiChatMessageContent} class.
@@ -33,8 +31,7 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
      * @param innerContent      The inner content.
      * @param encoding          The encoding.
      * @param metadata          The metadata.
-     * @param functionCalls     The function calls.
-     * @param functionResponses The function responses.
+     * @param geminiFunctionCalls  The function calls.
      */
     public GeminiChatMessageContent(
             AuthorRole authorRole,
@@ -43,18 +40,12 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
             @Nullable T innerContent,
             @Nullable Charset encoding,
             @Nullable FunctionResultMetadata metadata,
-            @Nullable List<FunctionCall> functionCalls,
-            @Nullable List<FunctionResponse> functionResponses) {
+            @Nullable List<GeminiFunctionCall> geminiFunctionCalls) {
         super(authorRole, content, modelId, innerContent, encoding, metadata);
-        if (functionCalls == null) {
-            this.functionCalls = Collections.emptyList();
+        if (geminiFunctionCalls == null) {
+            this.geminiFunctionCalls = Collections.emptyList();
         } else {
-            this.functionCalls = Collections.unmodifiableList(functionCalls);
-        }
-        if (functionResponses == null) {
-            this.functionResponses = Collections.emptyList();
-        } else {
-            this.functionResponses = Collections.unmodifiableList(functionResponses);
+            this.geminiFunctionCalls = Collections.unmodifiableList(geminiFunctionCalls);
         }
     }
 
@@ -64,17 +55,7 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
      * @return The function calls.
      */
     @Nonnull
-    public List<FunctionCall> getFunctionCalls() {
-        return functionCalls;
-    }
-
-    /**
-     * Gets the function responses.
-     *
-     * @return The function responses.
-     */
-    @Nonnull
-    public List<FunctionResponse> getFunctionResponses() {
-        return functionResponses;
+    public List<GeminiFunctionCall> getGeminiFunctionCalls() {
+        return geminiFunctionCalls;
     }
 }
