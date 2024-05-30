@@ -1,12 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-import sys
-from typing import TYPE_CHECKING
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
+from typing import TYPE_CHECKING, Annotated
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -15,9 +8,7 @@ if TYPE_CHECKING:
 
 
 class ConversationSummaryPlugin:
-    """
-    Semantic plugin that enables conversations summarization.
-    """
+    """Semantic plugin that enables conversations summarization."""
 
     from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -37,8 +28,7 @@ class ConversationSummaryPlugin:
     def __init__(
         self, kernel: "Kernel", prompt_template_config: "PromptTemplateConfig", return_key: str = "summary"
     ) -> None:
-        """
-        Initializes a new instance of the ConversationSummaryPlugin class.
+        """Initializes a new instance of the ConversationSummaryPlugin class.
 
         :param kernel: The kernel instance.
         :param prompt_template_config: The prompt template configuration.
@@ -64,8 +54,7 @@ class ConversationSummaryPlugin:
     ) -> Annotated[
         "KernelArguments", "KernelArguments with the summarized conversation result in key self.return_key."
     ]:
-        """
-        Given a long conversation transcript, summarize the conversation.
+        """Given a long conversation transcript, summarize the conversation.
 
         :param input: A long conversation transcript.
         :param kernel: The kernel for function execution.

@@ -38,6 +38,10 @@ class KernelInvokeException(KernelException):
     pass
 
 
+class OperationCancelledException(KernelException):
+    pass
+
+
 __all__ = [
     "KernelException",
     "KernelFunctionAlreadyExistsError",
@@ -46,4 +50,5 @@ __all__ = [
     "KernelPluginNotFoundError",
     "KernelServiceNotFoundError",
     "KernelPluginInvalidConfigurationError",
+    "OperationCancelledException",
 ]

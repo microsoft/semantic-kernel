@@ -76,8 +76,7 @@ public class AgentChatTests
         lock (syncObject)
         {
             tasks =
-                new[]
-                {
+                [
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
@@ -86,7 +85,7 @@ public class AgentChatTests
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
                     Task.Run(() => SynchronizedInvokeAsync()),
-                };
+                ];
         }
 
         // Signal tasks to execute

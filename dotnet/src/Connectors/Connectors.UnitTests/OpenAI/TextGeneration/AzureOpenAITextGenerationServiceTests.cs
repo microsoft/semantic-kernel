@@ -126,7 +126,8 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
             PresencePenalty = 1.2,
             ResultsPerPrompt = 5,
             TokenSelectionBiases = new Dictionary<int, int> { { 2, 3 } },
-            StopSequences = ["stop_sequence"]
+            StopSequences = ["stop_sequence"],
+            TopLogprobs = 5
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -154,6 +155,7 @@ public sealed class AzureOpenAITextGenerationServiceTests : IDisposable
         Assert.Equal(5, content.GetProperty("best_of").GetInt32());
         Assert.Equal(3, content.GetProperty("logit_bias").GetProperty("2").GetInt32());
         Assert.Equal("stop_sequence", content.GetProperty("stop")[0].GetString());
+        Assert.Equal(5, content.GetProperty("logprobs").GetInt32());
     }
 
     [Fact]

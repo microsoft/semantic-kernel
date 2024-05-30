@@ -1,14 +1,11 @@
-import sys
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Optional, Union
+# Copyright (c) Microsoft. All rights reserved.
+
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import TYPE_CHECKING, Annotated, Any, Union
 
 import pytest
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
-from semantic_kernel.functions.kernel_function_decorator import _parse_annotation, kernel_function
+from semantic_kernel.functions.kernel_function_decorator import _parse_parameter, kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -37,7 +34,7 @@ class MiscClass:
 
     @kernel_function
     def func_docstring_as_description(self, input):
-        """description"""
+        """Description."""
         return input
 
     @kernel_function
@@ -45,11 +42,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
+    def func_input_annotated_optional(self, input: Annotated[str | None, "input description"] = "test"):
         return input
 
     @kernel_function
-    def func_input_optional(self, input: Optional[str] = "test"):
+    def func_input_optional(self, input: str | None = "test"):
         return input
 
     @kernel_function
@@ -57,7 +54,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_return_type_optional(self, input: str) -> Optional[str]:
+    def func_return_type_optional(self, input: str) -> str | None:
         return input
 
     @kernel_function
@@ -73,7 +70,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_optional(self, input: Optional[InputObject] = None):
+    def func_input_object_optional(self, input: InputObject | None = None):
         return input
 
     @kernel_function
@@ -81,11 +78,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_annotated_optional(self, input: Annotated[Optional[InputObject], "input description"] = None):
+    def func_input_object_annotated_optional(self, input: Annotated[InputObject | None, "input description"] = None):
         return input
 
     @kernel_function
-    def func_input_object_union(self, input: Union[InputObject, str]):
+    def func_input_object_union(self, input: InputObject | str):
         return input
 
     @kernel_function
@@ -120,7 +117,7 @@ def test_kernel_function_with_name_specified():
 def test_kernel_function_docstring_as_description():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_docstring_as_description")
-    assert my_func.__kernel_function_description__ == "description"
+    assert my_func.__kernel_function_description__ == "Description."
 
 
 def test_kernel_function_param_annotated():
@@ -178,11 +175,10 @@ def test_kernel_function_return_type_annotated():
     assert not my_func.__kernel_function_streaming__
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
 def test_kernel_function_return_type_streaming():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_return_type_streaming")
-    assert my_func.__kernel_function_return_type__ == "str, Any"
+    assert my_func.__kernel_function_return_type__ in ("str, Any", "str, typing.Any")
     assert my_func.__kernel_function_return_description__ == "test return"
     assert my_func.__kernel_function_return_required__
     assert my_func.__kernel_function_streaming__
@@ -249,24 +245,26 @@ def test_kernel_function_no_typing():
 
 
 @pytest.mark.parametrize(
-    ("annotation", "description", "type_", "is_required"),
+    ("name", "annotation", "description", "type_", "is_required"),
     [
-        (Annotated[str, "test"], "test", "str", True),
-        (Annotated[Optional[str], "test"], "test", "str", False),
-        (Annotated[AsyncGenerator[str, Any], "test"], "test", ["str", "Any"], True),
-        (Annotated[Optional[Union[str, int]], "test"], "test", ["str", "int"], False),
-        (str, None, "str", True),
-        (Union[str, int, float, "KernelArguments"], None, ["str", "int", "float", "KernelArguments"], True),
+        ("anno_str", Annotated[str, "test"], "test", "str", True),
+        ("anno_opt_str", Annotated[str | None, "test"], "test", "str", False),
+        ("anno_iter_str", Annotated[AsyncIterable[str], "test"], "test", "str", True),
+        ("anno_opt_str_int", Annotated[str | int | None, "test"], "test", "str, int", False),
+        ("str", str, None, "str", True),
+        ("union", Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
+        ("new_union", "str | int | float | KernelArguments", None, "str, int, float, KernelArguments", True),
+        ("opt_str", str | None, None, "str", False),
+        ("list_str", list[str], None, "list[str]", True),
+        ("dict_str", dict[str, str], None, "dict[str, str]", True),
+        ("list_str_opt", list[str] | None, None, "list[str]", False),
+        ("anno_dict_str", Annotated[dict[str, str], "description"], "description", "dict[str, str]", True),
+        ("anno_opt_dict_str", Annotated[dict | str | None, "description"], "description", "dict, str", False),
     ],
 )
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="Typing in Python before 3.10 is very different.")
-def test_annotation_parsing(annotation, description, type_, is_required):
-    annotations = _parse_annotation(annotation)
+def test_annotation_parsing(name, annotation, description, type_, is_required):
+    annotations = _parse_parameter(name, annotation, None)
 
     assert description == annotations.get("description")
-    if isinstance(type_, list):
-        for item in type_:
-            assert item in annotations["type_"]
-    else:
-        assert type_ == annotations["type_"]
+    assert type_ == annotations["type_"]
     assert is_required == annotations["is_required"]

@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
@@ -17,11 +18,11 @@ class PassThroughWithoutRetry(RetryMechanismBase, KernelBaseModel):
     async def execute_with_retry(self, action: Callable[[], Awaitable[T]]) -> Awaitable[T]:
         """Executes the given action with retry logic.
 
-        Arguments:
-            action {Callable[[], Awaitable[T]]} -- The action to retry on exception.
+        Args:
+            action (Callable[[], Awaitable[T]]): The action to retry on exception.
 
         Returns:
-            Awaitable[T] -- An awaitable that will return the result of the action.
+            Awaitable[T]: An awaitable that will return the result of the action.
         """
         try:
             await action()

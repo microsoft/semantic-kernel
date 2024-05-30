@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import Any, List, Optional
+import sys
+from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 import aiohttp
 from numpy import array, ndarray
@@ -9,34 +15,28 @@ from pydantic import HttpUrl
 
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental_class
 class OllamaTextEmbedding(EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
     Make sure to have the ollama service running either locally or remotely.
 
-    Arguments:
-        ai_model_id {str} -- Ollama model name, see https://ollama.ai/library
-        url {Optional[Union[str, HttpUrl]]} -- URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
-        session {Optional[aiohttp.ClientSession]} -- Optional client session to use for requests.
+    Args:
+        ai_model_id (str): Ollama model name, see https://ollama.ai/library
+        url (Optional[Union[str, HttpUrl]]): URL of the Ollama server, defaults to http://localhost:11434/api/embeddings
+        session (Optional[aiohttp.ClientSession]): Optional client session to use for requests.
     """
 
     url: HttpUrl = "http://localhost:11434/api/embeddings"
-    session: Optional[aiohttp.ClientSession] = None
+    session: aiohttp.ClientSession | None = None
 
-    async def generate_embeddings(self, texts: List[str], **kwargs: Any) -> ndarray:
-        """
-        Generates embeddings for a list of texts.
-
-        Arguments:
-            texts {List[str]} -- Texts to generate embeddings for.
-
-        Returns:
-            ndarray -- Embeddings for the texts.
-        """
+    @override
+    async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         result = []
         for text in texts:
             async with AsyncSession(self.session) as session:

@@ -1,18 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import sys
+from typing import Annotated
 
-from service_configurator import add_service
-
-import semantic_kernel as sk
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
-
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from samples.learn_resources.sk_service_configurator import add_service
+from semantic_kernel import Kernel
+from semantic_kernel.functions import kernel_function
 
 
 # Let's define a light plugin
@@ -46,7 +39,7 @@ class LightPlugin:
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
+    kernel = Kernel()
 
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion

@@ -16,11 +16,27 @@ For more information, please refer to the following articles:
 
 ## What to expect
 
-In this example project, the Handlebars planner will be invoked to achieve a goal. The planner will request the model to create a plan, comprising three steps, with two of them being prompt-based kernel functions. The plan will be executed to produce the desired output, effectively fulfilling the goal.
-
-The Semantic Kernel SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the planner invocation, as well as during function and plan execution. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
+The Semantic Kernel SDK is designed to efficiently generate comprehensive logs, traces, and metrics throughout the flow of function execution and model invocation. This allows you to effectively monitor your AI application's performance and accurately track token consumption.
 
 > `ActivitySource.StartActivity` internally determines if there are any listeners recording the Activity. If there are no registered listeners or there are listeners that are not interested, StartActivity() will return null and avoid creating the Activity object. Read more [here](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-instrumentation-walkthroughs).
+
+## OTel Semantic Conventions
+
+Semantic Kernel is also committed to provide the best developer experience while complying with the industry standards for observability. For more information, please review [ADR](../../../../docs/decisions/0044-OTel-semantic-convention.md).
+
+The OTel GenAI semantic conventions are experimental. There are two options to enable the feature:
+
+1. AppContext switch:
+
+   - `Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics`
+   - `Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive`
+
+2. Environment variable
+
+   - `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS`
+   - `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE`
+
+> Enabling the collection of sensitive data including prompts and responses will implicitly enable the feature.
 
 ## Configuration
 
@@ -45,6 +61,15 @@ dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:ChatModelId" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
+
+dotnet user-secrets set "GoogleAI:Gemini:ModelId" "..."
+dotnet user-secrets set "GoogleAI:ApiKey" "..."
+
+dotnet user-secrets set "HuggingFace:ModelId" "..."
+dotnet user-secrets set "HuggingFace:ApiKey" "..."
+
+dotnet user-secrets set "MistralAI:ChatModelId" "mistral-large-latest"
+dotnet user-secrets set "MistralAI:ApiKey" "..."
 
 dotnet user-secrets set "ApplicationInsights:ConnectionString" "..."
 ```
@@ -134,7 +159,30 @@ customMetrics
 
 You can create an Azure Dashboard to visualize the custom telemetry items. You can read more here: [Create a new dashboard](https://learn.microsoft.com/en-us/azure/azure-monitor/app/overview-dashboard#create-a-new-dashboard).
 
+## Aspire Dashboard
+
+You can also use the [Aspire dashboard](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview) for local development.
+
+### Steps
+
+- Follow this [code sample](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/overview) to start an Aspire dashboard in a docker container.
+- Add the package to the project: **`OpenTelemetry.Exporter.OpenTelemetryProtocol`**
+- Replace all occurrences of
+
+  ```c#
+  .AddAzureMonitorLogExporter(...)
+  ```
+
+  with
+
+  ```c#
+  .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317"))
+  ```
+
+- Run the app and you can visual the traces in the Aspire dashboard.
+
 ## More information
 
 - [Telemetry docs](../../../docs/TELEMETRY.md)
 - [Planner telemetry improvement ADR](../../../../docs/decisions/0025-planner-telemetry-enhancement.md)
+- [OTel Semantic Conventions ADR](../../../../docs/decisions/0044-OTel-semantic-convention.md)

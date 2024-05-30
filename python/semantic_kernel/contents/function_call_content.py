@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import json
 import logging
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -24,7 +24,18 @@ class FunctionCallContent(KernelContent):
     name: str | None = None
     arguments: str | None = None
 
+    @cached_property
+    def function_name(self) -> str:
+        """Get the function name."""
+        return self.split_name()[1]
+
+    @cached_property
+    def plugin_name(self) -> str | None:
+        """Get the plugin name."""
+        return self.split_name()[0]
+
     def __str__(self) -> str:
+        """Return the function call as a string."""
         return f"{self.name}({self.arguments})"
 
     def __add__(self, other: "FunctionCallContent | None") -> "FunctionCallContent":
