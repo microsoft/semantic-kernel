@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Optional options when calling <see cref="IVectorDBRecordService{TKey, TDataModel}.GetAsync"/>.
+/// Optional options when calling <see cref="IMemoryRecordService{TKey, TDataModel}.GetAsync"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public class GetRecordOptions
