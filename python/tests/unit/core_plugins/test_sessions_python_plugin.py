@@ -30,8 +30,8 @@ def test_validate_endpoint(aca_python_sessions_unit_test_env):
 def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert kernel.add_plugin(plugin=plugin, plugin_name="PythonCodeInterpreter")
-    assert kernel.plugins["PythonCodeInterpreter"] is not None
-    assert kernel.plugins["PythonCodeInterpreter"].name == "PythonCodeInterpreter"
+    assert kernel.get_plugin(plugin_name="PythonCodeInterpreter") is not None
+    assert kernel.get_plugin(plugin_name="PythonCodeInterpreter").name == "PythonCodeInterpreter"
 
 
 @pytest.mark.asyncio

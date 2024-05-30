@@ -1,11 +1,6 @@
-import sys
+from typing import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
 
 
 @kernel_function(
@@ -13,8 +8,7 @@ else:
     name="echoAsync",
 )
 async def echo(text: Annotated[str, "The text to echo"]) -> str:
-    """
-    Echo for input text
+    """Echo for input text
 
     Example:
         "hello world" => "hello world"

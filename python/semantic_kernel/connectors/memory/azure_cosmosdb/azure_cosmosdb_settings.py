@@ -1,20 +1,24 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pydantic import SecretStr
+from typing import ClassVar
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
+from pydantic import Field, SecretStr
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
+from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
-class AzureCosmosDBSettings(BaseModelSettings):
-    """Azure CosmosDB model settings
+@experimental_class
+class AzureCosmosDBSettings(KernelBaseSettings):
+    """Azure CosmosDB model settings.
 
     Optional:
+    - api: str - Azure CosmosDB API version (Env var COSMOSDB_API)
     - connection_string: str - Azure CosmosDB connection string
         (Env var COSMOSDB_CONNECTION_STRING)
     """
 
-    api: str | None = None
-    connection_string: SecretStr | None = None
+    env_prefix: ClassVar[str] = "COSMOSDB_"
 
-    class Config(BaseModelSettings.Config):
-        env_prefix = "COSMOSDB_"
+    api: str | None = None
+    connection_string: SecretStr | None = Field(None, alias="AZCOSMOS_CONNSTR")

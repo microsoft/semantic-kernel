@@ -39,14 +39,26 @@ internal static class ModelDiagnostics
     /// Start a text completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, string prompt, PromptExecutionSettings? executionSettings)
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        string prompt,
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
         => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
 
     /// <summary>
     /// Start a chat completion activity for a given model.
     /// The activity will be tagged with the a set of attributes specified by the semantic conventions.
     /// </summary>
-    public static Activity? StartCompletionActivity(Uri? endpoint, string modelName, string modelProvider, ChatHistory chatHistory, PromptExecutionSettings? executionSettings)
+    public static Activity? StartCompletionActivity<TPromptExecutionSettings>(
+        Uri? endpoint,
+        string modelName,
+        string modelProvider,
+        ChatHistory chatHistory,
+        TPromptExecutionSettings? executionSettings
+    ) where TPromptExecutionSettings : PromptExecutionSettings
         => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
 
     /// <summary>
@@ -66,12 +78,17 @@ internal static class ModelDiagnostics
     /// <summary>
     /// Notify the end of streaming for a given activity.
     /// </summary>
-    public static void EndStreaming(this Activity activity, IEnumerable<StreamingKernelContent>? contents, int? promptTokens = null, int? completionTokens = null)
+    public static void EndStreaming(
+        this Activity activity,
+        IEnumerable<StreamingKernelContent>? contents,
+        IEnumerable<FunctionCallContent>? toolCalls = null,
+        int? promptTokens = null,
+        int? completionTokens = null)
     {
         if (IsModelDiagnosticsEnabled())
         {
             var choices = OrganizeStreamingContent(contents);
-            SetCompletionResponse(activity, choices, promptTokens, completionTokens);
+            SetCompletionResponse(activity, choices, toolCalls, promptTokens, completionTokens);
         }
     }
 
@@ -108,17 +125,31 @@ internal static class ModelDiagnostics
         return (s_enableDiagnostics || s_enableSensitiveEvents) && s_activitySource.HasListeners();
     }
 
+    /// <summary>
+    /// Check if sensitive events are enabled.
+    /// Sensitive events are enabled if EnableSensitiveEvents is set to true and there are listeners.
+    /// </summary>
+    public static bool IsSensitiveEventsEnabled() => s_enableSensitiveEvents && s_activitySource.HasListeners();
+
     #region Private
-    private static void AddOptionalTags(Activity? activity, PromptExecutionSettings? executionSettings)
+    private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
+        where TPromptExecutionSettings : PromptExecutionSettings
     {
-        if (activity is null || executionSettings?.ExtensionData is null)
+        if (activity is null || executionSettings is null)
+        {
+            return;
+        }
+
+        // Serialize and deserialize the execution settings to get the extension data
+        var deserializedSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(JsonSerializer.Serialize(executionSettings));
+        if (deserializedSettings is null || deserializedSettings.ExtensionData is null)
         {
             return;
         }
 
         void TryAddTag(string key, string tag)
         {
-            if (executionSettings.ExtensionData.TryGetValue(key, out var value))
+            if (deserializedSettings.ExtensionData.TryGetValue(key, out var value))
             {
                 activity.SetTag(tag, value);
             }
@@ -150,8 +181,11 @@ internal static class ModelDiagnostics
             sb.Append(message.Role);
             sb.Append("\", \"content\": ");
             sb.Append(JsonSerializer.Serialize(message.Content));
-            sb.Append(", \"tool_calls\": ");
-            ToOpenAIFormat(sb, message.Items);
+            if (message.Items.OfType<FunctionCallContent>().Any())
+            {
+                sb.Append(", \"tool_calls\": ");
+                ToOpenAIFormat(sb, message.Items);
+            }
             sb.Append('}');
 
             isFirst = false;
@@ -194,13 +228,13 @@ internal static class ModelDiagnostics
     /// Start a completion activity and return the activity.
     /// The `formatPrompt` delegate won't be invoked if events are disabled.
     /// </summary>
-    private static Activity? StartCompletionActivity<T>(
+    private static Activity? StartCompletionActivity<TPrompt, TPromptExecutionSettings>(
         Uri? endpoint,
         string modelName,
         string modelProvider,
-        T prompt,
-        PromptExecutionSettings? executionSettings,
-        Func<T, string> formatPrompt)
+        TPrompt prompt,
+        TPromptExecutionSettings? executionSettings,
+        Func<TPrompt, string> formatPrompt) where TPromptExecutionSettings : PromptExecutionSettings
     {
         if (!IsModelDiagnosticsEnabled())
         {
@@ -287,6 +321,7 @@ internal static class ModelDiagnostics
     private static void SetCompletionResponse(
         Activity activity,
         Dictionary<int, List<StreamingKernelContent>> choices,
+        IEnumerable<FunctionCallContent>? toolCalls,
         int? promptTokens,
         int? completionTokens)
     {
@@ -314,9 +349,15 @@ internal static class ModelDiagnostics
                      var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
                      return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
                  }).ToList();
+                // It's currently not allowed to request multiple results per prompt while auto-invoke is enabled.
+                // Therefore, we can assume that there is only one completion per prompt when tool calls are present.
+                foreach (var functionCall in toolCalls ?? [])
+                {
+                    chatCompletions.FirstOrDefault()?.Items.Add(functionCall);
+                }
                 SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens, ToOpenAIFormat);
                 break;
-        };
+        }
     }
 
     // Returns an activity for chaining

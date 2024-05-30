@@ -18,6 +18,7 @@ class BlockRenderException(BlockException):
 
 class VarBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
+        """Raised when the content of a VarBlock is invalid."""
         super().__init__(
             f"A VarBlock starts with a '$' followed by at least one letter, \
 number or underscore, anything else is invalid. \
@@ -31,6 +32,7 @@ class VarBlockRenderError(BlockRenderException):
 
 class ValBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
+        """Raised when the content of a ValBlock is invalid."""
         super().__init__(
             f"A ValBlock starts with a single or double quote followed by at least one letter, \
 finishing with the same type of quote as the first one. \
@@ -40,6 +42,7 @@ The content provided was: {content}",
 
 class NamedArgBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
+        """Raised when the content of a NamedArgBlock is invalid."""
         super().__init__(
             f"A NamedArgBlock starts with a name (letters, numbers or underscore) \
 followed by a single equal sign, then the value of the argument, \
@@ -51,6 +54,7 @@ The content provided was: {content}",
 
 class FunctionIdBlockSyntaxError(BlockSyntaxError):
     def __init__(self, content: str) -> None:
+        """Raised when the content of a FunctionIdBlock is invalid."""
         super().__init__(
             f"A FunctionIdBlock is composed of either a plugin name and \
 function name separated by a single dot, or just a function name. \

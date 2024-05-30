@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 /// <summary>
 /// A function to be used in the chat completion request.
 /// </summary>
-internal class MistralFunction
+internal sealed partial class MistralFunction
 {
     /// <summary>
     /// The name of the function to be called.Must be a-z,A-Z,0-9 or contain underscores and dashes, with a maximum length of 64.
@@ -96,14 +96,20 @@ internal class MistralFunction
 
     #region private
 
+#if NET
+    [GeneratedRegex("^[0-9A-Za-z_-]*$")]
+    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
+#else
+    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
     private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_-]*$");
+#endif
 
     private static void ValidFunctionName(string name)
     {
         Verify.NotNull(name, nameof(name));
         Verify.True(name.Length <= 64, "The name of the function must be less than or equal to 64 characters.", nameof(name));
 
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(name))
+        if (!AsciiLettersDigitsUnderscoresRegex().IsMatch(name))
         {
             throw new ArgumentException($"A function name can contain only ASCII letters, digits, dashes and underscores: '{name}' is not a valid name.");
         }

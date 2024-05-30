@@ -1,4 +1,7 @@
-from typing import TYPE_CHECKING, Annotated, Any, AsyncGenerator, AsyncIterable, Optional, Union
+# Copyright (c) Microsoft. All rights reserved.
+
+from collections.abc import AsyncGenerator, AsyncIterable
+from typing import TYPE_CHECKING, Annotated, Any, Union
 
 import pytest
 
@@ -31,7 +34,7 @@ class MiscClass:
 
     @kernel_function
     def func_docstring_as_description(self, input):
-        """description"""
+        """Description."""
         return input
 
     @kernel_function
@@ -39,11 +42,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_annotated_optional(self, input: Annotated[Optional[str], "input description"] = "test"):
+    def func_input_annotated_optional(self, input: Annotated[str | None, "input description"] = "test"):
         return input
 
     @kernel_function
-    def func_input_optional(self, input: Optional[str] = "test"):
+    def func_input_optional(self, input: str | None = "test"):
         return input
 
     @kernel_function
@@ -51,7 +54,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_return_type_optional(self, input: str) -> Optional[str]:
+    def func_return_type_optional(self, input: str) -> str | None:
         return input
 
     @kernel_function
@@ -67,7 +70,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_optional(self, input: Optional[InputObject] = None):
+    def func_input_object_optional(self, input: InputObject | None = None):
         return input
 
     @kernel_function
@@ -75,11 +78,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_annotated_optional(self, input: Annotated[Optional[InputObject], "input description"] = None):
+    def func_input_object_annotated_optional(self, input: Annotated[InputObject | None, "input description"] = None):
         return input
 
     @kernel_function
-    def func_input_object_union(self, input: Union[InputObject, str]):
+    def func_input_object_union(self, input: InputObject | str):
         return input
 
     @kernel_function
@@ -114,7 +117,7 @@ def test_kernel_function_with_name_specified():
 def test_kernel_function_docstring_as_description():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_docstring_as_description")
-    assert my_func.__kernel_function_description__ == "description"
+    assert my_func.__kernel_function_description__ == "Description."
 
 
 def test_kernel_function_param_annotated():
@@ -260,7 +263,7 @@ def test_kernel_function_no_typing():
     ],
 )
 def test_annotation_parsing(name, annotation, description, type_, is_required):
-    annotations = _parse_parameter(name, annotation)
+    annotations = _parse_parameter(name, annotation, None)
 
     assert description == annotations.get("description")
     assert type_ == annotations["type_"]

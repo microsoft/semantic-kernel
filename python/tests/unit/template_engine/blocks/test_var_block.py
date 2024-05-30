@@ -5,6 +5,7 @@ import logging
 from pytest import mark, raises
 
 from semantic_kernel.exceptions import VarBlockSyntaxError
+from semantic_kernel.exceptions.template_engine_exceptions import VarBlockRenderError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
@@ -76,3 +77,14 @@ def test_render_no_args():
     target = VarBlock(content="$var")
     result = target.render(Kernel())
     assert result == ""
+
+
+class MockNonString(str):
+    def __str__(self):
+        raise ValueError("This is not a string")
+
+
+def test_not_string():
+    target = VarBlock(content="$var")
+    with raises(VarBlockRenderError):
+        target.render(Kernel(), KernelArguments(var=MockNonString("1")))

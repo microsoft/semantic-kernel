@@ -1,15 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 
 import pytest
 
+import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-
-if sys.version_info >= (3, 9):
-    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 
 @pytest.fixture(scope="function")

@@ -2,7 +2,7 @@
 
 import os
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any, Dict
+from typing import Any
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 
@@ -26,9 +26,8 @@ APP_INFO = (
 )
 
 
-def prepend_semantic_kernel_to_user_agent(headers: Dict[str, Any]):
-    """
-    Prepend "Semantic-Kernel" to the User-Agent in the headers.
+def prepend_semantic_kernel_to_user_agent(headers: dict[str, Any]):
+    """Prepend "Semantic-Kernel" to the User-Agent in the headers.
 
     Args:
         headers: The existing headers dictionary.
@@ -36,7 +35,6 @@ def prepend_semantic_kernel_to_user_agent(headers: Dict[str, Any]):
     Returns:
         The modified headers dictionary with "Semantic-Kernel" prepended to the User-Agent.
     """
-
     headers[USER_AGENT] = f"{HTTP_USER_AGENT} {headers[USER_AGENT]}" if USER_AGENT in headers else f"{HTTP_USER_AGENT}"
 
     return headers

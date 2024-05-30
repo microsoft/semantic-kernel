@@ -2,9 +2,8 @@
 
 import asyncio
 
-from service_configurator import add_service
-
 import semantic_kernel as sk
+from samples.learn_resources.sk_service_configurator import add_service
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.core_plugins import ConversationSummaryPlugin
@@ -50,7 +49,9 @@ async def main():
         plugin_name="ConversationSummaryPlugin",
     )
 
-    summarize_function = kernel.plugins["ConversationSummaryPlugin"]["SummarizeConversation"]
+    summarize_function = kernel.get_function(
+        plugin_name="ConversationSummaryPlugin", function_name="SummarizeConversation"
+    )
 
     # Create the history
     history = ChatHistory()

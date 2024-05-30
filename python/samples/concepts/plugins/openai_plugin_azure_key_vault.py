@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import os
-from typing import Dict, Optional
 
 import httpx
 from aiohttp import ClientSession
@@ -18,7 +16,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Adds a secret to the Azure Key Vault."""
     arguments = KernelArguments()
-    arguments["secret_name"] = "Foo"
+    arguments["secret_name"] = "Foo"  # nosec
     arguments["api_version"] = "7.0"
     arguments["value"] = "Bar"
     arguments["enabled"] = True
@@ -33,7 +31,7 @@ async def add_secret_to_key_vault(kernel: Kernel, plugin: KernelPlugin):
 async def get_secret_from_key_vault(kernel: Kernel, plugin: KernelPlugin):
     """Gets a secret from the Azure Key Vault."""
     arguments = KernelArguments()
-    arguments["secret_name"] = "Foo"
+    arguments["secret_name"] = "Foo"  # nosec
     arguments["api_version"] = "7.0"
     result = await kernel.invoke(
         function=plugin["GetSecret"],
@@ -47,7 +45,7 @@ class OpenAIAuthenticationProvider:
     """A Sample Authentication Provider for an OpenAI/OpenAPI plugin"""
 
     def __init__(
-        self, oauth_values: Optional[Dict[str, Dict[str, str]]] = None, credentials: Optional[Dict[str, str]] = None
+        self, oauth_values: dict[str, dict[str, str]] | None = None, credentials: dict[str, str] | None = None
     ):
         """Initializes the OpenAIAuthenticationProvider."""
         self.oauth_values = oauth_values or {}
@@ -145,7 +143,7 @@ async def main():
     openai_spec_file = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "open_ai_plugins", "akv-openai.json"
     )
-    with open(openai_spec_file, "r") as file:
+    with open(openai_spec_file) as file:
         openai_spec = file.read()
 
     http_client = httpx.AsyncClient()
@@ -156,7 +154,7 @@ async def main():
         execution_parameters=OpenAIFunctionExecutionParameters(
             http_client=http_client,
             auth_callback=authentication_provider.authenticate_request,
-            server_url_override=endpoint,
+            server_url_override=str(endpoint),
             enable_dynamic_payload=True,
         ),
     )

@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
@@ -45,7 +44,7 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 
 
@@ -78,14 +77,7 @@ async def test_azure_text_completion_call_with_parameters(mock_create, azure_ope
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
-        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
-        logit_bias={},
-        max_tokens=complete_prompt_execution_settings.max_tokens,
-        n=complete_prompt_execution_settings.number_of_responses,
-        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         stream=False,
-        temperature=complete_prompt_execution_settings.temperature,
-        top_p=complete_prompt_execution_settings.top_p,
         prompt=prompt,
         echo=False,
     )
@@ -109,14 +101,8 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none(
 
     mock_create.assert_awaited_once_with(
         model=azure_openai_unit_test_env["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"],
-        frequency_penalty=complete_prompt_execution_settings.frequency_penalty,
         logit_bias=complete_prompt_execution_settings.logit_bias,
-        max_tokens=complete_prompt_execution_settings.max_tokens,
-        n=complete_prompt_execution_settings.number_of_responses,
-        presence_penalty=complete_prompt_execution_settings.presence_penalty,
         stream=False,
-        temperature=complete_prompt_execution_settings.temperature,
-        top_p=complete_prompt_execution_settings.top_p,
         prompt=prompt,
         echo=False,
     )
