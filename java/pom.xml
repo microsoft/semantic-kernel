@@ -70,7 +70,7 @@
 
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
-        <module>aiservices/semantickernel-aiservices-huggingface</module>
+        <module>aiservices/huggingface</module>
 
         <module>semantickernel-api</module>
     </modules>
