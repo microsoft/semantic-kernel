@@ -55,7 +55,7 @@ public sealed class FunctionCallContentBuilder
                 string? pluginName = null;
                 string functionName = string.Empty;
 
-                if (this._functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string fqn) ?? false)
+                if (this._functionNamesByIndex?.TryGetValue(functionCallIndexAndId.Key, out string? fqn) ?? false)
                 {
                     var functionFullyQualifiedName = Microsoft.SemanticKernel.FunctionName.Parse(fqn);
                     pluginName = functionFullyQualifiedName.PluginName;
@@ -86,7 +86,7 @@ public sealed class FunctionCallContentBuilder
     private (KernelArguments? Arguments, Exception? Exception) GetFunctionArguments(int functionCallIndex)
     {
         if (this._functionArgumentBuildersByIndex is null ||
-            !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder functionArgumentsBuilder))
+            !this._functionArgumentBuildersByIndex.TryGetValue(functionCallIndex, out StringBuilder? functionArgumentsBuilder))
         {
             return (null, null);
         }
