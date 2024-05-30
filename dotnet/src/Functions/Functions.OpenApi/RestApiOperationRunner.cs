@@ -23,30 +23,21 @@ internal sealed class RestApiOperationRunner
     private const string MediaTypeTextPlain = "text/plain";
 
     private const string DefaultResponseKey = "default";
-    private const string TypeHttp = "HTTP";
 
     /// <summary>
-    /// This field is the name of the request and it represents the code path taken to process the request.
-    /// A low cardinality value allows for better grouping of requests. For HTTP requests, it represents the HTTP method.
+    /// HTTP request method.
     /// </summary>
-    private const string Name = "Name";
+    private const string HttpRequestMethod = "http.request.method";
 
     /// <summary>
-    /// This field is the command initiated by this dependency call.
-    /// This will be set to the request content.
+    /// The request payload body.
     /// </summary>
-    private const string Data = "Data";
+    private const string HttpRequestBody = "http.request.body";
 
     /// <summary>
-    /// The request URL with all query string parameters.
+    /// Absolute URL describing a network resource according to RFC3986.
     /// </summary>
-    private const string Url = "Url";
-
-    /// <summary>
-    /// This field is the dependency type name. It has a low cardinality value for logical grouping of dependencies and interpretation of other fields like commandName and resultCode.
-    /// This will set to HTTP.
-    /// </summary>
-    private const string Type = "Type";
+    private const string UrlFull = "url.full";
 
     /// <summary>
     /// List of payload builders/factories.
@@ -216,19 +207,17 @@ internal sealed class RestApiOperationRunner
             ex.RequestPayload = payload;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            ex.Data.Add(Type, TypeHttp);
-            ex.Data.Add(Name, requestMessage.Method.Method);
-            ex.Data.Add(Url, requestMessage.RequestUri?.ToString());
-            ex.Data.Add(Data, payload);
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
 
             throw;
         }
         catch (KernelException ex)
         {
-            ex.Data.Add(Type, TypeHttp);
-            ex.Data.Add(Name, requestMessage.Method.Method);
-            ex.Data.Add(Url, requestMessage.RequestUri?.ToString());
-            ex.Data.Add(Data, payload);
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
 
             throw;
         }
@@ -435,13 +424,13 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Builds operation Url.
+    /// Builds operation UrlFull.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
-    /// <returns>The operation Url.</returns>
+    /// <returns>The operation UrlFull.</returns>
     private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);

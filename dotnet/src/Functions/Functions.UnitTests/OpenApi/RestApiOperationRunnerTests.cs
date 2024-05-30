@@ -1050,10 +1050,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         // Act & Assert
         var kernelException = await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
         Assert.Equal("The content type `fake/type` is not supported.", kernelException.Message);
-        Assert.Equal("HTTP", kernelException.Data["Type"]);
-        Assert.Equal("POST", kernelException.Data["Name"]);
-        Assert.Equal("https://fake-random-test-host/fake-path", kernelException.Data["Url"]);
-        Assert.Equal("{\"value\":\"fake-value\"}", kernelException.Data["Data"]);
+        Assert.Equal("POST", kernelException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", kernelException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", kernelException.Data["http.request.body"]);
     }
 
     [Fact]
