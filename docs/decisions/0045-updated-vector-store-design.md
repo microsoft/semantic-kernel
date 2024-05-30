@@ -781,10 +781,30 @@ each implementation to hardcode allowed key types if the vector db only supports
 ### Collection Creation
 
 7. Release Collection Creation public interface.
-8. Add support for registering collection creation with SK container to allow automatic dependency injection.
+8. Create cross db collection creation config that supports common functionality, and per daatabase implementation that supports this configuration.
+9. Add support for registering collection creation with SK container to allow automatic dependency injection.
 
-### First Party Memory Features
+### First Party Memory Features and well known model support
 
-9. Add first party implementations and storage models for chat history with Collection Creation for supported stores.
-10. Add first party implementations and storage models for semantic caching with Collection Creation for supported stores.
-11. Add samples showing how to map between first party implementations and custom models.
+10. Add model and mappers for legacy SK MemoryStore interface, so that consumers using this has an upgrade path to the new memory storage stack.
+11. Add model and mappers for popular loader systems, like Kernel Memory or LlamaIndex.
+11. Explore adding first party implementations for common scenarios, e.g. semantic caching. Specfics TBD.
+
+### Cross Cutting Requirements
+
+Need the following for all features:
+
+- Unit tests
+- Integration tests
+- Samples, including:
+  - Usage scenario for collection and record management using custom model and configured collection creation.
+  - A simple consumption example like semantic caching, specfics TBD.
+  - Adding your own collection creation implementation.
+  - Adding your own custom model mapper.
+- Documentation, including:
+  - How to create models and annotate/describe them to use with the storage system.
+  - How to define configuration for creating collections using common create implementation.
+  - How to use record and collection management apis.
+  - How to implement your own collection create implementation for break glass scenario.
+  - How to implement your own mapper.
+  - How to upgrade from the current storage system to the new one.
