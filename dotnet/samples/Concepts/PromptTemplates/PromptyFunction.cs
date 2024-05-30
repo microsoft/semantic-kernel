@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Microsoft.SemanticKernel.Prompty;
 
-namespace Prompty;
+namespace PromptTemplates;
 
 public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
 {
