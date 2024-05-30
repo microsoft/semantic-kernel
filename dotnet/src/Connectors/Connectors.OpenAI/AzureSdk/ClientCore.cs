@@ -634,7 +634,7 @@ internal abstract class ClientCore
         OpenAIPromptExecutionSettings chatExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
         ValidateMaxTokens(chatExecutionSettings.MaxTokens);
 
-        var chatOptions = CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
+        var chatOptions = this.CreateChatCompletionsOptions(chatExecutionSettings, chat, kernel, this.DeploymentOrModelName);
 
         var functionCallConfiguration = this.ConfigureFunctionCalling(kernel, chatExecutionSettings, chatOptions, 0);
 
