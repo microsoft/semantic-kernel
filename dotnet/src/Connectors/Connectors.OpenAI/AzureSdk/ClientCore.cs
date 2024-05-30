@@ -859,7 +859,7 @@ internal abstract class ClientCore
 
                 AddResponseMessage(chatOptions, chat, streamedRole, toolCall, metadata, stringResult, errorMessage: null, this.Logger);
 
-                // If filter requested termination, breaking request iteration loop.
+                // If filter requested termination, returning latest function result and breaking request iteration loop.
                 if (invocationContext.Terminate)
                 {
                     if (this.Logger.IsEnabled(LogLevel.Debug))
@@ -867,6 +867,9 @@ internal abstract class ClientCore
                         this.Logger.LogDebug("Filter requested termination of automatic function invocation.");
                     }
 
+                    var lastChatMessage = chat.Last();
+
+                    yield return new OpenAIStreamingChatMessageContent(lastChatMessage.Role, lastChatMessage.Content);
                     yield break;
                 }
 

@@ -4,17 +4,14 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class TestNativeEchoBotPlugin:
-    """
-    Description: Test Native Plugin for testing purposes
-    """
+    """Description: Test Native Plugin for testing purposes"""
 
     @kernel_function(
         description="Echo for input text",
         name="echoAsync",
     )
     async def echo(self, text: Annotated[str, "The text to echo"]) -> str:
-        """
-        Echo for input text
+        """Echo for input text
 
         Example:
             "hello world" => "hello world"

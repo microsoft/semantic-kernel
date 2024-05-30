@@ -17,17 +17,21 @@ class KernelContent(KernelBaseModel, ABC):
 
     @abstractmethod
     def __str__(self) -> str:
+        """Return the string representation of the content."""
         pass
 
     @abstractmethod
     def to_element(self) -> Any:
+        """Convert the instance to an Element."""
         pass
 
     @classmethod
     @abstractmethod
     def from_element(cls, element: Any) -> "KernelContent":
+        """Create an instance from an Element."""
         pass
 
     @abstractmethod
     def to_dict(self) -> dict[str, Any]:
+        """Convert the instance to a dictionary."""
         pass

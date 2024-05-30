@@ -32,8 +32,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExtension, KernelReliabilityExtension):
-    """
-    The Kernel class is the main entry point for the Semantic Kernel. It provides the ability to run
+    """The main Kernel class of Semantic Kernel.
+
+    This is the main entry point for the Semantic Kernel. It provides the ability to run
     semantic/native functions, and manage plugins, memory, and AI services.
 
     Attributes:
@@ -52,15 +53,15 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         ai_service_selector: AIServiceSelector | None = None,
         **kwargs: Any,
     ) -> None:
-        """
-        Initialize a new instance of the Kernel class.
+        """Initialize a new instance of the Kernel class.
 
         Args:
             plugins (KernelPlugin | dict[str, KernelPlugin] | list[KernelPlugin] | None):
                 The plugins to be used by the kernel, will be rewritten to a dict with plugin name as key
-            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None:
+            services (AIServiceClientBase | list[AIServiceClientBase] | dict[str, AIServiceClientBase] | None):
                 The services to be used by the kernel, will be rewritten to a dict with service_id as key
-            ai_service_selector (AIServiceSelector | None): The AI service selector to be used by the kernel,
+            ai_service_selector (AIServiceSelector | None):
+                The AI service selector to be used by the kernel,
                 default is based on order of execution settings.
             **kwargs (Any): Additional fields to be passed to the Kernel model,
                 these are limited to retry_mechanism and function_invoking_handlers
@@ -92,11 +93,11 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This will execute the functions in the order they are provided, if a list of functions is provided.
         When multiple functions are provided only the last one is streamed, the rest is executed as a pipeline.
 
-        Arguments:
-            functions (KernelFunction): The function or functions to execute,
-            this value has precedence when supplying both this and using function_name and plugin_name,
-            if this is none, function_name and plugin_name are used and cannot be None.
-            arguments (KernelArguments): The arguments to pass to the function(s), optional
+        Args:
+            function (KernelFunction): The function to execute,
+                this value has precedence when supplying both this and using function_name and plugin_name,
+                if this is none, function_name and plugin_name are used and cannot be None.
+            arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
             metadata (dict[str, Any]): The metadata to pass to the function(s)
@@ -151,7 +152,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         When multiple functions are passed the FunctionResult of each is put into a list.
 
-        Arguments:
+        Args:
             function (KernelFunction): The function or functions to execute,
             this value has precedence when supplying both this and using function_name and plugin_name,
             if this is none, function_name and plugin_name are used and cannot be None.
@@ -201,8 +202,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         ] = KERNEL_TEMPLATE_FORMAT_NAME,
         **kwargs: Any,
     ) -> FunctionResult | None:
-        """
-        Invoke a function from the provided prompt
+        """Invoke a function from the provided prompt.
 
         Args:
             function_name (str): The name of the function
@@ -242,8 +242,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         return_function_results: bool | None = False,
         **kwargs: Any,
     ) -> AsyncIterable[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult]]:
-        """
-        Invoke a function from the provided prompt and stream the results
+        """Invoke a function from the provided prompt and stream the results.
 
         Args:
             function_name (str): The name of the function
@@ -251,6 +250,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             prompt (str): The prompt to use
             arguments (KernelArguments | None): The arguments to pass to the function(s), optional
             template_format (str | None): The format of the prompt template
+            return_function_results (bool): If True, the function results are yielded as a list[FunctionResult]
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
         Returns:

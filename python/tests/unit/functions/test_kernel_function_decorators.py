@@ -34,7 +34,7 @@ class MiscClass:
 
     @kernel_function
     def func_docstring_as_description(self, input):
-        """description"""
+        """Description."""
         return input
 
     @kernel_function
@@ -117,7 +117,7 @@ def test_kernel_function_with_name_specified():
 def test_kernel_function_docstring_as_description():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_docstring_as_description")
-    assert my_func.__kernel_function_description__ == "description"
+    assert my_func.__kernel_function_description__ == "Description."
 
 
 def test_kernel_function_param_annotated():

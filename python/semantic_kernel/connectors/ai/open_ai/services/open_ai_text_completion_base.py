@@ -39,12 +39,12 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
     ) -> list["TextContent"]:
         """Executes a completion request and returns the result.
 
-        Arguments:
-            prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
+        Args:
+            prompt (str): The prompt to use for the completion request.
+            settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 
         Returns:
-            List["TextContent"] -- The completion result(s).
+            List["TextContent"]: The completion result(s).
         """
         if isinstance(settings, OpenAITextPromptExecutionSettings):
             settings.prompt = prompt
@@ -78,16 +78,16 @@ class OpenAITextCompletionBase(OpenAIHandler, TextCompletionClientBase):
         prompt: str,
         settings: "OpenAIPromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        """
-        Executes a completion request and streams the result.
+        """Executes a completion request and streams the result.
+
         Supports both chat completion and text completion.
 
-        Arguments:
-            prompt {str} -- The prompt to use for the completion request.
-            settings {OpenAITextPromptExecutionSettings} -- The settings to use for the completion request.
+        Args:
+            prompt (str): The prompt to use for the completion request.
+            settings (OpenAITextPromptExecutionSettings): The settings to use for the completion request.
 
         Yields:
-            List["StreamingTextContent"] -- The result stream made up of StreamingTextContent objects.
+            List["StreamingTextContent"]: The result stream made up of StreamingTextContent objects.
         """
         if "prompt" in settings.model_fields:
             settings.prompt = prompt

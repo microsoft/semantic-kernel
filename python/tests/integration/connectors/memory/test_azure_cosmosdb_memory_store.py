@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+from semantic_kernel.connectors.memory.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
 )

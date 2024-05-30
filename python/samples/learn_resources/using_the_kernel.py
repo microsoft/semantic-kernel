@@ -1,40 +1,44 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+# <NecessaryPackages>
 import asyncio
 import os
 
-from service_configurator import add_service
+from samples.learn_resources import add_service
+from semantic_kernel import Kernel
 
-import semantic_kernel as sk
-from semantic_kernel.core_plugins.time_plugin import TimePlugin
+# </NecessaryPackages>
 
 
 async def main():
     # Initialize the kernel
-    kernel = sk.Kernel()
-
+    # <KernelCreation>
+    kernel = Kernel()
     # Add the service to the kernel
     # use_chat: True to use chat completion, False to use text completion
-    kernel = add_service(kernel=kernel, use_chat=True)
+    kernel = add_service(kernel, use_chat=True)
+    # </KernelCreation>
 
-    # Import the TimePlugin
+    # <InvokeUtcNow>
+    # Import the TimePlugin and add it to the kernel
+    from semantic_kernel.core_plugins import TimePlugin
+
     time = kernel.add_plugin(TimePlugin(), "TimePlugin")
 
+    # Invoke the Today function
+    current_time = await kernel.invoke(time["today"])
+    print(f"The current date is: {current_time}\n")
+    # </InvokeUtcNow>
+
+    # <InvokeShortPoem>
     # Import the WriterPlugin from the plugins directory.
     script_directory = os.path.dirname(__file__)
     plugins_directory = os.path.join(script_directory, "plugins")
-    writer_plugin = kernel.import_plugin_from_prompt_directory(
-        parent_directory=plugins_directory,
-        plugin_directory_name="WriterPlugin",
-    )
-
-    # Run the current time function
-    currentTime = await kernel.invoke(time["today"])
-    print(f"The current date is: {currentTime}\n")
-
+    kernel.add_plugin(parent_directory=plugins_directory, plugin_name="WriterPlugin")
     # Run the short poem function with the Kernel Argument
-    poemResult = await kernel.invoke(writer_plugin["ShortPoem"], input=str(currentTime))
-    print(f"The poem result:\n\n{poemResult}")
+    poem_result = await kernel.invoke(function_name="ShortPoem", plugin_name="WriterPlugin", input=str(current_time))
+    print(f"The poem result:\n\n{poem_result}")
+    # </InvokeShortPoem>
 
 
 # Run the main function

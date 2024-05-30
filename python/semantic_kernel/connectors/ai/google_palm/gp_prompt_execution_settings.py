@@ -40,6 +40,7 @@ class GooglePalmChatPromptExecutionSettings(GooglePalmPromptExecutionSettings):
 
     @model_validator(mode="after")
     def validate_input(self):
+        """Validate input."""
         if self.prompt is not None:
             if self.messages or self.context or self.examples:
                 raise ServiceInvalidExecutionSettingsError(

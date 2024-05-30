@@ -105,6 +105,7 @@ class KernelFilterExtension(KernelBaseModel, ABC):
         filter_type: FilterTypes,
         inner_function: Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]],
     ) -> Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]]:
+        """Construct the call stack for the given filter type."""
         stack: list[Any] = [inner_function]
         for _, filter in getattr(self, FILTER_MAPPING[filter_type]):
             filter_with_next = partial(filter, next=stack[0])
