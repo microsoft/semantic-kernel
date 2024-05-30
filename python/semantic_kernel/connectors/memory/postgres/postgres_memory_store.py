@@ -17,6 +17,7 @@ from semantic_kernel.exceptions import (
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -45,6 +46,7 @@ class PostgresMemoryStore(MemoryStoreBase):
         max_pool: int,
         schema: str = DEFAULT_SCHEMA,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the PostgresMemoryStore class.
 
@@ -56,24 +58,23 @@ class PostgresMemoryStore(MemoryStoreBase):
             schema (str): The schema to use. (default: {"public"})
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file.
         """
-        postgres_settings = None
         try:
-            postgres_settings = PostgresSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load Postgres pydantic settings: {e}")
-
-        connection_string = connection_string or (
-            postgres_settings.connection_string.get_secret_value()
-            if postgres_settings and postgres_settings.connection_string
-            else None
-        )
+            postgres_settings = PostgresSettings.create(
+                connection_string=connection_string,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Postgres settings.", ex) from ex
 
         self._check_dimensionality(default_dimensionality)
 
-        self._connection_string = connection_string
         self._default_dimensionality = default_dimensionality
-        self._connection_pool = ConnectionPool(self._connection_string, min_size=min_pool, max_size=max_pool)
+        self._connection_pool = ConnectionPool(
+            postgres_settings.connection_string.get_secret_value(), min_size=min_pool, max_size=max_pool
+        )
         self._schema = schema
         atexit.register(self._connection_pool.close)
 
