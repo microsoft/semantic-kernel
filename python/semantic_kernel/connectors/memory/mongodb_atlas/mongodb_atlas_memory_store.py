@@ -73,19 +73,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         self.index_name: str = mongodb_settings.index_name
 
     @property
-    def database_name(self) -> str:
-        """The name of the database."""
-        return self.database_name
-
-    @property
     def database(self) -> core.AgnosticDatabase:
         """The database object."""
         return self.mongo_client[self.database_name]
-
-    @property
-    def index_name(self) -> str:
-        """The name of the index."""
-        return self.index_name
 
     @property
     def num_candidates(self) -> int:
@@ -336,6 +326,3 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         )
 
         return matches[0] if matches else None
-
-
-__all__ = ["MongoDBAtlasMemoryStore"]
