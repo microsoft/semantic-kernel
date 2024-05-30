@@ -20,7 +20,6 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
 )
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -29,12 +28,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental_class
-class MongoDBAtlasMemoryStore(MemoryStoreBase, KernelBaseModel):
+class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections."""
-
-    mongo_client: motor_asyncio.AsyncIOMotorClient
-    database_name: str
-    index_name: str
 
     def __init__(
         self,
@@ -69,16 +64,13 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase, KernelBaseModel):
         except ValidationError as ex:
             raise MemoryConnectorInitializationError("Failed to create MongoDB Atlas settings.") from ex
 
-        kwargs = {
-            "database_name": mongodb_settings.database_name,
-            "index_name": mongodb_settings.index_name,
-            "mongo_client": motor_asyncio.AsyncIOMotorClient(
-                mongodb_settings.connection_string.get_secret_value(),
-                read_preference=read_preference,
-                driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
-            ),
-        }
-        super().__init__(**kwargs)
+        self.mongo_client: motor_asyncio.AsyncIOMotorClient = motor_asyncio.AsyncIOMotorClient(
+            mongodb_settings.connection_string.get_secret_value(),
+            read_preference=read_preference,
+            driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
+        )
+        self.database_name: str = mongodb_settings.database_name
+        self.index_name: str = mongodb_settings.index_name
 
     @property
     def database_name(self) -> str:
@@ -104,7 +96,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase, KernelBaseModel):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
         if self.mongo_client:
             self.mongo_client.close()
-            self.mongo_client = None
+            del self.mongo_client
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
