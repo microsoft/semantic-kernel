@@ -24,8 +24,9 @@ class PromptTemplateConfig(KernelBaseModel):
         template: The template for the prompt.
         template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
         input_variables: The input variables for the prompt.
-        allow_dangerously_set_content (default: false): Allow content without encoding, this controls
-            if the output of functions called in the template is encoded before use.
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unencoded input.
         execution_settings: The execution settings for the prompt.
 
     """
@@ -40,7 +41,7 @@ class PromptTemplateConfig(KernelBaseModel):
 
     @model_validator(mode="after")
     def check_input_variables(self):
-        """Verify that input variable default values are string only"""
+        """Verify that input variable default values are string only."""
         for variable in self.input_variables:
             if variable.default and not isinstance(variable.default, str):
                 raise TypeError(f"Default value for input variable {variable.name} must be a string.")
@@ -111,8 +112,10 @@ class PromptTemplateConfig(KernelBaseModel):
             name: The name of the prompt template.
             description: The description of the prompt template.
             template: The template for the prompt.
+            template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
             input_variables: The input variables for the prompt.
             execution_settings: The execution settings for the prompt.
+            allow_dangerously_set_content: Allow content without encoding.
 
         Returns:
             A new PromptTemplateConfig instance.

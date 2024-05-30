@@ -65,7 +65,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     print(
@@ -83,7 +83,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     result = kernel.invoke_prompt_stream(
@@ -106,7 +106,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
