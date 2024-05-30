@@ -2,16 +2,10 @@
 
 import asyncio
 import logging
-import sys
 
 import aiohttp
 from numpy import ndarray
 from pydantic import ValidationError
-
-if sys.version_info >= (3, 12):
-    pass
-else:
-    pass
 
 from semantic_kernel.connectors.memory.astradb.astra_client import AstraClient
 from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
@@ -45,6 +39,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
         similarity: str,
         session: aiohttp.ClientSession | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AstraDBMemoryStore class.
 
@@ -58,32 +53,19 @@ class AstraDBMemoryStore(MemoryStoreBase):
             session: Optional session parameter
             env_file_path (str | None): Use the environment settings file as a
                 fallback to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
-        astradb_settings = None
         try:
-            astradb_settings = AstraDBSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AstraDB pydantic settings: {e}")
-
-        # Load the settings and validate
-        astra_application_token = astra_application_token or (
-            astradb_settings.app_token.get_secret_value() if astradb_settings and astradb_settings.app_token else None
-        )
-        if astra_application_token is None:
-            raise ValueError("The astra_application_token cannot be None.")
-        astra_id = astra_id or (astradb_settings.db_id if astradb_settings and astradb_settings.db_id else None)
-        if astra_id is None:
-            raise ValueError("The astra_id cannot be None.")
-        astra_region = astra_region or (
-            astradb_settings.region if astradb_settings and astradb_settings.region else None
-        )
-        if astra_region is None:
-            raise ValueError("The astra_region cannot be None.")
-        keyspace_name = keyspace_name or (
-            astradb_settings.keyspace if astradb_settings and astradb_settings.keyspace else None
-        )
-        if keyspace_name is None:
-            raise ValueError("The keyspace_name cannot be None.")
+            astradb_settings = AstraDBSettings.create(
+                app_token=astra_application_token,
+                db_id=astra_id,
+                region=astra_region,
+                keyspace=keyspace_name,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create AstraDB settings.", ex) from ex
 
         self._embedding_dim = embedding_dim
         self._similarity = similarity
@@ -96,10 +78,12 @@ class AstraDBMemoryStore(MemoryStoreBase):
             )
 
         self._client = AstraClient(
-            astra_id=astra_id,
-            astra_region=astra_region,
-            astra_application_token=astra_application_token,
-            keyspace_name=keyspace_name,
+            astra_id=astradb_settings.db_id,
+            astra_region=astradb_settings.region,
+            astra_application_token=(
+                astradb_settings.app_token.get_secret_value() if astradb_settings.app_token else None
+            ),
+            keyspace_name=astradb_settings.keyspace,
             embedding_dim=embedding_dim,
             similarity_function=similarity,
             session=self._session,

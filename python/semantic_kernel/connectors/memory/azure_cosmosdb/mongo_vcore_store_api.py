@@ -4,18 +4,15 @@ import json
 import sys
 from typing import Any
 
-import numpy as np
-
-if sys.version_info >= (3, 12):
+if sys.version >= "3.12":
     from typing import override
 else:
     from typing_extensions import override
 
+import numpy as np
+
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
-    CosmosDBSimilarityType,
-    CosmosDBVectorSearchType,
-)
+from semantic_kernel.connectors.memory.azure_cosmosdb.utils import CosmosDBSimilarityType, CosmosDBVectorSearchType
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.utils.experimental_decorator import experimental_class
 

@@ -2,13 +2,11 @@
 
 import asyncio
 import logging
-from dataclasses import dataclass
 
 import numpy as np
 import weaviate
-from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -65,13 +63,6 @@ SCHEMA = {
 ALL_PROPERTIES = [property["name"] for property in SCHEMA["properties"]]
 
 
-@dataclass
-class WeaviateConfig:
-    use_embed: bool = False
-    url: str = None
-    api_key: str = None
-
-
 @experimental_class
 class WeaviateMemoryStore(MemoryStoreBase):
     class FieldMapper:
@@ -115,55 +106,43 @@ class WeaviateMemoryStore(MemoryStoreBase):
             """Used to initialize a MemoryRecord from a SK's dict of private attribute-values."""
             return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
-    def __init__(self, config: WeaviateConfig | None = None, env_file_path: str | None = None):
+    def __init__(
+        self,
+        url: str | None = None,
+        api_key: str | None = None,
+        use_embed: bool = False,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ):
         """Initializes a new instance of the WeaviateMemoryStore.
 
-        Optional parameters:
-        - env_file_path (str | None): Whether to use the environment settings (.env) file. Defaults to False.
+        Args:
+            url (str): The URL of the Weaviate instance.
+            api_key (str): The API key to use for authentication.
+            use_embed (bool): Whether to use the client embedding options.
+            env_file_path (str): Whether to use the environment settings (.env) file.
+            env_file_encoding (str): The encoding of the environment settings (.env) file. Defaults to 'utf-8'.
         """
-        # Initialize settings from environment variables or defaults defined in WeaviateSettings
-        weaviate_settings = None
-        try:
-            weaviate_settings = WeaviateSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load WeaviateSettings pydantic settings: {e}")
+        from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 
-        # Override settings with provided config if available
-        if config:
-            self.settings = self.merge_settings(weaviate_settings, config)
-        else:
-            self.settings = weaviate_settings
-
-        self.settings.validate_settings()
-        self.client = self._initialize_client()
-
-    def merge_settings(self, default_settings: WeaviateSettings, config: WeaviateConfig) -> WeaviateSettings:
-        """Merges default settings with configuration provided through WeaviateConfig.
-
-        This function allows for manual overriding of settings from the config parameter.
-        """
-        return WeaviateSettings(
-            url=config.url or (str(default_settings.url) if default_settings and default_settings.url else None),
-            api_key=config.api_key
-            or (default_settings.api_key.get_secret_value() if default_settings and default_settings.api_key else None),
-            use_embed=(
-                config.use_embed
-                if config.use_embed is not None
-                else (default_settings.use_embed if default_settings and default_settings.use_embed else False)
-            ),
+        self.settings = WeaviateSettings.create(
+            url=url,
+            api_key=api_key,
+            use_embed=use_embed,
+            env_file_path=env_file_path,
+            env_file_encoding=env_file_encoding,
         )
-
-    def _initialize_client(self) -> weaviate.Client:
-        """Initializes the Weaviate client based on the combined settings."""
         if self.settings.use_embed:
-            return weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
-
-        if self.settings.api_key:
-            return weaviate.Client(
-                url=self.settings.url, auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key)
+            self.client = weaviate.Client(embedded_options=weaviate.EmbeddedOptions())
+        elif self.settings.api_key and self.settings.url:
+            self.client = weaviate.Client(
+                url=str(self.settings.url),
+                auth_client_secret=weaviate.auth.AuthApiKey(api_key=self.settings.api_key.get_secret_value()),
             )
-
-        return weaviate.Client(url=self.settings.url)
+        elif self.settings.url:
+            self.client = weaviate.Client(url=str(self.settings.url))
+        else:
+            raise MemoryConnectorInitializationError("WeaviateMemoryStore requires a URL or API key, or to use embed.")
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in Weaviate."""
