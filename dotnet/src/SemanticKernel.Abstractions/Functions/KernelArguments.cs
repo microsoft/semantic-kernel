@@ -105,7 +105,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
                 ? new Dictionary<string, PromptExecutionSettings>(dictionary)
                 : value?.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-            if (this._executionSettings is not { Count: 0 })
+            if (this._executionSettings is { Count: > 0 })
             {
                 foreach (var kv in this._executionSettings!)
                 {
