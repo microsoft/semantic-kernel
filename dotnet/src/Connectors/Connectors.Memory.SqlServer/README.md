@@ -85,7 +85,8 @@ while (true)
     {
         builder.AppendLine(result.Metadata.Text);
     }
-    if (builder.Length != 0) {
+    if (builder.Length != 0)
+    {
         Console.WriteLine("\nFound information from the memory:");
         Console.WriteLine(builder.ToString());
     }
