@@ -58,7 +58,7 @@ public sealed class OllamaTextGenerationService : ITextGenerationService
     /// <inheritdoc />
     public async IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        var completionResponse = await this.Client.GetCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
+        var completionResponse = await this.Client.StreamCompletion(prompt, null, cancellationToken).ConfigureAwait(false);
 
         yield return new StreamingTextContent(completionResponse.Response);
     }
