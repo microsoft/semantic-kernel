@@ -70,7 +70,7 @@ public sealed class OllamaChatCompletionService : IChatCompletionService
     /// <inheritdoc />
     public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
-        var request = this.CreateCharRequest(chatHistory);
+        var request = this.CreateChatRequest(chatHistory);
 
         OllamaChatResponseStreamer streamer = new();
 
