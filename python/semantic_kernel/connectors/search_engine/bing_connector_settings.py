@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 
 
-class BingSettings(BaseSettings):
+class BingSettings(KernelBaseSettings):
     """Bing Connector settings.
 
     The settings are first loaded from environment variables with the prefix 'BING_'. If the
@@ -17,23 +20,6 @@ class BingSettings(BaseSettings):
 
     """
 
-    env_file_path: str | None = None
+    env_prefix: ClassVar[str] = "BING_"
+
     api_key: SecretStr | None = None
-
-    class Config:
-        """Configuration for the Bing Connector settings."""
-
-        env_prefix = "BING_"
-        env_file = None
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-        case_sensitive = False
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Create an instance of the Bing Connector settings."""
-        if "env_file_path" in kwargs and kwargs["env_file_path"]:
-            cls.Config.env_file = kwargs["env_file_path"]
-        else:
-            cls.Config.env_file = None
-        return cls(**kwargs)

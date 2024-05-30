@@ -10,6 +10,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import O
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncOpenAI | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the OpenAITextCompletion class.
 
@@ -44,25 +46,25 @@ class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
             async_client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as
                 a fallback to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load OpenAI pydantic settings: {e}")
-
-        api_key = api_key or (
-            openai_settings.api_key.get_secret_value() if openai_settings and openai_settings.api_key else None
-        )
-        org_id = org_id or (openai_settings.org_id if openai_settings and openai_settings.org_id else None)
-        ai_model_id = ai_model_id or (
-            openai_settings.embedding_model_id if openai_settings and openai_settings.embedding_model_id else None
-        )
-
+            openai_settings = OpenAISettings.create(
+                api_key=api_key,
+                org_id=org_id,
+                embedding_model_id=ai_model_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create OpenAI settings.", ex) from ex
+        if not openai_settings.embedding_model_id:
+            raise ServiceInitializationError("The OpenAI embedding model ID is required.")
         super().__init__(
-            ai_model_id=ai_model_id,
-            api_key=api_key,
+            ai_model_id=openai_settings.embedding_model_id,
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
             ai_model_type=OpenAIModelTypes.EMBEDDING,
-            org_id=org_id,
+            org_id=openai_settings.org_id,
             service_id=service_id,
             default_headers=default_headers,
             async_client=async_client,

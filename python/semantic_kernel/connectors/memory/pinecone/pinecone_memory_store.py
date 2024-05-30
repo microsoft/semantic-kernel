@@ -15,6 +15,7 @@ from semantic_kernel.exceptions import (
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -34,7 +35,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class PineconeMemoryStore(MemoryStoreBase):
     """A memory store that uses Pinecone as the backend."""
 
-    _pinecone_api_key: str
     _default_dimensionality: int
 
     DEFAULT_INDEX_SPEC: ServerlessSpec = ServerlessSpec(
@@ -47,6 +47,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         api_key: str,
         default_dimensionality: int,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the PineconeMemoryStore class.
 
@@ -55,29 +56,25 @@ class PineconeMemoryStore(MemoryStoreBase):
             default_dimensionality (int): The default dimensionality to use for new collections.
             env_file_path (str | None): Use the environment settings file as a fallback
                 to environment variables. (Optional)
+            env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         if default_dimensionality > MAX_DIMENSIONALITY:
-            raise ServiceInitializationError(
+            raise MemoryConnectorInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
                 + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
-
-        pinecone_settings = None
         try:
-            pinecone_settings = PineconeSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load the Pinecone pydantic settings: {e}")
+            pinecone_settings = PineconeSettings.create(
+                api_key=api_key,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Pinecone settings.", ex) from ex
 
-        api_key = api_key or (
-            pinecone_settings.api_key.get_secret_value() if pinecone_settings and pinecone_settings.api_key else None
-        )
-        if not api_key:
-            raise ValueError("The Pinecone api_key cannot be None.")
-
-        self._pinecone_api_key = api_key
         self._default_dimensionality = default_dimensionality
 
-        self.pinecone = Pinecone(api_key=self._pinecone_api_key)
+        self.pinecone = Pinecone(api_key=pinecone_settings.api_key.get_secret_value())
         self.collection_names_cache = set()
 
     async def create_collection(

@@ -35,16 +35,14 @@ logging.basicConfig(level=logging.INFO)
 # }
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = AzureAISearchSettings.create(env_file_path=".env")
 
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
+az_source = AzureAISearchDataSource.from_azure_ai_search_settings(azure_ai_search_settings=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="default", extra_body=extra)
 
 # When using data, use the 2024-02-15-preview API version.
-chat_service = AzureChatCompletion(
-    service_id="chat-gpt",
-)
+chat_service = AzureChatCompletion(service_id="chat-gpt")
 kernel.add_service(chat_service)
 
 prompt_template_config = PromptTemplateConfig(

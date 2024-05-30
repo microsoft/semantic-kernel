@@ -1,18 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from typing import Literal
 
 from numpy import ndarray
-from pydantic import ValidationError
+from pymongo import MongoClient
 
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmosdb_settings import AzureCosmosDBSettings
-from semantic_kernel.connectors.memory.azure_cosmosdb.cosmosdb_utils import (
+from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
+from semantic_kernel.connectors.memory.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
-    get_mongodb_search_client,
 )
-from semantic_kernel.connectors.memory.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
@@ -75,40 +75,36 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
 
     @staticmethod
     async def create(
-        cosmos_connstr,
-        application_name,
-        cosmos_api,
-        database_name,
-        collection_name,
-        index_name,
-        vector_dimensions,
-        num_lists,
-        similarity,
-        kind,
-        m,
-        ef_construction,
-        ef_search,
+        database_name: str,
+        collection_name: str,
+        vector_dimensions: int,
+        num_lists: int,
+        similarity: CosmosDBSimilarityType,
+        kind: CosmosDBVectorSearchType,
+        m: int,
+        ef_construction: int,
+        ef_search: int,
+        index_name: str | None = None,
+        cosmos_connstr: str | None = None,
+        application_name: str | None = None,
+        cosmos_api: Literal["mongo-vcore"] = "mongo-vcore",
         env_file_path: str | None = None,
     ) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition."""
         # Right now this only supports Mongo, but set up to support more later.
-        apiStore: AzureCosmosDBStoreApi = None
+        api_store: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            cosmosdb_settings = None
-            try:
-                cosmosdb_settings = AzureCosmosDBSettings.create(env_file_path=env_file_path)
-            except ValidationError as e:
-                logger.warning(f"Failed to load AzureCosmosDB pydantic settings: {e}")
-
-            cosmos_connstr = cosmos_connstr or (
-                cosmosdb_settings.connection_string.get_secret_value()
-                if cosmosdb_settings and cosmosdb_settings.connection_string
-                else None
+            cosmosdb_settings = AzureCosmosDBSettings.create(
+                env_file_path=env_file_path,
+                connection_string=cosmos_connstr,
             )
 
-            mongodb_client = get_mongodb_search_client(cosmos_connstr, application_name)
+            mongodb_client = MongoClient(
+                cosmosdb_settings.connection_string.get_secret_value() if cosmosdb_settings.connection_string else None,
+                appname=application_name,
+            )
             database = mongodb_client[database_name]
-            apiStore = MongoStoreApi(
+            api_store = MongoStoreApi(
                 collection_name=collection_name,
                 index_name=index_name,
                 vector_dimensions=vector_dimensions,
@@ -124,7 +120,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
             raise MemoryConnectorInitializationError(f"API type {cosmos_api} is not supported.")
 
         store = AzureCosmosDBMemoryStore(
-            apiStore,
+            api_store,
             database_name,
             index_name,
             vector_dimensions,
