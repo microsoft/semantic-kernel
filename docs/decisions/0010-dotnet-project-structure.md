@@ -1,7 +1,7 @@
 ---
 # These are optional elements. Feel free to remove any of them
 
-status: accepted
+status: superseded by [ADR-0042](0042-samples-restructure.md)
 contact: markwallace-microsoft
 date: 2023-09-29
 deciders: SergeyMenshykh, dmytrostruk, RogerBarreto
@@ -250,11 +250,9 @@ Below are some different examples of Assembly and root namespace naming that are
 ```text
 dotnet/
 ├── samples/
-│   └── Concepts/
-│   └── Demos/
-│   └── GettingStarted/
-│   └── GettingStartedWithAgents/
-│   └── LearnResources/
+│   ├── ApplicationInsightsExample/
+│   ├── KernelSyntaxExamples/
+│   └── NCalcSkills/
 └── src/
     ├── Connectors/
     │   ├── Connectors.AI.OpenAI*
