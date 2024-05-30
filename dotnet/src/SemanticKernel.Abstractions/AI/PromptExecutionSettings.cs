@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -31,6 +32,7 @@ public class PromptExecutionSettings
     /// Service identifier.
     /// This identifies the service these settings are configured for e.g., azure_openai_eastus, openai, ollama, huggingface, etc.
     /// </summary>
+    [Experimental("SKEXP0001")]
     [JsonPropertyName("service_id")]
     public string? ServiceId
     {
