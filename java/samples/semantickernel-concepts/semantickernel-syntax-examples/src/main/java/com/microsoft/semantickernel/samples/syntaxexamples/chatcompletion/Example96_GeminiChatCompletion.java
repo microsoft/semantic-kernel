@@ -1,3 +1,5 @@
+
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
@@ -21,9 +23,9 @@ public class Example96_GeminiChatCompletion {
         VertexAI client = new VertexAI(PROJECT_ID, LOCATION);
 
         ChatCompletionService geminiChat = GeminiChatCompletion.builder()
-                .withVertexAIClient(client)
-                .withModelId(MODEL_ID)
-                .build();
+            .withVertexAIClient(client)
+            .withModelId(MODEL_ID)
+            .build();
 
         System.out.println("Chat content:");
         System.out.println("------------------------");
@@ -38,7 +40,7 @@ public class Example96_GeminiChatCompletion {
         messageOutput(chatHistory);
 
         chatHistory.addUserMessage(
-                "I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
+            "I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         messageOutput(chatHistory);
 
         reply(geminiChat, chatHistory);
@@ -53,7 +55,7 @@ public class Example96_GeminiChatCompletion {
 
     private static void reply(ChatCompletionService geminiChat, ChatHistory chatHistory) {
         var reply = geminiChat.getChatMessageContentsAsync(chatHistory, null, null)
-                .block();
+            .block();
 
         StringBuilder message = new StringBuilder();
         reply.forEach(chatMessageContent -> message.append(chatMessageContent.getContent()));

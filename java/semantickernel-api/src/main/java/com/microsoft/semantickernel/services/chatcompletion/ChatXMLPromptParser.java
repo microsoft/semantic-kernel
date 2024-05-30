@@ -32,11 +32,11 @@ public class ChatXMLPromptParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatXMLPromptParser.class);
 
     public static <T> ChatPromptParseVisitor<T> parse(
-            String rawPrompt,
-            ChatPromptParseVisitor<T> chatPromptParseVisitor) {
+        String rawPrompt,
+        ChatPromptParseVisitor<T> chatPromptParseVisitor) {
         List<String> prompts = Arrays.asList(
-                rawPrompt,
-                "<prompt>" + rawPrompt + "</prompt>");
+            rawPrompt,
+            "<prompt>" + rawPrompt + "</prompt>");
 
         for (String prompt : prompts) {
             try {
@@ -48,6 +48,7 @@ public class ChatXMLPromptParser {
                 }
             } catch (SKException e) {
                 //ignore
+                chatPromptParseVisitor = chatPromptParseVisitor.reset();
             }
         }
 
@@ -55,7 +56,7 @@ public class ChatXMLPromptParser {
     }
 
     private static <T> ChatPromptParseVisitor<T> getChatRequestMessages(String prompt,
-                                                                        ChatPromptParseVisitor<T> chatPromptParseVisitor) {
+        ChatPromptParseVisitor<T> chatPromptParseVisitor) {
 
         // TODO: XML parsing should be done as a chain of XMLEvent handlers.
         // If one handler does not recognize the element, it should pass it to the next handler.
@@ -100,7 +101,7 @@ public class ChatXMLPromptParser {
     }
 
     private static <T> ChatPromptParseVisitor<T> getFunctionDefinitions(String prompt,
-                                                                        ChatPromptParseVisitor<T> chatPromptParseVisitor) {
+        ChatPromptParseVisitor<T> chatPromptParseVisitor) {
         // TODO: XML parsing should be done as a chain of XMLEvent handlers. See previous remark.
         // <function pluginName=\"%s\" name=\"%s\"  description=\"%s\">
         //      <parameter name=\"%s\" description=\"%s\" defaultValue=\"%s\" isRequired=\"%s\" type=\"%s\"/>...
@@ -125,16 +126,16 @@ public class ChatXMLPromptParser {
                         String description = getAttributeValue(event, "description");
                         // name has to match '^[a-zA-Z0-9_-]{1,64}$'
                         functionDefinition = new FunctionDefinition(
-                                ToolCallBehavior.formFullFunctionName(pluginName, name),
-                                description);
+                            ToolCallBehavior.formFullFunctionName(pluginName, name),
+                            description);
                     } else if (elementName.equals("parameter")) {
                         String name = getAttributeValue(event, "name");
                         String type = getAttributeValue(event, "type").toLowerCase(Locale.ROOT);
                         String description = getAttributeValue(event, "description");
                         parameters.put(name,
-                                String.format("{\"type\": \"%s\", \"description\": \"%s\"}",
-                                        "string",
-                                        description));
+                            String.format("{\"type\": \"%s\", \"description\": \"%s\"}",
+                                "string",
+                                description));
 
                         String isRequired = getAttributeValue(event, "isRequired");
                         if (Boolean.parseBoolean(isRequired)) {
@@ -168,7 +169,7 @@ public class ChatXMLPromptParser {
                         }
                         if (!parameters.isEmpty()) {
                             StringBuilder sb = new StringBuilder(
-                                    "{\"type\": \"object\", \"properties\": {");
+                                "{\"type\": \"object\", \"properties\": {");
                             parameters.forEach((name, value) -> {
                                 // make "param": {"type": "string", "description": "desc"},
                                 sb.append(String.format("\"%s\": %s,", name, value));
@@ -192,9 +193,9 @@ public class ChatXMLPromptParser {
                             functionDefinition.setParameters(binaryData);
                         }
                         chatPromptParseVisitor = chatPromptParseVisitor.addFunction(
-                                functionDefinition.name,
-                                functionDefinition.description,
-                                functionDefinition.parameters);
+                            functionDefinition.name,
+                            functionDefinition.description,
+                            functionDefinition.parameters);
                         functionDefinition = null;
                         parameters.clear();
                         requiredParameters.clear();

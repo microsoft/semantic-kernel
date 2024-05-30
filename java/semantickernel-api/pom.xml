@@ -70,6 +70,12 @@
             <version>3.3.1</version>
             <scope>test</scope>
         </dependency>
+        <!-- Required for Android -->
+        <dependency>
+            <groupId>javax.xml.stream</groupId>
+            <artifactId>stax-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
