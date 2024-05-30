@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplates.Liquid;
+using Microsoft.SemanticKernel.Prompty;
 
-namespace Prompty;
+namespace PromptTemplates;
 
 public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
 {
@@ -99,6 +102,38 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
         var function = kernel.CreateFunctionFromPrompty(promptyTemplate);
 
         var result = await kernel.InvokeAsync(function, arguments);
+        Console.WriteLine(result);
+    }
+
+    [Fact]
+    public async Task RenderPromptAsync()
+    {
+        Kernel kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        string promptyTemplate = """
+            ---
+            name: Contoso_Prompt
+            description: A sample prompt that responds with what Seattle is.
+            authors:
+              - ????
+            model:
+              api: chat
+            ---
+            What is Seattle?
+            """;
+
+        var promptConfig = KernelFunctionPrompty.ToPromptTemplateConfig(promptyTemplate);
+        var promptTemplateFactory = new LiquidPromptTemplateFactory();
+        var promptTemplate = promptTemplateFactory.Create(promptConfig);
+        var prompt = await promptTemplate.RenderAsync(kernel);
+
+        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        var result = await chatService.GetChatMessageContentAsync(prompt);
+
         Console.WriteLine(result);
     }
 }
