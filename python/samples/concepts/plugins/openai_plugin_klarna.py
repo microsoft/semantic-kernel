@@ -24,7 +24,7 @@ async def main():
 
     result = await kernel.invoke(plugin["productsUsingGET"], **query_params)
 
-    print(f"Function execution result: {str(result)}")
+    print(f"Function execution result: {result!s}")
 
 
 if __name__ == "__main__":

@@ -11,11 +11,7 @@ from semantic_kernel.prompt_template import PromptTemplateConfig
 async def main():
     kernel = Kernel()
     service_id = "chat-gpt"
-    kernel.add_service(
-        AzureChatCompletion(
-            service_id=service_id,
-        ),
-    )
+    kernel.add_service(AzureChatCompletion(service_id=service_id))
     connector = BingConnector()
     web_plugin = kernel.add_plugin(WebSearchEnginePlugin(connector), "WebSearch")
 

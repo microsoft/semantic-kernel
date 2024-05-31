@@ -3,7 +3,7 @@
 import logging
 from collections import OrderedDict
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import urlparse
 
 from prance import ResolvingParser
@@ -51,8 +51,8 @@ class OpenApiParser:
     :return: The parsed OpenAPI file
     """
 
-    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH = 10
-    supported_media_types = ["application/json", "text/plain"]
+    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
+    SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
 
     def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
         """Parse the OpenAPI document."""
@@ -131,7 +131,7 @@ class OpenApiParser:
         return RestApiOperationPayload(
             media_type,
             payload_properties,
-            request_body.get("description", None),
+            request_body.get("description"),
             schema=media_type_metadata.get("schema", None),
         )
 

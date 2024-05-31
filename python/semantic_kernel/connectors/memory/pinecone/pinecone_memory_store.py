@@ -61,7 +61,7 @@ class PineconeMemoryStore(MemoryStoreBase):
         if default_dimensionality > MAX_DIMENSIONALITY:
             raise MemoryConnectorInitializationError(
                 f"Dimensionality of {default_dimensionality} exceeds "
-                + f"the maximum allowed value of {MAX_DIMENSIONALITY}."
+                f"the maximum allowed value of {MAX_DIMENSIONALITY}."
             )
         try:
             pinecone_settings = PineconeSettings.create(
@@ -217,8 +217,7 @@ class PineconeMemoryStore(MemoryStoreBase):
 
         if upsert_response.upserted_count is None:
             raise ServiceResponseException(f"Error upserting record: {upsert_response.message}")
-        else:
-            return [record._id for record in records]
+        return [record._id for record in records]
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
@@ -259,7 +258,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         fetch_response = await self.__get_batch(collection_name, keys, with_embeddings)
-        return [parse_payload(fetch_response.vectors[key], with_embeddings) for key in fetch_response.vectors.keys()]
+        return [parse_payload(fetch_response.vectors[key], with_embeddings) for key in fetch_response.vectors]
 
     async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
@@ -351,7 +350,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             raise ServiceInvalidRequestError(
                 "Limit must be less than or equal to " + f"{MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE}"
             )
-        elif limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
+        if limit > MAX_QUERY_WITH_METADATA_BATCH_SIZE:
             query_response = collection.query(
                 vector=embedding.tolist(),
                 top_k=limit,
@@ -363,7 +362,7 @@ class PineconeMemoryStore(MemoryStoreBase):
             vectors = fetch_response.vectors
             for match in query_response.matches:
                 vectors[match.id].update(match)
-            matches = [vectors[key] for key in vectors.keys()]
+            matches = [vectors[key] for key in vectors]
         else:
             query_response = collection.query(
                 vector=embedding.tolist(),

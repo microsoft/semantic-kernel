@@ -7,4 +7,4 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings 
     SessionsPythonSettings,
 )
 
-__all__ = ["SessionsPythonTool", "SessionsPythonSettings"]
+__all__ = ["SessionsPythonSettings", "SessionsPythonTool"]

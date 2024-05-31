@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from promptflow import PFClient
 
 pf_client = PFClient()

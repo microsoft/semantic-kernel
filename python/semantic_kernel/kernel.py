@@ -181,7 +181,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         except Exception as exc:
             logger.error(
                 "Something went wrong in function invocation. During function invocation:"
-                f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
+                f" '{function.fully_qualified_name}'. Error description: '{exc!s}'"
             )
             raise KernelInvokeException(
                 f"Error occurred while invoking function: '{function.fully_qualified_name}'"

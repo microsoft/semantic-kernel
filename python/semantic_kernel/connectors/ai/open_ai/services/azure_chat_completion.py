@@ -125,15 +125,15 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         """
         return AzureChatCompletion(
             service_id=settings.get("service_id"),
-            api_key=settings.get("api_key", None),
-            deployment_name=settings.get("deployment_name", None),
-            endpoint=settings.get("endpoint", None),
-            base_url=settings.get("base_url", None),
-            api_version=settings.get("api_version", None),
+            api_key=settings.get("api_key"),
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            base_url=settings.get("base_url"),
+            api_version=settings.get("api_version"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            env_file_path=settings.get("env_file_path", None),
+            env_file_path=settings.get("env_file_path"),
         )
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
@@ -181,10 +181,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
         """Get the tool message from a choice."""
-        if isinstance(choice, Choice):
-            content = choice.message
-        else:
-            content = choice.delta
+        content = choice.message if isinstance(choice, Choice) else choice.delta
         if content.model_extra is not None and "context" in content.model_extra:
             return json.dumps(content.model_extra["context"])
 
