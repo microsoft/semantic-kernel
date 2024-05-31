@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represents <see cref="FunctionChoiceBehavior"/> that does not provides any <see cref="Kernel"/>'s plugins' function information to the model by default.
+/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
 /// This behavior forces the model to not call any functions and only generate a user-facing message.
 /// </summary>
 /// <remarks>
@@ -39,7 +39,8 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     public NoneFunctionChoiceBehavior(IEnumerable<KernelFunction> functions)
     {
         this._functions = functions;
@@ -47,7 +48,8 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
+    /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// </summary>
     [JsonPropertyName("functions")]
     [JsonConverter(typeof(FunctionNameFormatJsonConverter))]

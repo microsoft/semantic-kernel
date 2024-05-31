@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represent <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
+/// Represents <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
 /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
 /// </summary>
 [Experimental("SKEXP0001")]
@@ -41,7 +41,8 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
     /// </summary>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions information.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     public AutoFunctionChoiceBehavior(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
         this._autoInvoke = autoInvoke;
@@ -50,7 +51,8 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     }
 
     /// <summary>
-    /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions information to provide to the model.
+    /// Fully qualified names of subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
     /// </summary>
     [JsonPropertyName("functions")]
     [JsonConverter(typeof(FunctionNameFormatJsonConverter))]

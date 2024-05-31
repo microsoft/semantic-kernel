@@ -17,11 +17,19 @@ namespace Microsoft.SemanticKernel;
 public abstract class FunctionChoiceBehavior
 {
     /// <summary>
+    /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
+    /// </summary>
+    internal FunctionChoiceBehavior()
+    {
+    }
+
+    /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior allows the model to decide whether to call the functions and, if so, which ones to call.
     /// </summary>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     public static FunctionChoiceBehavior AutoFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
@@ -33,7 +41,8 @@ public abstract class FunctionChoiceBehavior
     /// This behavior forces the model to always call one or more functions. The model will then select which function(s) to call.
     /// </summary>
     /// <param name="autoInvoke">Indicates whether the functions should be automatically invoked by the AI service/connector.</param>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     public static FunctionChoiceBehavior RequiredFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
@@ -44,7 +53,8 @@ public abstract class FunctionChoiceBehavior
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' function information to the model or a specified subset.
     /// This behavior forces the model to not call any functions and only generate a user-facing message.
     /// </summary>
-    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' function information.</param>
+    /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
+    /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
     /// <remarks>
     /// Although this behavior prevents the model from calling any functions, the model can use the provided function information
