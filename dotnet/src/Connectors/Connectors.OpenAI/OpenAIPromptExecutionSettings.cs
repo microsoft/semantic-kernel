@@ -287,6 +287,23 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// An abstraction of additional settings for chat completion, see https://learn.microsoft.com/en-us/dotnet/api/azure.ai.openai.azurechatextensionsoptions.
+    /// This property is compatible only with Azure OpenAI.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonIgnore]
+    public AzureChatExtensionsOptions? AzureChatExtensionsOptions
+    {
+        get => this._azureChatExtensionsOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._azureChatExtensionsOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -329,7 +346,8 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
             User = this.User,
             ChatSystemPrompt = this.ChatSystemPrompt,
             Logprobs = this.Logprobs,
-            TopLogprobs = this.TopLogprobs
+            TopLogprobs = this.TopLogprobs,
+            AzureChatExtensionsOptions = this.AzureChatExtensionsOptions,
         };
     }
 
@@ -376,6 +394,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <param name="executionSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIPromptExecutionSettings</returns>
+    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public static OpenAIPromptExecutionSettings FromExecutionSettingsWithData(PromptExecutionSettings? executionSettings, int? defaultMaxTokens = null)
     {
         var settings = FromExecutionSettings(executionSettings, defaultMaxTokens);
@@ -407,6 +426,7 @@ public sealed class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private string? _chatSystemPrompt;
     private bool? _logprobs;
     private int? _topLogprobs;
+    private AzureChatExtensionsOptions? _azureChatExtensionsOptions;
 
     #endregion
 }

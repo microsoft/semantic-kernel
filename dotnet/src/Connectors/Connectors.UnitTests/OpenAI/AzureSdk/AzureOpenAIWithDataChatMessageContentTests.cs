@@ -12,6 +12,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIWithDataChatMessageContent"/> class.
 /// </summary>
+[Obsolete("AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataChatMessageContentTests
 {
     [Fact]

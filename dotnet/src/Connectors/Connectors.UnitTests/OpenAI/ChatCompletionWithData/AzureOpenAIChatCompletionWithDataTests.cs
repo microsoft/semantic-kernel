@@ -16,6 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIChatCompletionWithDataService"/>
 /// </summary>
+[Obsolete("AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
 {
     private readonly AzureOpenAIChatCompletionWithDataConfig _config;

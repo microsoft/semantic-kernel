@@ -32,6 +32,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Null(executionSettings.TokenSelectionBiases);
         Assert.Null(executionSettings.TopLogprobs);
         Assert.Null(executionSettings.Logprobs);
+        Assert.Null(executionSettings.AzureChatExtensionsOptions);
         Assert.Equal(128, executionSettings.MaxTokens);
     }
 
@@ -242,6 +243,7 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
+    [Obsolete("AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
     {
         // Arrange
