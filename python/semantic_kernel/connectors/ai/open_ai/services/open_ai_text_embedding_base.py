@@ -30,7 +30,7 @@ class OpenAITextEmbeddingBase(OpenAIHandler, EmbeddingGeneratorBase):
         raw_embeddings = []
         batch_size = batch_size or len(texts)
         for i in range(0, len(texts), batch_size):
-            batch = texts[i : i + batch_size]  # noqa: E203
+            batch = texts[i : i + batch_size]
             settings.input = batch
             raw_embedding = await self._send_embedding_request(
                 settings=settings,

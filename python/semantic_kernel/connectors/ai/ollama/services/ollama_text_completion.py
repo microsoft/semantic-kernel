@@ -48,12 +48,14 @@ class OllamaTextCompletion(TextCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.prompt = prompt
         settings.stream = False
-        async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                inner_content = await response.json()
-                text = inner_content["response"]
-                return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(self.url, json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            inner_content = await response.json()
+            text = inner_content["response"]
+            return [TextContent(inner_content=inner_content, ai_model_id=self.ai_model_id, text=text)]
 
     async def get_streaming_text_contents(
         self,
@@ -76,20 +78,22 @@ class OllamaTextCompletion(TextCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.prompt = prompt
         settings.stream = True
-        async with AsyncSession(self.session) as session:
-            async with session.post(self.url, json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                async for line in response.content:
-                    body = json.loads(line)
-                    if body.get("done") and body.get("response") is None:
-                        break
-                    yield [
-                        StreamingTextContent(
-                            choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
-                        )
-                    ]
-                    if body.get("done"):
-                        break
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(self.url, json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            async for line in response.content:
+                body = json.loads(line)
+                if body.get("done") and body.get("response") is None:
+                    break
+                yield [
+                    StreamingTextContent(
+                        choice_index=0, inner_content=body, ai_model_id=self.ai_model_id, text=body.get("response")
+                    )
+                ]
+                if body.get("done"):
+                    break
 
     def get_prompt_execution_settings_class(self) -> "OllamaTextPromptExecutionSettings":
         """Get the request settings class."""

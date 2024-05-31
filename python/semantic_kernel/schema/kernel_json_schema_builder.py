@@ -27,7 +27,6 @@ TYPE_MAPPING = {
 
 
 class KernelJsonSchemaBuilder:
-
     @classmethod
     def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
@@ -47,11 +46,10 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description)
         if hasattr(parameter_type, "__args__"):
             return cls.handle_complex_type(parameter_type, description)
-        else:
-            schema = cls.get_json_schema(parameter_type)
-            if description:
-                schema["description"] = description
-            return schema
+        schema = cls.get_json_schema(parameter_type)
+        if description:
+            schema["description"] = description
+        return schema
 
     @classmethod
     def build_model_schema(cls, model: type, description: str | None = None) -> dict[str, Any]:
@@ -65,7 +63,7 @@ class KernelJsonSchemaBuilder:
             dict[str, Any]: The JSON schema for the model.
         """
         properties = {}
-        # TODO: add support for handling forward references, which is not currently tested
+        # TODO (moonbox3): add support for handling forward references, which is not currently tested
         hints = get_type_hints(model, globals(), locals())
         for field_name, field_type in hints.items():
             field_description = None
@@ -110,8 +108,7 @@ class KernelJsonSchemaBuilder:
             dict[str, Any]: The JSON schema for the parameter type.
         """
         type_name = TYPE_MAPPING.get(parameter_type, "object")
-        schema = {"type": type_name}
-        return schema
+        return {"type": type_name}
 
     @classmethod
     def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
@@ -148,8 +145,6 @@ class KernelJsonSchemaBuilder:
                 if description:
                     schema["description"] = description
                 return schema
-            else:
-                schemas = [cls.build(arg) for arg in args]
-                return {"anyOf": schemas, "description": description}
-        else:
-            return cls.get_json_schema(parameter_type)
+            schemas = [cls.build(arg) for arg in args]
+            return {"anyOf": schemas, "description": description}
+        return cls.get_json_schema(parameter_type)

@@ -56,18 +56,20 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = False
-        async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                response_object = await response.json()
-                return [
-                    ChatMessageContent(
-                        inner_content=response_object,
-                        ai_model_id=self.ai_model_id,
-                        role="assistant",
-                        content=response_object.get("message", {"content": None}).get("content", None),
-                    )
-                ]
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(str(self.url), json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            response_object = await response.json()
+            return [
+                ChatMessageContent(
+                    inner_content=response_object,
+                    ai_model_id=self.ai_model_id,
+                    role="assistant",
+                    content=response_object.get("message", {"content": None}).get("content", None),
+                )
+            ]
 
     async def get_streaming_chat_message_contents(
         self,
@@ -92,24 +94,26 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.stream = True
-        async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                async for line in response.content:
-                    body = json.loads(line)
-                    if body.get("done") and body.get("message", {}).get("content") is None:
-                        break
-                    yield [
-                        StreamingChatMessageContent(
-                            role="assistant",
-                            choice_index=0,
-                            inner_content=body,
-                            ai_model_id=self.ai_model_id,
-                            content=body.get("message", {"content": None}).get("content", None),
-                        )
-                    ]
-                    if body.get("done"):
-                        break
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(str(self.url), json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            async for line in response.content:
+                body = json.loads(line)
+                if body.get("done") and body.get("message", {}).get("content") is None:
+                    break
+                yield [
+                    StreamingChatMessageContent(
+                        role="assistant",
+                        choice_index=0,
+                        inner_content=body,
+                        ai_model_id=self.ai_model_id,
+                        content=body.get("message", {"content": None}).get("content", None),
+                    )
+                ]
+                if body.get("done"):
+                    break
 
     async def get_text_contents(
         self,
@@ -129,17 +133,19 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.messages = [{"role": "user", "content": prompt}]
         settings.stream = False
-        async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                response_object = await response.json()
-                return [
-                    TextContent(
-                        inner_content=response_object,
-                        ai_model_id=self.ai_model_id,
-                        text=response_object.get("message", {"content": None}).get("content", None),
-                    )
-                ]
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(str(self.url), json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            response_object = await response.json()
+            return [
+                TextContent(
+                    inner_content=response_object,
+                    ai_model_id=self.ai_model_id,
+                    text=response_object.get("message", {"content": None}).get("content", None),
+                )
+            ]
 
     async def get_streaming_text_contents(
         self,
@@ -161,23 +167,25 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
             settings.ai_model_id = self.ai_model_id
         settings.messages = [{"role": "user", "content": prompt}]
         settings.stream = True
-        async with AsyncSession(self.session) as session:
-            async with session.post(str(self.url), json=settings.prepare_settings_dict()) as response:
-                response.raise_for_status()
-                async for line in response.content:
-                    body = json.loads(line)
-                    if body.get("done") and body.get("message", {}).get("content") is None:
-                        break
-                    yield [
-                        StreamingTextContent(
-                            choice_index=0,
-                            inner_content=body,
-                            ai_model_id=self.ai_model_id,
-                            text=body.get("message", {"content": None}).get("content", None),
-                        )
-                    ]
-                    if body.get("done"):
-                        break
+        async with (
+            AsyncSession(self.session) as session,
+            session.post(str(self.url), json=settings.prepare_settings_dict()) as response,
+        ):
+            response.raise_for_status()
+            async for line in response.content:
+                body = json.loads(line)
+                if body.get("done") and body.get("message", {}).get("content") is None:
+                    break
+                yield [
+                    StreamingTextContent(
+                        choice_index=0,
+                        inner_content=body,
+                        ai_model_id=self.ai_model_id,
+                        text=body.get("message", {"content": None}).get("content", None),
+                    )
+                ]
+                if body.get("done"):
+                    break
 
     def get_prompt_execution_settings_class(self) -> "OllamaChatPromptExecutionSettings":
         """Get the request settings class."""

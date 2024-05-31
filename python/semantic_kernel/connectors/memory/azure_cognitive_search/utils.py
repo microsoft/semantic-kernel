@@ -89,7 +89,7 @@ def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
     Returns:
         list: The Azure Cognitive Search schema as list type.
     """
-    search_fields = [
+    return [
         SimpleField(
             name=SEARCH_FIELD_ID,
             type=SearchFieldDataType.String,
@@ -142,8 +142,6 @@ def get_index_schema(vector_size: int, vector_search_profile_name: str) -> list:
         ),
     ]
 
-    return search_fields
-
 
 def get_field_selection(with_embeddings: bool) -> list[str]:
     """Get the list of fields to search and load.
@@ -179,7 +177,7 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     Returns:
         MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
     """
-    sk_result = MemoryRecord(
+    return MemoryRecord(
         id=decode_id(data[SEARCH_FIELD_ID]),
         key=data[SEARCH_FIELD_ID],
         text=data[SEARCH_FIELD_TEXT],
@@ -190,7 +188,6 @@ def dict_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
         embedding=data[SEARCH_FIELD_EMBEDDING] if with_embeddings else None,
         timestamp=None,
     )
-    return sk_result
 
 
 def memory_record_to_search_record(record: MemoryRecord) -> dict:

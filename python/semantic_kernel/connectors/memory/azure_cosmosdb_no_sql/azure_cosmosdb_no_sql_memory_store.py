@@ -182,8 +182,7 @@ class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
         )
         if len(nearest_results) > 0:
             return nearest_results[0]
-        else:
-            return None
+        return None
 
     @staticmethod
     def __serialize_metadata(record: MemoryRecord) -> str:

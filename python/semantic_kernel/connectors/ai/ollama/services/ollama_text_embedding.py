@@ -39,12 +39,11 @@ class OllamaTextEmbedding(EmbeddingGeneratorBase):
     async def generate_embeddings(self, texts: list[str], **kwargs: Any) -> ndarray:
         result = []
         for text in texts:
-            async with AsyncSession(self.session) as session:
-                async with session.post(
-                    self.url,
-                    json={"model": self.ai_model_id, "prompt": text, "options": kwargs},
-                ) as response:
-                    response.raise_for_status()
-                    response = await response.json()
-                    result.append(response["embedding"])
+            async with AsyncSession(self.session) as session, session.post(
+                self.url,
+                json={"model": self.ai_model_id, "prompt": text, "options": kwargs},
+            ) as response:
+                response.raise_for_status()
+                response = await response.json()
+                result.append(response["embedding"])
         return array(result)
