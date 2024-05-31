@@ -3,8 +3,8 @@
 status: proposed
 contact: westey-m
 date: 2024-05-01
-deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos
-consulted: stephentoub, dluc
+deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos, eavanvalkenburg
+consulted: stephentoub, dluc, ajcvickers, roji
 informed: 
 ---
 
@@ -27,8 +27,8 @@ Responsibilities:
 |Functional Area|Cardinality|Significance to Semantic Kernel|
 |-|-|-|
 |Collection/Index create|An implementation per store type and model|Valuable when building a store and adding data|
-|Collection/Index list/exists/delete|An implementation per store type|Valuable when building a store and adding data|
-|Data Storage and Retrieval|An implementation per store type|Valueble when building a store and adding data|
+|Collection/Index list names, exists and delete|An implementation per store type|Valuable when building a store and adding data|
+|Data Storage and Retrieval|An implementation per store type|Valuable when building a store and adding data|
 |Vector Search|An implementation per store type, model and search type|Valuable for many scenarios including RAG, finding contradictary facts based on user input, finding similar memories to merge, etc.|
 
 
@@ -369,10 +369,6 @@ From GitHub Issue:
 - Dependency injection must be supported
 - Azure-ML YAML format must be supported
 - Breaking glass scenarios must be supported
-
-Additional:
-- Focus on the core value propisition of SK
-
 
 ## Considered Questions
 
