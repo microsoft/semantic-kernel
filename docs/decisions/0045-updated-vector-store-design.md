@@ -29,7 +29,7 @@ Responsibilities:
 |Collection/Index create|An implementation per store type and model|Valuable when building a store and adding data|
 |Collection/Index list/exists/delete|An implementation per store type|Valuable when building a store and adding data|
 |Data Storage and Retrieval|An implementation per store type|Valueble when building a store and adding data|
-|Vector Search|An implementation per store type, model and search type|Valuable for RAG scenarios|
+|Vector Search|An implementation per store type, model and search type|Valuable for many scenarios including RAG, finding contradictary facts based on user input, finding similar memories to merge, etc.|
 
 
 ### Memory Store Today
@@ -78,6 +78,11 @@ interface IMemoryStore
     1. The AzureAISearch connector encodes keys before storing and decodes them after retrieval since keys in Azure AI Search supports a limited set of characters.
     2. The AzureAISearch connector sanitizes collection names before using them, since Azure AI Search supports a limited set of characters.
     3. The Redis connector prepends the collection name on to the front of keys before storing records and also registers the collection name as a prefix for records to be indexed by the index.
+
+### Non-functional requirements for new connectors
+1. Ensure all connectors are throwing the same exceptions conssitently with data about the request made provided in a consistent manner.
+2. Add consistent telemetry for all connectors.
+3. As far as possible integration tests should be runnable on build server.
 
 ### New Designs
 
