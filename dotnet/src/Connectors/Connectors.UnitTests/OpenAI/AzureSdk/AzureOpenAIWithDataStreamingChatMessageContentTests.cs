@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.AzureSdk;
 
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
+
 /// <summary>
 /// Unit tests for <see cref="AzureOpenAIWithDataStreamingChatMessageContent"/> class.
 /// </summary>
-[Obsolete("AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
 public sealed class AzureOpenAIWithDataStreamingChatMessageContentTests
 {
     [Theory]

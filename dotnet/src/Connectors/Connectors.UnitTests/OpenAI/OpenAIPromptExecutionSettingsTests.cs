@@ -243,15 +243,15 @@ public class OpenAIPromptExecutionSettingsTests
     }
 
     [Fact]
-    [Obsolete("AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public void FromExecutionSettingsWithDataDoesNotIncludeEmptyStopSequences()
     {
         // Arrange
         var executionSettings = new OpenAIPromptExecutionSettings { StopSequences = [] };
 
         // Act
+#pragma warning disable CS0618 // AzureOpenAIChatCompletionWithData is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions
         var executionSettingsWithData = OpenAIPromptExecutionSettings.FromExecutionSettingsWithData(executionSettings);
-
+#pragma warning restore CS0618
         // Assert
         Assert.Null(executionSettingsWithData.StopSequences);
     }
