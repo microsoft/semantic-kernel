@@ -326,17 +326,17 @@ through prompt_template_config or in the prompt_template."
         if not config_exists and not prompt_exists:
             raise FunctionInitializationError(
                 f"{PROMPT_FILE_NAME} and {CONFIG_FILE_NAME} files are required to create a "
-                f"function from a directory, path: {str(path)}."
+                f"function from a directory, path: {path!s}."
             )
-        elif not config_exists:
+        if not config_exists:
             raise FunctionInitializationError(
                 f"{CONFIG_FILE_NAME} files are required to create a function from a directory, "
-                f"path: {str(path)}, prompt file is there."
+                f"path: {path!s}, prompt file is there."
             )
-        elif not prompt_exists:
+        if not prompt_exists:
             raise FunctionInitializationError(
                 f"{PROMPT_FILE_NAME} files are required to create a function from a directory, "
-                f"path: {str(path)}, config file is there."
+                f"path: {path!s}, config file is there."
             )
 
         function_name = os.path.basename(path)

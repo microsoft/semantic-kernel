@@ -3,7 +3,7 @@
 import logging
 from collections import OrderedDict
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import urlparse
 
 from prance import ResolvingParser
@@ -51,8 +51,8 @@ class OpenApiParser:
     :return: The parsed OpenAPI file
     """
 
-    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH = 10
-    supported_media_types = ["application/json", "text/plain"]
+    PAYLOAD_PROPERTIES_HIERARCHY_MAX_DEPTH: int = 10
+    SUPPORTED_MEDIA_TYPES: Final[list[str]] = ["application/json", "text/plain"]
 
     def parse(self, openapi_document: str) -> Any | dict[str, Any] | None:
         """Parse the OpenAPI document."""
@@ -121,7 +121,7 @@ class OpenApiParser:
     ) -> RestApiOperationPayload:
         if request_body is None or request_body.get("content") is None:
             return None
-        media_type = next((mt for mt in OpenApiParser.supported_media_types if mt in request_body.get("content")), None)
+        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in request_body.get("content")), None)
         if media_type is None:
             raise Exception(f"Neither of the media types of {operation_id} is supported.")
         media_type_metadata = request_body.get("content")[media_type]
@@ -131,7 +131,7 @@ class OpenApiParser:
         return RestApiOperationPayload(
             media_type,
             payload_properties,
-            request_body.get("description", None),
+            request_body.get("description"),
             schema=media_type_metadata.get("schema", None),
         )
 
@@ -140,7 +140,7 @@ class OpenApiParser:
     ) -> Generator[tuple[str, RestApiOperationExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
-                (mt for mt in OpenApiParser.supported_media_types if mt in response_value.get("content", {})), None
+                (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
             )
             if media_type is not None:
                 matching_schema = response_value["content"][media_type].get("schema", {})

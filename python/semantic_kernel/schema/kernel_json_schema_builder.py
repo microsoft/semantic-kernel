@@ -27,7 +27,6 @@ TYPE_MAPPING = {
 
 
 class KernelJsonSchemaBuilder:
-
     @classmethod
     def build(
         cls, parameter_type: type | str, description: str | None = None
@@ -49,11 +48,10 @@ class KernelJsonSchemaBuilder:
             return cls.build_model_schema(parameter_type, description)
         if hasattr(parameter_type, "__args__"):
             return cls.handle_complex_type(parameter_type, description)
-        else:
-            schema = cls.get_json_schema(parameter_type)
-            if description:
-                schema["description"] = description
-            return schema
+        schema = cls.get_json_schema(parameter_type)
+        if description:
+            schema["description"] = description
+        return schema
 
     @classmethod
     def build_model_schema(
@@ -68,7 +66,7 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the model.
         """
-        # TODO: add support for handling forward references, which is not currently tested
+        # TODO (moonbox3): add support for handling forward references, which is not currently tested
         # https://github.com/microsoft/semantic-kernel/issues/6464
         properties = {}
         required = []
@@ -167,7 +165,7 @@ class KernelJsonSchemaBuilder:
             return schema
         if origin is tuple:
             items = [cls.build(arg) for arg in args]
-            schema = {"type": "array", "items": items} # type: ignore
+            schema = {"type": "array", "items": items}  # type: ignore
             if description:
                 schema["description"] = description
             return schema
@@ -176,15 +174,13 @@ class KernelJsonSchemaBuilder:
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
                 schema = cls.build(non_none_type)
-                schema["nullable"] = True # type: ignore
+                schema["nullable"] = True  # type: ignore
                 if description:
                     schema["description"] = description
                 return schema
-            else:
-                schemas = [cls.build(arg) for arg in args]
-                schema = {"anyOf": schemas} # type: ignore
-                if description:
-                    schema["description"] = description
-                return schema
-        else:
-            return cls.get_json_schema(parameter_type)
+            schemas = [cls.build(arg) for arg in args]
+            schema = {"anyOf": schemas}  # type: ignore
+            if description:
+                schema["description"] = description
+            return schema
+        return cls.get_json_schema(parameter_type)

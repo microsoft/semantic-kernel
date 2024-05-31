@@ -92,10 +92,9 @@ class KernelServicesExtension(KernelBaseModel, ABC):
             if not type:
                 if default_service := self.services.get("default"):
                     return default_service
-                return list(self.services.values())[0]
-            if default_service := self.services.get("default"):
-                if isinstance(default_service, type):
-                    return default_service
+                return next(iter(self.services.values()))
+            if (default_service := self.services.get("default")) and isinstance(default_service, type):
+                return default_service
             for service in self.services.values():
                 if isinstance(service, type):
                     return service

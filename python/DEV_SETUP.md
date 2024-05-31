@@ -155,6 +155,57 @@ It's important to note that most of this library is written with asynchronous in
 developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
 
+### Documentation
+
+Each file should have a single first line containing: # Copyright (c) Microsoft. All rights reserved.
+
+We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#383-functions-and-methods) style guide for functions and methods.
+They are currently not checked for private functions (functions starting with '_').
+
+They should contain:
+- Single line explaining what the function does, ending with a period.
+- If necessary to further explain the logic a newline follows the first line and then the explanation is given.
+- The following three sections are optional, and if used should be separated by a single empty line.
+- Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
+    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+    - Default values do not have to be specified, they will be pulled from the definition.
+- Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
+- Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
+    - `ExceptionType`: Explanation of the exception.
+    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+
+Putting them all together, gives you at minimum this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same."""
+    ...
+```
+Or a complete version of this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same.
+
+    Here is extra explanation of the logic involved.
+
+    Args:
+        arg1 (str): The first string to compare.
+        arg2 (str): The second string to compare.
+            This string requires extra explanation.
+
+    Returns:
+        bool: True if the strings are the same, False otherwise.
+
+    Raises:
+        ValueError: If one of the strings is empty.
+    """
+    ...
+```
+
+If in doubt, use the link above to read much more considerations of what to do and when, or use common sense.
+
 ## Pydantic and Serialization
 
 [Pydantic Documentation](https://docs.pydantic.dev/1.10/)

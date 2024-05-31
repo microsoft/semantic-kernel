@@ -147,7 +147,7 @@ async def test_azure_oai_chat_service_with_tool_call(kernel: Kernel):
     output = str(summary).strip()
     print(f"Math output: '{output}'")
     assert "2" in output
-    assert 0 < len(output)
+    assert len(output) > 0
 
 
 @pytest.mark.asyncio

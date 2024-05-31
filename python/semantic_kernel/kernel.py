@@ -148,22 +148,20 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         metadata: dict[str, Any] = {},
         **kwargs: Any,
     ) -> FunctionResult | None:
-        """Execute one or more functions.
-
-        When multiple functions are passed the FunctionResult of each is put into a list.
+        """Execute a function and return the FunctionResult.
 
         Args:
             function (KernelFunction): The function or functions to execute,
-            this value has precedence when supplying both this and using function_name and plugin_name,
-            if this is none, function_name and plugin_name are used and cannot be None.
+                this value has precedence when supplying both this and using function_name and plugin_name,
+                if this is none, function_name and plugin_name are used and cannot be None.
             arguments (KernelArguments): The arguments to pass to the function(s), optional
             function_name (str | None): The name of the function to execute
             plugin_name (str | None): The name of the plugin to execute
             metadata (dict[str, Any]): The metadata to pass to the function(s)
             kwargs (dict[str, Any]): arguments that can be used instead of supplying KernelArguments
 
-        Returns:
-            FunctionResult | list[FunctionResult] | None: The result of the function(s)
+        Raises:
+            KernelInvokeException: If an error occurs during function invocation
 
         """
         if arguments is None:
@@ -183,7 +181,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         except Exception as exc:
             logger.error(
                 "Something went wrong in function invocation. During function invocation:"
-                f" '{function.fully_qualified_name}'. Error description: '{str(exc)}'"
+                f" '{function.fully_qualified_name}'. Error description: '{exc!s}'"
             )
             raise KernelInvokeException(
                 f"Error occurred while invoking function: '{function.fully_qualified_name}'"

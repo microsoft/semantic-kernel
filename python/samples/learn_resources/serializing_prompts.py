@@ -35,7 +35,7 @@ async def main():
 
     prompt_template_config = PromptTemplateConfig(
         template=template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
         InputVariables=[
             InputVariable(name="input", description="The user input", is_required=True),
