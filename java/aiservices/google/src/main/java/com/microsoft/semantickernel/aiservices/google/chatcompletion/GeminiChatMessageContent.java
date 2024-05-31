@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.api.FunctionCall;
@@ -35,13 +36,13 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
      * @param geminiFunctionCalls  The function calls.
      */
     public GeminiChatMessageContent(
-            AuthorRole authorRole,
-            String content,
-            @Nullable String modelId,
-            @Nullable T innerContent,
-            @Nullable Charset encoding,
-            @Nullable FunctionResultMetadata metadata,
-            @Nullable List<GeminiFunctionCall> geminiFunctionCalls) {
+        AuthorRole authorRole,
+        String content,
+        @Nullable String modelId,
+        @Nullable T innerContent,
+        @Nullable Charset encoding,
+        @Nullable FunctionResultMetadata metadata,
+        @Nullable List<GeminiFunctionCall> geminiFunctionCalls) {
         super(authorRole, content, modelId, innerContent, encoding, metadata);
         if (geminiFunctionCalls == null) {
             this.geminiFunctionCalls = Collections.emptyList();

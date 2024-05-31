@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
@@ -39,10 +40,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
@@ -63,76 +62,89 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     @Override
-    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(String prompt,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
         GeminiXMLPromptParser.GeminiParsedPrompt parsedPrompt = GeminiXMLPromptParser.parse(prompt);
 
-        return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel, invocationContext);
+        return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel,
+            invocationContext);
     }
 
     @Override
-    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
         return internalChatMessageContentsAsync(
-                new ChatHistory(chatHistory.getMessages()),
-                new ChatHistory(),
-                kernel,
-                invocationContext,
-                Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
-                        invocationContext != null && invocationContext.getToolCallBehavior() != null
-                                ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts()
-                                : 0)
-        );
+            new ChatHistory(chatHistory.getMessages()),
+            new ChatHistory(),
+            kernel,
+            invocationContext,
+            Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                invocationContext != null && invocationContext.getToolCallBehavior() != null
+                    ? invocationContext.getToolCallBehavior().getMaximumAutoInvokeAttempts()
+                    : 0));
     }
 
-    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(ChatHistory fullHistory, ChatHistory newHistory, @Nullable Kernel kernel, @Nullable InvocationContext invocationContext, int invocationAttempts) {
+    private Mono<List<ChatMessageContent<?>>> internalChatMessageContentsAsync(
+        ChatHistory fullHistory, ChatHistory newHistory, @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext, int invocationAttempts) {
         List<Content> contents = getContents(fullHistory);
         GenerativeModel model = getGenerativeModel(kernel, invocationContext);
 
         try {
-            return MonoConverter.fromApiFuture(model.generateContentAsync(contents)).flatMap(result -> {
-                // Separate the messages and function calls in the response
-                GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(result);
+            return MonoConverter.fromApiFuture(model.generateContentAsync(contents))
+                .flatMap(result -> {
+                    // Separate the messages and function calls in the response
+                    GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(
+                        result);
 
-                // Add assistant response to the chat history
-                fullHistory.addMessage(response);
-                newHistory.addMessage(response);
+                    // Add assistant response to the chat history
+                    fullHistory.addMessage(response);
+                    newHistory.addMessage(response);
 
-                // Just return the result:
-                // If we don't want to attempt to invoke any functions or if we have no function calls
-                if (invocationAttempts <= 0 || response.getGeminiFunctionCalls().isEmpty()) {
-                    if (invocationContext != null && invocationContext.returnMode() == InvocationReturnMode.FULL_HISTORY) {
-                        return Mono.just(fullHistory.getMessages());
+                    // Just return the result:
+                    // If we don't want to attempt to invoke any functions or if we have no function calls
+                    if (invocationAttempts <= 0 || response.getGeminiFunctionCalls().isEmpty()) {
+                        if (invocationContext != null && invocationContext
+                            .returnMode() == InvocationReturnMode.FULL_HISTORY) {
+                            return Mono.just(fullHistory.getMessages());
+                        }
+                        if (invocationContext != null && invocationContext
+                            .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                            ChatHistory lastMessage = new ChatHistory();
+                            lastMessage.addMessage(response);
+
+                            return Mono.just(lastMessage.getMessages());
+                        }
+
+                        return Mono.just(newHistory.getMessages());
                     }
-                    if (invocationContext != null && invocationContext.returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
-                        ChatHistory lastMessage = new ChatHistory();
-                        lastMessage.addMessage(response);
 
-                        return Mono.just(lastMessage.getMessages());
-                    }
-
-                    return Mono.just(newHistory.getMessages());
-                }
-
-                // Perform the function calls
-                // FunctionCall and FunctionResult are kept together to create later the list of FunctionResponse
-                List<Mono<GeminiFunctionCall>> functionResults = response.getGeminiFunctionCalls().stream()
-                        .map(geminiFunctionCall -> performFunctionCall(kernel, invocationContext, geminiFunctionCall))
+                    // Perform the function calls
+                    // FunctionCall and FunctionResult are kept together to create later the list of FunctionResponse
+                    List<Mono<GeminiFunctionCall>> functionResults = response
+                        .getGeminiFunctionCalls().stream()
+                        .map(geminiFunctionCall -> performFunctionCall(kernel, invocationContext,
+                            geminiFunctionCall))
                         .collect(Collectors.toList());
 
-                Mono<List<GeminiFunctionCall>> combinedResults = Flux.fromIterable(functionResults)
+                    Mono<List<GeminiFunctionCall>> combinedResults = Flux
+                        .fromIterable(functionResults)
                         .flatMap(mono -> mono)
                         .collectList();
 
-                // Add the function responses to the chat history
-                return combinedResults.flatMap(results -> {
-                    ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(AuthorRole.USER,
+                    // Add the function responses to the chat history
+                    return combinedResults.flatMap(results -> {
+                        ChatMessageContent<?> functionResponsesMessage = new GeminiChatMessageContent<>(
+                            AuthorRole.USER,
                             "", null, null, null, null, results);
 
-                    fullHistory.addMessage(functionResponsesMessage);
-                    newHistory.addMessage(functionResponsesMessage);
+                        fullHistory.addMessage(functionResponsesMessage);
+                        newHistory.addMessage(functionResponsesMessage);
 
-                    return internalChatMessageContentsAsync(fullHistory, newHistory, kernel, invocationContext, invocationAttempts - 1);
+                        return internalChatMessageContentsAsync(fullHistory, newHistory, kernel,
+                            invocationContext, invocationAttempts - 1);
+                    });
                 });
-            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -152,11 +164,16 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                     message.getGeminiFunctionCalls().forEach(geminiFunction -> {
                         FunctionResponse functionResponse = FunctionResponse.newBuilder()
-                                .setName(geminiFunction.getFunctionCall().getName())
-                                .setResponse(Struct.newBuilder().putFields("result", Value.newBuilder().setStringValue((String) geminiFunction.getFunctionResult().getResult()).build()))
-                                .build();
+                            .setName(geminiFunction.getFunctionCall().getName())
+                            .setResponse(Struct.newBuilder().putFields("result",
+                                Value.newBuilder()
+                                    .setStringValue(
+                                        (String) geminiFunction.getFunctionResult().getResult())
+                                    .build()))
+                            .build();
 
-                        contentBuilder.addParts(Part.newBuilder().setFunctionResponse(functionResponse));
+                        contentBuilder
+                            .addParts(Part.newBuilder().setFunctionResponse(functionResponse));
                     });
                 }
             } else if (chatMessageContent.getAuthorRole() == AuthorRole.ASSISTANT) {
@@ -166,12 +183,14 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                     GeminiChatMessageContent<?> message = (GeminiChatMessageContent<?>) chatMessageContent;
 
                     message.getGeminiFunctionCalls().forEach(geminiFunctionCall -> {
-                        contentBuilder.addParts(Part.newBuilder().setFunctionCall(geminiFunctionCall.getFunctionCall()));
+                        contentBuilder.addParts(Part.newBuilder()
+                            .setFunctionCall(geminiFunctionCall.getFunctionCall()));
                     });
                 }
             }
 
-            if (chatMessageContent.getContent() != null && !chatMessageContent.getContent().isEmpty()) {
+            if (chatMessageContent.getContent() != null
+                && !chatMessageContent.getContent().isEmpty()) {
                 contentBuilder.addParts(Part.newBuilder().setText(chatMessageContent.getContent()));
             }
 
@@ -181,55 +200,58 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return contents;
     }
 
-    private GeminiChatMessageContent<?> getGeminiChatMessageContentFromResponse(GenerateContentResponse response) {
+    private GeminiChatMessageContent<?> getGeminiChatMessageContentFromResponse(
+        GenerateContentResponse response) {
         StringBuilder message = new StringBuilder();
         List<GeminiFunctionCall> functionCalls = new ArrayList<>();
 
         response.getCandidatesList().forEach(
-                candidate -> {
-                    Content content = candidate.getContent();
-                    if (content.getPartsCount() == 0) {
-                        return;
-                    }
-
-                    content.getPartsList().forEach(part -> {
-                        if (!part.getFunctionCall().getName().isEmpty()) {
-                            // We only care about the function call here
-                            // Execution of the function call will be done later
-                            functionCalls.add(new GeminiFunctionCall(part.getFunctionCall(),null));
-                        }
-                        if (!part.getText().isEmpty()) {
-                            message.append(part.getText());
-                        }
-                    });
+            candidate -> {
+                Content content = candidate.getContent();
+                if (content.getPartsCount() == 0) {
+                    return;
                 }
-        );
+
+                content.getPartsList().forEach(part -> {
+                    if (!part.getFunctionCall().getName().isEmpty()) {
+                        // We only care about the function call here
+                        // Execution of the function call will be done later
+                        functionCalls.add(new GeminiFunctionCall(part.getFunctionCall(), null));
+                    }
+                    if (!part.getText().isEmpty()) {
+                        message.append(part.getText());
+                    }
+                });
+            });
 
         return new GeminiChatMessageContent<>(AuthorRole.ASSISTANT,
-                message.toString(), null, null, null, null, functionCalls);
+            message.toString(), null, null, null, null, functionCalls);
     }
 
-    private GenerativeModel getGenerativeModel(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+    private GenerativeModel getGenerativeModel(@Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
         GenerativeModel.Builder modelBuilder = new GenerativeModel.Builder()
-                .setModelName(getModelId())
-                .setVertexAi(getClient());
+            .setModelName(getModelId())
+            .setVertexAi(getClient());
 
         if (invocationContext != null) {
             if (invocationContext.getPromptExecutionSettings() != null) {
                 PromptExecutionSettings settings = invocationContext.getPromptExecutionSettings();
 
-                if (settings.getResultsPerPrompt() < 1 || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+                if (settings.getResultsPerPrompt() < 1
+                    || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
                     throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                            String.format("Results per prompt must be in range between 1 and %d, inclusive.",
-                                    MAX_RESULTS_PER_PROMPT));
+                        String.format(
+                            "Results per prompt must be in range between 1 and %d, inclusive.",
+                            MAX_RESULTS_PER_PROMPT));
                 }
 
                 GenerationConfig config = GenerationConfig.newBuilder()
-                        .setMaxOutputTokens(settings.getMaxTokens())
-                        .setTemperature((float) settings.getTemperature())
-                        .setTopP((float) settings.getTopP())
-                        .setCandidateCount(settings.getResultsPerPrompt())
-                        .build();
+                    .setMaxOutputTokens(settings.getMaxTokens())
+                    .setTemperature((float) settings.getTemperature())
+                    .setTopP((float) settings.getTopP())
+                    .setCandidateCount(settings.getResultsPerPrompt())
+                    .build();
 
                 modelBuilder.setGenerationConfig(config);
             }
@@ -249,7 +271,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
     private FunctionDeclaration buildFunctionDeclaration(KernelFunction<?> function) {
         FunctionDeclaration.Builder functionBuilder = FunctionDeclaration.newBuilder();
-        functionBuilder.setName(ToolCallBehavior.formFullFunctionName(function.getPluginName(), function.getName()));
+        functionBuilder.setName(
+            ToolCallBehavior.formFullFunctionName(function.getPluginName(), function.getName()));
         functionBuilder.setDescription(function.getDescription());
 
         List<InputVariable> parameters = function.getMetadata().getParameters();
@@ -259,8 +282,9 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             function.getMetadata().getParameters().forEach(parameter -> {
                 parametersBuilder.setType(Type.OBJECT);
                 parametersBuilder.putProperties(
-                        parameter.getName(),
-                        Schema.newBuilder().setType(Type.STRING).setDescription(parameter.getDescription()).build());
+                    parameter.getName(),
+                    Schema.newBuilder().setType(Type.STRING)
+                        .setDescription(parameter.getDescription()).build());
             });
 
             functionBuilder.setParameters(parametersBuilder.build());
@@ -280,7 +304,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         // If a specific function is required to be called
         if (toolCallBehavior instanceof ToolCallBehavior.RequiredKernelFunction) {
             KernelFunction<?> kernelFunction = ((ToolCallBehavior.RequiredKernelFunction) toolCallBehavior)
-                    .getRequiredFunction();
+                .getRequiredFunction();
 
             toolBuilder.addFunctionDeclarations(buildFunctionDeclaration(kernelFunction));
         }
@@ -288,25 +312,29 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         if (toolCallBehavior instanceof ToolCallBehavior.AllowedKernelFunctions) {
             ToolCallBehavior.AllowedKernelFunctions enabledKernelFunctions = (ToolCallBehavior.AllowedKernelFunctions) toolCallBehavior;
 
-            kernel.getPlugins().forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
-                        // check if all kernel functions are enabled or if the specific function is enabled
-                        if (enabledKernelFunctions.isAllKernelFunctionsAllowed() ||
-                                enabledKernelFunctions.isFunctionAllowed(function.getPluginName(), function.getName())) {
-                            toolBuilder.addFunctionDeclarations(buildFunctionDeclaration(function));
-                        }
-                    }));
+            kernel.getPlugins()
+                .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> {
+                    // check if all kernel functions are enabled or if the specific function is enabled
+                    if (enabledKernelFunctions.isAllKernelFunctionsAllowed() ||
+                        enabledKernelFunctions.isFunctionAllowed(function.getPluginName(),
+                            function.getName())) {
+                        toolBuilder.addFunctionDeclarations(buildFunctionDeclaration(function));
+                    }
+                }));
         }
 
         return toolBuilder.build();
     }
 
-    public Mono<GeminiFunctionCall> performFunctionCall(@Nullable Kernel kernel, @Nullable InvocationContext invocationContext, GeminiFunctionCall geminiFunction) {
+    public Mono<GeminiFunctionCall> performFunctionCall(@Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext, GeminiFunctionCall geminiFunction) {
         if (kernel == null) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                    "Kernel must be provided to perform function call");
+                "Kernel must be provided to perform function call");
         }
 
-        String[] name = geminiFunction.getFunctionCall().getName().split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
+        String[] name = geminiFunction.getFunctionCall().getName()
+            .split(ToolCallBehavior.FUNCTION_NAME_SEPARATOR);
 
         String pluginName = name[0];
         String functionName = name[1];
@@ -315,12 +343,13 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
         if (function == null) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                    String.format("Kernel function %s not found in plugin %s", functionName, pluginName));
+                String.format("Kernel function %s not found in plugin %s", functionName,
+                    pluginName));
         }
 
         ContextVariableTypes contextVariableTypes = invocationContext == null
-                ? new ContextVariableTypes()
-                : invocationContext.getContextVariableTypes();
+            ? new ContextVariableTypes()
+            : invocationContext.getContextVariableTypes();
 
         KernelFunctionArguments.Builder arguments = KernelFunctionArguments.builder();
         geminiFunction.getFunctionCall().getArgs().getFieldsMap().forEach((key, value) -> {
@@ -339,12 +368,12 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         public GeminiChatCompletion build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "VertexAI client must be provided");
+                    "VertexAI client must be provided");
             }
 
             if (this.modelId == null || modelId.isEmpty()) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "Gemini model id must be provided");
+                    "Gemini model id must be provided");
             }
 
             return new GeminiChatCompletion(client, modelId);

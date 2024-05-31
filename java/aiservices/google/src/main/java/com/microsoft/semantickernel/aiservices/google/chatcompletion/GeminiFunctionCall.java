@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.api.FunctionCall;
@@ -18,8 +19,8 @@ public class GeminiFunctionCall {
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public GeminiFunctionCall(
-            @Nonnull FunctionCall functionCall,
-            @Nullable FunctionResult<?> functionResult) {
+        @Nonnull FunctionCall functionCall,
+        @Nullable FunctionResult<?> functionResult) {
         this.functionCall = functionCall;
         this.functionResult = functionResult;
 
@@ -31,6 +32,7 @@ public class GeminiFunctionCall {
     public String getPluginName() {
         return pluginName;
     }
+
     public String getFunctionName() {
         return functionName;
     }
