@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
 from typing import Annotated, Any, Literal, Union
 
@@ -8,6 +10,7 @@ from pydantic.functional_validators import AfterValidator
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
+from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
@@ -82,6 +85,18 @@ class AzureAISearchDataSource(AzureChatRequestBase):
     type: Literal["azure_search"] = "azure_search"
     parameters: Annotated[dict, AzureAISearchDataSourceParameters]
 
+    @classmethod
+    def from_azure_ai_search_settings(cls, azure_ai_search_settings: AzureAISearchSettings, **kwargs: Any):
+        """Create an instance from Azure AI Search settings."""
+        kwargs["parameters"] = {
+            "endpoint": str(azure_ai_search_settings.endpoint),
+            "index_name": azure_ai_search_settings.index_name,
+            "authentication": {
+                "key": azure_ai_search_settings.api_key.get_secret_value() if azure_ai_search_settings.api_key else None
+            },
+        }
+        return cls(**kwargs)
+
 
 DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], Field(discriminator="type")]
 
@@ -99,5 +114,4 @@ class ExtraBody(KernelBaseModel):
 class AzureChatPromptExecutionSettings(OpenAIChatPromptExecutionSettings):
     """Specific settings for the Azure OpenAI Chat Completion endpoint."""
 
-    response_format: str | None = None
     extra_body: dict[str, Any] | ExtraBody | None = None

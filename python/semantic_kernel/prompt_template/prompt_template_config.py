@@ -5,6 +5,7 @@ from typing import TypeVar
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
@@ -24,8 +25,9 @@ class PromptTemplateConfig(KernelBaseModel):
         template: The template for the prompt.
         template_format: The format of the template, should be 'semantic-kernel', 'jinja2' or 'handlebars'.
         input_variables: The input variables for the prompt.
-        allow_dangerously_set_content (default: false): Allow content without encoding, this controls
-            if the output of functions called in the template is encoded before use.
+        allow_dangerously_set_content (bool = False): Allow content without encoding throughout, this overrides
+            the same settings in the prompt template config and input variables.
+            This reverts the behavior to unencoded input.
         execution_settings: The execution settings for the prompt.
 
     """
@@ -56,16 +58,16 @@ class PromptTemplateConfig(KernelBaseModel):
         if not settings:
             return {}
         if isinstance(settings, PromptExecutionSettings):
-            return {settings.service_id or "default": settings}
+            return {settings.service_id or DEFAULT_SERVICE_NAME: settings}
         if isinstance(settings, list):
-            return {s.service_id or "default": s for s in settings}
+            return {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
         return settings
 
     def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
         """Add execution settings to the prompt template."""
         if settings.service_id in self.execution_settings and not overwrite:
             return
-        self.execution_settings[settings.service_id or "default"] = settings
+        self.execution_settings[settings.service_id or DEFAULT_SERVICE_NAME] = settings
         logger.warning("Execution settings already exist and overwrite is set to False")
 
     def get_kernel_parameter_metadata(self) -> list[KernelParameterMetadata]:
@@ -75,7 +77,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 name=variable.name,
                 description=variable.description,
                 default_value=variable.default,
-                type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
+                type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
             )
             for variable in self.input_variables

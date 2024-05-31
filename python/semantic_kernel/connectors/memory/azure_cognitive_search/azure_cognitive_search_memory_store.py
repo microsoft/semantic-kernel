@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import contextlib
 import logging
 import uuid
 from inspect import isawaitable
@@ -50,46 +51,47 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         azure_credentials: AzureKeyCredential | None = None,
         token_credentials: TokenCredential | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
-
-        Args:
-            vector_size (int): Embedding vector size.
-            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
-                                                                (default: {None}).
-            admin_key (str | None): Azure Cognitive Search API key (default: {None}).
-            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
-            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
-                                                                (default: {None}).
-            env_file_path (str | None): Use the environment settings file as a fallback
-                                                                to environment variables
 
         Instantiate using Async Context Manager:
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
+
+        Args:
+            vector_size (int): Embedding vector size.
+            search_endpoint (str | None): The endpoint of the Azure Cognitive Search service
+                (default: {None}).
+            admin_key (str | None): Azure Cognitive Search API key (default: {None}).
+            azure_credentials (AzureKeyCredential | None): Azure Cognitive Search credentials (default: {None}).
+            token_credentials (TokenCredential | None): Azure Cognitive Search token credentials
+                (default: {None}).
+            env_file_path (str | None): Use the environment settings file as a fallback
+                to environment variables
+            env_file_encoding (str | None): The encoding of the environment settings file
+
         """
-        from semantic_kernel.connectors.memory.azure_cognitive_search import AzureAISearchSettings
+        from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import (
+            AzureAISearchSettings,
+        )
 
-        acs_memory_settings = None
         try:
-            acs_memory_settings = AzureAISearchSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureAISearch pydantic settings: {e}")
-
-        admin_key = admin_key or (
-            acs_memory_settings.api_key.get_secret_value()
-            if acs_memory_settings and acs_memory_settings.api_key
-            else None
-        )
-        search_endpoint = search_endpoint or (
-            acs_memory_settings.endpoint if acs_memory_settings and acs_memory_settings.endpoint else None
-        )
-        if not search_endpoint:
-            raise ValueError("The ACS endpoint is required to connect to Azure Cognitive Search.")
+            acs_memory_settings = AzureAISearchSettings.create(
+                env_file_path=env_file_path,
+                endpoint=search_endpoint,
+                api_key=admin_key,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise MemoryConnectorInitializationError("Failed to create Azure Cognitive Search settings.") from exc
 
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
-            str(search_endpoint), admin_key, azure_credentials, token_credentials
+            search_endpoint=str(acs_memory_settings.endpoint),
+            admin_key=acs_memory_settings.api_key.get_secret_value(),
+            azure_credential=azure_credentials,
+            token_credential=token_credentials,
         )
 
     async def close(self):
@@ -148,10 +150,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         # Check to see if collection exists
         collection_index = None
-        try:
+        with contextlib.suppress(ResourceNotFoundError):
             collection_index = await self._search_index_client.get_index(collection_name.lower())
-        except ResourceNotFoundError:
-            pass
 
         if not collection_index:
             # Create the search index with the semantic settings
@@ -203,10 +203,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         try:
             collection_result = await self._search_index_client.get_index(name=collection_name.lower())
 
-            if collection_result:
-                return True
-            else:
-                return False
+            return bool(collection_result)
         except ResourceNotFoundError:
             return False
 
@@ -258,8 +255,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if result[0].succeeded:
             return search_ids
-        else:
-            return None
+        return None
 
     async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
@@ -371,8 +367,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         if len(memory_records) > 0:
             return memory_records[0]
-        else:
-            return None
+        return None
 
     async def get_nearest_matches(
         self,

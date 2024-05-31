@@ -12,8 +12,6 @@ from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
-    DEFAULT_DB_NAME,
-    DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
     NUM_CANDIDATES_SCALAR,
@@ -21,6 +19,7 @@ from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     memory_record_to_mongo_document,
 )
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -32,12 +31,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections."""
 
-    __slots__ = ("_mongo_client", "__database_name")
-
-    _mongo_client: motor_asyncio.AsyncIOMotorClient
-    __database_name: str
-    __index_name: str
-
     def __init__(
         self,
         index_name: str | None = None,
@@ -45,44 +38,44 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         database_name: str | None = None,
         read_preference: ReadPreference | None = ReadPreference.PRIMARY,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ):
-        """Initializes a new instance of the MongoDBAtlasMemoryStore class."""
-        from semantic_kernel.connectors.memory.mongodb_atlas import MongoDBAtlasSettings
+        """Create the MongoDB Atlas Memory Store.
 
-        mongodb_settings = None
+        Args:
+            index_name (str): The name of the index.
+            connection_string (str): The connection string for the MongoDB Atlas instance.
+            database_name (str): The name of the database.
+            read_preference (ReadPreference): The read preference for the connection.
+            env_file_path (str): The path to the .env file containing the connection string.
+            env_file_encoding (str): The encoding of the .env file.
+
+        """
+        from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
+
         try:
-            mongodb_settings = MongoDBAtlasSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load the MongoDBAtlas pydantic settings: {e}")
+            mongodb_settings = MongoDBAtlasSettings.create(
+                database_name=database_name,
+                index_name=index_name,
+                connection_string=connection_string,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create MongoDB Atlas settings.") from ex
 
-        connection_string = connection_string or (
-            mongodb_settings.connection_string.get_secret_value()
-            if mongodb_settings and mongodb_settings.connection_string
-            else None
-        )
-
-        self._mongo_client = motor_asyncio.AsyncIOMotorClient(
-            connection_string,
+        self.mongo_client: motor_asyncio.AsyncIOMotorClient = motor_asyncio.AsyncIOMotorClient(
+            mongodb_settings.connection_string.get_secret_value(),
             read_preference=read_preference,
             driver=DriverInfo("Microsoft Semantic Kernel", metadata.version("semantic-kernel")),
         )
-        self.__database_name = database_name or DEFAULT_DB_NAME
-        self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
-
-    @property
-    def database_name(self) -> str:
-        """The name of the database."""
-        return self.__database_name
+        self.database_name: str = mongodb_settings.database_name
+        self.index_name: str = mongodb_settings.index_name
 
     @property
     def database(self) -> core.AgnosticDatabase:
         """The database object."""
-        return self._mongo_client[self.database_name]
-
-    @property
-    def index_name(self) -> str:
-        """The name of the index."""
-        return self.__index_name
+        return self.mongo_client[self.database_name]
 
     @property
     def num_candidates(self) -> int:
@@ -91,9 +84,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
     async def close(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()."""
-        if self._mongo_client:
-            self._mongo_client.close()
-            self._mongo_client = None
+        if self.mongo_client:
+            self.mongo_client.close()
+            del self.mongo_client
 
     async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection in the data store.
@@ -333,6 +326,3 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         )
 
         return matches[0] if matches else None
-
-
-__all__ = ["MongoDBAtlasMemoryStore"]

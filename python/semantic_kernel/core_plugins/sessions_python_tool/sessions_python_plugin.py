@@ -32,9 +32,9 @@ class SessionsPythonTool(KernelBaseModel):
     """A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter."""
 
     pool_management_endpoint: str
-    settings: SessionsPythonSettings | None = None
+    settings: SessionsPythonSettings
     auth_callback: Callable[..., Awaitable[Any]]
-    http_client: httpx.AsyncClient | None = None
+    http_client: httpx.AsyncClient
 
     def __init__(
         self,
@@ -53,17 +53,17 @@ class SessionsPythonTool(KernelBaseModel):
             http_client = httpx.AsyncClient()
 
         try:
-            aca_settings = ACASessionsSettings.create(env_file_path=env_file_path)
+            aca_settings = ACASessionsSettings.create(
+                env_file_path=env_file_path, pool_management_endpoint=pool_management_endpoint
+            )
         except ValidationError as e:
-            logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
-            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
-
-        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
+            logger.error(f"Failed to load the ACASessionsSettings with message: {e!s}")
+            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {e!s}") from e
 
         super().__init__(
-            pool_management_endpoint=endpoint,
-            auth_callback=auth_callback,
+            pool_management_endpoint=aca_settings.pool_management_endpoint,
             settings=settings,
+            auth_callback=auth_callback,
             http_client=http_client,
             **kwargs,
         )
@@ -87,8 +87,8 @@ class SessionsPythonTool(KernelBaseModel):
         try:
             auth_token = await self.auth_callback()
         except Exception as e:
-            logger.error(f"Failed to retrieve the client auth token with message: {str(e)}")
-            raise FunctionExecutionException(f"Failed to retrieve the client auth token with messages: {str(e)}") from e
+            logger.error(f"Failed to retrieve the client auth token with message: {e!s}")
+            raise FunctionExecutionException(f"Failed to retrieve the client auth token with messages: {e!s}") from e
 
         return auth_token
 
@@ -98,15 +98,14 @@ class SessionsPythonTool(KernelBaseModel):
         Remove whitespace, backtick & python (if llm mistakes python console as terminal).
 
         Args:
-            code: The query to sanitize
+            code (str): The query to sanitize
         Returns:
             str: The sanitized query
         """
         # Removes `, whitespace & python from start
         code = re.sub(r"^(\s|`)*(?i:python)?\s*", "", code)
         # Removes whitespace & ` from end
-        code = re.sub(r"(\s|`)*$", "", code)
-        return code
+        return re.sub(r"(\s|`)*$", "", code)
 
     @kernel_function(
         description="""Executes the provided Python code.
@@ -160,11 +159,15 @@ class SessionsPythonTool(KernelBaseModel):
         response.raise_for_status()
 
         result = response.json()
-        return f"Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"  # noqa: E501
+        return f"Result:\n{result['result']}Stdout:\n{result['stdout']}Stderr:\n{result['stderr']}"
 
     @kernel_function(name="upload_file", description="Uploads a file for the current Session ID")
     async def upload_file(
-        self, *, data: BufferedReader = None, remote_file_path: str = None, local_file_path: str = None
+        self,
+        *,
+        data: BufferedReader | None = None,
+        remote_file_path: str | None = None,
+        local_file_path: str | None = None,
     ) -> SessionsRemoteFileMetadata:
         """Upload a file to the session pool.
 
@@ -182,7 +185,7 @@ class SessionsPythonTool(KernelBaseModel):
         if local_file_path:
             if not remote_file_path:
                 remote_file_path = os.path.basename(local_file_path)
-            data = open(local_file_path, "rb")
+            data = open(local_file_path, "rb")  # noqa: SIM115
 
         auth_token = await self._ensure_auth_token()
         self.http_client.headers.update(
@@ -196,7 +199,7 @@ class SessionsPythonTool(KernelBaseModel):
         response = await self.http_client.post(
             url=f"{self.pool_management_endpoint}python/uploadFile?identifier={self.settings.session_id}",
             json={},
-            files=files,
+            files=files,  # type: ignore
         )
 
         response.raise_for_status()
@@ -227,7 +230,7 @@ class SessionsPythonTool(KernelBaseModel):
         response_json = response.json()
         return [SessionsRemoteFileMetadata.from_dict(entry) for entry in response_json["$values"]]
 
-    async def download_file(self, *, remote_file_path: str, local_file_path: str = None) -> BufferedReader | None:
+    async def download_file(self, *, remote_file_path: str, local_file_path: str | None = None) -> BytesIO | None:
         """Download a file from the session pool.
 
         Args:
@@ -247,7 +250,7 @@ class SessionsPythonTool(KernelBaseModel):
         )
 
         response = await self.http_client.get(
-            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}",  # noqa: E501
+            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}",
         )
         response.raise_for_status()
 

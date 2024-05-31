@@ -21,13 +21,13 @@ class SequentialPlannerFunctionExtension:
             for parameter in function.parameters
         ]
         inputs = "\n".join(inputs)
-        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
+        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n  {inputs}"
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
         """Convert the function to an embedding string."""
         inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
-        return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
+        return f"{function.name}:\n  description: {function.description}\n  inputs:\n{inputs}"
 
 
 class SequentialPlannerKernelExtension:
@@ -38,7 +38,7 @@ class SequentialPlannerKernelExtension:
     async def get_functions_manual(
         kernel: "Kernel",
         arguments: KernelArguments,
-        semantic_query: str = None,
+        semantic_query: str | None = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
         """Get the functions manual."""
@@ -99,7 +99,8 @@ class SequentialPlannerKernelExtension:
     ) -> list[KernelFunctionMetadata]:
         """Get relevant functions from the memories."""
         relevant_functions = []
-        # TODO: cancellation
+        # TODO (eavanvalkenburg): cancellation
+        # https://github.com/microsoft/semantic-kernel/issues/5668
         if memories is None:
             return relevant_functions
         for memory_entry in memories:

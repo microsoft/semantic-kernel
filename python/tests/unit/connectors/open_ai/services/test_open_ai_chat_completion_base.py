@@ -196,7 +196,7 @@ async def test_process_tool_calls_with_continuation_on_malformed_arguments():
 
     add_message_calls = chat_history_mock.add_message.call_args_list
     assert any(
-        call[1]["message"].items[0].result == "The tool call arguments are malformed, please try again."
+        call[1]["message"].items[0].result == "The tool call arguments are malformed. Arguments must be in JSON format. Please try again."  # noqa: E501
         and call[1]["message"].items[0].id == "test_id"
         and call[1]["message"].items[0].name == "test_function"
         for call in add_message_calls

@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import pytest
 
 from semantic_kernel.contents.function_call_content import FunctionCallContent

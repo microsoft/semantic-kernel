@@ -1,13 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import ClassVar
+
 from pydantic import SecretStr
-from pydantic_settings import BaseSettings
 
-from semantic_kernel.kernel_pydantic import HttpsUrl
+from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 
 
-class AzureOpenAISettings(BaseSettings):
+class AzureOpenAISettings(KernelBaseSettings):
     """AzureOpenAI model settings.
 
     The settings are first loaded from environment variables with the prefix 'AZURE_OPENAI_'.
@@ -54,29 +56,12 @@ class AzureOpenAISettings(BaseSettings):
     - env_file_path: str | None - if provided, the .env settings are read from this file path location
     """
 
-    env_file_path: str | None = None
+    env_prefix: ClassVar[str] = "AZURE_OPENAI_"
+
     chat_deployment_name: str | None = None
     text_deployment_name: str | None = None
     embedding_deployment_name: str | None = None
     endpoint: HttpsUrl | None = None
     base_url: HttpsUrl | None = None
     api_key: SecretStr | None = None
-    api_version: str | None = None
-
-    class Config:
-        """Pydantic configuration settings."""
-
-        env_prefix = "AZURE_OPENAI_"
-        env_file = None
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-        case_sensitive = False
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Create an instance of the class."""
-        if "env_file_path" in kwargs and kwargs["env_file_path"]:
-            cls.Config.env_file = kwargs["env_file_path"]
-        else:
-            cls.Config.env_file = None
-        return cls(**kwargs)
+    api_version: str = DEFAULT_AZURE_API_VERSION
