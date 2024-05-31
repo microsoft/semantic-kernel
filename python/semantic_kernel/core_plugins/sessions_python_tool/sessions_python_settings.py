@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import uuid
 from enum import Enum
+from typing import ClassVar
 
 from pydantic import Field
 
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel, KernelBaseSettings
 
 
 class CodeInputType(str, Enum):
@@ -32,3 +32,16 @@ class SessionsPythonSettings(KernelBaseModel):
     python_code: str | None = Field(alias="pythonCode", default=None)
     timeout_in_sec: int | None = Field(default=100, alias="timeoutInSeconds")
     sanitize_input: bool | None = Field(default=True, alias="sanitizeInput")
+
+
+class ACASessionsSettings(KernelBaseSettings):
+    """Azure Container Apps sessions settings.
+
+    Required:
+    - pool_management_endpoint: HttpsUrl - The URL of the Azure Container Apps pool management endpoint.
+        (Env var ACA_POOL_MANAGEMENT_ENDPOINT)
+    """
+
+    env_prefix: ClassVar[str] = "ACA_"
+
+    pool_management_endpoint: HttpsUrl

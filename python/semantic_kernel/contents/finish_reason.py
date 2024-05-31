@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class FinishReason(str, Enum):
-    """Finish Reason enum"""
+    """Finish Reason enum."""
 
     STOP = "stop"
     LENGTH = "length"

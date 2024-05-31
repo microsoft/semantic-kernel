@@ -11,17 +11,13 @@ from tests.integration.fakes.writer_plugin_fake import WriterPluginFake
 
 
 @pytest.mark.asyncio
-async def test_can_call_to_plan_from_xml(get_aoai_config):
-    deployment_name, api_key, endpoint = get_aoai_config
+async def test_can_call_to_plan_from_xml():
 
     kernel = Kernel()
     # Configure LLM service
     kernel.add_service(
         sk_oai.AzureChatCompletion(
             service_id="text_completion",
-            deployment_name=deployment_name,
-            endpoint=endpoint,
-            api_key=api_key,
         ),
     )
     kernel.add_plugin(EmailPluginFake(), "email")

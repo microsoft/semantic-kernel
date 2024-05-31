@@ -25,6 +25,21 @@ internal sealed class RestApiOperationRunner
     private const string DefaultResponseKey = "default";
 
     /// <summary>
+    /// HTTP request method.
+    /// </summary>
+    private const string HttpRequestMethod = "http.request.method";
+
+    /// <summary>
+    /// The HTTP request payload body.
+    /// </summary>
+    private const string HttpRequestBody = "http.request.body";
+
+    /// <summary>
+    /// Absolute URL describing a network resource according to RFC3986.
+    /// </summary>
+    private const string UrlFull = "url.full";
+
+    /// <summary>
     /// List of payload builders/factories.
     /// </summary>
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
@@ -174,13 +189,38 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
+            var response = await SerializeResponseContentAsync(requestMessage, payload, responseMessage.Content).ConfigureAwait(false);
 
-        response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
 
-        return response;
+            return response;
+        }
+        catch (HttpOperationException ex)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            ex.RequestMethod = requestMessage.Method.Method;
+            ex.RequestUri = requestMessage.RequestUri;
+            ex.RequestPayload = payload;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
+        catch (KernelException ex)
+        {
+            ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
+            ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
+            ex.Data.Add(HttpRequestBody, payload);
+
+            throw;
+        }
     }
 
     /// <summary>

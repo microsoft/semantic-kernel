@@ -2,7 +2,7 @@
 
 import logging
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, List
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import Field, field_validator, model_validator
 
@@ -42,12 +42,12 @@ class CodeBlock(Block):
         CodeBlockTokenError: If a token is not a named argument after the second token.
         CodeBlockRenderError: If the plugin collection is not set in the kernel.
         CodeBlockRenderError: If the function is not found in the plugin collection.
-        CodeBlockRenderError: If the function does not take any arguments but it is being
+        CodeBlockRenderError: If the function does not take any arguments, but it is being
             called in the template with arguments.
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.CODE
-    tokens: List[Block] = Field(default_factory=list)
+    tokens: list[Block] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -63,7 +63,7 @@ class CodeBlock(Block):
         return fields
 
     @field_validator("tokens", mode="after")
-    def check_tokens(cls, tokens: List[Block]) -> List[Block]:
+    def check_tokens(cls, tokens: list[Block]) -> list[Block]:
         """Check the tokens in the list.
 
         If the first token is a value or variable, the rest of the tokens will be ignored.
@@ -104,7 +104,7 @@ these will be ignored."
         """Render the code block.
 
         If the first token is a function_id, it will call the function from the plugin collection.
-        Otherwise it is a value or variable and those are then rendered directly.
+        Otherwise, it is a value or variable and those are then rendered directly.
         """
         logger.debug(f"Rendering code: `{self.content}`")
         if self.tokens[0].type == BlockTypes.FUNCTION_ID:
@@ -124,11 +124,12 @@ these will be ignored."
         arguments_clone = copy(arguments)
         if len(self.tokens) > 1:
             arguments_clone = self._enrich_function_arguments(kernel, arguments_clone, function.metadata)
-
-        result = await function.invoke(kernel, arguments_clone)
-        if exc := result.metadata.get("error", None):
-            raise CodeBlockRenderException(f"Error rendering function: {function.metadata} with error: {exc}") from exc
-
+        try:
+            result = await function.invoke(kernel, arguments_clone)
+        except Exception as exc:
+            error_msg = f"Error invoking function `{function_block.content}`"
+            logger.error(error_msg)
+            raise CodeBlockRenderException(error_msg) from exc
         return str(result) if result else ""
 
     def _enrich_function_arguments(

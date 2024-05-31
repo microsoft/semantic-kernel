@@ -88,7 +88,7 @@ chat_service = AzureChatCompletion(
 kernel.add_service(chat_service)
 
 python_code_interpreter = SessionsPythonTool(
-    **azure_container_apps_settings_from_dot_env_as_dict(), auth_callback=auth_callback
+    auth_callback=auth_callback
 )
 
 sessions_tool = kernel.add_plugin(python_code_interpreter, "PythonCodeInterpreter")

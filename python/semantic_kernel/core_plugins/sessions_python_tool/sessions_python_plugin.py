@@ -1,19 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
 
 import logging
 import os
 import re
+from collections.abc import Awaitable, Callable
 from io import BufferedReader, BytesIO
-from typing import Annotated, Any, Awaitable, Callable
+from typing import Annotated, Any
 
 import httpx
-from pydantic import field_validator
+from pydantic import ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings import (
+    ACASessionsSettings,
     SessionsPythonSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
@@ -37,10 +38,11 @@ class SessionsPythonTool(KernelBaseModel):
 
     def __init__(
         self,
-        pool_management_endpoint: str,
         auth_callback: Callable[..., Awaitable[Any]],
+        pool_management_endpoint: str | None = None,
         settings: SessionsPythonSettings | None = None,
         http_client: httpx.AsyncClient | None = None,
+        env_file_path: str | None = None,
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
@@ -50,8 +52,18 @@ class SessionsPythonTool(KernelBaseModel):
         if not http_client:
             http_client = httpx.AsyncClient()
 
+        try:
+            aca_settings = ACASessionsSettings.create(
+                env_file_path=env_file_path, pool_management_endpoint=pool_management_endpoint
+            )
+        except ValidationError as e:
+            logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
+            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
+
+        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
+
         super().__init__(
-            pool_management_endpoint=pool_management_endpoint,
+            pool_management_endpoint=endpoint,
             auth_callback=auth_callback,
             settings=settings,
             http_client=http_client,
@@ -61,6 +73,8 @@ class SessionsPythonTool(KernelBaseModel):
     @field_validator("pool_management_endpoint", mode="before")
     @classmethod
     def _validate_endpoint(cls, endpoint: str):
+        endpoint = str(endpoint)
+
         """Validates the pool management endpoint."""
         if "/python/execute" in endpoint:
             # Remove '/python/execute/' and ensure the endpoint ends with a '/'
@@ -72,7 +86,6 @@ class SessionsPythonTool(KernelBaseModel):
 
     async def _ensure_auth_token(self) -> str:
         """Ensure the auth token is valid."""
-
         try:
             auth_token = await self.auth_callback()
         except Exception as e:
@@ -83,13 +96,14 @@ class SessionsPythonTool(KernelBaseModel):
 
     def _sanitize_input(self, code: str) -> str:
         """Sanitize input to the python REPL.
-        Remove whitespace, backtick & python (if llm mistakes python console as terminal)
+
+        Remove whitespace, backtick & python (if llm mistakes python console as terminal).
+
         Args:
-            query: The query to sanitize
+            code: The query to sanitize
         Returns:
             str: The sanitized query
         """
-
         # Removes `, whitespace & python from start
         code = re.sub(r"^(\s|`)*(?i:python)?\s*", "", code)
         # Removes whitespace & ` from end
@@ -108,16 +122,15 @@ class SessionsPythonTool(KernelBaseModel):
         name="execute_code",
     )
     async def execute_code(self, code: Annotated[str, "The valid Python code to execute"]) -> str:
-        """
-        Executes the provided Python code
+        """Executes the provided Python code.
+
         Args:
             code (str): The valid Python code to execute
         Returns:
             str: The result of the Python code execution in the form of Result, Stdout, and Stderr
         Raises:
-            FunctionExecutionException: If the provided code is empty
+            FunctionExecutionException: If the provided code is empty.
         """
-
         if not code:
             raise FunctionExecutionException("The provided code is empty")
 
@@ -156,14 +169,15 @@ class SessionsPythonTool(KernelBaseModel):
         self, *, data: BufferedReader = None, remote_file_path: str = None, local_file_path: str = None
     ) -> SessionsRemoteFileMetadata:
         """Upload a file to the session pool.
+
         Args:
             data (BufferedReader): The file data to upload.
             remote_file_path (str): The path to the file in the session.
             local_file_path (str): The path to the file on the local machine.
+
         Returns:
             RemoteFileMetadata: The metadata of the uploaded file.
         """
-
         if data and local_file_path:
             raise ValueError("data and local_file_path cannot be provided together")
 
@@ -195,6 +209,7 @@ class SessionsPythonTool(KernelBaseModel):
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
         """List the files in the session pool.
+
         Returns:
             list[SessionsRemoteFileMetadata]: The metadata for the files in the session pool
         """
@@ -216,10 +231,12 @@ class SessionsPythonTool(KernelBaseModel):
 
     async def download_file(self, *, remote_file_path: str, local_file_path: str = None) -> BufferedReader | None:
         """Download a file from the session pool.
+
         Args:
             remote_file_path: The path to download the file from, relative to `/mnt/data`.
             local_file_path: The path to save the downloaded file to. If not provided, the
                 file is returned as a BufferedReader.
+
         Returns:
             BufferedReader: The data of the downloaded file.
         """

@@ -49,6 +49,10 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [OpenAI_ChatCompletionWithVision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_ChatCompletionWithVision.cs)
 - [OpenAI_CustomAzureOpenAIClient](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_CustomAzureOpenAIClient.cs)
 - [OpenAI_UsingLogitBias](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_UsingLogitBias.cs)
+- [OpenAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/OpenAI_FunctionCalling.cs)
+- [MistralAI_ChatPrompt](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_ChatPrompt.cs)
+- [MistralAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_FunctionCalling.cs)
+- [MistralAI_StreamingFunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_StreamingFunctionCalling.cs)
 
 ## DependencyInjection - Examples on using `DI Container`
 
@@ -122,10 +126,7 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [MultiplePromptTemplates](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/MultiplePromptTemplates.cs)
 - [PromptFunctionsWithChatGPT](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/PromptFunctionsWithChatGPT.cs)
 - [TemplateLanguage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/TemplateLanguage.cs)
-
-## Prompty - Using Prompty file format to [import prompt functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Functions/Functions.Prompty/Extensions/PromptyKernelExtensions.cs)
-
-- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Prompty/PromptyFunction.cs)
+- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptYemplates/PromptyFunction.cs)
 
 ## RAG - Retrieval-Augmented Generation
 

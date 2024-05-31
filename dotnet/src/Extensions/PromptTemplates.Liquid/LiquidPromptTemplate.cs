@@ -2,14 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Scriban;
-using Scriban.Syntax;
+using Fluid;
+using Fluid.Ast;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
@@ -18,12 +17,18 @@ namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 /// </summary>
 internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
+    private static readonly FluidParser s_parser = new();
+    private static readonly TemplateOptions s_templateOptions = new()
+    {
+        MemberAccessStrategy = new UnsafeMemberAccessStrategy() { MemberNameStrategy = MemberNameStrategies.SnakeCase },
+    };
+
     private const string ReservedString = "&#58;";
     private const string ColonString = ":";
     private const char LineEnding = '\n';
     private readonly PromptTemplateConfig _config;
-    private readonly bool _allowUnsafeContent;
-    private readonly Template _liquidTemplate;
+    private readonly bool _allowDangerouslySetContent;
+    private readonly IFluidTemplate _liquidTemplate;
     private readonly Dictionary<string, object> _inputVariables;
 
 #if NET
@@ -36,12 +41,12 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
     /// <param name="config">Prompt template configuration</param>
-    /// <param name="allowUnsafeContent">Whether to allow unsafe content in the template</param>
+    /// <param name="allowDangerouslySetContent">Whether to allow dangerously set content in the template</param>
     /// <exception cref="ArgumentException">throw if <see cref="PromptTemplateConfig.TemplateFormat"/> is not <see cref="LiquidPromptTemplateFactory.LiquidTemplateFormat"/></exception>
     /// <exception cref="ArgumentException">The template in <paramref name="config"/> could not be parsed.</exception>
     /// <exception cref="ArgumentNullException">throw if <paramref name="config"/> is null</exception>
     /// <exception cref="ArgumentNullException">throw if the template in <paramref name="config"/> is null</exception>
-    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowUnsafeContent = false)
+    public LiquidPromptTemplate(PromptTemplateConfig config, bool allowDangerouslySetContent = false)
     {
         Verify.NotNull(config, nameof(config));
         Verify.NotNull(config.Template, nameof(config.Template));
@@ -50,17 +55,17 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             throw new ArgumentException($"Invalid template format: {config.TemplateFormat}");
         }
 
-        this._allowUnsafeContent = allowUnsafeContent;
+        this._allowDangerouslySetContent = allowDangerouslySetContent;
         this._config = config;
 
         // Parse the template now so we can check for errors, understand variable usage, and
         // avoid having to parse on each render.
-        this._liquidTemplate = Template.ParseLiquid(config.Template);
-        if (this._liquidTemplate.HasErrors)
+        if (!s_parser.TryParse(config.Template, out this._liquidTemplate, out string error))
         {
-            throw new ArgumentException($"The template could not be parsed:{Environment.NewLine}{string.Join(Environment.NewLine, this._liquidTemplate.Messages)}");
+            throw new ArgumentException(error is not null ?
+                $"The template could not be parsed:{Environment.NewLine}{error}" :
+                 "The template could not be parsed.");
         }
-        Debug.Assert(this._liquidTemplate.Page is not null);
 
         // Ideally the prompty author would have explicitly specified input variables. If they specified any,
         // assume they specified them all. If they didn't, heuristically try to find the variables, looking for
@@ -69,7 +74,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             foreach (string implicitVariable in SimpleVariablesVisitor.InferInputs(this._liquidTemplate))
             {
-                config.InputVariables.Add(new() { Name = implicitVariable, AllowUnsafeContent = config.AllowUnsafeContent });
+                config.InputVariables.Add(new() { Name = implicitVariable, AllowDangerouslySetContent = config.AllowDangerouslySetContent });
             }
         }
 
@@ -92,7 +97,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     {
         Verify.NotNull(kernel);
         cancellationToken.ThrowIfCancellationRequested();
-        var variables = this.GetVariables(arguments);
+        var variables = this.GetTemplateContext(arguments);
         var renderedResult = this._liquidTemplate.Render(variables);
 
         // parse chat history
@@ -143,7 +148,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 
     private string ReplaceReservedStringBackToColonIfNeeded(string text)
     {
-        if (this._allowUnsafeContent)
+        if (this._allowDangerouslySetContent)
         {
             return text;
         }
@@ -154,9 +159,9 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
     /// </summary>
-    private Dictionary<string, object?> GetVariables(KernelArguments? arguments)
+    private TemplateContext GetTemplateContext(KernelArguments? arguments)
     {
-        var result = new Dictionary<string, object?>();
+        var ctx = new TemplateContext(s_templateOptions);
 
         foreach (var p in this._config.InputVariables)
         {
@@ -165,7 +170,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                 continue;
             }
 
-            result[p.Name] = p.Default;
+            ctx.SetValue(p.Name, p.Default);
         }
 
         if (arguments is not null)
@@ -177,22 +182,22 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
                     var value = (object)kvp.Value;
                     if (this.ShouldReplaceColonToReservedString(this._config, kvp.Key, kvp.Value))
                     {
-                        result[kvp.Key] = value.ToString()?.Replace(ColonString, ReservedString);
+                        ctx.SetValue(kvp.Key, value.ToString()?.Replace(ColonString, ReservedString));
                     }
                     else
                     {
-                        result[kvp.Key] = value;
+                        ctx.SetValue(kvp.Key, value);
                     }
                 }
             }
         }
 
-        return result;
+        return ctx;
     }
 
     private bool ShouldReplaceColonToReservedString(PromptTemplateConfig promptTemplateConfig, string propertyName, object? propertyValue)
     {
-        if (propertyValue is null || propertyValue is not string || this._allowUnsafeContent)
+        if (propertyValue is null || propertyValue is not string || this._allowDangerouslySetContent)
         {
             return false;
         }
@@ -201,7 +206,7 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
         {
             if (inputVariable.Name == propertyName)
             {
-                return !inputVariable.AllowUnsafeContent;
+                return !inputVariable.AllowDangerouslySetContent;
             }
         }
 
@@ -209,20 +214,23 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
     }
 
     /// <summary>
-    /// Visitor for <see cref="ScriptPage"/> looking for variables that are only
+    /// Visitor for <see cref="IFluidTemplate"/> looking for variables that are only
     /// ever read and appear to represent very simple strings. If any variables
-    /// other than that are found, none are returned.
+    /// other than that are found, none are returned. This only handles very basic
+    /// cases where the template doesn't contain any more complicated constructs;
+    /// the heuristic can be improved over time.
     /// </summary>
-    private sealed class SimpleVariablesVisitor : ScriptVisitor
+    private sealed class SimpleVariablesVisitor : AstVisitor
     {
         private readonly HashSet<string> _variables = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Stack<Statement> _statementStack = new();
         private bool _valid = true;
 
-        public static HashSet<string> InferInputs(Template template)
+        public static HashSet<string> InferInputs(IFluidTemplate template)
         {
             var visitor = new SimpleVariablesVisitor();
 
-            template.Page.Accept(visitor);
+            visitor.VisitTemplate(template);
             if (!visitor._valid)
             {
                 visitor._variables.Clear();
@@ -231,27 +239,51 @@ internal sealed partial class LiquidPromptTemplate : IPromptTemplate
             return visitor._variables;
         }
 
-        public override void Visit(ScriptVariableGlobal node)
+        public override Statement Visit(Statement statement)
         {
-            if (this._valid)
+            if (!this._valid)
             {
-                switch (node.Parent)
-                {
-                    case ScriptAssignExpression assign when ReferenceEquals(assign.Target, node):
-                    case ScriptForStatement forLoop:
-                    case ScriptMemberExpression member:
-                        // Unsupported use found; bail.
-                        this._valid = false;
-                        return;
+                return statement;
+            }
 
-                    default:
-                        // Reading from a simple variable.
-                        this._variables.Add(node.Name);
-                        break;
+            this._statementStack.Push(statement);
+            try
+            {
+                return base.Visit(statement);
+            }
+            finally
+            {
+                this._statementStack.Pop();
+            }
+        }
+
+        protected override Expression VisitMemberExpression(MemberExpression memberExpression)
+        {
+            if (memberExpression.Segments.Count == 1 && memberExpression.Segments[0] is IdentifierSegment id)
+            {
+                bool isValid = true;
+
+                if (this._statementStack.Count > 0)
+                {
+                    switch (this._statementStack.Peek())
+                    {
+                        case ForStatement:
+                        case AssignStatement assign when string.Equals(id.Identifier, assign.Identifier, StringComparison.OrdinalIgnoreCase):
+                            isValid = false;
+                            break;
+                    }
                 }
 
-                base.DefaultVisit(node);
+                if (isValid)
+                {
+                    this._variables.Add(id.Identifier);
+                    return base.VisitMemberExpression(memberExpression);
+                }
             }
+
+            // Found something unsupported. Bail.
+            this._valid = false;
+            return memberExpression;
         }
     }
 }
