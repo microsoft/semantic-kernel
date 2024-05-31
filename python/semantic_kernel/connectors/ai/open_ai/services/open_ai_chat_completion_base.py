@@ -88,10 +88,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None and settings.function_call_behavior.auto_invoke_kernel_functions:
-            if kernel is None or arguments is None:
+        if settings.function_call_behavior is not None:
+            if kernel is None:
                 raise ServiceInvalidExecutionSettingsError(
-                    "The kernel and kernel arguments are required for auto invoking OpenAI tool calls."
+                    "The kernel is required for OpenAI tool calls."
+                )
+            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
+                raise ServiceInvalidExecutionSettingsError(
+                    "The kernel arguments are required for auto invoking OpenAI tool calls."
                 )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
@@ -165,10 +169,14 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """
         kernel = kwargs.get("kernel", None)
         arguments = kwargs.get("arguments", None)
-        if settings.function_call_behavior is not None and settings.function_call_behavior.auto_invoke_kernel_functions:
-            if kernel is None or arguments is None:
+        if settings.function_call_behavior is not None:
+            if kernel is None:
                 raise ServiceInvalidExecutionSettingsError(
-                    "The kernel argument and arguments are required for OpenAI tool calling."
+                    "The kernel is required for OpenAI tool calls."
+                )
+            if arguments is None and settings.function_call_behavior.auto_invoke_kernel_functions:
+                raise ServiceInvalidExecutionSettingsError(
+                    "The kernel arguments are required for auto invoking OpenAI tool calls."
                 )
             if settings.number_of_responses is not None and settings.number_of_responses > 1:
                 raise ServiceInvalidExecutionSettingsError(
