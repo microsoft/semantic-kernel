@@ -12,7 +12,7 @@ informed:
 
 ## Context and Problem Statement
 
-Today, every AI connector in SK that supports function calling has its own implementation of tool call behavior model classes. These classes are used to configure the way connectors advertise and invoke functions. For example, the behavior classes can describe which functions should be advertised to LLM by a connector, whether the functions should be called automatically by the connector, or if the connector caller will invoke them himself manually, etc.  
+Today, every AI connector in SK that supports function calling has its own implementation of tool call behavior model classes. These classes are used to configure the way connectors advertise and invoke functions. For example, the behavior classes can describe which functions should be advertised to LLM by a connector, whether the functions should be called automatically by the connector, or if the connector caller will invoke them manually, etc.  
    
 All the tool call behavior classes are the same in terms of describing the desired function call behavior. However, the classes have a mapping functionality to map the function call behavior to the connector-specific model classes, and that's what makes the function calling classes non-reusable between connectors. For example, [the constructor of the ToolCallBehavior class](https://github.com/microsoft/semantic-kernel/blob/0c40031eb917bbf46c9af97897051f45e4084986/dotnet/src/Connectors/Connectors.OpenAI/ToolCallBehavior.cs#L165) references the [OpenAIFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Connectors/Connectors.OpenAI/AzureSdk/OpenAIFunction.cs) class that lives in the `Microsoft.SemanticKernel.Connectors.OpenAI` namespace declared in the `Connectors.OpenAI` project. The classes can't be reused by, let's say, the Mistral AI connector without introducing an explicit project dependency from the `Connectors.Mistral` project to the `Connectors.OpenAI` project, a dependency we definitely don't want to have.
 
@@ -22,7 +22,7 @@ Additionally, today, it's not possible to specify function calling behavior decl
 
 - The same set of function call behavior model classes should be connector/mode-agnostic, allowing them to be used by all SK connectors that support function calling.
 - Function calling behavior should be specified in the `PromptExecutionSettings` base class rather than in connector-specific derivatives.
-- It should be possible and easy to specify function calling behavior in all already supported YAML, MD, and SK(config.json) prompts.
+- It should be possible and easy to specify function calling behavior in all already supported YAML(Handlebars, Prompty), MD, and SK(config.json) prompts.
 - It should be possible to override the prompt execution settings specified in the prompt by using the prompt execution settings specified in the code.
 
 ## Existing function calling behavior model - ToolCallBehavior
@@ -49,7 +49,7 @@ public abstract class FunctionChoiceBehavior
 {
     public static FunctionChoiceBehavior AutoFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) { ... }
     public static FunctionChoiceBehavior RequiredFunctionChoice(IEnumerable<KernelFunction>? functions = null, bool autoInvoke = true) { ... }
-    public static FunctionChoiceBehavior None { get { ... }; }
+    public static FunctionChoiceBehavior NoneFunctionChoice { get { ... }; }
 
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context);
 }
@@ -94,9 +94,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
 
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        // Handle functions provided via constructor as function instances.
-        ...
-        // Or, handle functions provided via the 'Functions' property as function fully qualified names.
+        // Handle functions provided through the constructor or through the 'Functions' property.
         ...
         // Or, provide all functions from the kernel.
 
@@ -132,9 +130,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
 
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorContext context)
     {
-        // Handle functions provided via constructor as function instances.
-        ...
-        // Or, handle functions provided via the 'Functions' property as function fully qualified names.
+        // Handle functions provided through the constructor or through the 'Functions' property.
         ...
         // Or, provide all functions from the kernel.
 
