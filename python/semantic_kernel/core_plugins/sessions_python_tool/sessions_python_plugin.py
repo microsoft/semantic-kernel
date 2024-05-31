@@ -18,7 +18,7 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings 
     SessionsPythonSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -32,9 +32,9 @@ class SessionsPythonTool(KernelBaseModel):
     """A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter."""
 
     pool_management_endpoint: str
-    settings: SessionsPythonSettings | None = None
+    settings: SessionsPythonSettings
     auth_callback: Callable[..., Awaitable[Any]]
-    http_client: httpx.AsyncClient | None = None
+    http_client: httpx.AsyncClient
 
     def __init__(
         self,
@@ -58,14 +58,12 @@ class SessionsPythonTool(KernelBaseModel):
             )
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {str(e)}")
-            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
-
-        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
+            raise FunctionInitializationError(f"Failed to load the ACASessionsSettings with message: {str(e)}") from e
 
         super().__init__(
-            pool_management_endpoint=endpoint,
-            auth_callback=auth_callback,
+            pool_management_endpoint=aca_settings.pool_management_endpoint,
             settings=settings,
+            auth_callback=auth_callback,
             http_client=http_client,
             **kwargs,
         )
@@ -100,7 +98,7 @@ class SessionsPythonTool(KernelBaseModel):
         Remove whitespace, backtick & python (if llm mistakes python console as terminal).
 
         Args:
-            code: The query to sanitize
+            code (str): The query to sanitize
         Returns:
             str: The sanitized query
         """
@@ -166,7 +164,11 @@ class SessionsPythonTool(KernelBaseModel):
 
     @kernel_function(name="upload_file", description="Uploads a file for the current Session ID")
     async def upload_file(
-        self, *, data: BufferedReader = None, remote_file_path: str = None, local_file_path: str = None
+        self,
+        *,
+        data: BufferedReader | None = None,
+        remote_file_path: str | None = None,
+        local_file_path: str | None = None,
     ) -> SessionsRemoteFileMetadata:
         """Upload a file to the session pool.
 
@@ -198,7 +200,7 @@ class SessionsPythonTool(KernelBaseModel):
         response = await self.http_client.post(
             url=f"{self.pool_management_endpoint}python/uploadFile?identifier={self.settings.session_id}",
             json={},
-            files=files,
+            files=files,  # type: ignore
         )
 
         response.raise_for_status()
@@ -229,7 +231,7 @@ class SessionsPythonTool(KernelBaseModel):
         response_json = response.json()
         return [SessionsRemoteFileMetadata.from_dict(entry) for entry in response_json["$values"]]
 
-    async def download_file(self, *, remote_file_path: str, local_file_path: str = None) -> BufferedReader | None:
+    async def download_file(self, *, remote_file_path: str, local_file_path: str | None = None) -> BytesIO | None:
         """Download a file from the session pool.
 
         Args:
