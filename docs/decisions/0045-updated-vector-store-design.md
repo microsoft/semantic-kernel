@@ -577,7 +577,7 @@ Chosen option: 4 + 5.
 - Pros: No code executed when no normalization required.
 - Pros: Easy to package matching encoders/decoders together.
 - Pros: Easier to obsolete encoding/normalization as a concept.
-- Cons: Need to implement the full MemoryRecordService interface.
+- Cons: Not a major con, but need to implement the full MemoryRecordService interface, instead of e.g. just providing the two translation functions, if we go with option 3.
 - Cons: Hard to have a generic implementation that can work with any model, without either changing the data in the provided object on upsert or doing cloning in an expensive way.
 
 ```cs
