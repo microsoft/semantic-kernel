@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Represent function choice behavior configuration.
+/// Represent function choice behavior configuration produced by a <see cref="FunctionChoiceBehavior" />.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class FunctionChoiceBehaviorConfiguration
