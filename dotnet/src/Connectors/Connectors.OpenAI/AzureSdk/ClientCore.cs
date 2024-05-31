@@ -1267,7 +1267,7 @@ internal abstract class ClientCore
             return [new ChatRequestUserMessage(message.Items.Select(static (KernelContent item) => (ChatMessageContentItem)(item switch
             {
                 TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                ImageContent imageContent => new ChatMessageImageContentItem(imageContent.Uri),
+                ImageContent imageContent => GetImageContentItem(imageContent),
                 _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
             })))
             { Name = message.AuthorName }];
@@ -1335,6 +1335,21 @@ internal abstract class ClientCore
         }
 
         throw new NotSupportedException($"Role {message.Role} is not supported.");
+    }
+
+    private static ChatMessageImageContentItem GetImageContentItem(ImageContent imageContent)
+    {
+        if (imageContent.Data is { IsEmpty: false } data)
+        {
+            return new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MimeType);
+        }
+
+        if (imageContent.Uri is not null)
+        {
+            return new ChatMessageImageContentItem(imageContent.Uri);
+        }
+
+        throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
     private static ChatRequestMessage GetRequestMessage(ChatResponseMessage message)
