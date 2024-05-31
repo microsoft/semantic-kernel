@@ -29,7 +29,7 @@ class BingConnector(ConnectorBase):
         Args:
             api_key (str | None): The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
-            custom_config {str | None}: The Bing Custom Search instance's unique identifier.
+            custom_config (str | None): The Bing Custom Search instance's unique identifier.
                 If provided, will override the value in the env vars or .env file.
             env_file_path (str | None): The optional path to the .env file. If provided,
                 the settings are read from this file path location.
@@ -41,7 +41,6 @@ class BingConnector(ConnectorBase):
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
-
 
     async def search(self, query: str, num_results: int = 1, offset: int = 0) -> list[str]:
         """Returns the search results of the query provided by pinging the Bing web search API."""
