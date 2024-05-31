@@ -437,6 +437,33 @@ async def test_azure_chat_completion_no_kernel_provided_throws_error(
 
     with pytest.raises(
         ServiceInvalidExecutionSettingsError,
-        match="The kernel and kernel arguments are required for auto invoking OpenAI tool calls.",
+        match="The kernel is required for OpenAI tool calls.",
+    ):
+        await azure_chat_completion.get_chat_message_contents(chat_history, complete_prompt_execution_settings)
+
+
+@pytest.mark.asyncio
+@patch.object(AsyncChatCompletions, "create")
+async def test_azure_chat_completion_auto_invoke_false_no_kernel_provided_throws_error(
+    mock_create, azure_openai_unit_test_env, chat_history: ChatHistory
+) -> None:
+    prompt = "some prompt that would trigger the content filtering"
+    chat_history.add_user_message(prompt)
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
+        function_call_behavior=FunctionCallBehavior.EnableFunctions(
+            auto_invoke=False, filters={}
+        )
+    )
+
+    test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    mock_create.side_effect = openai.BadRequestError(
+        "The request was bad.", response=Response(400, request=Request("POST", test_endpoint)), body={}
+    )
+
+    azure_chat_completion = AzureChatCompletion()
+
+    with pytest.raises(
+        ServiceInvalidExecutionSettingsError,
+        match="The kernel is required for OpenAI tool calls.",
     ):
         await azure_chat_completion.get_chat_message_contents(chat_history, complete_prompt_execution_settings)
