@@ -121,7 +121,7 @@ class OpenApiParser:
     ) -> RestApiOperationPayload:
         if request_body is None or request_body.get("content") is None:
             return None
-        media_type = next((mt for mt in OpenApiParser.supported_media_types if mt in request_body.get("content")), None)
+        media_type = next((mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in request_body.get("content")), None)
         if media_type is None:
             raise Exception(f"Neither of the media types of {operation_id} is supported.")
         media_type_metadata = request_body.get("content")[media_type]
@@ -140,7 +140,7 @@ class OpenApiParser:
     ) -> Generator[tuple[str, RestApiOperationExpectedResponse], None, None]:
         for response_key, response_value in responses.items():
             media_type = next(
-                (mt for mt in OpenApiParser.supported_media_types if mt in response_value.get("content", {})), None
+                (mt for mt in OpenApiParser.SUPPORTED_MEDIA_TYPES if mt in response_value.get("content", {})), None
             )
             if media_type is not None:
                 matching_schema = response_value["content"][media_type].get("schema", {})
