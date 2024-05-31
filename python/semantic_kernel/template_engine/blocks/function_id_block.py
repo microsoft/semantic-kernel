@@ -2,7 +2,7 @@
 
 import logging
 from re import compile
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pydantic import model_validator
 
@@ -27,7 +27,7 @@ class FunctionIdBlock(Block):
     The content is parsed using a regex, that returns either a plugin and
     function name or just a function name, depending on the content.
 
-    Anything other then that and a ValueError is raised.
+    Anything other than that and a ValueError is raised.
 
     Args:
         content (str): The content of the block.
@@ -39,16 +39,16 @@ class FunctionIdBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
-    function_name: Optional[str] = ""
-    plugin_name: Optional[str] = None
+    function_name: str | None = ""
+    plugin_name: str | None = None
 
     @model_validator(mode="before")
     @classmethod
-    def parse_content(cls, fields: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_content(cls, fields: dict[str, Any]) -> dict[str, Any]:
         """Parse the content of the function id block and extract the plugin and function name.
 
         If both are present in the fields, return the fields as is.
-        Otherwise use the regex to extract the plugin and function name.
+        Otherwise, use the regex to extract the plugin and function name.
         """
         if "plugin_name" in fields and "function_name" in fields:
             return fields
@@ -61,5 +61,6 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
-    def render(self, *_: Tuple["Kernel", Optional["KernelArguments"]]) -> str:
+    def render(self, *_: tuple["Kernel", Optional["KernelArguments"]]) -> str:
+        """Render the function id block."""
         return self.content

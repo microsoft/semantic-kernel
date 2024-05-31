@@ -51,7 +51,7 @@ public class Plugin(ITestOutputHelper output) : LearnBaseTest([
         // Start the conversation
         Console.Write("User > ");
         string? userInput;
-        while ((userInput = Console.ReadLine()) != null)
+        while ((userInput = Console.ReadLine()) is not null)
         {
             // Add user input
             history.AddUserMessage(userInput);

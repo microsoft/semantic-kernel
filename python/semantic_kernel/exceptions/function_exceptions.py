@@ -12,6 +12,7 @@ class FunctionSyntaxError(FunctionException):
 
 class FunctionInitializationError(FunctionException):
     def __init__(self, message: str):
+        """Raised when a KernelFunction fails to initialize."""
         super().__init__("KernelFunction failed to initialize: " + message)
 
 
@@ -43,6 +44,10 @@ class FunctionResultError(FunctionException):
     pass
 
 
+class PromptRenderingException(FunctionException):
+    pass
+
+
 __all__ = [
     "FunctionException",
     "FunctionInitializationError",
@@ -54,4 +59,5 @@ __all__ = [
     "PluginInvalidNameError",
     "FunctionExecutionException",
     "FunctionResultError",
+    "PromptRenderingException",
 ]

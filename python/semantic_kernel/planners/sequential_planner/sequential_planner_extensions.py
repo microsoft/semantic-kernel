@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from typing import List, Optional
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
@@ -15,6 +14,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class SequentialPlannerFunctionExtension:
     @staticmethod
     def to_manual_string(function: KernelFunctionMetadata):
+        """Convert the function to a manual string."""
         inputs = [
             f"  - {parameter.name}: {parameter.description}"
             + (f" (default value: {parameter.default_value})" if parameter.default_value else "")
@@ -25,6 +25,7 @@ class SequentialPlannerFunctionExtension:
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
+        """Convert the function to an embedding string."""
         inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
         return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
 
@@ -40,6 +41,7 @@ class SequentialPlannerKernelExtension:
         semantic_query: str = None,
         config: SequentialPlannerConfig = None,
     ) -> str:
+        """Get the functions manual."""
         config = config or SequentialPlannerConfig()
 
         if config.get_available_functions is None:
@@ -56,16 +58,17 @@ class SequentialPlannerKernelExtension:
         kernel: Kernel,
         arguments: KernelArguments,
         config: SequentialPlannerConfig,
-        semantic_query: Optional[str] = None,
+        semantic_query: str | None = None,
     ):
+        """Get the available functions based on the semantic query."""
         excluded_plugins = config.excluded_plugins or []
         excluded_functions = config.excluded_functions or []
         included_functions = config.included_functions or []
 
         available_functions = [
             func
-            for func in kernel.get_list_of_function_metadata()
-            if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
+            for func in kernel.get_list_of_function_metadata({"excluded_plugins": excluded_plugins})
+            if func.name not in excluded_functions
         ]
 
         if semantic_query is None or config.relevancy_threshold is None:
@@ -91,9 +94,10 @@ class SequentialPlannerKernelExtension:
     @staticmethod
     async def get_relevant_functions(
         kernel: Kernel,
-        available_functions: List[KernelFunctionMetadata],
-        memories: Optional[List[MemoryQueryResult]] = None,
-    ) -> List[KernelFunctionMetadata]:
+        available_functions: list[KernelFunctionMetadata],
+        memories: list[MemoryQueryResult] | None = None,
+    ) -> list[KernelFunctionMetadata]:
+        """Get relevant functions from the memories."""
         relevant_functions = []
         # TODO: cancellation
         if memories is None:
@@ -105,7 +109,7 @@ class SequentialPlannerKernelExtension:
             )
             if function is not None:
                 logger.debug(
-                    "Found relevant function. Relevance Score: {0}, Function: {1}".format(
+                    "Found relevant function. Relevance Score: {}, Function: {}".format(
                         memory_entry.relevance,
                         function.fully_qualified_name,
                     )

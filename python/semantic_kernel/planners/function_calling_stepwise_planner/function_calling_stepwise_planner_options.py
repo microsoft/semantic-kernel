@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from __future__ import annotations
-
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import model_validator
 
@@ -28,6 +27,7 @@ class FunctionCallingStepwisePlannerOptions(PlannerOptions):
     @model_validator(mode="before")
     @classmethod
     def calculate_token_limits(cls, data: Any) -> Any:
+        """Calculate the token limits based on the max_tokens and max_tokens_ratio."""
         if isinstance(data, dict):
             max_tokens = data.get("max_tokens")
             # Ensure max_tokens_ratio has a default value if not provided

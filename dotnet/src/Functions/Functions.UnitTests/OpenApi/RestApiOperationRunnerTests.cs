@@ -1048,7 +1048,59 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
+        var kernelException = await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
+        Assert.Equal("The content type `fake/type` is not supported.", kernelException.Message);
+        Assert.Equal("POST", kernelException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", kernelException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", kernelException.Data["http.request.body"]);
+    }
+
+    [Fact]
+    public async Task ItShouldReturnRequestUriAndContentAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiOperationPayloadProperty> payloadProperties =
+        [
+            new("name", "string", true, []),
+            new("attributes", "object", false,
+            [
+                new("enabled", "boolean", false, []),
+            ])
+        ];
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            [],
+            payload
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "name", "fake-name-value" },
+            { "enabled", true }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result.RequestMethod);
+        Assert.Equal(HttpMethod.Post.Method, result.RequestMethod);
+        Assert.NotNull(result.RequestUri);
+        Assert.Equal("https://fake-random-test-host/fake-path", result.RequestUri.AbsoluteUri);
+        Assert.NotNull(result.RequestPayload);
+        Assert.IsType<JsonObject>(result.RequestPayload);
+        Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
     public class SchemaTestData : IEnumerable<object[]>
@@ -1158,7 +1210,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             this.Method = request.Method;
             this.RequestUri = request.RequestUri;
             this.RequestHeaders = request.Headers;
-            this.RequestContent = request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+            this.RequestContent = request.Content is null ? null : await request.Content.ReadAsByteArrayAsync(cancellationToken);
             this.ContentHeaders = request.Content?.Headers;
 
             return await Task.FromResult(this.ResponseToReturn);

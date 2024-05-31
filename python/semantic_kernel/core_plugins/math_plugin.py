@@ -1,17 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
-import sys
 
-if sys.version_info >= (3, 9):
-    from typing import Annotated
-else:
-    from typing_extensions import Annotated
+from typing import Annotated
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class MathPlugin:
-    """
-    Description: MathPlugin provides a set of functions to make Math calculations.
+    """Description: MathPlugin provides a set of functions to make Math calculations.
 
     Usage:
         kernel.add_plugin(MathPlugin(), plugin_name="math")
@@ -43,8 +38,7 @@ class MathPlugin:
         input: Annotated[int, "the first number"],
         amount: Annotated[int, "the number to subtract"],
     ) -> int:
-        """
-        Returns the difference of numbers provided.
+        """Returns the difference of numbers provided.
 
         :param initial_value_text: Initial value as string to subtract the specified amount
         :param context: Contains the context to get the numbers from
@@ -58,8 +52,7 @@ class MathPlugin:
 
     @staticmethod
     def add_or_subtract(input: int, amount: int, add: bool) -> int:
-        """
-        Helper function to perform addition or subtraction based on the add flag.
+        """Helper function to perform addition or subtraction based on the add flag.
 
         :param initial_value_text: Initial value as string to add or subtract the specified amount
         :param context: Contains the context to get the numbers from

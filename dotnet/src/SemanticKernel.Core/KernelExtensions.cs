@@ -140,7 +140,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -159,7 +160,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -209,7 +211,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
@@ -227,7 +230,8 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromType<T>(this ICollection<KernelPlugin> plugins, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
@@ -246,7 +250,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromType<T>(this IKernelBuilderPlugins plugins, string? pluginName = null)
     {
@@ -281,7 +286,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
@@ -299,7 +305,8 @@ public static class KernelExtensions
     /// <param name="serviceProvider">Service provider from which to resolve dependencies, such as <see cref="ILoggerFactory"/>.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromObject(this ICollection<KernelPlugin> plugins, object target, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
@@ -318,7 +325,8 @@ public static class KernelExtensions
     /// </param>
     /// <returns>The same instance as <paramref name="plugins"/>.</returns>
     /// <remarks>
-    /// Public methods that have the <see cref="KernelFunctionFromPrompt"/> attribute will be included in the plugin.
+    /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
+    /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromObject(this IKernelBuilderPlugins plugins, object target, string? pluginName = null)
     {
@@ -447,7 +455,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -555,7 +563,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -603,7 +611,7 @@ public static class KernelExtensions
     ///             |__ config.json           #     settings (optional file)
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompt_template_samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -661,6 +669,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -699,6 +708,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -775,6 +785,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);
@@ -815,6 +826,7 @@ public static class KernelExtensions
 
         KernelFunction function = KernelFunctionFromPrompt.Create(
             promptTemplate,
+            functionName: KernelFunctionFromPrompt.CreateRandomFunctionName(nameof(InvokePromptStreamingAsync)),
             templateFormat: templateFormat,
             promptTemplateFactory: promptTemplateFactory,
             loggerFactory: kernel.LoggerFactory);

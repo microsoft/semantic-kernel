@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
@@ -15,36 +15,34 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
     """Base class for text completion AI services."""
 
     @abstractmethod
-    async def complete(
+    async def get_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
-        """
-        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {PromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (PromptExecutionSettings): Settings for the request.
 
-            Returns:
-            list[TextContent] -- A string or list of strings representing the response(s) from the LLM.
+        Returns:
+            list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
 
     @abstractmethod
-    def complete_stream(
+    def get_streaming_text_contents(
         self,
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        """
-        This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {PromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (PromptExecutionSettings): Settings for the request.
 
         Yields:
-            list[StreamingTextContent] -- A stream representing the response(s) from the LLM.
+            list[StreamingTextContent]: A stream representing the response(s) from the LLM.
         """
         ...

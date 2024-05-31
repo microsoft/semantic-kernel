@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import re
-from typing import Callable, Optional, Tuple
+from collections.abc import Callable
 
 from defusedxml import ElementTree as ET
 
@@ -26,9 +26,10 @@ class SequentialPlanParser:
         xml_string: str,
         goal: str,
         kernel: Kernel,
-        get_plugin_function: Optional[Callable[[str, str], Optional[KernelFunction]]] = None,
+        get_plugin_function: Callable[[str, str], KernelFunction | None] | None = None,
         allow_missing_functions: bool = False,
     ):
+        """Convert an xml string to a plan."""
         xml_string = "<xml>" + xml_string + "</xml>"
         try:
             xml_doc = ET.fromstring(xml_string)
@@ -111,7 +112,8 @@ class SequentialPlanParser:
         return plan
 
     @staticmethod
-    def get_plugin_function_names(plugin_function_name: str) -> Tuple[str, str]:
+    def get_plugin_function_names(plugin_function_name: str) -> tuple[str, str]:
+        """Get the plugin and function names from the plugin function name."""
         plugin_function_name_parts = plugin_function_name.split("-")
         plugin_name = plugin_function_name_parts[0] if len(plugin_function_name_parts) > 0 else ""
         function_name = plugin_function_name_parts[1] if len(plugin_function_name_parts) > 1 else plugin_function_name

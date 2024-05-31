@@ -55,9 +55,9 @@ class NamedArgBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.NAMED_ARG
-    name: Optional[str] = None
-    value: Optional[ValBlock] = None
-    variable: Optional[VarBlock] = None
+    name: str | None = None
+    value: ValBlock | None = None
+    variable: VarBlock | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -65,7 +65,7 @@ class NamedArgBlock(Block):
         """Parse the content of the named argument block and extract the name and value.
 
         If the name and either value or variable is present the parsing is skipped.
-        Otherwise the content is parsed using a regex to extract the name and value.
+        Otherwise, the content is parsed using a regex to extract the name and value.
         Those are then turned into Blocks.
 
         Raises:
@@ -88,6 +88,7 @@ class NamedArgBlock(Block):
         return fields
 
     def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> Any:
+        """Render the named argument block."""
         if self.value:
             return self.value.render(kernel, arguments)
         if arguments is None:

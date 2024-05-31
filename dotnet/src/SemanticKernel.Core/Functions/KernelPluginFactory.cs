@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
 /// </summary>
-public static class KernelPluginFactory
+public static partial class KernelPluginFactory
 {
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -25,7 +27,7 @@ public static class KernelPluginFactory
     /// </param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <typeparamref name="T"/>.</returns>
     /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin CreateFromType<T>(string? pluginName = null, IServiceProvider? serviceProvider = null)
@@ -42,17 +44,17 @@ public static class KernelPluginFactory
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A <see cref="KernelPlugin"/> containing <see cref="KernelFunction"/>s for all relevant members of <paramref name="target"/>.</returns>
     /// <remarks>
-    /// Public methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
+    /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin CreateFromObject(object target, string? pluginName = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 
-        pluginName ??= target.GetType().Name;
+        pluginName ??= CreatePluginName(target.GetType());
         Verify.ValidPluginName(pluginName);
 
-        MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 
         // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
         var functions = new List<KernelFunction>();
@@ -65,7 +67,7 @@ public static class KernelPluginFactory
         }
         if (functions.Count == 0)
         {
-            throw new ArgumentException($"The {target.GetType()} instance doesn't expose any public [KernelFunction]-attributed methods.");
+            throw new ArgumentException($"The {target.GetType()} instance doesn't implement any [KernelFunction]-attributed methods.");
         }
 
         if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
@@ -101,4 +103,51 @@ public static class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
     public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
         new DefaultKernelPlugin(pluginName, description, functions);
+
+    /// <summary>Creates a name for a plugin based on its type name.</summary>
+    private static string CreatePluginName(Type type)
+    {
+        string name = type.Name;
+        if (type.IsGenericType)
+        {
+            // Simple representation of generic arguments, without recurring into their generics
+            var builder = new StringBuilder();
+            AppendWithoutArity(builder, name);
+
+            Type[] genericArgs = type.GetGenericArguments();
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                builder.Append('_');
+                AppendWithoutArity(builder, genericArgs[i].Name);
+            }
+
+            name = builder.ToString();
+
+            static void AppendWithoutArity(StringBuilder builder, string name)
+            {
+                int tickPos = name.IndexOf('`');
+                if (tickPos >= 0)
+                {
+                    builder.Append(name, 0, tickPos);
+                }
+                else
+                {
+                    builder.Append(name);
+                }
+            }
+        }
+
+        // Replace invalid characters
+        name = InvalidPluginNameCharactersRegex().Replace(name, "_");
+
+        return name;
+    }
+
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidPluginNameCharactersRegex();
+#else
+    private static Regex InvalidPluginNameCharactersRegex() => s_invalidPluginNameCharactersRegex;
+    private static readonly Regex s_invalidPluginNameCharactersRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 }

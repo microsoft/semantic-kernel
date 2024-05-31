@@ -2,16 +2,24 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning.Handlebars;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.MistralAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Services;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 /// <summary>
@@ -19,6 +27,80 @@ using OpenTelemetry.Trace;
 /// </summary>
 public sealed class Program
 {
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task Main()
+    {
+        // Enable model diagnostics with sensitive data.
+        AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
+
+        // Load configuration from environment variables or user secrets.
+        LoadUserSecrets();
+
+        var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
+        var resourceBuilder = ResourceBuilder
+            .CreateDefault()
+            .AddService("TelemetryExample");
+
+        using var traceProvider = Sdk.CreateTracerProviderBuilder()
+            .SetResourceBuilder(resourceBuilder)
+            .AddSource("Microsoft.SemanticKernel*")
+            .AddSource("Telemetry.Example")
+            .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
+            .Build();
+
+        using var meterProvider = Sdk.CreateMeterProviderBuilder()
+            .SetResourceBuilder(resourceBuilder)
+            .AddMeter("Microsoft.SemanticKernel*")
+            .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
+            .Build();
+
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            // Add OpenTelemetry as a logging provider
+            builder.AddOpenTelemetry(options =>
+            {
+                options.SetResourceBuilder(resourceBuilder);
+                options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
+                // Format log messages. This is default to false.
+                options.IncludeFormattedMessage = true;
+                options.IncludeScopes = true;
+            });
+            builder.SetMinimumLevel(MinLogLevel);
+        });
+
+        var kernel = GetKernel(loggerFactory);
+
+        using var activity = s_activitySource.StartActivity("Main");
+        Console.WriteLine($"Operation/Trace ID: {Activity.Current?.TraceId}");
+        Console.WriteLine();
+
+        Console.WriteLine("Write a poem about John Doe and translate it to Italian.");
+        using (var _ = s_activitySource.StartActivity("Chat"))
+        {
+            await RunAzureOpenAIChatAsync(kernel);
+            Console.WriteLine();
+            await RunGoogleAIChatAsync(kernel);
+            Console.WriteLine();
+            await RunHuggingFaceChatAsync(kernel);
+            Console.WriteLine();
+            await RunMistralAIChatAsync(kernel);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine();
+
+        Console.WriteLine("Get weather.");
+        using (var _ = s_activitySource.StartActivity("ToolCalls"))
+        {
+            await RunAzureOpenAIToolCallsAsync(kernel);
+            Console.WriteLine();
+        }
+    }
+
+    #region Private
     /// <summary>
     /// Log level to be used by <see cref="ILogger"/>.
     /// </summary>
@@ -33,58 +115,133 @@ public sealed class Program
     /// </summary>
     private static readonly ActivitySource s_activitySource = new("Telemetry.Example");
 
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public static async Task Main()
+    private const string AzureOpenAIServiceKey = "AzureOpenAI";
+    private const string GoogleAIGeminiServiceKey = "GoogleAIGemini";
+    private const string HuggingFaceServiceKey = "HuggingFace";
+    private const string MistralAIServiceKey = "MistralAI";
+
+    #region chat completion
+    private static async Task RunAzureOpenAIChatAsync(Kernel kernel)
     {
-        // Load configuration from environment variables or user secrets.
-        LoadUserSecrets();
+        Console.WriteLine("============= Azure OpenAI Chat Completion =============");
 
-        var connectionString = TestConfiguration.ApplicationInsights.ConnectionString;
-
-        using var traceProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("Microsoft.SemanticKernel*")
-            .AddSource("Telemetry.Example")
-            .AddAzureMonitorTraceExporter(options => options.ConnectionString = connectionString)
-            .Build();
-
-        using var meterProvider = Sdk.CreateMeterProviderBuilder()
-            .AddMeter("Microsoft.SemanticKernel*")
-            .AddAzureMonitorMetricExporter(options => options.ConnectionString = connectionString)
-            .Build();
-
-        using var loggerFactory = LoggerFactory.Create(builder =>
+        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+        try
         {
-            // Add OpenTelemetry as a logging provider
-            builder.AddOpenTelemetry(options =>
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static async Task RunGoogleAIChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= Google Gemini Chat Completion =============");
+
+        using var activity = s_activitySource.StartActivity(GoogleAIGeminiServiceKey);
+        SetTargetService(kernel, GoogleAIGeminiServiceKey);
+
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static async Task RunHuggingFaceChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= HuggingFace Chat Completion =============");
+
+        using var activity = s_activitySource.StartActivity(HuggingFaceServiceKey);
+        SetTargetService(kernel, HuggingFaceServiceKey);
+
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static async Task RunMistralAIChatAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= MistralAI Chat Completion =============");
+
+        using var activity = s_activitySource.StartActivity(MistralAIServiceKey);
+        SetTargetService(kernel, MistralAIServiceKey);
+
+        try
+        {
+            await RunChatAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static async Task RunChatAsync(Kernel kernel)
+    {
+        // Using non-streaming to get the poem.
+        var poem = await kernel.InvokeAsync<string>(
+            "WriterPlugin",
+            "ShortPoem",
+            new KernelArguments { ["input"] = "Write a poem about John Doe." });
+        Console.WriteLine($"Poem:\n{poem}\n");
+
+        // Use streaming to translate the poem.
+        Console.WriteLine("Translated Poem:");
+        await foreach (var update in kernel.InvokeStreamingAsync<string>(
+            "WriterPlugin",
+            "Translate",
+            new KernelArguments
             {
-                options.AddAzureMonitorLogExporter(options => options.ConnectionString = connectionString);
-                // Format log messages. This is default to false.
-                options.IncludeFormattedMessage = true;
-            });
-            builder.SetMinimumLevel(MinLogLevel);
-        });
+                ["input"] = poem,
+                ["language"] = "Italian"
+            }))
+        {
+            Console.Write(update);
+        }
+    }
+    #endregion
 
-        var kernel = GetKernel(loggerFactory);
-        var planner = CreatePlanner();
+    #region tool calls
+    private static async Task RunAzureOpenAIToolCallsAsync(Kernel kernel)
+    {
+        Console.WriteLine("============= Azure OpenAI ToolCalls =============");
 
-        using var activity = s_activitySource.StartActivity("Main");
+        using var activity = s_activitySource.StartActivity(AzureOpenAIServiceKey);
+        SetTargetService(kernel, AzureOpenAIServiceKey);
+        try
+        {
+            await RunAutoToolCallAsync(kernel);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
 
-        Console.WriteLine("Operation/Trace ID:");
-        Console.WriteLine(Activity.Current?.TraceId);
+    private static async Task RunAutoToolCallAsync(Kernel kernel)
+    {
+        var result = await kernel.InvokePromptAsync("What is the weather like in my location?");
 
-        var plan = await planner.CreatePlanAsync(kernel, "Write a poem about John Doe, then translate it into Italian.");
-
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToString());
-
-        var result = await plan.InvokeAsync(kernel).ConfigureAwait(false);
-
-        Console.WriteLine("Result:");
         Console.WriteLine(result);
     }
+    #endregion
 
     private static Kernel GetKernel(ILoggerFactory loggerFactory)
     {
@@ -93,22 +250,46 @@ public sealed class Program
         IKernelBuilder builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(loggerFactory);
-        builder.AddAzureOpenAIChatCompletion(
-            deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            modelId: TestConfiguration.AzureOpenAI.ChatModelId,
-            endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-            apiKey: TestConfiguration.AzureOpenAI.ApiKey
-        ).Build();
+        builder
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                serviceId: AzureOpenAIServiceKey)
+            .AddGoogleAIGeminiChatCompletion(
+                modelId: TestConfiguration.GoogleAI.Gemini.ModelId,
+                apiKey: TestConfiguration.GoogleAI.ApiKey,
+                serviceId: GoogleAIGeminiServiceKey)
+            .AddHuggingFaceChatCompletion(
+                model: TestConfiguration.HuggingFace.ModelId,
+                endpoint: new Uri("https://api-inference.huggingface.co"),
+                apiKey: TestConfiguration.HuggingFace.ApiKey,
+                serviceId: HuggingFaceServiceKey)
+            .AddMistralChatCompletion(
+                modelId: TestConfiguration.MistralAI.ChatModelId,
+                apiKey: TestConfiguration.MistralAI.ApiKey,
+                serviceId: MistralAIServiceKey
+            );
 
+        builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
         builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+        builder.Plugins.AddFromType<WeatherPlugin>();
+        builder.Plugins.AddFromType<LocationPlugin>();
 
         return builder.Build();
     }
 
-    private static HandlebarsPlanner CreatePlanner()
+    private static void SetTargetService(Kernel kernel, string targetServiceKey)
     {
-        var plannerOptions = new HandlebarsPlannerOptions();
-        return new HandlebarsPlanner(plannerOptions);
+        if (kernel.Data.ContainsKey("TargetService"))
+        {
+            kernel.Data["TargetService"] = targetServiceKey;
+        }
+        else
+        {
+            kernel.Data.Add("TargetService", targetServiceKey);
+        }
     }
 
     private static void LoadUserSecrets()
@@ -119,4 +300,73 @@ public sealed class Program
             .Build();
         TestConfiguration.Initialize(configRoot);
     }
+
+    private sealed class AIServiceSelector : IAIServiceSelector
+    {
+        public bool TrySelectAIService<T>(
+            Kernel kernel, KernelFunction function, KernelArguments arguments,
+            [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+        {
+            var targetServiceKey = kernel.Data.TryGetValue("TargetService", out object? value) ? value : null;
+            if (targetServiceKey is not null)
+            {
+                var targetService = kernel.Services.GetKeyedServices<T>(targetServiceKey).FirstOrDefault();
+                if (targetService is not null)
+                {
+                    service = targetService;
+                    serviceSettings = targetServiceKey switch
+                    {
+                        AzureOpenAIServiceKey => new OpenAIPromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                        },
+                        GoogleAIGeminiServiceKey => new GeminiPromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                            // Not show casing the AutoInvokeKernelFunctions behavior for Gemini due the following issue:
+                            // https://github.com/microsoft/semantic-kernel/issues/6282
+                            // ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+                        },
+                        HuggingFaceServiceKey => new HuggingFacePromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                        },
+                        MistralAIServiceKey => new MistralAIPromptExecutionSettings()
+                        {
+                            Temperature = 0,
+                            ToolCallBehavior = MistralAIToolCallBehavior.AutoInvokeKernelFunctions
+                        },
+                        _ => null,
+                    };
+
+                    return true;
+                }
+            }
+
+            service = null;
+            serviceSettings = null;
+            return false;
+        }
+    }
+    #endregion
+
+    #region Plugins
+
+    public sealed class WeatherPlugin
+    {
+        [KernelFunction]
+        public string GetWeather(string location) => $"Weather in {location} is 70°F.";
+    }
+
+    public sealed class LocationPlugin
+    {
+        [KernelFunction]
+        public string GetCurrentLocation()
+        {
+            return "Seattle";
+        }
+    }
+
+    #endregion
 }
