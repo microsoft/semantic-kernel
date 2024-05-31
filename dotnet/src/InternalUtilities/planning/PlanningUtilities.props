@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/planning/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-</Project>
