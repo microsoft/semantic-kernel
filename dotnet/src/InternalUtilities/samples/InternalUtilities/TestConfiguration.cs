@@ -31,6 +31,8 @@ public sealed class TestConfiguration
     public static PineconeConfig Pinecone => LoadSection<PineconeConfig>();
     public static BingConfig Bing => LoadSection<BingConfig>();
     public static GoogleConfig Google => LoadSection<GoogleConfig>();
+
+    public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static GithubConfig Github => LoadSection<GithubConfig>();
     public static PostgresConfig Postgres => LoadSection<PostgresConfig>();
     public static RedisConfig Redis => LoadSection<RedisConfig>();
@@ -143,6 +145,12 @@ public sealed class TestConfiguration
     {
         public string ApiKey { get; set; }
         public string SearchEngineId { get; set; }
+    }
+
+    public class OllamaConfig
+    {
+        public string ModelId { get; set; }
+        public Uri BaseUri { get; set; }
     }
 
     public class GithubConfig
