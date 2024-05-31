@@ -32,7 +32,6 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Gets the referenced Uri of the content.
     /// </summary>
-    [JsonPropertyName("uri")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Uri? Uri
     {
@@ -53,7 +52,6 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Gets the byte array data of the content.
     /// </summary>
-    [JsonPropertyName("data")]
     [JsonPropertyOrder(100), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
     public ReadOnlyMemory<byte>? Data
     {
@@ -62,7 +60,7 @@ public class BinaryContent : KernelContent
     }
 
     /// <summary>
-    /// Indicates whether the content has binary data. If false content usually must be referenced by URI.
+    /// Indicates whether the content contains binary data in either <see cref="Data"/> or <see cref="DataUri"/> properties.
     /// </summary>
     /// <returns>True if the content has binary data, false otherwise.</returns>
     [JsonIgnore]
@@ -84,7 +82,7 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class referring to an external uri.
     /// </summary>
-    public BinaryContent(Uri? uri = null)
+    public BinaryContent(Uri uri)
     {
         this.Uri = uri;
     }
@@ -96,7 +94,7 @@ public class BinaryContent : KernelContent
     public BinaryContent(
         // Uri type has a ushort size limit check which inviabilizes its usage in DataUri scenarios.
         // <see href="https://github.com/dotnet/runtime/issues/96544"/>
-        string? dataUri)
+        string dataUri)
     {
         this.DataUri = dataUri;
     }
@@ -146,7 +144,6 @@ public class BinaryContent : KernelContent
     /// Sets the DataUri of the content.
     /// </summary>
     /// <param name="dataUri">DataUri of the content</param>
-    /// <exception cref="ArgumentException"></exception>
     private void SetDataUri(string? dataUri)
     {
         if (dataUri is null)
@@ -173,6 +170,9 @@ public class BinaryContent : KernelContent
         // If parameters where provided in the data uri, updates the content metadata.
         if (parsedDataUri.Parameters.Count != 0)
         {
+            // According to the RFC 2397, the data uri supports custom parameters
+            // This method ensures that if parameter is provided those will be added
+            // to the content metadata with a "data-uri-" prefix.
             this.UpdateDataUriParametersToMetadata(parsedDataUri);
         }
 
@@ -184,16 +184,20 @@ public class BinaryContent : KernelContent
 
     private void UpdateDataUriParametersToMetadata(DataUriParser.DataUri parsedDataUri)
     {
+        if (parsedDataUri.Parameters.Count == 0)
+        {
+            return;
+        }
+
         var newMetadata = this.Metadata as Dictionary<string, object?>;
         if (newMetadata is null)
         {
-            // Clone the current read only metadata;
             newMetadata = new Dictionary<string, object?>();
             if (this.Metadata is not null)
             {
-                foreach (var property in this.Metadata)
+                foreach (var property in this.Metadata!)
                 {
-                    newMetadata[$"data-uri-{property.Key}"] = property.Value;
+                    newMetadata[property.Key] = property.Value;
                 }
             }
         }
@@ -283,9 +287,10 @@ public class BinaryContent : KernelContent
         if (this.MimeType is null)
         {
             // May consider defaulting to application/octet-stream if not provided.
-            throw new InvalidOperationException("Can't get the data uri with without a mime type defined for the content.");
+            throw new InvalidOperationException("Can't get the data uri without a mime type defined for the content.");
         }
 
+        // Ensure that if any data-uri-parameter defined in the metadata those will be added to the data uri.
         this._dataUri = $"data:{this.MimeType}{this.GetDataUriParametersFromMetadata()};base64," + Convert.ToBase64String(cachedByteArray.Value.ToArray());
         return this._dataUri;
     }

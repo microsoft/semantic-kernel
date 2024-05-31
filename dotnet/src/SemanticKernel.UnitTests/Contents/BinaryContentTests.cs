@@ -18,20 +18,17 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         Assert.Equal("{}",
             JsonSerializer.Serialize(new BinaryContent()));
 
-        Assert.Equal("{}",
-            JsonSerializer.Serialize(new BinaryContent(dataUri: null)));
+        Assert.Equal("""{"MimeType":"text/plain","Data":""}""",
+            JsonSerializer.Serialize(new BinaryContent("data:,")));
 
-        Assert.Equal("{}",
-            JsonSerializer.Serialize(new BinaryContent(uri: null)));
-
-        Assert.Equal("""{"uri":"http://localhost/"}""",
+        Assert.Equal("""{"Uri":"http://localhost/"}""",
             JsonSerializer.Serialize(new BinaryContent(new Uri("http://localhost/"))));
 
-        Assert.Equal("""{"mimeType":"application/octet-stream","data":"AQIDBA=="}""",
+        Assert.Equal("""{"MimeType":"application/octet-stream","Data":"AQIDBA=="}""",
             JsonSerializer.Serialize(new BinaryContent(
                 dataUri: "data:application/octet-stream;base64,AQIDBA==")));
 
-        Assert.Equal("""{"mimeType":"application/octet-stream","data":"AQIDBA=="}""",
+        Assert.Equal("""{"MimeType":"application/octet-stream","Data":"AQIDBA=="}""",
             JsonSerializer.Serialize(new BinaryContent(
                 data: new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]),
                 mimeType: "application/octet-stream")
@@ -50,7 +47,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         Assert.False(content.CanRead);
 
         // Data + MimeType only
-        content = JsonSerializer.Deserialize<BinaryContent>("""{"mimeType":"application/octet-stream","data":"AQIDBA=="}""")!;
+        content = JsonSerializer.Deserialize<BinaryContent>("""{"MimeType":"application/octet-stream","Data":"AQIDBA=="}""")!;
 
         Assert.Null(content.Uri);
         Assert.NotNull(content.Data);
@@ -59,7 +56,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         Assert.True(content.CanRead);
 
         // Uri referenced content-only 
-        content = JsonSerializer.Deserialize<BinaryContent>("""{"mimeType":"application/octet-stream","uri":"http://localhost/"}""")!;
+        content = JsonSerializer.Deserialize<BinaryContent>("""{"MimeType":"application/octet-stream","Uri":"http://localhost/"}""")!;
 
         Assert.Null(content.Data);
         Assert.Null(content.DataUri);
@@ -70,13 +67,13 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
         // Using extra metadata
         content = JsonSerializer.Deserialize<BinaryContent>("""
             {
-                "data": "AQIDBA==",
-                "modelId": "gpt-4",
-                "metadata": {
+                "Data": "AQIDBA==",
+                "ModelId": "gpt-4",
+                "Metadata": {
                     "key": "value"
                 },
-                "uri": "http://localhost/myfile.txt",
-                "mimeType": "text/plain"
+                "Uri": "http://localhost/myfile.txt",
+                "MimeType": "text/plain"
             }
         """)!;
 
@@ -178,17 +175,17 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData( // Data always comes last in serialization
-        """{"data": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "mimeType": "text/plain" }""",
-        """{"mimeType":"text/plain","data":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""")]
+        """{"Data": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "MimeType": "text/plain" }""",
+        """{"MimeType":"text/plain","Data":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""")]
     [InlineData( // Does not support non-readable content
-        """{"dataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "unexpected": true }""",
+        """{"DataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "unexpected": true }""",
         "{}")]
     [InlineData( // Only serializes the read/writeable properties
-        """{"dataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "mimeType": "text/plain" }""",
-        """{"mimeType":"text/plain"}""")]
+        """{"DataUri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "MimeType": "text/plain" }""",
+        """{"MimeType":"text/plain"}""")]
     [InlineData( // Uri comes before mimetype
-        """{"mimeType": "text/plain", "uri": "http://localhost/" }""",
-        """{"uri":"http://localhost/","mimeType":"text/plain"}""")]
+        """{"MimeType": "text/plain", "Uri": "http://localhost/" }""",
+        """{"Uri":"http://localhost/","MimeType":"text/plain"}""")]
     public void DeserializationAndSerializationBehaveAsExpected(string serialized, string expectedToString)
     {
         // Arrange
@@ -215,6 +212,9 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     [InlineData("data:something;else,data", typeof(UriFormatException))] // mime type without subtype
     [InlineData("data:type/subtype;parameterwithoutvalue;else,", typeof(UriFormatException))] // parameter without value
     [InlineData("data:type/subtype;;parameter=value;else,", typeof(UriFormatException))] // parameter without value
+    [InlineData("data:type/subtype;parameter=va=lue;else,", typeof(UriFormatException))] // parameter with multiple = 
+    [InlineData("data:type/subtype;=value;else,", typeof(UriFormatException))] // empty parameter name
+
     // Base64 Validation Errors
     [InlineData("data:text;base64,something!", typeof(UriFormatException))]  // Invalid base64 due to invalid character '!'
     [InlineData("data:text/plain;base64,U29tZQ==\t", typeof(UriFormatException))] // Invalid base64 due to tab character
@@ -224,7 +224,7 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
     [InlineData("data:text/plain;base64,U29", typeof(UriFormatException))] // Invalid base64 due to missing padding
     [InlineData("data:text/plain;base64,U29tZQ", typeof(UriFormatException))] // Invalid base64 due to missing padding
     [InlineData("data:text/plain;base64,U29tZQ=", typeof(UriFormatException))] // Invalid base64 due to missing padding
-    public void ItThrowsOnInvalidDataUri(string? path, Type exception)
+    public void ItThrowsOnInvalidDataUri(string path, Type exception)
     {
         var thrownException = Assert.Throws(exception, () => new BinaryContent(path));
         output.WriteLine(thrownException.Message);
@@ -232,11 +232,11 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
 
     [Theory]
     [InlineData("data:;parameter1=value1,", "{}", """{"data-uri-parameter1":"value1"}""")] // Should create extra data
-    [InlineData("data:;parameter1=value1,", """{"metadata":{"data-uri-parameter1":"should override me"}}""", """{"data-uri-parameter1":"value1"}""")] // Should override existing data
-    [InlineData("data:;parameter1=value1,", """{"metadata":{"data-uri-parameter2":"value2"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:;parameter1=value1;parameter2=value2,data", """{"metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
-    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"metadata":{"data-uri-parameter3":"existing data", "data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2","data-uri-parameter3":"existing data"}""")] // Should keep previous metadata
+    [InlineData("data:;parameter1=value1,", """{"Metadata":{"data-uri-parameter1":"should override me"}}""", """{"data-uri-parameter1":"value1"}""")] // Should override existing data
+    [InlineData("data:;parameter1=value1,", """{"Metadata":{"data-uri-parameter2":"value2"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:;parameter1=value1;parameter2=value2,data", """{"Metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"Metadata":{"data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2"}""")] // Should merge existing data with new data
+    [InlineData("data:image/jpeg;parameter1=value1;parameter2=value2;base64,data", """{"Metadata":{"data-uri-parameter3":"existing data", "data-uri-parameter2":"should override me"}}""", """{"data-uri-parameter1":"value1","data-uri-parameter2":"value2","data-uri-parameter3":"existing data"}""")] // Should keep previous metadata
     public void DataUriConstructorWhenProvidingParametersUpdatesMetadataAsExpected(string path, string startingSerializedBinaryContent, string expectedSerializedMetadata)
     {
         // Arrange
@@ -252,6 +252,30 @@ public sealed class BinaryContentTests(ITestOutputHelper output)
             Assert.True(content.Metadata.ContainsKey(kvp.Key));
             Assert.Equal(kvp.Value?.ToString(), content.Metadata[kvp.Key]?.ToString());
         }
+    }
+
+    [Fact]
+    public void ItPreservePreviousMetadataForParameterizedDataUri()
+    {
+        // Arrange
+        var content = new BinaryContent
+        {
+            Metadata = new Dictionary<string, object?>
+            {
+                { "key1", "value1" },
+                { "key2", "value2" }
+            }
+        };
+
+        // Act
+        content.DataUri = "data:;parameter1=parametervalue1;parameter2=parametervalue2;base64,data";
+
+        // Assert
+        Assert.Equal(4, content.Metadata!.Count);
+        Assert.Equal("value1", content.Metadata["key1"]?.ToString());
+        Assert.Equal("value2", content.Metadata["key2"]?.ToString());
+        Assert.Equal("parametervalue1", content.Metadata["data-uri-parameter1"]?.ToString());
+        Assert.Equal("parametervalue2", content.Metadata["data-uri-parameter2"]?.ToString());
     }
 
     [Fact]

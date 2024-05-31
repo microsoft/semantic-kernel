@@ -25,6 +25,7 @@ public class DataUriParserTests(ITestOutputHelper output)
     [InlineData("data:text/plain;charset=UTF-8;page=21,the%20data:1234,5678", "text/plain", "the%20data:1234,5678", null, """{"charset":"UTF-8","page":"21"}""")]
     [InlineData("data:image/svg+xml;utf8,<svg width='10'... </svg>", "image/svg+xml", "<svg width='10'... </svg>", "utf8", "{}")]
     [InlineData("data:;charset=UTF-8,the%20data", "text/plain", "the%20data", null, """{"charset":"UTF-8"}""")]
+    [InlineData("data:text/vnd-example+xyz;foo=;base64,R0lGODdh", "text/vnd-example+xyz", "R0lGODdh", "base64", """{"foo":""}""")]
     public void ItCanParseDataUri(string dataUri, string? expectedMimeType, string expectedData, string? expectedDataFormat, string serializedExpectedParameters)
     {
         var parsed = DataUriParser.Parse(dataUri);
@@ -54,6 +55,8 @@ public class DataUriParserTests(ITestOutputHelper output)
     [InlineData("data:something;else,data", typeof(UriFormatException))] // mime type without subtype
     [InlineData("data:type/subtype;parameterwithoutvalue;else,", typeof(UriFormatException))] // parameter without value
     [InlineData("data:type/subtype;;parameter=value;else,", typeof(UriFormatException))] // parameter without value
+    [InlineData("data:type/subtype;parameter=va=lue;else,", typeof(UriFormatException))] // parameter with multiple = 
+    [InlineData("data:type/subtype;=value;else,", typeof(UriFormatException))] // empty parameter name
     // Base64 Validation Errors
     [InlineData("data:text;base64,something!", typeof(UriFormatException))]  // Invalid base64 due to invalid character '!'
     [InlineData("data:text/plain;base64,U29tZQ==\t", typeof(UriFormatException))] // Invalid base64 due to tab character

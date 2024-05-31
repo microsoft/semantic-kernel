@@ -27,7 +27,6 @@ public abstract class KernelContent
     /// <summary>
     /// MIME type of the content.
     /// </summary>
-    [JsonPropertyName("mimeType")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? MimeType { get; set; }
 
@@ -43,14 +42,12 @@ public abstract class KernelContent
     /// <summary>
     /// The model ID used to generate the content.
     /// </summary>
-    [JsonPropertyName("modelId")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ModelId { get; set; }
 
     /// <summary>
     /// The metadata associated with the content.
     /// </summary>
-    [JsonPropertyName("metadata")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 

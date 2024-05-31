@@ -34,12 +34,12 @@ public class AudioContent : BinaryContent
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
     /// <param name="dataUri">DataUri of the audio</param>
-    public AudioContent(string? dataUri) : base(dataUri)
+    public AudioContent(string dataUri) : base(dataUri)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ImageContent"/> class.
+    /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
     /// <param name="data">Byte array of the audio</param>
     /// <param name="mimeType">Mime type of the audio</param>

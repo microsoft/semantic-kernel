@@ -32,7 +32,7 @@ public class ImageContent : BinaryContent
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
     /// <param name="dataUri">DataUri of the image</param>
-    public ImageContent(string? dataUri) : base(dataUri)
+    public ImageContent(string dataUri) : base(dataUri)
     {
     }
 

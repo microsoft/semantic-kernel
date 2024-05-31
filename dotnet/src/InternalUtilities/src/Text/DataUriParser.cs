@@ -110,10 +110,14 @@ static internal class DataUriParser
             if (part!.Contains("="))
             {
                 var keyValue = part.Split('=');
-                if (keyValue.Length == 2)
+
+                // Parameter must have a name and cannot have more than one '=' for values.
+                if (string.IsNullOrWhiteSpace(keyValue[0]) || keyValue.Length != 2)
                 {
-                    model.Parameters[keyValue[0]] = keyValue[1];
+                    throw new UriFormatException("Invalid data uri format. Parameters must have \"name=value\" format.");
                 }
+
+                model.Parameters[keyValue[0]] = keyValue[1];
 
                 continue;
             }

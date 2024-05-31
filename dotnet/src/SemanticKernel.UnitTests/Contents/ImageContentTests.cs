@@ -171,8 +171,8 @@ public sealed class ImageContentTests
         var serializeAfter = JsonSerializer.Serialize(content);
 
         // Assert
-        Assert.Equal("""{"mimeType":"text/plain","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeBefore);
-        Assert.Equal("""{"uri":"file:///foo.txt","mimeType":"image/jpeg","data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
+        Assert.Equal("""{"MimeType":"text/plain","Data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeBefore);
+        Assert.Equal("""{"Uri":"file:///foo.txt","MimeType":"image/jpeg","Data":"dGhpcyBpcyBhIHRlc3Q="}""", serializeAfter);
 
         // Uri behaves independently of other properties
         Assert.Equal("file:///foo.txt", content.Uri?.ToString());
@@ -260,7 +260,7 @@ public sealed class ImageContentTests
         }
         else
         {
-            Assert.Equal($"{{\"uri\":\"{uri}\"}}", serialized);
+            Assert.Equal($"{{\"Uri\":\"{uri}\"}}", serialized);
         }
 
         Assert.NotNull(deserialized);
