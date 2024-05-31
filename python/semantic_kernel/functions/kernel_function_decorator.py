@@ -1,9 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import types
 from collections.abc import Callable
-from inspect import Parameter, isasyncgenfunction, isclass, isgeneratorfunction, signature
-from typing import Any, ForwardRef
+from inspect import (
+    Parameter,
+    Signature,
+    isasyncgenfunction,
+    isclass,
+    isgeneratorfunction,
+    signature,
+)
+from typing import Any, ForwardRef, Union, get_args
 
 NoneType = type(None)
 logger = logging.getLogger(__name__)
@@ -49,33 +57,90 @@ def kernel_function(
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
         setattr(func, "__kernel_function_description__", description or func.__doc__)
-        setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
-        setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
-        logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
+        setattr(
+            func,
+            "__kernel_function_name__",
+            name or getattr(func, "__name__", "unknown"),
+        )
+        setattr(
+            func,
+            "__kernel_function_streaming__",
+            isasyncgenfunction(func) or isgeneratorfunction(func),
+        )
+        logger.debug(
+            f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}"
+        )
         func_sig = signature(func, eval_str=True)
-        annotations = []
-        for arg in func_sig.parameters.values():
-            if arg.name == "self":
-                continue
-            if arg.default == arg.empty:
-                annotations.append(_parse_parameter(arg.name, arg.annotation, None))
-            else:
-                annotations.append(_parse_parameter(arg.name, arg.annotation, arg.default))
+
+        annotations = _process_signature(func_sig)
         logger.debug(f"{annotations=}")
+
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
-            _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
+            _parse_parameter("return", func_sig.return_annotation, None)
+            if func_sig.return_annotation
+            else {}
         )
-        setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
-        setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
-        setattr(func, "__kernel_function_return_description__", return_annotation.get("description", ""))
-        setattr(func, "__kernel_function_return_required__", return_annotation.get("is_required", False))
+        setattr(
+            func,
+            "__kernel_function_return_type__",
+            return_annotation.get("type_", "None"),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_type_object__",
+            return_annotation.get("type_object", None),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_description__",
+            return_annotation.get("description", ""),
+        )
+        setattr(
+            func,
+            "__kernel_function_return_required__",
+            return_annotation.get("is_required", False),
+        )
         return func
 
     if func:
         return decorator(func)
     return decorator
+
+
+def _get_underlying_type(annotation: Any) -> Any:
+    if isinstance(annotation, types.UnionType):
+        args = annotation.__args__
+        non_none_types = [arg for arg in args if arg is not type(None)]
+        return non_none_types[0] if non_none_types else None
+    if hasattr(annotation, "__origin__"):
+        if annotation.__origin__ is Union:
+            args = get_args(annotation)
+            non_none_types = [arg for arg in args if arg is not type(None)]
+            return non_none_types[0] if non_none_types else None
+        if isinstance(annotation.__origin__, types.UnionType):
+            args = annotation.__origin__.__args__
+            non_none_types = [arg for arg in args if arg is not type(None)]
+            return non_none_types[0] if non_none_types else None
+        return annotation.__origin__
+    return annotation
+
+
+def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
+    annotations = []
+
+    for arg in func_sig.parameters.values():
+        if arg.name == "self":
+            continue
+        annotation = arg.annotation
+        default = arg.default if arg.default != arg.empty else None
+        parsed_annotation = _parse_parameter(arg.name, annotation, default)
+        underlying_type = _get_underlying_type(annotation)
+        parsed_annotation["type_object"] = underlying_type
+        annotations.append(parsed_annotation)
+
+    return annotations
 
 
 def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
@@ -107,7 +172,9 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                     arg = arg.__forward_arg__
                 args.append(_parse_parameter(name, arg, default))
             if ret.get("type_") in ["list", "dict"]:
-                ret["type_"] = f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
+                ret["type_"] = (
+                    f"{ret['type_']}[{', '.join([arg['type_'] for arg in args])}]"
+                )
             elif len(args) > 1:
                 ret["type_"] = ", ".join([arg["type_"] for arg in args])
             else:
