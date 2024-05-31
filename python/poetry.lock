@@ -5957,4 +5957,8 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "68ac03e588be923ece82d2bfddf8a35dcffce59d5553c15c36e64e579bfac4b2"
+<<<<content-hash = "68ac03e588be923ece82d2bfddf8a35dcffce59d5553c15c36e64e579bfac4b2"
+>>>>>>>+Updated upstrea
+===
+content-hash = "751c426269957f2ed7f1d627ee76d2892ebb24719762bb1fcf81ffcb3d08d1bd"
+>>>>>>> Stashed changes
