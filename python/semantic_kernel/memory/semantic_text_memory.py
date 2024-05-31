@@ -15,7 +15,6 @@ from semantic_kernel.utils.experimental_decorator import experimental_class
 @experimental_class
 class SemanticTextMemory(SemanticTextMemoryBase):
     _storage: MemoryStoreBase = PrivateAttr()
-    # TODO: replace with kernel and service_selector pattern
     _embeddings_generator: EmbeddingGeneratorBase = PrivateAttr()
 
     def __init__(self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase) -> None:
@@ -49,7 +48,6 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             additional_metadata (Optional[str]): Additional metadata of the information.
             embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the information.
         """
-        # TODO: not the best place to create collection, but will address this behavior together with .NET SK
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 
@@ -85,7 +83,6 @@ class SemanticTextMemory(SemanticTextMemoryBase):
             additional_metadata (Optional[str]): Additional metadata of the reference.
             embeddings_kwargs (Optional[Dict[str, Any]]): The embeddings kwargs of the reference.
         """
-        # TODO: not the best place to create collection, but will address this behavior together with .NET SK
         if not await self._storage.does_collection_exist(collection_name=collection):
             await self._storage.create_collection(collection_name=collection)
 

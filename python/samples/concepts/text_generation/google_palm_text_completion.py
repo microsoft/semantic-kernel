@@ -10,8 +10,7 @@ async def text_completion_example_complete(kernel: Kernel, user_mssg, settings):
     """Complete a text prompt using the Google PaLM model and print the results."""
     palm_text_completion = GooglePalmTextCompletion("models/text-bison-001")
     kernel.add_service(palm_text_completion)
-    answer = await palm_text_completion.get_text_contents(user_mssg, settings)
-    return answer
+    return await palm_text_completion.get_text_contents(user_mssg, settings)
 
 
 async def main() -> None:
