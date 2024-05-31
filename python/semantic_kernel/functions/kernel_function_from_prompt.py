@@ -4,7 +4,7 @@ import logging
 import os
 from collections.abc import AsyncGenerator
 from html import unescape
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from pydantic import Field, ValidationError, model_validator
@@ -12,6 +12,7 @@ from pydantic import Field, ValidationError, model_validator
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -30,6 +31,9 @@ from semantic_kernel.functions.prompt_rendering_result import PromptRenderingRes
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+if TYPE_CHECKING:
+    from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -146,10 +150,12 @@ through prompt_template_config or in the prompt_template."
                 return data
         if isinstance(prompt_execution_settings, PromptExecutionSettings):
             data["prompt_execution_settings"] = {
-                prompt_execution_settings.service_id or "default": prompt_execution_settings
+                prompt_execution_settings.service_id or DEFAULT_SERVICE_NAME: prompt_execution_settings
             }
         if isinstance(prompt_execution_settings, list):
-            data["prompt_execution_settings"] = {s.service_id or "default": s for s in prompt_execution_settings}
+            data["prompt_execution_settings"] = {
+                s.service_id or DEFAULT_SERVICE_NAME: s for s in prompt_execution_settings
+            }
         return data
 
     async def _invoke_internal(self, context: FunctionInvocationContext) -> None:
@@ -232,7 +238,6 @@ through prompt_template_config or in the prompt_template."
     async def _render_prompt(self, context: FunctionInvocationContext) -> PromptRenderingResult:
         """Render the prompt and apply the prompt rendering filters."""
         self.update_arguments_with_defaults(context.arguments)
-        service, execution_settings = context.kernel.select_ai_service(self, context.arguments)
 
         _rebuild_prompt_render_context()
         prompt_render_context = PromptRenderContext(function=self, kernel=context.kernel, arguments=context.arguments)
@@ -245,10 +250,13 @@ through prompt_template_config or in the prompt_template."
 
         if prompt_render_context.rendered_prompt is None:
             raise PromptRenderingException("Prompt rendering failed, no rendered prompt was returned.")
+        selected_service: tuple["AIServiceClientBase", PromptExecutionSettings] = context.kernel.select_ai_service(
+            function=self, arguments=context.arguments
+        )
         return PromptRenderingResult(
             rendered_prompt=prompt_render_context.rendered_prompt,
-            ai_service=service,
-            execution_settings=execution_settings,
+            ai_service=selected_service[0],
+            execution_settings=selected_service[1],
         )
 
     async def _inner_render_prompt(self, context: PromptRenderContext) -> None:

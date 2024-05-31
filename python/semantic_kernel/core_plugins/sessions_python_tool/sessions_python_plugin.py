@@ -32,9 +32,9 @@ class SessionsPythonTool(KernelBaseModel):
     """A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter."""
 
     pool_management_endpoint: str
-    settings: SessionsPythonSettings | None = None
+    settings: SessionsPythonSettings
     auth_callback: Callable[..., Awaitable[Any]]
-    http_client: httpx.AsyncClient | None = None
+    http_client: httpx.AsyncClient
 
     def __init__(
         self,
@@ -60,12 +60,10 @@ class SessionsPythonTool(KernelBaseModel):
             logger.error(f"Failed to load the ACASessionsSettings with message: {e!s}")
             raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {e!s}") from e
 
-        endpoint = pool_management_endpoint or aca_settings.pool_management_endpoint
-
         super().__init__(
-            pool_management_endpoint=endpoint,
-            auth_callback=auth_callback,
+            pool_management_endpoint=aca_settings.pool_management_endpoint,
             settings=settings,
+            auth_callback=auth_callback,
             http_client=http_client,
             **kwargs,
         )
@@ -100,7 +98,7 @@ class SessionsPythonTool(KernelBaseModel):
         Remove whitespace, backtick & python (if llm mistakes python console as terminal).
 
         Args:
-            code: The query to sanitize
+            code (str): The query to sanitize
         Returns:
             str: The sanitized query
         """
@@ -201,7 +199,7 @@ class SessionsPythonTool(KernelBaseModel):
         response = await self.http_client.post(
             url=f"{self.pool_management_endpoint}python/uploadFile?identifier={self.settings.session_id}",
             json={},
-            files=files,
+            files=files,  # type: ignore
         )
 
         response.raise_for_status()
@@ -232,9 +230,7 @@ class SessionsPythonTool(KernelBaseModel):
         response_json = response.json()
         return [SessionsRemoteFileMetadata.from_dict(entry) for entry in response_json["$values"]]
 
-    async def download_file(
-        self, *, remote_file_path: str, local_file_path: str | None = None
-    ) -> BufferedReader | None:
+    async def download_file(self, *, remote_file_path: str, local_file_path: str | None = None) -> BytesIO | None:
         """Download a file from the session pool.
 
         Args:

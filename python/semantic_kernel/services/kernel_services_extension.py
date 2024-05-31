@@ -2,31 +2,21 @@
 
 import logging
 from abc import ABC
-from typing import TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING
 
 from pydantic import Field, field_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.exceptions import (
-    KernelFunctionAlreadyExistsError,
-    KernelServiceNotFoundError,
-    ServiceInvalidTypeError,
-)
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
+from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-    from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-    from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+    from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.functions.kernel_function import KernelFunction
-
-T = TypeVar("T")
-
-AI_SERVICE_CLIENT_TYPE = TypeVar("AI_SERVICE_CLIENT_TYPE", bound=AIServiceClientBase)
-ALL_SERVICE_TYPES = Union["TextCompletionClientBase", "ChatCompletionClientBase", "EmbeddingGeneratorBase"]
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -48,22 +38,22 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         if not services:
             return {}
         if isinstance(services, AIServiceClientBase):
-            return {services.service_id if services.service_id else "default": services}  # type: ignore
+            return {services.service_id if services.service_id else DEFAULT_SERVICE_NAME: services}  # type: ignore
         if isinstance(services, list):
-            return {s.service_id if s.service_id else "default": s for s in services}
+            return {s.service_id if s.service_id else DEFAULT_SERVICE_NAME: s for s in services}
         return services
 
     def select_ai_service(
-        self, function: "KernelFunction", arguments: KernelArguments
-    ) -> tuple[ALL_SERVICE_TYPES, PromptExecutionSettings]:
+        self, function: "KernelFunction", arguments: "KernelArguments"
+    ) -> tuple[AIServiceClientBase, PromptExecutionSettings]:
         """Uses the AI service selector to select a service for the function."""
         return self.ai_service_selector.select_ai_service(self, function, arguments)
 
     def get_service(
         self,
         service_id: str | None = None,
-        type: type[ALL_SERVICE_TYPES] | None = None,
-    ) -> "AIServiceClientBase":
+        type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None = None,
+    ) -> AIServiceClientBase:
         """Get a service by service_id and type.
 
         Type is optional and when not supplied, no checks are done.
@@ -71,46 +61,47 @@ class KernelServicesExtension(KernelBaseModel, ABC):
             TextCompletionClientBase, ChatCompletionClientBase, EmbeddingGeneratorBase
             or a subclass of one.
             You can also check for multiple types in one go,
-            by using TextCompletionClientBase | ChatCompletionClientBase.
+            by using a tuple: (TextCompletionClientBase, ChatCompletionClientBase).
 
         If type and service_id are both None, the first service is returned.
 
         Args:
             service_id (str | None): The service id,
                 if None, the default service is returned or the first service is returned.
-            type (Type[ALL_SERVICE_TYPES] | None): The type of the service, if None, no checks are done.
+            type (Type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None):
+                The type of the service, if None, no checks are done on service type.
 
         Returns:
-            ALL_SERVICE_TYPES: The service.
+            AIServiceClientBase: The service, should be a class derived from AIServiceClientBase.
 
         Raises:
-            ValueError: If no service is found that matches the type.
+            KernelServiceNotFoundError: If no service is found that matches the type or id.
 
         """
-        service: "AIServiceClientBase | None" = None
-        if not service_id or service_id == "default":
-            if not type:
-                if default_service := self.services.get("default"):
-                    return default_service
-                return next(iter(self.services.values()))
-            if (default_service := self.services.get("default")) and isinstance(default_service, type):
-                return default_service
-            for service in self.services.values():
-                if isinstance(service, type):
-                    return service
-            raise KernelServiceNotFoundError(f"No service found of type {type}")
-        if not (service := self.services.get(service_id)):
-            raise KernelServiceNotFoundError(f"Service with service_id '{service_id}' does not exist")
-        if type and not isinstance(service, type):
-            raise ServiceInvalidTypeError(f"Service with service_id '{service_id}' is not of type {type}")
-        return service
+        services = self.get_services_by_type(type)
+        if not services:
+            raise KernelServiceNotFoundError(f"No services found of type {type}.")
+        if not service_id:
+            service_id = DEFAULT_SERVICE_NAME
 
-    def get_services_by_type(self, type: type[ALL_SERVICE_TYPES]) -> dict[str, ALL_SERVICE_TYPES]:
+        if service_id not in services:
+            if service_id == DEFAULT_SERVICE_NAME:
+                return next(iter(services.values()))
+            raise KernelServiceNotFoundError(
+                f"Service with service_id '{service_id}' does not exist or has a different type."
+            )
+        return services[service_id]
+
+    def get_services_by_type(
+        self, type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None
+    ) -> dict[str, AIServiceClientBase]:
         """Get all services of a specific type."""
-        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}  # type: ignore
+        if type is None:
+            return self.services
+        return {service.service_id: service for service in self.services.values() if isinstance(service, type)}
 
     def get_prompt_execution_settings_from_service_id(
-        self, service_id: str, type: type[ALL_SERVICE_TYPES] | None = None
+        self, service_id: str, type: type[AI_SERVICE_CLIENT_TYPE] | None = None
     ) -> PromptExecutionSettings:
         """Get the specific request settings from the service, instantiated with the service_id and ai_model_id."""
         service = self.get_service(service_id, type=type)
@@ -128,8 +119,8 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         """
         if service.service_id not in self.services or overwrite:
             self.services[service.service_id] = service
-        else:
-            raise KernelFunctionAlreadyExistsError(f"Service with service_id '{service.service_id}' already exists")
+            return
+        raise KernelFunctionAlreadyExistsError(f"Service with service_id '{service.service_id}' already exists")
 
     def remove_service(self, service_id: str) -> None:
         """Delete a single service from the Kernel."""

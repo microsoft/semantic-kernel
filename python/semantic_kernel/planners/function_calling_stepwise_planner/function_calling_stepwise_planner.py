@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function_metadata_to_openai_tool_format
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -256,8 +257,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         """
         data = yaml.safe_load(self.generate_plan_yaml)
         prompt_template_config = PromptTemplateConfig(**data)
-        if "default" in prompt_template_config.execution_settings:
-            settings = prompt_template_config.execution_settings.pop("default")
+        if DEFAULT_SERVICE_NAME in prompt_template_config.execution_settings:
+            settings = prompt_template_config.execution_settings.pop(DEFAULT_SERVICE_NAME)
             prompt_template_config.execution_settings[self.service_id] = settings
         return kernel.add_function(
             function_name="create_plan",

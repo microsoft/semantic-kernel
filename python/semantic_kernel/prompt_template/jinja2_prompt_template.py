@@ -9,6 +9,7 @@ from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
 from semantic_kernel.exceptions import Jinja2TemplateRenderException
+from semantic_kernel.exceptions.template_engine_exceptions import TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
@@ -47,7 +48,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         Jinja2TemplateSyntaxError: If there is a syntax error in the Jinja2 template.
     """
 
-    _env: ImmutableSandboxedEnvironment = PrivateAttr()
+    _env: ImmutableSandboxedEnvironment | None = PrivateAttr()
 
     @field_validator("prompt_template_config")
     @classmethod
@@ -101,6 +102,8 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                 }
             )
         try:
+            if self.prompt_template_config.template is None:
+                raise TemplateRenderException("Template is None")
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
             return template.render(**arguments)
 
