@@ -93,7 +93,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         try {
             return MonoConverter.fromApiFuture(model.generateContentAsync(contents))
                 .flatMap(result -> {
-                    // Separate the messages and function calls in the response
+                    // Get ChatMessageContent from the response
                     GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(
                         result);
 
@@ -120,7 +120,6 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                     }
 
                     // Perform the function calls
-                    // FunctionCall and FunctionResult are kept together to create later the list of FunctionResponse
                     List<Mono<GeminiFunctionCall>> functionResults = response
                         .getGeminiFunctionCalls().stream()
                         .map(geminiFunctionCall -> performFunctionCall(kernel, invocationContext,
