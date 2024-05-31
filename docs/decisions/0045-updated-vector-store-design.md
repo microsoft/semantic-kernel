@@ -29,7 +29,7 @@ Responsibilities:
 |Collection/Index create|An implementation per store type and model|Valuable when building a store and adding data|
 |Collection/Index list names, exists and delete|An implementation per store type|Valuable when building a store and adding data|
 |Data Storage and Retrieval|An implementation per store type|Valuable when building a store and adding data|
-|Vector Search|An implementation per store type, model and search type|Valuable for many scenarios including RAG, finding contradictary facts based on user input, finding similar memories to merge, etc.|
+|Vector Search|An implementation per store type, model and search type|Valuable for many scenarios including RAG, finding contradictory facts based on user input, finding similar memories to merge, etc.|
 
 
 ### Memory Store Today
