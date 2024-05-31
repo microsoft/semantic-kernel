@@ -68,6 +68,8 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the model.
         """
+        # TODO: add support for handling forward references, which is not currently tested
+        # https://github.com/microsoft/semantic-kernel/issues/6464
         properties = {}
         required = []
         hints = get_type_hints(model, globals(), locals())
