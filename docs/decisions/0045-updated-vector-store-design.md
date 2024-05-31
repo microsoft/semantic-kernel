@@ -312,23 +312,23 @@ the provided configuration.
 Here is what the attributes would look like, plus a sample use case.
 
 ```cs
-sealed class KeyAttribute : Attribute
+sealed class MemoryRecordKeyAttribute : Attribute
 {
 }
-sealed class DataAttribute : Attribute
+sealed class MemoryRecordDataAttribute : Attribute
 {
     public bool HasEmbedding { get; set; }
     public string EmbeddingPropertyName { get; set; }
 }
-sealed class VectorAttribute : Attribute
+sealed class MemoryRecordVectorAttribute : Attribute
 {
 }
 
 public record HotelInfo(
-    [property: Key, JsonPropertyName("hotel-id")] string HotelId,
-    [property: Data, JsonPropertyName("hotel-name")] string HotelName,
-    [property: Data(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbeddings"), JsonPropertyName("description")] string Description,
-    [property: Vector, JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
+    [property: MemoryRecordKey, JsonPropertyName("hotel-id")] string HotelId,
+    [property: MemoryRecordData, JsonPropertyName("hotel-name")] string HotelName,
+    [property: MemoryRecordData(HasEmbedding = true, EmbeddingPropertyName = "DescriptionEmbeddings"), JsonPropertyName("description")] string Description,
+    [property: MemoryRecordVector, JsonPropertyName("description-embeddings")] ReadOnlyMemory<float>? DescriptionEmbeddings);
 ```
 
 Here is what the configuration objects would look like.

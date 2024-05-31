@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 [Experimental("SKEXP0001")]
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class DataAttribute : Attribute
+public sealed class MemoryRecordDataAttribute : Attribute
 {
     /// <summary>
     /// Gets or sets a value indicating whether this data field has an associated embedding field.

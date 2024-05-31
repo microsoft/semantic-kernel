@@ -10,6 +10,6 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 [Experimental("SKEXP0001")]
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class KeyAttribute : Attribute
+public sealed class MemoryRecordKeyAttribute : Attribute
 {
 }
