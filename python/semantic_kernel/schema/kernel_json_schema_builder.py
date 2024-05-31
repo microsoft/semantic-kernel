@@ -62,22 +62,37 @@ class KernelJsonSchemaBuilder:
         Returns:
             dict[str, Any]: The JSON schema for the model.
         """
-        properties = {}
         # TODO (moonbox3): add support for handling forward references, which is not currently tested
+        # https://github.com/microsoft/semantic-kernel/issues/6464
+        properties = {}
+        required = []
         hints = get_type_hints(model, globals(), locals())
+
         for field_name, field_type in hints.items():
             field_description = None
             if hasattr(model, "__fields__") and field_name in model.__fields__:
                 field_info = model.__fields__[field_name]
-                field_description = field_info.description
+                if isinstance(field_info.metadata, dict):
+                    field_description = field_info.metadata.get("description")
+                elif isinstance(field_info.metadata, list) and field_info.metadata:
+                    field_description = field_info.metadata[0]
+                elif hasattr(field_info, "description"):
+                    field_description = field_info.description
+            if not cls._is_optional(field_type):
+                required.append(field_name)
             properties[field_name] = cls.build(field_type, field_description)
 
         schema = {"type": "object", "properties": properties}
-
+        if required:
+            schema["required"] = required
         if description:
             schema["description"] = description
 
         return schema
+
+    @classmethod
+    def _is_optional(cls, field_type: Any) -> bool:
+        return get_origin(field_type) is Union and type(None) in get_args(field_type)
 
     @classmethod
     def build_from_type_name(cls, parameter_type: str, description: str | None = None) -> dict[str, Any]:
@@ -94,7 +109,6 @@ class KernelJsonSchemaBuilder:
         schema = {"type": type_name}
         if description:
             schema["description"] = description
-
         return schema
 
     @classmethod
@@ -126,25 +140,39 @@ class KernelJsonSchemaBuilder:
 
         if origin is list or origin is set:
             item_type = args[0]
-            return {"type": "array", "items": cls.build(item_type), "description": description}
+            schema = {"type": "array", "items": cls.build(item_type)}
+            if description:
+                schema["description"] = description
+            return schema
         if origin is dict:
             _, value_type = args
             additional_properties = cls.build(value_type)
             if additional_properties == {"type": "object"}:
-                additional_properties["properties"] = {}  # Account for differences in Python 3.10 dict
-            return {"type": "object", "additionalProperties": additional_properties, "description": description}
+                additional_properties["properties"] = (
+                    {}
+                )  # Account for differences in Python 3.10 dict
+            schema = {"type": "object", "additionalProperties": additional_properties}
+            if description:
+                schema["description"] = description
+            return schema
         if origin is tuple:
             items = [cls.build(arg) for arg in args]
-            return {"type": "array", "items": items, "description": description}
+            schema = {"type": "array", "items": items}  # type: ignore
+            if description:
+                schema["description"] = description
+            return schema
         if origin is Union:
             # Handle Optional[T] (Union[T, None]) by making schema nullable
             if len(args) == 2 and type(None) in args:
                 non_none_type = args[0] if args[1] is type(None) else args[1]
                 schema = cls.build(non_none_type)
-                schema["nullable"] = True
+                schema["nullable"] = True  # type: ignore
                 if description:
                     schema["description"] = description
                 return schema
             schemas = [cls.build(arg) for arg in args]
-            return {"anyOf": schemas, "description": description}
+            schema = {"anyOf": schemas}  # type: ignore
+            if description:
+                schema["description"] = description
+            return schema
         return cls.get_json_schema(parameter_type)
