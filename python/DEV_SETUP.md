@@ -165,7 +165,7 @@ They are currently not checked for private functions (functions starting with '_
 They should contain:
 - Single line explaining what the function does, ending with a period.
 - If necessary to further explain the logic a newline follows the first line and then the explanation is given.
-- The following three sections are optional, and if used should be seperated by a single empty line.
+- The following three sections are optional, and if used should be separated by a single empty line.
 - Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
     - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
     - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
