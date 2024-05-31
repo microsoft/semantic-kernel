@@ -65,7 +65,6 @@ class SemanticTextMemoryBase(KernelBaseModel):
         self,
         collection: str,
         key: str,
-        # TODO: with_embedding: bool,
     ) -> "MemoryQueryResult | None":
         """Get information from the memory (calls the memory store's get method).
 

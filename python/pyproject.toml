@@ -127,18 +127,24 @@ target-version = "py310"
 include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 
 [tool.ruff.lint]
-select = ["D", "E", "F", "I"]
-ignore = ["D100", "D101", "D104"]
+preview = true
+select = ["D", "E", "F", "I", "CPY", "ISC", "INP", "RSE102", "RET", "SIM", "TD", "FIX", "ERA001", "RUF"]
+ignore = ["D100", "D101", "D104", "TD003", "FIX002"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-# Ignore all directories named `tests`.
-"tests/**" = ["D"]
-"samples/**" = ["D"]
+# Ignore all directories named `tests` and `samples`.
+"tests/**" = ["D", "INP", "TD", "ERA001", "RUF"]
+"samples/**" = ["D", "INP", "ERA001", "RUF"]
 # Ignore all files that end in `_test.py`.
 "*_test.py" = ["D"]
+"*.ipynb" = ["CPY", "E501"]
+
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = "^# Copyright \\(c\\) Microsoft\\. All rights reserved\\."
+min-file-size = 1
 
 [tool.bandit]
 targets = ["python/semantic_kernel"]

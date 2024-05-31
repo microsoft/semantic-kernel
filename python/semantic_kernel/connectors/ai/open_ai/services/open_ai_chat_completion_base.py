@@ -260,10 +260,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         """Send the chat request."""
         response = await self._send_request(request_settings=settings)
         response_metadata = self._get_metadata_from_chat_response(response)
-        completions = [
-            self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices
-        ]
-        return completions
+        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
 
     async def _send_chat_stream_request(
         self, settings: OpenAIChatPromptExecutionSettings
@@ -353,10 +350,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     def _get_tool_calls_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get tool calls from a chat choice."""
-        if isinstance(choice, Choice):
-            content = choice.message
-        else:
-            content = choice.delta
+        content = choice.message if isinstance(choice, Choice) else choice.delta
         if content.tool_calls is None:
             return []
         return [
@@ -371,10 +365,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     def _get_function_call_from_chat_choice(self, choice: Choice | ChunkChoice) -> list[FunctionCallContent]:
         """Get a function call from a chat choice."""
-        if isinstance(choice, Choice):
-            content = choice.message
-        else:
-            content = choice.delta
+        content = choice.message if isinstance(choice, Choice) else choice.delta
         if content.function_call is None:
             return []
         return [
@@ -442,18 +433,20 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 result="The tool call arguments are malformed, please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
-            return
+            return None
 
         logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
         try:
             if function_call.name is None:
                 raise ValueError("The function name is required.")
-            if isinstance(function_call_behavior, RequiredFunction):
-                if function_call.name != function_call_behavior.function_fully_qualified_name:
-                    raise ValueError(
-                        f"Only function: {function_call_behavior.function_fully_qualified_name} "
-                        f"is allowed, {function_call.name} is not allowed."
-                    )
+            if (
+                isinstance(function_call_behavior, RequiredFunction)
+                and function_call.name != function_call_behavior.function_fully_qualified_name
+            ):
+                raise ValueError(
+                    f"Only function: {function_call_behavior.function_fully_qualified_name} "
+                    f"is allowed, {function_call.name} is not allowed."
+                )
             if isinstance(function_call_behavior, EnabledFunctions):
                 enabled_functions = [
                     func.fully_qualified_name
@@ -471,7 +464,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 result="The tool call could not be found, please try again and make sure to validate the name.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
-            return
+            return None
 
         num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
         if len(parsed_args) < num_required_func_params:
@@ -487,7 +480,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
                 result=msg,
             )
             chat_history.add_message(message=frc.to_chat_message_content())
-            return
+            return None
 
         _rebuild_auto_function_invocation_context()
         invocation_context = AutoFunctionInvocationContext(
@@ -515,6 +508,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             function_call_content=function_call, result=invocation_context.function_result
         )
         chat_history.add_message(message=frc.to_chat_message_content())
+        return None
 
     async def _inner_auto_function_invoke_handler(self, context: AutoFunctionInvocationContext):
         """Inner auto function invocation handler."""

@@ -8,13 +8,13 @@ class SequentialPlannerConfig:
         self,
         relevancy_threshold: float | None = None,
         max_relevant_functions: int = 100,
-        excluded_plugins: list[str] = None,
-        excluded_functions: list[str] = None,
-        included_functions: list[str] = None,
+        excluded_plugins: list[str] | None = None,
+        excluded_functions: list[str] | None = None,
+        included_functions: list[str] | None = None,
         max_tokens: int = 1024,
         allow_missing_functions: bool = False,
-        get_available_functions: Callable = None,
-        get_plugin_function: Callable = None,
+        get_available_functions: Callable | None = None,
+        get_plugin_function: Callable | None = None,
     ):
         """Initializes a new instance of the SequentialPlannerConfig class."""
         self.relevancy_threshold: float = relevancy_threshold

@@ -59,7 +59,7 @@ class OpenAIAuthenticationProvider:
     ) -> dict[str, str] | None:
         """An example of how to authenticate a request as part of an auth callback."""
         if openai_auth_config.type == OpenAIAuthenticationType.NoneType:
-            return
+            return None
 
         scheme = ""
         credential = ""

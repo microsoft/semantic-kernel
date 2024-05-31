@@ -17,7 +17,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
-    + "fulfill the request using functions. This ability is also known as decision making and function flow"
+    "fulfill the request using functions. This ability is also known as decision making and function flow"
 )
 
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -44,7 +44,7 @@ class SequentialPlanner:
         kernel: Kernel,
         service_id: str,
         config: SequentialPlannerConfig = None,
-        prompt: str = None,
+        prompt: str | None = None,
     ) -> None:
         """Initializes a new instance of the SequentialPlanner class.
 
@@ -76,11 +76,13 @@ class SequentialPlanner:
         prompt_config.template = prompt_template
 
         # if a service_id is provided, use it instead of the default
-        if service_id and service_id not in prompt_config.execution_settings:
-            # Move 'default' settings to this service_id if 'default' exists
-            if "default" in prompt_config.execution_settings:
-                settings = prompt_config.execution_settings.pop("default")
-                prompt_config.execution_settings[service_id] = settings
+        if (
+            service_id
+            and service_id not in prompt_config.execution_settings
+            and "default" in prompt_config.execution_settings
+        ):
+            settings = prompt_config.execution_settings.pop("default")
+            prompt_config.execution_settings[service_id] = settings
 
         return self._kernel.add_function(
             plugin_name=self.RESTRICTED_PLUGIN_NAME,

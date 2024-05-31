@@ -15,10 +15,10 @@ from semantic_kernel.planners.planner_options import PlannerOptions
 from semantic_kernel.planners.sequential_planner import SequentialPlanner
 
 __all__ = [
-    "Plan",
-    "SequentialPlanner",
-    "PlannerOptions",
-    "FunctionCallingStepwisePlannerOptions",
     "FunctionCallingStepwisePlanner",
+    "FunctionCallingStepwisePlannerOptions",
     "FunctionCallingStepwisePlannerResult",
+    "Plan",
+    "PlannerOptions",
+    "SequentialPlanner",
 ]

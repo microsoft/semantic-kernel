@@ -32,7 +32,7 @@ class BingConnector(ConnectorBase):
                 the settings are read from this file path location.
             env_file_encoding (str | None): The optional encoding of the .env file.
         """
-        self.settings = BingSettings.create(
+        self._settings = BingSettings.create(
             api_key=api_key,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
@@ -63,12 +63,14 @@ class BingConnector(ConnectorBase):
 
         headers = {"Ocp-Apim-Subscription-Key": self._settings.api_key.get_secret_value()}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(_request_url, headers=headers, raise_for_status=True) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    pages = data.get("webPages", {}).get("value")
-                    if pages:
-                        return list(map(lambda x: x["snippet"], pages)) or []
-                else:
-                    return []
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(_request_url, headers=headers, raise_for_status=True) as response,
+        ):
+            if response.status == 200:
+                data = await response.json()
+                pages = data.get("webPages", {}).get("value")
+                if pages:
+                    return list(map(lambda x: x["snippet"], pages)) or []
+                return None
+            return []

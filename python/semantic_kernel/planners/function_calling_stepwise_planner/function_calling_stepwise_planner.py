@@ -73,10 +73,19 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
                 the function calling stepwise planner. Defaults to None.
         """
         options = options or FunctionCallingStepwisePlannerOptions()
-        generate_plan_yaml = (
-            options.get_initial_plan() if options.get_initial_plan else open(PLAN_YAML_FILE_PATH).read()
-        )
-        step_prompt = options.get_step_prompt() if options.get_step_prompt else open(STEP_PROMPT_FILE_PATH).read()
+
+        if options.get_initial_plan:
+            generate_plan_yaml = options.get_initial_plan()
+        else:
+            with open(PLAN_YAML_FILE_PATH) as f:
+                generate_plan_yaml = f.read()
+
+        if options.get_step_prompt:
+            step_prompt = options.get_step_prompt()
+        else:
+            with open(STEP_PROMPT_FILE_PATH) as f:
+                step_prompt = f.read()
+
         options.excluded_plugins.add(STEPWISE_PLANNER_PLUGIN_NAME)
 
         super().__init__(
@@ -225,7 +234,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
         service: OpenAIChatCompletion | AzureChatCompletion,
     ) -> ChatHistory:
         """Build the chat history for the stepwise planner."""
-        chat_history = ChatHistory()
+        ChatHistory()
         additional_arguments = KernelArguments(
             goal=goal,
             initial_plan=initial_plan,
@@ -237,8 +246,7 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
             )
         )
         prompt = await kernel_prompt_template.render(kernel, arguments)
-        chat_history = ChatHistory.from_rendered_prompt(prompt)
-        return chat_history
+        return ChatHistory.from_rendered_prompt(prompt)
 
     def _create_config_from_yaml(self, kernel: Kernel) -> "KernelFunction":
         """A temporary method to create a function from the yaml file.
@@ -266,7 +274,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     ) -> str:
         """Generate the plan for the given question using the kernel."""
         generate_plan_function = self._create_config_from_yaml(kernel)
-        # TODO: revisit when function call behavior is finalized, and other function calling models are added
+        # TODO (moonbox3): revisit when function call behavior is finalized, and other function calling models are added
+        # https://github.com/microsoft/semantic-kernel/issues/6458
         functions_manual = [
             kernel_function_metadata_to_openai_tool_format(f)
             for f in kernel.get_list_of_function_metadata(

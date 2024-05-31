@@ -100,13 +100,13 @@ class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
         """
         return AzureTextCompletion(
             service_id=settings.get("service_id"),
-            api_key=settings.get("api_key", None),
-            deployment_name=settings.get("deployment_name", None),
-            endpoint=settings.get("endpoint", None),
-            base_url=settings.get("base_url", None),
-            api_version=settings.get("api_version", None),
+            api_key=settings.get("api_key"),
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            base_url=settings.get("base_url"),
+            api_version=settings.get("api_version"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            env_file_path=settings.get("env_file_path", None),
+            env_file_path=settings.get("env_file_path"),
         )

@@ -76,7 +76,7 @@ class PromptTemplateConfig(KernelBaseModel):
                 name=variable.name,
                 description=variable.description,
                 default_value=variable.default,
-                type_=variable.json_schema,  # TODO: update to handle complex JSON schemas
+                type_=variable.json_schema,  # TODO (moonbox3): update to handle complex JSON schemas
                 is_required=variable.is_required,
             )
             for variable in self.input_variables

@@ -28,7 +28,7 @@ chat_service = AzureChatCompletion(
 kernel.add_service(chat_service)
 
 ## there are three ways to create the request settings in code: # noqa: E266
-## Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
+# Note: the prompt_execution_settings are a dictionary with the service_id as the key and the request settings as the value. # noqa: E501
 
 ## 1. create the request settings from the base class: # noqa: E266
 # from semantic_kernel.connectors.ai.chat_completion_client_base import PromptExecutionSettings
