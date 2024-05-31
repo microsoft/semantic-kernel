@@ -424,13 +424,13 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
             parsed_args = function_call.parse_arguments()
             if parsed_args:
                 args_cloned.update(parsed_args)
-        except FunctionCallInvalidArgumentsException as exc:
+        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
             logger.exception(
                 f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again."
             )
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
-                result="The tool call arguments are malformed, please try again.",
+                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
             )
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
