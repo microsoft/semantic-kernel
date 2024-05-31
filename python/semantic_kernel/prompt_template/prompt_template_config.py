@@ -5,6 +5,7 @@ from typing import TypeVar
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
@@ -57,16 +58,16 @@ class PromptTemplateConfig(KernelBaseModel):
         if not settings:
             return {}
         if isinstance(settings, PromptExecutionSettings):
-            return {settings.service_id or "default": settings}
+            return {settings.service_id or DEFAULT_SERVICE_NAME: settings}
         if isinstance(settings, list):
-            return {s.service_id or "default": s for s in settings}
+            return {s.service_id or DEFAULT_SERVICE_NAME: s for s in settings}
         return settings
 
     def add_execution_settings(self, settings: PromptExecutionSettings, overwrite: bool = True) -> None:
         """Add execution settings to the prompt template."""
         if settings.service_id in self.execution_settings and not overwrite:
             return
-        self.execution_settings[settings.service_id or "default"] = settings
+        self.execution_settings[settings.service_id or DEFAULT_SERVICE_NAME] = settings
         logger.warning("Execution settings already exist and overwrite is set to False")
 
     def get_kernel_parameter_metadata(self) -> list[KernelParameterMetadata]:

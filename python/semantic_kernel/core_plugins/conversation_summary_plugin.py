@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 from typing import TYPE_CHECKING, Annotated
 
+from semantic_kernel.functions.kernel_function_decorator import kernel_function
+
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
+    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
 class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
-
-    from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
     # The max tokens to process in a single semantic function call.
     _max_tokens = 1024
@@ -30,16 +31,20 @@ class ConversationSummaryPlugin:
     ) -> None:
         """Initializes a new instance of the ConversationSummaryPlugin class.
 
-        :param kernel: The kernel instance.
-        :param prompt_template_config: The prompt template configuration.
-        :param return_key: The key to use for the return value.
+        Args:
+            kernel (Kernel): The kernel instance to use for the function.
+            prompt_template_config (PromptTemplateConfig): The configuration to use for functions.
+            return_key (str): The key to use for the return value.
         """
         self.return_key = return_key
-        self._summarizeConversationFunction = kernel.add_function(
+        kernel.add_function(
             prompt=ConversationSummaryPlugin._summarize_conversation_prompt_template,
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
             prompt_template_config=prompt_template_config,
+        )
+        self._summarizeConversationFunction: "KernelFunction" = kernel.get_function(
+            plugin_name=ConversationSummaryPlugin.__name__, function_name="SummarizeConversation"
         )
 
     @kernel_function(
@@ -56,10 +61,13 @@ class ConversationSummaryPlugin:
     ]:
         """Given a long conversation transcript, summarize the conversation.
 
-        :param input: A long conversation transcript.
-        :param kernel: The kernel for function execution.
-        :param arguments: Arguments used by the kernel.
-        :return: KernelArguments with the summarized conversation result in key self.return_key.
+        Args:
+            input (str): A long conversation transcript.
+            kernel (Kernel): The kernel for function execution.
+            arguments (KernelArguments): Arguments used by the kernel.
+
+        Returns:
+            KernelArguments with the summarized conversation result in key self.return_key.
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import aggregate_chunked_results

@@ -3,7 +3,7 @@
 import os
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.const import METADATA_EXCEPTION_KEY
+from semantic_kernel.const import DEFAULT_SERVICE_NAME, METADATA_EXCEPTION_KEY
 from semantic_kernel.exceptions import PlannerCreatePlanError, PlannerException, PlannerInvalidGoalError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -67,8 +67,8 @@ class SequentialPlanner:
         prompt_template = prompt or read_file(PROMPT_TEMPLATE_FILE_PATH)
         if service_id in prompt_config.execution_settings:
             prompt_config.execution_settings[service_id].extension_data["max_tokens"] = self.config.max_tokens
-        elif "default" in prompt_config.execution_settings:
-            prompt_config.execution_settings["default"].extension_data["max_tokens"] = self.config.max_tokens
+        elif DEFAULT_SERVICE_NAME in prompt_config.execution_settings:
+            prompt_config.execution_settings[DEFAULT_SERVICE_NAME].extension_data["max_tokens"] = self.config.max_tokens
         else:
             prompt_config.execution_settings[service_id] = PromptExecutionSettings(
                 service_id=service_id, max_tokens=self.config.max_tokens
@@ -79,9 +79,9 @@ class SequentialPlanner:
         if (
             service_id
             and service_id not in prompt_config.execution_settings
-            and "default" in prompt_config.execution_settings
+            and DEFAULT_SERVICE_NAME in prompt_config.execution_settings
         ):
-            settings = prompt_config.execution_settings.pop("default")
+            settings = prompt_config.execution_settings.pop(DEFAULT_SERVICE_NAME)
             prompt_config.execution_settings[service_id] = settings
 
         return self._kernel.add_function(
