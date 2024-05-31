@@ -105,7 +105,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
+        auto_invoke=False, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"
@@ -113,7 +113,7 @@ async def main():
 
     while True:
         # The result is a list of ChatMessageContent objects, grab the first one
-        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings)
+        result = await chat.get_chat_message_contents(chat_history=chat_history, settings=settings, kernel=kernel)
         result = result[0]
 
         if result.content:
@@ -123,12 +123,16 @@ async def main():
             break
 
         chat_history.add_message(result)
-        await chat._process_function_calls(
-            result=result,
-            kernel=kernel,
-            chat_history=chat_history,
-            arguments=KernelArguments(),
-        )
+        for item in result.items:
+            await chat._process_function_call(
+                function_call=item,
+                kernel=kernel,
+                chat_history=chat_history,
+                arguments=KernelArguments(),
+                function_call_count=1,
+                request_index=0,
+                function_call_behavior=settings.function_call_behavior,
+            )
 
 
 if __name__ == "__main__":
