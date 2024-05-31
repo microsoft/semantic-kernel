@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from unittest.mock import patch
 
 import pytest

@@ -21,3 +21,4 @@ async def retry(func, retries=20):
             if i == retries - 1:  # Last retry
                 raise
             time.sleep(max(min(i, max_delay), min_delay))
+    return None

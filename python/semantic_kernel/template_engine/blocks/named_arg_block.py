@@ -95,3 +95,4 @@ class NamedArgBlock(Block):
             return ""
         if self.variable:
             return self.variable.render(kernel, arguments)
+        return None

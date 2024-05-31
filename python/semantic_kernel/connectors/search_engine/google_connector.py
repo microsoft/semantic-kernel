@@ -55,13 +55,11 @@ class GoogleConnector(ConnectorBase):
 
         logger.info("Sending GET request to Google Search API.")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(_request_url, raise_for_status=True) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    logger.info("Request successful.")
-                    logger.info(f"API Response: {data}")
-                    return [x["snippet"] for x in data["items"]]
-                else:
-                    logger.error(f"Request to Google Search API failed with status code: {response.status}.")
-                    return []
+        async with aiohttp.ClientSession() as session, session.get(_request_url, raise_for_status=True) as response:
+            if response.status == 200:
+                data = await response.json()
+                logger.info("Request successful.")
+                logger.info(f"API Response: {data}")
+                return [x["snippet"] for x in data["items"]]
+            logger.error(f"Request to Google Search API failed with status code: {response.status}.")
+            return []
