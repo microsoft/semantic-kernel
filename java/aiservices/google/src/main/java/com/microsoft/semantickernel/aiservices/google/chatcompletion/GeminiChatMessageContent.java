@@ -5,6 +5,7 @@ import com.google.cloud.vertexai.api.FunctionResponse;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +56,7 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
      * @return The function calls.
      */
     @Nonnull
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public List<GeminiFunctionCall> getGeminiFunctionCalls() {
         return geminiFunctionCalls;
     }

@@ -269,6 +269,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return functionBuilder.build();
     }
 
+    @Nullable
     private Tool getTool(@Nullable Kernel kernel, @Nullable ToolCallBehavior toolCallBehavior) {
         if (kernel == null || toolCallBehavior == null) {
             return null;
@@ -314,7 +315,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
         if (function == null) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                    String.format("Kernel function %s not found in plugin %s", name, pluginName));
+                    String.format("Kernel function %s not found in plugin %s", functionName, pluginName));
         }
 
         ContextVariableTypes contextVariableTypes = invocationContext == null
@@ -334,6 +335,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
+        @Override
         public GeminiChatCompletion build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
