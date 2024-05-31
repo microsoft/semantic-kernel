@@ -20,7 +20,7 @@ public class TemplateLanguage(ITestOutputHelper output) : BaseTest(output)
         string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (openAIModelId is null || openAIApiKey is null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;

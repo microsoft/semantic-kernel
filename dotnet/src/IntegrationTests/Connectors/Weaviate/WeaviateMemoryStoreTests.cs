@@ -145,7 +145,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(id, responseId);
 
         var memoryRecordResultNoVector = await this._weaviateMemoryStore.GetAsync(collectionName, id);
-        if (memoryRecordResultNoVector == null)
+        if (memoryRecordResultNoVector is null)
         {
             Assert.Fail("Unable to retrieve record");
         }
@@ -162,7 +162,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecordResultNoVector.Metadata.IsReference, memoryRecordResultNoVector.Metadata.IsReference);
 
         var memoryRecordResultWithVector = await this._weaviateMemoryStore.GetAsync(collectionName, id, true);
-        if (memoryRecordResultWithVector == null)
+        if (memoryRecordResultWithVector is null)
         {
             Assert.Fail("Unable to retrieve record");
         }
@@ -180,7 +180,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
 
         await this._weaviateMemoryStore.RemoveAsync(collectionName, id);
         var memoryRecordAfterDeletion = await this._weaviateMemoryStore.GetAsync(collectionName, id);
-        if (memoryRecordAfterDeletion != null)
+        if (memoryRecordAfterDeletion is not null)
         {
             Assert.Fail("Unable to delete record");
         }

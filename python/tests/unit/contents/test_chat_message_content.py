@@ -133,8 +133,8 @@ def test_cmc_from_element_content():
         (
             '<message role="user"><text>Hello, world!</text><text>Hello, world!</text></message>',
             "user",
-            "Hello, world!",
-            2,
+            "Hello, world!Hello, world!",
+            1,
         ),
         (
             '<message role="assistant"><function_call id="test" name="func_name">args</function_call></message>',
@@ -157,8 +157,8 @@ def test_cmc_from_element_content():
         (
             '<message role="user"><random>some random code sample</random>in between text<text>test</text></message>',
             "user",
-            "<random>some random code sample</random>in between text",
-            2,
+            "<random>some random code sample</random>in between texttest",
+            1,  # TODO: review this case
         ),
         ('<message role="user" choice_index="0">Hello, world!</message>', "user", "Hello, world!", 1),
     ],

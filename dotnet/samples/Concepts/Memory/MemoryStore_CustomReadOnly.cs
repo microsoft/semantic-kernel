@@ -26,7 +26,7 @@ public class MemoryStore_CustomReadOnly(ITestOutputHelper output) : BaseTest(out
 
         Console.WriteLine("Reading data from custom read-only memory store");
         var memoryRecord = await store.GetAsync("collection", "key3");
-        if (memoryRecord != null)
+        if (memoryRecord is not null)
         {
             Console.WriteLine($"ID = {memoryRecord.Metadata.Id}, Embedding = {string.Join(", ", MemoryMarshal.ToEnumerable(memoryRecord.Embedding))}");
         }
@@ -50,7 +50,7 @@ public class MemoryStore_CustomReadOnly(ITestOutputHelper output) : BaseTest(out
             s_jsonVectorEntries = s_jsonVectorEntries.Replace(" ", string.Empty, StringComparison.Ordinal);
             this._memoryRecords = JsonSerializer.Deserialize<MemoryRecord[]>(valueString);
 
-            if (this._memoryRecords == null)
+            if (this._memoryRecords is null)
             {
                 throw new Exception("Unable to deserialize memory records");
             }
@@ -119,7 +119,7 @@ public class MemoryStore_CustomReadOnly(ITestOutputHelper output) : BaseTest(out
             double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            if (this._memoryRecords == null || this._memoryRecords.Length == 0)
+            if (this._memoryRecords is null || this._memoryRecords.Length == 0)
             {
                 yield break;
             }

@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Class for extensions methods for the <see cref="RestApiOperation"/> class.
 /// </summary>
-internal static class RestApiOperationExtensions
+internal static partial class RestApiOperationExtensions
 {
     /// <summary>
     /// Returns list of REST API operation parameters.
@@ -41,7 +41,7 @@ internal static class RestApiOperationExtensions
         // Create a property alternative name without special symbols that are not supported by SK template language.
         foreach (var parameter in parameters)
         {
-            parameter.AlternativeName = s_invalidSymbolsRegex.Replace(parameter.Name, "_");
+            parameter.AlternativeName = InvalidSymbolsRegex().Replace(parameter.Name, "_");
         }
 
         return parameters;
@@ -207,6 +207,13 @@ internal static class RestApiOperationExtensions
     }
 
     private const string MediaTypeTextPlain = "text/plain";
-    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+");
     private static readonly string[] s_preferredResponses = ["200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default"];
+
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]+")]
+    private static partial Regex InvalidSymbolsRegex();
+#else
+    private static Regex InvalidSymbolsRegex() => s_invalidSymbolsRegex;
+    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+", RegexOptions.Compiled);
+#endif
 }

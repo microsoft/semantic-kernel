@@ -2,23 +2,18 @@
 
 import logging
 from abc import ABC
-from typing import List, Union
 
 from numpy import array, ndarray
 from openai import AsyncOpenAI, AsyncStream, BadRequestError
 from openai.types import Completion
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
-from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
-    ContentFilterAIException,
-)
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
-    OpenAIModelTypes,
-)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -37,21 +32,20 @@ class OpenAIHandler(KernelBaseModel, ABC):
     async def _send_request(
         self,
         request_settings: OpenAIPromptExecutionSettings,
-    ) -> Union[ChatCompletion, Completion, AsyncStream[ChatCompletionChunk], AsyncStream[Completion]]:
-        """
-        Completes the given prompt. Returns a single string completion.
+    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
+        """Completes the given prompt. Returns a single string completion.
+
         Cannot return multiple completions. Cannot return logprobs.
 
-        Arguments:
-            prompt {str} -- The prompt to complete.
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
-            request_settings {OpenAIPromptExecutionSettings} -- The request settings.
-            stream {bool} -- Whether to stream the response.
+        Args:
+            prompt (str): The prompt to complete.
+            messages (List[Tuple[str, str]]): A list of tuples, where each tuple is a role and content set.
+            request_settings (OpenAIPromptExecutionSettings): The request settings.
+            stream (bool): Whether to stream the response.
 
         Returns:
-            ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
+            ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk]: The completion response.
         """
-
         try:
             if self.ai_model_type == OpenAIModelTypes.CHAT:
                 response = await self.client.chat.completions.create(**request_settings.prepare_settings_dict())
@@ -75,7 +69,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
                 ex,
             ) from ex
 
-    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> List[ndarray]:
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[ndarray]:
         try:
             response = await self.client.embeddings.create(**settings.prepare_settings_dict())
             self.store_usage(response)
@@ -89,6 +83,7 @@ class OpenAIHandler(KernelBaseModel, ABC):
             ) from ex
 
     def store_usage(self, response):
+        """Store the usage information from the response."""
         if not isinstance(response, AsyncStream):
             logger.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens

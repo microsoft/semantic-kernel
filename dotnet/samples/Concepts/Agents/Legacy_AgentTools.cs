@@ -73,7 +73,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
 
         Console.WriteLine("======== Using Retrieval tool ========");
 
-        if (TestConfiguration.OpenAI.ApiKey == null)
+        if (TestConfiguration.OpenAI.ApiKey is null)
         {
             Console.WriteLine("OpenAI apiKey not found. Skipping example.");
             return;
@@ -125,7 +125,7 @@ public sealed class Legacy_AgentTools(ITestOutputHelper output) : BaseTest(outpu
         params string[] questions)
     {
         string[]? fileIds = null;
-        if (fileId != null)
+        if (fileId is not null)
         {
             fileIds = [fileId];
         }

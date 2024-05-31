@@ -1,3 +1,8 @@
+# 1.1.5
+
+- Fix bug with removing new lines on function parameters on Windows
+- Fix bug forming serializing arguments to tool calls 
+
 # 1.1.3
 
 - Fix bug appending plugin name to tool calls

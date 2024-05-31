@@ -15,9 +15,9 @@ def test_can_be_instantiated():
 def test_can_be_imported():
     kernel = sk.Kernel()
     kernel.add_plugin(TimePlugin(), "time")
-    assert kernel.plugins["time"] is not None
-    assert kernel.plugins["time"].name == "time"
-    assert kernel.plugins["time"]["now"] is not None
+    assert kernel.get_plugin(plugin_name="time") is not None
+    assert kernel.get_plugin(plugin_name="time").name == "time"
+    assert kernel.get_function(plugin_name="time", function_name="now") is not None
 
 
 def test_date():

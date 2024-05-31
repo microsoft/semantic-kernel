@@ -41,7 +41,6 @@ public static class KernelFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static KernelFunction CreateFromMethod(
         Delegate method,
         KernelFunctionFromMethodOptions? options) =>
@@ -77,7 +76,6 @@ public static class KernelFunctionFactory
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0001")]
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
         object? target,

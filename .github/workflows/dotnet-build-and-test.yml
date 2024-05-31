@@ -52,40 +52,40 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dotnet: "8.0-jammy", os: "ubuntu", configuration: Release }
           - {
               dotnet: "8.0",
-              os: "windows",
-              configuration: Debug,
+              os: "ubuntu-latest",
+              configuration: Release,
               integration-tests: true,
             }
-          - { dotnet: "8.0", os: "windows", configuration: Release }
+          - { dotnet: "8.0", os: "windows-latest", configuration: Debug }
+          - { dotnet: "8.0", os: "windows-latest", configuration: Release }
 
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
-      env:
-        NUGET_CERT_REVOCATION_MODE: offline
-        GITHUB_ACTIONS: "true"
-
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
+      - name: Setup dotnet ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
       - name: Build dotnet solutions
+        shell: bash
         run: |
           export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
           for solution in $SOLUTIONS; do
-            dotnet build -c ${{ matrix.configuration }} /warnaserror $solution
+            dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
           done
 
       - name: Run Unit Tests
+        shell: bash
         run: |
           export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | grep -v -E "(Experimental.Orchestration.Flow.UnitTests.csproj|Experimental.Assistants.UnitTests.csproj)" | tr '\n' ' ')
           for project in $UT_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/"
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx --collect:"XPlat Code Coverage" --results-directory:"TestResults/Coverage/" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute=ObsoleteAttribute,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute
           done
 
       - name: Run Integration Tests
+        shell: bash
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
           export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
@@ -98,9 +98,9 @@ jobs:
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
           AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI_EASTUS__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI_EASTUS__APIKEY }}
           Planners__AzureOpenAI__ApiKey: ${{ secrets.PLANNERS__AZUREOPENAI__APIKEY }}
           Planners__AzureOpenAI__Endpoint: ${{ secrets.PLANNERS__AZUREOPENAI__ENDPOINT }}
           Planners__AzureOpenAI__DeploymentName: ${{ vars.PLANNERS__AZUREOPENAI__DEPLOYMENTNAME }}

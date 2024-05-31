@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 from pydantic import ValidationError
@@ -14,11 +14,11 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 
 @pytest.mark.asyncio
 async def test_register_valid_native_function(kernel: Kernel, decorated_native_function: Callable):
-    kernel.add_function("TestPlugin", function=decorated_native_function)
-    registered_func = kernel.get_function("TestPlugin", "getLightStatus")
+    kernel.add_function(plugin_name="TestPlugin", function=decorated_native_function)
+    registered_func = kernel.get_function(plugin_name="TestPlugin", function_name="getLightStatus")
 
     assert isinstance(registered_func, KernelFunction)
-    assert kernel.plugins["TestPlugin"]["getLightStatus"] == registered_func
+    assert kernel.get_function(plugin_name="TestPlugin", function_name="getLightStatus") == registered_func
     func_result = await registered_func.invoke(kernel, KernelArguments(arg1="testtest"))
     assert str(func_result) == "test"
 

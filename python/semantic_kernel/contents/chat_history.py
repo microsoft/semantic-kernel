@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 import logging
+from collections.abc import Generator
 from functools import singledispatchmethod
-from typing import Any, Generator
-from xml.etree.ElementTree import Element, tostring
+from html import unescape
+from typing import Any
+from xml.etree.ElementTree import Element, tostring  # nosec
 
 from defusedxml.ElementTree import XML, ParseError
 from pydantic import field_validator
@@ -20,8 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class ChatHistory(KernelBaseModel):
-    """
-    This class holds the history of chat messages from a chat conversation.
+    """This class holds the history of chat messages from a chat conversation.
 
     Note: the constructor takes a system_message parameter, which is not part
     of the class definition. This is to allow the system_message to be passed in
@@ -34,9 +34,9 @@ class ChatHistory(KernelBaseModel):
     messages: list[ChatMessageContent]
 
     def __init__(self, **data: Any):
-        """
-        Initializes a new instance of the ChatHistory class, optionally incorporating a message and/or
-        a system message at the beginning of the chat history.
+        """Initializes a new instance of the ChatHistory class.
+
+        Optionally incorporating a message and/or a system message at the beginning of the chat history.
 
         This constructor allows for flexible initialization with chat messages and an optional messages or a
         system message. If both 'messages' (a list of ChatMessageContent instances) and 'system_message' are
@@ -45,15 +45,17 @@ class ChatHistory(KernelBaseModel):
         initialized with the 'system_message' as its first item. If 'messages' are provided without a
         'system_message', the chat history is initialized with the provided messages as is.
 
-        Parameters:
-        - **data: Arbitrary keyword arguments. The constructor looks for two optional keys:
-            - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
-            - 'system_message' Optional[str]: An optional string representing a system-generated message to be
-                included at the start of the chat history.
-
         Note: The 'system_message' is not retained as part of the class's attributes; it's used during
         initialization and then discarded. The rest of the keyword arguments are passed to the superclass
         constructor and handled according to the Pydantic model's behavior.
+
+        Args:
+            **data: Arbitrary keyword arguments.
+                The constructor looks for two optional keys:
+                - 'messages': Optional[List[ChatMessageContent]], a list of chat messages to include in the history.
+                - 'system_message' Optional[str]: An optional string representing a system-generated message to be
+                    included at the start of the chat history.
+
         """
         system_message_content = data.pop("system_message", None)
 
@@ -88,10 +90,12 @@ class ChatHistory(KernelBaseModel):
 
     @add_system_message.register
     def add_system_message_str(self, content: str, **kwargs: Any) -> None:
+        """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, content=content, **kwargs))
 
     @add_system_message.register(list)
     def add_system_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+        """Add a system message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.SYSTEM, items=content, **kwargs))
 
     @singledispatchmethod
@@ -101,10 +105,12 @@ class ChatHistory(KernelBaseModel):
 
     @add_user_message.register
     def add_user_message_str(self, content: str, **kwargs: Any) -> None:
+        """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, content=content, **kwargs))
 
     @add_user_message.register(list)
     def add_user_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+        """Add a user message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.USER, items=content, **kwargs))
 
     @singledispatchmethod
@@ -114,10 +120,12 @@ class ChatHistory(KernelBaseModel):
 
     @add_assistant_message.register
     def add_assistant_message_str(self, content: str, **kwargs: Any) -> None:
+        """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, content=content, **kwargs))
 
     @add_assistant_message.register(list)
     def add_assistant_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+        """Add an assistant message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.ASSISTANT, items=content, **kwargs))
 
     @singledispatchmethod
@@ -127,10 +135,12 @@ class ChatHistory(KernelBaseModel):
 
     @add_tool_message.register
     def add_tool_message_str(self, content: str, **kwargs: Any) -> None:
+        """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, content=content, **kwargs))
 
     @add_tool_message.register(list)
     def add_tool_message_list(self, content: list[KernelContent], **kwargs: Any) -> None:
+        """Add a tool message to the chat history."""
         self.add_message(message=self._prepare_for_add(role=AuthorRole.TOOL, items=content, **kwargs))
 
     def add_message(
@@ -220,6 +230,13 @@ class ChatHistory(KernelBaseModel):
             chat_history_xml.append(message.to_element())
         return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
 
+    def to_prompt(self) -> str:
+        """Return a string representation of the history."""
+        chat_history_xml = Element(CHAT_HISTORY_TAG)
+        for message in self.messages:
+            chat_history_xml.append(message.to_element())
+        return tostring(chat_history_xml, encoding="unicode", short_empty_elements=True)
+
     def __iter__(self) -> Generator[ChatMessageContent, None, None]:  # type: ignore
         """Return an iterator over the messages in the history."""
         yield from self.messages
@@ -233,8 +250,7 @@ class ChatHistory(KernelBaseModel):
 
     @classmethod
     def from_rendered_prompt(cls, rendered_prompt: str) -> "ChatHistory":
-        """
-        Create a ChatHistory instance from a rendered prompt.
+        """Create a ChatHistory instance from a rendered prompt.
 
         Args:
             rendered_prompt (str): The rendered prompt to convert to a ChatHistory instance.
@@ -242,16 +258,16 @@ class ChatHistory(KernelBaseModel):
         Returns:
             ChatHistory: The ChatHistory instance created from the rendered prompt.
         """
-        prompt_tag = "prompt"
+        prompt_tag = "root"
         messages: list["ChatMessageContent"] = []
         prompt = rendered_prompt.strip()
         try:
             xml_prompt = XML(text=f"<{prompt_tag}>{prompt}</{prompt_tag}>")
         except ParseError:
             logger.info(f"Could not parse prompt {prompt} as xml, treating as text")
-            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=prompt)])
+            return cls(messages=[ChatMessageContent(role=AuthorRole.USER, content=unescape(prompt))])
         if xml_prompt.text and xml_prompt.text.strip():
-            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=xml_prompt.text.strip()))
+            messages.append(ChatMessageContent(role=AuthorRole.SYSTEM, content=unescape(xml_prompt.text.strip())))
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
@@ -259,14 +275,13 @@ class ChatHistory(KernelBaseModel):
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))
             if item.tail and item.tail.strip():
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=item.tail.strip()))
+                messages.append(ChatMessageContent(role=AuthorRole.USER, content=unescape(item.tail.strip())))
         if len(messages) == 1 and messages[0].role == AuthorRole.SYSTEM:
             messages[0].role = AuthorRole.USER
         return cls(messages=messages)
 
     def serialize(self) -> str:
-        """
-        Serializes the ChatHistory instance to a JSON string.
+        """Serializes the ChatHistory instance to a JSON string.
 
         Returns:
             str: A JSON string representation of the ChatHistory instance.
@@ -280,9 +295,8 @@ class ChatHistory(KernelBaseModel):
             raise ContentSerializationError(f"Unable to serialize ChatHistory to JSON: {e}") from e
 
     @classmethod
-    def restore_chat_history(cls, chat_history_json: str) -> ChatHistory:
-        """
-        Restores a ChatHistory instance from a JSON string.
+    def restore_chat_history(cls, chat_history_json: str) -> "ChatHistory":
+        """Restores a ChatHistory instance from a JSON string.
 
         Args:
             chat_history_json (str): The JSON string to deserialize
@@ -301,8 +315,7 @@ class ChatHistory(KernelBaseModel):
             raise ContentInitializationError(f"Invalid JSON format: {e}")
 
     def store_chat_history_to_file(self, file_path: str) -> None:
-        """
-        Stores the serialized ChatHistory to a file.
+        """Stores the serialized ChatHistory to a file.
 
         Args:
             file_path (str): The path to the file where the serialized data will be stored.
@@ -312,9 +325,8 @@ class ChatHistory(KernelBaseModel):
             file.write(json_str)
 
     @classmethod
-    def load_chat_history_from_file(cls, file_path: str) -> ChatHistory:
-        """
-        Loads the ChatHistory from a file.
+    def load_chat_history_from_file(cls, file_path: str) -> "ChatHistory":
+        """Loads the ChatHistory from a file.
 
         Args:
             file_path (str): The path to the file from which to load the ChatHistory.
