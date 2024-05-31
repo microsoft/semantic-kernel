@@ -3,14 +3,7 @@
 import logging
 import types
 from collections.abc import Callable
-from inspect import (
-    Parameter,
-    Signature,
-    isasyncgenfunction,
-    isclass,
-    isgeneratorfunction,
-    signature,
-)
+from inspect import Parameter, Signature, isasyncgenfunction, isclass, isgeneratorfunction, signature
 from typing import Any, ForwardRef, Union, get_args
 
 NoneType = type(None)
@@ -57,19 +50,9 @@ def kernel_function(
         """The actual decorator function."""
         setattr(func, "__kernel_function__", True)
         setattr(func, "__kernel_function_description__", description or func.__doc__)
-        setattr(
-            func,
-            "__kernel_function_name__",
-            name or getattr(func, "__name__", "unknown"),
-        )
-        setattr(
-            func,
-            "__kernel_function_streaming__",
-            isasyncgenfunction(func) or isgeneratorfunction(func),
-        )
-        logger.debug(
-            f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}"
-        )
+        setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
+        setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
+        logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
         func_sig = signature(func, eval_str=True)
 
         annotations = _process_signature(func_sig)
@@ -78,30 +61,12 @@ def kernel_function(
         setattr(func, "__kernel_function_parameters__", annotations)
 
         return_annotation = (
-            _parse_parameter("return", func_sig.return_annotation, None)
-            if func_sig.return_annotation
-            else {}
+            _parse_parameter("return", func_sig.return_annotation, None) if func_sig.return_annotation else {}
         )
-        setattr(
-            func,
-            "__kernel_function_return_type__",
-            return_annotation.get("type_", "None"),
-        )
-        setattr(
-            func,
-            "__kernel_function_return_type_object__",
-            return_annotation.get("type_object", None),
-        )
-        setattr(
-            func,
-            "__kernel_function_return_description__",
-            return_annotation.get("description", ""),
-        )
-        setattr(
-            func,
-            "__kernel_function_return_required__",
-            return_annotation.get("is_required", False),
-        )
+        setattr(func, "__kernel_function_return_type__", return_annotation.get("type_", "None"))
+        setattr(func, "__kernel_function_return_type_object__", return_annotation.get("type_object", None))
+        setattr(func, "__kernel_function_return_description__", return_annotation.get("description", ""))
+        setattr(func, "__kernel_function_return_required__", return_annotation.get("is_required", False))
         return func
 
     if func:
@@ -110,6 +75,7 @@ def kernel_function(
 
 
 def _get_underlying_type(annotation: Any) -> Any:
+    """Get the underlying type of the annotation."""
     if isinstance(annotation, types.UnionType):
         args = annotation.__args__
         non_none_types = [arg for arg in args if arg is not type(None)]
@@ -128,6 +94,7 @@ def _get_underlying_type(annotation: Any) -> Any:
 
 
 def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
+    """Process the signature of the function."""
     annotations = []
 
     for arg in func_sig.parameters.values():
@@ -144,6 +111,7 @@ def _process_signature(func_sig: Signature) -> list[dict[str, Any]]:
 
 
 def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
+    """Parse the parameter annotation."""
     logger.debug(f"Parsing param: {name}")
     logger.debug(f"Parsing annotation: {param}")
     ret: dict[str, Any] = {"name": name}

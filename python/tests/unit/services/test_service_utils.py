@@ -235,7 +235,7 @@ def test_list_schema(setup_kernel):
     assert complex_schema == expected_schema
 
 
-def test_agenda(setup_kernel):
+def test_list_of_items_plugin(setup_kernel):
 
     kernel = setup_kernel
 

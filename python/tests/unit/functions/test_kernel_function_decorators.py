@@ -6,10 +6,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Union
 
 import pytest
 
-from semantic_kernel.functions.kernel_function_decorator import (
-    _process_signature,
-    kernel_function,
-)
+from semantic_kernel.functions.kernel_function_decorator import _process_signature, kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -46,9 +43,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_annotated_optional(
-        self, input: Annotated[str | None, "input description"] = "test"
-    ):
+    def func_input_annotated_optional(self, input: Annotated[str | None, "input description"] = "test"):
         return input
 
     @kernel_function
@@ -68,9 +63,7 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_return_type_streaming(
-        self, input: str
-    ) -> Annotated[AsyncGenerator[str, Any], "test return"]:
+    def func_return_type_streaming(self, input: str) -> Annotated[AsyncGenerator[str, Any], "test return"]:
         yield input
 
     @kernel_function
@@ -82,15 +75,11 @@ class MiscClass:
         return input
 
     @kernel_function
-    def func_input_object_annotated(
-        self, input: Annotated[InputObject, "input description"]
-    ):
+    def func_input_object_annotated(self, input: Annotated[InputObject, "input description"]):
         return input
 
     @kernel_function
-    def func_input_object_annotated_optional(
-        self, input: Annotated[InputObject | None, "input description"] = None
-    ):
+    def func_input_object_annotated_optional(self, input: Annotated[InputObject | None, "input description"] = None):
         return input
 
     @kernel_function
@@ -135,9 +124,7 @@ def test_kernel_function_docstring_as_description():
 def test_kernel_function_param_annotated():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_annotated")
-    assert (
-        my_func.__kernel_function_parameters__[0]["description"] == "input description"
-    )
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0].get("default_value") is None
@@ -156,9 +143,7 @@ def test_kernel_function_param_optional():
 def test_kernel_function_param_annotated_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_annotated_optional")
-    assert (
-        my_func.__kernel_function_parameters__[0]["description"] == "input description"
-    )
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_parameters__[0]["type_"] == "str"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] == "test"
@@ -223,9 +208,7 @@ def test_kernel_function_input_object_optional():
 def test_kernel_function_input_object_annotated():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_object_annotated")
-    assert (
-        my_func.__kernel_function_parameters__[0]["description"] == "input description"
-    )
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_parameters__[0]["type_"] == "InputObject"
     assert my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0].get("default_value") is None
@@ -236,9 +219,7 @@ def test_kernel_function_input_object_annotated():
 def test_kernel_function_input_object_annotated_optional():
     decorator_test = MiscClass()
     my_func = getattr(decorator_test, "func_input_object_annotated_optional")
-    assert (
-        my_func.__kernel_function_parameters__[0]["description"] == "input description"
-    )
+    assert my_func.__kernel_function_parameters__[0]["description"] == "input description"
     assert my_func.__kernel_function_parameters__[0]["type_"] == "InputObject"
     assert not my_func.__kernel_function_parameters__[0]["is_required"]
     assert my_func.__kernel_function_parameters__[0]["default_value"] is None
@@ -270,46 +251,16 @@ def test_kernel_function_no_typing():
         ("anno_str", Annotated[str, "test"], "test", "str", True),
         ("anno_opt_str", Annotated[str | None, "test"], "test", "str", False),
         ("anno_iter_str", Annotated[AsyncIterable[str], "test"], "test", "str", True),
-        (
-            "anno_opt_str_int",
-            Annotated[str | int | None, "test"],
-            "test",
-            "str, int",
-            False,
-        ),
+        ("anno_opt_str_int", Annotated[str | int | None, "test"], "test", "str, int", False),
         ("str", str, None, "str", True),
-        (
-            "union",
-            Union[str, int, float, "KernelArguments"],
-            None,
-            "str, int, float, KernelArguments",
-            True,
-        ),
-        (
-            "new_union",
-            "str | int | float | KernelArguments",
-            None,
-            "str, int, float, KernelArguments",
-            True,
-        ),
+        ("union", Union[str, int, float, "KernelArguments"], None, "str, int, float, KernelArguments", True),
+        ("new_union", "str | int | float | KernelArguments", None, "str, int, float, KernelArguments", True),
         ("opt_str", str | None, None, "str", False),
         ("list_str", list[str], None, "list[str]", True),
         ("dict_str", dict[str, str], None, "dict[str, str]", True),
         ("list_str_opt", list[str] | None, None, "list[str]", False),
-        (
-            "anno_dict_str",
-            Annotated[dict[str, str], "description"],
-            "description",
-            "dict[str, str]",
-            True,
-        ),
-        (
-            "anno_opt_dict_str",
-            Annotated[dict | str | None, "description"],
-            "description",
-            "dict, str",
-            False,
-        ),
+        ("anno_dict_str", Annotated[dict[str, str], "description"], "description", "dict[str, str]", True),
+        ("anno_opt_dict_str", Annotated[dict | str | None, "description"], "description", "dict, str", False),
     ],
 )
 def test_annotation_parsing(name, annotation, description, type_, is_required):

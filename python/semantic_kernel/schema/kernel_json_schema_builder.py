@@ -28,9 +28,7 @@ TYPE_MAPPING = {
 
 class KernelJsonSchemaBuilder:
     @classmethod
-    def build(
-        cls, parameter_type: type | str, description: str | None = None
-    ) -> dict[str, Any]:
+    def build(cls, parameter_type: type | str, description: str | None = None) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type and description.
 
         Args:
@@ -54,9 +52,7 @@ class KernelJsonSchemaBuilder:
         return schema
 
     @classmethod
-    def build_model_schema(
-        cls, model: type, description: str | None = None
-    ) -> dict[str, Any]:
+    def build_model_schema(cls, model: type, description: str | None = None) -> dict[str, Any]:
         """Builds the JSON schema for a given model and description.
 
         Args:
@@ -99,9 +95,7 @@ class KernelJsonSchemaBuilder:
         return get_origin(field_type) is Union and type(None) in get_args(field_type)
 
     @classmethod
-    def build_from_type_name(
-        cls, parameter_type: str, description: str | None = None
-    ) -> dict[str, Any]:
+    def build_from_type_name(cls, parameter_type: str, description: str | None = None) -> dict[str, Any]:
         """Builds the JSON schema for a given parameter type name and description.
 
         Args:
@@ -131,9 +125,7 @@ class KernelJsonSchemaBuilder:
         return {"type": type_name}
 
     @classmethod
-    def handle_complex_type(
-        cls, parameter_type: type, description: str | None = None
-    ) -> dict[str, Any]:
+    def handle_complex_type(cls, parameter_type: type, description: str | None = None) -> dict[str, Any]:
         """Handles building the JSON schema for complex types.
 
         Args:

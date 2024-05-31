@@ -42,40 +42,14 @@ class MockModel:
         "optional_field": Optional[str],
     }
     __fields__ = {
-        "id": Mock(
-            description="The ID of the model",
-            metadata={"description": "The ID of the model"},
-        ),
-        "name": Mock(
-            description="The name of the model",
-            metadata={"description": "The name of the model"},
-        ),
-        "is_active": Mock(
-            description="Whether the model is active",
-            metadata={"description": "Whether the model is active"},
-        ),
-        "tags": Mock(
-            description="Tags associated with the model",
-            metadata={"description": "Tags associated with the model"},
-        ),
-        "status": Mock(
-            description="The status of the model, either as an integer or a string",
-            metadata={
-                "description": "The status of the model, either as an integer or a string"
-            },
-        ),
-        "scores": Mock(
-            description="The scores associated with the model",
-            metadata={"description": "The scores associated with the model"},
-        ),
-        "optional_field": Mock(
-            description="An optional field that can be null",
-            metadata={"description": "An optional field that can be null"},
-        ),
-        "metadata": Mock(
-            description="The optional metadata description",
-            metadata={"description": "The optional metadata description"},
-        ),
+        "id": Mock(description="The ID of the model"),
+        "name": Mock(description="The name of the model"),
+        "is_active": Mock(description="Whether the model is active"),
+        "tags": Mock(description="Tags associated with the model"),
+        "status": Mock(description="The status of the model, either as an integer or a string"),
+        "scores": Mock(description="The scores associated with the model"),
+        "optional_field": Mock(description="An optional field that can be null"),
+        "metadata": Mock(description="The optional metadata description"),
     }
 
 
