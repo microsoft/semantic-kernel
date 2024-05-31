@@ -105,6 +105,7 @@ class KernelFilterExtension(KernelBaseModel, ABC):
         filter_type: FilterTypes,
         inner_function: Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]],
     ) -> Callable[[FILTER_CONTEXT_TYPE], Coroutine[Any, Any, None]]:
+        """Construct the call stack for the given filter type."""
         stack: list[Any] = [inner_function]
         for _, filter in getattr(self, FILTER_MAPPING[filter_type]):
             filter_with_next = partial(filter, next=stack[0])
@@ -120,7 +121,7 @@ def _rebuild_auto_function_invocation_context() -> None:
     from semantic_kernel.functions.function_result import FunctionResult  # noqa: F401
     from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
     from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
-    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+    from semantic_kernel.kernel import Kernel  # noqa: F401
 
     AutoFunctionInvocationContext.model_rebuild()
 
@@ -140,6 +141,6 @@ def _rebuild_prompt_render_context() -> None:
     from semantic_kernel.functions.function_result import FunctionResult  # noqa: F401
     from semantic_kernel.functions.kernel_arguments import KernelArguments  # noqa: F401
     from semantic_kernel.functions.kernel_function import KernelFunction  # noqa: F401
-    from semantic_kernel.kernel import Kernel  # noqa: F403 F401
+    from semantic_kernel.kernel import Kernel  # noqa: F401
 
     PromptRenderContext.model_rebuild()

@@ -45,7 +45,7 @@ class VarBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.VARIABLE
-    name: str | None = ""
+    name: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -67,7 +67,9 @@ class VarBlock(Block):
 
     def render(self, _: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """Render the variable block with the given arguments.
-        If the variable is not found in the arguments, return an empty string."""
+
+        If the variable is not found in the arguments, return an empty string.
+        """
         if arguments is None:
             return ""
         value = arguments.get(self.name, None)

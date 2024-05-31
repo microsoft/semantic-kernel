@@ -17,6 +17,7 @@ class RestApiOperationPayloadProperty:
         default_value: Any | None = None,
         schema: str | None = None,
     ):
+        """Initialize the RestApiOperationPayloadProperty."""
         self.name = name
         self.type = type
         self.properties = properties

@@ -185,7 +185,6 @@ class RequiredFunction(FunctionCallBehavior):
         if not self.enable_kernel_functions:
             return
         # since using this always calls this single function, we do not want to allow repeated calls
-        # TODO: reevaluate when other models support function calling then OpenAI.
         if self.max_auto_invoke_attempts > 1:
             self.max_auto_invoke_attempts = 1
         update_settings_callback(

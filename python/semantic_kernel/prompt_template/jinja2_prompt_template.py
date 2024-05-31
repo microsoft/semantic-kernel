@@ -9,6 +9,7 @@ from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
 from semantic_kernel.exceptions import Jinja2TemplateRenderException
+from semantic_kernel.exceptions.template_engine_exceptions import TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
@@ -22,8 +23,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Jinja2PromptTemplate(PromptTemplateBase):
-    """
-    Creates and renders Jinja2 prompt templates to text.
+    """Creates and renders Jinja2 prompt templates to text.
 
     Jinja2 templates support advanced features such as variable substitution, control structures,
     and inheritance, making it possible to dynamically generate text based on input arguments
@@ -48,23 +48,26 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         Jinja2TemplateSyntaxError: If there is a syntax error in the Jinja2 template.
     """
 
-    _env: ImmutableSandboxedEnvironment = PrivateAttr()
+    _env: ImmutableSandboxedEnvironment | None = PrivateAttr()
 
     @field_validator("prompt_template_config")
     @classmethod
     def validate_template_format(cls, v: "PromptTemplateConfig") -> "PromptTemplateConfig":
+        """Validate the template format."""
         if v.template_format != JINJA2_TEMPLATE_FORMAT_NAME:
             raise ValueError(f"Invalid prompt template format: {v.template_format}. Expected: jinja2")
         return v
 
     def model_post_init(self, _: Any) -> None:
+        """Post init model."""
         if not self.prompt_template_config.template:
             self._env = None
             return
         self._env = ImmutableSandboxedEnvironment(loader=BaseLoader())
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
-        """
+        """Render the prompt template.
+
         Using the prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
         function result.
@@ -82,7 +85,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             arguments = KernelArguments()
 
         arguments = self._get_trusted_arguments(arguments)
-        allow_unsafe_function_output = self._get_allow_unsafe_function_output()
+        allow_unsafe_function_output = self._get_allow_dangerously_set_function_output()
         helpers: dict[str, Callable[..., Any]] = {}
         helpers.update(JINJA2_SYSTEM_HELPERS)
         for plugin in kernel.plugins.values():
@@ -99,6 +102,8 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                 }
             )
         try:
+            if self.prompt_template_config.template is None:
+                raise TemplateRenderException("Template is None")
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
             return template.render(**arguments)
 

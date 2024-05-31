@@ -1048,7 +1048,11 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
+        var kernelException = await Assert.ThrowsAsync<KernelException>(() => sut.RunAsync(operation, arguments));
+        Assert.Equal("The content type `fake/type` is not supported.", kernelException.Message);
+        Assert.Equal("POST", kernelException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", kernelException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", kernelException.Data["http.request.body"]);
     }
 
     [Fact]

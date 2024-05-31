@@ -24,7 +24,7 @@ async def test_azure_summarize_conversation_using_plugin(setup_summarize_convers
     )
     prompt_template_config = PromptTemplateConfig(
         template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
     )
 
@@ -55,7 +55,7 @@ async def test_oai_summarize_conversation_using_plugin(
     )
     prompt_template_config = PromptTemplateConfig(
         template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=execution_settings,
     )
 

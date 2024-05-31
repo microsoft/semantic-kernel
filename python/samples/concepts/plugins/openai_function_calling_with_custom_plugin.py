@@ -23,20 +23,19 @@ class WeatherPlugin:
     def get_weather_for_city(self, city: Annotated[str, "The input city"]) -> Annotated[str, "The output is a string"]:
         if city == "Boston":
             return "61 and rainy"
-        elif city == "London":
+        if city == "London":
             return "55 and cloudy"
-        elif city == "Miami":
+        if city == "Miami":
             return "80 and sunny"
-        elif city == "Paris":
+        if city == "Paris":
             return "60 and rainy"
-        elif city == "Tokyo":
+        if city == "Tokyo":
             return "50 and sunny"
-        elif city == "Sydney":
+        if city == "Sydney":
             return "75 and sunny"
-        elif city == "Tel Aviv":
+        if city == "Tel Aviv":
             return "80 and sunny"
-        else:
-            return "31 and snowing"
+        return "31 and snowing"
 
 
 async def main():
@@ -65,7 +64,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     print(
@@ -83,7 +82,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
 
     result = kernel.invoke_prompt_stream(
@@ -106,7 +105,7 @@ async def main():
         service_id=service_id
     )
     settings.function_call_behavior = FunctionCallBehavior.EnableFunctions(
-        auto_invoke=True, filters={"include_plugin": ["weather", "time"]}
+        auto_invoke=True, filters={"included_plugins": ["weather", "time"]}
     )
     chat_history.add_user_message(
         "Given the current time of day and weather, what is the likely color of the sky in Boston?"

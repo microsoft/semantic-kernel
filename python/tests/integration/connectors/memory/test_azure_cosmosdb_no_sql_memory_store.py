@@ -2,19 +2,20 @@
 
 import numpy as np
 import pytest
-from azure.cosmos import PartitionKey
-from azure.cosmos.aio import CosmosClient
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 try:
+    from azure.cosmos import PartitionKey
+    from azure.cosmos.aio import CosmosClient
+
     from semantic_kernel.connectors.memory.azure_cosmosdb_no_sql.azure_cosmosdb_no_sql_memory_store import (
         AzureCosmosDBNoSQLMemoryStore,
     )
 
     azure_cosmosdb_no_sql_memory_store_installed = True
-except AssertionError:
+except ImportError:
     azure_cosmosdb_no_sql_memory_store_installed = False
 
 pytest_mark = pytest.mark.skipif(
@@ -26,10 +27,7 @@ pytest_mark = pytest.mark.skipif(
 HOST = ""
 KEY = ""
 
-if not HOST or KEY:
-    skip_test = True
-else:
-    skip_test = False
+skip_test = bool(not HOST or KEY)
 
 cosmos_client = CosmosClient(HOST, KEY)
 database_name = "sk_python_db"
@@ -39,7 +37,7 @@ cosmos_container_properties = {"partition_key": partition_key}
 
 
 async def azure_cosmosdb_no_sql_memory_store() -> MemoryStoreBase:
-    store = AzureCosmosDBNoSQLMemoryStore(
+    return AzureCosmosDBNoSQLMemoryStore(
         cosmos_client=cosmos_client,
         database_name=database_name,
         partition_key=partition_key.path,
@@ -47,7 +45,6 @@ async def azure_cosmosdb_no_sql_memory_store() -> MemoryStoreBase:
         indexing_policy=get_vector_indexing_policy("flat"),
         cosmos_container_properties=cosmos_container_properties,
     )
-    return store
 
 
 @pytest.mark.asyncio
