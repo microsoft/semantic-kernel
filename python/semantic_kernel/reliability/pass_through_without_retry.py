@@ -25,7 +25,7 @@ class PassThroughWithoutRetry(RetryMechanismBase, KernelBaseModel):
             Awaitable[T]: An awaitable that will return the result of the action.
         """
         try:
-            await action()
+            return action()
         except Exception as e:
             logger.warning(e, "Error executing action, not retrying")
             raise e
