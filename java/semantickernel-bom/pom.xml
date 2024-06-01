@@ -5,7 +5,11 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
+<<<<<<< HEAD
     <version>0.2.10-alpha-SNAPSHOT</version>
+=======
+    <version>0.2.9-alpha-SNAPSHOT</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -77,16 +81,20 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< HEAD
                 <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                 <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+<<<<<<< HEAD
                 <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -100,11 +108,20 @@
                 <artifactId>semantickernel-settings-loader</artifactId>
                 <version>${project.version}</version>
             </dependency>
+=======
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
+<<<<<<< HEAD
                 <version>1.0.0-beta.5</version>
+=======
+                <version>1.0.0-beta.2</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -141,13 +158,21 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core-http-netty</artifactId>
+<<<<<<< HEAD
                 <version>1.13.8</version>
+=======
+                <version>1.13.2</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-search-documents</artifactId>
+<<<<<<< HEAD
                 <version>11.6.0-beta.9</version>
+=======
+                <version>11.6.0-beta.6</version>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
@@ -160,12 +185,15 @@
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>3.42.0.0</version>
             </dependency>
+<<<<<<< HEAD
 
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.6.1</version>
             </dependency>
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         </dependencies>
     </dependencyManagement>
 
@@ -176,7 +204,10 @@
             <distributionManagement>
                 <repository>
                     <id>${releaseRepoId}</id>
+<<<<<<< HEAD
                     <!--suppress UnresolvedMavenProperty -->
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                     <url>${releaseRepoUrl}</url>
                     <name>${releaseRepoName}</name>
                 </repository>
@@ -203,6 +234,10 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
+<<<<<<< HEAD
         <tag>java-0.2.9-alpha</tag>
+=======
+        <tag>java-0.2.8-alpha</tag>
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     </scm>
 </project>
