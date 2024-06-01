@@ -102,6 +102,7 @@ public interface SKContext extends Buildable {
         Builder withVariables(ContextVariables variables);
 
         /**
+<<<<<<< HEAD
          * Clones the given context and sets its result to the given error
          *
          * @param toClone context to clone
@@ -112,6 +113,8 @@ public interface SKContext extends Buildable {
         SKContext failed(SKContext toClone, String errorDescription, Exception exception);
 
         /**
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
          * Sets the skills
          *
          * @param skills null argument will be ignored
