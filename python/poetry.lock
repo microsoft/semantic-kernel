@@ -5109,17 +5109,17 @@ fastembed = ["fastembed (==0.2.6)"]
 
 [[package]]
 name = "redis"
-version = "4.6.0"
+version = "5.0.4"
 description = "Python client for Redis database and key-value store"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.6.0-py3-none-any.whl", hash = "sha256:e2b03db868160ee4591de3cb90d40ebb50a90dd302138775937f6a42b7ed183c"},
-    {file = "redis-4.6.0.tar.gz", hash = "sha256:585dc516b9eb042a619ef0a39c3d7d55fe81bdb4df09a52c9cdde0d07bf1aa7d"},
+    {file = "redis-5.0.4-py3-none-any.whl", hash = "sha256:7adc2835c7a9b5033b7ad8f8918d09b7344188228809c98df07af226d39dec91"},
+    {file = "redis-5.0.4.tar.gz", hash = "sha256:ec31f2ed9675cc54c21ba854cfe0462e6faf1d83c8ce5944709db8a4700b9c61"},
 ]
 
 [package.dependencies]
-async-timeout = {version = ">=4.0.2", markers = "python_full_version <= \"3.11.2\""}
+async-timeout = {version = ">=4.0.3", markers = "python_full_version < \"3.11.3\""}
 
 [package.extras]
 hiredis = ["hiredis (>=1.0.0)"]
@@ -7058,4 +7058,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "6c40e64f7b0904505576de0b3238706e3f3c56d30927b5f9990b72adf5fe58ff"
+content-hash = "464e4b27929ff8ce953a23bfafb2e21d7d623e2fd05c0ea255f638de7462e1a3"
