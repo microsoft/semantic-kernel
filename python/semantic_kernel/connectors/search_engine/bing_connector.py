@@ -20,6 +20,7 @@ class BingConnector(ConnectorBase):
     def __init__(
         self,
         api_key: str | None = None,
+        custom_config: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
@@ -28,12 +29,15 @@ class BingConnector(ConnectorBase):
         Args:
             api_key (str | None): The Bing Search API key. If provided, will override
                 the value in the env vars or .env file.
+            custom_config (str | None): The Bing Custom Search instance's unique identifier.
+                If provided, will override the value in the env vars or .env file.
             env_file_path (str | None): The optional path to the .env file. If provided,
                 the settings are read from this file path location.
             env_file_encoding (str | None): The optional encoding of the .env file.
         """
         self._settings = BingSettings.create(
             api_key=api_key,
+            custom_config=custom_config,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
         )
@@ -56,8 +60,14 @@ class BingConnector(ConnectorBase):
                 params:\nquery: {query}\nnum_results: {num_results}\noffset: {offset}"
         )
 
-        _base_url = "https://api.bing.microsoft.com/v7.0/search"
-        _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}"
+        _base_url = (
+            "https://api.bing.microsoft.com/v7.0/custom/search"
+            if self._custom_config
+            else "https://api.bing.microsoft.com/v7.0/search"
+        )
+        _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}" + (
+            f"&customConfig={self._custom_config}" if self._custom_config else ""
+        )
 
         logger.info(f"Sending GET request to {_request_url}")
 
