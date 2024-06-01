@@ -2472,14 +2472,12 @@ python-dateutil = ">=2.8.2"
 
 [[package]]
 name = "milvus"
-version = "2.3.5"
+version = "2.3.8"
 description = "Embeded Milvus"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "milvus-2.3.5-py3-none-macosx_12_0_arm64.whl", hash = "sha256:328d2ba24fb04a595f47ab226abf5565691bfe242beb88e61b31326d0416bf1a"},
-    {file = "milvus-2.3.5-py3-none-macosx_12_0_x86_64.whl", hash = "sha256:e35a8d6397da1f0f685d0f55afad8654296ff3b3aea296439e53ce9980d1ad22"},
-    {file = "milvus-2.3.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:69515a0630ce29fd10e101fa442afea8ca1387b93a456cd9bd41fdf3deb93d04"},
+    {file = "milvus-2.3.8-py3-none-macosx_12_0_arm64.whl", hash = "sha256:f86c1a5b00c8f3c6589affef8b04f45146496cf9c815a122e9a277698456cbb8"},
 ]
 
 [package.extras]
@@ -7060,4 +7058,4 @@ weaviate = ["weaviate-client"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.13"
-content-hash = "67c1f9735668da90ef18378d7f0c8dabab55f64de5e90535ec0972402de2351d"
+content-hash = "6c40e64f7b0904505576de0b3238706e3f3c56d30927b5f9990b72adf5fe58ff"
