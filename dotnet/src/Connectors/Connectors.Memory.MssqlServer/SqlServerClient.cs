@@ -97,7 +97,7 @@ public sealed class SqlServerClient : ISqlServerClient
                     );
 
                     IF OBJECT_ID(N'{this._configuration.Schema}.IXC_{$"{this._configuration.EmbeddingsTableName}_{collectionName}"}', N'U') IS NULL
-                    CREATE CLUSTERED COLUMNSTORE INDEX IXC_{$"{this._configuration.EmbeddingsTableName}_{collectionName}"}
+                    CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{this._configuration.EmbeddingsTableName}_{collectionName}]"}
                     ON {this.GetFullTableName($"{this._configuration.EmbeddingsTableName}_{collectionName}")};";
 
             command.Parameters.AddWithValue("@collectionName", collectionName);
@@ -121,7 +121,7 @@ public sealed class SqlServerClient : ISqlServerClient
             if (item.Equals(collectionName, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
-        }
+            }
         }
 
         return false;
@@ -276,7 +276,6 @@ public sealed class SqlServerClient : ISqlServerClient
             WHERE [collection] = @collectionName
                 AND [key] IN ({string.Join(",", Enumerable.Range(0, keysArray.Length).Select(c => $"@key{c}"))})";
 
-
         cmd.Parameters.AddWithValue("@collectionName", collectionName);
 
         for (int i = 0; i < keysArray.Length; i++)
@@ -285,7 +284,6 @@ public sealed class SqlServerClient : ISqlServerClient
         }
 
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
     }
 
     /// <inheritdoc />
