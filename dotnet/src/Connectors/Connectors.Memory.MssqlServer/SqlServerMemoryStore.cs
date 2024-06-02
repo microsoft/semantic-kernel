@@ -29,7 +29,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// <param name="config">The SQL server configuration.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A new instance of <see cref="SqlServerMemoryStore"/> connected to the specified SQL Server database.</returns>
-    public static async Task<SqlServerMemoryStore> ConnectAsync(string connectionString, SqlServerConfig config = default, CancellationToken cancellationToken = default)
+    public static async Task<SqlServerMemoryStore> ConnectAsync(string connectionString, SqlServerConfig? config = default, CancellationToken cancellationToken = default)
     {
         var client = new SqlServerClient(connectionString, config ?? new());
 
@@ -61,7 +61,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbClient.GetCollectionsAsync(cancellationToken))
+        await foreach (var collection in this._dbClient.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -171,7 +171,6 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
 
         await this._dbClient.DeleteBatchAsync(collectionName, keys, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)

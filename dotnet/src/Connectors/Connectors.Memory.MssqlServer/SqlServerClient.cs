@@ -119,7 +119,9 @@ public sealed class SqlServerClient : ISqlServerClient
         await foreach (var item in collections)
         {
             if (item.Equals(collectionName, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+        }
         }
 
         return false;
@@ -424,7 +426,6 @@ public sealed class SqlServerClient : ISqlServerClient
     {
         return $"[{this._configuration.Schema}].[{tableName}]";
     }
-
 
     /// <inheritdoc />
     private async Task<SqlServerMemoryEntry> ReadEntryAsync(SqlDataReader dataReader, bool withEmbedding, CancellationToken cancellationToken = default)
