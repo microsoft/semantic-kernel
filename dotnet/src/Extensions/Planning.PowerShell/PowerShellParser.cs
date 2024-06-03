@@ -20,7 +20,9 @@ internal static class PowerShellParser
         plan.OriginalPlan = script;
 
         var syntaxTree = Parser.ParseInput(script, out var tokens, out var errors);
-        var resultVariable = string.Empty;
+        foreach (var command in GetFunctionInvocationsFromScript(syntaxTree))
+        {
+            var resultVariable = string.Empty;
 
         foreach (var command in GetFunctionInvocationsFromScript(syntaxTree))
         {
