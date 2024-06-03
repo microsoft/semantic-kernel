@@ -78,6 +78,10 @@ catch (Exception ex)
     {
         if (string.IsNullOrEmpty(goal))
         {
+            _logger.LogWarning("The goal specified is empty");
+            throw new SKException("The goal specified is empty");
+        }
+        {
             throw new SKException("The goal specified is empty");
         }
 
