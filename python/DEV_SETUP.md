@@ -85,9 +85,12 @@ Note: SK requires at least Poetry 1.2.0.
 
 ### Note for MacOS Users
 
-It is best to install Poetry using their [official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
+It is best to install Poetry using their 
+[official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
 
-On MacOS, you might find that `python` commands are not recognized by default, and you can only use `python3`. To make it easier to run `python ...` commands (which Poetry requires), you can create an alias in your shell configuration file.
+On MacOS, you might find that `python` commands are not recognized by default, 
+and you can only use `python3`. To make it easier to run `python ...` commands 
+(which Poetry requires), you can create an alias in your shell configuration file.
 
 Follow these steps:
 
@@ -107,7 +110,8 @@ Follow these steps:
     - For **Bash**: `source ~/.bash_profile` or `source ~/.bashrc`
     - For **Zsh**: `source ~/.zshrc`
 
-After these steps, you should be able to use `python` in your terminal to run Python 3 commands.
+After these steps, you should be able to use `python` in your terminal to run 
+Python 3 commands.
 
 ### Poetry Installation
 
