@@ -9,12 +9,12 @@ from jinja2.sandbox import ImmutableSandboxedEnvironment
 from pydantic import PrivateAttr, field_validator
 
 from semantic_kernel.exceptions import Jinja2TemplateRenderException
-from semantic_kernel.exceptions.template_engine_exceptions import TemplateRenderException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.const import JINJA2_TEMPLATE_FORMAT_NAME
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS, create_template_helper_from_function
+from semantic_kernel.prompt_template.utils import JINJA2_SYSTEM_HELPERS
+from semantic_kernel.prompt_template.utils.template_function_helpers import create_template_helper_from_function
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
@@ -63,7 +63,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
         if not self.prompt_template_config.template:
             self._env = None
             return
-        self._env = ImmutableSandboxedEnvironment(loader=BaseLoader())
+        self._env = ImmutableSandboxedEnvironment(loader=BaseLoader(), enable_async=True)
 
     async def render(self, kernel: "Kernel", arguments: Optional["KernelArguments"] = None) -> str:
         """Render the prompt template.
@@ -97,16 +97,16 @@ class Jinja2PromptTemplate(PromptTemplateBase):
                         arguments,
                         self.prompt_template_config.template_format,
                         allow_unsafe_function_output,
+                        enable_async=True,
                     )
                     for function in plugin
                 }
             )
+        if self.prompt_template_config.template is None:
+            raise Jinja2TemplateRenderException("Error rendering template, template is None")
         try:
-            if self.prompt_template_config.template is None:
-                raise TemplateRenderException("Template is None")
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
-            return template.render(**arguments)
-
+            return await template.render_async(**arguments)
         except TemplateError as exc:
             logger.error(
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"
