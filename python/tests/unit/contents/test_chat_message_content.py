@@ -20,6 +20,7 @@ def test_cmc():
 
 def test_cmc_str():
     message = ChatMessageContent(role="user", content="Hello, world!")
+    assert message.role == AuthorRole.USER
     assert str(message) == "Hello, world!"
 
 
