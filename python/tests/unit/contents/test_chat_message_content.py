@@ -12,20 +12,21 @@ from semantic_kernel.contents.text_content import TextContent
 
 
 def test_cmc():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
 
 
 def test_cmc_str():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
+    assert message.role == AuthorRole.USER
     assert str(message) == "Hello, world!"
 
 
 def test_cmc_full():
     message = ChatMessageContent(
-        role=AuthorRole.USER,
+        role="user",
         name="username",
         content="Hello, world!",
         inner_content="Hello, world!",
@@ -42,14 +43,16 @@ def test_cmc_full():
 
 
 def test_cmc_items():
-    message = ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(role="user", items=[TextContent(text="Hello, world!")])
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
 
 
 def test_cmc_items_and_content():
-    message = ChatMessageContent(role=AuthorRole.USER, content="text", items=[TextContent(text="Hello, world!")])
+    message = ChatMessageContent(
+        role="user", content="text", items=[TextContent(text="Hello, world!")]
+    )
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert message.items[0].text == "Hello, world!"
@@ -59,7 +62,7 @@ def test_cmc_items_and_content():
 
 def test_cmc_multiple_items():
     message = ChatMessageContent(
-        role=AuthorRole.SYSTEM,
+        role="system",
         items=[
             TextContent(text="Hello, world!"),
             TextContent(text="Hello, world!"),
@@ -71,7 +74,7 @@ def test_cmc_multiple_items():
 
 
 def test_cmc_content_set():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.content = "Hello, world to you too!"
@@ -82,7 +85,7 @@ def test_cmc_content_set():
 
 
 def test_cmc_content_set_empty():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.items.pop()
@@ -92,7 +95,7 @@ def test_cmc_content_set_empty():
 
 
 def test_cmc_to_element():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!", name=None)
+    message = ChatMessageContent(role="user", content="Hello, world!", name=None)
     element = message.to_element()
     assert element.tag == "message"
     assert element.attrib == {"role": "user"}
@@ -103,13 +106,13 @@ def test_cmc_to_element():
 
 
 def test_cmc_to_prompt():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     prompt = message.to_prompt()
     assert prompt == '<message role="user"><text>Hello, world!</text></message>'
 
 
 def test_cmc_from_element():
-    element = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!").to_element()
+    element = ChatMessageContent(role="user", content="Hello, world!").to_element()
     message = ChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
@@ -182,14 +185,14 @@ def test_cmc_from_element_content_parse(xml_content, user, text_content, length)
 
 
 def test_cmc_serialize():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     dumped = message.model_dump()
     assert dumped["role"] == AuthorRole.USER
     assert dumped["items"][0]["text"] == "Hello, world!"
 
 
 def test_cmc_to_dict():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     assert message.to_dict() == {
         "role": "user",
         "content": "Hello, world!",
@@ -197,7 +200,7 @@ def test_cmc_to_dict():
 
 
 def test_cmc_to_dict_keys():
-    message = ChatMessageContent(role=AuthorRole.USER, content="Hello, world!")
+    message = ChatMessageContent(role="user", content="Hello, world!")
     assert message.to_dict(role_key="author", content_key="text") == {
         "author": "user",
         "text": "Hello, world!",
