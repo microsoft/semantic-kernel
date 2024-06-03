@@ -2,7 +2,7 @@
 
 from pydantic import ValidationError
 
-from samples.learn_resources.service_settings import ServiceSettings
+from samples.service_settings import ServiceSettings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
@@ -14,10 +14,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInitializationE
 
 
 def add_service(
-    kernel: Kernel, 
-    use_chat: bool = True, 
-    env_file_path: str | None = None, 
-    env_file_encoding: str | None = None
+    kernel: Kernel, use_chat: bool = True, env_file_path: str | None = None, env_file_encoding: str | None = None
 ) -> Kernel:
     """
     Configure the AI service for the kernel

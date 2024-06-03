@@ -5,6 +5,10 @@ on:
     branches: ["main", "feature*"]
     paths:
       - "python/**"
+  workflow_run:
+    workflows: ["Python Unit Tests"]
+    types: 
+      - in_progress
 
 jobs:
   python-tests-coverage:
