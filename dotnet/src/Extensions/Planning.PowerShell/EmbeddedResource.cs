@@ -13,7 +13,7 @@ internal sealed class EmbeddedResource
     internal static string Read(string name)
     {
         var assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly;
-        if (assembly == null) { throw new SKException($"[{s_namespace}] {name} assembly not found"); }
+        // The null check for 'assembly' is redundant and can be removed
 
         using Stream? resource = assembly.GetManifestResourceStream($"{s_namespace}." + name);
         if (resource == null) { throw new SKException($"[{s_namespace}] {name} resource not found"); }
