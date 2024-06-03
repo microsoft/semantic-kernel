@@ -1,0 +1,53 @@
+#
+# This workflow will run all python samples tests.
+#
+
+name: Python Samples Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * 0" # Run at 1AM UTC daily on Sunday
+
+jobs:
+  python-samples-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+      - name: Run samples Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+          OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
+          OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
+          OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE__APIKEY }}
+          POSTGRES_CONNECTION_STRING: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_AI_SEARCH_API_KEY: ${{secrets.AZURE_AI_SEARCH_API_KEY}}
+          AZURE_AI_SEARCH_ENDPOINT: ${{secrets.AZURE_AI_SEARCH_ENDPOINT}}
+          MONGODB_ATLAS_CONNECTION_STRING: ${{secrets.MONGODB_ATLAS_CONNECTION_STRING}}
+        run: |
+          cd python
+          poetry run pytest ./tests/samples -v
+
