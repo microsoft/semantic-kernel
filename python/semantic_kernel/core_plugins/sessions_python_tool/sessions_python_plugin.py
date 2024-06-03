@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from collections.abc import Awaitable, Callable
-from io import BufferedReader, BytesIO
+from io import BytesIO
 from typing import Annotated, Any
 
 import httpx
@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 
 
 SESSIONS_USER_AGENT = f"{HTTP_USER_AGENT}/{version_info} (Language=Python)"
+
+SESSIONS_API_VERSION = "2024-02-02-preview"
 
 
 class SessionsPythonTool(KernelBaseModel):
@@ -105,6 +107,12 @@ class SessionsPythonTool(KernelBaseModel):
             remote_file_path = f"/mnt/data/{remote_file_path}"
         return remote_file_path
 
+    def _build_url_with_version(self, base_url, endpoint, params):
+        """Builds a URL with the provided base URL, endpoint, and query parameters."""
+        params['api-version'] = SESSIONS_API_VERSION
+        query_string = '&'.join([f"{key}={value}" for key, value in params.items()])
+        return f"{base_url}{endpoint}?{query_string}"
+
     @kernel_function(
         description="""Executes the provided Python code.
                      Start and end the code snippet with double quotes to define it as a string.
@@ -150,8 +158,14 @@ class SessionsPythonTool(KernelBaseModel):
             "properties": self.settings.model_dump(exclude_none=True, exclude={"sanitize_input"}, by_alias=True),
         }
 
+        url = self._build_url_with_version(
+            base_url=self.pool_management_endpoint,
+            endpoint="python/execute/",
+            params={"identifier": self.settings.session_id},
+        )
+
         response = await self.http_client.post(
-            url=f"{self.pool_management_endpoint}python/execute/",
+            url=url,
             json=request_body,
         )
         response.raise_for_status()
@@ -163,14 +177,12 @@ class SessionsPythonTool(KernelBaseModel):
     async def upload_file(
         self,
         *,
-        data: Annotated[BufferedReader | None, "The file data to upload"] = None,
+        local_file_path: Annotated[str, "The path to the local file on the machine"],
         remote_file_path: Annotated[str | None, "The remote path to the file in the session. Defaults to /mnt/data"] = None,  # noqa: E501
-        local_file_path: Annotated[str | None, "The path to the local file on the machine"] = None,
     ) -> Annotated[SessionsRemoteFileMetadata, "The metadata of the uploaded file"]:
         """Upload a file to the session pool.
 
         Args:
-            data (BufferedReader): The file data to upload.
             remote_file_path (str): The path to the file in the session.
             local_file_path (str): The path to the file on the local machine.
 
@@ -178,38 +190,39 @@ class SessionsPythonTool(KernelBaseModel):
             RemoteFileMetadata: The metadata of the uploaded file.
 
         Raises:
-            FunctionExecutionException: If data and local_file_path are provided together.
+            FunctionExecutionException: If local_file_path is not provided.
         """
-        if data and local_file_path:
-            raise FunctionExecutionException("data and local_file_path cannot be provided together")
+        if not local_file_path:
+            raise FunctionExecutionException("Please provide a local file path to upload.")
 
-        if remote_file_path:
-            remote_file_path = self._construct_remote_file_path(remote_file_path)
+        remote_file_path = self._construct_remote_file_path(remote_file_path or os.path.basename(local_file_path))
 
-        if local_file_path:
-            if not remote_file_path:
-                remote_file_path = self._construct_remote_file_path(os.path.basename(local_file_path))
-            data = open(local_file_path, "rb")  # noqa: SIM115
+        with open(local_file_path, "rb") as data:
+            auth_token = await self._ensure_auth_token()
+            self.http_client.headers.update(
+                {
+                    "Authorization": f"Bearer {auth_token}",
+                    USER_AGENT: SESSIONS_USER_AGENT,
+                }
+            )
+            files = [("file", (remote_file_path, data, "application/octet-stream"))]
 
-        auth_token = await self._ensure_auth_token()
-        self.http_client.headers.update(
-            {
-                "Authorization": f"Bearer {auth_token}",
-                USER_AGENT: SESSIONS_USER_AGENT,
-            }
-        )
-        files = [("file", (remote_file_path, data, "application/octet-stream"))]
+            url = self._build_url_with_version(
+                base_url=self.pool_management_endpoint,
+                endpoint="python/uploadFile",
+                params={"identifier": self.settings.session_id},
+            )
 
-        response = await self.http_client.post(
-            url=f"{self.pool_management_endpoint}python/uploadFile?identifier={self.settings.session_id}",
-            json={},
-            files=files,  # type: ignore
-        )
+            response = await self.http_client.post(
+                url=url,
+                json={},
+                files=files,  # type: ignore
+            )
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        response_json = response.json()
-        return SessionsRemoteFileMetadata.from_dict(response_json['$values'][0])
+            response_json = response.json()
+            return SessionsRemoteFileMetadata.from_dict(response_json['$values'][0])
 
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
@@ -226,8 +239,14 @@ class SessionsPythonTool(KernelBaseModel):
             }
         )
 
+        url = self._build_url_with_version(
+            base_url=self.pool_management_endpoint,
+            endpoint="python/files",
+            params={"identifier": self.settings.session_id}
+        )
+
         response = await self.http_client.get(
-            url=f"{self.pool_management_endpoint}python/files?identifier={self.settings.session_id}",
+            url=url,
         )
         response.raise_for_status()
 
@@ -253,8 +272,17 @@ class SessionsPythonTool(KernelBaseModel):
             }
         )
 
+        url = self._build_url_with_version(
+            base_url=self.pool_management_endpoint,
+            endpoint="python/downloadFile",
+            params={
+                "identifier": self.settings.session_id,
+                "filename": remote_file_path
+            }
+        )
+
         response = await self.http_client.get(
-            url=f"{self.pool_management_endpoint}python/downloadFile?identifier={self.settings.session_id}&filename={remote_file_path}",
+            url=url,
         )
         response.raise_for_status()
 
