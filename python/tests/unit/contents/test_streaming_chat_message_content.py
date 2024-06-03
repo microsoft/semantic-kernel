@@ -15,18 +15,14 @@ from semantic_kernel.exceptions.content_exceptions import ContentAdditionExcepti
 
 
 def test_scmc():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
 
 
 def test_scmc_str():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert str(message) == "Hello, world!"
 
 
@@ -50,9 +46,7 @@ def test_scmc_full():
 
 
 def test_scmc_items():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", items=[TextContent(text="Hello, world!")]
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", items=[TextContent(text="Hello, world!")])
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     assert len(message.items) == 1
@@ -60,10 +54,7 @@ def test_scmc_items():
 
 def test_scmc_items_and_content():
     message = StreamingChatMessageContent(
-        choice_index=0,
-        role="user",
-        content="text",
-        items=[TextContent(text="Hello, world!")],
+        choice_index=0, role="user", content="text", items=[TextContent(text="Hello, world!")]
     )
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
@@ -87,9 +78,7 @@ def test_scmc_multiple_items():
 
 
 def test_scmc_content_set():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.content = "Hello, world to you too!"
@@ -100,9 +89,7 @@ def test_scmc_content_set():
 
 
 def test_scmc_content_set_empty():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
     message.items.pop()
@@ -112,9 +99,7 @@ def test_scmc_content_set_empty():
 
 
 def test_scmc_to_element():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!", name=None
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!", name=None)
     element = message.to_element()
     assert element.tag == "message"
     assert element.attrib == {"role": "user", "choice_index": "0"}
@@ -125,9 +110,7 @@ def test_scmc_to_element():
 
 
 def test_scmc_to_prompt():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     prompt = message.to_prompt()
     assert "<text>Hello, world!</text>" in prompt
     assert 'choice_index="0"' in prompt
@@ -135,9 +118,7 @@ def test_scmc_to_prompt():
 
 
 def test_scmc_from_element():
-    element = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    ).to_element()
+    element = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!").to_element()
     message = StreamingChatMessageContent.from_element(element)
     assert message.role == AuthorRole.USER
     assert message.content == "Hello, world!"
@@ -207,18 +188,14 @@ def test_scmc_from_element_content_parse(xml_content, user, text_content, length
 
 
 def test_scmc_serialize():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     dumped = message.model_dump()
     assert dumped["role"] == AuthorRole.USER
     assert dumped["items"][0]["text"] == "Hello, world!"
 
 
 def test_scmc_to_dict():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert message.to_dict() == {
         "role": "user",
         "content": "Hello, world!",
@@ -226,9 +203,7 @@ def test_scmc_to_dict():
 
 
 def test_scmc_to_dict_keys():
-    message = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, world!"
-    )
+    message = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, world!")
     assert message.to_dict(role_key="author", content_key="text") == {
         "author": "user",
         "text": "Hello, world!",
@@ -279,12 +254,8 @@ def test_scmc_to_dict_items(input_args, expected_dict):
 
 
 def test_scmc_add():
-    message1 = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, ", inner_content="source1"
-    )
-    message2 = StreamingChatMessageContent(
-        choice_index=0, role="user", content="world!", inner_content="source2"
-    )
+    message1 = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, ", inner_content="source1")
+    message2 = StreamingChatMessageContent(choice_index=0, role="user", content="world!", inner_content="source2")
     combined = message1 + message2
     assert combined.role == AuthorRole.USER
     assert combined.content == "Hello, world!"
@@ -293,15 +264,9 @@ def test_scmc_add():
 
 
 def test_scmc_add_three():
-    message1 = StreamingChatMessageContent(
-        choice_index=0, role="user", content="Hello, ", inner_content="source1"
-    )
-    message2 = StreamingChatMessageContent(
-        choice_index=0, role="user", content="world", inner_content="source2"
-    )
-    message3 = StreamingChatMessageContent(
-        choice_index=0, role="user", content="!", inner_content="source3"
-    )
+    message1 = StreamingChatMessageContent(choice_index=0, role="user", content="Hello, ", inner_content="source1")
+    message2 = StreamingChatMessageContent(choice_index=0, role="user", content="world", inner_content="source2")
+    message3 = StreamingChatMessageContent(choice_index=0, role="user", content="!", inner_content="source3")
     combined = message1 + message2 + message3
     assert combined.role == AuthorRole.USER
     assert combined.content == "Hello, world!"
@@ -334,29 +299,19 @@ def test_scmc_add_different_items():
     [
         (
             StreamingChatMessageContent(choice_index=0, role="user", content="Hello, "),
-            StreamingChatMessageContent(
-                choice_index=0, role="assistant", content="world!"
-            ),
+            StreamingChatMessageContent(choice_index=0, role="assistant", content="world!"),
         ),
         (
             StreamingChatMessageContent(choice_index=0, role="user", content="Hello, "),
             StreamingChatMessageContent(choice_index=1, role="user", content="world!"),
         ),
         (
-            StreamingChatMessageContent(
-                choice_index=0, role="user", content="Hello, ", ai_model_id="1234"
-            ),
-            StreamingChatMessageContent(
-                choice_index=0, role="user", content="world!", ai_model_id="5678"
-            ),
+            StreamingChatMessageContent(choice_index=0, role="user", content="Hello, ", ai_model_id="1234"),
+            StreamingChatMessageContent(choice_index=0, role="user", content="world!", ai_model_id="5678"),
         ),
         (
-            StreamingChatMessageContent(
-                choice_index=0, role="user", content="Hello, ", encoding="utf-8"
-            ),
-            StreamingChatMessageContent(
-                choice_index=0, role="user", content="world!", encoding="utf-16"
-            ),
+            StreamingChatMessageContent(choice_index=0, role="user", content="Hello, ", encoding="utf-8"),
+            StreamingChatMessageContent(choice_index=0, role="user", content="world!", encoding="utf-16"),
         ),
         (
             StreamingChatMessageContent(choice_index=0, role="user", content="Hello, "),
