@@ -112,15 +112,10 @@ def _create_async_template_helper_from_function(
             arguments.execution_settings = base_arguments.execution_settings  # pragma: no cover
         arguments.update(base_arguments)
         arguments.update(kwargs)
-
-        this = None
-        actual_args = args
-
         logger.debug(
             f"Invoking function {function.metadata.fully_qualified_name} "
-            f"with args: {actual_args} and kwargs: {kwargs} and this: {this}."
+            f"with args: {arguments} and kwargs: {kwargs}."
         )
-
         result = await function.invoke(kernel=kernel, arguments=arguments)
         if allow_dangerously_set_content:
             return result
