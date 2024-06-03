@@ -50,7 +50,14 @@ public class PowerShellPlanner
     /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
-        var script = await this.GenerateScriptAsync(goal, cancellationToken).ConfigureAwait(false);
+try
+{
+    var script = await this.GenerateScriptAsync(goal, cancellationToken).ConfigureAwait(false);
+}
+catch (Exception ex)
+{
+    throw new SKException("Failed to generate script.", ex);
+}
 
         var getSkillFunction = this.Config.GetSkillFunction ?? GetSkillFunction(this._context);
         var plan = script.ToPlanFromScript(goal, getSkillFunction);
