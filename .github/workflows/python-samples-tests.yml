@@ -18,6 +18,7 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        service: ['AzureOpenAI']
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
@@ -31,6 +32,7 @@ jobs:
         id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
+          GLOBAL_LLM_SERVICE: ${{ matrix.service }}
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME }}
           AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
           AZURE_OPENAI_TEXT_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_TEXT_DEPLOYMENT_NAME }}

@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from samples.learn_resources.sk_service_configurator import add_service
+from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.planners.function_calling_stepwise_planner import FunctionCallingStepwisePlanner
 
