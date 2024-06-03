@@ -93,6 +93,15 @@ async def test_it_renders_fail(kernel: Kernel):
 
 
 @pytest.mark.asyncio
+async def test_it_renders_fail_empty_template(kernel: Kernel):
+    template = "{{ plug-func 'test1'}}"
+    target = create_jinja2_prompt_template(template)
+    target.prompt_template_config.template = None
+    with pytest.raises(Jinja2TemplateRenderException):
+        await target.render(kernel, KernelArguments())
+
+
+@pytest.mark.asyncio
 async def test_it_renders_list(kernel: Kernel):
     template = "List: {% for item in items %}{{ item }}{% endfor %}"
     target = create_jinja2_prompt_template(template)
