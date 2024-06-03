@@ -62,11 +62,16 @@ class BingConnector(ConnectorBase):
 
         _base_url = (
             "https://api.bing.microsoft.com/v7.0/custom/search"
-            if self._custom_config
+            if self._settings.custom_config
             else "https://api.bing.microsoft.com/v7.0/search"
         )
-        _request_url = f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}" + (
-            f"&customConfig={self._custom_config}" if self._custom_config else ""
+        _request_url = (
+            f"{_base_url}?q={urllib.parse.quote_plus(query)}&count={num_results}&offset={offset}"
+            + (
+                f"&customConfig={self._settings.custom_config}"
+                if self._settings.custom_config
+                else ""
+            )
         )
 
         logger.info(f"Sending GET request to {_request_url}")
