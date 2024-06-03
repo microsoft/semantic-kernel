@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from io import BufferedReader, BytesIO
+from io import BufferedReader, BytesIO, StringIO
 from unittest.mock import mock_open, patch
 
 import httpx
 import pytest
 
-from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import (
-    SessionsPythonTool,
-)
+from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin import SessionsPythonTool
+from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.kernel import Kernel
 
 
@@ -24,7 +23,38 @@ def test_it_can_be_instantiated(aca_python_sessions_unit_test_env):
 def test_validate_endpoint(aca_python_sessions_unit_test_env):
     plugin = SessionsPythonTool(auth_callback=test_auth_callback)
     assert plugin is not None
-    assert plugin.pool_management_endpoint == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
+    assert str(plugin.pool_management_endpoint) == aca_python_sessions_unit_test_env["ACA_POOL_MANAGEMENT_ENDPOINT"]
+
+
+@pytest.mark.parametrize(
+    "override_env_param_dict",
+    [
+        {"ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/execute/"},
+        {"ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/execute"},
+    ],
+    indirect=True,
+)
+def test_validate_endpoint_with_execute(aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    assert plugin is not None
+    assert "/python/execute" not in str(plugin.pool_management_endpoint)
+
+
+@pytest.mark.parametrize(
+    "override_env_param_dict",
+    [{"ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint"}],
+    indirect=True,
+)
+def test_validate_endpoint_no_final_slash(aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    assert plugin is not None
+    assert str(plugin.pool_management_endpoint) == "https://test.endpoint/"
+
+
+@pytest.mark.parametrize("exclude_list", [["ACA_POOL_MANAGEMENT_ENDPOINT"]], indirect=True)
+def test_validate_settings_fail(aca_python_sessions_unit_test_env):
+    with pytest.raises(FunctionInitializationError):
+        SessionsPythonTool(auth_callback=test_auth_callback)
 
 
 def test_it_can_be_imported(kernel: Kernel, aca_python_sessions_unit_test_env):
@@ -82,6 +112,13 @@ async def test_call_to_container_fails_raises_exception(mock_post, aca_python_se
 
 
 @pytest.mark.asyncio
+async def test_empty_call_to_container_fails_raises_exception(aca_python_sessions_unit_test_env):
+    plugin = SessionsPythonTool(auth_callback=test_auth_callback)
+    with pytest.raises(FunctionExecutionException):
+        await plugin.execute_code(code="")
+
+
+@pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
 async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_test_env):
     """Test upload_file when providing a local file path."""
@@ -89,10 +126,13 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
     async def async_return(result):
         return result
 
-    with patch(
-        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-        return_value="test_token",
-    ), patch("builtins.open", mock_open(read_data=b"file data")):
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("builtins.open", mock_open(read_data=b"file data")),
+    ):
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
@@ -103,6 +143,37 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
         result = await plugin.upload_file(local_file_path="test.txt", remote_file_path="uploaded_test.txt")
+        assert result.filename == "test.txt"
+        assert result.size_in_bytes == 123
+        assert result.full_path == "/mnt/data/test.txt"
+        mock_post.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@patch("httpx.AsyncClient.post")
+async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_sessions_unit_test_env):
+    """Test upload_file when providing a local file path."""
+
+    async def async_return(result):
+        return result
+
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("builtins.open", mock_open(read_data=b"file data")),
+    ):
+        mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
+
+        mock_response = httpx.Response(
+            status_code=200, json={"filename": "test.txt", "bytes": 123}, request=mock_request
+        )
+        mock_post.return_value = await async_return(mock_response)
+
+        plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+
+        result = await plugin.upload_file(local_file_path="test.txt")
         assert result.filename == "test.txt"
         assert result.size_in_bytes == 123
         mock_post.assert_awaited_once()
@@ -138,6 +209,19 @@ async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_
 
 
 @pytest.mark.asyncio
+async def test_upload_file_fail_with_data_and_local_path(aca_python_sessions_unit_test_env):
+    """Test upload_file when providing a local file path."""
+
+    plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
+    with pytest.raises(FunctionExecutionException):
+        await plugin.upload_file(
+            data=StringIO("This is a test string as buffer."),
+            local_file_path="test.txt",
+            remote_file_path="uploaded_test.txt",
+        )
+
+
+@pytest.mark.asyncio
 @patch("httpx.AsyncClient.get")
 async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
     """Test list_files function."""
@@ -149,7 +233,6 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
         "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
         return_value="test_token",
     ):
-
         mock_request = httpx.Request(method="GET", url="https://example.com/python/files?identifier=None")
 
         mock_response = httpx.Response(
@@ -186,10 +269,13 @@ async def test_download_file_to_local(mock_get, aca_python_sessions_unit_test_en
     async def mock_auth_callback():
         return "test_token"
 
-    with patch(
-        "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
-        return_value="test_token",
-    ), patch("builtins.open", mock_open()) as mock_file:
+    with (
+        patch(
+            "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
+            return_value="test_token",
+        ),
+        patch("builtins.open", mock_open()) as mock_file,
+    ):
         mock_request = httpx.Request(
             method="GET", url="https://example.com/python/downloadFile?identifier=None&filename=remote_test.txt"
         )
@@ -263,3 +349,24 @@ def test_sanitize_input(input_code, expected_output, aca_python_sessions_unit_te
     plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
     sanitized_code = plugin._sanitize_input(input_code)
     assert sanitized_code == expected_output
+
+
+@pytest.mark.asyncio
+async def test_auth_token(aca_python_sessions_unit_test_env):
+    async def token_cb():
+        return "sample_token"
+
+    plugin = SessionsPythonTool(auth_callback=token_cb)
+    assert await plugin._ensure_auth_token() == "sample_token"
+
+
+@pytest.mark.asyncio
+async def test_auth_token_fail(aca_python_sessions_unit_test_env):
+    async def token_cb():
+        raise ValueError("Could not get token.")
+
+    plugin = SessionsPythonTool(auth_callback=token_cb)
+    with pytest.raises(
+        FunctionExecutionException, match="Failed to retrieve the client auth token with messages: Could not get token."
+    ):
+        await plugin._ensure_auth_token()
