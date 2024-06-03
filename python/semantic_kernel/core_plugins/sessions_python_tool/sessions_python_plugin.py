@@ -292,5 +292,3 @@ class SessionsPythonTool(KernelBaseModel):
             return None
 
         return BytesIO(response.content)
-    
-    
