@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import logging
 import os
 import re
@@ -9,7 +8,7 @@ from io import BufferedReader, BytesIO
 from typing import Annotated, Any
 
 import httpx
-from pydantic import ValidationError, field_validator
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.const import USER_AGENT
 from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, version_info
@@ -18,9 +17,9 @@ from semantic_kernel.core_plugins.sessions_python_tool.sessions_python_settings 
     SessionsPythonSettings,
 )
 from semantic_kernel.core_plugins.sessions_python_tool.sessions_remote_file_metadata import SessionsRemoteFileMetadata
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ SESSIONS_USER_AGENT = f"{HTTP_USER_AGENT}/{version_info} (Language=Python)"
 class SessionsPythonTool(KernelBaseModel):
     """A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter."""
 
-    pool_management_endpoint: str
+    pool_management_endpoint: HttpsUrl
     settings: SessionsPythonSettings
     auth_callback: Callable[..., Awaitable[Any]]
     http_client: httpx.AsyncClient
@@ -46,19 +45,19 @@ class SessionsPythonTool(KernelBaseModel):
         **kwargs,
     ):
         """Initializes a new instance of the SessionsPythonTool class."""
-        if not settings:
-            settings = SessionsPythonSettings()
-
-        if not http_client:
-            http_client = httpx.AsyncClient()
-
         try:
             aca_settings = ACASessionsSettings.create(
                 env_file_path=env_file_path, pool_management_endpoint=pool_management_endpoint
             )
         except ValidationError as e:
             logger.error(f"Failed to load the ACASessionsSettings with message: {e!s}")
-            raise FunctionExecutionException(f"Failed to load the ACASessionsSettings with message: {e!s}") from e
+            raise FunctionInitializationError(f"Failed to load the ACASessionsSettings with message: {e!s}") from e
+
+        if not settings:
+            settings = SessionsPythonSettings()
+
+        if not http_client:
+            http_client = httpx.AsyncClient()
 
         super().__init__(
             pool_management_endpoint=aca_settings.pool_management_endpoint,
@@ -67,20 +66,6 @@ class SessionsPythonTool(KernelBaseModel):
             http_client=http_client,
             **kwargs,
         )
-
-    @field_validator("pool_management_endpoint", mode="before")
-    @classmethod
-    def _validate_endpoint(cls, endpoint: str):
-        endpoint = str(endpoint)
-
-        """Validates the pool management endpoint."""
-        if "/python/execute" in endpoint:
-            # Remove '/python/execute/' and ensure the endpoint ends with a '/'
-            endpoint = endpoint.replace("/python/execute", "").rstrip("/") + "/"
-        if not endpoint.endswith("/"):
-            # Ensure the endpoint ends with a '/'
-            endpoint = endpoint + "/"
-        return endpoint
 
     async def _ensure_auth_token(self) -> str:
         """Ensure the auth token is valid."""
@@ -178,9 +163,12 @@ class SessionsPythonTool(KernelBaseModel):
 
         Returns:
             RemoteFileMetadata: The metadata of the uploaded file.
+
+        Raises:
+            FunctionExecutionException: If data and local_file_path are provided together.
         """
         if data and local_file_path:
-            raise ValueError("data and local_file_path cannot be provided together")
+            raise FunctionExecutionException("data and local_file_path cannot be provided together")
 
         if local_file_path:
             if not remote_file_path:

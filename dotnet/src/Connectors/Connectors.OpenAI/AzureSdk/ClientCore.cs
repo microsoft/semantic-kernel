@@ -1107,7 +1107,8 @@ internal abstract class ClientCore
             Seed = executionSettings.Seed,
             User = executionSettings.User,
             LogProbabilitiesPerToken = executionSettings.TopLogprobs,
-            EnableLogProbabilities = executionSettings.Logprobs
+            EnableLogProbabilities = executionSettings.Logprobs,
+            AzureExtensionsOptions = executionSettings.AzureChatExtensionsOptions
         };
 
         switch (executionSettings.ResponseFormat)

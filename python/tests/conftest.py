@@ -286,7 +286,7 @@ def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_pa
         override_env_param_dict = {}
 
     env_vars = {
-        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/excute/",
+        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/",
     }
 
     env_vars.update(override_env_param_dict)

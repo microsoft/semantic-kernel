@@ -77,13 +77,46 @@ Poetry allows to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
 
 To install Poetry in your system, first, navigate to the directory containing
-this README using your chosen shell. You will need to have Python 3.8+ installed.
+this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
+installed.
 
 Install the Poetry package manager and create a project virtual environment.
 Note: SK requires at least Poetry 1.2.0.
 
+### Note for MacOS Users
+
+It is best to install Poetry using their 
+[official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
+
+On MacOS, you might find that `python` commands are not recognized by default, 
+and you can only use `python3`. To make it easier to run `python ...` commands 
+(which Poetry requires), you can create an alias in your shell configuration file.
+
+Follow these steps:
+
+1. **Open your shell configuration file**:
+    - For **Bash**: `nano ~/.bash_profile` or `nano ~/.bashrc`
+    - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+2. **Add the alias**:
+    ```sh
+    alias python='python3'
+    ```
+
+3. **Save the file and exit**:
+    - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+4. **Apply the changes**:
+    - For **Bash**: `source ~/.bash_profile` or `source ~/.bashrc`
+    - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run 
+Python 3 commands.
+
+### Poetry Installation
+
 ```bash
-# Install poetry package
+# Install poetry package if not choosing to install via their official installer
 pip3 install poetry
 
 # optionally, define which python version you want to use
