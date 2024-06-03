@@ -65,7 +65,14 @@ public sealed class Plan : IPlan
     /// Original generated plan in string representation.
     /// </summary>
     [JsonPropertyName("original_plan")]
-    public string? OriginalPlan { get; set; }
+private readonly string? _originalPlan;
+[JsonPropertyName("original_plan")]
+public string? OriginalPlan => _originalPlan;
+
+public Plan(string? originalPlan)
+{
+    _originalPlan = originalPlan;
+}
 
     #region ISKFunction implementation
 
