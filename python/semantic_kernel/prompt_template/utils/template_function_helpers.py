@@ -31,7 +31,25 @@ def create_template_helper_from_function(
     allow_dangerously_set_content: bool = False,
     enable_async: bool = False,
 ) -> Callable[..., Any]:
-    """Create a helper function for both the Handlebars and Jinja2 templating engines from a kernel function."""
+    """Create a helper function for both the Handlebars and Jinja2 templating engines from a kernel function.
+
+    Args:
+        function (KernelFunction): The kernel function to create a helper for.
+        kernel (Kernel): The kernel to use for invoking the function.
+        base_arguments (KernelArguments): The base arguments to use when invoking the function.
+        template_format (TEMPLATE_FORMAT_TYPES): The template format to create the helper for.
+        allow_dangerously_set_content (bool, optional): Return the content of the function result
+            without encoding it or not.
+        enable_async (bool, optional): Enable async helper function. Defaults to False.
+            Currently only works for Jinja2 templates.
+
+    Returns:
+        The function with args that are callable by the different templates.
+
+    Raises:
+        ValueError: If the template format is not supported.
+
+    """
     if enable_async:
         return _create_async_template_helper_from_function(
             function=function,
