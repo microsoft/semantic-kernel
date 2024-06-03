@@ -136,7 +136,17 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "test.txt", "bytes": 123}, request=mock_request
+            status_code=200, json={
+                '$id': '1', 
+                '$values': [
+                    {
+                        '$id': '2', 
+                        'filename': 'test.txt', 
+                        'size': 123, 
+                        'last_modified_time': '2024-06-03T17:48:46.2672398Z'
+                    }
+                ]
+            }, request=mock_request
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -167,7 +177,17 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "test.txt", "bytes": 123}, request=mock_request
+            status_code=200, json={
+                '$id': '1', 
+                '$values': [
+                    {
+                        '$id': '2', 
+                        'filename': 'test.txt', 
+                        'size': 123, 
+                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                    }
+                ]
+            }, request=mock_request
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -179,9 +199,18 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_post.assert_awaited_once()
 
 
+@pytest.mark.parametrize(
+    "input_remote_file_path, expected_remote_file_path",
+    [
+        ("uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
+        ("/mnt/data/input.py", "/mnt/data/input.py"),
+    ]
+)
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_buffer(
+    mock_post, input_remote_file_path, expected_remote_file_path, aca_python_sessions_unit_test_env
+):
     """Test upload_file when providing file data as a BufferedReader."""
 
     async def async_return(result):
@@ -194,7 +223,19 @@ async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "buffer_file.txt", "bytes": 456}, request=mock_request
+            status_code=200,
+            json={
+                '$id': '1',
+                '$values': [
+                    {
+                        '$id': '2',
+                        'filename': input_remote_file_path,
+                        'size': 456,
+                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                    }
+                ]
+            },
+            request=mock_request,
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -202,8 +243,8 @@ async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_
 
         data_buffer = BufferedReader(BytesIO(b"file data"))
 
-        result = await plugin.upload_file(data=data_buffer, remote_file_path="buffer_file.txt")
-        assert result.filename == "buffer_file.txt"
+        result = await plugin.upload_file(data=data_buffer, remote_file_path=input_remote_file_path)
+        assert result.filename == input_remote_file_path
         assert result.size_in_bytes == 456
         mock_post.assert_awaited_once()
 
@@ -238,9 +279,10 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
         mock_response = httpx.Response(
             status_code=200,
             json={
-                "$values": [
-                    {"filename": "test1.txt", "bytes": 123},
-                    {"filename": "test2.txt", "bytes": 456},
+                '$id': '1',
+                '$values': [
+                    {'$id': '2', 'filename': 'test1.txt', 'size': 123, 'last_modified_time': '2024-06-03T17:00:00.0000000Z'},  # noqa: E501
+                    {'$id': '3', 'filename': 'test2.txt', 'size': 456, 'last_modified_time': '2024-06-03T18:00:00.0000000Z'}  # noqa: E501
                 ]
             },
             request=mock_request,

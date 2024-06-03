@@ -91,6 +91,19 @@ class SessionsPythonTool(KernelBaseModel):
         code = re.sub(r"^(\s|`)*(?i:python)?\s*", "", code)
         # Removes whitespace & ` from end
         return re.sub(r"(\s|`)*$", "", code)
+    
+    def _construct_remote_file_path(self, remote_file_path: str) -> str:
+        """Construct the remote file path.
+
+        Args:
+            remote_file_path (str): The remote file path.
+
+        Returns:
+            str: The remote file path.
+        """
+        if not remote_file_path.startswith("/mnt/data/"):
+            remote_file_path = f"/mnt/data/{remote_file_path}"
+        return remote_file_path
 
     @kernel_function(
         description="""Executes the provided Python code.
@@ -150,10 +163,10 @@ class SessionsPythonTool(KernelBaseModel):
     async def upload_file(
         self,
         *,
-        data: BufferedReader | None = None,
-        remote_file_path: str | None = None,
-        local_file_path: str | None = None,
-    ) -> SessionsRemoteFileMetadata:
+        data: Annotated[BufferedReader | None, "The file data to upload"] = None,
+        remote_file_path: Annotated[str | None, "The remote path to the file in the session. Defaults to /mnt/data"] = None,  # noqa: E501
+        local_file_path: Annotated[str | None, "The path to the local file on the machine"] = None,
+    ) -> Annotated[SessionsRemoteFileMetadata, "The metadata of the uploaded file"]:
         """Upload a file to the session pool.
 
         Args:
@@ -170,9 +183,12 @@ class SessionsPythonTool(KernelBaseModel):
         if data and local_file_path:
             raise FunctionExecutionException("data and local_file_path cannot be provided together")
 
+        if remote_file_path:
+            remote_file_path = self._construct_remote_file_path(remote_file_path)
+
         if local_file_path:
             if not remote_file_path:
-                remote_file_path = os.path.basename(local_file_path)
+                remote_file_path = self._construct_remote_file_path(os.path.basename(local_file_path))
             data = open(local_file_path, "rb")  # noqa: SIM115
 
         auth_token = await self._ensure_auth_token()
@@ -193,7 +209,7 @@ class SessionsPythonTool(KernelBaseModel):
         response.raise_for_status()
 
         response_json = response.json()
-        return SessionsRemoteFileMetadata.from_dict(response_json)
+        return SessionsRemoteFileMetadata.from_dict(response_json['$values'][0])
 
     @kernel_function(name="list_files", description="Lists all files in the provided Session ID")
     async def list_files(self) -> list[SessionsRemoteFileMetadata]:
@@ -248,3 +264,5 @@ class SessionsPythonTool(KernelBaseModel):
             return None
 
         return BytesIO(response.content)
+    
+    
