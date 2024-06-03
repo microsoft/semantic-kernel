@@ -284,14 +284,17 @@ public sealed class AzureOpenAIChatCompletionWithDataService : IChatCompletionSe
 
     private string GetRequestUri()
     {
-        const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
-
         var apiVersion = this._config.CompletionApiVersion;
 
         if (string.IsNullOrWhiteSpace(apiVersion))
         {
             apiVersion = DefaultApiVersion;
         }
+
+        // Starting with 2024 API version, the endpoint has changed to not include "extensions" part in the path.
+        var EndpointUriFormat = apiVersion.Contains("2022") || apiVersion.Contains("2023")
+            ? "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}"
+            : "{0}/openai/deployments/{1}/chat/completions?api-version={2}";
 
         return string.Format(
             CultureInfo.InvariantCulture,

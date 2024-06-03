@@ -52,7 +52,7 @@ public sealed class AzureOpenAIChatCompletionWithDataTests : IDisposable
     public async Task SpecifiedConfigurationShouldBeUsedAsync()
     {
         // Arrange
-        const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
+        const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/chat/completions?api-version=fake-api-version";
         var service = new AzureOpenAIChatCompletionWithDataService(this._config, this._httpClient);
 
         // Act
