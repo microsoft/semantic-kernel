@@ -57,8 +57,7 @@ public class GeminiChatMessageContent<T> extends ChatMessageContent<T> {
      * @return The function calls.
      */
     @Nonnull
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public List<GeminiFunctionCall> getGeminiFunctionCalls() {
-        return geminiFunctionCalls;
+        return Collections.unmodifiableList(geminiFunctionCalls);
     }
 }
