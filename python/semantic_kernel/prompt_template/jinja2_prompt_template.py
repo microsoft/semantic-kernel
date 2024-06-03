@@ -106,7 +106,7 @@ class Jinja2PromptTemplate(PromptTemplateBase):
             raise Jinja2TemplateRenderException("Error rendering template, template is None")
         try:
             template = self._env.from_string(self.prompt_template_config.template, globals=helpers)
-            return template.render(**arguments)
+            return await template.render_async(**arguments)
         except TemplateError as exc:
             logger.error(
                 f"Error rendering prompt template: {self.prompt_template_config.template} with arguments: {arguments}"
