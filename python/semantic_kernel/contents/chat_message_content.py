@@ -14,11 +14,13 @@ from semantic_kernel.contents.const import (
     CHAT_MESSAGE_CONTENT_TAG,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
+    IMAGE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
 )
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -27,9 +29,10 @@ TAG_CONTENT_MAP = {
     TEXT_CONTENT_TAG: TextContent,
     FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
     FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
+    IMAGE_CONTENT_TAG: ImageContent,
 }
 
-ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent]
+ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent, ImageContent]
 
 logger = logging.getLogger(__name__)
 
