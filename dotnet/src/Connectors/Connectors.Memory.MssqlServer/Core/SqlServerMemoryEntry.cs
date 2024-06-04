@@ -2,12 +2,12 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer;
+namespace Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
 
 /// <summary>
 /// A sql memory entry.
 /// </summary>
-public record struct SqlServerMemoryEntry
+internal struct SqlServerMemoryEntry
 {
     /// <summary>
     /// The unique identitfier of the memory entry.

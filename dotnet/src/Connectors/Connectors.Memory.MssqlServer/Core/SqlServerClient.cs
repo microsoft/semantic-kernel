@@ -10,14 +10,14 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer;
+namespace Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
 
 /// <summary>
 /// Represents a client for interacting with a SQL Server database for storing semantic memories and embeddings.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
                                                    Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-public sealed class SqlServerClient : ISqlServerClient
+internal sealed class SqlServerClient
 {
     private readonly string _connectionString;
     private readonly SqlServerConfig _configuration;
@@ -148,7 +148,7 @@ public sealed class SqlServerClient : ISqlServerClient
     {
         collectionName = NormalizeIndexName(collectionName);
 
-        if (!(await this.DoesCollectionExistsAsync(collectionName, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesCollectionExistsAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
             // Collection does not exist
             return;
@@ -433,12 +433,12 @@ public sealed class SqlServerClient : ISqlServerClient
         entry.Id = dataReader.GetGuid(dataReader.GetOrdinal("id"));
         entry.Key = dataReader.GetString(dataReader.GetOrdinal("key"));
 
-        if (!(await dataReader.IsDBNullAsync(dataReader.GetOrdinal("metadata"), cancellationToken).ConfigureAwait(false)))
+        if (!await dataReader.IsDBNullAsync(dataReader.GetOrdinal("metadata"), cancellationToken).ConfigureAwait(false))
         {
             entry.MetadataString = dataReader.GetString(dataReader.GetOrdinal("metadata"));
         }
 
-        if (!(await dataReader.IsDBNullAsync(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false)))
+        if (!await dataReader.IsDBNullAsync(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false))
         {
             entry.Timestamp = await dataReader.GetFieldValueAsync<DateTimeOffset?>(dataReader.GetOrdinal("timestamp"), cancellationToken).ConfigureAwait(false);
         }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
 
+using Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
 using Microsoft.SemanticKernel.Memory;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.MssqlServer;
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
-    private ISqlServerClient _dbClient;
+    private SqlServerClient _dbClient;
 
     /// <summary>
     /// Connects to a SQL Server database using the provided connection string and schema, and returns a new instance of <see cref="SqlServerMemoryStore"/>.
@@ -41,7 +42,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// <summary>
     /// Represents a memory store implementation that uses a SQL Server database as its backing store.
     /// </summary>
-    public SqlServerMemoryStore(ISqlServerClient dbClient)
+    internal SqlServerMemoryStore(SqlServerClient dbClient)
     {
         this._dbClient = dbClient;
     }
