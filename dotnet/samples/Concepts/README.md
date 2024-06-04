@@ -126,10 +126,7 @@ Down below you can find the code snippets that demonstrate the usage of many Sem
 - [MultiplePromptTemplates](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/MultiplePromptTemplates.cs)
 - [PromptFunctionsWithChatGPT](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/PromptFunctionsWithChatGPT.cs)
 - [TemplateLanguage](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptTemplates/TemplateLanguage.cs)
-
-## Prompty - Using Prompty file format to [import prompt functions](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Functions/Functions.Prompty/Extensions/PromptyKernelExtensions.cs)
-
-- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Prompty/PromptyFunction.cs)
+- [PromptyFunction](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/PromptYemplates/PromptyFunction.cs)
 
 ## RAG - Retrieval-Augmented Generation
 

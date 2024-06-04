@@ -81,8 +81,7 @@ class Plan:
         """Check if the plan is native code."""
         if self._is_prompt is None:
             return None
-        else:
-            return not self._is_prompt
+        return not self._is_prompt
 
     @property
     def prompt_execution_settings(self) -> PromptExecutionSettings:
@@ -166,28 +165,27 @@ class Plan:
                     exc,
                 ) from exc
             return result
-        else:
-            # loop through steps until completion
-            partial_results = []
-            while self.has_next_step:
-                function_arguments = copy(arguments)
-                self.add_variables_to_state(self._state, function_arguments)
-                logger.info(
-                    "Invoking next step: "
-                    + str(self._steps[self._next_step_index].name)
-                    + " with arguments: "
-                    + str(function_arguments)
-                )
-                result = await self.invoke_next_step(kernel, function_arguments)
-                if result:
-                    partial_results.append(result)
-                    self._state[Plan.DEFAULT_RESULT_KEY] = str(result)
-                    arguments = self.update_arguments_with_outputs(arguments)
-                    logger.info(f"updated arguments: {arguments}")
+        # loop through steps until completion
+        partial_results = []
+        while self.has_next_step:
+            function_arguments = copy(arguments)
+            self.add_variables_to_state(self._state, function_arguments)
+            logger.info(
+                "Invoking next step: "
+                + str(self._steps[self._next_step_index].name)
+                + " with arguments: "
+                + str(function_arguments)
+            )
+            result = await self.invoke_next_step(kernel, function_arguments)
+            if result:
+                partial_results.append(result)
+                self._state[Plan.DEFAULT_RESULT_KEY] = str(result)
+                arguments = self.update_arguments_with_outputs(arguments)
+                logger.info(f"updated arguments: {arguments}")
 
-            result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
+        result_string = str(partial_results[-1]) if len(partial_results) > 0 else ""
 
-            return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
+        return FunctionResult(function=self.metadata, value=result_string, metadata={"results": partial_results})
 
     def set_ai_configuration(
         self,
@@ -296,8 +294,8 @@ class Plan:
 
     def add_variables_to_state(self, state: KernelArguments, variables: KernelArguments) -> None:
         """Add variables to the state."""
-        for key in variables.keys():
-            if key not in state.keys():
+        for key in variables:
+            if key not in state:
                 state[key] = variables[key]
 
     def update_arguments_with_outputs(self, arguments: KernelArguments) -> KernelArguments:
@@ -310,10 +308,7 @@ class Plan:
         arguments["input"] = result_string
 
         for item in self._steps[self._next_step_index - 1]._outputs:
-            if item in self._state:
-                arguments[item] = self._state[item]
-            else:
-                arguments[item] = result_string
+            arguments[item] = self._state.get(item, result_string)
         return arguments
 
     def get_next_step_arguments(self, arguments: KernelArguments, step: "Plan") -> KernelArguments:

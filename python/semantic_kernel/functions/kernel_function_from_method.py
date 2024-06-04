@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 import logging
 from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
@@ -118,7 +119,9 @@ class KernelFunctionFromMethod(KernelFunction):
         function_arguments = self.gather_function_parameters(context)
         context.result = FunctionResult(function=self.metadata, value=self.stream_method(**function_arguments))
 
-    def gather_function_parameters(self, context: FunctionInvocationContext) -> dict[str, Any]:
+    def gather_function_parameters(
+        self, context: FunctionInvocationContext
+    ) -> dict[str, Any]:
         """Gathers the function parameters from the arguments."""
         function_arguments: dict[str, Any] = {}
         for param in self.parameters:
@@ -138,7 +141,8 @@ class KernelFunctionFromMethod(KernelFunction):
                 continue
             if param.name in context.arguments:
                 value: Any = context.arguments[param.name]
-                if param.type_ and "," not in param.type_ and param.type_object:
+                if (param.type_ and "," not in param.type_ and
+                    param.type_object and param.type_object is not inspect._empty):
                     if hasattr(param.type_object, "model_validate"):
                         try:
                             value = param.type_object.model_validate(value)
@@ -154,7 +158,8 @@ class KernelFunctionFromMethod(KernelFunction):
                                 value = param.type_object(value)
                         except Exception as exc:
                             raise FunctionExecutionException(
-                                f"Parameter {param.name} is expected to be parsed to {param.type_object} but is not."
+                                f"Parameter {param.name} is expected to be parsed to "
+                                f"{param.type_object} but is not."
                             ) from exc
                 function_arguments[param.name] = value
                 continue
@@ -162,5 +167,7 @@ class KernelFunctionFromMethod(KernelFunction):
                 raise FunctionExecutionException(
                     f"Parameter {param.name} is required but not provided in the arguments."
                 )
-            logger.debug(f"Parameter {param.name} is not provided, using default value {param.default_value}")
+            logger.debug(
+                f"Parameter {param.name} is not provided, using default value {param.default_value}"
+            )
         return function_arguments

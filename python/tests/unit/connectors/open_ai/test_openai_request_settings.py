@@ -207,7 +207,7 @@ def test_create_options_azure_data():
     assert options["extra_body"] == extra.model_dump(exclude_none=True, by_alias=True)
 
 
-def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():  # noqa: E501
+def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources():
     input_dict = {
         "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
@@ -236,7 +236,7 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_cosmosdb_data_sources
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCosmosDB"
 
 
-def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources():  # noqa: E501
+def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources():
     input_dict = {
         "messages": [{"role": "system", "content": "Hello"}],
         "extra_body": {
@@ -263,3 +263,10 @@ def test_azure_open_ai_chat_prompt_execution_settings_with_aisearch_data_sources
     }
     settings = AzureChatPromptExecutionSettings.model_validate(input_dict, strict=True, from_attributes=True)
     assert settings.extra_body["dataSources"][0]["type"] == "AzureCognitiveSearch"
+
+
+def test_azure_open_ai_chat_prompt_execution_settings_with_response_format_json():
+    response_format = {"type": "json_object"}
+    settings = AzureChatPromptExecutionSettings(response_format=response_format)
+    options = settings.prepare_settings_dict()
+    assert options["response_format"] == response_format

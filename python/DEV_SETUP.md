@@ -77,13 +77,46 @@ Poetry allows to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
 
 To install Poetry in your system, first, navigate to the directory containing
-this README using your chosen shell. You will need to have Python 3.8+ installed.
+this README using your chosen shell. You will need to have Python 3.10, 3.11, or 3.12
+installed.
 
 Install the Poetry package manager and create a project virtual environment.
 Note: SK requires at least Poetry 1.2.0.
 
+### Note for MacOS Users
+
+It is best to install Poetry using their 
+[official installer](https://python-poetry.org/docs/#installing-with-the-official-installer).
+
+On MacOS, you might find that `python` commands are not recognized by default, 
+and you can only use `python3`. To make it easier to run `python ...` commands 
+(which Poetry requires), you can create an alias in your shell configuration file.
+
+Follow these steps:
+
+1. **Open your shell configuration file**:
+    - For **Bash**: `nano ~/.bash_profile` or `nano ~/.bashrc`
+    - For **Zsh** (default on macOS Catalina and later): `nano ~/.zshrc`
+
+2. **Add the alias**:
+    ```sh
+    alias python='python3'
+    ```
+
+3. **Save the file and exit**:
+    - In `nano`, press `CTRL + X`, then `Y`, and hit `Enter`.
+
+4. **Apply the changes**:
+    - For **Bash**: `source ~/.bash_profile` or `source ~/.bashrc`
+    - For **Zsh**: `source ~/.zshrc`
+
+After these steps, you should be able to use `python` in your terminal to run 
+Python 3 commands.
+
+### Poetry Installation
+
 ```bash
-# Install poetry package
+# Install poetry package if not choosing to install via their official installer
 pip3 install poetry
 
 # optionally, define which python version you want to use
@@ -154,6 +187,57 @@ Alternatively, you can run them using VSCode Tasks. Open the command palette
 It's important to note that most of this library is written with asynchronous in mind. The
 developer should always assume everything is asynchronous. One can use the function signature
 with either `async def` or `def` to understand if something is asynchronous or not.
+
+### Documentation
+
+Each file should have a single first line containing: # Copyright (c) Microsoft. All rights reserved.
+
+We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#383-functions-and-methods) style guide for functions and methods.
+They are currently not checked for private functions (functions starting with '_').
+
+They should contain:
+- Single line explaining what the function does, ending with a period.
+- If necessary to further explain the logic a newline follows the first line and then the explanation is given.
+- The following three sections are optional, and if used should be separated by a single empty line.
+- Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
+    - `arg_name` (`arg_type`): Explanation of the argument, arg_type is optional, as long as you are consistent.
+    - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
+    - Default values do not have to be specified, they will be pulled from the definition.
+- Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
+- Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
+    - `ExceptionType`: Explanation of the exception.
+    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+
+Putting them all together, gives you at minimum this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same."""
+    ...
+```
+Or a complete version of this:
+
+```python
+def equal(arg1: str, arg2: str) -> bool:
+    """Compares two strings and returns True if they are the same.
+
+    Here is extra explanation of the logic involved.
+
+    Args:
+        arg1 (str): The first string to compare.
+        arg2 (str): The second string to compare.
+            This string requires extra explanation.
+
+    Returns:
+        bool: True if the strings are the same, False otherwise.
+
+    Raises:
+        ValueError: If one of the strings is empty.
+    """
+    ...
+```
+
+If in doubt, use the link above to read much more considerations of what to do and when, or use common sense.
 
 ## Pydantic and Serialization
 

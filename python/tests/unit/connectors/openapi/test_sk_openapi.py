@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 from unittest.mock import patch
 
@@ -8,11 +10,7 @@ from openapi_core import Spec
 from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
     OpenAPIFunctionExecutionParameters,
 )
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import (
-    OpenApiParser,
-    OpenApiRunner,
-    RestApiOperation,
-)
+from semantic_kernel.connectors.openapi_plugin.openapi_manager import OpenApiParser, OpenApiRunner, RestApiOperation
 
 directory = os.path.dirname(os.path.realpath(__file__))
 openapi_document = directory + "/openapi.yaml"

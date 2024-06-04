@@ -24,13 +24,13 @@ class PlannerFunctionExtension:
             for parameter in function.parameters
         ]
         inputs = "\n".join(inputs)
-        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n " f" {inputs}"
+        return f"{function.fully_qualified_name}:\n  description: {function.description}\n  inputs:\n  {inputs}"
 
     @staticmethod
     def to_embedding_string(function: KernelFunctionMetadata):
         """Convert the function to a string that can be used as an embedding."""
         inputs = "\n".join([f"    - {parameter.name}: {parameter.description}" for parameter in function.parameters])
-        return f"{function.name}:\n  description: {function.description}\n " f" inputs:\n{inputs}"
+        return f"{function.name}:\n  description: {function.description}\n  inputs:\n{inputs}"
 
 
 class PlannerKernelExtension:
@@ -63,12 +63,8 @@ class PlannerKernelExtension:
         excluded_plugins = options.excluded_plugins or []
         excluded_functions = options.excluded_functions or []
 
-        available_functions = [
+        return [
             func
             for func in kernel.get_list_of_function_metadata()
             if (func.plugin_name not in excluded_plugins and func.name not in excluded_functions)
         ]
-
-        # TODO support for semantic memory query
-
-        return available_functions

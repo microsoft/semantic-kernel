@@ -388,9 +388,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
         """
         if not self.plugins:
             return []
-        included_plugins = filters.get("included_plugins", None)
+        included_plugins = filters.get("included_plugins")
         excluded_plugins = filters.get("excluded_plugins", [])
-        included_functions = filters.get("included_functions", None)
+        included_functions = filters.get("included_functions")
         excluded_functions = filters.get("excluded_functions", [])
         if included_plugins and excluded_plugins:
             raise ValueError("Cannot use both included_plugins and excluded_plugins at the same time.")
