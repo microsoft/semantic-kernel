@@ -32,6 +32,9 @@ public class PromptExecutionSettings
     /// Service identifier.
     /// This identifies the service these settings are configured for e.g., azure_openai_eastus, openai, ollama, huggingface, etc.
     /// </summary>
+    /// <remarks>
+    /// When provided, this service identifier will be the key in a dictionary collection of execution settings for both <see cref="KernelArguments"/> and <see cref="PromptTemplateConfig"/>.
+    /// </remarks>
     [Experimental("SKEXP0001")]
     [JsonPropertyName("service_id")]
     public string? ServiceId

@@ -22,7 +22,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
-    private Dictionary<string, PromptExecutionSettings>? _executionSettings;
+    private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -100,27 +100,19 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         get => this._executionSettings;
         set
         {
-            // Clone the settings to avoid reference changes.
-            this._executionSettings = value is IDictionary<string, PromptExecutionSettings> dictionary
-                ? new Dictionary<string, PromptExecutionSettings>(dictionary)
-                : value?.ToDictionary(kv => kv.Key, kv => kv.Value);
-
             if (this._executionSettings is { Count: > 0 })
             {
                 foreach (var kv in this._executionSettings!)
                 {
-                    // Ensures that if a service id is not specified and is not default, it is set to the current service id.
-                    if (kv.Key != kv.Value.ServiceId)
+                    // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
-                        {
-                            throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
-                        }
-
-                        kv.Value.ServiceId = kv.Key;
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
                     }
                 }
             }
+
+            this._executionSettings = value;
         }
     }
 

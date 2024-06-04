@@ -188,24 +188,19 @@ public sealed class PromptTemplateConfig
         {
             Verify.NotNull(value);
 
-            // Clone the settings to avoid reference changes.
-            this._executionSettings = new(value);
-            if (this._executionSettings.Count != 0)
+            if (value.Count != 0)
             {
-                foreach (var kv in this._executionSettings)
+                foreach (var kv in value)
                 {
-                    // Ensures that if a service id is not specified and is not default, it is set to the current service id.
-                    if (kv.Key != kv.Value.ServiceId)
+                    // Ensures that if a service id is provided it must match the key in the dictionary.
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId))
-                        {
-                            throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
-                        }
-
-                        kv.Value.ServiceId = kv.Key;
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
                     }
                 }
             }
+
+            this._executionSettings = value;
         }
     }
 
@@ -243,19 +238,19 @@ public sealed class PromptTemplateConfig
     {
         Verify.NotNull(settings);
 
+        if (!string.IsNullOrWhiteSpace(serviceId) && !string.IsNullOrWhiteSpace(settings.ServiceId))
+        {
+            throw new ArgumentException($"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
+        }
+
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 
-        // To avoid any reference changes to the settings object, clone it before changing service id.
-        var clonedSettings = settings.Clone();
-
-        // Overwrite the service id if provided in the method.
-        clonedSettings.ServiceId = key;
         if (this.ExecutionSettings.ContainsKey(key))
         {
             throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
 
-        this.ExecutionSettings[key] = clonedSettings;
+        this.ExecutionSettings[key] = settings;
     }
 
     /// <summary>

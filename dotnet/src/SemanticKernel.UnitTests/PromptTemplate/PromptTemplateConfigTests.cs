@@ -106,7 +106,7 @@ public class PromptTemplateConfigTests
     }
 
     [Fact]
-    public void DeserializingAutoSetServiceIdWhenNotProvided()
+    public void DeserializingDoesNotAutoSetServiceIdWhenNotProvided()
     {
         // Arrange
         string configPayload = """
@@ -150,12 +150,12 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-        Assert.Equal("service1", promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
-        Assert.Equal("service2", promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
     }
 
     [Fact]
-    public void DeserializingAutoSetServiceIdWhenDefault()
+    public void DeserializingDoesNotAutoSetServiceIdWhenDefault()
     {
         // Arrange
         string configPayload = """
@@ -187,7 +187,7 @@ public class PromptTemplateConfigTests
         // Assert
         Assert.NotNull(promptTemplateConfig);
         Assert.NotNull(promptTemplateConfig.DefaultExecutionSettings);
-        Assert.Equal(PromptExecutionSettings.DefaultServiceId, promptTemplateConfig.DefaultExecutionSettings?.ServiceId);
+        Assert.Null(promptTemplateConfig.DefaultExecutionSettings?.ServiceId);
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class PromptTemplateConfigTests
     }
 
     [Fact]
-    public void ItAddExecutionSettingsAndOverwriteServiceIdAsExpected()
+    public void ItAddExecutionSettingsAndNeverOverwriteServiceId()
     {
         // Arrange
         var promptTemplateConfig = new PromptTemplateConfig();
@@ -256,29 +256,37 @@ public class PromptTemplateConfigTests
         // Act
         promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "model1" });
         promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ModelId = "model2" }, "service1");
-        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ServiceId = "service2", ModelId = "model-service-2" }, "override");
+        promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ServiceId = "service2", ModelId = "model-service-2" });
         promptTemplateConfig.AddExecutionSettings(new PromptExecutionSettings { ServiceId = "service3", ModelId = "model-service-3" });
-        promptTemplateConfig.AddExecutionSettings(settings1, "service4");
+        promptTemplateConfig.AddExecutionSettings(settings1);
 
         // Assert
-        // Overwrite with Default
         Assert.Equal("model1", promptTemplateConfig.ExecutionSettings["default"].ModelId);
-        Assert.Equal("default", promptTemplateConfig.ExecutionSettings["default"].ServiceId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["default"].ServiceId);
 
-        // Overwrite with ServiceId from Argument (Not Defaulting)
         Assert.Equal("model2", promptTemplateConfig.ExecutionSettings["service1"].ModelId);
-        Assert.Equal("service1", promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
+        Assert.Null(promptTemplateConfig.ExecutionSettings["service1"].ServiceId);
 
-        // Overwrite with ServiceId from Argument
-        Assert.Equal("model-service-2", promptTemplateConfig.ExecutionSettings["override"].ModelId);
-        Assert.Equal("override", promptTemplateConfig.ExecutionSettings["override"].ServiceId);
+        Assert.Equal("model-service-2", promptTemplateConfig.ExecutionSettings["service2"].ModelId);
+        Assert.Equal("service2", promptTemplateConfig.ExecutionSettings["service2"].ServiceId);
 
-        // Don't override from argument and use ServiceId from ExecutionSettings
         Assert.Equal("model-service-3", promptTemplateConfig.ExecutionSettings["service3"].ModelId);
         Assert.Equal("service3", promptTemplateConfig.ExecutionSettings["service3"].ServiceId);
 
-        // Don't change settings by reference (it was cloned)
+        // Never changes settings id
         Assert.Equal("should not override", settings1.ServiceId);
+        Assert.True(promptTemplateConfig.ExecutionSettings.ContainsKey("should not override"));
+    }
+
+    [Fact]
+    public void ItThrowsWhenServiceIdIsProvidedAndExecutionSettingsAlreadyHasAServiceIdPropertySet()
+    {
+        // Arrange
+        var promptTemplateConfig = new PromptTemplateConfig();
+        var settings = new PromptExecutionSettings { ModelId = "model-service-3", ServiceId = "service2" };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => promptTemplateConfig.AddExecutionSettings(settings, "service1"));
     }
 
     [Fact]
@@ -328,7 +336,7 @@ public class PromptTemplateConfigTests
         Assert.NotNull(promptTemplate);
         Assert.NotNull(promptTemplate.ExecutionSettings);
         Assert.Single(promptTemplate.ExecutionSettings);
-        Assert.Equal("service1", promptTemplate.ExecutionSettings["service1"].ServiceId);
+        Assert.Null(promptTemplate.ExecutionSettings["service1"].ServiceId);
         Assert.Equal("gpt-3.5_turbo", promptTemplate.ExecutionSettings["service1"].ModelId);
     }
 
