@@ -80,7 +80,7 @@ interface IMemoryStore
     3. The Redis connector prepends the collection name on to the front of keys before storing records and also registers the collection name as a prefix for records to be indexed by the index.
 
 ### Non-functional requirements for new connectors
-1. Ensure all connectors are throwing the same exceptions conssitently with data about the request made provided in a consistent manner.
+1. Ensure all connectors are throwing the same exceptions consistently with data about the request made provided in a consistent manner.
 2. Add consistent telemetry for all connectors.
 3. As far as possible integration tests should be runnable on build server.
 
@@ -306,8 +306,11 @@ The different stores vary in many ways around how data is organized.
 I'm proposing that we allow two ways in which to provide the information required to map data between the consumer data model and storage data model.
 First is a set of configuration objects that capture the types of each field. Second would be a set of attributes that can be used to decorate the model itself
 and can be converted to the configuration objects, allowing a single execution path.
-Additional configuration properties can easily be added for each type of field as required, e.g. IsFilterable or IsFullTextSearchable, allowing us to also create an index from
-the provided configuration.
+Additional configuration properties can easily be added for each type of field as required, e.g. IsFilterable or IsFullTextSearchable, allowing us to also create an index from the provided configuration.
+
+I'm also proposing that even though similar attributes already exist in other systems, e.g. System.ComponentModel.DataAnnotations.KeyAttribute, we create our own.
+We will likely require additional properties on all these attributes that are not currently supported on the existing attributes, e.g. whether a field is or
+should be filterable. Requiring users to switch to new attributes later will be disruptive.
 
 Here is what the attributes would look like, plus a sample use case.
 
@@ -376,6 +379,7 @@ From GitHub Issue:
 2. Collection name and key value normalization in decorator or main class.
 3. Collection name as method param or constructor param.
 4. How to normalize ids across different vector stores where different types are supported.
+5. Store Interface/Class Naming
 
 ### Question 1: Combined collection and record management vs separated.
 
@@ -384,7 +388,7 @@ From GitHub Issue:
 ```cs
 interface IMemoryRecordService<TDataModel>
 {
-    Task CreateCollectionAsync(CollectionConfig collectionConfig, CancellationToken cancellationToken = default);
+    Task CreateCollectionAsync(CollectionCreateConfig collectionConfig, CancellationToken cancellationToken = default);
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
     Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
     Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
@@ -455,6 +459,10 @@ interface IMemoryCollectionCreateService
     virtual Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
+// Implement a generic version of create that takes a configuation that should work for 80% of cases.
+class AzureAISearchConfiguredCollectionCreateService(CollectionCreateConfig collectionConfig): IMemoryCollectionCreateService;
+
+// Allow custom implementations of create for break glass scenarios for outside the 80% case.
 class AzureAISearchChatHistoryCollectionCreateService: IMemoryCollectionCreateService;
 class AzureAISearchSemanticCacheCollectionCreateService: IMemoryCollectionCreateService;
 
@@ -537,12 +545,27 @@ internal class CombinedMemoryService<TDataModel>(IMemoryCollectionCreateService 
 
 #### Decision Outcome
 
+Option 1 is problematic on its own, since we have to allow consumers to create custom implementations of collection create for break glass scenarios. With
+a single interface like this, it will require them to implement many methods that they do not want to change. Options 4 & 5, gives us more flexibility while
+still preserving the ease of use of an aggregated interface as described in Option 1.
+
+Option 2 doesn't give us the flexbility we need for break glass scenarios, since it only allows certain types of collections to be created. It also means
+that each time a new collection type is required it introduces a breaking change, so it is not a viable option.
+
+Since collection create and configuration and the possible options vary considerable across different database types, we will need to support an easy
+to use break glass scenario for collection creation. While we would be able to develop a basic configurable create option, for complex create scenarios
+users will need to implement their own. We will also need to support multiple create implementations out of the box, e.g. a configuration based option using
+our own configuration, create implementations that re-create the current model for backward compatibility, create implementations that use other configuration
+as input, e.g. Azure-ML YAML. Therefore separating create, which may have many implementations, from exists, list and delete, which requires only a single implementation per database type is useful.
+Option 3 provides us this separation, but Option 4 + 5 builds on top of this, and allows us to combine different implementations together for simpler
+consumption.
+
 Chosen option: 4 + 5.
 
-- Collection create and configuration varies considerably across different schemas, even for the same database, but also varies by database type.
+- Collection create, configuration and supported options vary considerably across different schemas and database types.
 - Collection list, exists and delete is the same across different schemas, but varies by database type.
 - Vector storage, even with custom schemas can be supported using a single implementation per database type.
-- We will therefore need to support multiple collection create service implementations per store type, a single collection update service implementation per store type, and a single vector store implementation per store type.
+- We will need to support multiple collection create service implementations per store type, a single collection update service implementation per store type, and a single vector store implementation per store type.
 - At the same time we can layer interfaces on top that allow easy combined access to collection and record management.
 
 
@@ -604,7 +627,7 @@ public class StoreOptions
 }
 ```
 
-### Option 4 - Normalization via custom mapper
+#### Option 4 - Normalization via custom mapper
 
 If developer wants to change any values they can do so by creating a custom mapper.
 
@@ -764,6 +787,32 @@ class AzureAISearchMemoryRecordService<TDataModel, TKeyType>: IMemoryRecordServi
 
 Chosen option 4, since it is forwards compatible with any complex key types we may need to support but still allows
 each implementation to hardcode allowed key types if the vector db only supports certain key types.
+
+### Question 5: Store Interface/Class Naming.
+
+#### Option 1 - VectorDB
+
+```cs
+IVectorDBRecordService
+IVectorDBCollectionUpdateService
+IVectorDBCollectionCreateService
+```
+
+#### Option 2 - Memory
+
+```cs
+IMemoryRecordService
+IMemoryCollectionUpdateService
+IMemoryCollectionCreateService
+```
+
+#### Decision Outcome
+
+Chosen option 2. Memory constrains the scope of these classes to be for memory storage and retrieval in the context of an AI system. Since almost all
+databases are currently adding vector support, including relational, it's important to clarify the purpose of these abstractions compared to others.
+Here, the purpose is not to provide generic database access to all databases that support vectors, but rather for memory storage and retrieval. The
+concern with using a term such as VectorDB is that it opens up the scope of the feature set to include anything that stores a vector, without
+constraining it to any specific purpose.
 
 ## Roadmap
 
