@@ -11,6 +11,8 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundE
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
+from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdBlock
+from semantic_kernel.template_engine.blocks.named_arg_block import NamedArgBlock
 from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
 
 if TYPE_CHECKING:
@@ -42,7 +44,7 @@ class CodeBlock(Block):
         CodeBlockTokenError: If a token is not a named argument after the second token.
         CodeBlockRenderError: If the plugin collection is not set in the kernel.
         CodeBlockRenderError: If the function is not found in the plugin collection.
-        CodeBlockRenderError: If the function does not take any arguments but it is being
+        CodeBlockRenderError: If the function does not take any arguments, but it is being
             called in the template with arguments.
     """
 
@@ -104,16 +106,18 @@ these will be ignored."
         """Render the code block.
 
         If the first token is a function_id, it will call the function from the plugin collection.
-        Otherwise it is a value or variable and those are then rendered directly.
+        Otherwise, it is a value or variable and those are then rendered directly.
         """
         logger.debug(f"Rendering code: `{self.content}`")
-        if self.tokens[0].type == BlockTypes.FUNCTION_ID:
+        if isinstance(self.tokens[0], FunctionIdBlock):
             return await self._render_function_call(kernel, arguments)
         # validated that if the first token is not a function_id, it is a value or variable
-        return self.tokens[0].render(kernel, arguments)
+        return self.tokens[0].render(kernel, arguments)  # type: ignore
 
     async def _render_function_call(self, kernel: "Kernel", arguments: "KernelArguments"):
-        function_block = self.tokens[0]
+        if not isinstance(self.tokens[0], FunctionIdBlock):
+            raise CodeBlockRenderException("The first token should be a function_id")
+        function_block: FunctionIdBlock = self.tokens[0]
         try:
             function = kernel.get_function(function_block.plugin_name, function_block.function_name)
         except (KernelFunctionNotFoundError, KernelPluginNotFoundError) as exc:
@@ -145,10 +149,10 @@ these will be ignored."
             )
         for index, token in enumerate(self.tokens[1:], start=1):
             logger.debug(f"Parsing variable/value: `{self.tokens[1].content}`")
-            rendered_value = token.render(kernel, arguments)
-            if token.type != BlockTypes.NAMED_ARG and index == 1:
+            rendered_value = token.render(kernel, arguments)  # type: ignore
+            if not isinstance(token, NamedArgBlock) and index == 1:
                 arguments[function_metadata.parameters[0].name] = rendered_value
                 continue
-            arguments[token.name] = rendered_value
+            arguments[token.name] = rendered_value  # type: ignore
 
         return arguments

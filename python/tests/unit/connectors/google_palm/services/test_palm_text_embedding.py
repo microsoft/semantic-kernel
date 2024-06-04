@@ -3,11 +3,11 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
     GooglePalmTextEmbedding,
 )
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 
 def test_google_palm_text_embedding_init(google_palm_unit_test_env) -> None:
@@ -27,7 +27,7 @@ def test_google_palm_text_embedding_init(google_palm_unit_test_env) -> None:
 def test_google_palm_text_embedding_init_with_empty_api_key(google_palm_unit_test_env) -> None:
     ai_model_id = "test_model_id"
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ServiceInitializationError):
         GooglePalmTextEmbedding(
             ai_model_id=ai_model_id,
         )

@@ -51,6 +51,7 @@ OUTPUT_FIELDS_WO_EMBEDDING = [
 @experimental_function
 def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
+
     Args:
         mem (MemoryRecord): MemoryRecord to convert.
 
@@ -79,24 +80,25 @@ def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
         MemoryRecord
     """
     # Embedding needs conversion to numpy array
-    embedding = milvus_dict.get(SEARCH_FIELD_EMBEDDING, None)
+    embedding = milvus_dict.get(SEARCH_FIELD_EMBEDDING)
     if embedding is not None:
         embedding = array(embedding)
     return MemoryRecord(
-        is_reference=milvus_dict.get(SEARCH_FIELD_IS_REF, None),
-        external_source_name=milvus_dict.get(SEARCH_FIELD_SRC, None),
-        id=milvus_dict.get(SEARCH_FIELD_ID, None),
-        description=milvus_dict.get(SEARCH_FIELD_DESC, None),
-        text=milvus_dict.get(SEARCH_FIELD_TEXT, None),
-        additional_metadata=milvus_dict.get(SEARCH_FIELD_METADATA, None),
+        is_reference=milvus_dict.get(SEARCH_FIELD_IS_REF),
+        external_source_name=milvus_dict.get(SEARCH_FIELD_SRC),
+        id=milvus_dict.get(SEARCH_FIELD_ID),
+        description=milvus_dict.get(SEARCH_FIELD_DESC),
+        text=milvus_dict.get(SEARCH_FIELD_TEXT),
+        additional_metadata=milvus_dict.get(SEARCH_FIELD_METADATA),
         embedding=embedding,
-        key=milvus_dict.get("key", None),
-        timestamp=milvus_dict.get(SEARCH_FIELD_TIMESTAMP, None),
+        key=milvus_dict.get("key"),
+        timestamp=milvus_dict.get(SEARCH_FIELD_TIMESTAMP),
     )
 
 
 @experimental_function
 def create_fields(dimensions: int) -> list[FieldSchema]:
+    """Create the fields for the Milvus collection."""
     return [
         FieldSchema(
             name=SEARCH_FIELD_ID,
@@ -148,13 +150,13 @@ class MilvusMemoryStore(MemoryStoreBase):
         self,
         uri: str = "http://localhost:19530",
         token: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
-        """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
+        """Memory store based on Milvus.
 
         For more details on how to get the service started, take a look here:
-            Milvus: https://milvus.io/docs/get_started.md
-            Zilliz Cloud: https://docs.zilliz.com/docs/quick-start
+        - Milvus: https://milvus.io/docs/get_started.md
+        - Zilliz Cloud: https://docs.zilliz.com/docs/quick-start
 
 
         Args:
@@ -162,6 +164,7 @@ class MilvusMemoryStore(MemoryStoreBase):
                 "http://localhost:19530".
             token (Optional[str], optional): The token to connect to the cluster if
                 authentication is required. Defaults to None.
+            **kwargs (Any): Unused.
         """
         connections.connect("default", uri=uri, token=token)
         self.collections: dict[str, Collection] = {}
@@ -191,9 +194,8 @@ class MilvusMemoryStore(MemoryStoreBase):
             create_fields(dimension_num), "Semantic Kernel Milvus Collection", enable_dynamic_field=True
         )
         index_param = {"index_type": _INDEX_TYPE, "params": {"nlist": _NLIST}, "metric_type": distance_type}
-        if utility.has_collection(collection_name):
-            if overwrite:
-                utility.drop_collection(collection_name=collection_name)
+        if utility.has_collection(collection_name) and overwrite:
+            utility.drop_collection(collection_name=collection_name)
         self.collections[collection_name] = Collection(
             name=collection_name,
             schema=schema,
@@ -259,7 +261,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         return res[0]
 
     async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
-        """_summary_
+        """_summary_.
 
         Args:
             collection_name (str): The collection name.
@@ -303,7 +305,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         return res[0]
 
     async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
-        """Get the MemoryRecords corresponding to the keys
+        """Get the MemoryRecords corresponding to the keys.
 
         Args:
             collection_name (str): _description_
@@ -429,7 +431,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float] | None:
         """Find the nearest match for an embedding.
 
         Args:
@@ -450,5 +452,4 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         if len(m) > 0:
             return m[0]
-        else:
-            return None
+        return None

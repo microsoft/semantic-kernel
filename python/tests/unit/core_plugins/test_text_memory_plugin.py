@@ -36,7 +36,7 @@ def test_can_be_instantiated(memory: SemanticTextMemory):
 
 def test_can_be_imported(kernel: Kernel, memory: SemanticTextMemory):
     kernel.add_plugin(TextMemoryPlugin(memory), "memory_plugin")
-    assert not kernel.plugins["memory_plugin"]["recall"].is_prompt
+    assert not kernel.get_function(plugin_name="memory_plugin", function_name="recall").is_prompt
 
 
 @mark.asyncio

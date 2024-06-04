@@ -2,10 +2,11 @@
 
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import field_validator
 
+from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
@@ -23,7 +24,7 @@ TAG_CONTENT_MAP = {
 class FunctionResultContent(KernelContent):
     """This is the base class for text response content.
 
-    All Text Completion Services should return a instance of this class as response.
+    All Text Completion Services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
@@ -62,6 +63,7 @@ class FunctionResultContent(KernelContent):
         return result
 
     def __str__(self) -> str:
+        """Return the text of the response."""
         return self.result
 
     def to_element(self) -> Element:
@@ -103,8 +105,8 @@ class FunctionResultContent(KernelContent):
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
         if unwrap:
-            return ChatMessageContent(role="tool", items=[self.result])  # type: ignore
-        return ChatMessageContent(role="tool", items=[self])  # type: ignore
+            return ChatMessageContent(role=AuthorRole.TOOL, items=[self.result])  # type: ignore
+        return ChatMessageContent(role=AuthorRole.TOOL, items=[self])  # type: ignore
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

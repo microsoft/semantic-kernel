@@ -15,17 +15,15 @@ from semantic_kernel.connectors.openai_plugin.openai_function_execution_paramete
     OpenAIFunctionExecutionParameters,
 )
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
-from semantic_kernel.exceptions import (
-    KernelFunctionAlreadyExistsError,
-    KernelServiceNotFoundError,
-    ServiceInvalidTypeError,
-)
+from semantic_kernel.exceptions import KernelFunctionAlreadyExistsError, KernelServiceNotFoundError
 from semantic_kernel.exceptions.kernel_exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
 from semantic_kernel.exceptions.template_engine_exceptions import TemplateSyntaxError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
+from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 
@@ -229,6 +227,39 @@ def test_add_function_not_provided(kernel: Kernel):
         kernel.add_function(function_name="TestFunction", plugin_name="TestPlugin")
 
 
+def test_add_function_from_prompt_different_values(kernel: Kernel):
+    template = """
+    Write a short story about two Corgis on an adventure.
+    The story must be:
+    - G rated
+    - Have a positive message
+    - No sexism, racism or other bias/bigotry
+    - Be exactly {{$paragraph_count}} paragraphs long
+    - Be written in this language: {{$language}}
+    - The two names of the corgis are {{GenerateNames.generate_names}}
+    """
+    prompt = "test"
+
+    kernel.add_function(
+        prompt=prompt,
+        function_name="TestFunction",
+        plugin_name="TestPlugin",
+        description="Write a short story.",
+        template_format="handlebars",
+        prompt_template_config=PromptTemplateConfig(
+            template=template,
+        ),
+        execution_settings=PromptExecutionSettings(
+            extension_data={"max_tokens": 500, "temperature": 0.5, "top_p": 0.5}
+        ),
+    )
+    func = kernel.get_function("TestPlugin", "TestFunction")
+    assert func.name == "TestFunction"
+    assert func.description == "Write a short story."
+    assert isinstance(func.prompt_template, KernelPromptTemplate)
+    assert len(func.parameters) == 2
+
+
 def test_add_functions(kernel: Kernel):
     @kernel_function(name="func1")
     def func1(arg1: str) -> str:
@@ -279,7 +310,7 @@ async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel
             enable_dynamic_payload=True,
         ),
     )
-    plugin = kernel.plugins["TestOpenAIPlugin"]
+    plugin = kernel.get_plugin(plugin_name="TestOpenAIPlugin")
     assert plugin is not None
     assert plugin.name == "TestOpenAIPlugin"
     assert plugin.functions.get("GetSecret") is not None
@@ -295,7 +326,7 @@ def test_import_plugin_from_openapi(kernel: Kernel):
         plugin_name="TestOpenAPIPlugin",
         openapi_document_path=openapi_spec_file,
     )
-    plugin = kernel.plugins["TestOpenAPIPlugin"]
+    plugin = kernel.get_plugin(plugin_name="TestOpenAPIPlugin")
     assert plugin is not None
     assert plugin.name == "TestOpenAPIPlugin"
     assert plugin.functions.get("GetSecret") is not None
@@ -437,7 +468,7 @@ def test_get_service_with_multiple_types_union(kernel_with_service: Kernel):
 
 
 def test_get_service_with_type_not_found(kernel_with_service: Kernel):
-    with pytest.raises(ServiceInvalidTypeError):
+    with pytest.raises(KernelServiceNotFoundError):
         kernel_with_service.get_service("service", type=ChatCompletionClientBase)
 
 

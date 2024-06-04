@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from openai import AsyncAzureOpenAI
 from openai.resources.completions import AsyncCompletions
-from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAITextPromptExecutionSettings,
@@ -45,7 +44,7 @@ def test_azure_text_completion_init_with_custom_header(azure_openai_unit_test_en
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_OPENAI_TEXT_DEPLOYMENT_NAME"]], indirect=True)
 def test_azure_text_completion_init_with_empty_deployment_name(azure_openai_unit_test_env) -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ServiceInitializationError):
         AzureTextCompletion()
 
 

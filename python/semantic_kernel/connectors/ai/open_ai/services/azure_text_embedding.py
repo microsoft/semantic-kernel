@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import logging
 from collections.abc import Mapping
 
@@ -8,16 +7,9 @@ from openai import AsyncAzureOpenAI
 from openai.lib.azure import AsyncAzureADTokenProvider
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
-from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
-    AzureOpenAIConfigBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
-    OpenAIModelTypes,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
-    OpenAITextEmbeddingBase,
-)
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import AzureOpenAIConfigBase
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIModelTypes
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import OpenAITextEmbeddingBase
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.kernel_pydantic import HttpsUrl
@@ -44,8 +36,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
     ) -> None:
-        """
-        Initialize an AzureTextEmbedding service.
+        """Initialize an AzureTextEmbedding service.
 
         service_id: The service ID. (Optional)
         api_key  {str | None}: The optional api key. If provided, will override the value in the
@@ -63,50 +54,39 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             (Optional) The default value is False.
         default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
-        async_client {Optional[AsyncAzureOpenAI]} -- An existing client to use. (Optional)
-        env_file_path {str | None} -- Use the environment settings file as a fallback to
+        async_client (Optional[AsyncAzureOpenAI]): An existing client to use. (Optional)
+        env_file_path (str | None): Use the environment settings file as a fallback to
             environment variables. (Optional)
         """
-        azure_openai_settings = None
         try:
-            azure_openai_settings = AzureOpenAISettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureOpenAI pydantic settings: {e}")
+            azure_openai_settings = AzureOpenAISettings.create(
+                env_file_path=env_file_path,
+                api_key=api_key,
+                embedding_deployment_name=deployment_name,
+                endpoint=endpoint,
+                base_url=base_url,
+                api_version=api_version,
+            )
+        except ValidationError as exc:
+            raise ServiceInitializationError(f"Invalid settings: {exc}") from exc
+        if not azure_openai_settings.embedding_deployment_name:
+            raise ServiceInitializationError("The Azure OpenAI embedding deployment name is required.")
 
-        base_url = base_url or (
-            str(azure_openai_settings.base_url) if azure_openai_settings and azure_openai_settings.base_url else None
-        )
-        endpoint = endpoint or (
-            str(azure_openai_settings.endpoint) if azure_openai_settings and azure_openai_settings.endpoint else None
-        )
-        deployment_name = deployment_name or (
-            azure_openai_settings.embedding_deployment_name if azure_openai_settings else None
-        )
-        api_version = api_version or (azure_openai_settings.api_version if azure_openai_settings else None)
-        api_key = api_key or (
-            azure_openai_settings.api_key.get_secret_value()
-            if azure_openai_settings and azure_openai_settings.api_key
-            else None
-        )
-
-        if api_version is None:
-            api_version = DEFAULT_AZURE_API_VERSION
-
-        if not base_url and not endpoint:
+        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
 
-        if base_url and isinstance(base_url, str):
-            base_url = HttpsUrl(base_url)
-        if endpoint and deployment_name:
-            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+        if azure_openai_settings.endpoint and azure_openai_settings.embedding_deployment_name:
+            azure_openai_settings.base_url = HttpsUrl(
+                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.embedding_deployment_name}"
+            )
 
         super().__init__(
-            deployment_name=deployment_name,
-            endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
-            base_url=base_url,
-            api_version=api_version,
+            deployment_name=azure_openai_settings.embedding_deployment_name,
+            endpoint=azure_openai_settings.endpoint,
+            base_url=azure_openai_settings.base_url,
+            api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=api_key,
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
@@ -116,23 +96,22 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
 
     @classmethod
     def from_dict(cls, settings: dict[str, str]) -> "AzureTextEmbedding":
-        """
-        Initialize an Azure OpenAI service from a dictionary of settings.
+        """Initialize an Azure OpenAI service from a dictionary of settings.
 
-        Arguments:
+        Args:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
+                should contain keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth
         """
         return AzureTextEmbedding(
             service_id=settings.get("service_id"),
-            api_key=settings.get("api_key", None),
-            deployment_name=settings.get("deployment_name", None),
-            endpoint=settings.get("endpoint", None),
-            base_url=settings.get("base_url", None),
-            api_version=settings.get("api_version", None),
+            api_key=settings.get("api_key"),
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            base_url=settings.get("base_url"),
+            api_version=settings.get("api_version"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            env_file_path=settings.get("env_file_path", None),
+            env_file_path=settings.get("env_file_path"),
         )

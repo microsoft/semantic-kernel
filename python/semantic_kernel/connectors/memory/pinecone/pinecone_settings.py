@@ -1,21 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import ClassVar
+
 from pydantic import SecretStr
 
-from semantic_kernel.connectors.memory.memory_settings_base import BaseModelSettings
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.experimental_decorator import experimental_class
 
 
 @experimental_class
-class PineconeSettings(BaseModelSettings):
-    """Pinecone model settings
+class PineconeSettings(KernelBaseSettings):
+    """Pinecone model settings.
 
-    Required:
+    Args:
     - api_key: SecretStr - Pinecone API key
         (Env var PINECONE_API_KEY)
     """
 
-    api_key: SecretStr | None = None
+    env_prefix: ClassVar[str] = "PINECONE_"
 
-    class Config(BaseModelSettings.Config):
-        env_prefix = "PINECONE_"
+    api_key: SecretStr

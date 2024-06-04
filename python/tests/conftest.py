@@ -129,9 +129,7 @@ def create_mock_function() -> Callable:
                 self.call_count += 1
                 context.result = FunctionResult(function=kernel_function_metadata, value=value, metadata={})
 
-        mock_function = CustomKernelFunction(metadata=kernel_function_metadata)
-
-        return mock_function
+        return CustomKernelFunction(metadata=kernel_function_metadata)
 
     return create_mock_function
 
@@ -155,12 +153,12 @@ def enable_debug_mode():
     3. If you want a trace of a particular functions calls, just add `ss()` as the first
         line of the function.
 
-    NOTE:
+    Note:
     ----
         It's completely fine to leave `autouse=True` in the fixture. It doesn't affect
         the tests unless you use `pr` or `ss` in any test.
 
-    NOTE:
+    Note:
     ----
         When you use `ss` or `pr` in a test, pylance or mypy will complain. This is
         because they don't know that we're adding these functions to the builtins. The
@@ -288,7 +286,7 @@ def aca_python_sessions_unit_test_env(monkeypatch, exclude_list, override_env_pa
         override_env_param_dict = {}
 
     env_vars = {
-        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/python/excute/",
+        "ACA_POOL_MANAGEMENT_ENDPOINT": "https://test.endpoint/",
     }
 
     env_vars.update(override_env_param_dict)

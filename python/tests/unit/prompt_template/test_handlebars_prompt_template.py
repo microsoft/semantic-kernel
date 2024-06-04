@@ -3,6 +3,7 @@
 import pytest
 from pytest import mark
 
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -285,10 +286,12 @@ async def test_helpers_message_to_prompt(kernel: Kernel):
     chat_history = ChatHistory()
     chat_history.add_user_message("User message")
     chat_history.add_message(
-        ChatMessageContent(role="assistant", items=[FunctionCallContent(id="1", name="plug-test")])
+        ChatMessageContent(role=AuthorRole.ASSISTANT, items=[FunctionCallContent(id="1", name="plug-test")])
     )
     chat_history.add_message(
-        ChatMessageContent(role="tool", items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")])
+        ChatMessageContent(
+            role=AuthorRole.TOOL, items=[FunctionResultContent(id="1", name="plug-test", result="Tool message")]
+        )
     )
     rendered = await target.render(kernel, KernelArguments(chat_history=chat_history))
 

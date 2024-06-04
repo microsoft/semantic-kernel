@@ -20,15 +20,14 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> list["TextContent"]:
-        """
-        This is the method that is called from the kernel to get a response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {PromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (PromptExecutionSettings): Settings for the request.
 
-            Returns:
-            list[TextContent] -- A string or list of strings representing the response(s) from the LLM.
+        Returns:
+            list[TextContent]: A string or list of strings representing the response(s) from the LLM.
         """
 
     @abstractmethod
@@ -37,14 +36,13 @@ class TextCompletionClientBase(AIServiceClientBase, ABC):
         prompt: str,
         settings: "PromptExecutionSettings",
     ) -> AsyncGenerator[list["StreamingTextContent"], Any]:
-        """
-        This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
+        """This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
-        Arguments:
-            prompt {str} -- The prompt to send to the LLM.
-            settings {PromptExecutionSettings} -- Settings for the request.
+        Args:
+            prompt (str): The prompt to send to the LLM.
+            settings (PromptExecutionSettings): Settings for the request.
 
         Yields:
-            list[StreamingTextContent] -- A stream representing the response(s) from the LLM.
+            list[StreamingTextContent]: A stream representing the response(s) from the LLM.
         """
         ...

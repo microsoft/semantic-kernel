@@ -213,9 +213,9 @@ def test_dump():
     )
     dump = chat_history.model_dump(exclude_none=True)
     assert dump is not None
-    assert dump["messages"][0]["role"] == "system"
+    assert dump["messages"][0]["role"] == AuthorRole.SYSTEM
     assert dump["messages"][0]["items"][0]["text"] == system_msg
-    assert dump["messages"][1]["role"] == "user"
+    assert dump["messages"][1]["role"] == AuthorRole.USER
     assert dump["messages"][1]["items"][0]["text"] == "Message"
 
 
