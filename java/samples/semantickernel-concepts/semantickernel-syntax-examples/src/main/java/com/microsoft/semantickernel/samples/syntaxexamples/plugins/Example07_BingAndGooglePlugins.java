@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.samples.connectors.web.bing.BingConnector;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -59,7 +60,7 @@ public class Example07_BingAndGooglePlugins {
         var bing = KernelPluginFactory.createFromObject(new WebSearchEnginePlugin(bingConnector),
             "bing");
 
-        var chatCompletionService = ChatCompletionService.builder()
+        var chatCompletionService = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();

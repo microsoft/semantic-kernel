@@ -7,6 +7,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.azure.core.http.HttpClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
@@ -26,7 +27,7 @@ public class Example42_KernelBuilder {
 
         Kernel kernel1 = Kernel.builder()
             .withAIService(ChatCompletionService.class,
-                ChatCompletionService.builder()
+                OpenAIChatCompletion.builder()
                     .withOpenAIAsyncClient(client)
                     .withModelId("gpt-35-turbo-2")
                     .build())
