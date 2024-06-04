@@ -208,6 +208,14 @@ Cons:
 
 - ⚠️ Breaking change for `ImageContent` consumers
 
+### ImageContent Breaking Changes
+
+- `Uri` property will be dedicated solely for referenced locations (non-data-uri), attempting to add a `data-uri` format will throw an exception suggesting the usage of the `DataUri` property instead.
+- Setting `DataUri` will override the `Data` and `MimeType` properties according with the information provided.
+- Attempting to set an invalid `DataUri` will throw an exception.
+- Setting `Data` will now override the `DataUri` data part.
+- Attempting to serialize an `ImageContent` with data-uri in the `Uri` property will throw an exception.
+
 ## AudioContent Graduation
 
 Similar to `ImageContent` proposal `AudioContent` can be graduated to be a `BinaryContent`.
