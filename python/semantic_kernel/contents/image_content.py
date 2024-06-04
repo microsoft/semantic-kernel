@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import base64
+import logging
 import mimetypes
 from typing import Any
 from xml.etree.ElementTree import Element  # nosec
@@ -11,24 +12,34 @@ from pydantic_core import Url
 from semantic_kernel.contents.const import IMAGE_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 
+logger = logging.getLogger(__name__)
+
 
 class ImageContent(KernelContent):
-    """This is the base class for text response content.
+    """This represent image content.
 
-    All Text Completion Services should return an instance of this class as response.
-    Or they can implement their own subclass of this class and return an instance.
+    This can be created either with a uri for a image or with the bytes data of the image.
+    Use the .from_image_file method to create an instance from a image file.
+        This reads the file and guesses the mime_type.
+    If both uri and data is provided, data will be used and a warning is logged.
 
     Args:
-        inner_content: Any - The inner content of the response,
+        inner_content (Any): The inner content of the response,
             this should hold all the information from the response so even
             when not creating a subclass a developer can leverage the full thing.
-        ai_model_id: str | None - The id of the AI model that generated this response.
-        metadata: dict[str, Any] - Any metadata that should be attached to the response.
-        text: str | None - The text of the response.
-        encoding: str | None - The encoding of the text.
+        ai_model_id (str | None): The id of the AI model that generated this response.
+        metadata (dict[str, Any]): Any metadata that should be attached to the response.
+        uri (Url | None): The uri of the image.
+        data (bytes | None): The data of the image.
+        mime_type (str | None): The mime type of the image, only used with data.
 
     Methods:
-        __str__: Returns the text of the response.
+        from_image_file: Create an instance from an image file.
+        __str__: Returns the string representation of the image.
+
+    Raises:
+        ValidationError: If neither uri or data is provided.
+
     """
 
     uri: Url | None = None
@@ -37,14 +48,16 @@ class ImageContent(KernelContent):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_uri_or_data(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def validate_uri_and_or_data(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Validate that either uri or data is provided."""
         if not values.get("uri") and not values.get("data"):
             raise ValidationError("Either uri or data must be provided.")
+        if values.get("uri") and values.get("data"):
+            logger.warning('Both "uri" and "data" are provided, "data" will be used.')
         return values
 
     def __str__(self) -> str:
-        """Return the text of the response."""
+        """Return the string representation of the image."""
         return (
             f"data:{self.mime_type};base64,{ base64.b64encode(self.data).decode('utf-8')}"
             if self.data
