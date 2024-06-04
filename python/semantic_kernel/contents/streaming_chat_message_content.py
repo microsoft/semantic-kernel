@@ -10,11 +10,17 @@ from semantic_kernel.contents.const import CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.exceptions import ContentAdditionException
 
-ITEM_TYPES = Union[StreamingTextContent, FunctionCallContent, FunctionResultContent]
+ITEM_TYPES = Union[
+    ImageContent,
+    StreamingTextContent,
+    FunctionCallContent,
+    FunctionResultContent,
+]
 
 
 class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
@@ -88,7 +94,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         Args:
             role: ChatRole - The role of the chat message.
             choice_index: int - The index of the choice that generated this response.
-            items: list[TextContent, FunctionCallContent, FunctionResultContent] - The content.
+            items: list[TextContent, FunctionCallContent, FunctionResultContent, ImageContent] - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even

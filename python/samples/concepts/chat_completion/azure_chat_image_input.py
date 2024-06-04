@@ -11,7 +11,7 @@ from semantic_kernel.contents import ChatHistory, ChatMessageContent, ImageConte
 logging.basicConfig(level=logging.WARNING)
 
 system_message = """
-You are a image reviewing chat bot. Your name is Mosscap and you have one goal
+You are an image reviewing chat bot. Your name is Mosscap and you have one goal
 critiquing images that are supplied.
 """
 

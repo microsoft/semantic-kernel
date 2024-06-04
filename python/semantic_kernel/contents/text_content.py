@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from html import unescape
+from typing import Literal
 from xml.etree.ElementTree import Element  # nosec
+
+from pydantic import Field
 
 from semantic_kernel.contents.const import TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -26,6 +29,7 @@ class TextContent(KernelContent):
         __str__: Returns the text of the response.
     """
 
+    type: Literal["text"] = Field("text", init=False)
     text: str
     encoding: str | None = None
 

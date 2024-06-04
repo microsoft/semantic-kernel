@@ -3,8 +3,10 @@
 import json
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 from xml.etree.ElementTree import Element  # nosec
+
+from pydantic import Field
 
 from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -19,6 +21,7 @@ logger = logging.getLogger(__name__)
 class FunctionCallContent(KernelContent):
     """Class to hold a function call response."""
 
+    type: Literal["function_call"] = Field("function_call", init=False)
     id: str | None
     index: int | None = None
     name: str | None = None

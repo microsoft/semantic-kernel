@@ -12,6 +12,7 @@ from pydantic import Field
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import (
     CHAT_MESSAGE_CONTENT_TAG,
+    DISCRIMINATOR_FIELD,
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
@@ -32,7 +33,13 @@ TAG_CONTENT_MAP = {
     IMAGE_CONTENT_TAG: ImageContent,
 }
 
-ITEM_TYPES = Union[TextContent, StreamingTextContent, FunctionResultContent, FunctionCallContent, ImageContent]
+ITEM_TYPES = Union[
+    ImageContent,
+    TextContent,
+    StreamingTextContent,
+    FunctionResultContent,
+    FunctionCallContent,
+]
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +66,7 @@ class ChatMessageContent(KernelContent):
 
     role: AuthorRole
     name: str | None = None
-    items: list[ITEM_TYPES] = Field(default_factory=list)
+    items: list[ITEM_TYPES] = Field(default_factory=list, discriminator=DISCRIMINATOR_FIELD)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -107,8 +114,9 @@ class ChatMessageContent(KernelContent):
         """Create a ChatMessageContent instance.
 
         Args:
-            role: ChatRole - The role of the chat message.
-            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent] - The content.
+            role: AuthorRole - The role of the chat message.
+            items: list[TextContent, StreamingTextContent, FunctionCallContent, FunctionResultContent, ImageContent]
+                 - The content.
             content: str - The text of the response.
             inner_content: Optional[Any] - The inner content of the response,
                 this should hold all the information from the response so even

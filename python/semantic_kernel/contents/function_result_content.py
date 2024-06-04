@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
@@ -40,6 +40,7 @@ class FunctionResultContent(KernelContent):
         __str__: Returns the text of the response.
     """
 
+    type: Literal["function_result"] = Field("function_result", init=False)
     id: str
     name: str | None = None
     result: str

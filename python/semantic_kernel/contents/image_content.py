@@ -3,13 +3,19 @@
 import base64
 import logging
 import mimetypes
-from typing import Any
+import sys
+from typing import Any, Literal
+
+if sys.version < "3.11":
+    from typing_extensions import Self
+else:
+    from typing import Self
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import ValidationError, model_validator
+from pydantic import Field, model_validator
 from pydantic_core import Url
 
-from semantic_kernel.contents.const import IMAGE_CONTENT_TAG
+from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ChatMessageContentSubtypes
 from semantic_kernel.contents.kernel_content import KernelContent
 
 logger = logging.getLogger(__name__)
@@ -42,19 +48,19 @@ class ImageContent(KernelContent):
 
     """
 
+    type: Literal[ChatMessageContentSubtypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     uri: Url | None = None
     data: bytes | None = None
     mime_type: str | None = None
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_uri_and_or_data(cls, values: dict[str, Any]) -> dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_uri_and_or_data(self) -> Self:
         """Validate that either uri or data is provided."""
-        if not values.get("uri") and not values.get("data"):
-            raise ValidationError("Either uri or data must be provided.")
-        if values.get("uri") and values.get("data"):
+        if not self.uri and not self.data:
+            raise ValueError("Either uri or data must be provided.")
+        if self.uri and self.data:
             logger.warning('Both "uri" and "data" are provided, "data" will be used.')
-        return values
+        return self
 
     def __str__(self) -> str:
         """Return the string representation of the image."""
