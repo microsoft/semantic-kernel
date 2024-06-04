@@ -99,9 +99,9 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
         get => this._executionSettings;
         set
         {
-            if (this._executionSettings is { Count: > 0 })
+            if (value is { Count: > 0 })
             {
-                foreach (var kv in this._executionSettings!)
+                foreach (var kv in value!)
                 {
                     // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
                     if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
