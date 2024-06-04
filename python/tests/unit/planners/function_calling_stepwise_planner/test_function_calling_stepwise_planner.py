@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.exceptions.planner_exceptions import PlannerInvalidConfigurationError
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -60,7 +61,7 @@ async def test_build_chat_history_for_step():
         "goal", "initial_plan", kernel_mock, arguments_mock, service_mock
     )
     assert chat_history is not None
-    assert chat_history[0].role == "user"
+    assert chat_history[0].role == AuthorRole.USER
 
 
 @pytest.mark.asyncio
