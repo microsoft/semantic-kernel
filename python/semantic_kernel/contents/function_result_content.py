@@ -6,6 +6,7 @@ from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import field_validator
 
+from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.const import FUNCTION_RESULT_CONTENT_TAG, TEXT_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
@@ -104,8 +105,8 @@ class FunctionResultContent(KernelContent):
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
         if unwrap:
-            return ChatMessageContent(role="tool", items=[self.result])  # type: ignore
-        return ChatMessageContent(role="tool", items=[self])  # type: ignore
+            return ChatMessageContent(role=AuthorRole.TOOL, items=[self.result])  # type: ignore
+        return ChatMessageContent(role=AuthorRole.TOOL, items=[self])  # type: ignore
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""
