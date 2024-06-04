@@ -10,7 +10,10 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
+<<<<<<< HEAD
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
@@ -69,6 +72,7 @@ public interface Kernel extends SkillExecutor, Buildable {
     Mono<SKContext> runAsync(ContextVariables variables, SKFunction<?>... pipeline);
 
     /**
+<<<<<<< HEAD
      * Register a semantic function on this kernel
      *
      * @param skillName The skill name
@@ -80,6 +84,8 @@ public interface Kernel extends SkillExecutor, Buildable {
             String skillName, String functionName, SemanticFunctionConfig functionConfig);
 
     /**
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
      * Get a completion function builder, functions created with this builder will be registered on
      * the kernel
      */

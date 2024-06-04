@@ -35,7 +35,10 @@ import reactor.core.publisher.Mono;
 public class DefaultCompletionSKFunction
         extends DefaultSemanticSKFunction<CompletionRequestSettings>
         implements CompletionSKFunction {
+<<<<<<< HEAD
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
 
     private final SemanticFunctionConfig functionConfig;
@@ -189,10 +192,23 @@ public class DefaultCompletionSKFunction
                     PromptTemplate func = functionConfig.getTemplate();
 
                     return func.renderAsync(context)
+<<<<<<< HEAD
                             .flatMap(
                                     prompt ->
                                             performCompletionRequest(
                                                     client, requestSettings, prompt, context))
+=======
+                            .flatMapMany(
+                                    prompt -> {
+                                        LOGGER.debug("RENDERED PROMPT: \n" + prompt);
+                                        return client.completeAsync(prompt, requestSettings);
+                                    })
+                            .single()
+                            .map(
+                                    completion -> {
+                                        return context.update(completion.get(0));
+                                    })
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                             .doOnError(
                                     ex -> {
                                         LOGGER.warn(
@@ -233,6 +249,7 @@ public class DefaultCompletionSKFunction
         this.aiService = () -> kernel.getService(null, TextCompletion.class);
     }
 
+<<<<<<< HEAD
     private static Mono<SKContext> performCompletionRequest(
             TextCompletion client,
             CompletionRequestSettings requestSettings,
@@ -257,6 +274,8 @@ public class DefaultCompletionSKFunction
         }
     }
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     @Override
     public Class<CompletionRequestSettings> getType() {
         return CompletionRequestSettings.class;
@@ -278,7 +297,10 @@ public class DefaultCompletionSKFunction
     }
 
     public static class Builder implements CompletionSKFunction.Builder {
+<<<<<<< HEAD
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         private Kernel kernel;
         @Nullable private String promptTemplate = null;
         @Nullable private String functionName = null;

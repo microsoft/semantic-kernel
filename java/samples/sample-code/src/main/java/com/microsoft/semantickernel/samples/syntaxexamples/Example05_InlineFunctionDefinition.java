@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+<<<<<<< HEAD
 /**
  * Demonstrates using prompt templates to define functions.
  * <p>
@@ -36,6 +37,23 @@ public class Example05_InlineFunctionDefinition {
 
     // Function defined using few-shot design pattern
     String functionDefinition = """
+=======
+public class Example05_InlineFunctionDefinition {
+    public static void main(String[] args) throws ConfigurationException {
+        OpenAIAsyncClient client = SamplesConfig.getClient();
+
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
+
+        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+
+        System.out.println("======== Inline Function Definition ========");
+
+        // Function defined using few-shot design pattern
+        String functionDefinition = """
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
                     Generate a creative reason or excuse for the given event.
                     Be creative and be funny. Let your imagination run wild.
                     
@@ -48,6 +66,7 @@ public class Example05_InlineFunctionDefinition {
                     Event: {{$input}}
                 """.stripIndent();
 
+<<<<<<< HEAD
     // Create function via builder
     var excuseFunction = SKBuilders
         .completionFunctions()
@@ -83,4 +102,41 @@ public class Example05_InlineFunctionDefinition {
 
     System.out.println(fixedFunction.invokeAsync().block().getResult());
   }
+=======
+        // Create function via builder
+        var excuseFunction = SKBuilders
+                .completionFunctions()
+                .withKernel(kernel)
+                .withPromptTemplate(functionDefinition)
+                .withCompletionConfig(
+                        new PromptTemplateConfig.CompletionConfigBuilder()
+                                .maxTokens(100)
+                                .temperature(0.4)
+                                .topP(1)
+                                .build())
+                .build();
+
+
+        var result = excuseFunction.invokeAsync("I missed the F1 final race").block();
+        System.out.println(result.getResult());
+
+        result = excuseFunction.invokeAsync("sorry I forgot your birthday").block();
+        System.out.println(result.getResult());
+
+        // Create function via kernel
+        var fixedFunction = kernel.
+                getSemanticFunctionBuilder()
+                .withPromptTemplate("Translate this date " +
+                        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
+                .withCompletionConfig(
+                        new PromptTemplateConfig.CompletionConfigBuilder()
+                                .maxTokens(100)
+                                .temperature(0.4)
+                                .topP(1)
+                                .build())
+                .build();
+
+        System.out.println(fixedFunction.invokeAsync().block().getResult());
+    }
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 }

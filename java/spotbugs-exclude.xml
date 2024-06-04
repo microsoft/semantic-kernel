@@ -70,6 +70,7 @@
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
 
+<<<<<<< HEAD
   <Match>
     <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector"/>
     <Method name="&lt;init&gt;"/>
@@ -116,4 +117,6 @@
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 </FindBugsFilter>

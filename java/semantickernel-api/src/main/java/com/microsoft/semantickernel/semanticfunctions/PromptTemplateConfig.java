@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.builders.Buildable;
@@ -14,6 +15,18 @@ import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
 @JsonIgnoreProperties(ignoreUnknown = true)
+=======
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import reactor.util.annotation.Nullable;
+
+/** Prompt template configuration */
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 public class PromptTemplateConfig {
     private final CompletionConfig completionConfig;
     private final InputConfig input;
@@ -27,6 +40,7 @@ public class PromptTemplateConfig {
         return completionConfig;
     }
 
+<<<<<<< HEAD
     public int getSchema() {
         return schema;
     }
@@ -34,6 +48,8 @@ public class PromptTemplateConfig {
     public String getType() {
         return type;
     }
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 
     /** Builder for CompletionConfig */
     public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
@@ -293,11 +309,15 @@ public class PromptTemplateConfig {
         }
 
         public SemanticKernelBuilder<CompletionConfig> builder() {
+<<<<<<< HEAD
             return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
         }
 
         public List<String> getStopSequences() {
             return Collections.unmodifiableList(stopSequences);
+=======
+          return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         }
     }
 

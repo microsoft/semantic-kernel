@@ -12,7 +12,10 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Locale;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -25,8 +28,11 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     private final String skillName;
     private final String functionName;
     private final String description;
+<<<<<<< HEAD
 
     private final List<ParameterView> returnParameters;
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     @Nullable private KernelSkillsSupplier skillsSupplier;
 
     /**
@@ -43,14 +49,20 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             String skillName,
             String functionName,
             String description,
+<<<<<<< HEAD
             List<ParameterView> returnParameters,
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
             @Nullable KernelSkillsSupplier skillsSupplier) {
 
         this.parameters = new ArrayList<>(parameters);
         this.skillName = skillName;
         this.functionName = functionName;
         this.description = description;
+<<<<<<< HEAD
         this.returnParameters = Collections.unmodifiableList(returnParameters);
+=======
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         this.skillsSupplier = skillsSupplier;
     }
 
@@ -185,7 +197,11 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     }
 
     @Override
+<<<<<<< HEAD
     public String toManualString(boolean includeOutputs) {
+=======
+    public String toManualString() {
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         String inputs =
                 parameters.stream()
                         .map(
@@ -212,6 +228,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                                             + parameter.getDescription()
                                             + defaultValueString;
                                 })
+<<<<<<< HEAD
                         .map(s -> s.toLowerCase(Locale.ROOT))
                         .sorted()
                         .distinct()
@@ -238,14 +255,22 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             }
         }
 
+=======
+                        .collect(Collectors.joining("\n"));
+
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
         return toFullyQualifiedName()
                 + ":\n"
                 + "  description: "
                 + getDescription()
                 + "\n"
                 + "  inputs:\n"
+<<<<<<< HEAD
                 + inputs
                 + outputs;
+=======
+                + inputs;
+>>>>>>> beeed7b7a795d8c989165740de6ddb21aeacbb6f
     }
 
     @Override
