@@ -14,7 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.utils import kernel_function_metadata_to_openai_tool_format
+from semantic_kernel.connectors.utils.function_call_format import kernel_function_metadata_to_function_call_format
 from semantic_kernel.const import DEFAULT_SERVICE_NAME
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -275,10 +275,8 @@ class FunctionCallingStepwisePlanner(KernelBaseModel):
     ) -> str:
         """Generate the plan for the given question using the kernel."""
         generate_plan_function = self._create_config_from_yaml(kernel)
-        # TODO (moonbox3): revisit when function call behavior is finalized, and other function calling models are added
-        # https://github.com/microsoft/semantic-kernel/issues/6458
         functions_manual = [
-            kernel_function_metadata_to_openai_tool_format(f)
+            kernel_function_metadata_to_function_call_format(f)
             for f in kernel.get_list_of_function_metadata(
                 {"excluded_functions": [f"{self.service_id}", "sequential_planner-create_plan"]}
             )

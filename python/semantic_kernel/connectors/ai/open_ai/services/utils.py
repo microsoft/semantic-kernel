@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+from semantic_kernel.connectors.utils.function_call_format import kernel_function_metadata_to_function_call_format
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_call_behavior import (
@@ -26,7 +26,7 @@ def update_settings_from_function_call_configuration(
                 "Multiple required functions are not supported. Using the first required function."
             )
         settings.tools = [
-            kernel_function_metadata_to_openai_tool_format(
+            kernel_function_metadata_to_function_call_format(
                 function_call_configuration.required_functions[0]
             )
         ]
@@ -39,26 +39,6 @@ def update_settings_from_function_call_configuration(
             "auto" if len(function_call_configuration.available_functions) > 0 else None
         )
         settings.tools = [
-            kernel_function_metadata_to_openai_tool_format(f)
+            kernel_function_metadata_to_function_call_format(f)
             for f in function_call_configuration.available_functions
         ]
-
-
-def kernel_function_metadata_to_openai_tool_format(
-    metadata: KernelFunctionMetadata,
-) -> dict[str, Any]:
-    """Convert the kernel function metadata to OpenAI format."""
-    return {
-        "type": "function",
-        "function": {
-            "name": metadata.fully_qualified_name,
-            "description": metadata.description or "",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    param.name: param.schema_data for param in metadata.parameters
-                },
-                "required": [p.name for p in metadata.parameters if p.is_required],
-            },
-        },
-    }

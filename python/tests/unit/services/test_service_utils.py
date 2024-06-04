@@ -5,8 +5,8 @@ from typing import Annotated
 import pytest
 from pydantic import Field
 
-from semantic_kernel.connectors.ai.open_ai.services.utils import (
-    kernel_function_metadata_to_openai_tool_format,
+from semantic_kernel.connectors.utils.function_call_format import (
+    kernel_function_metadata_to_function_call_format,
 )
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -105,7 +105,7 @@ def test_bool_schema(setup_kernel):
         filters={"included_plugins": ["BooleanPlugin"]}
     )
 
-    boolean_schema = kernel_function_metadata_to_openai_tool_format(
+    boolean_schema = kernel_function_metadata_to_function_call_format(
         boolean_func_metadata[0]
     )
 
@@ -134,7 +134,7 @@ def test_string_schema(setup_kernel):
         filters={"included_plugins": ["StringPlugin"]}
     )
 
-    string_schema = kernel_function_metadata_to_openai_tool_format(
+    string_schema = kernel_function_metadata_to_function_call_format(
         string_func_metadata[0]
     )
 
@@ -166,7 +166,7 @@ def test_complex_schema(setup_kernel):
         filters={"included_plugins": ["ComplexTypePlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
+    complex_schema = kernel_function_metadata_to_function_call_format(
         complex_func_metadata[0]
     )
 
@@ -209,7 +209,7 @@ def test_list_schema(setup_kernel):
         filters={"included_plugins": ["ListPlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
+    complex_schema = kernel_function_metadata_to_function_call_format(
         complex_func_metadata[0]
     )
 
@@ -243,7 +243,7 @@ def test_list_of_items_plugin(setup_kernel):
         filters={"included_plugins": ["ItemsPlugin"]}
     )
 
-    complex_schema = kernel_function_metadata_to_openai_tool_format(
+    complex_schema = kernel_function_metadata_to_function_call_format(
         complex_func_metadata[0]
     )
 
