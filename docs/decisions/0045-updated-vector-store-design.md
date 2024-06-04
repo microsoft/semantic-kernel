@@ -459,7 +459,7 @@ interface IMemoryCollectionCreateService
     virtual Task CreateCollectionAsync(string name, CancellationToken cancellationToken = default);
 }
 
-// Implement a generic version of create that takes a configuation that should work for 80% of cases.
+// Implement a generic version of create that takes a configuration that should work for 80% of cases.
 class AzureAISearchConfiguredCollectionCreateService(CollectionCreateConfig collectionConfig): IMemoryCollectionCreateService;
 
 // Allow custom implementations of create for break glass scenarios for outside the 80% case.
