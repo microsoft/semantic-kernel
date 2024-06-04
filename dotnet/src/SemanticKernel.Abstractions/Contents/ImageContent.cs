@@ -8,9 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents image content.
 /// </summary>
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 public class ImageContent : BinaryContent
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.

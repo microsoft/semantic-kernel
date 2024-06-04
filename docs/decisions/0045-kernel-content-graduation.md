@@ -421,9 +421,9 @@ public class AnnotationContent : KernelContent
 
 ## Decision Outcome
 
-- `BinaryContent`: TBD
-- `ImageContent`: TBD
-- `AudioContent`: TBD
+- `BinaryContent`: Accepted.
+- `ImageContent`: Breaking change accepted with benefits using the `BinaryContent` specialization. No backwards compatibility as the current `ImageContent` behavior is undesirable.
+- `AudioContent`: Experimental breaking changes using the `BinaryContent` specialization.
 - `FunctionCallContent`: Graduate as is.
-- `FunctionResultContent`: Change `Id` to `CallId`.
+- `FunctionResultContent`: Experimental breaking change from property `Id` to `CallId` to avoid confusion regarding being a function call Id or a response id.
 - `FileReferenceContent` and `AnnotationContent`: No changes, continue as experimental.
