@@ -1,13 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import TYPE_CHECKING, Annotated
+
+import logging
+from typing import TYPE_CHECKING, Annotated, Any
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
 if TYPE_CHECKING:
     from semantic_kernel.functions.kernel_arguments import KernelArguments
-    from semantic_kernel.functions.kernel_function import KernelFunction
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+logger = logging.getLogger(__name__)
 
 
 class ConversationSummaryPlugin:
@@ -27,24 +31,32 @@ class ConversationSummaryPlugin:
     )
 
     def __init__(
-        self, kernel: "Kernel", prompt_template_config: "PromptTemplateConfig", return_key: str = "summary"
+        self, prompt_template_config: "PromptTemplateConfig", return_key: str = "summary", **kwargs: Any
     ) -> None:
-        """Initializes a new instance of the ConversationSummaryPlugin class.
+        """Initializes a new instance of the ConversationSummaryPlugin.
+
+        The template for this plugin is built-in, and will overwrite any template passed in the prompt_template_config.
 
         Args:
-            kernel (Kernel): The kernel instance to use for the function.
-            prompt_template_config (PromptTemplateConfig): The configuration to use for functions.
+            prompt_template_config (PromptTemplateConfig): The prompt template configuration.
             return_key (str): The key to use for the return value.
+            **kwargs: Additional keyword arguments, not used only for compatibility.
+
         """
+        if "kernel" in kwargs:
+            logger.warning(
+                "The kernel parameter is not used in the ConversationSummaryPlugin constructor anymore."
+                "Please make sure to remove and to add the created plugin to the kernel, by using:"
+                "kernel.add_plugin(conversation_plugin, 'summarizer')"
+            )
+
         self.return_key = return_key
-        kernel.add_function(
-            prompt=ConversationSummaryPlugin._summarize_conversation_prompt_template,
+        prompt_template_config.template = ConversationSummaryPlugin._summarize_conversation_prompt_template
+        prompt_template_config.template_format = "semantic-kernel"
+        self._summarizeConversationFunction = KernelFunctionFromPrompt(
             plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
             prompt_template_config=prompt_template_config,
-        )
-        self._summarizeConversationFunction: "KernelFunction" = kernel.get_function(
-            plugin_name=ConversationSummaryPlugin.__name__, function_name="SummarizeConversation"
         )
 
     @kernel_function(

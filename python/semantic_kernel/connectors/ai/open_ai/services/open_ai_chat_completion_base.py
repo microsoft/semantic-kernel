@@ -249,12 +249,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> dict[str, str | None]:
         msg = super()._chat_message_content_to_dict(message)
-        if message.role == "assistant":
+        if message.role == AuthorRole.ASSISTANT:
             if tool_calls := getattr(message, "tool_calls", None):
                 msg["tool_calls"] = [tool_call.model_dump() for tool_call in tool_calls]
             if function_call := getattr(message, "function_call", None):
                 msg["function_call"] = function_call.model_dump_json()
-        if message.role == "tool":
+        if message.role == AuthorRole.TOOL:
             if tool_call_id := getattr(message, "tool_call_id", None):
                 msg["tool_call_id"] = tool_call_id
             if message.metadata and "function" in message.metadata:
