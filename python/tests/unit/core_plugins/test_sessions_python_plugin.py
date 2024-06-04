@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from io import BufferedReader, BytesIO, StringIO
 from unittest.mock import mock_open, patch
 
 import httpx
@@ -136,7 +135,17 @@ async def test_upload_file_with_local_path(mock_post, aca_python_sessions_unit_t
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "test.txt", "bytes": 123}, request=mock_request
+            status_code=200, json={
+                '$id': '1', 
+                '$values': [
+                    {
+                        '$id': '2', 
+                        'filename': 'test.txt', 
+                        'size': 123, 
+                        'last_modified_time': '2024-06-03T17:48:46.2672398Z'
+                    }
+                ]
+            }, request=mock_request
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -167,7 +176,17 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "test.txt", "bytes": 123}, request=mock_request
+            status_code=200, json={
+                '$id': '1', 
+                '$values': [
+                    {
+                        '$id': '2', 
+                        'filename': 'test.txt', 
+                        'size': 123, 
+                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                    }
+                ]
+            }, request=mock_request
         )
         mock_post.return_value = await async_return(mock_response)
 
@@ -179,9 +198,18 @@ async def test_upload_file_with_local_path_and_no_remote(mock_post, aca_python_s
         mock_post.assert_awaited_once()
 
 
+@pytest.mark.parametrize(
+    "local_file_path, input_remote_file_path, expected_remote_file_path",
+    [
+        ("./file.py", "uploaded_test.txt", "/mnt/data/uploaded_test.txt"),
+        ("./file.py", "/mnt/data/input.py", "/mnt/data/input.py"),
+    ]
+)
 @pytest.mark.asyncio
 @patch("httpx.AsyncClient.post")
-async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_env):
+async def test_upload_file_with_buffer(
+    mock_post, local_file_path, input_remote_file_path, expected_remote_file_path, aca_python_sessions_unit_test_env
+):
     """Test upload_file when providing file data as a BufferedReader."""
 
     async def async_return(result):
@@ -190,33 +218,43 @@ async def test_upload_file_with_buffer(mock_post, aca_python_sessions_unit_test_
     with patch(
         "semantic_kernel.core_plugins.sessions_python_tool.sessions_python_plugin.SessionsPythonTool._ensure_auth_token",
         return_value="test_token",
-    ):
+    ), patch("builtins.open", mock_open(read_data="print('hello, world~')")):
+
         mock_request = httpx.Request(method="POST", url="https://example.com/python/uploadFile?identifier=None")
 
         mock_response = httpx.Response(
-            status_code=200, json={"filename": "buffer_file.txt", "bytes": 456}, request=mock_request
+            status_code=200,
+            json={
+                '$id': '1',
+                '$values': [
+                    {
+                        '$id': '2',
+                        'filename': expected_remote_file_path,
+                        'size': 456,
+                        'last_modified_time': '2024-06-03T17:00:00.0000000Z'
+                    }
+                ]
+            },
+            request=mock_request,
         )
         mock_post.return_value = await async_return(mock_response)
 
         plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
 
-        data_buffer = BufferedReader(BytesIO(b"file data"))
-
-        result = await plugin.upload_file(data=data_buffer, remote_file_path="buffer_file.txt")
-        assert result.filename == "buffer_file.txt"
+        result = await plugin.upload_file(local_file_path=local_file_path, remote_file_path=input_remote_file_path)
+        assert result.filename == expected_remote_file_path
         assert result.size_in_bytes == 456
         mock_post.assert_awaited_once()
 
 
 @pytest.mark.asyncio
-async def test_upload_file_fail_with_data_and_local_path(aca_python_sessions_unit_test_env):
-    """Test upload_file when providing a local file path."""
+async def test_upload_file_fail_with_no_local_path(aca_python_sessions_unit_test_env):
+    """Test upload_file when not providing a local file path throws an exception."""
 
     plugin = SessionsPythonTool(auth_callback=lambda: "sample_token")
     with pytest.raises(FunctionExecutionException):
         await plugin.upload_file(
-            data=StringIO("This is a test string as buffer."),
-            local_file_path="test.txt",
+            local_file_path=None,
             remote_file_path="uploaded_test.txt",
         )
 
@@ -238,9 +276,10 @@ async def test_list_files(mock_get, aca_python_sessions_unit_test_env):
         mock_response = httpx.Response(
             status_code=200,
             json={
-                "$values": [
-                    {"filename": "test1.txt", "bytes": 123},
-                    {"filename": "test2.txt", "bytes": 456},
+                '$id': '1',
+                '$values': [
+                    {'$id': '2', 'filename': 'test1.txt', 'size': 123, 'last_modified_time': '2024-06-03T17:00:00.0000000Z'},  # noqa: E501
+                    {'$id': '3', 'filename': 'test2.txt', 'size': 456, 'last_modified_time': '2024-06-03T18:00:00.0000000Z'}  # noqa: E501
                 ]
             },
             request=mock_request,
