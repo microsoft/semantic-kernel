@@ -37,8 +37,9 @@ class MockJsonSchemaBuilder:
 
 @pytest.fixture
 def mock_json_schema_builder():
-    with patch.object(KernelJsonSchemaBuilder, "build", MockJsonSchemaBuilder.build), patch.object(
-        KernelJsonSchemaBuilder, "build_from_type_name", MockJsonSchemaBuilder.build_from_type_name
+    with (
+        patch.object(KernelJsonSchemaBuilder, "build", MockJsonSchemaBuilder.build),
+        patch.object(KernelJsonSchemaBuilder, "build_from_type_name", MockJsonSchemaBuilder.build_from_type_name),
     ):
         yield
 
@@ -57,7 +58,7 @@ def test_kernel_parameter_metadata_valid(mock_json_schema_builder):
     assert metadata.default_value == "default"
     assert metadata.type_ == "str"
     assert metadata.is_required is True
-    assert metadata.type_object == str
+    assert metadata.type_object is str
     assert metadata.schema_data == {"type": "mock_object", "description": "A test parameter"}
 
 

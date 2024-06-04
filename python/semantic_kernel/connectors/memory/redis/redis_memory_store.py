@@ -19,10 +19,10 @@ from semantic_kernel.connectors.memory.redis.utils import (
     serialize_record_to_redis,
 )
 from semantic_kernel.exceptions import (
-    ServiceInitializationError,
     ServiceResourceNotFoundError,
     ServiceResponseException,
 )
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.experimental_decorator import experimental_class
@@ -54,6 +54,7 @@ class RedisMemoryStore(MemoryStoreBase):
         vector_index_algorithm: str = "HNSW",
         query_dialect: int = 2,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """RedisMemoryStore is an abstracted interface to interact with a Redis node connection.
 
@@ -69,23 +70,21 @@ class RedisMemoryStore(MemoryStoreBase):
             query_dialect (int): Query dialect, must be 2 or greater for vector similarity searching, defaults to 2
             env_file_path (str | None): Use the environment settings file as a fallback to
                 environment variables, defaults to False
+            env_file_encoding (str | None): Encoding of the environment settings file, defaults to "utf-8"
         """
-        redis_settings = None
         try:
-            redis_settings = RedisSettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load Redis pydantic settings: {e}")
-
-        connection_string = connection_string or (
-            redis_settings.connection_string.get_secret_value()
-            if redis_settings and redis_settings.connection_string
-            else None
-        )
+            redis_settings = RedisSettings.create(
+                connection_string=connection_string,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise MemoryConnectorInitializationError("Failed to create Redis settings.", ex) from ex
 
         if vector_size <= 0:
-            raise ServiceInitializationError("Vector dimension must be a positive integer")
+            raise MemoryConnectorInitializationError("Vector dimension must be a positive integer")
 
-        self._database = redis.Redis.from_url(connection_string)
+        self._database = redis.Redis.from_url(redis_settings.connection_string.get_secret_value())
         self._ft = self._database.ft
 
         self._query_dialect = query_dialect

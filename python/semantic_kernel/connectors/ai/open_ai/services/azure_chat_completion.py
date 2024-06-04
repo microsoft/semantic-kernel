@@ -13,7 +13,6 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.open_ai.const import DEFAULT_AZURE_API_VERSION
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
     AzureChatPromptExecutionSettings,
 )
@@ -51,6 +50,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
     ) -> None:
         """Initialize an AzureChatCompletion service.
 
@@ -72,46 +72,41 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
                 string values for HTTP requests. (Optional)
             async_client (AsyncAzureOpenAI | None): An existing client to use. (Optional)
             env_file_path (str | None): Use the environment settings file as a fallback to using env vars.
+            env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
-        azure_openai_settings = None
         try:
-            azure_openai_settings = AzureOpenAISettings.create(env_file_path=env_file_path)
-        except ValidationError as e:
-            logger.warning(f"Failed to load AzureOpenAI pydantic settings: {e}")
+            azure_openai_settings = AzureOpenAISettings.create(
+                api_key=api_key,
+                base_url=base_url,
+                endpoint=endpoint,
+                chat_deployment_name=deployment_name,
+                api_version=api_version,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise ServiceInitializationError(f"Failed to validate settings: {exc}") from exc
 
-        base_url = base_url or (
-            str(azure_openai_settings.base_url) if azure_openai_settings and azure_openai_settings.base_url else None
-        )
-        endpoint = endpoint or (
-            str(azure_openai_settings.endpoint) if azure_openai_settings and azure_openai_settings.endpoint else None
-        )
-        deployment_name = deployment_name or (
-            azure_openai_settings.chat_deployment_name if azure_openai_settings else None
-        )
-        api_version = api_version or (azure_openai_settings.api_version if azure_openai_settings else None)
-        api_key = api_key or (
-            azure_openai_settings.api_key.get_secret_value()
-            if azure_openai_settings and azure_openai_settings.api_key
-            else None
-        )
+        if not azure_openai_settings.chat_deployment_name:
+            raise ServiceInitializationError("chat_deployment_name is required.")
 
-        if api_version is None:
-            api_version = DEFAULT_AZURE_API_VERSION
+        if not azure_openai_settings.api_key and not ad_token and not ad_token_provider:
+            raise ServiceInitializationError("Please provide either api_key, ad_token or ad_token_provider")
 
-        if not base_url and not endpoint:
+        if not azure_openai_settings.base_url and not azure_openai_settings.endpoint:
             raise ServiceInitializationError("At least one of base_url or endpoint must be provided.")
 
-        if base_url and isinstance(base_url, str):
-            base_url = HttpsUrl(base_url)
-        if endpoint and deployment_name:
-            base_url = HttpsUrl(f"{str(endpoint).rstrip('/')}/openai/deployments/{deployment_name}")
+        if azure_openai_settings.endpoint and azure_openai_settings.chat_deployment_name:
+            azure_openai_settings.base_url = HttpsUrl(
+                f"{str(azure_openai_settings.endpoint).rstrip('/')}/openai/deployments/{azure_openai_settings.chat_deployment_name}"
+            )
         super().__init__(
-            deployment_name=deployment_name,
-            endpoint=endpoint if not isinstance(endpoint, str) else HttpsUrl(endpoint),
-            base_url=base_url,
-            api_version=api_version,
+            deployment_name=azure_openai_settings.chat_deployment_name,
+            endpoint=azure_openai_settings.endpoint,
+            base_url=azure_openai_settings.base_url,
+            api_version=azure_openai_settings.api_version,
             service_id=service_id,
-            api_key=api_key,
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             ad_token=ad_token,
             ad_token_provider=ad_token_provider,
             default_headers=default_headers,
@@ -130,15 +125,15 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
         """
         return AzureChatCompletion(
             service_id=settings.get("service_id"),
-            api_key=settings.get("api_key", None),
-            deployment_name=settings.get("deployment_name", None),
-            endpoint=settings.get("endpoint", None),
-            base_url=settings.get("base_url", None),
-            api_version=settings.get("api_version", None),
+            api_key=settings.get("api_key"),
+            deployment_name=settings.get("deployment_name"),
+            endpoint=settings.get("endpoint"),
+            base_url=settings.get("base_url"),
+            api_version=settings.get("api_version"),
             ad_token=settings.get("ad_token"),
             ad_token_provider=settings.get("ad_token_provider"),
             default_headers=settings.get("default_headers"),
-            env_file_path=settings.get("env_file_path", None),
+            env_file_path=settings.get("env_file_path"),
         )
 
     def get_prompt_execution_settings_class(self) -> "PromptExecutionSettings":
@@ -186,10 +181,7 @@ class AzureChatCompletion(AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenA
 
     def _get_tool_message_from_chat_choice(self, choice: Choice | ChunkChoice) -> str | None:
         """Get the tool message from a choice."""
-        if isinstance(choice, Choice):
-            content = choice.message
-        else:
-            content = choice.delta
+        content = choice.message if isinstance(choice, Choice) else choice.delta
         if content.model_extra is not None and "context" in content.model_extra:
             return json.dumps(content.model_extra["context"])
 

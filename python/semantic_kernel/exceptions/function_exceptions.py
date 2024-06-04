@@ -50,14 +50,14 @@ class PromptRenderingException(FunctionException):
 
 __all__ = [
     "FunctionException",
+    "FunctionExecutionException",
     "FunctionInitializationError",
-    "FunctionInvalidParamNameError",
     "FunctionInvalidNameError",
+    "FunctionInvalidParamNameError",
     "FunctionNameNotUniqueError",
+    "FunctionResultError",
     "FunctionSyntaxError",
     "PluginInitializationError",
     "PluginInvalidNameError",
-    "FunctionExecutionException",
-    "FunctionResultError",
     "PromptRenderingException",
 ]

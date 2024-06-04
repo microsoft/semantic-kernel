@@ -31,8 +31,7 @@ def connection_string():
         redis_settings = RedisSettings.create()
         if redis_settings.connection_string:
             return redis_settings.connection_string.get_secret_value()
-        else:
-            return "redis://localhost:6379"
+        return "redis://localhost:6379"
     except Exception:
         pytest.skip("Redis connection string not found in env vars.")
 

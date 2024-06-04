@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import time
 from random import randint
 
 import numpy as np
@@ -48,7 +47,7 @@ async def test_collections():
         assert collection in many
 
         await memory_store.delete_collection(collection)
-        time.sleep(1)
+        await asyncio.sleep(1)
         assert not await memory_store.does_collection_exist(collection)
 
 
@@ -57,7 +56,7 @@ async def test_upsert():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
-        time.sleep(1)
+        await asyncio.sleep(1)
         try:
             assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
@@ -70,7 +69,7 @@ async def test_upsert():
                 embedding=np.array([0.2, 0.1, 0.2, 0.7]),
             )
             id = await memory_store.upsert(collection, rec)
-            time.sleep(1)
+            await asyncio.sleep(1)
 
             many = await memory_store.get_batch(collection, [id])
             one = await memory_store.get(collection, id)
@@ -90,7 +89,7 @@ async def test_record_not_found():
     collection = f"int-tests-{randint(1000, 9999)}"
     async with AzureCognitiveSearchMemoryStore(vector_size=4) as memory_store:
         await memory_store.create_collection(collection)
-        time.sleep(1)
+        await asyncio.sleep(1)
         try:
             assert await memory_store.does_collection_exist(collection)
             rec = MemoryRecord(
@@ -109,7 +108,7 @@ async def test_record_not_found():
 
         try:
             await memory_store.remove(collection, id)
-            time.sleep(1)
+            await asyncio.sleep(1)
 
             # KeyError exception should occur
             await memory_store.get(collection, id)

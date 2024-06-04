@@ -101,8 +101,8 @@ public class RepairServiceTests
         catch (HttpOperationException ex)
         {
             Assert.Equal("Response status code does not indicate success: 404 (Not Found).", ex.Message);
-            Assert.Equal("Patch", ex.RequestMethod);
-            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.RequestUri!.ToString());
+            Assert.Equal("Patch", ex.Data["http.request.method"]);
+            Assert.Equal("https://piercerepairsapi.azurewebsites.net/repairs", ex.Data["url.full"]);
         }
     }
 

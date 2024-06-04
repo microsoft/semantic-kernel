@@ -2,7 +2,7 @@
 
 import logging
 from re import compile
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
@@ -39,7 +39,7 @@ class FunctionIdBlock(Block):
     """
 
     type: ClassVar[BlockTypes] = BlockTypes.FUNCTION_ID
-    function_name: str | None = ""
+    function_name: str = ""
     plugin_name: str | None = None
 
     @model_validator(mode="before")
@@ -61,6 +61,6 @@ class FunctionIdBlock(Block):
         fields["function_name"] = matches.group("function")
         return fields
 
-    def render(self, *_: tuple["Kernel", Optional["KernelArguments"]]) -> str:
+    def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the function id block."""
         return self.content

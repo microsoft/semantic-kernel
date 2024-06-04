@@ -36,9 +36,9 @@ def build_payload(record: MemoryRecord) -> dict[str, Any]:
 
 def parse_payload(document: dict[str, Any]) -> MemoryRecord:
     """Parses a record from AstraDb into a MemoryRecord."""
-    text = document.get("text", None)
-    description = document["description"] if "description" in document else None
-    additional_metadata = document["additional_metadata"] if "additional_metadata" in document else None
+    text = document.get("text")
+    description = document.get("description")
+    additional_metadata = document.get("additional_metadata")
 
     return MemoryRecord.local_record(
         id=document["_id"],
