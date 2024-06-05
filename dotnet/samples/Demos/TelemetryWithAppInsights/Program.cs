@@ -194,18 +194,23 @@ public sealed class Program
 
     private static async Task RunChatAsync(Kernel kernel)
     {
+        // Create the plugin from the sample plugins folder without registering it to the kernel.
+        // We do not advise registering plugins to the kernel and then invoking them directly,
+        // especially when the service supports function calling. Doing so will cause unexpected behavior,
+        // such as repeated calls to the same function.
+        var folder = RepoFiles.SamplePluginsPath();
+        var plugin = kernel.CreatePluginFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
+
         // Using non-streaming to get the poem.
         var poem = await kernel.InvokeAsync<string>(
-            "WriterPlugin",
-            "ShortPoem",
+            plugin["ShortPoem"],
             new KernelArguments { ["input"] = "Write a poem about John Doe." });
         Console.WriteLine($"Poem:\n{poem}\n");
 
         // Use streaming to translate the poem.
         Console.WriteLine("Translated Poem:");
         await foreach (var update in kernel.InvokeStreamingAsync<string>(
-            "WriterPlugin",
-            "Translate",
+            plugin["Translate"],
             new KernelArguments
             {
                 ["input"] = poem,
@@ -273,7 +278,6 @@ public sealed class Program
             );
 
         builder.Services.AddSingleton<IAIServiceSelector>(new AIServiceSelector());
-        builder.Plugins.AddFromPromptDirectory(Path.Combine(folder, "WriterPlugin"));
         builder.Plugins.AddFromType<WeatherPlugin>();
         builder.Plugins.AddFromType<LocationPlugin>();
 

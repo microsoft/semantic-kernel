@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncGenerator, AsyncIterable
+from inspect import Parameter, Signature
 from typing import TYPE_CHECKING, Annotated, Any, Union
 
 import pytest
 
-from semantic_kernel.functions.kernel_function_decorator import _parse_parameter, kernel_function
+from semantic_kernel.functions.kernel_function_decorator import _process_signature, kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
@@ -263,8 +264,19 @@ def test_kernel_function_no_typing():
     ],
 )
 def test_annotation_parsing(name, annotation, description, type_, is_required):
-    annotations = _parse_parameter(name, annotation, None)
+    param = Parameter(
+        name=name,
+        annotation=annotation,
+        default=Parameter.empty,
+        kind=Parameter.POSITIONAL_OR_KEYWORD,
+    )
+    func_sig = Signature(parameters=[param])
 
-    assert description == annotations.get("description")
-    assert type_ == annotations["type_"]
-    assert is_required == annotations["is_required"]
+    annotations = _process_signature(func_sig)
+
+    assert len(annotations) == 1
+    annotation_dict = annotations[0]
+
+    assert description == annotation_dict.get("description")
+    assert type_ == annotation_dict["type_"]
+    assert is_required == annotation_dict["is_required"]

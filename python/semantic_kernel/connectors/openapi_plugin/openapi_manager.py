@@ -118,8 +118,7 @@ def _create_function_from_operation(
                 api_host_url=Uri(document_uri).get_left_part() if document_uri is not None else None,
             )
 
-            response = await runner.run_operation(operation, kernel_arguments, options)
-            return response
+            return await runner.run_operation(operation, kernel_arguments, options)
         except Exception as e:
             logger.error(f"Error running OpenAPI operation: {operation.id}", exc_info=True)
             raise FunctionExecutionException(f"Error running OpenAPI operation: {operation.id}") from e

@@ -2,7 +2,7 @@
 
 import logging
 from re import S, compile
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pydantic import model_validator
 
@@ -69,6 +69,6 @@ class ValBlock(Block):
             fields["quote"] = quote
         return fields
 
-    def render(self, *_: tuple["Kernel", Optional["KernelArguments"]]) -> str:
+    def render(self, *_: "Kernel | KernelArguments | None") -> str:
         """Render the value block."""
-        return self.value
+        return self.value or ""

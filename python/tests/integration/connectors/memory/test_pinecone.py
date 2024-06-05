@@ -13,7 +13,7 @@ from semantic_kernel.exceptions.service_exceptions import ServiceResourceNotFoun
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    import pinecone  # noqa: F401
+    import pinecone
 
     pinecone_installed = True
 except ImportError:
@@ -33,6 +33,7 @@ async def retry(func, retries=1):
         except pinecone.core.client.exceptions.ServiceException as e:
             print(e)
             await asyncio.sleep(i * 2)
+    return None
 
 
 @pytest.fixture(autouse=True, scope="module")

@@ -60,7 +60,7 @@ def memory_record_gen():
 
 @pytest.fixture
 def test_collection():
-    return f"AVSTest-{random.randint(0,9999)}"
+    return f"AVSTest-{random.randint(0, 9999)}"
 
 
 @pytest.fixture
@@ -120,7 +120,7 @@ async def nearest_match_store(memory):
         if not await memory.does_collection_exist("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "
-                + "please ensure your Atlas Test Cluster has this collection configured"
+                "please ensure your Atlas Test Cluster has this collection configured"
             )
         yield memory
     except Exception:
