@@ -31,7 +31,7 @@ public abstract class FunctionChoiceBehavior
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
     /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior AutoFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
+    public static FunctionChoiceBehavior Auto(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
         return new AutoFunctionChoiceBehavior(autoInvoke, functions);
     }
@@ -44,7 +44,7 @@ public abstract class FunctionChoiceBehavior
     /// <param name="functions">The subset of the <see cref="Kernel"/>'s plugins' functions to provide to the model.
     /// If null or empty, all <see cref="Kernel"/>'s plugins' functions are provided to the model.</param>
     /// <returns>An instance of one of the <see cref="FunctionChoiceBehavior"/>.</returns>
-    public static FunctionChoiceBehavior RequiredFunctionChoice(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
+    public static FunctionChoiceBehavior Required(bool autoInvoke = true, IEnumerable<KernelFunction>? functions = null)
     {
         return new RequiredFunctionChoiceBehavior(autoInvoke, functions);
     }
@@ -60,7 +60,7 @@ public abstract class FunctionChoiceBehavior
     /// Although this behavior prevents the model from calling any functions, the model can use the provided function information
     /// to describe how it would complete the prompt if it had the ability to call the functions.
     /// </remarks>
-    public static FunctionChoiceBehavior NoneFunctionChoice(IEnumerable<KernelFunction>? functions = null)
+    public static FunctionChoiceBehavior None(IEnumerable<KernelFunction>? functions = null)
     {
         return new NoneFunctionChoiceBehavior(functions ?? []);
     }

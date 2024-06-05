@@ -22,7 +22,7 @@ public sealed class FunctionChoiceBehaviorTests
     public void AutoFunctionChoiceShouldBeUsed()
     {
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice();
+        var choiceBehavior = FunctionChoiceBehavior.Auto();
 
         // Assert
         Assert.IsType<AutoFunctionChoiceBehavior>(choiceBehavior);
@@ -32,7 +32,7 @@ public sealed class FunctionChoiceBehaviorTests
     public void RequiredFunctionChoiceShouldBeUsed()
     {
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice();
+        var choiceBehavior = FunctionChoiceBehavior.Required();
 
         // Assert
         Assert.IsType<RequiredFunctionChoiceBehavior>(choiceBehavior);
@@ -42,7 +42,7 @@ public sealed class FunctionChoiceBehaviorTests
     public void NoneFunctionChoiceShouldBeUsed()
     {
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice();
+        var choiceBehavior = FunctionChoiceBehavior.None();
 
         // Assert
         Assert.IsType<NoneFunctionChoiceBehavior>(choiceBehavior);
@@ -56,7 +56,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice(functions: null);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(functions: null);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -78,7 +78,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -99,7 +99,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice(autoInvoke: true);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: true);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -116,7 +116,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice(autoInvoke: false);
+        var choiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -133,7 +133,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(functions: null);
+        var choiceBehavior = FunctionChoiceBehavior.Required(functions: null);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -155,7 +155,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
+        var choiceBehavior = FunctionChoiceBehavior.Required(functions: [plugin.ElementAt(0), plugin.ElementAt(1)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -176,7 +176,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(autoInvoke: true);
+        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: true);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -193,7 +193,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice(autoInvoke: false);
+        var choiceBehavior = FunctionChoiceBehavior.Required(autoInvoke: false);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -209,7 +209,7 @@ public sealed class FunctionChoiceBehaviorTests
         var plugin = GetTestPlugin();
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice([plugin.ElementAt(0), plugin.ElementAt(2)]);
+        var choiceBehavior = FunctionChoiceBehavior.None([plugin.ElementAt(0), plugin.ElementAt(2)]);
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 
@@ -230,7 +230,7 @@ public sealed class FunctionChoiceBehaviorTests
         this._kernel.Plugins.Add(plugin);
 
         // Act
-        var choiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice();
+        var choiceBehavior = FunctionChoiceBehavior.None();
 
         var config = choiceBehavior.GetConfiguration(new() { Kernel = this._kernel });
 

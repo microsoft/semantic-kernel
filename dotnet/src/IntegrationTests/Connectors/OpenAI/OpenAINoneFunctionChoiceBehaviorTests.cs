@@ -42,7 +42,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
         });
 
         // Act
-        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice() };
+        var settings = new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
         var result = await this._kernel.InvokePromptAsync("How many days until Christmas?", new(settings));
 
@@ -102,7 +102,7 @@ public sealed class OpenAINoneFunctionChoiceBehaviorTests : BaseIntegrationTest
             await next(context);
         });
 
-        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice() };
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
         string result = "";
 

@@ -52,17 +52,17 @@ public class PromptExecutionSettings
     /// <item>To disable function calling, and have the model only generate a user-facing message, set the property to null (the default).</item>
     /// <item>
     /// To allow the model to decide whether to call the functions and, if so, which ones to call, set the property to an instance returned
-    /// from <see cref="FunctionChoiceBehavior.AutoFunctionChoice"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// from <see cref="FunctionChoiceBehavior.Auto"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
     /// To limit the functions available, pass a list of the functions when calling the method.
     /// </item>
     /// <item>
     /// To force the model to always call one or more functions, set the property to an instance returned
-    /// from <see cref="FunctionChoiceBehavior.RequiredFunctionChoice"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// from <see cref="FunctionChoiceBehavior.Required"/> method. By default, all functions in the <see cref="Kernel"/> will be available.
     /// To limit the functions available, pass a list of the functions when calling the method.
     /// </item>
     /// <item>
     /// To force the model to not call any functions and only generate a user-facing message, set the property to an instance returned
-    /// from <see cref="FunctionChoiceBehavior.NoneFunctionChoice"/> property. By default, all functions in the <see cref="Kernel"/> will be available.
+    /// from <see cref="FunctionChoiceBehavior.None"/> property. By default, all functions in the <see cref="Kernel"/> will be available.
     /// To limit the functions available, pass a list of the functions when calling the method.
     /// </item>
     /// </list>

@@ -606,7 +606,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(ChatCompletionResponse)
         };
 
-        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.AutoFunctionChoice() };
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
@@ -637,7 +637,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(ChatCompletionResponse)
         };
 
-        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.RequiredFunctionChoice() };
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Required() };
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
@@ -669,7 +669,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
             Content = new StringContent(ChatCompletionResponse)
         };
 
-        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.NoneFunctionChoice() };
+        var executionSettings = new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
         // Act
         await chatCompletion.GetChatMessageContentsAsync([], executionSettings, kernel);
