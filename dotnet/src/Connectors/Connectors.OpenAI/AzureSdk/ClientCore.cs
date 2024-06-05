@@ -1552,7 +1552,7 @@ internal abstract class ClientCore
             result = this.ConfigureFunctionCalling(kernel, chatOptions, requestIndex, toolCallBehavior);
         }
 
-        // Having already sent tools and with tool call information in history, the service can become unhappy ("[] is too short - 'tools'")
+        // Having already sent tools and with tool call information in history, the service can become unhappy "Invalid 'tools': empty array. Expected an array with minimum length 1, but got an empty array instead."
         // if we don't send any tools in subsequent requests, even if we say not to use any.
         // Similarly, if we say not to use any tool (ToolChoice = ChatCompletionsToolChoice.None) and dont provide any for the first request,
         // the service fails with "'tool_choice' is only allowed when 'tools' are specified."
