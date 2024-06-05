@@ -51,8 +51,11 @@ class PromptExecutionSettings(KernelBaseModel):
                 these are attempted to parse into the keys of the specific prompt execution settings.
         """
         extension_data = kwargs.pop("extension_data", {})
+        function_choice_behavior = kwargs.pop("function_choice_behavior", None)
         extension_data.update(kwargs)
-        super().__init__(service_id=service_id, extension_data=extension_data)
+        super().__init__(
+            service_id=service_id, extension_data=extension_data, function_choice_behavior=function_choice_behavior
+        )
         self.unpack_extension_data()
 
     @property
