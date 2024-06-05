@@ -12,6 +12,7 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.utils import AsyncSession
 from semantic_kernel.connectors.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -66,7 +67,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                 ChatMessageContent(
                     inner_content=response_object,
                     ai_model_id=self.ai_model_id,
-                    role="assistant",
+                    role=AuthorRole.ASSISTANT,
                     content=response_object.get("message", {"content": None}).get("content", None),
                 )
             ]
@@ -105,7 +106,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
                     break
                 yield [
                     StreamingChatMessageContent(
-                        role="assistant",
+                        role=AuthorRole.ASSISTANT,
                         choice_index=0,
                         inner_content=body,
                         ai_model_id=self.ai_model_id,
@@ -131,7 +132,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
-        settings.messages = [{"role": "user", "content": prompt}]
+        settings.messages = [{"role": AuthorRole.USER, "content": prompt}]
         settings.stream = False
         async with (
             AsyncSession(self.session) as session,
@@ -165,7 +166,7 @@ class OllamaChatCompletion(TextCompletionClientBase, ChatCompletionClientBase):
         """
         if not settings.ai_model_id:
             settings.ai_model_id = self.ai_model_id
-        settings.messages = [{"role": "user", "content": prompt}]
+        settings.messages = [{"role": AuthorRole.USER, "content": prompt}]
         settings.stream = True
         async with (
             AsyncSession(self.session) as session,
