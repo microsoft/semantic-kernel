@@ -357,6 +357,24 @@ sealed class MemoryRecordDefinition
 }
 ```
 
+### Notable method signature changes from existing interface
+
+All methods currently existing on IMemoryStore will be ported to new interfaces, but in places I am proposing that we make changes to improve
+consistency and scalability.
+
+1. `RemoveAsync` and `RemoveBatchAsync` renamed to `DeleteAsync` and `DeleteBatchAsync`, since record are actually deleted, and this also matches the verb used for collections.
+2. `GetCollectionsAsync` renamed to `GetCollectionNamesAsync`, since we are only retrieving names and no other information about collections.
+3. `DoesCollectionExistAsync` renamed to `CollectionExistsAsync` since this is shorter and is more commonly used in other apis.
+
+### Comparison with other AI frameworks
+
+|Criteria|Current SK Implementation|Proposed SK Implementation|Spring AI|LlamaIndex|Langchain|
+|-|-|-|-|-|-|
+|Support for Custom Schemas|N|Y|N|N|N|
+|Naming of store|MemoryStore|MemoryRecordService, MemoryCollectionCreateService, MemoryCollectionUpdateService|VectorStore|VectorStore|VectorStore|
+|MultiVector support|N|Y|N|N|N|
+|Support Multiple Collections via SDK params|Y|Y|N (via app config)|Y|Y|
+
 ## Decision Drivers
 
 From GitHub Issue:
