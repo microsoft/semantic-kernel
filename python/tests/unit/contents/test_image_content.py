@@ -36,9 +36,9 @@ def test_create_empty_fail():
 
 
 def test_create_both_log():
-    with patch("logging.getLogger", spec=logging.Logger) as mock_log:
+    with patch("semantic_kernel.contents.image_content.logger", spec=logging.Logger) as mock_log:
         ImageContent(uri="http://test_uri", data=b"test_data", mime_type="image/jpeg")
-        assert mock_log.warning.called_once_with('Both "uri" and "data" are provided, "data" will be used.')
+        mock_log.warning.assert_called_once_with('Both "uri" and "data" are provided, "data" will be used.')
 
 
 def test_to_str_uri():
