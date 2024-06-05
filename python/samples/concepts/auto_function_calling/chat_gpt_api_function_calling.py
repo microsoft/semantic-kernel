@@ -111,7 +111,7 @@ async def handle_streaming(
     streamed_chunks: list[StreamingChatMessageContent] = []
     async for message in response:
         if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            message[0], ChatMessageContent
+            message[0], StreamingChatMessageContent
         ):
             streamed_chunks.append(message[0])
         else:
@@ -150,9 +150,8 @@ async def chat() -> bool:
         # If tools are used, and auto invoke tool calls is False, the response will be of type
         # ChatMessageContent with information about the tool calls, which need to be sent
         # back to the model to get the final response.
-        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and isinstance(
-            result.value[0], FunctionCallContent
-        ):
+        function_calls = [item for item in result.value[-1].items if isinstance(item, FunctionCallContent)]
+        if not execution_settings.function_call_behavior.auto_invoke_kernel_functions and len(function_calls) > 0:
             print_tool_calls(result.value[0])
             return True
 

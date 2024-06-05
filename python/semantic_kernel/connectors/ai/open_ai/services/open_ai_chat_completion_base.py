@@ -188,7 +188,10 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         self._prepare_settings(settings, chat_history, stream_request=True, kernel=kernel)
 
         request_attempts = (
-            settings.function_call_behavior.max_auto_invoke_attempts if settings.function_call_behavior else 1
+            settings.function_call_behavior.max_auto_invoke_attempts 
+            if (settings.function_call_behavior and 
+                settings.function_call_behavior.auto_invoke_kernel_functions) 
+            else 1
         )
         # hold the messages, if there are more than one response, it will not be used, so we flatten
         for request_index in range(request_attempts):
@@ -249,12 +252,12 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
 
     def _chat_message_content_to_dict(self, message: "ChatMessageContent") -> dict[str, str | None]:
         msg = super()._chat_message_content_to_dict(message)
-        if message.role == "assistant":
+        if message.role == AuthorRole.ASSISTANT:
             if tool_calls := getattr(message, "tool_calls", None):
                 msg["tool_calls"] = [tool_call.model_dump() for tool_call in tool_calls]
             if function_call := getattr(message, "function_call", None):
                 msg["function_call"] = function_call.model_dump_json()
-        if message.role == "tool":
+        if message.role == AuthorRole.TOOL:
             if tool_call_id := getattr(message, "tool_call_id", None):
                 msg["tool_call_id"] = tool_call_id
             if message.metadata and "function" in message.metadata:
