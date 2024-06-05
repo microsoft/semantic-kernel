@@ -52,7 +52,7 @@ async def test_azure_e2e_text_completion_with_plugin_with_provided_client(setup_
 
     azure_openai_settings = AzureOpenAISettings.create()
     endpoint = azure_openai_settings.endpoint
-    deployment_name = azure_openai_settings.chat_deployment_name
+    deployment_name = azure_openai_settings.text_deployment_name
     api_key = azure_openai_settings.api_key.get_secret_value()
     api_version = azure_openai_settings.api_version
 
