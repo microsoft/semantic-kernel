@@ -1,10 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
+from semantic_kernel.connectors.ai.function_choice_behaviors.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class PromptExecutionSettings(KernelBaseModel):
@@ -27,6 +31,16 @@ class PromptExecutionSettings(KernelBaseModel):
 
     service_id: str | None = Field(None, min_length=1)
     extension_data: dict[str, Any] = Field(default_factory=dict)
+    function_choice_behavior: FunctionChoiceBehavior | None = Field(None, exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_function_choice_behavior(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Parse the function choice behavior data."""
+        function_choice_behavior_data = data.get("function_choice_behavior")
+        if function_choice_behavior_data and isinstance(function_choice_behavior_data, dict):
+            data["function_choice_behavior"] = FunctionChoiceBehavior.from_dict(function_choice_behavior_data)
+        return data
 
     def __init__(self, service_id: str | None = None, **kwargs: Any):
         """Initialize the prompt execution settings.
