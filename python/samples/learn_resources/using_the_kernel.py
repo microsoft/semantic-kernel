@@ -4,7 +4,7 @@
 import asyncio
 import os
 
-from samples.learn_resources import add_service
+from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 
 # </NecessaryPackages>
