@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.MssqlServer</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.SqlServer.Classic</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
     <VersionSuffix>alpha</VersionSuffix>
@@ -14,8 +14,11 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - MSSQL Server Connector</Title>
-    <Description>MSSQL Server connector for Semantic Kernel plugins and semantic memory</Description>
+    <Title>Semantic Kernel - SQL Server Connectorr</Title>
+    <Description>
+      SQL Server connector for Semantic Kernel plugins and semantic memory.
+      This use classic plain tables to create vector search. If you are using Azure SQL Database, it is recommended to use Microsoft.SemanticKernel.Connectors.SqlServer connector instead.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>

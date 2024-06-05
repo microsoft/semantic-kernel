@@ -1,8 +1,8 @@
-﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 
 /// <summary>
 /// A sql memory entry.

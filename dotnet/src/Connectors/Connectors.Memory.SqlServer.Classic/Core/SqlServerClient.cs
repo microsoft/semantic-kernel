@@ -1,4 +1,4 @@
-﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Data.SqlClient;
 using System;
@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 
 /// <summary>
 /// Represents a client for interacting with a SQL Server database for storing semantic memories and embeddings.

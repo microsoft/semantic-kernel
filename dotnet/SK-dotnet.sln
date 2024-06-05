@@ -314,7 +314,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MssqlServer", "src\Connectors\Connectors.Memory.MssqlServer\Connectors.Memory.MssqlServer.csproj", "{24104E69-87C6-48A5-A000-1767D43989F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.SqlServer.Classic", "src\Connectors\Connectors.Memory.SqlServer.Classic\Connectors.Memory.SqlServer.Classic.csproj", "{24104E69-87C6-48A5-A000-1767D43989F8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Redis.UnitTests", "src\Connectors\Connectors.Redis.UnitTests\Connectors.Redis.UnitTests.csproj", "{1D4667B9-9381-4E32-895F-123B94253EE8}"
 EndProject

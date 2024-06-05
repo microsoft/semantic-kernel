@@ -1,6 +1,6 @@
-﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.MssqlServer.Core;
+using Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 using Microsoft.SemanticKernel.Memory;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQL server database.

@@ -1,6 +1,6 @@
-﻿// Copyright (c) Kevin BEAUGRAND. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.MssqlServer;
+namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 
 /// <summary>
 /// Configuration for the SQL Server memory store.
