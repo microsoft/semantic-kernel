@@ -6,6 +6,7 @@ import os
 from functools import reduce
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.filters.filter_types import FilterTypes
@@ -39,7 +40,7 @@ async def streaming_exception_handling(context, next):
             async for partial in stream:
                 yield partial
         except Exception as e:
-            yield [StreamingChatMessageContent(author="assistant", content=f"Exception caught: {e}")]
+            yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content=f"Exception caught: {e}")]
 
     stream = context.result.value
     context.result = FunctionResult(function=context.result.function, value=override_stream(stream))

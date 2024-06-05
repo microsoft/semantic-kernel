@@ -38,7 +38,7 @@ class BookingSampleSettings(BaseSettings):
 
     @classmethod
     def create(cls, **kwargs):
-        if "env_file_path" in kwargs and kwargs["env_file_path"]:
+        if kwargs.get("env_file_path"):
             cls.Config.env_file = kwargs["env_file_path"]
         else:
             cls.Config.env_file = None

@@ -16,8 +16,8 @@ __all__ = [
     "KernelFunction",
     "KernelFunctionFromMethod",
     "KernelFunctionFromPrompt",
-    "kernel_function",
     "KernelFunctionMetadata",
     "KernelParameterMetadata",
     "KernelPlugin",
+    "kernel_function",
 ]

@@ -6,8 +6,8 @@ from semantic_kernel.connectors.ai.ollama.services.ollama_text_completion import
 from semantic_kernel.connectors.ai.ollama.services.ollama_text_embedding import OllamaTextEmbedding
 
 __all__ = [
+    "OllamaChatCompletion",
     "OllamaPromptExecutionSettings",
     "OllamaTextCompletion",
-    "OllamaChatCompletion",
     "OllamaTextEmbedding",
 ]

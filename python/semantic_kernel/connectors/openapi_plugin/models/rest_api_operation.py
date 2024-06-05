@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import re
-from typing import Any
+from typing import Any, Final
 from urllib.parse import urlencode, urljoin, urlparse, urlunparse
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_operation_expected_response import (
@@ -30,7 +30,7 @@ class RestApiOperation:
     CONTENT_TYPE_ARGUMENT_NAME = "content-type"
     INVALID_SYMBOLS_REGEX = re.compile(r"[^0-9A-Za-z_]+")
 
-    _preferred_responses: list[str] = [
+    _preferred_responses: Final[list[str]] = [
         "200",
         "201",
         "202",
@@ -71,10 +71,7 @@ class RestApiOperation:
     def url_join(self, base_url: str, path: str):
         """Join a base URL and a path, correcting for any missing slashes."""
         parsed_base = urlparse(base_url)
-        if not parsed_base.path.endswith("/"):
-            base_path = parsed_base.path + "/"
-        else:
-            base_path = parsed_base.path
+        base_path = parsed_base.path + "/" if not parsed_base.path.endswith("/") else parsed_base.path
         full_path = urljoin(base_path, path.lstrip("/"))
         return urlunparse(parsed_base._replace(path=full_path))
 
@@ -113,7 +110,9 @@ class RestApiOperation:
             server_url_string = (
                 self.server_url.geturl()
                 if self.server_url
-                else api_host_url.geturl() if api_host_url else self._raise_invalid_operation_exception()
+                else api_host_url.geturl()
+                if api_host_url
+                else self._raise_invalid_operation_exception()
             )
 
         # make sure the base URL ends with a trailing slash
@@ -218,7 +217,7 @@ class RestApiOperation:
         self,
         properties: list["RestApiOperationPayloadProperty"],
         enable_namespacing: bool = False,
-        root_property_name: bool = None,
+        root_property_name: bool | None = None,
     ) -> list["RestApiOperationParameter"]:
         parameters: list[RestApiOperationParameter] = []
         for property in properties:
