@@ -2,7 +2,7 @@
 # These are optional elements. Feel free to remove any of them.
 status: proposed
 contact: westey-m
-date: 2024-05-01
+date: 2024-06-05
 deciders: sergeymenshykh, markwallace, rbarreto, dmytrostruk, westey-m, matthewbolanos, eavanvalkenburg
 consulted: stephentoub, dluc, ajcvickers, roji
 informed: 
@@ -383,7 +383,7 @@ From GitHub Issue:
 - - Design must allow Memory Plugins to be easily instantiated with any connector
 - Design must support all Kernel content types
 - Design must allow for database specific configuration
-- All NFR's to be production ready are implemented
+- All NFR's to be production ready are implemented (see Roadmap for more detail)
 - Basic CRUD operations must be supported so that connectors can be used in a polymorphic manner
 - Official Database Clients must be used where available
 - Dynamic database schema must be supported
@@ -864,6 +864,8 @@ Need the following for all features:
 
 - Unit tests
 - Integration tests
+- Logging / Telemetry
+- Common Exception Handling
 - Samples, including:
   - Usage scenario for collection and record management using custom model and configured collection creation.
   - A simple consumption example like semantic caching, specfics TBD.
