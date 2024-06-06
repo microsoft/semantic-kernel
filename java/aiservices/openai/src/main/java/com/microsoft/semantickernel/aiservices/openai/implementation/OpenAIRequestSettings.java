@@ -20,10 +20,14 @@ public final class OpenAIRequestSettings {
 
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTY_NAME = "semantic-kernel.version";
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
-    private static final String version;
+    private static final String useragent;
+
+    private static final String header;
 
     static {
-        version = loadVersion();
+        String version = loadVersion();
+        useragent = "Semantic-Kernel-Java-" + version;
+        header = "Java-" + version;
     }
 
     private static String loadVersion() {
@@ -55,9 +59,8 @@ public final class OpenAIRequestSettings {
      */
     public static RequestOptions getRequestOptions() {
         return new RequestOptions()
-            .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), "Java/" + version)
+            .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), header)
             .setContext(
-                new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY,
-                    "Semantic-Kernel-Java-" + version));
+                new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
     }
 }
