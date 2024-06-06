@@ -20,7 +20,7 @@ import com.microsoft.semantickernel.aiservices.google.GeminiService;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
-import com.microsoft.semantickernel.orchestration.FunctionResult;
+import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -223,8 +223,11 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                 });
             });
 
+        FunctionResultMetadata<GenerateContentResponse.UsageMetadata> metadata = FunctionResultMetadata
+            .build(null, response.getUsageMetadata(), null);
+
         return new GeminiChatMessageContent<>(AuthorRole.ASSISTANT,
-            message.toString(), null, null, null, null, functionCalls);
+            message.toString(), null, null, null, metadata, functionCalls);
     }
 
     private GenerativeModel getGenerativeModel(@Nullable Kernel kernel,

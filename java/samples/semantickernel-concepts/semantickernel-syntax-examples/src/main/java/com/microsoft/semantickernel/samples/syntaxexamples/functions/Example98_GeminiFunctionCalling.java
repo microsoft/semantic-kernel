@@ -1,9 +1,6 @@
 package com.microsoft.semantickernel.samples.syntaxexamples.functions;
 
 import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.FunctionResponse;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatCompletion;
 import com.microsoft.semantickernel.aiservices.google.chatcompletion.GeminiChatMessageContent;
@@ -69,7 +66,7 @@ public class Example98_GeminiFunctionCalling {
         }
 
         public static void main(String[] args) throws NoSuchMethodException {
-            System.out.println("======== Open AI - Function calling ========");
+            System.out.println("======== Gemini - Function calling ========");
 
             VertexAI client = new VertexAI(PROJECT_ID, LOCATION);
 

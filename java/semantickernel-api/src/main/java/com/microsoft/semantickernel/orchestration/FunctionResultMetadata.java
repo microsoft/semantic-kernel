@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.azure.ai.openai.models.CompletionsUsage;
+import com.google.api.Usage;
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+
 import java.time.OffsetDateTime;
 import javax.annotation.Nullable;
 
@@ -12,7 +14,7 @@ import javax.annotation.Nullable;
  * <p>
  * This class is used to return metadata about the result of a function invocation.
  */
-public class FunctionResultMetadata {
+public class FunctionResultMetadata<UsageType> {
 
     /**
      * The key for id metadata.
@@ -50,7 +52,7 @@ public class FunctionResultMetadata {
     /**
      * Create a new instance of FunctionResultMetadata.
      */
-    public static FunctionResultMetadata build(String id) {
+    public static FunctionResultMetadata<?> build(@Nullable String id) {
         return build(id, null, null);
     }
 
@@ -62,21 +64,24 @@ public class FunctionResultMetadata {
      * @param createdAt The time the result was created.
      * @return A new instance of FunctionResultMetadata.
      */
-    public static FunctionResultMetadata build(
-        String id,
-        @Nullable CompletionsUsage usage,
+    public static <UsageType> FunctionResultMetadata<UsageType> build(
+        @Nullable String id,
+        @Nullable UsageType usage,
         @Nullable OffsetDateTime createdAt) {
 
         CaseInsensitiveMap<ContextVariable<?>> metadata = new CaseInsensitiveMap<>();
-        metadata.put(ID, ContextVariable.of(id));
+
+        if (id != null) {
+            metadata.put(ID, ContextVariable.of(id));
+        }
         if (usage != null) {
-            metadata.put(USAGE, ContextVariable.of(usage));
+            metadata.put(USAGE, ContextVariable.of(usage, new ContextVariableTypeConverter.NoopConverter<>(Object.class)));
         }
         if (createdAt != null) {
             metadata.put(CREATED_AT, ContextVariable.of(createdAt));
         }
 
-        return new FunctionResultMetadata(metadata);
+        return new FunctionResultMetadata<>(metadata);
     }
 
     /**
@@ -84,8 +89,8 @@ public class FunctionResultMetadata {
      *
      * @return A new instance of FunctionResultMetadata.
      */
-    public static FunctionResultMetadata empty() {
-        return new FunctionResultMetadata(new CaseInsensitiveMap<>());
+    public static FunctionResultMetadata<?> empty() {
+        return new FunctionResultMetadata<>(new CaseInsensitiveMap<>());
     }
 
     /**
@@ -117,12 +122,12 @@ public class FunctionResultMetadata {
      * @return The usage of the result of the function invocation.
      */
     @Nullable
-    public CompletionsUsage getUsage() {
+    public UsageType getUsage() {
         ContextVariable<?> usage = metadata.get(USAGE);
         if (usage == null) {
             return null;
         }
-        return usage.getValue(CompletionsUsage.class);
+        return (UsageType) usage.getValue(Object.class);
     }
 
     /**
