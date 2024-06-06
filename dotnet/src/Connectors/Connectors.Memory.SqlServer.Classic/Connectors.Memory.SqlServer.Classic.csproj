@@ -14,7 +14,7 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - SQL Server Connectorr</Title>
+    <Title>Semantic Kernel - SQL Server Connector</Title>
     <Description>
       SQL Server connector for Semantic Kernel plugins and semantic memory.
       This use classic plain tables to create vector search. If you are using Azure SQL Database, it is recommended to use Microsoft.SemanticKernel.Connectors.SqlServer connector instead.

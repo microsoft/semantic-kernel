@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Data.SqlClient;
 using Microsoft.SemanticKernel.Connectors.SqlServer.Classic.Core;
 using Microsoft.SemanticKernel.Memory;
 using System;
@@ -19,9 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer.Classic;
 /// The data persists between subsequent instances.
 /// </remarks>
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
+public class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
-    private SqlServerClient _dbClient;
+    private readonly SqlServerClient? _dbClient;
 
     /// <summary>
     /// Connects to a SQL Server database using the provided connection string and schema, and returns a new instance of <see cref="SqlServerMemoryStore"/>.
@@ -32,7 +33,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
     /// <returns>A new instance of <see cref="SqlServerMemoryStore"/> connected to the specified SQL Server database.</returns>
     public static async Task<SqlServerMemoryStore> ConnectAsync(string connectionString, SqlServerConfig? config = default, CancellationToken cancellationToken = default)
     {
-        var client = new SqlServerClient(connectionString, config ?? new());
+        var client = new SqlServerClient(new SqlConnection(connectionString), config ?? new());
 
         await client.CreateTablesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -139,7 +140,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
 
         IAsyncEnumerable<(SqlServerMemoryEntry, double)> results = this._dbClient.GetNearestMatchesAsync(
             collectionName: collectionName,
-            embedding: JsonSerializer.Serialize(embedding.ToArray()),
+            embedding: JsonSerializer.Serialize(embedding),
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
@@ -206,7 +207,7 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
     {
         return MemoryRecord.FromJsonMetadata(
             json: entry.MetadataString,
-            embedding: entry.Embedding ?? new ReadOnlyMemory<float>(),
+            embedding: entry.Embedding ?? ReadOnlyMemory<float>.Empty,
             key: entry.Key,
             timestamp: entry.Timestamp
             );
@@ -221,19 +222,28 @@ public sealed class SqlServerMemoryStore : IMemoryStore, IDisposable
             collectionName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding.ToArray()),
+            embedding: JsonSerializer.Serialize(record.Embedding),
             timestamp: record.Timestamp,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return record.Key;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
-        if (this._dbClient is not null)
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            this._dbClient.Dispose();
-            this._dbClient = null!;
+            this._dbClient?.Dispose();
         }
     }
 }
