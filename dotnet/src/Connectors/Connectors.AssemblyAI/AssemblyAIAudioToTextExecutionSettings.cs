@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AssemblyAI;
 /// <summary>
 /// Execution settings for AssemblyAI speech-to-text execution.
 /// </summary>
-public class AssemblyAIAudioToTextExecutionSettings : PromptExecutionSettings
+public sealed class AssemblyAIAudioToTextExecutionSettings : PromptExecutionSettings
 {
     /// <summary>
     /// The time between each poll for the transcript status, until the status is completed.

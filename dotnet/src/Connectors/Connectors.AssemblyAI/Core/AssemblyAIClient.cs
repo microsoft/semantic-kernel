@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.AssemblyAI.Client;
+namespace Microsoft.SemanticKernel.Connectors.AssemblyAI.Core;
 
 internal sealed class AssemblyAIClient
 {
@@ -20,7 +20,7 @@ internal sealed class AssemblyAIClient
     private readonly string _apiKey;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-
+    private const string PublicAPI = "https://api.assemblyai.com/";
     internal AssemblyAIClient(
         HttpClient httpClient,
         string? apiKey,
@@ -30,7 +30,7 @@ internal sealed class AssemblyAIClient
         Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNull(httpClient);
 
-        endpoint ??= new Uri("https://api.assemblyai.com/");
+        endpoint ??= new Uri(PublicAPI);
         this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._httpClient = httpClient;
@@ -119,7 +119,7 @@ internal sealed class AssemblyAIClient
             HttpHeaderConstant.Values.GetAssemblyVersion(this.GetType()));
     }
 
-    internal async Task<JsonDocument> WaitForTranscriptToProcessAsync(
+    internal async Task<JsonElement> WaitForTranscriptToProcessAsync(
         string transcriptId,
         PromptExecutionSettings? executionSettings,
         CancellationToken ct
@@ -127,11 +127,9 @@ internal sealed class AssemblyAIClient
     {
         var url = this.CreateUrl($"v2/transcript/{transcriptId}");
 
-        var pollingInterval = TimeSpan.FromMilliseconds(500);
-        if (executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings)
-        {
-            pollingInterval = aaiSettings.PollingInterval;
-        }
+        var pollingInterval = executionSettings is AssemblyAIAudioToTextExecutionSettings aaiSettings
+            ? aaiSettings.PollingInterval
+            : TimeSpan.FromMilliseconds(500);
 
         while (true)
         {
@@ -143,9 +141,9 @@ internal sealed class AssemblyAIClient
             using var response = await this._httpClient.SendWithSuccessCheckAsync(request, ct).ConfigureAwait(false);
             using var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-            var json = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct).ConfigureAwait(false);
+            var json = await JsonSerializer.DeserializeAsync<JsonElement>(jsonStream, cancellationToken: ct).ConfigureAwait(false);
 
-            var status = json.RootElement.GetProperty("status").GetString()!;
+            var status = json.GetProperty("status").GetString()!;
             switch (status)
             {
                 case "processing":
@@ -155,7 +153,7 @@ internal sealed class AssemblyAIClient
                 case "completed":
                     return json;
                 case "error":
-                    var errorString = json.RootElement.GetProperty("error").GetString()!;
+                    var errorString = json.GetProperty("error").GetString()!;
                     throw new KernelException($"Failed to create transcript. Reason: {errorString}");
                 default:
                     throw new KernelException($"Received unexpected transcript status '{status}'.");
