@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// Service for storing and retrieving memory records, that uses Azure AI Search as the underlying storage.
 /// </summary>
 /// <typeparam name="TDataModel">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-public class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService<string, TDataModel>
+public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService<string, TDataModel>
     where TDataModel : class
 {
     /// <summary>A set of types that a key on the provided model may have.</summary>
@@ -209,7 +209,7 @@ public class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService
         string collectionName,
         string key,
         GetDocumentOptions innerOptions,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
         if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper)
@@ -241,7 +241,12 @@ public class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService
     /// <param name="innerOptions">The azure ai search sdk options for uploading a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The document upload result.</returns>
-    private async Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(SearchClient searchClient, string collectionName, IEnumerable<TDataModel> records, IndexDocumentsOptions innerOptions, CancellationToken cancellationToken = default)
+    private async Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(
+        SearchClient searchClient,
+        string collectionName,
+        IEnumerable<TDataModel> records,
+        IndexDocumentsOptions innerOptions,
+        CancellationToken cancellationToken)
     {
         // Use the user provided mapper.
         if (this._options.MapperType == AzureAISearchMemoryRecordMapperType.JsonObjectCustomerMapper)

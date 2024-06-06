@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// Options when creating a <see cref="AzureAISearchMemoryRecordService{TDataModel}"/>.
 /// </summary>
-public class AzureAISearchMemoryRecordServiceOptions<TDataModel>
+public sealed class AzureAISearchMemoryRecordServiceOptions<TDataModel>
     where TDataModel : class
 {
     /// <summary>
