@@ -14,7 +14,7 @@ $aiSearchResourceName = "aisearch-integration-test-basic"
 <#
 .SYNOPSIS
     Setup the infra required for Azure AI Search Integration tests,
-    retrieve the connection information for it, and udpate the secrets
+    retrieve the connection information for it, and update the secrets
     store with these settings.
 
 .Parameter OverrideResourceGroup
@@ -31,7 +31,7 @@ function New-AzureAISearchIntegrationInfra($overrideResourceGroup = $resourceGro
         New-AzResourceGroup -Name $overrideResourceGroup -Location "North Europe"
     }
 
-    # Create the ai search service if it doen't exist.
+    # Create the ai search service if it doesn't exist.
     $service = Get-AzSearchService -ResourceGroupName $resourceGroup -Name $aiSearchResourceName
     if (-not $service) {
         Write-Host "Service does not exist, creating '$overrideAISearchResourceName' ..."

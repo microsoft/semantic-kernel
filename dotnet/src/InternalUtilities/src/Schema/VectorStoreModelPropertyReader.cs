@@ -188,7 +188,7 @@ internal static class MemoryServiceModelPropertyReader
     /// </summary>
     /// <param name="properties">The properties to check.</param>
     /// <param name="supportedTypes">A set of supported types that the provided properties may have.</param>
-    /// <param name="propertyCategoryDescription">A description of the category of proeprties being checked. Used for error messaging.</param>
+    /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
     /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
     public static void VerifyPropertyTypes(List<PropertyInfo> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription)
     {
@@ -197,7 +197,7 @@ internal static class MemoryServiceModelPropertyReader
             if (!supportedTypes.Contains(property.PropertyType))
             {
                 var supportedTypesString = string.Join(", ", supportedTypes.Select(t => t.FullName));
-                throw new ArgumentException($"{propertyCategoryDescription} properties must be one of the supportd types: {supportedTypesString}. Type of {property.Name} is {property.PropertyType.FullName}.");
+                throw new ArgumentException($"{propertyCategoryDescription} properties must be one of the supported types: {supportedTypesString}. Type of {property.Name} is {property.PropertyType.FullName}.");
             }
         }
     }

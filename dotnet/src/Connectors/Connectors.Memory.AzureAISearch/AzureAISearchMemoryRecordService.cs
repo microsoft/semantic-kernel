@@ -201,7 +201,7 @@ public class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecordService
     /// <param name="searchClient">The search client to use when fetching the document.</param>
     /// <param name="collectionName">The name of the collection to retrieve the record from.</param>
     /// <param name="key">The key of the record to get.</param>
-    /// <param name="innerOptions">The azure ai search sdk options for geting a document.</param>
+    /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
     private async Task<TDataModel> GetDocumentAndMapToDataModelAsync(
