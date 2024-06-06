@@ -1,14 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Any, Literal
+
+if sys.version < "3.11":
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_choice_behaviors.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
-from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 
 logger = logging.getLogger(__name__)
 
@@ -73,26 +79,23 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
                 "The function_call and functions parameters are deprecated. Please use the tool_choice and tools parameters instead."  # noqa: E501
             )
         return v
-    
-    @field_validator("function_call_behavior", mode="after")
-    @classmethod
-    def function_call_behavior_warning(cls, v: str | list[dict[str, Any]] | None = None):
-        """Check if FunctionCallBehavior is used, and if so provide a warning."""
-        if v is not None:
-            logger.warning(
-                "The function_call_behavior may be deprecated in the future. Please use the `function_choice_behavior` attribute instead."  # noqa: E501
-            )
-        return v
-    
+
     @model_validator(mode="after")
-    def check_exclusive_function_calling_behaviors(self) -> None:
+    def validate_function_calling_behaviors(self) -> Self:
         """Check that only one of function_call_behavior and function_choice_behavior is set."""
-        function_call_behavior = self.function_call_behavior
-        function_choice_behavior = self.function_choice_behavior
-        if function_call_behavior is not None and function_choice_behavior is not None:
-            err_message = "Both function_call_behavior and function_choice_behavior are set in the prompt execution settings. Please only configure `function_choice_behavior`."  # noqa: E501
-            logger.error(err_message)
-            raise ServiceInitializationError(err_message)
+        # In an attempt to phase out the use of `function_call_behavior` in favor of `function_choice_behavior`,
+        # we are re-writing the `function_call_behavior` to `function_choice_behavior` if the former is set.
+        if self.function_call_behavior is not None:
+            logger.warning(
+                "The function_call_behavior may be deprecated in the future. Switching to use the `function_choice_behavior` attribute instead."  # noqa: E501
+            )
+            function_call_behavior = self.function_call_behavior.model_copy(deep=True)
+            self.function_call_behavior = None
+            self.function_choice_behavior = FunctionChoiceBehavior.from_function_call_behavior(
+                function_call_behavior
+            )
+        
+        return self
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):

@@ -9,6 +9,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.kernel import Kernel
 
@@ -54,6 +55,35 @@ class FunctionChoiceBehavior(KernelBaseModel):
     function_qualified_names: list[str] | None = None
     enable_kernel_functions: bool = True
     max_auto_invoke_attempts: int = DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS
+
+    @classmethod
+    def from_function_call_behavior(cls, behavior: "FunctionCallBehavior"):
+        """Convert FunctionCallBehavior to FunctionChoiceBehavior.
+        
+        This method is used while FunctionCallBehavior is still supported.
+
+        Args:
+            behavior (FunctionCallBehavior): The function call behavior to convert.
+
+        Returns:
+            FunctionChoiceBehavior: The converted function choice behavior.
+        """
+        from semantic_kernel.connectors.ai.function_call_behavior import (
+            EnabledFunctions,
+            KernelFunctions,
+            RequiredFunction,
+        )
+
+        if isinstance(behavior, KernelFunctions):
+            return cls.Auto()
+        if isinstance(behavior, EnabledFunctions):
+            return cls.EnableFunctions(filters=behavior.filters)
+        if isinstance(behavior, RequiredFunction):
+            return cls.RequiredFunction(function_fully_qualified_name=behavior.function_fully_qualified_name)
+        return cls(
+            enable_kernel_functions=behavior.enable_kernel_functions,
+            max_auto_invoke_attempts=behavior.max_auto_invoke_attempts
+        )
 
     @property
     def auto_invoke_kernel_functions(self):
@@ -116,7 +146,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ],
-    ) -> "EnabledFunctions":
+    ) -> "EnableFunctions":
         """Set the enable kernel functions flag."""
         return EnabledFunctions(
             filters=filters, max_auto_invoke_attempts=DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS if auto_invoke else 0

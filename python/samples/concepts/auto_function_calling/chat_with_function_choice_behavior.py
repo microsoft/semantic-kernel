@@ -19,19 +19,6 @@ if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunction
 
 
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard,
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for,
-you will return a full answer to me as soon as possible.
-"""
-
 kernel = Kernel()
 
 # Note: the underlying gpt-35/gpt-4 model version needs to be at least version 0613 to support tools.
@@ -66,10 +53,6 @@ execution_settings = OpenAIChatPromptExecutionSettings(
 )
 
 history = ChatHistory()
-
-history.add_system_message(system_message)
-history.add_user_message("Hi there, who are you?")
-history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
 arguments = KernelArguments(settings=execution_settings)
 
