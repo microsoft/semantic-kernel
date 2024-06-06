@@ -47,8 +47,8 @@ __all__ = [
     "KernelFunctionAlreadyExistsError",
     "KernelFunctionNotFoundError",
     "KernelInvokeException",
+    "KernelPluginInvalidConfigurationError",
     "KernelPluginNotFoundError",
     "KernelServiceNotFoundError",
-    "KernelPluginInvalidConfigurationError",
     "OperationCancelledException",
 ]

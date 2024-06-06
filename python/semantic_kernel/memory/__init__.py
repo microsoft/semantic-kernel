@@ -2,4 +2,4 @@
 from semantic_kernel.memory.semantic_text_memory import SemanticTextMemory
 from semantic_kernel.memory.volatile_memory_store import VolatileMemoryStore
 
-__all__ = ["VolatileMemoryStore", "SemanticTextMemory"]
+__all__ = ["SemanticTextMemory", "VolatileMemoryStore"]

@@ -2,7 +2,7 @@
 
 import asyncio
 
-from samples.learn_resources.sk_service_configurator import add_service
+from samples.sk_service_configurator import add_service
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.contents import ChatHistory
@@ -22,7 +22,7 @@ async def main():
     service_id = "default"
     prompt_template_config = PromptTemplateConfig(
         template=ConversationSummaryPlugin._summarize_conversation_prompt_template,
-        description="Given a section of a conversation transcript, summarize the part of" " the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation.",
         execution_settings=PromptExecutionSettings(
             service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
         ),

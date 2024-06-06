@@ -906,6 +906,7 @@ public static class OpenAIServiceCollectionExtensions
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
     /// </remarks>
     [Experimental("SKEXP0010")]
+    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public static IKernelBuilder AddAzureOpenAIChatCompletion(
         this IKernelBuilder builder,
         AzureOpenAIChatCompletionWithDataConfig config,
@@ -936,6 +937,7 @@ public static class OpenAIServiceCollectionExtensions
     /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
     /// </remarks>
     [Experimental("SKEXP0010")]
+    [Obsolete("This method is deprecated in favor of OpenAIPromptExecutionSettings.AzureChatExtensionsOptions")]
     public static IServiceCollection AddAzureOpenAIChatCompletion(
         this IServiceCollection services,
         AzureOpenAIChatCompletionWithDataConfig config,

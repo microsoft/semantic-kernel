@@ -79,10 +79,10 @@ class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
         if "default_headers" in settings and isinstance(settings["default_headers"], str):
             settings["default_headers"] = json.loads(settings["default_headers"])
         return OpenAITextCompletion(
-            ai_model_id=settings.get("ai_model_id", None),
-            api_key=settings.get("api_key", None),
-            org_id=settings.get("org_id", None),
+            ai_model_id=settings.get("ai_model_id"),
+            api_key=settings.get("api_key"),
+            org_id=settings.get("org_id"),
             service_id=settings.get("service_id"),
             default_headers=settings.get("default_headers"),
-            env_file_path=settings.get("env_file_path", None),
+            env_file_path=settings.get("env_file_path"),
         )

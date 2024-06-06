@@ -27,6 +27,7 @@ async def retry(func, retries=1):
         except Exception as e:
             print(e)
             time.sleep(i * 2)
+    return None
 
 
 @pytest.fixture(autouse=True, scope="module")
