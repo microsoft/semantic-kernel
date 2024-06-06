@@ -32,11 +32,41 @@ public static class AssemblyAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, (serviceProvider, _)
+        builder.Services.AddKeyedSingleton<IAudioToTextService>(serviceId, (_, _)
             => new AssemblyAIAudioToTextService(
                 apiKey,
                 endpoint,
                 httpClient));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the AssemblyAI file service to the kernel.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="apiKey">AssemblyAI API key, <a href="https://www.assemblyai.com/dashboard">get your API key from the dashboard.</a></param>
+    /// <param name="endpoint">The endpoint URL to the AssemblyAI API.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAssemblyAIFiles(
+        this IKernelBuilder builder,
+        string apiKey,
+        Uri? endpoint = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null
+    )
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddKeyedSingleton(serviceId, (_, _) =>
+            new AssemblyAIFileService(
+                apiKey,
+                endpoint,
+                httpClient
+            )
+        );
 
         return builder;
     }

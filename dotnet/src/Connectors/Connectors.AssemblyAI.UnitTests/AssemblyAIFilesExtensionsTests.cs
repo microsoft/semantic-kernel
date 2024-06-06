@@ -4,16 +4,15 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AudioToText;
 using Microsoft.SemanticKernel.Connectors.AssemblyAI;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.AssemblyAI;
+namespace SemanticKernel.Connectors.AssemblyAI.UnitTests;
 
 /// <summary>
 /// Unit tests for <see cref="AssemblyAIServiceCollectionExtensions"/> class.
 /// </summary>
-public sealed class AssemblyAIAudioToTextServiceExtensionsTests
+public sealed class AssemblyAIFilesExtensionsTests
 {
     private const string ApiKey = "Test123";
     private const string Endpoint = "http://localhost:1234/";
@@ -25,7 +24,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         // Arrange & Act
         using var httpClient = new HttpClient();
         var kernel = Kernel.CreateBuilder()
-            .AddAssemblyAIAudioToText(
+            .AddAssemblyAIFiles(
                 apiKey: ApiKey,
                 endpoint: new Uri(Endpoint),
                 serviceId: ServiceId,
@@ -34,13 +33,13 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
             .Build();
 
         // Assert
-        var service = kernel.GetRequiredService<IAudioToTextService>();
+        var service = kernel.GetRequiredService<AssemblyAIFileService>();
         Assert.NotNull(service);
-        Assert.IsType<AssemblyAIAudioToTextService>(service);
+        Assert.IsType<AssemblyAIFileService>(service);
 
-        service = kernel.GetRequiredService<IAudioToTextService>(ServiceId);
+        service = kernel.GetRequiredService<AssemblyAIFileService>(ServiceId);
         Assert.NotNull(service);
-        Assert.IsType<AssemblyAIAudioToTextService>(service);
+        Assert.IsType<AssemblyAIFileService>(service);
     }
 
     [Fact]
@@ -48,7 +47,7 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
     {
         // Arrange & Act
         var services = new ServiceCollection();
-        services.AddAssemblyAIAudioToText(
+        services.AddAssemblyAIFiles(
             apiKey: ApiKey,
             endpoint: new Uri(Endpoint),
             serviceId: ServiceId
@@ -56,8 +55,8 @@ public sealed class AssemblyAIAudioToTextServiceExtensionsTests
         using var provider = services.BuildServiceProvider();
 
         // Assert
-        var service = provider.GetRequiredKeyedService<IAudioToTextService>(ServiceId);
+        var service = provider.GetRequiredKeyedService<AssemblyAIFileService>(ServiceId);
         Assert.NotNull(service);
-        Assert.IsType<AssemblyAIAudioToTextService>(service);
+        Assert.IsType<AssemblyAIFileService>(service);
     }
 }

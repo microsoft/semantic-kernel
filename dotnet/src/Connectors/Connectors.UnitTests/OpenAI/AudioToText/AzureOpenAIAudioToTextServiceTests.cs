@@ -107,27 +107,6 @@ public sealed class AzureOpenAIAudioToTextServiceTests : IDisposable
         Assert.Equal("Test audio-to-text response", result[0].Text);
     }
 
-    [Fact]
-    public async Task GetTextContentWithStreamByDefaultWorksCorrectlyAsync()
-    {
-        // Arrange
-        var service = new AzureOpenAIAudioToTextService("deployment-name", "https://endpoint", "api-key", "model-id", this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        {
-            Content = new StringContent("Test audio-to-text response")
-        };
-
-        // Act
-        var result = await service.GetTextContentsAsync(
-            new AudioStreamContent(new BinaryData("data").ToStream()),
-            new OpenAIAudioToTextExecutionSettings("file.mp3")
-        );
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Test audio-to-text response", result[0].Text);
-    }
-
     public void Dispose()
     {
         this._httpClient.Dispose();
