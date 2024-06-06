@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -52,7 +53,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
-    public IReadOnlyList<ChatCompletionsToolCall> ToolCalls { get; }
+    public IReadOnlyList<ChatToolCall> ToolCalls { get; }
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -64,7 +65,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
 
         foreach (var toolCall in this.ToolCalls)
         {
-            if (toolCall is ChatCompletionsFunctionToolCall functionToolCall)
+            if (toolCall is ChatToolCall functionToolCall)
             {
                 (functionToolCallList ??= []).Add(new OpenAIFunctionToolCall(functionToolCall));
             }
@@ -79,7 +80,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     }
 
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
-        IReadOnlyList<ChatCompletionsToolCall> toolCalls,
+        IReadOnlyList<ChatToolCall> toolCalls,
         IReadOnlyDictionary<string, object?>? original)
     {
         // We only need to augment the metadata if there are any tool calls.
@@ -107,7 +108,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             }
 
             // Add the additional entry.
-            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatCompletionsFunctionToolCall>().ToList());
+            newDictionary.Add(FunctionToolCallsProperty, toolCalls.OfType<ChatToolCall>().ToList());
 
             return newDictionary;
         }

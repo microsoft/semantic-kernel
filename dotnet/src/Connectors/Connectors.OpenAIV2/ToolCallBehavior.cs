@@ -121,7 +121,7 @@ public abstract class ToolCallBehavior
 
     /// <summary>Configures the <paramref name="options"/> with any tools this <see cref="ToolCallBehavior"/> provides.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> used for the operation. This can be queried to determine what tools to provide into the <paramref name="options"/>.</param>
-    /// <param name="options">The destination <see cref="ChatCompletionsOptions"/> to configure.</param>
+    /// <param name="options">The destination <see cref="ChatCompletionOptions"/> to configure.</param>
     internal abstract void ConfigureOptions(Kernel? kernel, ChatCompletionOptions options);
 
     /// <summary>
@@ -161,26 +161,26 @@ public abstract class ToolCallBehavior
     internal sealed class EnabledFunctions : ToolCallBehavior
     {
         private readonly OpenAIFunction[] _openAIFunctions;
-        private readonly ChatCompletionsFunctionToolDefinition[] _functions;
+        private readonly ChatTool[] _functions;
 
         public EnabledFunctions(IEnumerable<OpenAIFunction> functions, bool autoInvoke) : base(autoInvoke)
         {
             this._openAIFunctions = functions.ToArray();
 
-            var defs = new ChatCompletionsFunctionToolDefinition[this._openAIFunctions.Length];
+            var defs = new ChatTool[this._openAIFunctions.Length];
             for (int i = 0; i < defs.Length; i++)
             {
-                defs[i] = new ChatCompletionsFunctionToolDefinition(this._openAIFunctions[i].ToFunctionDefinition());
+                defs[i] = this._openAIFunctions[i].ToFunctionDefinition();
             }
             this._functions = defs;
         }
 
-        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.Name))}";
+        public override string ToString() => $"{nameof(EnabledFunctions)}(autoInvoke:{this.MaximumAutoInvokeAttempts != 0}): {string.Join(", ", this._functions.Select(f => f.FunctionName))}";
 
-        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionsOptions options)
+        internal override void ConfigureOptions(Kernel? kernel, ChatCompletionOptions options)
         {
             OpenAIFunction[] openAIFunctions = this._openAIFunctions;
-            ChatCompletionsFunctionToolDefinition[] functions = this._functions;
+            ChatTool[] functions = this._functions;
             Debug.Assert(openAIFunctions.Length == functions.Length);
 
             if (openAIFunctions.Length > 0)

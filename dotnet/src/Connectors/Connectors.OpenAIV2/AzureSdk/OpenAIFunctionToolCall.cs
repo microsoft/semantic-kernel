@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Azure.AI.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -16,15 +17,15 @@ public sealed class OpenAIFunctionToolCall
 {
     private string? _fullyQualifiedFunctionName;
 
-    /// <summary>Initialize the <see cref="OpenAIFunctionToolCall"/> from a <see cref="ChatCompletionsFunctionToolCall"/>.</summary>
-    internal OpenAIFunctionToolCall(ChatCompletionsFunctionToolCall functionToolCall)
+    /// <summary>Initialize the <see cref="OpenAIFunctionToolCall"/> from a <see cref="ChatToolCall"/>.</summary>
+    internal OpenAIFunctionToolCall(ChatToolCall functionToolCall)
     {
         Verify.NotNull(functionToolCall);
-        Verify.NotNull(functionToolCall.Name);
+        Verify.NotNull(functionToolCall.FunctionName);
 
-        string fullyQualifiedFunctionName = functionToolCall.Name;
+        string fullyQualifiedFunctionName = functionToolCall.FunctionName;
         string functionName = fullyQualifiedFunctionName;
-        string? arguments = functionToolCall.Arguments;
+        string? arguments = functionToolCall.FunctionArguments;
         string? pluginName = null;
 
         int separatorPos = fullyQualifiedFunctionName.IndexOf(OpenAIFunction.NameSeparator, StringComparison.Ordinal);
@@ -94,7 +95,7 @@ public sealed class OpenAIFunctionToolCall
     /// <param name="functionNamesByIndex">Lazily-initialized dictionary mapping indices to names.</param>
     /// <param name="functionArgumentBuildersByIndex">Lazily-initialized dictionary mapping indices to arguments.</param>
     internal static void TrackStreamingToolingUpdate(
-        StreamingToolCallUpdate? update,
+        StreamingChatToolCallUpdate? update,
         ref Dictionary<int, string>? toolCallIdsByIndex,
         ref Dictionary<int, string>? functionNamesByIndex,
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
@@ -109,23 +110,23 @@ public sealed class OpenAIFunctionToolCall
         // we want to keep track of it so we can send back an error.
         if (update.Id is string id)
         {
-            (toolCallIdsByIndex ??= [])[update.ToolCallIndex] = id;
+            (toolCallIdsByIndex ??= [])[update.Index] = id;
         }
 
-        if (update is StreamingFunctionToolCallUpdate ftc)
+        if (update is StreamingChatToolCallUpdate ftc)
         {
             // Ensure we're tracking the function's name.
-            if (ftc.Name is string name)
+            if (ftc.FunctionName is string name)
             {
-                (functionNamesByIndex ??= [])[ftc.ToolCallIndex] = name;
+                (functionNamesByIndex ??= [])[ftc.Index] = name;
             }
 
             // Ensure we're tracking the function's arguments.
-            if (ftc.ArgumentsUpdate is string argumentsUpdate)
+            if (ftc.FunctionArgumentsUpdate is string argumentsUpdate)
             {
-                if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(ftc.ToolCallIndex, out StringBuilder? arguments))
+                if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(ftc.Index, out StringBuilder? arguments))
                 {
-                    functionArgumentBuildersByIndex[ftc.ToolCallIndex] = arguments = new();
+                    functionArgumentBuildersByIndex[ftc.Index] = arguments = new();
                 }
 
                 arguments.Append(argumentsUpdate);
@@ -133,21 +134,15 @@ public sealed class OpenAIFunctionToolCall
         }
     }
 
-    /// <summary>
-    /// Converts the data built up by <see cref="TrackStreamingToolingUpdate"/> into an array of <see cref="ChatCompletionsFunctionToolCall"/>s.
-    /// </summary>
-    /// <param name="toolCallIdsByIndex">Dictionary mapping indices to IDs.</param>
-    /// <param name="functionNamesByIndex">Dictionary mapping indices to names.</param>
-    /// <param name="functionArgumentBuildersByIndex">Dictionary mapping indices to arguments.</param>
-    internal static ChatCompletionsFunctionToolCall[] ConvertToolCallUpdatesToChatCompletionsFunctionToolCalls(
+    internal static ChatToolCall[] ConvertToolCallsToChatToolCalls(
         ref Dictionary<int, string>? toolCallIdsByIndex,
         ref Dictionary<int, string>? functionNamesByIndex,
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
     {
-        ChatCompletionsFunctionToolCall[] toolCalls = [];
+        ChatToolCall[] tooCalls = [];
         if (toolCallIdsByIndex is { Count: > 0 })
         {
-            toolCalls = new ChatCompletionsFunctionToolCall[toolCallIdsByIndex.Count];
+            tooCalls = new ChatToolCall[toolCallIdsByIndex.Count];
 
             int i = 0;
             foreach (KeyValuePair<int, string> toolCallIndexAndId in toolCallIdsByIndex)
@@ -158,13 +153,13 @@ public sealed class OpenAIFunctionToolCall
                 functionNamesByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionName);
                 functionArgumentBuildersByIndex?.TryGetValue(toolCallIndexAndId.Key, out functionArguments);
 
-                toolCalls[i] = new ChatCompletionsFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
+                tooCalls[i] = ChatToolCall.CreateFunctionToolCall(toolCallIndexAndId.Value, functionName ?? string.Empty, functionArguments?.ToString() ?? string.Empty);
                 i++;
             }
 
-            Debug.Assert(i == toolCalls.Length);
+            Debug.Assert(i == tooCalls.Length);
         }
 
-        return toolCalls;
+        return tooCalls;
     }
 }

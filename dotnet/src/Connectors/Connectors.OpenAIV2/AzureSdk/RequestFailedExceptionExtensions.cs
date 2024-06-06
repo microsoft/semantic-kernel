@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.Net;
-using Azure;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
-/// Provides extension methods for the <see cref="RequestFailedException"/> class.
+/// Provides extension methods for the <see cref="ClientResultException"/> class.
 /// </summary>
-internal static class RequestFailedExceptionExtensions
+internal static class ClientResultExceptionExtensions
 {
     /// <summary>
-    /// Converts a <see cref="RequestFailedException"/> to an <see cref="HttpOperationException"/>.
+    /// Converts a <see cref="ClientResultException"/> to an <see cref="HttpOperationException"/>.
     /// </summary>
-    /// <param name="exception">The original <see cref="RequestFailedException"/>.</param>
+    /// <param name="exception">The original <see cref="ClientResultException"/>.</param>
     /// <returns>An <see cref="HttpOperationException"/> instance.</returns>
-    public static HttpOperationException ToHttpOperationException(this RequestFailedException exception)
+    public static HttpOperationException ToHttpOperationException(this ClientResultException exception)
     {
         const int NoResponseReceived = 0;
 

@@ -25,10 +25,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.ClientModel" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" />
+    <Reference Include="OpenAI">
+      <HintPath>C:\temp\OpenAISDK\OpenAI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
