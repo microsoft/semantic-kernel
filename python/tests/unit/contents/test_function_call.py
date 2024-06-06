@@ -91,7 +91,7 @@ def test_fc_dump(function_call: FunctionCallContent):
     # Test dumping the function call to dictionary
     dumped = function_call.model_dump(exclude_none=True)
     assert dumped == {
-        "type": "function_call",
+        "content_type": "function_call",
         "id": "test",
         "name": "Test-Function",
         "arguments": '{"input": "world"}',
@@ -104,5 +104,5 @@ def test_fc_dump_json(function_call: FunctionCallContent):
     dumped = function_call.model_dump_json(exclude_none=True)
     assert (
         dumped
-        == """{"metadata":{},"type":"function_call","id":"test","name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
+        == """{"metadata":{},"content_type":"function_call","id":"test","name":"Test-Function","arguments":"{\\"input\\": \\"world\\"}"}"""  # noqa: E501
     )

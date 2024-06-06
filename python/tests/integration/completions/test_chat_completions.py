@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import os
 from functools import partial, reduce
 from typing import Any
 
@@ -20,9 +21,27 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents import ChatHistory, ChatMessageContent, TextContent
 from semantic_kernel.contents.author_role import AuthorRole
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from tests.integration.completions.test_utils import retry
+
+
+def setup(
+    kernel: Kernel,
+    service: str,
+    execution_settings_kwargs: dict[str, Any],
+    services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
+):
+    kernel.add_service(services[service][0])
+    kernel.add_plugin(MathPlugin(), plugin_name="math")
+    kernel.add_function(
+        function_name="chat",
+        plugin_name="chat",
+        prompt="If someone asks how you are, always include the word 'well', "
+        "if you get a direct question, answer the question. {{$chat_history}}",
+        prompt_execution_settings=services[service][1](**execution_settings_kwargs),
+    )
 
 
 @pytest.fixture(scope="function")
@@ -83,6 +102,72 @@ pytestmark = pytest.mark.parametrize(
             ["house", "germany"],
         ),
         (
+            "openai",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            ["house", "germany"],
+        ),
+        (
+            "openai",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=True, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+        ),
+        (
+            "openai",
+            {
+                "function_call_behavior": FunctionCallBehavior.EnableFunctions(
+                    auto_invoke=False, filters={"excluded_plugins": ["chat"]}
+                )
+            },
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="What is 3+345?")]),
+            ],
+            ["348"],
+        ),
+        (
+            "openai",
+            {},
+            [
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
+            ],
+            ["1.2"],
+        ),
+        (
             "azure",
             {},
             [
@@ -92,13 +177,38 @@ pytestmark = pytest.mark.parametrize(
             ["Hello", "well"],
         ),
         (
-            "azure_custom_client",
+            "azure",
             {},
             [
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent(
+                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
             ],
-            ["Hello", "well"],
+            ["house", "germany"],
+        ),
+        (
+            "azure",
+            {},
+            [
+                ChatMessageContent(
+                    role=AuthorRole.USER,
+                    items=[
+                        TextContent(text="What is in this image?"),
+                        ImageContent.from_image_path(
+                            image_path=os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+                        ),
+                    ],
+                ),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+            ],
+            ["house", "germany"],
         ),
         (
             "azure",
@@ -128,28 +238,51 @@ pytestmark = pytest.mark.parametrize(
             "azure",
             {},
             [
-                ChatMessageContent(
-                    role=AuthorRole.USER,
-                    items=[
-                        TextContent(text="What is in this image?"),
-                        ImageContent(
-                            uri="https://upload.wikimedia.org/wikipedia/commons/d/d5/Half-timbered_mansion%2C_Zirkel%2C_East_view.jpg"
-                        ),
-                    ],
-                ),
-                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Where was it made?")]),
+                [
+                    ChatMessageContent(
+                        role=AuthorRole.USER,
+                        items=[TextContent(text="What was our 2024 revenue?")],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.ASSISTANT,
+                        items=[
+                            FunctionCallContent(
+                                id="fin", name="finance-search", arguments='{"company": "contoso", "year": 2024}'
+                            )
+                        ],
+                    ),
+                    ChatMessageContent(
+                        role=AuthorRole.TOOL,
+                        items=[FunctionResultContent(id="fin", name="finance-search", result="1.2B")],
+                    ),
+                ],
             ],
-            ["house", "germany"],
+            ["1.2"],
+        ),
+        (
+            "azure_custom_client",
+            {},
+            [
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="Hello")]),
+                ChatMessageContent(role=AuthorRole.USER, items=[TextContent(text="How are you today?")]),
+            ],
+            ["Hello", "well"],
         ),
     ],
     ids=[
         "openai_text_input",
         "openai_image_input_uri",
+        "openai_image_input_file",
+        "openai_tool_call_auto",
+        "openai_tool_call_non_auto",
+        "openai_tool_call_flow",
         "azure_text_input",
-        "azure_custom_client",
-        "azure_tool_call",
-        "azure_tool_call_non_auto",
         "azure_image_input_uri",
+        "azure_image_input_file",
+        "azure_tool_call_auto",
+        "azure_tool_call_non_auto",
+        "azure_tool_call_flow",
+        "azure_custom_client",
     ],
 )
 
@@ -159,16 +292,44 @@ async def test_chat_completion(
     kernel: Kernel,
     service: str,
     execution_settings_kwargs: dict[str, Any],
-    inputs: list[ChatMessageContent],
+    inputs: list[ChatMessageContent | list[ChatMessageContent]],
     outputs: list[str],
     services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
     history: ChatHistory,
 ):
     setup(kernel, service, execution_settings_kwargs, services)
     for message, output in zip(inputs, outputs):
-        history.add_message(message)
+        if isinstance(message, list):
+            for msg in message:
+                history.add_message(msg)
+        else:
+            history.add_message(message)
+
         cmc = await retry(
             partial(execute_invoke, kernel=kernel, history=history, output=output, stream=False), retries=5
+        )
+        history.add_message(cmc)
+
+
+@pytest.mark.asyncio
+async def test_streaming_chat_completion(
+    kernel: Kernel,
+    service: str,
+    execution_settings_kwargs: dict[str, Any],
+    inputs: list[ChatMessageContent | list[ChatMessageContent]],
+    outputs: list[str],
+    services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
+    history: ChatHistory,
+):
+    setup(kernel, service, execution_settings_kwargs, services)
+    for message, output in zip(inputs, outputs):
+        if isinstance(message, list):
+            for msg in message:
+                history.add_message(msg)
+        else:
+            history.add_message(message)
+        cmc = await retry(
+            partial(execute_invoke, kernel=kernel, history=history, output=output, stream=True), retries=5
         )
         history.add_message(cmc)
 
@@ -196,39 +357,3 @@ async def execute_invoke(kernel: Kernel, history: ChatHistory, output: str, stre
                 assert kernel.get_function_from_fully_qualified_function_name(item.name)
         return response
     raise AssertionError(f"Unexpected output: response: {invocation}, type: {type(invocation)}")
-
-
-@pytest.mark.asyncio
-async def test_streaming_chat_completion(
-    kernel: Kernel,
-    service: str,
-    execution_settings_kwargs: dict[str, Any],
-    inputs: list[ChatMessageContent],
-    outputs: list[str],
-    services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
-    history: ChatHistory,
-):
-    setup(kernel, service, execution_settings_kwargs, services)
-    for message, output in zip(inputs, outputs):
-        history.add_message(message)
-        cmc = await retry(
-            partial(execute_invoke, kernel=kernel, history=history, output=output, stream=True), retries=5
-        )
-        history.add_message(cmc)
-
-
-def setup(
-    kernel: Kernel,
-    service: str,
-    execution_settings_kwargs: dict[str, Any],
-    services: dict[str, tuple[ChatCompletionClientBase, type[PromptExecutionSettings]]],
-):
-    kernel.add_service(services[service][0])
-    kernel.add_plugin(MathPlugin(), plugin_name="math")
-    kernel.add_function(
-        function_name="chat",
-        plugin_name="chat",
-        prompt="If someone asks how you are, always include the word 'well', "
-        "if you get a direct question, answer the question. {{$chat_history}}",
-        prompt_execution_settings=services[service][1](**execution_settings_kwargs),
-    )

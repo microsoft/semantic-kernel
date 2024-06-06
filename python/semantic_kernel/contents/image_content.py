@@ -4,21 +4,26 @@ import base64
 import logging
 import mimetypes
 import sys
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
+
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 if sys.version < "3.11":
     from typing_extensions import Self
 else:
     from typing import Self
+
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field, model_validator
 from pydantic_core import Url
 
-from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ChatMessageContentSubtypes
+from semantic_kernel.contents.const import IMAGE_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 
 logger = logging.getLogger(__name__)
+
+_T = TypeVar("_T", bound="ImageContent")
 
 
 class ImageContent(KernelContent):
@@ -40,7 +45,7 @@ class ImageContent(KernelContent):
         mime_type (str | None): The mime type of the image, only used with data.
 
     Methods:
-        from_image_file: Create an instance from an image file.
+        from_image_path: Create an instance from an image file.
         __str__: Returns the string representation of the image.
 
     Raises:
@@ -48,7 +53,7 @@ class ImageContent(KernelContent):
 
     """
 
-    type: Literal[ChatMessageContentSubtypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
+    content_type: Literal[ContentTypes.IMAGE_CONTENT] = Field(IMAGE_CONTENT_TAG, init=False)  # type: ignore
     uri: Url | None = None
     data: bytes | None = None
     mime_type: str | None = None
@@ -57,7 +62,7 @@ class ImageContent(KernelContent):
     def validate_uri_and_or_data(self) -> Self:
         """Validate that either uri or data is provided."""
         if not self.uri and not self.data:
-            raise ValueError("Either uri or data must be provided.")
+            raise ContentInitializationError("Either uri or data must be provided.")
         if self.uri and self.data:
             logger.warning('Both "uri" and "data" are provided, "data" will be used.')
         return self
@@ -82,29 +87,29 @@ class ImageContent(KernelContent):
         return element
 
     @classmethod
-    def from_element(cls, element: Element) -> "ImageContent":
+    def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != IMAGE_CONTENT_TAG:
             raise ValueError(f"Element tag is not {IMAGE_CONTENT_TAG}")
 
         if element.text:
-            return ImageContent(
+            return cls(
                 data=base64.b64decode(element.text.split(",")[1].encode()),
                 mime_type=element.text.split(",")[0].split(";")[0].split(":")[1],
             )
 
-        return ImageContent(
+        return cls(
             uri=element.get("uri", None),
             mime_type=element.get("mime_type", None),
         )
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert the instance to a dictionary."""
-        return {"type": "image_url", "image_url": {"url": str(self)}}
-
     @classmethod
-    def from_image_file(cls, image_path: str) -> "ImageContent":
+    def from_image_path(cls: type[_T], image_path: str) -> _T:
         """Create an instance from an image file."""
         mime_type = mimetypes.guess_type(image_path)[0]
         with open(image_path, "rb") as image_file:
-            return ImageContent(data=image_file.read(), mime_type=mime_type)
+            return cls(data=image_file.read(), mime_type=mime_type)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the instance to a dictionary."""
+        return {"type": "image_url", "image_url": {"url": str(self)}}

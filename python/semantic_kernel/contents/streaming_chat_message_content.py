@@ -176,12 +176,15 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
                 if not added:
                     self.items.append(other_item)
         if not isinstance(self.inner_content, list):
-            self.inner_content = [self.inner_content]
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
-        else:
-            if other.inner_content:
-                self.inner_content.append(other.inner_content)
+            self.inner_content = [self.inner_content] if self.inner_content else []
+        other_content = (
+            other.inner_content
+            if isinstance(other.inner_content, list)
+            else [other.inner_content]
+            if other.inner_content
+            else []
+        )
+        self.inner_content.extend(other_content)
         return StreamingChatMessageContent(
             role=self.role,
             items=self.items,  # type: ignore

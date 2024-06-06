@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 
 def test_create_uri():
@@ -14,12 +15,9 @@ def test_create_uri():
     assert str(image.uri) == "http://test_uri/"
 
 
-def test_create_file():
-    path = __file__
-    path = os.path.dirname(path)
-
-    image_path = os.path.join(path, "sample_image.jpg")
-    image = ImageContent.from_image_file(image_path=image_path)
+def test_create_file_from_path():
+    image_path = os.path.join(os.path.dirname(__file__), "../../", "assets/sample_image.jpg")
+    image = ImageContent.from_image_path(image_path=image_path)
     assert image.mime_type == "image/jpeg"
     assert image.data is not None
 
@@ -31,7 +29,7 @@ def test_create_data():
 
 
 def test_create_empty_fail():
-    with pytest.raises(ValueError):
+    with pytest.raises(ContentInitializationError):
         ImageContent()
 
 

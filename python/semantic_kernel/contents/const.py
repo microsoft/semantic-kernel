@@ -8,11 +8,12 @@ TEXT_CONTENT_TAG: Final[str] = "text"
 IMAGE_CONTENT_TAG: Final[str] = "image"
 FUNCTION_CALL_CONTENT_TAG: Final[str] = "function_call"
 FUNCTION_RESULT_CONTENT_TAG: Final[str] = "function_result"
-DISCRIMINATOR_FIELD: Final[str] = "type"
+DISCRIMINATOR_FIELD: Final[str] = "content_type"
 
 
-class ChatMessageContentSubtypes(str, Enum):
+class ContentTypes(str, Enum):
     TEXT_CONTENT = "text"
     IMAGE_CONTENT = "image"
     FUNCTION_CALL_CONTENT = "function_call"
     FUNCTION_RESULT_CONTENT = "function_result"
+    CHAT_MESSAGE_CONTENT = "message"

@@ -50,7 +50,7 @@ async def chat(uri: str | None = None, image_path: str | None = None) -> bool:
         history.add_message(
             ChatMessageContent(
                 role="user",
-                items=[TextContent(text="What is in this image?"), ImageContent.from_image_file(image_path)],
+                items=[TextContent(text="What is in this image?"), ImageContent.from_image_path(image_path)],
             )
         )
     else:

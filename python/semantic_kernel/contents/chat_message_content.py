@@ -3,7 +3,7 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Any, Union, overload
+from typing import Any, Literal, Union, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
@@ -17,6 +17,7 @@ from semantic_kernel.contents.const import (
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
     TEXT_CONTENT_TAG,
+    ContentTypes,
 )
 from semantic_kernel.contents.finish_reason import FinishReason
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -64,6 +65,7 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     role: AuthorRole
     name: str | None = None
     items: list[ITEM_TYPES] = Field(default_factory=list, discriminator=DISCRIMINATOR_FIELD)
@@ -285,7 +287,7 @@ class ChatMessageContent(KernelContent):
         """Parse the items of the ChatMessageContent.
 
         Returns:
-            str | dict - The parsed items.
+            str | list of dicts - The parsed items.
         """
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text

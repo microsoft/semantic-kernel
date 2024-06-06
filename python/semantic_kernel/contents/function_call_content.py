@@ -3,12 +3,12 @@
 import json
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
 
-from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG
+from semantic_kernel.contents.const import FUNCTION_CALL_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.exceptions import FunctionCallInvalidArgumentsException, FunctionCallInvalidNameException
 
@@ -18,10 +18,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+_T = TypeVar("_T", bound="FunctionCallContent")
+
+
 class FunctionCallContent(KernelContent):
     """Class to hold a function call response."""
 
-    type: Literal["function_call"] = Field("function_call", init=False)
+    content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = Field(FUNCTION_CALL_CONTENT_TAG, init=False)  # type: ignore
     id: str | None
     index: int | None = None
     name: str | None = None
@@ -99,7 +102,7 @@ class FunctionCallContent(KernelContent):
         return element
 
     @classmethod
-    def from_element(cls, element: Element) -> "FunctionCallContent":
+    def from_element(cls: type[_T], element: Element) -> _T:
         """Create an instance from an Element."""
         if element.tag != FUNCTION_CALL_CONTENT_TAG:
             raise ValueError(f"Element tag is not {FUNCTION_CALL_CONTENT_TAG}")
