@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Text;
 /// https://datatracker.ietf.org/doc/html/rfc2397
 /// </summary>
 [ExcludeFromCodeCoverage]
-static internal class DataUriParser
+internal static class DataUriParser
 {
     private const string Scheme = "data:";
 

@@ -164,10 +164,11 @@ public sealed class OpenAIFileService
     public async Task<OpenAIFileReference> UploadContentAsync(BinaryContent fileContent, OpenAIFileUploadExecutionSettings settings, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(settings, nameof(settings));
+        Verify.NotNull(fileContent.Data, nameof(fileContent.Data));
 
         using var formData = new MultipartFormDataContent();
         using var contentPurpose = new StringContent(this.ConvertPurpose(settings.Purpose));
-        using var contentFile = new ByteArrayContent(fileContent.Data!.Value.ToArray());
+        using var contentFile = new ByteArrayContent(fileContent.Data.Value.ToArray());
         formData.Add(contentPurpose, "purpose");
         formData.Add(contentFile, "file", settings.FileName);
 

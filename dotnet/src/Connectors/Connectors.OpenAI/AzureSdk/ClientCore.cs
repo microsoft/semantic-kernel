@@ -339,7 +339,8 @@ internal abstract class ClientCore
         PromptExecutionSettings? executionSettings,
         CancellationToken cancellationToken)
     {
-        var audioData = content.Data!.Value;
+        Verify.NotNull(content.Data);
+        var audioData = content.Data.Value;
         if (audioData.IsEmpty)
         {
             throw new ArgumentException("Audio data cannot be empty", nameof(content));
