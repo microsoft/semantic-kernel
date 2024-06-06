@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.google.textcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
@@ -39,74 +40,77 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
 
     @Override
     public Mono<List<TextContent>> getTextContentsAsync(
-            String prompt,
-            @Nullable PromptExecutionSettings executionSettings,
-            @Nullable Kernel kernel) {
+        String prompt,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable Kernel kernel) {
         return this.internalGetTextAsync(prompt, executionSettings);
     }
 
     @Override
     public Flux<StreamingTextContent> getStreamingTextContentsAsync(
-            String prompt,
-            @Nullable PromptExecutionSettings executionSettings,
-            @Nullable Kernel kernel) {
+        String prompt,
+        @Nullable PromptExecutionSettings executionSettings,
+        @Nullable Kernel kernel) {
         return this
-                .internalGetTextAsync(prompt, executionSettings)
-                .flatMapMany(it -> Flux.fromStream(it.stream())
-                        .map(StreamingTextContent::new));
+            .internalGetTextAsync(prompt, executionSettings)
+            .flatMapMany(it -> Flux.fromStream(it.stream())
+                .map(StreamingTextContent::new));
     }
 
-    private Mono<List<TextContent>> internalGetTextAsync(String prompt, @Nullable PromptExecutionSettings executionSettings) {
+    private Mono<List<TextContent>> internalGetTextAsync(String prompt,
+        @Nullable PromptExecutionSettings executionSettings) {
         GenerativeModel model = getGenerativeModel(executionSettings);
 
         try {
             return MonoConverter.fromApiFuture(model.generateContentAsync(prompt))
-                    .doOnError(e -> LOGGER.error("Error generating text", e))
-                    .flatMap(result -> {
-                        List<TextContent> textContents = new ArrayList<>();
+                .doOnError(e -> LOGGER.error("Error generating text", e))
+                .flatMap(result -> {
+                    List<TextContent> textContents = new ArrayList<>();
 
-                        FunctionResultMetadata<GenerateContentResponse.UsageMetadata> metadata = FunctionResultMetadata.build(
-                                null,
-                                result.getUsageMetadata(),
-                                null);
+                    FunctionResultMetadata<GenerateContentResponse.UsageMetadata> metadata = FunctionResultMetadata
+                        .build(
+                            null,
+                            result.getUsageMetadata(),
+                            null);
 
-                        result.getCandidatesList().forEach(
-                            candidate -> {
-                                candidate.getContent().getPartsList().forEach(part -> {
-                                    if (!part.getText().isEmpty()) {
-                                        textContents.add(new TextContent(part.getText(), getModelId(), metadata));
-                                    }
-                                });
+                    result.getCandidatesList().forEach(
+                        candidate -> {
+                            candidate.getContent().getPartsList().forEach(part -> {
+                                if (!part.getText().isEmpty()) {
+                                    textContents.add(
+                                        new TextContent(part.getText(), getModelId(), metadata));
+                                }
+                            });
                         });
 
-                        return Mono.just(textContents);
-                    });
+                    return Mono.just(textContents);
+                });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    private GenerativeModel getGenerativeModel(@Nullable PromptExecutionSettings executionSettings) {
+    private GenerativeModel getGenerativeModel(
+        @Nullable PromptExecutionSettings executionSettings) {
         GenerativeModel.Builder modelBuilder = new GenerativeModel.Builder()
-                .setModelName(getModelId())
-                .setVertexAi(getClient());
+            .setModelName(getModelId())
+            .setVertexAi(getClient());
 
         if (executionSettings != null) {
             if (executionSettings.getResultsPerPrompt() < 1
-                    || executionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
+                || executionSettings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        String.format(
-                                "Results per prompt must be in range between 1 and %d, inclusive.",
-                                MAX_RESULTS_PER_PROMPT));
+                    String.format(
+                        "Results per prompt must be in range between 1 and %d, inclusive.",
+                        MAX_RESULTS_PER_PROMPT));
             }
 
             GenerationConfig config = GenerationConfig.newBuilder()
-                    .setMaxOutputTokens(executionSettings.getMaxTokens())
-                    .setTemperature((float) executionSettings.getTemperature())
-                    .setTopP((float) executionSettings.getTopP())
-                    .setCandidateCount(executionSettings.getResultsPerPrompt())
-                    .build();
+                .setMaxOutputTokens(executionSettings.getMaxTokens())
+                .setTemperature((float) executionSettings.getTemperature())
+                .setTopP((float) executionSettings.getTopP())
+                .setCandidateCount(executionSettings.getResultsPerPrompt())
+                .build();
 
             modelBuilder.setGenerationConfig(config);
         }
@@ -114,17 +118,18 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
         return modelBuilder.build();
     }
 
-    public static class Builder extends GeminiServiceBuilder<GeminiTextGenerationService, GeminiTextGenerationService.Builder> {
+    public static class Builder extends
+        GeminiServiceBuilder<GeminiTextGenerationService, GeminiTextGenerationService.Builder> {
         @Override
         public GeminiTextGenerationService build() {
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "VertexAI client must be provided");
+                    "VertexAI client must be provided");
             }
 
             if (this.modelId == null || modelId.isEmpty()) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
-                        "Gemini model id must be provided");
+                    "Gemini model id must be provided");
             }
 
             return new GeminiTextGenerationService(client, modelId);

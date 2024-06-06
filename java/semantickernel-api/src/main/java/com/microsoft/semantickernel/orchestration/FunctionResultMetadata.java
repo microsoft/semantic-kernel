@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.google.api.Usage;
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
@@ -75,7 +74,8 @@ public class FunctionResultMetadata<UsageType> {
             metadata.put(ID, ContextVariable.of(id));
         }
         if (usage != null) {
-            metadata.put(USAGE, ContextVariable.of(usage, new ContextVariableTypeConverter.NoopConverter<>(Object.class)));
+            metadata.put(USAGE, ContextVariable.of(usage,
+                new ContextVariableTypeConverter.NoopConverter<>(Object.class)));
         }
         if (createdAt != null) {
             metadata.put(CREATED_AT, ContextVariable.of(createdAt));
