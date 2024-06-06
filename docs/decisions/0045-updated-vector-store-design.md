@@ -337,23 +337,23 @@ public record HotelInfo(
 Here is what the configuration objects would look like.
 
 ```cs
-abstract class Field(string fieldName);
+abstract class MemoryRecordProperty(string propertyName);
 
-sealed class KeyField(string fieldName): Field(fieldName)
+sealed class MemoryRecordKeyProperty(string propertyName): Field(propertyName)
 {
 }
-sealed class DataField(string fieldName): Field(fieldName)
+sealed class MemoryRecordDataProperty(string propertyName): Field(propertyName)
 {
     bool HasEmbedding;
     string EmbeddingPropertyName;
 }
-sealed class VectorField(string fieldName): Field(fieldName)
+sealed class MemoryRecordVectorProperty(string propertyName): Field(propertyName)
 {
 }
 
 sealed class MemoryRecordDefinition
 {
-    IReadOnlyList<Field> Fields;
+    IReadOnlyList<MemoryRecordProperty> Properties;
 }
 ```
 
