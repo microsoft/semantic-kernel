@@ -101,7 +101,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async Task<TDataModel?> GetAsync(string key, Memory.GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TDataModel?> GetAsync(string key, Memory.GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -111,11 +111,11 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
         // Get record.
         var searchClient = this.GetSearchClient(collectionName);
-        return await this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, innerOptions, cancellationToken).ConfigureAwait(false);
+        return this.GetDocumentAndMapToDataModelAsync(searchClient, collectionName, key, innerOptions, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TDataModel> GetBatchAsync(IEnumerable<string> keys, Memory.GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TDataModel?> GetBatchAsync(IEnumerable<string> keys, Memory.GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -131,7 +131,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string key, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -140,14 +140,14 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
         // Remove record.
         var searchClient = this.GetSearchClient(collectionName);
-        var results = await RunOperationAsync(
+        return RunOperationAsync(
             () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, [key], new IndexDocumentsOptions(), cancellationToken),
             collectionName,
-            "DeleteDocuments").ConfigureAwait(false);
+            "DeleteDocuments");
     }
 
     /// <inheritdoc />
-    public async Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task DeleteBatchAsync(IEnumerable<string> keys, DeleteRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -156,10 +156,10 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
 
         // Remove records.
         var searchClient = this.GetSearchClient(collectionName);
-        var results = await RunOperationAsync(
+        return RunOperationAsync(
             () => searchClient.DeleteDocumentsAsync(this._keyPropertyName, keys, new IndexDocumentsOptions(), cancellationToken),
             collectionName,
-            "DeleteDocuments").ConfigureAwait(false);
+            "DeleteDocuments");
     }
 
     /// <inheritdoc />
@@ -204,7 +204,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="innerOptions">The azure ai search sdk options for getting a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
-    private async Task<TDataModel> GetDocumentAndMapToDataModelAsync(
+    private async Task<TDataModel?> GetDocumentAndMapToDataModelAsync(
         SearchClient searchClient,
         string collectionName,
         string key,
@@ -241,7 +241,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     /// <param name="innerOptions">The azure ai search sdk options for uploading a document.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The document upload result.</returns>
-    private async Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(
+    private Task<Response<IndexDocumentsResult>> MapToStorageModelAndUploadDocumentAsync(
         SearchClient searchClient,
         string collectionName,
         IEnumerable<TDataModel> records,
@@ -256,17 +256,17 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
                 collectionName,
                 "UploadDocuments");
 
-            return await RunOperationAsync(
+            return RunOperationAsync(
                 () => searchClient.UploadDocumentsAsync<JsonObject>(jsonObjects, innerOptions, cancellationToken),
                 collectionName,
-                "UploadDocuments").ConfigureAwait(false);
+                "UploadDocuments");
         }
 
         // Use the built in Azure AI Search mapper.
-        return await RunOperationAsync(
+        return RunOperationAsync(
             () => searchClient.UploadDocumentsAsync<TDataModel>(records, innerOptions, cancellationToken),
             collectionName,
-            "UploadDocuments").ConfigureAwait(false);
+            "UploadDocuments");
     }
 
     /// <summary>
@@ -288,13 +288,13 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <summary>
-    /// Convert the public <see cref="Memory.GetRecordOptions"/> options model to the azure ai search <see cref="Azure.Search.Documents.GetDocumentOptions"/> options model.
+    /// Convert the public <see cref="GetRecordOptions"/> options model to the azure ai search <see cref="GetDocumentOptions"/> options model.
     /// </summary>
     /// <param name="options">The public options model.</param>
     /// <returns>The azure ai search options model.</returns>
-    private Azure.Search.Documents.GetDocumentOptions ConvertGetDocumentOptions(Memory.GetRecordOptions? options)
+    private GetDocumentOptions ConvertGetDocumentOptions(GetRecordOptions? options)
     {
-        var innerOptions = new Azure.Search.Documents.GetDocumentOptions();
+        var innerOptions = new GetDocumentOptions();
         if (options?.IncludeVectors is false)
         {
             innerOptions.SelectedFields.AddRange(this._nonVectorPropertyNames);
