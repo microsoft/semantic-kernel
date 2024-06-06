@@ -2,9 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
+using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -32,6 +32,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         this.ToolCalls = chatMessage.ToolCalls;
     }
 
+    internal OpenAIChatMessageContent(OpenAIChatCompletion )
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
