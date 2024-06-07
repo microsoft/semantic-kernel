@@ -7,6 +7,22 @@ using xRetry;
 
 namespace AutoFunctionCalling;
 
+/// <summary>
+/// These examples demonstrate two ways functions called by the Gemini LLM can be invoked using the SK streaming and non-streaming AI API:
+///
+/// 1. Automatic Invocation by SK:
+///    Functions called by the LLM are invoked automatically by SK. The results of these function invocations
+///    are automatically added to the chat history and returned to the LLM. The LLM reasons about the chat history
+///    and generates the final response.
+///    This approach is fully automated and requires no manual intervention from the caller.
+///
+/// 2. Manual Invocation by a Caller:
+///    Functions called by the LLM are returned to the AI API caller. The caller controls the invocation phase where
+///    they may decide which function to call, when to call them, how to handle exceptions, etc. The caller then
+///    adds the function results or exceptions to the chat history and returns it to the LLM, which reasons about it
+///    and generates the final response.
+///    This approach is more manual and requires more manual intervention from the caller.
+/// </summary>
 public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 {
     [RetryFact]
