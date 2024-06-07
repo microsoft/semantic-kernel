@@ -361,7 +361,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
     }
 
     /// <summary>
-    /// Run the given model conversion and wrap any exceptions with <see cref="MemoryModelException"/>.
+    /// Run the given model conversion and wrap any exceptions with <see cref="MemoryDataModelMappingException"/>.
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operation">The operation to run.</param>
@@ -376,7 +376,7 @@ public sealed class AzureAISearchMemoryRecordService<TDataModel> : IMemoryRecord
         }
         catch (Exception ex)
         {
-            var wrapperException = new MemoryModelException("Failed to convert memory model.", ex);
+            var wrapperException = new MemoryDataModelMappingException("Failed to convert memory data model.", ex);
 
             // Using Open Telemetry standard for naming of these entries.
             // https://opentelemetry.io/docs/specs/semconv/attributes-registry/db/
