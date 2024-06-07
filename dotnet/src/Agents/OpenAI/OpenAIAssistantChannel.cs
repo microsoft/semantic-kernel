@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -94,7 +96,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         this.Logger.LogInformation("[{MethodName}] Created run: {RunId}", nameof(InvokeAsync), run.Id);
 
         // Evaluate status and process steps and messages, as encountered.
-        HashSet<string> processedMessageIds = [];
+        HashSet<string> processedStepIds = [];
 
         do
         {
@@ -130,48 +132,78 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             // Enumerate completed messages
             this.Logger.LogDebug("[{MethodName}] Processing run messages: {RunId}", nameof(InvokeAsync), run.Id);
 
-            IEnumerable<RunStepMessageCreationDetails> messageDetails =
+            IEnumerable<RunStep> completedStepsToProcess =
                 steps
-                    .OrderBy(s => s.CompletedAt)
-                    .Select(s => s.StepDetails)
-                    .OfType<RunStepMessageCreationDetails>()
-                    .Where(d => !processedMessageIds.Contains(d.MessageCreation.MessageId));
+                    .Where(s => s.CompletedAt.HasValue && !processedStepIds.Contains(s.Id))
+                    .OrderBy(s => s.CompletedAt); // %%%% ???
 
             int messageCount = 0;
-            foreach (RunStepMessageCreationDetails detail in messageDetails)
+            foreach (RunStep completedStep in completedStepsToProcess)
             {
-                ++messageCount;
-
-                // Retrieve the message
-                ThreadMessage? message = await this.RetrieveMessageAsync(detail, cancellationToken).ConfigureAwait(false);
-
-                if (message is not null)
+                if (completedStep.Type.Equals(RunStepType.ToolCalls))
                 {
-                    AuthorRole role = new(message.Role.ToString());
+                    RunStepToolCallDetails toolCallDetails = (RunStepToolCallDetails)completedStep.StepDetails;
 
-                    foreach (MessageContent itemContent in message.ContentItems)
+                    foreach (RunStepToolCall toolCall in toolCallDetails.ToolCalls)
                     {
                         ChatMessageContent? content = null;
 
-                        // Process text content
-                        if (itemContent is MessageTextContent contentMessage)
+                        // Process code-interpreter content
+                        if (toolCall is RunStepCodeInterpreterToolCall toolCodeInterpreter)
                         {
-                            content = GenerateTextMessageContent(agent.GetName(), role, contentMessage);
+                            content = GenerateCodeInterpreterContent(agent.GetName(), AuthorRole.Tool, toolCodeInterpreter);
                         }
-                        // Process image content
-                        else if (itemContent is MessageImageFileContent contentImage)
+                        // Process function content
+                        else if (toolCall is RunStepFunctionToolCall toolFunction)
                         {
-                            content = GenerateImageFileContent(agent.GetName(), role, contentImage);
+
                         }
 
                         if (content is not null)
                         {
+                            ++messageCount;
+
                             yield return content;
                         }
                     }
                 }
+                else if (completedStep.Type.Equals(RunStepType.MessageCreation))
+                {
+                    RunStepMessageCreationDetails messageCreationDetails = (RunStepMessageCreationDetails)completedStep.StepDetails;
 
-                processedMessageIds.Add(detail.MessageCreation.MessageId);
+                    // Retrieve the message
+                    ThreadMessage? message = await this.RetrieveMessageAsync(messageCreationDetails, cancellationToken).ConfigureAwait(false);
+
+                    if (message is not null)
+                    {
+                        AuthorRole role = new(message.Role.ToString());
+
+                        foreach (MessageContent itemContent in message.ContentItems)
+                        {
+                            ChatMessageContent? content = null;
+
+                            // Process text content
+                            if (itemContent is MessageTextContent contentMessage)
+                            {
+                                content = GenerateTextMessageContent(agent.GetName(), role, contentMessage);
+                            }
+                            // Process image content
+                            else if (itemContent is MessageImageFileContent contentImage)
+                            {
+                                content = GenerateImageFileContent(agent.GetName(), role, contentImage);
+                            }
+
+                            if (content is not null)
+                            {
+                                ++messageCount;
+
+                                yield return content;
+                            }
+                        }
+                    }
+                }
+
+                processedStepIds.Add(completedStep.Id);
             }
 
             if (this.Logger.IsEnabled(LogLevel.Information)) // Avoid boxing if not enabled
@@ -285,6 +317,19 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
                 FileId = fileId,
+            };
+    }
+
+    private static ChatMessageContent GenerateCodeInterpreterContent(string agentName, AuthorRole role, RunStepCodeInterpreterToolCall contentCodeInterpreter)
+    {
+        return
+            new ChatMessageContent(
+                role,
+                [
+                    new TextContent(contentCodeInterpreter.Input)
+                ])
+            {
+                AuthorName = agentName,
             };
     }
 

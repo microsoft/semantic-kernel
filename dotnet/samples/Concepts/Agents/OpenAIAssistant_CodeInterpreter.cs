@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -11,6 +12,8 @@ namespace Agents;
 /// </summary>
 public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTest(output)
 {
+    protected override bool ForceOpenAI => true;
+
     [Fact]
     public async Task RunAsync()
     {
@@ -21,6 +24,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
+                    Name = "CRCoder",
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
                 });
@@ -31,8 +35,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the solution to `3x + 2 = 14`?");
-            await InvokeAgentAsync("What is the fibinacci sequence until 101?");
+            await InvokeAgentAsync("What is the fibinacci sequence that does not exceed a value of 101?");
         }
         finally
         {

@@ -76,9 +76,14 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void WriteLine(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
+
+    /// <summary>
+    /// This method can be substituted by Console.WriteLine when used in Console apps.
+    /// </summary>
+    /// <param name="content">Content string</param>
+    public void WriteLine(string? content)
+        => this.Output.WriteLine(content ?? string.Empty);
 
     /// <summary>
     /// This method can be substituted by Console.WriteLine when used in Console apps.
@@ -93,9 +98,7 @@ public abstract class BaseTest
     /// </summary>
     /// <param name="target">Target object to write</param>
     public void Write(object? target = null)
-    {
-        this.Output.WriteLine(target ?? string.Empty);
-    }
+        => this.Output.WriteLine(target ?? string.Empty);
 
     protected sealed class LoggingHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : DelegatingHandler(innerHandler)
     {

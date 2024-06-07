@@ -223,11 +223,11 @@ public abstract class AgentChat
                 this.History.Add(message);
                 messages.Add(message);
 
-                // Don't expose internal messages to caller.
-                if (message.Role == AuthorRole.Tool || message.Items.All(i => i is FunctionCallContent))
-                {
-                    continue;
-                }
+                //// Don't expose internal messages to caller.
+                //if (message.Role == AuthorRole.Tool)
+                //{
+                //    continue;
+                //}
 
                 // Yield message to caller
                 yield return message;
@@ -239,7 +239,7 @@ public abstract class AgentChat
                 this._agentChannels
                     .Where(kvp => kvp.Value != channel)
                     .Select(kvp => new ChannelReference(kvp.Value, kvp.Key));
-            this._broadcastQueue.Enqueue(channelRefs, messages);
+            this._broadcastQueue.Enqueue(channelRefs, messages.Where(m => m.Role != AuthorRole.Tool).ToArray());
 
             this.Logger.LogInformation("[{MethodName}] Invoked agent {AgentType}: {AgentId}", nameof(InvokeAgentAsync), agent.GetType(), agent.Id);
         }
