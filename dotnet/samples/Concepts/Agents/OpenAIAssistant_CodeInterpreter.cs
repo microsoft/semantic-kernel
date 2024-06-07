@@ -23,7 +23,6 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
                 config: new(this.ApiKey, this.Endpoint),
                 new()
                 {
-                    Name = "CRCoder",
                     EnableCodeInterpreter = true, // Enable code-interpreter
                     ModelId = this.Model,
                 });
@@ -34,7 +33,7 @@ public class OpenAIAssistant_CodeInterpreter(ITestOutputHelper output) : BaseTes
         // Respond to user input
         try
         {
-            await InvokeAgentAsync("What is the fibinacci sequence that does not exceed a value of 101?");
+            await InvokeAgentAsync("Use code to determine the value of term in the fibinacci sequence that does not exceed a value of 101?");
         }
         finally
         {

@@ -133,8 +133,8 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
 
             IEnumerable<RunStep> completedStepsToProcess =
                 steps
-                    .Where(s => s.CompletedAt.HasValue && !processedStepIds.Contains(s.Id))
-                    .OrderBy(s => s.CompletedAt); // %%%% ???
+                    .Where(s => !processedStepIds.Contains(s.Id))
+                    .OrderBy(s => s.CreatedAt);
 
             int messageCount = 0;
             foreach (RunStep completedStep in completedStepsToProcess)
