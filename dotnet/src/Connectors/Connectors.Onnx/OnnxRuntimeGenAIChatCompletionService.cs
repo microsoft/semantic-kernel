@@ -79,7 +79,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         var tokens = this._tokenizer.Encode(prompt);
 
         var generatorParams = new GeneratorParams(this._model);
-        this.ApplyPromptExecutionSettings(generatorParams, onnxRuntimeGenAIPromptExecutionSettings);
+        this.UpdateGeneratorParamsFromPromptExecutionSettings(generatorParams, onnxRuntimeGenAIPromptExecutionSettings);
         generatorParams.SetInputSequences(tokens);
 
         var generator = new Generator(this._model, generatorParams);
@@ -113,7 +113,7 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
         return promptBuilder.ToString();
     }
 
-    private void ApplyPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
+    private void UpdateGeneratorParamsFromPromptExecutionSettings(GeneratorParams generatorParams, OnnxRuntimeGenAIPromptExecutionSettings onnxRuntimeGenAIPromptExecutionSettings)
     {
         generatorParams.SetSearchOption("top_p", onnxRuntimeGenAIPromptExecutionSettings.TopP);
         generatorParams.SetSearchOption("top_k", onnxRuntimeGenAIPromptExecutionSettings.TopK);

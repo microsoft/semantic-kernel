@@ -25,116 +25,45 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
         }
     }
 
-    private int _topK = 50;
-    private float _topP = 0.9f;
-    private float _temperature = 1;
-    private float _repetitionPenalty = 1;
-    private bool _pastPresentShareBuffer = false;
-    private int _numReturnSequences = 1;
-    private int _numBeams = 1;
-    private int _noRepeatNgramSize = 0;
-    private int _minLength = 0;
-    private int _maxLength = 200;
-    private float _lengthPenalty = 1;
-    private bool _earlyStopping = true;
-    private bool _doSample = false;
-    private float _diversityPenalty = 0;
-
     [JsonPropertyName("top_k")]
-    public int TopK
-    {
-        get { return this._topK; }
-        set { this._topK = value; }
-    }
+    public int TopK { get; set; } = 50;
 
     [JsonPropertyName("top_p")]
-    public float TopP
-    {
-        get { return this._topP; }
-        set { this._topP = value; }
-    }
+    public float TopP { get; set; } = 0.9f;
 
     [JsonPropertyName("temperature")]
-    public float Temperature
-    {
-        get { return this._temperature; }
-        set { this._temperature = value; }
-    }
+    public float Temperature { get; set; } = 1;
 
     [JsonPropertyName("repetition_penalty")]
-    public float RepetitionPenalty
-    {
-        get { return this._repetitionPenalty; }
-        set { this._repetitionPenalty = value; }
-    }
+    public float RepetitionPenalty { get; set; } = 1;
 
     [JsonPropertyName("past_present_share_buffer")]
-    public bool PastPresentShareBuffer
-    {
-        get { return this._pastPresentShareBuffer; }
-        set { this._pastPresentShareBuffer = value; }
-    }
+    public bool PastPresentShareBuffer { get; set; } = false;
 
     [JsonPropertyName("num_return_sequences")]
-    public int NumReturnSequences
-    {
-        get { return this._numReturnSequences; }
-        set { this._numReturnSequences = value; }
-    }
+    public int NumReturnSequences { get; set; } = 1;
 
     [JsonPropertyName("num_beams")]
-    public int NumBeams
-    {
-        get { return this._numBeams; }
-        set { this._numBeams = value; }
-    }
+    public int NumBeams { get; set; } = 1;
 
     [JsonPropertyName("no_repeat_ngram_size")]
-    public int NoRepeatNgramSize
-    {
-        get { return this._noRepeatNgramSize; }
-        set { this._noRepeatNgramSize = value; }
-    }
+    public int NoRepeatNgramSize { get; set; } = 0;
 
     [JsonPropertyName("min_length")]
-    public int MinLength
-    {
-        get { return this._minLength; }
-        set { this._minLength = value; }
-    }
+    public int MinLength { get; set; } = 0;
 
     [JsonPropertyName("max_length")]
-    public int MaxLength
-    {
-        get { return this._maxLength; }
-        set { this._maxLength = value; }
-    }
+    public int MaxLength { get; set; } = 200;
 
     [JsonPropertyName("length_penalty")]
-    public float LengthPenalty
-    {
-        get { return this._lengthPenalty; }
-        set { this._lengthPenalty = value; }
-    }
+    public float LengthPenalty { get; set; } = 1;
 
     [JsonPropertyName("diversity_penalty")]
-    public float DiversityPenalty
-    {
-        get { return this._diversityPenalty; }
-        set { this._diversityPenalty = value; }
-    }
+    public float DiversityPenalty { get; set; } = 0;
 
     [JsonPropertyName("early_stopping")]
-    public bool EarlyStopping
-    {
-        get { return this._earlyStopping; }
-        set { this._earlyStopping = value; }
-    }
+    public bool EarlyStopping { get; set; } = true;
 
     [JsonPropertyName("do_sample")]
-    public bool DoSample
-    {
-        get { return this._doSample; }
-        set { this._doSample = value; }
-    }
+    public bool DoSample { get; set; } = false;
 }
