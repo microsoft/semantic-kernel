@@ -118,12 +118,13 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                 var functionTasks = steps.Data.SelectMany(step => ExecuteStep(agent, step, cancellationToken)).ToArray();
                 if (functionTasks.Length > 0)
                 {
+                    // Emit function-call content
                     yield return GenerateFunctionCallContent(agent.GetName(), functionTasks);
 
-                    // Capture for FunctionResultContent generation
-                    foreach (KernelFunctionTask step in functionTasks)
+                    // Capture function-step for FunctionResultContent generation
+                    foreach (KernelFunctionTask task in functionTasks)
                     {
-                        functionSteps.Add(step.FunctionStep.ToolCallId, step.FunctionStep);
+                        functionSteps.Add(task.FunctionStep.ToolCallId, task.FunctionStep);
                     }
 
                     // Block for function results and process
@@ -162,7 +163,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
                         {
                             content = GenerateCodeInterpreterContent(agent.GetName(), toolCodeInterpreter);
                         }
-                        // Process function content
+                        // Process function result content
                         else if (toolCall is RunStepFunctionToolCall toolFunction)
                         {
                             KernelFunctionStep functionStep = functionSteps[toolFunction.Id]; // Function step always captured on invocation
@@ -415,8 +416,10 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
         return functionCallContent;
     }
 
+    // Capture kernel function references for content processing
     private sealed record KernelFunctionStep(string ToolCallId, KernelFunction Function, KernelArguments Arguments);
 
+    // Associate kernel function references with function execution task
     private sealed record KernelFunctionTask(KernelFunctionStep FunctionStep, Task<ToolOutput> FunctionTask);
 
     private static IEnumerable<KernelFunctionTask> ExecuteStep(OpenAIAssistantAgent agent, RunStep step, CancellationToken cancellationToken)
@@ -433,6 +436,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             }
         }
 
+        // Local function to capture kernel function state for further processing (participates in method closure).
         KernelFunctionStep ParseFunctionStep(RunStepFunctionToolCall functionDetails)
         {
             KernelFunction function = agent.Kernel.GetKernelFunction(functionDetails.Name, FunctionDelimiter);
@@ -450,7 +454,7 @@ internal sealed class OpenAIAssistantChannel(AssistantsClient client, string thr
             return new(functionDetails.Id, function, functionArguments);
         }
 
-        // Local function for processing the run-step (participates in method closure).
+        // Local function for processing the function-step (participates in method closure).
         async Task<ToolOutput> ProcessFunctionStepAsync(KernelFunctionStep functionStep)
         {
             FunctionResult functionResult = await functionStep.Function.InvokeAsync(agent.Kernel, functionStep.Arguments, cancellationToken).ConfigureAwait(false);
