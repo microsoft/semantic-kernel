@@ -6,7 +6,7 @@ from typing import Any
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import PromptExecutionSettings
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextCompletion
-from semantic_kernel.contents import ChatHistory
+from semantic_kernel.contents import AuthorRole, ChatHistory
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import InputVariable, PromptTemplateConfig
 
@@ -204,7 +204,9 @@ def _check_banned_words(banned_list, actual_list) -> bool:
 
 def _format_output(chat, banned_words) -> None:
     print("--- Checking for banned words ---")
-    chat_bot_ans_words = [word for msg in chat.messages if msg.role == "assistant" for word in msg.content.split()]
+    chat_bot_ans_words = [
+        word for msg in chat.messages if msg.role == AuthorRole.ASSISTANT for word in msg.content.split()
+    ]
     if _check_banned_words(banned_words, chat_bot_ans_words):
         print("None of the banned words were found in the answer")
 
