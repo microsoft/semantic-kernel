@@ -45,13 +45,20 @@ dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "text-embedding-a
 dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
+dotnet user-secrets set "AzureOpenAIAudioToText:ServiceId" "azure-audio-to-text"
 dotnet user-secrets set "AzureOpenAIAudioToText:DeploymentName" "whisper-1"
 dotnet user-secrets set "AzureOpenAIAudioToText:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAIAudioToText:ApiKey" "..."
 
+dotnet user-secrets set "AzureOpenAITextToAudio:ServiceId" "azure-text-to-audio"
 dotnet user-secrets set "AzureOpenAITextToAudio:DeploymentName" "tts-1"
 dotnet user-secrets set "AzureOpenAITextToAudio:Endpoint" "https://contoso.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAITextToAudio:ApiKey" "..."
+
+dotnet user-secrets set "AzureOpenAITextToImage:ServiceId" "azure-text-to-image"
+dotnet user-secrets set "AzureOpenAITextToImage:DeploymentName" "dall-e-3"
+dotnet user-secrets set "AzureOpenAITextToImage:Endpoint" "https://contoso.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAITextToImage:ApiKey" "..."
 
 dotnet user-secrets set "MistralAI:ChatModel" "mistral-large-latest"
 dotnet user-secrets set "MistralAI:EmbeddingModel" "mistral-embed"
